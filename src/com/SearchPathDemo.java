@@ -508,7 +508,7 @@ public class SearchPathDemo extends JFrame implements MouseListener,
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 
-		if (e.getSource() == btnAbout) {kk
+		if (e.getSource() == btnAbout) { 
 			String strMsg = "This is a maze path searching demo.\nAuthor: JiaPeng \n2011.9.25 V:1.0.0.2"
 					+ "\nCurrent version:1.0.0.3\nChange date: 2016.7.30";
 			JOptionPane.showMessageDialog(this, strMsg);
