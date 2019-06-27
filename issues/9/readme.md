@@ -1,4 +1,4 @@
-# [v0.0.2](https://github.com/littleflute/Games/edit/master/issues/9/readme.md) [..](..)
+#   [..](..)
 
 ## 1. 用 andriod studio 打开【gdx/test】  目录下的 build.gradle 工程。
 ## 2. 配置工程：运行 Run -> Edit configuartions. .. 
