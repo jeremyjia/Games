@@ -80,6 +80,50 @@
   	var url = "https://api.github.com/repos/jeremyjia/Games/issues/4";
   	w3.getHttpObject(url, _loadIssue ); 
 //*/
+	var nCell = 40;
+	   var canv = document.getElementById("canvas");
+	   var ctx = canv.getContext("2d");
+	   
+	   setInterval(function()
+	   {
+	   	   ctx.beginPath();
+		   for(var i=0; i<15;i++)
+		   {
+			  ctx.moveTo(10+i*40, 10);
+			  ctx.lineTo(10+i*40, 370);
+			  
+			  ctx.moveTo(10, 10+i*40);
+			  ctx.lineTo(370, 10+i*40);
+		   }
+	    ctx.stroke();
+	   	ctx.beginPath();
+		ctx.fillStyle = "Red";
+		ctx.arc(pt.x*40+20+10, pt.y*40+20+10, 20,0,Math.PI*2,false);
+		ctx.fill();
+	   
+	   },20);
+	   
+	   //Constructor function
+	   var Position = function(x,y)
+	   { this.x = x;
+	     this.y = y;
+	   };
+	   Position.prototype.move = function(x,y)
+	   {
+	   this.x = x;
+	   this.y = y;
+	   }
+	   var pt = new Position(0,0);
+	   
+	   $("#canvas").click(function(event)
+	   {
+	      ctx.clearRect(0,0,400,400);
+		   var x = Math.floor((event.offsetX - 10)/nCell);
+		   var y = Math.floor((event.offsetY - 10)/nCell);
+		   console.log(x+" "+y);
+           pt.move(x,y);
+	   }
+	   );
 </script>
   </body>
 </html>
