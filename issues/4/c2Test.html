@@ -49,7 +49,7 @@ body {font-family: "Lato", sans-serif;}
   <a href="/Games"><i class="fa fa-fw fa-home"></i>Home</a>
   <a href=".."><i class="fa fa-fw fa-wrench"></i> [..]</a>
   <a href="."><i class="fa fa-fw fa-wrench"></i> [.]</a>
-  <a href="https://github.com/littleflute/Games/edit/master/issues/4/c2Test.html" ><i class="fa fa-fw fa-wrench"></i> [v0.0.13*]</a>
+  <a href="https://github.com/littleflute/Games/edit/master/issues/4/c2Test.html" ><i class="fa fa-fw fa-wrench"></i> [v0.0. 15 *]</a>
   <a href="https://littleflute.github.io/weixin/" target="_blank"><i class="fa fa-fw fa-user"></i> [weixin]</a>
   <a href="https://littleflute.github.io/weixin/" target="_blank"><i class="fa fa-fw fa-envelope"></i>[blog]</a>
 </div>
@@ -57,7 +57,7 @@ body {font-family: "Lato", sans-serif;}
 <div class="main">
   <h2>c2 Test.html</h2>
   <p>This is a test page for c2.js</p>
-  <p><button id="loadc2.js">load c2.js</button></p>
+  <p><button id="loadc2.js">Run Test</button></p>
   <p>...</p>
 </div>
      
@@ -73,7 +73,8 @@ body {font-family: "Lato", sans-serif;}
       blo0.blScript("id_script_4_c2.js", "c2.js");
     }
     else{ 
-      _on_off_div(this, bl$("id_mdiv_4_issue4_c1"));
+	var d = bl$("id_mdiv_4_i4c2");
+	_on_off_div( this ,d);
     }
   }
   </script>
