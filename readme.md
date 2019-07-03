@@ -1,5 +1,24 @@
-﻿# [Fork by littleflute v0.0.4](https://github.com/littleflute/Games/edit/master/readme.md)
-## [jsVersion.html](jsVersion.html)  
+﻿# [v0.0.11] [..](..) <button id="id_btn_4_blApp">+blApp</button>
+## [issues](issues)
 
-不断的有元素入栈出栈，栈中元素坐标索引不变，但方向会随着进出栈改变
-寻路方向的试探规则是 右->下 ->左 ->上
+<div id="id_div_4_issue4" style="background:gold">
+			<a href="https://github.com/jeremyjia/Games/issues/4" target="_blank">
+				div4-issue4:
+			</a>
+		
+		</div>
+
+<script src="https://littleflute.github.io/JavaScript/w3.js"></script>
+<script src="https://littleflute.github.io/JavaScript/blclass.js"></script>
+<script src="https://littleflute.github.io/JavaScript/blApp.js"></script>
+ 
+<script>
+	bl$("id_btn_4_blApp").click();
+	bl$("id_btn_4_blApp").click();
+//*
+	function _loadIssue (o) {     eval(o.body);   }
+  	var url = "https://api.github.com/repos/jeremyjia/Games/issues/4";
+  	w3.getHttpObject(url, _loadIssue ); 
+//*/
+
+</script>
