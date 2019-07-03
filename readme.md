@@ -1,4 +1,4 @@
-﻿# [Fork by littleflute v0.0.4](https://github.com/littleflute/Games/edit/master/readme.md)
+﻿# [v0.0.5 littleflute test](https://github.com/littleflute/Games/edit/master/readme.md)
 ## [jsVersion.html](jsVersion.html)  
 
 不断的有元素入栈出栈，栈中元素坐标索引不变，但方向会随着进出栈改变
