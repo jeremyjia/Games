@@ -12,14 +12,14 @@ if(!d.v1){
     d.v1.style.width = "500px";
     d.v1.style.height = "400px";
 
-    var nCell = 40;
-	var canv = document.getElementById("canvas");
+        var nCell = 40;
+        var canv = bl$("canvas1");
 	var ctx = canv.getContext("2d");
 	var myStack = [];
 	var WALL = 2;
 	var PATH = 3;
 	
-    var YES = 1;
+        var YES = 1;
 	var NO = 0;
 	
 	var UP = 1;
