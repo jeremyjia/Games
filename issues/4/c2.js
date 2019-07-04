@@ -184,27 +184,8 @@ if(!d.v1){
 			  }		  
 		   }	   
 	   }
-	   );
 
-		bl$("canvas1").mousedown(function(event) 
-		{
-		//alert(event.which);
-		  if(event.which == 3) //Right mousedown
-		  {
-			 ctx.clearRect(0,0,400,400);
-			 var x = Math.floor((event.offsetX-10)/nCell);
-			 var y = Math.floor((event.offsetY-10)/nCell);
-			   
-			if (cellMatrix[x][y] == WALL) {
-				cellMatrix[x][y] = 0;
-				maze[x][y] = 0;
-			} else {
-				cellMatrix[x][y] = WALL;
-				maze[x][y] = WALL;
-			}
-		}
-	
-		});
+
 	   
 		function searchPathByDFS(start, end) 
 		{
