@@ -323,11 +323,12 @@ if(!d.v1){
 		
 	      function cleanAll() 
 	      {
+		   ctx.clearRect(0,0,400,400);
 		   for (var i = 0; i<9; i++) 
 		   {
 			  for (var j = 0; j<9; j++) {
 			     cellMatrix[i][j] = 0;
-			     cellMatrix[i][j] = 0;
+			     maze[i][j] = 0;
 			     pathIndex[i][j] = 0;
 			  }
 		  }
