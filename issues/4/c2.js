@@ -11,11 +11,8 @@ if(!d.v1){
     d. vToolBar = blo0.blDiv(d, d.id + "vToolBar ", 'vToolBar :', blGrey[1]);
     d. vToolBar. btn1 = blo0.blBtn(d. vToolBar, d. vToolBar.id + "btn1 ", ' btn1', blGrey[1]);
     d. vToolBar. btn1 .onclick = function(){
-	    ptStart.move(0,0);	   
-	    myStack = [];
-	    clearData();
+	    cleanAll();
 	    initMap();
-	    bClick=1;
     }
     d.v1 = blo0.blDiv(d, d.id + "v1", '<canvas id="canvas1" width="400" height="400"></canvas>', blGrey[1]);
     d.v1.style.width = "500px";
@@ -324,6 +321,21 @@ if(!d.v1){
 			}
 		}
 		
+	      function cleanAll() 
+	      {
+		   for (var i = 0; i<9; i++) 
+		   {
+			  for (var j = 0; j<9; j++) 
+			     cellMatrix[i][j] = 0;
+			     cellMatrix[i][j] = 0;
+			     pathIndex[i][j] = 0;
+			  }
+		  }
+		   ptStart.move(0,0);	   
+	           myStack = [];
+	           bClick=1;
+	      }
+	
 		function clearData() 
 		{
 		   for (var i = 0; i<9; i++) 
