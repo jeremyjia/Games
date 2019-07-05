@@ -325,7 +325,7 @@ if(!d.v1){
 	      {
 		   for (var i = 0; i<9; i++) 
 		   {
-			  for (var j = 0; j<9; j++) 
+			  for (var j = 0; j<9; j++) {
 			     cellMatrix[i][j] = 0;
 			     cellMatrix[i][j] = 0;
 			     pathIndex[i][j] = 0;
