@@ -10,7 +10,7 @@ var d = blo0.blMDiv(document.body,"id_mdiv_4_i4c2", s,    700,100,500,400, blGre
 if(!d.v1){
     d. vToolBar = blo0.blDiv(d, d.id + "vToolBar ", 'vToolBar :', blGrey[1]);
     d. vToolBar. btn1 = blo0.blBtn(d. vToolBar, d. vToolBar.id + "btn1 ", ' btn1', blGrey[1]);
-    d. vToolBar. btn1 .onclick = function(){alert("click me, to create a new map.")}
+    d. vToolBar. btn1 .onclick = function(){initMap();}
     d.v1 = blo0.blDiv(d, d.id + "v1", '<canvas id="canvas1" width="400" height="400"></canvas>', blGrey[1]);
     d.v1.style.width = "500px";
     d.v1.style.height = "400px";
