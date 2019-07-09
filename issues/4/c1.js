@@ -1,5 +1,5 @@
 //i4c1
-var s= "v0.0. 42 ";
+var s= "v0.0. 44 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c1.js'"
 s += " style='color:blue;'";		s +=">"; s += "c1.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c1.js'"
@@ -48,23 +48,25 @@ function ftnPlayer( oDiv ){
 	vid.controls = false;
 
 	v.tb = blo0.blDiv(v, v.id + "tb", "tb",blGrey[3]);
-	v.tb.b1 = blo0.blBtn(v.tb, v.tb+"b1","b1",blGrey[0]);
+	v.tb.b1 = blo0.blBtn(v.tb, v.tb+"b1","lyric",blGrey[0]);
 	v.tb.b1.onclick = function(){
 		if(!this.v){
 			this.v = blo0.blDiv(v,v.id + "v4b1","v4b1",blColor[3]);
 		}
 		_on_off_div(this,this.v);
 	}
-	v.tb.b2 = blo0.blBtn(v.tb, v.tb+"b2","b2",blGrey[0]);
+	v.tb.b2 = blo0.blBtn(v.tb, v.tb+"b2","play",blGrey[0]);
 	v.tb.b2.onclick = function(){
 		if(!this.run){
 			this.run = true;
 			this.style.backgroundColor = "green";
+			this.innerHTML = "pause";
 			vid.play();
 		} 
 		else{
 			this.run = false;
 			this.style.backgroundColor = "brown";
+			this.innerHTML = "play";
 			vid.pause();
 		}
 	}
