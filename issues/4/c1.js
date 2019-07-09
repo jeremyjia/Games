@@ -1,10 +1,10 @@
 //i4c1
-var s= "v0.0. 44 ";
+var s= "v0.0. 45 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c1.js'"
 s += " style='color:blue;'";		s +=">"; s += "c1.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c1.js'"
 s += " style='color:green;'";		s +=">"; s += "c1.js ";
-s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c18Test.html'"
+s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c1Test.html'"
 s += " style='color:brown;'";		s +=">"; s += "c1Test.html";
 
 var md = blo0.blDiv(document.body, "div_ID_4_I4C1", s ,blGrey[0]);  
