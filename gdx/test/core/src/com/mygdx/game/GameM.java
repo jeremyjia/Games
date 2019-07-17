@@ -11,8 +11,11 @@ import java.util.ArrayList;
 
 public class GameM {
 
-    int B[] = {0,1,2,3,4,5,6,7,8};
-    int A[] = {0,1,2,3,4,5,6,7,8};
+    //public int B[] = {0,1,2,3,4,5,6,7,8};
+    //public int B[] = { 3, 0, 2, 8, 1, 4, 6, 7, 5 };//Jeremyjia Test data
+    //public int B[] = { 6, 3, 2, 0, 8, 1, 7, 5, 4 };
+    public int B[] = { 3, 2, 1, 6, 8, 4, 0, 5, 7 };
+    public int A[] = {0,1,2,3,4,5,6,7,8};
 
     private float xdD = 120.0f;
     private float xdX = 120.0f;
@@ -39,7 +42,8 @@ public class GameM {
         Ss.add(new Sprite(Ts.get(7)));
         Ts.add(new Texture("9.jpg"));
         Ss.add(new Sprite(Ts.get(8)));
-        xdStart(A,B);
+        //xdStart(A,B);  //need to make sure have a solution
+
         for(int i=0;i<Ss.size();i++){
             xdSetxy(Ss.get(B[i]),xdX+xdD*(i%3),xdY+xdD*(i/3), Gdx.graphics.getHeight());
         }
