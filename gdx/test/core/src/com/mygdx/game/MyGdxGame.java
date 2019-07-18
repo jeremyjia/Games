@@ -3,202 +3,156 @@ package com.mygdx.game;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class MyGdxGame extends ApplicationAdapter {
-	private  SpriteBatch batch;
-	//Draw a button
-	private Texture textureBtnUp;
-	private Texture textureBtnDown;
-	private Pixmap pixmapBtnUp;
-	private Pixmap pixmapBtnDown;
-    private TextButton AIBtn;
-    private Stage  stage;
-    private  boolean bIsSearching;
+	private Texture dropImage;
+	private Texture bucketImage;
+	private Sound dropSound;
+	private Music rainMusic;
+	private SpriteBatch batch;
+	private OrthographicCamera camera;
+	private Rectangle bucket;
+	private Array<Rectangle> raindrops;
+	private long lastDropTime;
 
-	private ArrayList<Texture> Ts = new ArrayList<Texture>();
-	private ArrayList<Sprite> Ss = new ArrayList<Sprite>();
-	private GameM gm = new GameM();
-	private Sound wavSound;
+	//private GameM gm;
+	private int score;
 
-	private float xdD = 120.0f;
-	private float xdX = 120.0f;
-	private float xdY = 120.0f;
-
-	private float w = 0;
-	private float h = 0;
-	private BitmapFont xdFont;
-	private String xdStrV = "v0.0.12: " ;
-	private String xdMsg = xdStrV;
-
-	private void xdHit(ArrayList<Sprite> sl,int iBox){
-
-		int iSprite = gm.xdGetSpriteNoByBoxNo(sl,iBox);
-		int i8InBox = xdGetBoxNoBySpriteNo(8);
-
-		xdMsg = "box:" + iBox + " iSprite:" + iSprite + "i8InBox:"+i8InBox;
-		if(iBox-i8InBox==3 || -3==iBox-i8InBox ||
-				(iBox/3==i8InBox/3)&&(iBox-i8InBox==1 || -1==iBox-i8InBox))
-		{
-			gm.xdSwap(sl,iSprite,8);
-			wavSound.play();
-
-		}
-	}
-	private int xdGetBoxNoBySpriteNo(int iSprite){
-		float x = Ss.get(iSprite).getX()+xdD/2;
-		float y = h - Ss.get(iSprite).getY()-xdD/2;
-		int iBox = -1;
-		iBox = gm.xdGetBoxNoByXY(x,y,xdX,xdY,xdD);
-		return iBox;
-	}
-
-	private void xdF2(ArrayList<Sprite> sl,float x,float y){
-		int i = gm.xdGetBoxNoByXY(x,y,xdX,xdY,xdD);
-		if(-1!=i) xdHit(sl,i);
-	}
-
-	private void myAISearch(){
-        GameAIHelper helper = new GameAIHelper(gm.B);
-        GameAIHelper.MyNode node = helper.AISearch();
-
-        int nStep = 0;
-        GameAIHelper.MyNode preNode = null;
-        List<Integer> res = new ArrayList<Integer>();
-        while (node != null) {
-            if (nStep == 0) {
-                preNode = node;
-            } else {
-                int diffNum = helper.getDiff(preNode.getData(), node.getData());
-                if (diffNum != -1) {
-                    res.add(new Integer(diffNum));
-                }
-                preNode = node;
-            }
-            helper.printNodeData(node);
-            node = node.getParent();
-            nStep++;
-        }
-
-        int nSize = res.size();
-        System.out.println("nSize:"+nSize);
-        while (nSize > 0) {
-            int x = res.get(nSize - 1).intValue();
-            System.out.println("8->" + x);
-            try {
-                gm.xdSwap(Ss,x,8);
-                wavSound.play();
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            nSize--;
-        }
-    }
 	@Override
-	public void create () {
+	public void create() {
+		score = 0;
+		//gm = new GameM();
+		// load the images for the droplet and the bucket, 64x64 pixels each
+		dropImage = new Texture(Gdx.files.internal("droplet.png"));
+		bucketImage = new Texture(Gdx.files.internal("bucket.png"));
+
+		// load the drop sound effect and the rain background "music"
+		dropSound = Gdx.audio.newSound(Gdx.files.internal("data/raindrop.mp3"));
+		rainMusic = Gdx.audio.newMusic(Gdx.files.internal("data/raining.mp3"));
+		//rainMusic = Gdx.audio.newMusic(Gdx.files.external("https://littleflute.github.io/American-English-Mosaic/files/10/eng25-010.mp3"));
+
+
+		// start the playback of the background music immediately
+		rainMusic.setLooping(true);
+		rainMusic.play();
+
+		// create the camera and the SpriteBatch
+		camera = new OrthographicCamera();
+		camera.setToOrtho(false, 800, 480);
 		batch = new SpriteBatch();
-		//textureBtnUp = new Texture("badlogic.jpg");
-        pixmapBtnDown = new Pixmap(100,50, Pixmap.Format.RGB888);
-		pixmapBtnDown.setColor(Color.BLUE);
-		pixmapBtnDown.fill();
 
-		pixmapBtnUp = new Pixmap(100,50, Pixmap.Format.RGB888);
-		pixmapBtnUp.setColor(Color.RED);
-		pixmapBtnUp.fill();
+		// create a Rectangle to logically represent the bucket
+		bucket = new Rectangle();
+		bucket.x = 800 / 2 - 64 / 2; // center the bucket horizontally
+		bucket.y = 20; // bottom left corner of the bucket is 20 pixels above the bottom screen edge
+		bucket.width = 64;
+		bucket.height = 64;
 
-		textureBtnDown = new Texture(pixmapBtnDown);
-		textureBtnUp = new Texture(pixmapBtnUp);
-		pixmapBtnUp.dispose();
-		pixmapBtnDown.dispose();
-		TextureRegionDrawable btn_Up = new TextureRegionDrawable(new TextureRegion(textureBtnUp));
-		TextureRegionDrawable btn_Down= new TextureRegionDrawable(new TextureRegion(textureBtnDown));
+		// create the raindrops array and spawn the first raindrop
+		raindrops = new Array<Rectangle>();
+		spawnRaindrop();
+	}
 
-		wavSound = Gdx.audio.newSound(Gdx.files.internal("data/APiano.wav"));
-		w = Gdx.graphics.getWidth();
-		h = Gdx.graphics.getHeight();
-
-		gm.pbInit(Ss,Ts);
-
-		bIsSearching = false;
-        BitmapFont bf = new BitmapFont();
-        TextButton.TextButtonStyle ts = new TextButton.TextButtonStyle(btn_Up, btn_Down,btn_Up,bf);
-		AIBtn = new TextButton("AI Search",ts);
-		AIBtn.setSize(100, 50);
-		stage = new Stage();
-		AIBtn.setPosition(520,300, 0);
-		AIBtn.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                Gdx.app.log("INFO", "Button is clicked!");
-				if(bIsSearching){
-					Gdx.app.log("INFO", "Searching now!");
-					return;
-				}
-                for (int i:gm.B){
-                    Gdx.app.log("INFO", Integer.toString(i));
-                }
-
-                MyThread thread = new MyThread();
-                thread.setName("AI Thread");
-                thread.start();
-
-            }
-        });
-
-        Gdx.input.setInputProcessor(stage);
-		stage.addActor(AIBtn);
+	private void spawnRaindrop() {
+		Rectangle raindrop = new Rectangle();
+		raindrop.x = MathUtils.random(0, 800-64);
+		raindrop.y = 480;
+		raindrop.width = 64;
+		raindrop.height = 64;
+		raindrops.add(raindrop);
+		lastDropTime = TimeUtils.nanoTime();
 	}
 
 	@Override
-	public void render () {
-		Gdx.gl.glClearColor(0, 255, 255, 1);
+	public void render() {
+		// clear the screen with a dark blue color. The
+		// arguments to glClearColor are the red, green
+		// blue and alpha component in the range [0,1]
+		// of the color to be used to clear the screen.
+		Gdx.gl.glClearColor(0, 0, 0.2f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		if(Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
-			xdF2(Ss,Gdx.input.getX(),Gdx.input.getY());
-		}
+
+		// tell the camera to update its matrices.
+		camera.update();
+
+		// tell the SpriteBatch to render in the
+		// coordinate system specified by the camera.
+		batch.setProjectionMatrix(camera.combined);
+
+		// begin a new batch and draw the bucket and
+		// all drops
 		batch.begin();
-		gm.pbDraw(batch,Ss);
+		batch.draw(bucketImage, bucket.x, bucket.y);
+		for(Rectangle raindrop: raindrops) {
+			batch.draw(dropImage, raindrop.x, raindrop.y);
+		}
+		//	gm.pbDrawVer(batch,score);
 		batch.end();
 
-        stage.act();
-        stage.draw();
-	}
-	
-	@Override
-	public void dispose () {
-		batch.dispose();
-		textureBtnUp.dispose();
-		textureBtnDown.dispose();
-		wavSound.dispose();
+		// process user input
+		if(Gdx.input.isTouched()) {
+			Vector3 touchPos = new Vector3();
+			touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+			camera.unproject(touchPos);
+			bucket.x = touchPos.x - 64 / 2;
+		}
+		if(Gdx.input.isKeyPressed(Input.Keys.LEFT)) bucket.x -= 200 * Gdx.graphics.getDeltaTime();
+		if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)) bucket.x += 200 * Gdx.graphics.getDeltaTime();
 
-		for(int i=0;i<Ts.size();i++){
-			Ts.get(i).dispose();
+		// make sure the bucket stays within the screen bounds
+		if(bucket.x < 0) bucket.x = 0;
+		if(bucket.x > 800 - 64) bucket.x = 800 - 64;
+
+		// check if we need to create a new raindrop
+		if(TimeUtils.nanoTime() - lastDropTime > 1000000000) spawnRaindrop();
+
+		// move the raindrops, remove any that are beneath the bottom edge of
+		// the screen or that hit the bucket. In the latter case we play back
+		// a sound effect as well.
+		for (Iterator<Rectangle> iter = raindrops.iterator(); iter.hasNext(); ) {
+			Rectangle raindrop = iter.next();
+			raindrop.y -= 200 * Gdx.graphics.getDeltaTime();
+			if(raindrop.y + 64 < 0) iter.remove();
+			if(raindrop.overlaps(bucket)) {
+				dropSound.play();
+				score++;
+				iter.remove();
+			}
 		}
 	}
 
-    public class MyThread extends Thread {
-        @Override
-        public void run() {
-			bIsSearching = true;
-            myAISearch();
-			bIsSearching = false;
-        }
-    }
+	@Override
+	public void dispose() {
+		// dispose of all the native resources
+		dropImage.dispose();
+		bucketImage.dispose();
+		dropSound.dispose();
+		rainMusic.dispose();
+		batch.dispose();
+	}
 }
