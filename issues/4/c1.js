@@ -1,5 +1,5 @@
 //i4c1
-var s= "v0.0. 52 ";
+var s= "v0.1. 2 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c1.js'"
 s += " style='color:blue;'";		s +=">"; s += "c1.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c1.js'"
@@ -44,8 +44,10 @@ function ftnPlayer( oDiv ){
 	str4V +=' type="video/mp4">Your browser does not support HTML5 video.'; 	
 	str4V += '</video>';  										
 	var vPlayer = blo0.blDiv( v ,"id_div_4_myVideo" , str4V , 300,100,500,400,blColor[1]); 	
-	var vid = document.getElementById("myVideo"); 
-	vid.controls = false;
+	var _p = bl$("myVideo");  
+	_p.src = 'https://littleflute.github.io/ted1/docs/61/v0.mp4';
+	_p.lrc = "https://littleflute.github.io/english/NewConceptEnglish/Book2/1.lrc";
+	_p.controls = false;
 
 	v.tb = blo0.blDiv(v, v.id + "tb", "tb",blGrey[3]);
 
@@ -127,24 +129,44 @@ function ftnPlayer( oDiv ){
 
 	v.tb.b1 = blo0.blBtn(v.tb, v.tb+"b1","lyric",blGrey[0]);
 	v.tb.b1.onclick = function(){
+		var _TimeFun = function(_this){	      
+				var _t = 0;
+     			 return function(){
+     			 	_t++;
+     			 	_this.innerHTML = _t;
+     			 	_this.v.innerHTML = _p.src + "<br>" + _p.lrc;
+     			 }
+   		}(this);
 		if(!this.v){
-			this.v = blo0.blDiv(v,v.id + "v4b1","v4b1",blColor[3]);
+			this.v = blo0.blDiv(v,v.id + "v4b1","v4b1",blColor[6]);
+			this.timer = setInterval(_TimeFun , 100);   
+			_on_off_div(this,this.v);
 		}
-		_on_off_div(this,this.v);
-	}
+		else{
+			if(this.timer){ 
+				clearInterval(this.timer);
+				this.timer = null;
+			}
+			else{
+				this.timer = setInterval(_TimeFun , 100);   
+			}
+			_on_off_div(this,this.v);
+		}
+	};
+
 	v.tb.b2 = blo0.blBtn(v.tb, v.tb+"b2","play",blGrey[0]);
 	v.tb.b2.onclick = function(){
 		if(!this.run){
 			this.run = true;
 			this.style.backgroundColor = "green";
 			this.innerHTML = "pause";
-			vid.play();
+			_p.play();
 		} 
 		else{
 			this.run = false;
 			this.style.backgroundColor = "brown";
 			this.innerHTML = "play";
-			vid.pause();
+			_p.pause();
 		}
 	}
 }
