@@ -1,4 +1,4 @@
-var s = "id_mdiv_4_i4c2: v0.0. 24 - ";
+var s = "id_mdiv_4_i4c2: v0.0. 25 - ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c2.js'"
 s += " style='color:blue;'";	s +=">"; s += "c2.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c2.js'"
