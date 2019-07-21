@@ -1,4 +1,4 @@
-var s = "id_mdiv_4_i4c2: v0.0. 25 - ";
+var s = "id_mdiv_4_i4c2: v0.0. 26 - ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c2.js'"
 s += " style='color:blue;'";	s +=">"; s += "c2.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c2.js'"
@@ -397,6 +397,29 @@ if(!d.v1){
 			}
 		}		
 	   
+	   var mdiv = bl$("id_mdiv_4_i4c2");
+	   mdiv.style.display = "none";
+			//Right click on Canvas
+			canv.oncontextmenu = function(event){  
+			var event = event || window.event;
+			mdiv.style.display = "block";
+			var x = Math.floor((event.offsetX-10)/nCell);
+		    var y = Math.floor((event.offsetY-10)/nCell);
+		    console.log(x+   ","+y);
+			
+			ctx.clearRect(0,0,400,400);
+			if (cellMatrix[x][y] == WALL){
+			     cellMatrix[x][y] = 0;
+			     maze[x][y] = 0;
+			     mazeBFS[x][y] = 0;
+		    }else {
+				cellMatrix[x][y] = WALL;
+				maze[x][y] = WALL;
+			    mazeBFS[x][y] = WALL;
+			}
+            return false;
+        };
+
 	   bl$("canvas1").onclick = function(event)
 	   {
 		  ctx.clearRect(0,0,400,400);
@@ -470,4 +493,4 @@ if(!d.v1){
 	   }
  
 }
-_on_off_div(null,d);
+_on_off_div(this,d);
