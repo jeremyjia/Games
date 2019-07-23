@@ -1,6 +1,7 @@
 //i4c3 
 
-var s= "v0.0. 115 ";
+ 
+var s= "v0.0. 121 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c3.js'"
 s += " style='color:blue;'";		s +=">"; s += "c3.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c3.js'"
@@ -53,10 +54,20 @@ _on_off_div(this,md);
 
 function _myJobClass(){        
     this.bll0=  "<div id = 'id_div_4__myJobClass' title = 'title: _myJobClass'> _myJobClass: v0.0. 11</div>";
+ 
+	this.blrTest1 = function(b,d){
+		if(!d.v){
+			d.v = blo0.blDiv(d,d.id+"v","test1",blGrey[5]);
+			d.v.b1 = blo0.blBtn( d.v, d.v.id+"b1","btn1",blColor[2]);
 
+		}
+		_on_off_div(b,d);	
+
+	}
+	this.blline = "----";
     this.blrRunJS = function(b,d){
 		if(!d.v){
-			d.parentElement.style.backgroundColor	 = "grey";
+			d.parentElement.style.backgroundColor	 = blColor[3]; 
 
 			// 调用 jsClass 的 blo0.blDiv 接口函数，创建 DIV。 
 			d.v = blo0.blDiv(d,d.id+"v","",blGrey[5]);
