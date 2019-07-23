@@ -1,5 +1,5 @@
 //i4c1
-var s= "v0.1. 2 ";
+var s= "v0.1. 12 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c1.js'"
 s += " style='color:blue;'";		s +=">"; s += "c1.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c1.js'"
@@ -57,16 +57,16 @@ function ftnPlayer( oDiv ){
 			this.v = blo0.blDiv(v,v.id + "List","list", "lightblue");
 			var d = this.v;
 			d.v = blo0.blDiv(d,d.id+"v","v",blGrey[3]); 
-			d.v4List = blo0.blDiv(d,d.id+"v4List", "v4List", blColor[4]);
+			d.v4List = blo0.blDiv(d,d.id+"v4List", "v4List",  blColor[4]);
 
 			var _makeMp3List2Div = function(d,txt){
 							var str = "var a =" +  txt;  
 						    eval(str);
 						    d.innerHTML = "";
 						    var s = "***";
-						    //s += "<a href='https://github.com/littleflute/JavaScript/issues/9' target='_blank'>#9 v0.0. 115<a/> - "; 
-						    //s += "<a href='https://github.com/littleflute/JavaScript/edit/master/issues/9/i.js' target='_blank'>i.js* <a/> - ";
-						    //s += "<a href='https://littleflute.github.io/JavaScript/issues/9/i.js' target='_blank'>i.js<a/>";
+						    s += "<a href='https://github.com/littleflute/EXPLORATIONS/issues/1' target='_blank'>EXPLORATIONS:i1#<a/> - "; 
+						    s += "<a href='https://github.com/littleflute/EXPLORATIONS/edit/master/issues/1/i.js' target='_blank'>i.js* <a/> - ";
+						    s += "<a href='https://littleflute.github.io/EXPLORATIONS/issues/1/i.js' target='_blank'>i.js<a/>";
 						     blo0.blDiv(d,d.id+"_#9_", s,blColor[4]);
 						     var t = blo0.blDiv(d,d.id+"_title_", a.title,blColor[4]);
 						     t.v = blo0.blDiv(t,t.id+"v", "v",blColor[5]);
@@ -82,6 +82,7 @@ function ftnPlayer( oDiv ){
 						                   if(!p.dNow) p.dNow= null;
 						                   if(_this!= p.dNow){
 						                     p.src = _this.innerHTML;  
+						                     p.lrc = _s.lrc;
 						                    if(p.dNow) p.dNow.style.background = blGrey[5]; 
 						                     p.dNow = _this;
 						                     p.play();
@@ -131,16 +132,87 @@ function ftnPlayer( oDiv ){
 	v.tb.b1.onclick = function(){
 		var _TimeFun = function(_this){	      
 				var _t = 0;
-     			 return function(){
+				var _src = "";
+				var _lrc = "";
+     			return function(){
      			 	_t++;
      			 	_this.innerHTML = _t;
-     			 	_this.v.innerHTML = _p.src + "<br>" + _p.lrc;
+     			 	_this.v.src.innerHTML = _src;
+     			 	_this.v.lrc.innerHTML = _lrc;  
+     			 	_this.v.mv.parseTxt(_p.duration,_p.currentTime, _this.v.mv.lrcTxt);
+     			 	if(_src != _p.src) _src = _p.src;
+     			 	if(_lrc != _p.lrc) {
+     			 		_lrc = _p.lrc;
+     			 		_this.v.mv.getLrcTxt(_lrc);
+     			 	}
      			 }
    		}(this);
 		if(!this.v){
 			this.v = blo0.blDiv(v,v.id + "v4b1","v4b1",blColor[6]);
+			this.v.src = blo0.blDiv(this.v, this.v.id + "src", "url",10,10,300,200,blGrey[0]);
+			this.v.lrc = blo0.blDiv(this.v, this.v.id + "lrc", "url",10,10,300,200,blGrey[0]);
+			this.v.mv = blo0.blMDiv(this.v, this.v.id + "mv", "mv4Lyrics",310,10,300,200,blGrey[1]);
+
+			this.v.mv.parseTxt = function(_d){
+				function _4Ta (txt,d){
+					var html = ""; 
+					d.lrcArray = [],d.lrcTimeArray = []; 					 
+					var lrcVal = txt.replace(/\[\d\d:\d\d.\d\d]/g,"");					
+					d.lrcArray = lrcVal.split("\n");
+					 //获取歌词时间轴
+            		txt.replace(/\[(\d*):(\d*)([\.|\:]\d*)\]/g,function(){
+                    	var min = arguments[1] | 0, //分
+                        	sec = arguments[2] | 0, //秒
+                        	realMin = min * 60 + sec; //计算总秒数
+                    		d.lrcTimeArray.push(realMin);
+           			 });
+					html = d.lrcTimeArray;
+					html += "<br>"+ d.lrcArray;
+                	return html;
+				}
+
+				function xdMoveLyrics(ta,ct, d){ 
+					if(!d.mv){
+						d.mv = blo0.blDiv(d,d.id+"mv","mv...",blGrey[2]);
+						d.mv1 = blo0.blDiv(d,d.id+"mv1","mv...",blColor[6]);
+					}
+					var ii = 0;
+					for(var i=0; i< d.lrcTimeArray.length; i++){
+						if(ct>d.lrcTimeArray[i]){
+							ii = i;	
+						} 
+					}
+					d.mv.innerHTML 	= ct + "  /  " + ta + ": ii=" + ii;
+					d.mv1.innerHTML = d.lrcArray[ii];
+				    
+				}
+				return function(ta,ct,txt){
+					if(!_d.v){
+						_d.v 	= blo0.blDiv(_d, _d.id + "v", "v", blGrey[0]);
+						_d.vLrc = blo0.blDiv(_d, _d.id + "vLrc", "vLrc", blGrey[3]);
+						_d.vLrc.ta = blo0.blTextarea(_d.vLrc,_d.vLrc.id+"ta","xxx",blGrey[1]);
+						_d.vLrc.ta.style.width="95%"; 
+						_d.vLrc.ta.style.height="150px"; 
+					}
+					_d.v.innerHTML 		= ct + "   /    " + ta ;
+					_d.vLrc.ta.value 	= _4Ta(txt,_d);
+					xdMoveLyrics(ta,ct,_d);
+				}
+			}(this.v.mv);
+			this.v.mv.getLrcTxt = function(_d){
+				_d.lrcTxt = "***";
+				_d._2do = function(txt){ 
+					_d.lrcTxt = txt;
+				};
+				return function(url){ 
+					_d.lrcTxt = "Loading ...";					
+					blo0.blAjx(_d,url);
+				}
+			}(this.v.mv);
 			this.timer = setInterval(_TimeFun , 100);   
 			_on_off_div(this,this.v);
+			var b = this; var d = this.v;
+			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 		}
 		else{
 			if(this.timer){ 
@@ -151,6 +223,8 @@ function ftnPlayer( oDiv ){
 				this.timer = setInterval(_TimeFun , 100);   
 			}
 			_on_off_div(this,this.v);
+			var b = this; var d = this.v;
+			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 		}
 	};
 
