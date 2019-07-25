@@ -11,12 +11,7 @@ import java.util.ArrayList;
 
 public class GameM {
 
-    //public int B[] = {0,1,2,3,4,5,6,7,8};
-    //public int B[] = { 3, 0, 2, 8, 1, 4, 6, 7, 5 };//Jeremyjia Test data
-    //public int B[] = { 6, 3, 2, 0, 8, 1, 7, 5, 4 };
-    public int B[] = { 3, 2, 1, 6, 8, 4, 0, 5, 7 };
-    public int A[] = {0,1,2,3,4,5,6,7,8};
-
+    public int gameData[] = {0,1,2,3,4,5,6,7,8};
     private float xdD = 120.0f;
     private float xdX = 120.0f;
     private float xdY = 120.0f;
@@ -42,10 +37,30 @@ public class GameM {
         Ss.add(new Sprite(Ts.get(7)));
         Ts.add(new Texture("9.jpg"));
         Ss.add(new Sprite(Ts.get(8)));
-        //xdStart(A,B);  //need to make sure have a solution
+        /*
+        xdStart(A,B);
+        while(!GameAIHelper.isMapHasSolution(B)){
+            for (int i=0;i<9;i++){
+                A[i]=i;
+                B[i]=i;
+            }
+            xdStart(A,B);
+        }*/
+        initGameData(Ss,5);
+    }
+
+    public void initGameData(ArrayList<Sprite> Ss, int step){
+        GameAIHelper hp = new GameAIHelper();
+        gameData = hp.getASolution(step);
 
         for(int i=0;i<Ss.size();i++){
-            xdSetxy(Ss.get(B[i]),xdX+xdD*(i%3),xdY+xdD*(i/3), Gdx.graphics.getHeight());
+            xdSetxy(Ss.get(gameData[i]),xdX+xdD*(i%3),xdY+xdD*(i/3), Gdx.graphics.getHeight());
+        }
+    }
+
+    public void resetGameData(){
+        for (int i=0; i<3*3;i++){
+            gameData[i] = i;
         }
     }
     public void xdSwap(ArrayList<Sprite> sl,int i,int j){
@@ -57,10 +72,11 @@ public class GameM {
         sl.get(j).setPosition(xI,yI);
 
     }
-    public void xdSetxy(Sprite s,float x,float y,float h){
+    private void xdSetxy(Sprite s,float x,float y,float h){
         s.setPosition(x-s.getWidth()/2,h-y-s.getHeight()/2);
     }
-    public String xdStart(int a[],int b[]){
+
+    private String xdStart(int a[],int b[]){
         String s = "b[]:";
         for(int i=0;i<b.length;i++){
             int n = (int)( Math.random()*11100);
@@ -77,6 +93,7 @@ public class GameM {
         }
         return s;
     }
+
     public int xdGetBoxNoByXY(float x,float y,float x0,float y0,float d){
         int r = -1;
         int i = (int)((x-x0+d/2)/d);
@@ -88,6 +105,7 @@ public class GameM {
         }
         return r;
     }
+
     public void pbDraw(SpriteBatch sb, ArrayList<Sprite> sl){
         for (int i = 0; i < sl.size(); i++) {
             sl.get(i).draw(sb);
@@ -107,8 +125,8 @@ public class GameM {
         }
         BitmapFont f = new BitmapFont();
 
-        f.setColor(Color.GREEN);
-        f.draw(sb,"3x3Game:v0.1.2 \n -- " + s,450,400);
+        f.setColor(new Color(0xff1493ff));
+        f.draw(sb,"3x3Game:v0.1.3 \n -- " + s,450,400);
     }
 
     public int xdGetSpriteNoByBoxNo(ArrayList<Sprite>Ss,int iBox){
