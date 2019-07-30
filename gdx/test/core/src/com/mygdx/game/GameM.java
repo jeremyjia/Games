@@ -12,9 +12,16 @@ import java.util.ArrayList;
 public class GameM {
 
     public int gameData[] = {0,1,2,3,4,5,6,7,8};
-    private float xdD = 120.0f;
-    private float xdX = 120.0f;
-    private float xdY = 120.0f;
+
+    //Desktop
+    //public float xdD = 120.0f;
+    //public float xdX = 120.0f;
+    //public float xdY = 120.0f;
+
+    //Android
+    public float xdD = 270.0f;
+    public float xdX = 270.0f;
+    public float xdY = 270.0f;
 
     public void pbInit(ArrayList<Sprite> Ss, ArrayList<Texture> Ts){
 
@@ -37,6 +44,13 @@ public class GameM {
         Ss.add(new Sprite(Ts.get(7)));
         Ts.add(new Texture("9.jpg"));
         Ss.add(new Sprite(Ts.get(8)));
+
+        int h = Gdx.graphics.getHeight();
+        if (h==480){
+            xdD = 120.0f;
+            xdX = 120.0f;
+            xdY = 120.0f;
+        }
         /*
         xdStart(A,B);
         while(!GameAIHelper.isMapHasSolution(B)){
@@ -47,6 +61,7 @@ public class GameM {
             xdStart(A,B);
         }*/
         initGameData(Ss,5);
+
     }
 
     public void initGameData(ArrayList<Sprite> Ss, int step){
@@ -55,6 +70,7 @@ public class GameM {
 
         for(int i=0;i<Ss.size();i++){
             xdSetxy(Ss.get(gameData[i]),xdX+xdD*(i%3),xdY+xdD*(i/3), Gdx.graphics.getHeight());
+            Ss.get(gameData[i]).setSize(xdX,xdY);//fixed by Jeremyjia
         }
     }
 
@@ -106,10 +122,14 @@ public class GameM {
         return r;
     }
 
-    public void pbDraw(SpriteBatch sb, ArrayList<Sprite> sl){
+    public void pbDrawSprites(SpriteBatch sb, ArrayList<Sprite> sl){
         for (int i = 0; i < sl.size(); i++) {
-            sl.get(i).draw(sb);
+           sl.get(i).draw(sb);
+
         }
+
+    }
+    public void pbCheckWin(SpriteBatch sb, ArrayList<Sprite> sl){
         String s = "";
         if((xdGetSpriteNoByBoxNo(sl,0)==0)
                 &&(xdGetSpriteNoByBoxNo(sl,1)==1)
@@ -120,13 +140,10 @@ public class GameM {
                 &&(xdGetSpriteNoByBoxNo(sl,6)==6)
                 &&(xdGetSpriteNoByBoxNo(sl,7)==7)){
             s += "You Win!";
-
-
         }
         BitmapFont f = new BitmapFont();
-
         f.setColor(new Color(0xff1493ff));
-        f.draw(sb,"3x3Game:v0.1.3 \n -- " + s,450,400);
+        f.draw(sb,"3x3Game:v0.1.4 \n -- " + s,450,400);
     }
 
     public int xdGetSpriteNoByBoxNo(ArrayList<Sprite>Ss,int iBox){
