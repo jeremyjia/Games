@@ -4,8 +4,10 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -19,12 +21,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.viewport.StretchViewport;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MyGdxGame extends ApplicationAdapter{
 	private  SpriteBatch batch;
+
 	//Draw button
 	private Texture textureBtnUp;
 	private Texture textureBtnDown;
@@ -39,6 +43,7 @@ public class MyGdxGame extends ApplicationAdapter{
     private Object[] listEntries = {"Easy","Medium","Hard"};
 
     private Stage  stage;
+	private Camera camera;
     private boolean bIsSearching;
 
 	private ArrayList<Texture> Ts = new ArrayList<Texture>();
@@ -46,23 +51,15 @@ public class MyGdxGame extends ApplicationAdapter{
 	private GameM gm = new GameM();
 	private GameAIHelper helper = new GameAIHelper();
 	private Sound wavSound;
-
-	private float xdD = 120.0f;
-	private float xdX = 120.0f;
-	private float xdY = 120.0f;
-
 	private float w = 0;
 	private float h = 0;
-	private BitmapFont xdFont;
-	private String xdStrV = "v0.0.13: " ;
-	private String xdMsg = xdStrV;
 
 	private void xdHit(ArrayList<Sprite> sl,int iBox){
 
 		int iSprite = gm.xdGetSpriteNoByBoxNo(sl,iBox);
 		int i8InBox = xdGetBoxNoBySpriteNo(8);
 
-		xdMsg = "box:" + iBox + " iSprite:" + iSprite + "i8InBox:"+i8InBox;
+		String xdMsg = "box:" + iBox + " iSprite:" + iSprite + "i8InBox:"+i8InBox;
 		if(iBox-i8InBox==3 || -3==iBox-i8InBox ||
 				(iBox/3==i8InBox/3)&&(iBox-i8InBox==1 || -1==iBox-i8InBox))
 		{
@@ -73,15 +70,15 @@ public class MyGdxGame extends ApplicationAdapter{
 		}
 	}
 	private int xdGetBoxNoBySpriteNo(int iSprite){
-		float x = Ss.get(iSprite).getX()+xdD/2;
-		float y = h - Ss.get(iSprite).getY()-xdD/2;
+		float x = Ss.get(iSprite).getX()+gm.xdD/2;
+		float y = h - Ss.get(iSprite).getY()-gm.xdD/2;
 		int iBox = -1;
-		iBox = gm.xdGetBoxNoByXY(x,y,xdX,xdY,xdD);
+		iBox = gm.xdGetBoxNoByXY(x,y,gm.xdX,gm.xdY,gm.xdD);
 		return iBox;
 	}
 
 	private void xdF2(ArrayList<Sprite> sl,float x,float y){
-		int i = gm.xdGetBoxNoByXY(x,y,xdX,xdY,xdD);
+		int i = gm.xdGetBoxNoByXY(x,y,gm.xdX,gm.xdY,gm.xdD);
 		if(-1!=i) xdHit(sl,i);
 	}
 
@@ -222,11 +219,14 @@ public class MyGdxGame extends ApplicationAdapter{
 			}
 		});
 
-        stage = new Stage();
+		camera = new OrthographicCamera();
+        stage = new Stage(new StretchViewport(640, 480, camera));
+
         Gdx.input.setInputProcessor(stage);
 		stage.addActor(AIBtn);
 		stage.addActor(mapBtn);
 		stage.addActor(selectLevel);
+
 	}
 
 	@Override
@@ -237,9 +237,18 @@ public class MyGdxGame extends ApplicationAdapter{
 		    if(bIsSearching) return;
 			xdF2(Ss,Gdx.input.getX(),Gdx.input.getY());
 		}
+
+		//camera.update();
+		//batch.setProjectionMatrix(camera.combined);
 		batch.begin();
-		gm.pbDraw(batch,Ss);
+		gm.pbDrawSprites(batch,Ss);
 		batch.end();
+
+		SpriteBatch bc;
+		bc = (SpriteBatch) stage.getBatch();
+		bc.begin();
+		gm.pbCheckWin(bc,Ss);
+		bc.end();
 
         stage.act();
         stage.draw();
