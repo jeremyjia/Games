@@ -1,5 +1,5 @@
 //i4c1
-var s= "v0.1. 22 ";
+var s= "v0.1. 23 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c1.js'"
 s += " style='color:blue;'";		s +=">"; s += "c1.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c1.js'"
@@ -156,22 +156,6 @@ function ftnPlayer( oDiv ){
 			this.v.mv = blo0.blMDiv(this.v, this.v.id + "mv", "mv4Lyrics",310,10,300,200,blGrey[1]);
 
 			this.v.mv.parseTxt = function(_d){
-				function _getLrc2Div (txt,timeA,txtA){  		
-
-					var lrcVal = txt.replace(/\[\d\d:\d\d.\d\d]/g,"");					
-					var tt = lrcVal.split("\n");
-					for(i in tt){
-						txtA.push(tt[i]);
-					}		 
-
-					 //获取歌词时间轴
-            		txt.replace(/\[(\d*):(\d*)([\.|\:]\d*)\]/g,function(){
-                    	var min = arguments[1] | 0, //分
-                        	sec = arguments[2] | 0, //秒
-                        	realMin = min * 60 + sec; //计算总秒数
-                    		timeA.push(realMin);
-           			 }); 
-				}
 
 				function _xdMoveLyrics2Div(ta,ct, _timeA,_txtA, oDiv){  
 					var ii = 0;
@@ -205,9 +189,10 @@ function ftnPlayer( oDiv ){
 						}(b1,_d);
 						b2.onclick = function(_this,_div){													
 							return function(){
-								var ta = _div.vLrc.ta;
-								var timeAr = _div.lrcTimeArray;	
-								var txtAr = _div.lrcArray;									
+								var ta 				= _div.vLrc.ta;
+								_div.lrcTimeArray 	= [];	
+								_div.lrcArray 		= [];
+
 								if(!_div.vLrc.de){
 									_div.vLrc.de = blo0.blDiv(_div.vLrc,_div.vLrc.id+"de","dEdit",blGrey[4]);
 								}
@@ -217,13 +202,15 @@ function ftnPlayer( oDiv ){
 								de.innerHTML = "";
 								for(i in b){
 									var l = blo0.blDiv(de,de.id+i, "l"+i + ":" + b[i],blColor[i]);
-									l.onclick = function(_i,_timeA,_txtA, _player){
-										return function(){
-											
-											_timeA[i] = _player.currentTime;
-											_txtA[i]	= b[i];
+									l.onclick = function(_div,_i,_timeA,_txtA, _player){
+										return function(){											
+											_timeA[_i] 	= _player.currentTime;
+											_txtA[_i]	= b[_i];
+											var oldHTML = _div.innerHTML;
+											_div.innerHTML = _i +"["+ _timeA[_i] + "]"+ b[_i];
+										 
 										}
-									}(i,timeAr,txtAr,_p);
+									}(l,i,_div.lrcTimeArray,_div.lrcArray,_p);
 								}
 								_on_off_div(_this,_div.vLrc.de);
 							}
@@ -231,16 +218,35 @@ function ftnPlayer( oDiv ){
 					}
 					_d.v.innerHTML 		= ct + "   /    " + ta ;
 
-					_d.lrcArray = [];
-					_d.lrcTimeArray = []; 
-					_getLrc2Div(txt,_d.lrcTimeArray, _d.lrcArray);
 					_xdMoveLyrics2Div(ta,ct,_d.lrcTimeArray,_d.lrcArray,_d.v4MovingLrc);
 				}
 			}(this.v.mv);
 			this.v.mv.getLrcTxt = function(_d){
 				_d.lrcTxt = "***";
+				_d.lrcArray = [];
+				_d.lrcTimeArray = []; 
+
+				function _getLrc2Array (txt,timeA,txtA){  		
+
+					var lrcVal = txt.replace(/\[\d\d:\d\d.\d\d]/g,"");					
+					var tt = lrcVal.split("\n");
+					for(i in tt){
+						txtA.push(tt[i]);
+					}		 
+
+					 //获取歌词时间轴
+            		txt.replace(/\[(\d*):(\d*)([\.|\:]\d*)\]/g,function(){
+                    	var min = arguments[1] | 0, //分
+                        	sec = arguments[2] | 0, //秒
+                        	realMin = min * 60 + sec; //计算总秒数
+                    		timeA.push(realMin);
+           			 }); 
+				}
 				_d._2do = function(txt){ 
 					_d.lrcTxt = txt;
+					_d.lrcArray = [];
+					_d.lrcTimeArray = []; 
+					_getLrc2Array(txt,_d.lrcTimeArray, _d.lrcArray);
 				};
 				return function(url){ 
 					_d.lrcTxt = "Loading ...";					
