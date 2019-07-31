@@ -27,9 +27,15 @@
     <ClInclude Include="WinDesktopApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BlApp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinDesktopApp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BlApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

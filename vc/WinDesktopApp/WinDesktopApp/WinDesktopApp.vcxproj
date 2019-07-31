@@ -151,12 +151,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="BlApp.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="WinDesktopApp.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BlApp.cpp" />
     <ClCompile Include="WinDesktopApp.cpp" />
   </ItemGroup>
   <ItemGroup>

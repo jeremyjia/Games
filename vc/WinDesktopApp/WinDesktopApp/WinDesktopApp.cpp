@@ -3,6 +3,7 @@
 
 #include "framework.h"
 #include "WinDesktopApp.h"
+#include "BlApp.h"
 
 #define MAX_LOADSTRING 100
 
@@ -147,6 +148,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             // TODO: Add any drawing code that uses hdc here...
+			CBlApp a;
+			a.pbF1(hdc);
+
             EndPaint(hWnd, &ps);
         }
         break;
