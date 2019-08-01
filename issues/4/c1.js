@@ -1,5 +1,5 @@
 //i4c1
-var s= "v0.1. 12 ";
+var s= "v0.1. 23 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c1.js'"
 s += " style='color:blue;'";		s +=">"; s += "c1.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c1.js'"
@@ -137,72 +137,116 @@ function ftnPlayer( oDiv ){
      			return function(){
      			 	_t++;
      			 	_this.innerHTML = _t;
-     			 	_this.v.src.innerHTML = _src;
-     			 	_this.v.lrc.innerHTML = _lrc;  
      			 	_this.v.mv.parseTxt(_p.duration,_p.currentTime, _this.v.mv.lrcTxt);
-     			 	if(_src != _p.src) _src = _p.src;
+     			 	if(_src != _p.src){
+     			 		_src = _p.src;
+     			 		_this.v.src.innerHTML = _src;
+     			 	} 
      			 	if(_lrc != _p.lrc) {
-     			 		_lrc = _p.lrc;
+     			 		_lrc = _p.lrc;			 		
+     			 		_this.v.lrc.innerHTML = _lrc;  
      			 		_this.v.mv.getLrcTxt(_lrc);
      			 	}
      			 }
    		}(this);
 		if(!this.v){
-			this.v = blo0.blDiv(v,v.id + "v4b1","v4b1",blColor[6]);
+			this.v = blo0.blDiv(v,v.id + "v4b1","v4b1",blColor[9]);
 			this.v.src = blo0.blDiv(this.v, this.v.id + "src", "url",10,10,300,200,blGrey[0]);
-			this.v.lrc = blo0.blDiv(this.v, this.v.id + "lrc", "url",10,10,300,200,blGrey[0]);
+			this.v.lrc = blo0.blDiv(this.v, this.v.id + "lrc", "url",10,10,300,200,blGrey[5]);
 			this.v.mv = blo0.blMDiv(this.v, this.v.id + "mv", "mv4Lyrics",310,10,300,200,blGrey[1]);
 
 			this.v.mv.parseTxt = function(_d){
-				function _4Ta (txt,d){
-					var html = ""; 
-					d.lrcArray = [],d.lrcTimeArray = []; 					 
-					var lrcVal = txt.replace(/\[\d\d:\d\d.\d\d]/g,"");					
-					d.lrcArray = lrcVal.split("\n");
-					 //获取歌词时间轴
-            		txt.replace(/\[(\d*):(\d*)([\.|\:]\d*)\]/g,function(){
-                    	var min = arguments[1] | 0, //分
-                        	sec = arguments[2] | 0, //秒
-                        	realMin = min * 60 + sec; //计算总秒数
-                    		d.lrcTimeArray.push(realMin);
-           			 });
-					html = d.lrcTimeArray;
-					html += "<br>"+ d.lrcArray;
-                	return html;
-				}
 
-				function xdMoveLyrics(ta,ct, d){ 
-					if(!d.mv){
-						d.mv = blo0.blDiv(d,d.id+"mv","mv...",blGrey[2]);
-						d.mv1 = blo0.blDiv(d,d.id+"mv1","mv...",blColor[6]);
-					}
+				function _xdMoveLyrics2Div(ta,ct, _timeA,_txtA, oDiv){  
 					var ii = 0;
-					for(var i=0; i< d.lrcTimeArray.length; i++){
-						if(ct>d.lrcTimeArray[i]){
+					for(var i=0; i< _timeA.length; i++){
+						if(ct>_timeA[i]){
 							ii = i;	
 						} 
-					}
-					d.mv.innerHTML 	= ct + "  /  " + ta + ": ii=" + ii;
-					d.mv1.innerHTML = d.lrcArray[ii];
+					} 
+					oDiv.innerHTML = _txtA[ii];
 				    
 				}
 				return function(ta,ct,txt){
 					if(!_d.v){
 						_d.v 	= blo0.blDiv(_d, _d.id + "v", "v", blGrey[0]);
 						_d.vLrc = blo0.blDiv(_d, _d.id + "vLrc", "vLrc", blGrey[3]);
+						var b1 	= blo0.blBtn(_d.vLrc, _d.vLrc.id+"b1","b1",blGrey[0]);
+						var b2 	= blo0.blBtn(_d.vLrc, _d.vLrc.id+"b2","b2",blGrey[0]);
 						_d.vLrc.ta = blo0.blTextarea(_d.vLrc,_d.vLrc.id+"ta","xxx",blGrey[1]);
 						_d.vLrc.ta.style.width="95%"; 
 						_d.vLrc.ta.style.height="150px"; 
+
+						_d.v4MovingLrc = blo0.blDiv(_d, _d.id + "v4MovingLrc", "v4MovingLrc", blColor[9]);
+
+						b1.onclick = function(_this,_div){						
+							return function(){
+								var ta = _div.vLrc.ta;
+								var timeAr = _div.lrcTimeArray;	
+								var txtAr = _div.lrcArray;	
+								ta.value = timeAr + "\n" + txtAr;
+							}
+						}(b1,_d);
+						b2.onclick = function(_this,_div){													
+							return function(){
+								var ta 				= _div.vLrc.ta;
+								_div.lrcTimeArray 	= [];	
+								_div.lrcArray 		= [];
+
+								if(!_div.vLrc.de){
+									_div.vLrc.de = blo0.blDiv(_div.vLrc,_div.vLrc.id+"de","dEdit",blGrey[4]);
+								}
+								var de = _div.vLrc.de;
+								var a = ta.value;
+								var b = a.split("\n");
+								de.innerHTML = "";
+								for(i in b){
+									var l = blo0.blDiv(de,de.id+i, "l"+i + ":" + b[i],blColor[i]);
+									l.onclick = function(_div,_i,_timeA,_txtA, _player){
+										return function(){											
+											_timeA[_i] 	= _player.currentTime;
+											_txtA[_i]	= b[_i];
+											var oldHTML = _div.innerHTML;
+											_div.innerHTML = _i +"["+ _timeA[_i] + "]"+ b[_i];
+										 
+										}
+									}(l,i,_div.lrcTimeArray,_div.lrcArray,_p);
+								}
+								_on_off_div(_this,_div.vLrc.de);
+							}
+						}(b2,_d);
 					}
 					_d.v.innerHTML 		= ct + "   /    " + ta ;
-					_d.vLrc.ta.value 	= _4Ta(txt,_d);
-					xdMoveLyrics(ta,ct,_d);
+
+					_xdMoveLyrics2Div(ta,ct,_d.lrcTimeArray,_d.lrcArray,_d.v4MovingLrc);
 				}
 			}(this.v.mv);
 			this.v.mv.getLrcTxt = function(_d){
 				_d.lrcTxt = "***";
+				_d.lrcArray = [];
+				_d.lrcTimeArray = []; 
+
+				function _getLrc2Array (txt,timeA,txtA){  		
+
+					var lrcVal = txt.replace(/\[\d\d:\d\d.\d\d]/g,"");					
+					var tt = lrcVal.split("\n");
+					for(i in tt){
+						txtA.push(tt[i]);
+					}		 
+
+					 //获取歌词时间轴
+            		txt.replace(/\[(\d*):(\d*)([\.|\:]\d*)\]/g,function(){
+                    	var min = arguments[1] | 0, //分
+                        	sec = arguments[2] | 0, //秒
+                        	realMin = min * 60 + sec; //计算总秒数
+                    		timeA.push(realMin);
+           			 }); 
+				}
 				_d._2do = function(txt){ 
 					_d.lrcTxt = txt;
+					_d.lrcArray = [];
+					_d.lrcTimeArray = []; 
+					_getLrc2Array(txt,_d.lrcTimeArray, _d.lrcArray);
 				};
 				return function(url){ 
 					_d.lrcTxt = "Loading ...";					
@@ -242,5 +286,9 @@ function ftnPlayer( oDiv ){
 			this.innerHTML = "play";
 			_p.pause();
 		}
+	}
+	v.tb.b3 = blo0.blBtn(v.tb, v.tb+"b3","00",blGrey[0]);
+	v.tb.b3.onclick = function(){
+		_p.currentTime = 0;
 	}
 }
