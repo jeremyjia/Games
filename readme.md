@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 ﻿# [v0.0.12] [..](..) <button id="id_btn_4_blApp">+blApp</button>
 ## [issues](issues) [gdx/r](gdx/r)
+=======
+﻿# [v0.0.11] [..](..) <button id="id_btn_4_blApp">+blApp</button>
+## [issues](issues)
+>>>>>>> 74d5592147786c7502ef13e344e91e82fdc352da
 
 <div id="id_div_4_issue4" style="background:gold">
 			<a href="https://github.com/jeremyjia/Games/issues/4" target="_blank">

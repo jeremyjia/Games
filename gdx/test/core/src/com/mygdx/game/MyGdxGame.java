@@ -241,7 +241,11 @@ public class MyGdxGame extends ApplicationAdapter{
 		//camera.update();
 		//batch.setProjectionMatrix(camera.combined);
 		batch.begin();
+<<<<<<< HEAD
+		batch.draw(img, 511, 0);
+=======
 		gm.pbDrawSprites(batch,Ss);
+>>>>>>> b0de58795212e5630e1621955859d21281293867
 		batch.end();
 
 		SpriteBatch bc;

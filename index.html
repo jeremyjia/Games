@@ -1,0 +1,64 @@
+﻿
+<!DOCTYPE html>
+<html><head><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+* {box-sizing: border-box;}
+body {   margin: 0;  font-family: Arial;}
+.header {  overflow: hidden;  background-color: #f1f1f1;  padding: 20px 10px;}
+
+.header a {  float: left;  color: black;  text-align: center;  padding: 12px;  text-decoration: none;
+  font-size: 18px;   line-height: 25px;  border-radius: 4px;    }
+
+.header a.logo {  font-size: 25px;  font-weight: bold;}
+.header a:hover {  background-color: #ddd;  color: black;}
+.header a.active {  background-color: dodgerblue;  color: white;}
+.header a.xd0 {  background-color: dodgerblue;  color: white;}
+.header a.xd1 {  background-color: green;  color: white;}
+.header a.xd2 {  background-color: brown;  color: white;}
+.header a.xd3 {  background-color: blue;  color: white;}
+.header a.xd1:hover, a.xd2:hover, a.xd3:hover  {  background-color: #cba;  color: white;}	
+.header-right {  float: right;}
+
+@media screen and (max-width: 500px) {
+	.header a {    float: none;    display: block;    text-align: left;
+  }
+  .header-right {    float: none;  }
+}
+</style>
+</head>
+<body>
+	
+<div class="header">
+  <a target="_blank" href="http://www.baidu.com" class="logo">baidu</a>
+  <a target="_blank" href="http://www.google.com" class="logo">google</a>
+	
+  <div class="header-right" id="id_div_links">
+    <a class="active" href="##">漂泊者编程乐园</a>
+    <a class="xd1" href="https://jeremyjia.github.io/Games/"  target="_blank">源主页</a>
+    <a class="xd2" href="https://littleflute.github.io/Games/"  target="_blank">littleflute主页</a>
+    <a class="xd3" href="https://xiyufeng.github.io/Games/"  target="_blank">xiyufeng主页</a>   
+    <a href="##" id="id_btn_4_blApp" >+blApp</a>
+    <a href="##" >v0.1.113</a>
+  </div>
+</div>
+ 
+<div class="header-right"  id="id_div_4_issue4" style="background:gold">
+			<a href="https://github.com/jeremyjia/Games/issues/4" target="_blank">
+				div4-issue4:
+			</a>
+</div>
+	
+<script src="https://littleflute.github.io/JavaScript/w3.js" ></script>
+<script src="https://littleflute.github.io/JavaScript/blclass.js" ></script>
+<script src="https://littleflute.github.io/JavaScript/blApp.js"></script>
+
+<script>
+  function _loadIssue(o) {	
+	eval(o.body); 
+}
+w3.getHttpObject("https://api.github.com/repos/jeremyjia/Games/issues/4", _loadIssue);	
+</script> 
+	
+<script src="http://open.iciba.com/huaci/huaci.js"></script>
+</body>
+</html>
