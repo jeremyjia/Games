@@ -1,86 +1,64 @@
-﻿<!DOCTYPE html>
-<html lang="en-US">
+﻿
+<!DOCTYPE html>
+<html><head><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+* {box-sizing: border-box;}
+body {   margin: 0;  font-family: Arial;}
+.header {  overflow: hidden;  background-color: #f1f1f1;  padding: 20px 10px;}
 
-  <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width,maximum-scale=2">
-    <link rel="stylesheet" type="text/css" media="screen" href="https://littleflute.github.io/Games/assets/css/style.css?v=1744c60be9d3059b3b74bf128daf481d36e69aa3">
+.header a {  float: left;  color: black;  text-align: center;  padding: 12px;  text-decoration: none;
+  font-size: 18px;   line-height: 25px;  border-radius: 4px;    }
 
-<!-- Begin Jekyll SEO tag v2.5.0 -->
-<title>v0.0.2 | Games</title>
-<meta name="generator" content="Jekyll v3.8.5" />
-<meta property="og:title" content="v0.0.2" />
-<meta property="og:locale" content="en_US" />
-<link rel="canonical" href="https://jeremyjia.github.io/Games/" />
-<meta property="og:url" content="https://jeremyjia.github.io/Games/" />
-<meta property="og:site_name" content="Games" />
-<script type="application/ld+json">
-{"@type":"WebSite","headline":"v0.0.2","url":"https://jeremyjia.github.io/Games/","name":"Games","@context":"http://schema.org"}</script>
-<!-- End Jekyll SEO tag -->
+.header a.logo {  font-size: 25px;  font-weight: bold;}
+.header a:hover {  background-color: #ddd;  color: black;}
+.header a.active {  background-color: dodgerblue;  color: white;}
+.header a.xd0 {  background-color: dodgerblue;  color: white;}
+.header a.xd1 {  background-color: green;  color: white;}
+.header a.xd2 {  background-color: brown;  color: white;}
+.header a.xd3 {  background-color: blue;  color: white;}
+.header a.xd1:hover, a.xd2:hover, a.xd3:hover  {  background-color: #cba;  color: white;}	
+.header-right {  float: right;}
 
-  </head>
-
-  <body>
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/jeremyjia/Games">View on GitHub</a>
-          <h1 id="project_title">Games v0.0.4</h1>
-          <h2 id="project_tagline"></h2>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h1 id="v002">
-		<a href="https://jeremyjia.github.io/Games/" target="_blank">
-			[OriginalHome]
-		</a>
-		<a href="https://littleflute.github.io/Games/" target="_blank">
-			[ForkHome]
-		</a>
-		<a href="issues" target="_blank">issues</a>
-		
-		<button id="id_btn_4_blApp">+blApp</button>
-	</h1>
-	<h2 id="jsversionhtml-jsdatahtml">
-		<div id="id_div_4_issue4" style="background:gold">
+@media screen and (max-width: 500px) {
+	.header a {    float: none;    display: block;    text-align: left;
+  }
+  .header-right {    float: none;  }
+}
+</style>
+</head>
+<body>
+	
+<div class="header">
+  <a target="_blank" href="http://www.baidu.com" class="logo">baidu</a>
+  <a target="_blank" href="http://www.google.com" class="logo">google</a>
+	
+  <div class="header-right" id="id_div_links">
+    <a class="active" href="##">漂泊者编程乐园</a>
+    <a class="xd1" href="https://jeremyjia.github.io/Games/"  target="_blank">源主页</a>
+    <a class="xd2" href="https://littleflute.github.io/Games/"  target="_blank">littleflute主页</a>
+    <a class="xd3" href="https://xiyufeng.github.io/Games/"  target="_blank">xiyufeng主页</a>   
+    <a href="##" id="id_btn_4_blApp" >+blApp</a>
+    <a href="##" >v0.1.113</a>
+  </div>
+</div>
+ 
+<div class="header-right"  id="id_div_4_issue4" style="background:gold">
 			<a href="https://github.com/jeremyjia/Games/issues/4" target="_blank">
 				div4-issue4:
 			</a>
-		
-		</div>
-	</h2>
-	<canvas id="canvas" width="400" height="400"></canvas>
-<p>基于深度优先和广度优先遍历算法实现小球寻路，可编辑地图，选择算法。DFS寻路方向的试探规则是 右-&gt;下 -&gt;左 -&gt;上</p>
-
-      </section>
-    </div>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Games maintained by <a href="https://github.com/jeremyjia">jeremyjia</a></p>
-        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
-      </footer>
-    </div>
-    <script src="https://littleflute.github.io/JavaScript/w3.js"></script>
-<script src="https://littleflute.github.io/JavaScript/blclass.js"></script>
+</div>
+	
+<script src="https://littleflute.github.io/JavaScript/w3.js" ></script>
+<script src="https://littleflute.github.io/JavaScript/blclass.js" ></script>
 <script src="https://littleflute.github.io/JavaScript/blApp.js"></script>
 
-<script src="https://code.jquery.com/jquery-2.1.0.js"></script>
 <script>
-	bl$("id_btn_4_blApp").click();
-	bl$("id_btn_4_blApp").click();
-//*
-	function _loadIssue (o) {     eval(o.body);   }
-  	var url = "https://api.github.com/repos/jeremyjia/Games/issues/4";
-  	w3.getHttpObject(url, _loadIssue ); 
-//*/
-
-</script>
-  </body>
+  function _loadIssue(o) {	
+	eval(o.body); 
+}
+w3.getHttpObject("https://api.github.com/repos/jeremyjia/Games/issues/4", _loadIssue);	
+</script> 
+	
+<script src="http://open.iciba.com/huaci/huaci.js"></script>
+</body>
 </html>
-
