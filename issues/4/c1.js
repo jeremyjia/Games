@@ -1,5 +1,5 @@
 //i4c1
-var s= "v0.1. 23 ";
+var s= "v0.1. 25 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c1.js'"
 s += " style='color:blue;'";		s +=">"; s += "c1.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c1.js'"
@@ -45,6 +45,21 @@ function ftnPlayer( oDiv ){
 	str4V += '</video>';  										
 	var vPlayer = blo0.blDiv( v ,"id_div_4_myVideo" , str4V , 300,100,500,400,blColor[1]); 	
 	var _p = bl$("myVideo");  
+	_p.timeFun = function(player){
+		player.mListeners = [];
+		player.addListener = function(o){
+			player.mListeners.push(o);
+		}
+		player.getListenerNum = function(){
+			return player.mListeners.length;
+		}
+		return function(){
+			for(i in player.mListeners){
+				var ii = player.mListeners[i];
+				if(ii.timeFun) ii.timeFun(player.currentTime);
+			}
+		}
+	}(_p);
 	_p.src = 'https://littleflute.github.io/ted1/docs/61/v0.mp4';
 	_p.lrc = "https://littleflute.github.io/english/NewConceptEnglish/Book2/1.lrc";
 	_p.controls = false;
@@ -138,6 +153,8 @@ function ftnPlayer( oDiv ){
      			 	_t++;
      			 	_this.innerHTML = _t;
      			 	_this.v.mv.parseTxt(_p.duration,_p.currentTime, _this.v.mv.lrcTxt);
+     			 	if(_p.timeFun){_p.timeFun();}
+
      			 	if(_src != _p.src){
      			 		_src = _p.src;
      			 		_this.v.src.innerHTML = _src;
@@ -179,12 +196,34 @@ function ftnPlayer( oDiv ){
 
 						_d.v4MovingLrc = blo0.blDiv(_d, _d.id + "v4MovingLrc", "v4MovingLrc", blColor[9]);
 
-						b1.onclick = function(_this,_div){						
+						b1.onclick = function(_this,_div){	
 							return function(){
-								var ta = _div.vLrc.ta;
-								var timeAr = _div.lrcTimeArray;	
-								var txtAr = _div.lrcArray;	
-								ta.value = timeAr + "\n" + txtAr;
+								if(!_this.v0) 
+								{
+									_this.v0 = blo0.blMDiv(_div,_div.id+"v1","v1",150,100,400,300,blGrey[0]);
+									var bUpdate = blo0.blBtn(_this.v0 ,_this.v0.id+"bUpdate","bUpdate",blGrey[4]);
+									_this.v1 = blo0.blDiv(_this.v0,_this.v0.id+"v1","v1",blGrey[0]);
+									bUpdate.onclick = function(){
+										_this.v1.innerHTML = "-";
+										for(i in _div.lrcTimeArray){
+											var dl = blo0.blDiv(_this.v1, _this.v1.id+i,i,blGrey[i]);
+											dl.b1 = blo0.blBtn(dl,dl.id+"b1",_div.lrcTimeArray[i],blGrey[0]);
+											dl.b2 = blo0.blBtn(dl,dl.id+"b2",_div.lrcArray[i],blGrey[0]);
+											dl.b1.onclick = function(b1,player,t){
+												player.addListener(b1);
+												b1.timeFun = function(tNow){
+													if(t<tNow) b1.style.backgroundColor = blColor[9];
+													else b1.style.backgroundColor = blGrey[4];
+												}
+												return function(){
+													player.currentTime = t;
+												}
+											}(dl.b1,_p,_div.lrcTimeArray[i])
+										}
+									}
+									bUpdate.onclick();									
+								} 
+								_on_off_div(_this,_this.v0);
 							}
 						}(b1,_d);
 						b2.onclick = function(_this,_div){													
@@ -216,7 +255,7 @@ function ftnPlayer( oDiv ){
 							}
 						}(b2,_d);
 					}
-					_d.v.innerHTML 		= ct + "   /    " + ta ;
+					_d.v.innerHTML 		= ct + "   /    " + ta  + " n=" + _p.getListenerNum();
 
 					_xdMoveLyrics2Div(ta,ct,_d.lrcTimeArray,_d.lrcArray,_d.v4MovingLrc);
 				}
@@ -287,6 +326,7 @@ function ftnPlayer( oDiv ){
 			_p.pause();
 		}
 	}
+	
 	v.tb.b3 = blo0.blBtn(v.tb, v.tb+"b3","00",blGrey[0]);
 	v.tb.b3.onclick = function(){
 		_p.currentTime = 0;
