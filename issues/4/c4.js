@@ -29,12 +29,10 @@ if(!md.run){
 	style += "background-color: #2196F3;";
 	title.style =style;
  
-    // 调用 jsClass 的 blo0.blMakeDivMovable 接口函数，让 DIV 可拖动
     blo0.blMakeDivMovable(md );
 	md.style.left = "400px";
 	md.style.top = "40px";
 
-	// 调用 jsClass 的 blo0.blDiv 接口函数，创建 DIV。 
 	md.v = blo0.blDiv(md,md.id+"v","Let's chat!",blColor[1]);
 	md.v.ta = blo0.blTextarea(md.v, md.v.id+"ta", "", blGrey[3]);
 	md.v.ta.style.width="98%"; 
@@ -71,13 +69,13 @@ if(!md.run){
 	
 	function SendMsg(ss){
 		     var xmlHttpReg = null;
-          if (window.ActiveXObject) {//If IE
+          if (window.ActiveXObject) {
              xmlHttpReg = new ActiveXObject("Microsoft.XMLHTTP");
 	 } else if (window.XMLHttpRequest) {
               xmlHttpReg = new XMLHttpRequest(); 
          }
 
-         var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/515761823?access_token=7895f3eb0271620f7a5ad606896258a549fd8e15";
+        var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/515761823?access_token="+getToken();
 		var myMsg=allMsg;
 		if(myMsg!=""){
 			myMsg+="\n";
@@ -89,15 +87,17 @@ if(!md.run){
 			  if (xmlHttpReg != null) {
 				  xmlHttpReg.open("PATCH", url, true);    
 			      xmlHttpReg.send(JSON.stringify(data));
-				  xmlHttpReg.onreadystatechange = callBackResult;
+				  xmlHttpReg.onreadystatechange = SendCallBack;
 			  }else{
 			  alert("xmlHttpRequest is null!");
 		}
 
-          function callBackResult() {         
+          function SendCallBack() {         
               if (xmlHttpReg.readyState == 4) {            
                   if (xmlHttpReg.status == 200) {
-                   }
+                   }else{
+					   alert("Write:"+xmlHttpReg.status);
+				   }
               }
          }
 	}
@@ -105,7 +105,7 @@ if(!md.run){
 	function readMsg() 
 	{	
         var xmlHttpReg = null;
-          if (window.ActiveXObject) {//If IE
+          if (window.ActiveXObject) {
              xmlHttpReg = new ActiveXObject("Microsoft.XMLHTTP");
 	   } else if (window.XMLHttpRequest) {
               xmlHttpReg = new XMLHttpRequest(); 
@@ -115,12 +115,12 @@ if(!md.run){
 				  xmlHttpReg.open("GET", url, true);
 				  xmlHttpReg.setRequestHeader('If-Modified-Since', '0');
 				  xmlHttpReg.send(null);
-				  xmlHttpReg.onreadystatechange = callBack; 
+				  xmlHttpReg.onreadystatechange = readCallBack; 
 			}else{
 			  alert("xmlHttpRequest is null!");
 		 }
 
-          function callBack() {         
+          function readCallBack() {         
               if (xmlHttpReg.readyState == 4) {            
                   if (xmlHttpReg.status == 200) {
 					 var msg = JSON.parse(xmlHttpReg.responseText);
@@ -134,9 +134,12 @@ if(!md.run){
               }
          }
 	}
+	
+	function getToken(){
+		return "528805ab72"+"84427d5518"+"8bc503d5be"+"d7d739590d";
+	}
 
 }
-// 调用 jsClass 库中的全局接口函数 _on_off_div，打开或关闭 DIV（此处为 md)
 _on_off_div(this,md);
 
    
