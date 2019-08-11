@@ -1,5 +1,5 @@
 //i4c4
-var s= "v0.0.130 "; 
+var s= "v0.0.26 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c4.js'"
 s += " style='color:blue;'";		s +=">"; s += "c4.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c4.js'"
@@ -51,18 +51,19 @@ if(!md.run){
 		 SendMsg(s);
 	   }
 	   md.v.ta1.value="";
-	   setTimeout("readMsg()", 1000)
+	   //setTimeout("readMsg()", 1000)
 	}
 	md.v.btnClear.onclick= function(){
 	   allMsg="";
        SendMsg("Let's chat");
-       setTimeout("readMsg()", 200)	   
+       //setTimeout("readMsg()", 200)	   
 	}
 	
 	 setInterval(function()
 	 {
-	   md.v.ta.value = allMsg;
-	 },500);
+	  readMsg();
+	  md.v.ta.value = allMsg;
+	 },1000);
 	
 	var allMsg="";
     readMsg();
@@ -110,7 +111,7 @@ if(!md.run){
 	   } else if (window.XMLHttpRequest) {
               xmlHttpReg = new XMLHttpRequest(); 
          }
-		 var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/515761823";
+		 var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/515761823?access_token="+getToken();
 			  if (xmlHttpReg != null) {
 				  xmlHttpReg.open("GET", url, true);
 				  xmlHttpReg.setRequestHeader('If-Modified-Since', '0');
