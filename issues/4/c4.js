@@ -1,5 +1,5 @@
 //i4c4
-var s= "v0.0.26 "; 
+var s= "v0.0.27 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c4.js'"
 s += " style='color:blue;'";		s +=">"; s += "c4.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c4.js'"
@@ -59,7 +59,7 @@ if(!md.run){
        //setTimeout("readMsg()", 200)	   
 	}
 	
-	 setInterval(function()
+	 var timerId = setInterval(function()
 	 {
 	  readMsg();
 	  md.v.ta.value = allMsg;
@@ -131,13 +131,14 @@ if(!md.run){
 					   allMsg=msg.body;
                    }else{
 					   alert("The status code:"+xmlHttpReg.status);
+					   clearInterval(timerId);
 				   }
               }
          }
 	}
 	
-	function getToken(){
-		return "528805ab72"+"84427d5518"+"8bc503d5be"+"d7d739590d";
+	function getToken(){		        
+		return "65d796cd3a"+"29b4dbab37"+"c02624d6b6"+"651c61eedb";
 	}
 
 }
