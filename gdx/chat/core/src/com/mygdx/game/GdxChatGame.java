@@ -21,6 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -34,6 +35,9 @@ public class GdxChatGame extends ApplicationAdapter {
 	private TextArea textArea;
 	private TextField textField;
 	private TextButton btnSend;
+
+	private SpriteBatch 		batch;
+	private BitmapFont 			font;
 
 	private Pixmap  pixmapArea;
 	private Pixmap  pixmapField;
@@ -51,6 +55,10 @@ public class GdxChatGame extends ApplicationAdapter {
 
 		camera = new OrthographicCamera();
 		stage = new Stage(new StretchViewport(640, 480, camera));
+
+		batch = new SpriteBatch();
+		font = new BitmapFont();
+		font.setColor(Color.RED);
 
 		pixmapArea = new Pixmap(150,100, Pixmap.Format.RGB888);
 		pixmapArea.setColor(Color.CORAL);
@@ -101,6 +109,7 @@ public class GdxChatGame extends ApplicationAdapter {
 		btnSend.setPosition(460, 40);
 
 		Gdx.input.setInputProcessor(stage);
+
 		stage.addActor(textArea);
 		stage.addActor(textField);
 		stage.setKeyboardFocus(textField);
@@ -151,6 +160,10 @@ public class GdxChatGame extends ApplicationAdapter {
 		stage.act();
 		stage.draw();
 
+
+		batch.begin();
+		font.draw(batch, "v:0.0.2", 10, 30);
+		batch.end();
 	}
 
 	public void sendMsg(){
@@ -179,7 +192,6 @@ public class GdxChatGame extends ApplicationAdapter {
 				@Override
 				public void cancelled() {
 				}
-
 			});
 
 			textField.setText("");
@@ -251,5 +263,8 @@ public class GdxChatGame extends ApplicationAdapter {
 		pixmapField.dispose();
 		pixmapCur.dispose();
 		pixmapBtnUp.dispose();
+
+		batch.dispose();
+		font.dispose();
 	}
 }
