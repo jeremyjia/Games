@@ -162,7 +162,7 @@ public class GdxChatGame extends ApplicationAdapter {
 
 
 		batch.begin();
-		font.draw(batch, "v:0.0.2", 10, 30);
+		font.draw(batch, "v:0.0.3", 10, 30);
 		batch.end();
 	}
 
