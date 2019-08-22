@@ -223,7 +223,7 @@ public class GdxChatGame extends ApplicationAdapter {
 	}
 
 	private String getToken(){
-		return "65d796cd3a"+"29b4dbab37"+"c02624d6b6"+"651c61eedb";
+		return "f89b0eccf7"+"4c65a65513"+"60062c3e47"+"98d0df4577";
 	}
 
 	public String getCurrentTime()
