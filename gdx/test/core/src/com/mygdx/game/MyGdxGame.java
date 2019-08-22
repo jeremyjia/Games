@@ -39,6 +39,7 @@ public class MyGdxGame extends ApplicationAdapter {
 	private Rectangle bucket;
 	private Array<Rectangle> raindrops;
 	private long lastDropTime;
+	private BitmapFont	font;
 
 	//private GameM gm;
 	private int score;
@@ -65,6 +66,8 @@ public class MyGdxGame extends ApplicationAdapter {
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, 800, 480);
 		batch = new SpriteBatch();
+		font 	= new BitmapFont();
+		font.setColor(Color.RED);
 
 		// create a Rectangle to logically represent the bucket
 		bucket = new Rectangle();
@@ -112,6 +115,7 @@ public class MyGdxGame extends ApplicationAdapter {
 			batch.draw(dropImage, raindrop.x, raindrop.y);
 		}
 		//	gm.pbDrawVer(batch,score);
+		font.draw(batch,"v0.0.2",10,30);
 		batch.end();
 
 		// process user input
