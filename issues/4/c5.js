@@ -7,7 +7,17 @@ s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c5Test
 s += " style='color:green;'";	s +=">"; s += "c5Test.html";
 
 var d = blo0.blMDiv(document.body,"id_mdiv_4_i4c5", s, 700,100,500,400, blGrey[5]); 
-if(!d.v1){
+if(!d.v1){	
+	var style ="position: absolute;";
+	style += "z-index: 9;";
+	style += "background-color: #f1f1f1;";
+	style += "text-align: center;";
+	style += "border: 1px solid #d3d3d3;";
+	style += "left: 400px";
+	style += "top: 40px";
+	style += "width: 540px";
+	d.style =style;
+	
     d.vToolBar = blo0.blDiv(d, d.id + "vToolBar ", 'vToolBar: ', blGrey[1]);
     d.vToolBar.btn1 = blo0.blBtn(d. vToolBar, d.vToolBar.id + "btn1 ", 'Begin New', blGrey[1]);
     d.vToolBar.btn1.onclick = function(){
@@ -28,7 +38,7 @@ if(!d.v1){
 	
 	var BLACK = 1;
 	var WHITE = 2;
-	var allMsg="";
+	var allMessage="";
 	var isBlackRun=1;
 	
 	var cellMatrix = [
@@ -78,10 +88,10 @@ if(!d.v1){
        var timerId1 = setInterval(function()
 	   {
 		   	readMap();		  
-			if(allMsg!="")
+			if(allMessage!="")
 			{
-			   isBlackRun=JSON.parse(allMsg).isBlackRunKey;
-			   var arrData = JSON.parse(allMsg).arrayDataKey;
+			   isBlackRun=JSON.parse(allMessage).isBlackRunKey;
+			   var arrData = JSON.parse(allMessage).arrayDataKey;
 			   var array = jsonToArray(arrData);
 	           fillData(array);
 			
@@ -268,9 +278,9 @@ if(!d.v1){
 						  {
 							 var o = JSON.parse(xmlHttpReg.responseText);
 							 if(o.body==null || o.body==""){
-								 allMsg ="";
+								 allMessage ="";
 							 }else 
-								 allMsg=o.body;
+								 allMessage=o.body;
 						   }
 						   else
 						   {
