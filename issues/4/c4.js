@@ -1,5 +1,5 @@
 //i4c4
-var s= "v0.0.27 "; 
+var s= "v0.0.28 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c4.js'"
 s += " style='color:blue;'";		s +=">"; s += "c4.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c4.js'"
@@ -76,7 +76,7 @@ if(!md.run){
               xmlHttpReg = new XMLHttpRequest(); 
          }
 
-        var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/515761823?access_token="+getToken();
+        var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526806470?access_token="+getToken();
 		var myMsg=allMsg;
 		if(myMsg!=""){
 			myMsg+="\n";
@@ -111,7 +111,7 @@ if(!md.run){
 	   } else if (window.XMLHttpRequest) {
               xmlHttpReg = new XMLHttpRequest(); 
          }
-		 var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/515761823?access_token="+getToken();
+		 var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526806470?access_token="+getToken();
 			  if (xmlHttpReg != null) {
 				  xmlHttpReg.open("GET", url, true);
 				  xmlHttpReg.setRequestHeader('If-Modified-Since', '0');
