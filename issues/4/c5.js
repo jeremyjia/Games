@@ -16,13 +16,13 @@ if(!d.v1){
 	d.vStatusBar = blo0.blDiv(d,d.id+"vStatusBar","turn",blColor[2]);
 	d.vStatusBar.innerHTML ="Turn Black";
 	blo0.blMakeDivMovable(d);
-    d.v1 = blo0.blDiv(d, d.id + "v1", '<canvas id="canvas1" width="400" height="400"></canvas>', blGrey[1]);
+    d.v1 = blo0.blDiv(d, d.id + "v1", '<canvas id="canvas2" width="400" height="400"></canvas>', blGrey[1]);
     d.v1.style.width = "500px";
     d.v1.style.height = "400px";
 
     var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526778839?access_token="+getToken();
     var nCell = 20;
-    var canv = bl$("canvas1");
+    var canv = bl$("canvas2");
 	var ctx = canv.getContext("2d");
 	var mdiv = bl$("id_mdiv_4_i4c5");
 	
@@ -185,7 +185,7 @@ if(!d.v1){
             };
 
            //Button click on Canvas
-		   bl$("canvas1").onclick = function(event)
+		   bl$("canvas2").onclick = function(event)
 		   {
 			  ctx.clearRect(0,0,400,400);
 			  var x = Math.floor((event.offsetX)/nCell);
