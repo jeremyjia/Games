@@ -1,4 +1,4 @@
-var s = "id_mdiv_4_i4c5: v0.0.1 - ";
+var s = "id_mdiv_4_i4c5: v0.0.2 - ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c5.js'"
 s += " style='color:blue;'";	s +=">"; s += "c5.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c5.js'"
@@ -40,6 +40,8 @@ if(!d.v1){
 	var WHITE = 2;
 	var allMessage="";
 	var isBlackRun=1;
+	var curX=-1;
+	var curY=-1;
 	
 	var cellMatrix = [
 	[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -91,6 +93,9 @@ if(!d.v1){
 			if(allMessage!="")
 			{
 			   isBlackRun=JSON.parse(allMessage).isBlackRunKey;
+			   var pos=JSON.parse(allMessage).curPosKey;
+			   curX = pos.split(",")[0];
+			   curY = pos.split(",")[1];
 			   var arrData = JSON.parse(allMessage).arrayDataKey;
 			   var array = jsonToArray(arrData);
 	           fillData(array);
@@ -129,14 +134,26 @@ if(!d.v1){
 				   {
 					 ctx.fillStyle = "Black";
 					 ctx.beginPath();
-					 ctx.arc(i*nCell+10, j*nCell+5,10-1,0,Math.PI*2,false);
+					 ctx.arc(i*nCell+10, j*nCell+10,10-1,0,Math.PI*2,false);
 					 ctx.fill();
+					 
+					 if(i==curX && j==curY)
+					 {
+					   ctx.strokeStyle = "rgb(250,0,0)";
+					   ctx.strokeRect(i*nCell,j*nCell,20,20);
+					 }
 					  
 				   }else if(cellMatrix[i][j] == WHITE){
 					 ctx.fillStyle="White";
 					 ctx.beginPath();
-					 ctx.arc(i*nCell+10, j*nCell+5,10-1,0,Math.PI*2,false);
+					 ctx.arc(i*nCell+10, j*nCell+10,10-1,0,Math.PI*2,false);
 					 ctx.fill();
+					 
+					 if(i==curX && j==curY)
+					 {
+					   ctx.strokeStyle = "rgb(0,250,0)";
+					   ctx.strokeRect(i*nCell,j*nCell,20,20);
+					 }
 					 
 				   }
 				}
@@ -179,6 +196,8 @@ if(!d.v1){
 	 {
 		 ctx.clearRect(0,0,400,400);
 		 isBlackRun=1;
+		 curX=-1;
+		 curY=-1;
 		 SaveMap(zeroMatrix);
 	 }
 
@@ -211,6 +230,8 @@ if(!d.v1){
 				cellMatrix[x][y]=WHITE;	
 			  }
 			  
+			  curX=x;
+			  curY=y;
               isBlackRun=!isBlackRun;		  
 			  SaveMap(cellMatrix);
               			  
@@ -230,8 +251,10 @@ if(!d.v1){
 			function SaveMap(array)
 			{
 			   var jsonArrayData = arrayToJson(array);
+			   var curPos = curX+","+curY;
 			   var jsonAll= {
 				"isBlackRunKey": isBlackRun,
+				"curPosKey": curPos,
 				"arrayDataKey":jsonArrayData
 				};
 				var bodyData = JSON.stringify(jsonAll);
