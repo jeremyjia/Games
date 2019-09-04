@@ -230,10 +230,8 @@ if(!d.v1){
 				cellMatrix[x][y]=WHITE;	
 			  }
 			  
-			  curX=x;
-			  curY=y;
               isBlackRun=!isBlackRun;		  
-			  SaveMap(cellMatrix);
+			  SaveMap(cellMatrix,x,y);
               			  
 			}
 			
@@ -248,10 +246,10 @@ if(!d.v1){
 			   return objHttpRequest;
 			}
 			//Save data to Server
-			function SaveMap(array)
+			function SaveMap(array, X, Y)
 			{
 			   var jsonArrayData = arrayToJson(array);
-			   var curPos = curX+","+curY;
+			   var curPos = X+","+Y;
 			   var jsonAll= {
 				"isBlackRunKey": isBlackRun,
 				"curPosKey": curPos,
