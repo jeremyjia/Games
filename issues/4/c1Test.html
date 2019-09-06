@@ -62,7 +62,7 @@ body {
 
 <!-- Top Navigation Menu -->
 <div class="topnav">
-  <a href="#home" class="active">c18Test</a>
+  <a href="#home" class="active">c1Test</a>
   <div id="myLinks">
     <a href="https://jeremyjia.github.io/Games/" target="_blank">Home Page</a>
     <a href="https://github.com/jeremyjia/Games" target="_blank">Repo</a> 
@@ -73,9 +73,8 @@ body {
 </div>
 
 <div style="padding-left:16px">
-  <h3>c18Test v0.0.14</h3> 
-  <p><button id="loadc1.js">Run Test</button></p>
-c18Test
+  <h3>c1Test v0.0.21</h3> 
+  <p><button id="loadc1.js">Run Test: html5Player/v0.1.-</button></p>
 </div>
 
 <!-- End smartphone / tablet look -->
@@ -102,8 +101,10 @@ function myFunction() {
       blo0.blScript("id_script_4_c1.js", "c1.js");
     }
     else{ 
-	var d = bl$( "div_ID_4_I4C1" );
-	_on_off_div( this ,d);
+  	   var d = bl$( "div_ID_4_I4C1" );
+	     _on_off_div( this ,d);
+       var b = this;
+       b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
     }
   }
   </script>
