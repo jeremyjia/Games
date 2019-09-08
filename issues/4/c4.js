@@ -1,8 +1,8 @@
 //i4c4
-var s= "v0.0.27 "; 
+var s= "v0.0.51 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c4.js'"
 s += " style='color:blue;'";		s +=">"; s += "c4.js* ";
-s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c4.js'"
+s += "<a target='_blank' href='c4.js'"
 s += " style='color:green;'";		s +=">"; s += "c4.js ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c4Test.html'"
 s += " style='color:brown;'";		s +=">"; s += "c4Test.html";
@@ -33,7 +33,8 @@ if(!md.run){
 	md.style.left = "400px";
 	md.style.top = "40px";
 
-	md.v = blo0.blDiv(md,md.id+"v","Let's chat!",blColor[1]);
+	md.tb0 = blo0.blDiv(md,md.id+"tb0","tb0",blGrey[1]);
+	md.v = blo0.blDiv(md,md.id+"v","Let's chat!",blGrey[1]);
 	md.v.ta = blo0.blTextarea(md.v, md.v.id+"ta", "", blGrey[3]);
 	md.v.ta.style.width="98%"; 
 	md.v.ta.style.height="240px"; 
@@ -42,41 +43,40 @@ if(!md.run){
 	md.v.ta1.style.width="90%"; 
 	md.v.ta1.style.height="50px"; 
 	
-	md.v.btnSend = blo0.blBtn(md.v,md.v.id+"btnSend","Send/Read",blColor[4]);
-	md.v.btnClear = blo0.blBtn(md.v,md.v.id+"btnClear","ClearMsg",blColor[4]);
-	
+	md.tb1 = blo0.blDiv(md,md.id+"tb1","tb1",blGrey[1]);
+	md.v.btnSend = blo0.blBtn(md.tb1,md.tb1.id+"btnSend","Send/Read",blColor[4]);
+	md.v.btnClear = blo0.blBtn(md.tb1,md.tb1.id+"btnClear","ClearMsg",blColor[4]);
+	var curl = "https://api.github.com/repos/jeremyjia/Games/issues/comments/529246374?access_token="+getToken();
+
 	md.v.btnSend.onclick= function(){	
 	   var s = md.v.ta1.value;
 	   if(s!=""){
-		 SendMsg(s);
+		 SendMsg(s,curl);
 	   }
 	   md.v.ta1.value="";
-	   //setTimeout("readMsg()", 1000)
 	}
 	md.v.btnClear.onclick= function(){
 	   allMsg="";
-       SendMsg("Let's chat");
-       //setTimeout("readMsg()", 200)	   
+       SendMsg("i39c1:",curl); 
 	}
 	
 	 var timerId = setInterval(function()
 	 {
-	  readMsg();
+	  readMsg(curl);
 	  md.v.ta.value = allMsg;
 	 },1000);
 	
-	var allMsg="";
-    readMsg();
+	var allMsg=""; 
 	
-	function SendMsg(ss){
+	function SendMsg(ss,sURL){
 		     var xmlHttpReg = null;
           if (window.ActiveXObject) {
              xmlHttpReg = new ActiveXObject("Microsoft.XMLHTTP");
 	 } else if (window.XMLHttpRequest) {
               xmlHttpReg = new XMLHttpRequest(); 
-         }
+     }
 
-        var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/515761823?access_token="+getToken();
+        
 		var myMsg=allMsg;
 		if(myMsg!=""){
 			myMsg+="\n";
@@ -86,7 +86,7 @@ if(!md.run){
 		"body": myMsg
 		};
 			  if (xmlHttpReg != null) {
-				  xmlHttpReg.open("PATCH", url, true);    
+				  xmlHttpReg.open("PATCH", sURL, true);    
 			      xmlHttpReg.send(JSON.stringify(data));
 				  xmlHttpReg.onreadystatechange = SendCallBack;
 			  }else{
@@ -103,25 +103,24 @@ if(!md.run){
          }
 	}
 		
-	function readMsg() 
+	function readMsg(rRUL) 
 	{	
-        var xmlHttpReg = null;
-          if (window.ActiveXObject) {
+       var xmlHttpReg = null;
+       if (window.ActiveXObject) {
              xmlHttpReg = new ActiveXObject("Microsoft.XMLHTTP");
 	   } else if (window.XMLHttpRequest) {
               xmlHttpReg = new XMLHttpRequest(); 
-         }
-		 var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/515761823?access_token="+getToken();
-			  if (xmlHttpReg != null) {
-				  xmlHttpReg.open("GET", url, true);
+       } 
+	   if (xmlHttpReg != null) {
+				  xmlHttpReg.open("GET", rRUL, true);
 				  xmlHttpReg.setRequestHeader('If-Modified-Since', '0');
 				  xmlHttpReg.send(null);
 				  xmlHttpReg.onreadystatechange = readCallBack; 
 			}else{
 			  alert("xmlHttpRequest is null!");
-		 }
+		}
 
-          function readCallBack() {         
+        function readCallBack() {         
               if (xmlHttpReg.readyState == 4) {            
                   if (xmlHttpReg.status == 200) {
 					 var msg = JSON.parse(xmlHttpReg.responseText);
@@ -140,8 +139,4 @@ if(!md.run){
 	function getToken(){		        
 		return "f89b0eccf7"+"4c65a65513"+"60062c3e47"+"98d0df4577";
 	}
-
-}
-_on_off_div(this,md);
-
-   
+} 
