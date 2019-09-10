@@ -1,5 +1,5 @@
 //i4c4
-var s= "v0.0.28 "; 
+var s= "v0.0.30 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c4.js'"
 s += " style='color:blue;'";		s +=">"; s += "c4.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c4.js'"
@@ -67,6 +67,43 @@ if(!md.run){
 	
 	var allMsg="";
     readMsg();
+	addBtn(2);
+	addBtn(3);
+	addBtn(4);
+	
+	function addBtn(number)
+	{
+	  md.v.d1 = blo0.blDiv(md,md.id+"vd1","",blColor[1]);
+	  function _Comments(o) {
+		var index = 0;
+		var parentDiv = md.v.d1;
+		for(i in o){
+		 index++;
+		 if(index == number)
+		 {
+			var a = o[i].body;
+			
+			var oTd = document.createElement('td');
+			parentDiv.appendChild(oTd);
+			
+			var btnJS = blo0.blBtn(oTd, parentDiv.id+"btnJS"+index,index,blGrey[2]);
+			btnJS.onclick = function(_txt){
+			return function(){
+			eval( _txt);
+			}
+			}(a);
+			var oA = blo0.blLink(oTd, parentDiv.id+"blLink"+index,"Delete",'javascript:;',blGrey[0]);
+			oA.onclick = function(){
+              parentDiv.removeChild(this.parentNode);
+            }
+		 }
+	
+		}
+	 }
+	 
+	 var _src = "https://api.github.com/repos/jeremyjia/Games/issues/4/comments";
+	 w3.getHttpObject(_src, _Comments);
+    }
 	
 	function SendMsg(ss){
 		     var xmlHttpReg = null;
