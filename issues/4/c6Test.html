@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8">
+
+<title>Test</title>
+
+<body>
+
+<script type="text/javascript">
+
+ function weixinAddContact(name){
+
+   WeixinJSBridge.invoke("addContact", {webtype: "1",username: name}, function(e) {
+   WeixinJSBridge.log(e.err_msg);
+
+if(e.err_msg == 'add_contact:added' || e.err_msg == 'add_contact:ok'){
+alert("OK");
+}else{
+alert("Failed");
+}
+})
+}
+weixinAddContact(gh_17c19994f346);
+</script>
+
+</body>
+
+</html>
