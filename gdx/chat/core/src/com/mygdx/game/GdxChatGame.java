@@ -148,7 +148,7 @@ public class GdxChatGame extends ApplicationAdapter {
 			}
 		});
 
-		url="https://api.github.com/repos/jeremyjia/Games/issues/comments/515761823?access_token="+getToken();
+		url="https://api.github.com/repos/jeremyjia/Games/issues/comments/526806470?access_token="+getToken();
 		userName = generateUserID();
 		System.out.println("username "+userName);
 
