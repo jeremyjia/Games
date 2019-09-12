@@ -48,7 +48,7 @@ if(!md.run){
 	md.v.btnSend.onclick= function(){	
 	   var s = md.v.ta1.value;
 	   if(s!=""){
-		 SendMsg(s);
+		 dispatchMessage(s);
 	   }
 	   md.v.ta1.value="";
 	   //setTimeout("readMsg()", 1000)
@@ -67,9 +67,6 @@ if(!md.run){
 	
 	var allMsg="";
     readMsg();
-	addBtn(2);
-	addBtn(3);
-	addBtn(4);
 	
 	function addBtn(number)
 	{
@@ -105,6 +102,21 @@ if(!md.run){
 	 w3.getHttpObject(_src, _Comments);
     }
 	
+	function dispatchMessage(message){
+		var beginWith = message.toLowerCase().substr(0,4); 
+		if( beginWith == "cmd:" ){
+			var id = message.substr(message.indexOf(":")+1);
+			if(id == "help"){
+			  var help = "Please use \"cmd:number\" format to load our plugins.";
+			  SendMsg(help);
+			}else{
+			  addBtn(id);
+			}
+		}else{
+			SendMsg(message);
+		}
+		
+	}
 	function SendMsg(ss){
 		     var xmlHttpReg = null;
           if (window.ActiveXObject) {
