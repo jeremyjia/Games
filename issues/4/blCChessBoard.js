@@ -1,8 +1,8 @@
-// file: blCChessBoard.js
+﻿// file: blCChessBoard.js
 // by littleflute
 // 2017/11/1 11:46am bjt
 "use strict";
-var _my_ver = "v0.7.132";
+var _my_ver = "v0.7.133";
 
 function blClass ()
 {  
@@ -1582,7 +1582,7 @@ var _run	= function(id,x,y){
 	main.style.top		= y +"px";
 	var mi1 = o.blDiv(main,id+"mi1","mi1"); 
 
-  var board1 = new xdBoardClass(mi1, "https://littleflute.github.io/cchess0/cchess/images/", "https://littleflute.github.io/cchess0/cchess/sounds/");
+  var board1 = new xdBoardClass(mi1, "https://jeremyjia.github.io/Games/issues/4/images/", "https://jeremyjia.github.io/Games/issues/4/sounds/");
 }
 
 _run("id_4_run ",100,100);  
