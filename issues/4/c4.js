@@ -39,8 +39,8 @@ if(!md.run){
 	md.v.ta.style.height="240px"; 
 	
 	md.v.ta1 = blo0.blTextarea(md.v, md.v.id+"ta1", "", blGrey[4]);
-	md.v.ta1.style.width="90%"; 
-	md.v.ta1.style.height="50px"; 
+	md.v.ta1.style.width="98%"; 
+	md.v.ta1.style.height="40px";
 	
 	md.v.btnSend = blo0.blBtn(md.v,md.v.id+"btnSend","Send/Read",blColor[4]);
 	md.v.btnClear = blo0.blBtn(md.v,md.v.id+"btnClear","ClearMsg",blColor[4]);
@@ -53,12 +53,36 @@ if(!md.run){
 	   md.v.ta1.value="";
 	   //setTimeout("readMsg()", 1000)
 	}
-	md.v.btnClear.onclick= function(){
+	md.v.btnClear.onclick= function(){s
 	   allMsg="";
        SendMsg("Let's chat");
        //setTimeout("readMsg()", 200)	   
 	}
 	
+	var loginUsers = new Array("Jeremyjia","littleflute","Xiyu");
+	md.vUser = blo0.blDiv(md.v, md.id+"div_user_list","",blColor[2]);
+    md.vUser.style.width="98%"; 
+	md.vUser.style.height="80px";
+	
+	var oAhref = blo0.blLink(md.vUser, md.vUser.id+"refresh","Get online user",'javascript:void(0);',blGrey[0]);
+	oAhref.onclick = function(){
+		if(md.vUser.Temp)
+		{
+		   md.vUser.removeChild(md.vUser.Temp);
+		}
+		md.vUser.Temp = blo0.blDiv(md.vUser, md.vUser.id+"user_list","",blColor[2]);
+		loginUsers.forEach(listUser);	
+    }
+	 function listUser(value, index, array) {
+     	var user = value;
+		var oLi= document.createElement('li');
+		var oLabel = document.createElement("label");
+		var label_text = document.createTextNode(user);
+		oLabel.appendChild(label_text);
+		oLi.appendChild(oLabel);
+		
+		md.vUser.Temp.appendChild(oLi);
+     }
 	 var timerId = setInterval(function()
 	 {
 	  readMsg();
