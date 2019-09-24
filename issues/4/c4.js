@@ -18,7 +18,7 @@ if(!md.run){
 	style += "left: 400px";
 	style += "top: 40px";
 	style += "width: 540px";
-	md .style =style;
+	md.style =style;
 	
 	var title = blo0.blDiv(md , "div_ID_4_I4C4" + "Header", "Header");
 	style ="padding: 10px;";
@@ -29,11 +29,19 @@ if(!md.run){
 	style += "background-color: #2196F3;";
 	title.style =style;
  
-    blo0.blMakeDivMovable(md );
+    blo0.blMakeDivMovable(md);
 	md.style.left = "400px";
 	md.style.top = "40px";
 
-	md.v = blo0.blDiv(md,md.id+"v","Let's chat!",blColor[1]);
+	md.v = blo0.blDiv(md,md.id+"v","",blColor[1]);
+	
+    md.v.userInfo = blo0.blDiv(md.v,md.v.id+"userInfo","User:",blColor[1]);
+	md.v.btnExit = blo0.blBtn(md.v, md.v.id + "btnExit", 'Logoff', blGrey[1]);
+    md.v.btnExit.onclick = function(){
+	   bl$(md.v.id).style.display = "none";
+	   bl$(md.vLogin.id).style.display = "block";
+    }
+	
 	md.v.ta = blo0.blTextarea(md.v, md.v.id+"ta", "", blGrey[3]);
 	md.v.ta.style.width="98%"; 
 	md.v.ta.style.height="240px"; 
@@ -42,7 +50,7 @@ if(!md.run){
 	md.v.ta1.style.width="98%"; 
 	md.v.ta1.style.height="40px";
 	
-	md.v.btnSend = blo0.blBtn(md.v,md.v.id+"btnSend","Send/Read",blColor[4]);
+	md.v.btnSend = blo0.blBtn(md.v,md.v.id+"btnSend","SendMsg",blColor[4]);
 	md.v.btnClear = blo0.blBtn(md.v,md.v.id+"btnClear","ClearMsg",blColor[4]);
 	
 	md.v.btnSend.onclick= function(){	
@@ -90,7 +98,31 @@ if(!md.run){
 	 },1000);
 	
 	var allMsg="";
-    readMsg();
+	bl$(md.v.id).style.display = "none";
+	
+	//Login
+	md.vLogin = blo0.blDiv(md,md.id+"vLogin","User Name:",blColor[1]);
+	
+	md.vLogin.ta = blo0.blTextarea(md.vLogin, md.vLogin.id+"ta", "", blGrey[3]);
+	md.vLogin.ta.style.width="50%"; 
+	md.vLogin.ta.style.height="25px";
+	
+	md.v.line = blo0.blDiv(md.vLogin, md.vLogin.id+"line","",blColor[1]);
+	md.vLogin.btnLogin = blo0.blBtn(md.vLogin,md.vLogin.id+"btnLogin","Login",blColor[2]);	
+	md.vLogin.btnLogin.onclick= function(){	
+	
+	   if(md.vLogin.ta.value==""){
+		   alert("Please input a user name");
+		   return;
+	   }
+	   var userName= md.vLogin.ta.value;
+	   md.v.userInfo.innerHTML ="User:" + userName;
+       bl$(md.v.id).style.display = "block";
+	   bl$(md.vLogin.id).style.display = "none";
+	   
+
+	}
+	//End Login
 	
 	function addBtn(number)
 	{
@@ -137,7 +169,9 @@ if(!md.run){
 			  addBtn(id);
 			}
 		}else{
-			SendMsg(message);
+			var user_Name=md.vLogin.ta.value;
+			var sMsg = user_Name+":"+message;
+			SendMsg(sMsg);
 		}
 		
 	}
