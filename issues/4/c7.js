@@ -2,7 +2,7 @@
 // by littleflute
 // 2017/11/1 11:46am bjt
 "use strict";
-var _my_ver = "v0.7.152";
+var _my_ver = "v0.7.153";
 
 function blClass ()
 {  
@@ -1618,7 +1618,7 @@ var _run	= function(id,x,y){
 
 }
 function _cmdClass(_o){        
-    this.bll0=  "<div id = 'id_div_4__cmdClass' title = 'title: _cmdClass'> _cmdClass: v0.0.14</div>";
+    this.bll0=  "<div id = 'id_div_4__cmdClass' title = 'title: _cmdClass'> _cmdClass: v0.0.15</div>";
  
   this.blrCmd1 = function(b,d){
     if(!d.v){
@@ -1640,8 +1640,16 @@ function _cmdClass(_o){
       d.v.b1 = blo0.blBtn( d.v, "id_4_Get","Get",blColor[2]);
 
       d.v.b1.onclick = function(){
-        var ta = bl$("id_4_ta_ShowMsg");
-        _o.board.pos.fromFen("rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C2C4/9/RNBAKABNR b");
+        var ta = bl$("id_4_ta_ShowMsg"); 
+        var ta = bl$("id_4_ta_showMsg");
+
+        var a = ta.value;
+        var b = a.split("cc1:");
+        var c = b[b.length-1]; 
+        var d = c.split(";");
+        var e = d[0];       
+
+        _o.board.pos.fromFen(e);
         _o.board.flushBoard();
       }
 
