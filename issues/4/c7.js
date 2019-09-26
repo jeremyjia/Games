@@ -2,7 +2,7 @@
 // by littleflute
 // 2017/11/1 11:46am bjt
 "use strict";
-var _my_ver = "v0.7.143";
+var _my_ver = "v0.7.151";
 
 function blClass ()
 {  
@@ -1561,12 +1561,13 @@ var _run	= function(id,x,y){
 	var idBody = id;
 	var idHead = id + "Header";
   var s= _my_ver; 
-  s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c7.js'"
-  s += " style='color:blue;'";    s +=">"; s += "c7.js* ";
+  s += " <a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c7.js'"
+  s += " style='color:blue;'";    s +=">"; s += "c7.js* "; s+="</a>";
   s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c7.js'"
-  s += " style='color:green;'";   s +=">"; s += "c7.js ";
+  s += " style='color:green;'";   s +=">"; s += "c7.js ";  s+="</a>";
   s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c7Test.html'"
-  s += " style='color:brown;'";   s +=">"; s += "c7Test.html";
+  s += " style='color:brown;'";   s +=">"; s += "c7Test.html";  s+="</a>";
+  s += " <button id='id_div_4_cmd'>+</button>"
 
 	var main = o.blDiv(document.body,idBody, s, blGrey[0]);
 	var style ="position: absolute;";
@@ -1592,6 +1593,60 @@ var _run	= function(id,x,y){
 	main.style.top		= y +"px";
 	var d4b = o.blDiv(main, "id_4_board","div4board"); 
   d4b.board = new xdBoardClass(d4b, "https://jeremyjia.github.io/Games/issues/4/images/", "https://jeremyjia.github.io/Games/issues/4/sounds/");
-}
 
+  bl$("id_div_4_cmd").onclick = function(){
+    var b = this;
+    if(!this.cmd){
+      this.cmd = blo0.blMDiv(d4b, d4b.id + "cmd","cmd",450,-50,330,50,blGrey[0]);
+      this.cmd.v = blo0.blDiv(this.cmd, this.cmd.id + "v",blGrey[5]);
+      blo0.blShowObj2Div(this.cmd.v, new _cmdClass(d4b));
+
+      if(bl$("blrCmd1")){bl$("blrCmd1").click();} 
+      if(bl$("blrCmd2")){bl$("blrCmd2").click();} 
+
+      this.n = 1;
+    }
+    else{
+      if(this.n==1){
+        _on_off_div(this,this.cmd);
+        this.n++;
+      }
+      _on_off_div(this,this.cmd);
+      b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];   
+    }
+  }
+
+}
+function _cmdClass(_o){        
+    this.bll0=  "<div id = 'id_div_4__cmdClass' title = 'title: _cmdClass'> _cmdClass: v0.0.13</div>";
+ 
+  this.blrCmd1 = function(b,d){
+    if(!d.v){
+      d.v = blo0.blDiv(d,d.id+"v","test1",blGrey[5]);
+      d.v.b1 = blo0.blBtn( d.v,"id_4_Go", "Go",blColor[2]);
+      d.v.b1.onclick = function(){
+        alert(_o.board.pos.toFen());
+      }
+    }
+    _on_off_div(b,d); 
+    b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+
+  }
+  this.blline = "----";
+  this.blrCmd2 = function(b,d){
+    if(!d.v){
+      d.v = blo0.blDiv(d,d.id+"v","test1",blGrey[5]);
+      d.v.b1 = blo0.blBtn( d.v, "id_4_Get","Get",blColor[2]);
+
+      d.v.b1.onclick = function(){
+        _o.board.pos.fromFen("rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C2C4/9/RNBAKABNR b");
+        _o.board.flushBoard();
+      }
+
+    }
+    _on_off_div(b,d); 
+    b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+
+  }
+}
 _run("id_4_div_c7",100,100);  

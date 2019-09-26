@@ -1,5 +1,5 @@
 //i4c4
-var s= "v0.0.52 "; 
+var s= "v0.0.53 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c4.js'"
 s += " style='color:blue;'";		s +=">"; s += "c4.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c4.js'"
@@ -42,7 +42,7 @@ if(!md.run){
 	   bl$(md.vLogin.id).style.display = "block";
     }
 	
-	md.v.ta = blo0.blTextarea(md.v, md.v.id+"ta", "", blGrey[3]);
+	md.v.ta = blo0.blTextarea(md.v, "id_4_ta_showMsg", "", blGrey[3]);
 	md.v.ta.style.width="98%"; 
 	md.v.ta.style.height="240px"; 
 	
