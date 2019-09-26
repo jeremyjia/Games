@@ -2,7 +2,7 @@
 // by littleflute
 // 2017/11/1 11:46am bjt
 "use strict";
-var _my_ver = "v0.7.134";
+var _my_ver = "v0.7.141";
 
 function blClass ()
 {  
@@ -1580,9 +1580,8 @@ var _run	= function(id,x,y){
 
 	main.style.left 	= x +"px";
 	main.style.top		= y +"px";
-	var mi1 = o.blDiv(main,id+"mi1","mi1"); 
-
-  var board1 = new xdBoardClass(mi1, "https://jeremyjia.github.io/Games/issues/4/images/", "https://jeremyjia.github.io/Games/issues/4/sounds/");
+	var d4b = o.blDiv(main, "id_4_board","div4board"); 
+  d4b.board = new xdBoardClass(d4b, "https://jeremyjia.github.io/Games/issues/4/images/", "https://jeremyjia.github.io/Games/issues/4/sounds/");
 }
 
-_run("id_4_run ",100,100);  
+_run("id_4_div_c7",100,100);  
