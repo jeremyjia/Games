@@ -2,7 +2,7 @@
 // by littleflute
 // 2017/11/1 11:46am bjt
 "use strict";
-var _my_ver = "v0.7.142";
+var _my_ver = "v0.7.143";
 
 function blClass ()
 {  
@@ -1280,13 +1280,15 @@ function xdBoardClass(oContainer, images, sounds) {
   this.images = images;
   this.sounds = sounds;
   this.pos = new Position();
-  this.pos.fromFen("rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1");
+//  this.pos.fromFen("rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1");//原始红先
+  this.pos.fromFen("rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C2C4/9/RNBAKABNR b - - 0 1");//炮二平五
+
   this.animated = true;
   this.sound = true;
   this.search = null;
   this.imgSquares = [];
   this.sqSelected = 0;
-  this.mvLast = 0;
+  this.mvLast = 42922;//0; //42922 炮二平五
   this.millis = 0;
   this.computer = -1;
   this.result = RESULT_UNKNOWN;
