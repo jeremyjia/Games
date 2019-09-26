@@ -35,9 +35,11 @@ public class GdxChatGame extends ApplicationAdapter {
 	private TextArea textArea;
 	private TextField textField;
 	private TextButton btnSend;
+	private TextButton btnClear;
 
-	private SpriteBatch 		batch;
-	private BitmapFont 			font;
+	private SpriteBatch   batch;
+	private BitmapFont 	  font;
+	private BitmapFont    fontFromFile;
 
 	private Pixmap  pixmapArea;
 	private Pixmap  pixmapField;
@@ -49,6 +51,7 @@ public class GdxChatGame extends ApplicationAdapter {
 	private String strAllMsg="";
 	private String url;
 	private String userName;
+	private static final String version ="v:0.0.4";
 
 	@Override
 	public void create () {
@@ -58,7 +61,8 @@ public class GdxChatGame extends ApplicationAdapter {
 
 		batch = new SpriteBatch();
 		font = new BitmapFont();
-		font.setColor(Color.RED);
+		font.setColor(Color.PINK);
+		fontFromFile = new BitmapFont(Gdx.files.internal("chat.fnt"), Gdx.files.internal("chat.png"), false);
 
 		pixmapArea = new Pixmap(150,100, Pixmap.Format.RGB888);
 		pixmapArea.setColor(Color.CORAL);
@@ -71,19 +75,19 @@ public class GdxChatGame extends ApplicationAdapter {
 		pixmapCur = new Pixmap(3,100, Pixmap.Format.RGB888);
 		pixmapCur.setColor(Color.GREEN);
 		pixmapCur.fill();
-		pixmapBtnUp = new Pixmap(80,50, Pixmap.Format.RGB888);
+		pixmapBtnUp = new Pixmap(63,50, Pixmap.Format.RGB888);
 		pixmapBtnUp.setColor(Color.BLUE);
 		pixmapBtnUp.fill();
 
 
-		TextField.TextFieldStyle textAreaStyle = new TextField.TextFieldStyle(new BitmapFont(),
+		TextField.TextFieldStyle textAreaStyle = new TextField.TextFieldStyle(fontFromFile,
 				Color.BLACK, new TextureRegionDrawable(new TextureRegion(
 				new Texture(pixmapCur))),
 				new TextureRegionDrawable(new TextureRegion(new Texture(pixmapArea))),
 				new TextureRegionDrawable(new TextureRegion(new Texture(
 						pixmapArea))));
 
-		TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle(new BitmapFont(),
+		TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle(fontFromFile,
 				Color.BLACK, new TextureRegionDrawable(new TextureRegion(
 				new Texture(pixmapCur))),
 				new TextureRegionDrawable(new TextureRegion(new Texture(pixmapField))),
@@ -95,10 +99,10 @@ public class GdxChatGame extends ApplicationAdapter {
 		textArea.setPosition(50, 100);
 
 		textField = new TextField("", textFieldStyle);
-		textField.setSize(400, 50);
+		textField.setSize(350, 50);
 		textField.setPosition(50, 40);
-		Gdx.app.log("TAG", "preWidth=" + textField.getPrefWidth() + "preHeight=" + textField.getPrefHeight());
-		textField.setMessageText("Enter ps");
+		Gdx.app.log("TAG", "Width=" + textField.getPrefWidth() + "Height=" + textField.getPrefHeight());
+		textField.setMessageText("Enter MSG");
 		textField.setAlignment(Align.left);
 
 		textureBtnUp = new Texture(pixmapBtnUp);
@@ -106,20 +110,22 @@ public class GdxChatGame extends ApplicationAdapter {
 		TextButton.TextButtonStyle btnStyle = new TextButton.TextButtonStyle(btn_Up, null, null,
 				new BitmapFont());
 		btnSend = new TextButton("Send", btnStyle);
-		btnSend.setPosition(460, 40);
-
+		btnClear = new TextButton("Clear", btnStyle);
+		btnSend.setPosition(410, 40);
+		btnClear.setPosition(485, 40);
 		Gdx.input.setInputProcessor(stage);
 
 		stage.addActor(textArea);
 		stage.addActor(textField);
 		stage.setKeyboardFocus(textField);
 		stage.addActor(btnSend);
+		stage.addActor(btnClear);
 
 		textField.setTextFieldListener(new TextField.TextFieldListener(){
 			@Override
 			public void keyTyped(TextField textField, char c){
 				if((int)c == 13 || (int)c == 10) {
-					sendMsg();
+					btnSendMsg();
 					Gdx.input.setOnscreenKeyboardVisible(true);
 
 				}
@@ -129,12 +135,20 @@ public class GdxChatGame extends ApplicationAdapter {
 		btnSend.addListener(new ClickListener(){
 			@Override
 			public void clicked(InputEvent event, float x, float y){
-				sendMsg();
+				btnSendMsg();
 				Gdx.input.setOnscreenKeyboardVisible(false);
 			}
 		});
 
-		url="https://api.github.com/repos/jeremyjia/Games/issues/comments/515761823?access_token="+getToken();
+		btnClear.addListener(new ClickListener(){
+			@Override
+			public void clicked(InputEvent event, float x, float y){
+				btnClearMsg();
+				Gdx.input.setOnscreenKeyboardVisible(false);
+			}
+		});
+
+		url="https://api.github.com/repos/jeremyjia/Games/issues/comments/526806470?access_token="+getToken();
 		userName = generateUserID();
 		System.out.println("username "+userName);
 
@@ -149,31 +163,28 @@ public class GdxChatGame extends ApplicationAdapter {
 			}
 		},1f,3f);
 
-
 	}
 
-	@Override
-	public void render () {
-		Gdx.gl.glClearColor(66/255f, 55/255f, 88/255f, 0.5f);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-		stage.act();
-		stage.draw();
-
-
-		batch.begin();
-		font.draw(batch, "v:0.0.3", 10, 30);
-		batch.end();
-	}
-
-	public void sendMsg(){
+	private void btnSendMsg(){
 		String s = textField.getText();
 		if(!s.trim().equals("")){
-			System.out.println("Will send message "+s);
 			String strMsg = strAllMsg+"\n"+getCurrentTime()+"\n"+userName+":"+s;
 			strMsg = strMsg.replaceAll("\n","\\\\n");
-			String requestContent = "{\"body\":\""+strMsg+"\"}";
+			sendMsg(strMsg);
+			textField.setText("");
+		}
+	}
 
+	private void btnClearMsg(){
+		String s = "Let's chat";
+		sendMsg(s);
+	}
+
+	private void sendMsg(String str){
+
+		if(!str.trim().equals("")){
+			System.out.println("Will send message "+str);
+			String requestContent = "{\"body\":\""+str+"\"}";
 			Net.HttpRequest httpRequest = new Net.HttpRequest(Net.HttpMethods.POST);
 			httpRequest.setUrl(url);
 			httpRequest.setHeader("Content-Type", "text/plain");
@@ -193,12 +204,10 @@ public class GdxChatGame extends ApplicationAdapter {
 				public void cancelled() {
 				}
 			});
-
-			textField.setText("");
 		}
 	}
 
-	public void readMsg(){
+	private void readMsg(){
 		Net.HttpRequest httpRequest = new Net.HttpRequest(Net.HttpMethods.GET);
 		httpRequest.setUrl(url);
 
@@ -207,7 +216,7 @@ public class GdxChatGame extends ApplicationAdapter {
 		//Jeremy Debug
 		httpRequest.setHeader("Cache-Control", "no-store");
 		httpRequest.setHeader("Cache-Control", "no-cache");
-        //httpRequest.setHeader("If-Modified-Since", "0");
+		//httpRequest.setHeader("If-Modified-Since", "0");
 		//httpRequest.setHeader("Cache-Control", "max-age=0");
 		httpRequest.setContent(null);
 
@@ -238,7 +247,7 @@ public class GdxChatGame extends ApplicationAdapter {
 		return "f89b0eccf7"+"4c65a65513"+"60062c3e47"+"98d0df4577";
 	}
 
-	public String getCurrentTime()
+	private String getCurrentTime()
 	{
 		Date date = new Date();
 		DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -246,7 +255,7 @@ public class GdxChatGame extends ApplicationAdapter {
 
 	}
 
-	public String generateUserID(){
+	private String generateUserID(){
 		String str="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 		StringBuilder sb=new StringBuilder(6);
 		for(int i=0;i<6;i++)
@@ -255,6 +264,20 @@ public class GdxChatGame extends ApplicationAdapter {
 			sb.append(ch);
 		}
 		return sb.toString();
+	}
+
+
+	@Override
+	public void render () {
+		Gdx.gl.glClearColor(66/255f, 55/255f, 88/255f, 0.5f);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+		stage.act();
+		stage.draw();
+
+		batch.begin();
+		font.draw(batch, version, 10, 30);
+		batch.end();
 	}
 
 	@Override
@@ -266,5 +289,6 @@ public class GdxChatGame extends ApplicationAdapter {
 
 		batch.dispose();
 		font.dispose();
+		fontFromFile.dispose();
 	}
 }
