@@ -2,7 +2,7 @@
 // by littleflute
 // 2017/11/1 11:46am bjt
 "use strict";
-var _my_ver = "v0.7.141";
+var _my_ver = "v0.7.142";
 
 function blClass ()
 {  
@@ -1558,7 +1558,15 @@ var _run	= function(id,x,y){
 	var o = new blClass; 
 	var idBody = id;
 	var idHead = id + "Header";
-	var main = o.blDiv(document.body,idBody,id + _my_ver);
+  var s= _my_ver; 
+  s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c7.js'"
+  s += " style='color:blue;'";    s +=">"; s += "c7.js* ";
+  s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c7.js'"
+  s += " style='color:green;'";   s +=">"; s += "c7.js ";
+  s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c7Test.html'"
+  s += " style='color:brown;'";   s +=">"; s += "c7Test.html";
+
+	var main = o.blDiv(document.body,idBody, s, blGrey[0]);
 	var style ="position: absolute;";
 	style += "z-index: 9;";
 	style += "background-color: #f1f1f1;";
