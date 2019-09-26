@@ -46,7 +46,7 @@ if(!md.run){
 	md.v.ta.style.width="98%"; 
 	md.v.ta.style.height="240px"; 
 	
-	md.v.ta1 = blo0.blTextarea(md.v, md.v.id+"ta1", "", blGrey[4]);
+	md.v.ta1 = blo0.blTextarea(md.v, "id_4_ta_SendMsg", "", blGrey[4]);
 	md.v.ta1.style.width="98%"; 
 	md.v.ta1.style.height="40px";
 	

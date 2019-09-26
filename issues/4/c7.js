@@ -2,7 +2,7 @@
 // by littleflute
 // 2017/11/1 11:46am bjt
 "use strict";
-var _my_ver = "v0.7.151";
+var _my_ver = "v0.7.152";
 
 function blClass ()
 {  
@@ -1618,14 +1618,15 @@ var _run	= function(id,x,y){
 
 }
 function _cmdClass(_o){        
-    this.bll0=  "<div id = 'id_div_4__cmdClass' title = 'title: _cmdClass'> _cmdClass: v0.0.13</div>";
+    this.bll0=  "<div id = 'id_div_4__cmdClass' title = 'title: _cmdClass'> _cmdClass: v0.0.14</div>";
  
   this.blrCmd1 = function(b,d){
     if(!d.v){
       d.v = blo0.blDiv(d,d.id+"v","test1",blGrey[5]);
       d.v.b1 = blo0.blBtn( d.v,"id_4_Go", "Go",blColor[2]);
-      d.v.b1.onclick = function(){
-        alert(_o.board.pos.toFen());
+      d.v.b1.onclick = function(){ 
+        var ta = bl$("id_4_ta_SendMsg");
+        ta.value = "cc1:" + _o.board.pos.toFen() + ";";
       }
     }
     _on_off_div(b,d); 
@@ -1639,6 +1640,7 @@ function _cmdClass(_o){
       d.v.b1 = blo0.blBtn( d.v, "id_4_Get","Get",blColor[2]);
 
       d.v.b1.onclick = function(){
+        var ta = bl$("id_4_ta_ShowMsg");
         _o.board.pos.fromFen("rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C2C4/9/RNBAKABNR b");
         _o.board.flushBoard();
       }
