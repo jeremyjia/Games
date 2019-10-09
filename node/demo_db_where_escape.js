@@ -9,7 +9,10 @@ var con = mysql.createConnection({
  
 con.connect(function(err) {
   if (err) throw err;
-  con.query("SELECT * FROM customers1 WHERE address = 'Park Lane 38'", function (err, result) {
+  var adr = 'Mountain 21';
+  //Escape the address value:
+  var sql = 'SELECT * FROM customers WHERE address = ' + mysql.escape(adr);
+  con.query(sql, function (err, result) {
     if (err) throw err;
     console.log(result);
   });

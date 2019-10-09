@@ -9,7 +9,8 @@ var con = mysql.createConnection({
  
 con.connect(function(err) {
   if (err) throw err;
-  con.query("SELECT * FROM customers1 WHERE address = 'Park Lane 38'", function (err, result) {
+  var sql = "SELECT * FROM customers1 LIMIT 5";
+  con.query(sql, function (err, result) {
     if (err) throw err;
     console.log(result);
   });

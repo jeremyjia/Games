@@ -9,7 +9,8 @@ var con = mysql.createConnection({
  
 con.connect(function(err) {
   if (err) throw err;
-  con.query("SELECT * FROM customers1 WHERE address = 'Park Lane 38'", function (err, result) {
+  //Return 5 customers, starting from position 2:
+  con.query("SELECT * FROM customers1 LIMIT 2, 5", function (err, result) {
     if (err) throw err;
     console.log(result);
   });
