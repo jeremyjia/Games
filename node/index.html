@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+  margin: 0;
+  font-family: "Lato", sans-serif;
+}
+
+.sidebar {
+  margin: 0;
+  padding: 0;
+  width: 200px;
+  background-color: #f1f1f1;
+  position: fixed;
+  height: 100%;
+  overflow: auto;
+}
+
+.sidebar a {
+  display: block;
+  color: black;
+  padding: 16px;
+  text-decoration: none;
+}
+ 
+.sidebar a.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.sidebar a:hover:not(.active) {
+  background-color: #555;
+  color: white;
+}
+
+div.content {
+  margin-left: 200px;
+  padding: 1px 16px;
+  height: 1000px;
+}
+
+@media screen and (max-width: 700px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+  .sidebar a {float: left;}
+  div.content {margin-left: 0;}
+}
+
+@media screen and (max-width: 400px) {
+  .sidebar a {
+    text-align: center;
+    float: none;
+  }
+}
+
+table {
+  border-spacing: 0;
+  width: 100%;
+  border: 1px solid #ddd;
+}
+
+th, td {
+  text-align: left;
+  padding: 16px;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2
+}
+
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <a class="active" href="#home">Home v0.0.21</a>
+  <a href="#contact" id="show">show</a>
+  <a href="#news" id="news">News</a>
+  <a href="#blApp" id="id_btn_4_blApp">blApp</a>
+</div>
+
+<div class="content" id = "content">
+  <h2>Node.js + MySQL Example</h2>
+  <p>Node.js + MySQL Example</p>
+  <p>Node.js + MySQL Example</p>
+  <h3>Node.js + MySQL Example</h3>
+</div>
+<script src="https://littleflute.github.io/JavaScript/w3.js" ></script>
+<script src="https://littleflute.github.io/JavaScript/blclass.js" ></script>
+<script src="https://littleflute.github.io/JavaScript/blApp.js"></script>
+<script>
+	var n = bl$("news");
+	n.onclick = function(){
+		var w = {};
+		w._2do = function(txt){  bl$("content").innerHTML = txt; }
+		var urlLrc = "xd1.js";
+		blo0.blAjx(w,urlLrc);
+	}
+	var n = bl$("show");
+	n.onclick = function(){
+		var w = {};
+		w._2do = function(txt){  bl$("content").innerHTML = txt; }
+		var urlLrc = "show";
+		blo0.blAjx(w,urlLrc);
+	}
+</script>
+</script>
+</body>
+</html>
