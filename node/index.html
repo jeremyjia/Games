@@ -78,9 +78,9 @@ tr:nth-child(even) {
 <body>
 
 <div class="sidebar">
-  <a class="active" href="#home">Home v0.0.21</a>
+  <a class="active" href="#home">Home v0.0.22</a>
   <a href="#contact" id="show">show</a>
-  <a href="#news" id="news">News</a>
+  <a href="#delete" id="delete">delete</a>
   <a href="#blApp" id="id_btn_4_blApp">blApp</a>
 </div>
 
@@ -94,11 +94,11 @@ tr:nth-child(even) {
 <script src="https://littleflute.github.io/JavaScript/blclass.js" ></script>
 <script src="https://littleflute.github.io/JavaScript/blApp.js"></script>
 <script>
-	var n = bl$("news");
+	var n = bl$("delete");
 	n.onclick = function(){
 		var w = {};
 		w._2do = function(txt){  bl$("content").innerHTML = txt; }
-		var urlLrc = "xd1.js";
+		var urlLrc = "delete";
 		blo0.blAjx(w,urlLrc);
 	}
 	var n = bl$("show");
