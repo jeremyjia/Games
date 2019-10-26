@@ -3,6 +3,8 @@ var url = require('url');
 var fs = require('fs');
 var mysql = require('mysql');
 
+var iShow = require('./iShow');
+
 http.createServer(function (req, res) {
   console.log(req.url);
   var xdURL = req.url;
@@ -36,53 +38,8 @@ http.createServer(function (req, res) {
 
       res.end();
   }
-  else if (req.url == '/show') {
-    var con = mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      password: "xd178090xd",
-      database: "mydb"
-    });
-     
-    con.connect(function(err) {      
-      if (err) throw err;
-      con.query("SELECT name, address FROM customers1", function (err, result, fields) {
-        if (err) throw err;
-        console.log(result);
-
-        res.write('<table id="myTable">');
-        res.write('<tr>');
-        res.write('<th>NO.</th>');
-        res.write('<th>Name</th>    <th>Country</th>');
-        res.write('<th>Del</th>');
-        res.write('</tr>');
-
-        for(i in result){
-          res.write('<tr>');
-          res.write('<td>');
-          res.write(i);
-          res.write('</td>');
-          res.write('<td>');
-          res.write(result[i].name);
-          res.write('</td>');
-          res.write('<td>');
-          res.write(result[i].address);
-          res.write('</td>');
-          res.write('<td>');
-          var s = "<button id='x";
-          s += i;
-          s += "'>";
-          s += "X</button>";
-          res.write(s);
-          res.write('</td>');
-          res.write('</tr>'); 
-        }
-        res.write('</table>');
-       // res.write(result);  
-        res.end();
-      });
-    });
-
+  else if (req.url == '/show') { 
+    iShow.showTable(res,"customers1");
   } else {
     var q = url.parse(req.url, true);
     var filename = "." + q.pathname;
@@ -90,8 +47,13 @@ http.createServer(function (req, res) {
       if (err) {
         res.writeHead(404, {'Content-Type': 'text/html'});
         return res.end("[v0.0.23] 404 Not Found: " +filename);
-      } 
+      }
+      console.log("filename=" + filename); 
       res.writeHead(200, {'Content-Type': 'text/html'});
+
+      //res.writeHead(200, {'Content-Type': 'image/jpeg'});
+
+      //res.writeHead(200, {'Content-Type': 'audio/mp3'});
       res.write(data);
       return res.end();
     });
