@@ -1,5 +1,5 @@
 //i4c4
-var s= "v0.0.55 "; 
+var s= "v0.0.56 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c4.js'"
 s += " style='color:blue;'";		s +=">"; s += "c4.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c4.js'"
@@ -37,10 +37,15 @@ if(!md.run){
 	
     md.v.userInfo = blo0.blDiv(md.v,md.v.id+"userInfo","User:",blColor[1]);
 	md.v.btnExit = blo0.blBtn(md.v, md.v.id + "btnExit", 'Logoff', blGrey[1]);
+	//Logoff on click
     md.v.btnExit.onclick = function(){
 	   bl$(md.v.id).style.display = "none";
 	   bl$(md.vLogin.id).style.display = "block";
-	   clearInterval(timerId);
+
+	   clearInterval(timerId);   
+	   getOnlineUser();
+	   setTimeout("logOff()", 1000);
+	   sleep(1000);
     }
 	
 	md.v.ta = blo0.blTextarea(md.v, "id_4_ta_showMsg", "", blGrey[3]);
@@ -59,16 +64,13 @@ if(!md.run){
 	   if(s!=""){
 		 dispatchMessage(s);
 	   }
-	   md.v.ta1.value="";
-	   //setTimeout("readMsg()", 1000)
+	   md.v.ta1.value="";	
 	}
 	md.v.btnClear.onclick= function(){s
 	   allMsg="";
        SendMsg("Let's chat");
-       //setTimeout("readMsg()", 200)	   
 	}
 	
-	var loginUsers = new Array("Jeremyjia","littleflute","Xiyu");
 	md.vUser = blo0.blDiv(md.v, md.id+"div_user_list","",blColor[2]);
     md.vUser.style.width="98%"; 
 	md.vUser.style.height="80px";
@@ -80,17 +82,75 @@ if(!md.run){
 		   md.vUser.removeChild(md.vUser.Temp);
 		}
 		md.vUser.Temp = blo0.blDiv(md.vUser, md.vUser.id+"user_list","",blColor[2]);
-		loginUsers.forEach(listUser);	
+		getOnlineUser();
     }
+
+     function logOff(){
+		var userObj = globalJsonObj.users;
+		var newUsers = [];
+		var userName = md.vLogin.ta.value;
+		for(var i = 0; i < userObj.length; i++)
+		{
+			if(userObj[i].name == userName){
+				newUsers.push({"name":userObj[i].name,"LastloginTime":userObj[i].LastloginTime,"isLogin":false});
+			}else{
+				newUsers.push({"name":userObj[i].name,"LastloginTime":userObj[i].LastloginTime,"isLogin":userObj[i].isLogin});
+			}
+		}
+		var jsonAll= {
+		  "users":newUsers
+		};
+		updateOnlineUser(jsonAll);
+		   
+	   	if(md.vUser.Temp)
+		{
+		   md.vUser.removeChild(md.vUser.Temp);
+		   md.vUser.Temp = blo0.blDiv(md.vUser, md.vUser.id+"user_list","",blColor[2]);
+		}
+	 }
+	 
+	 function login(){
+	   	var userObj = globalJsonObj.users;
+		var userName = md.vLogin.ta.value;
+		var newUsers = [];
+		var bExist=false;
+		for(var i = 0; i < userObj.length; i++){
+			if(userObj[i].name != userName){
+				newUsers.push({"name":userObj[i].name,"LastloginTime":userObj[i].LastloginTime,"isLogin":userObj[i].isLogin});
+			}else{
+				bExist = true;
+				newUsers.push({"name":userObj[i].name,"LastloginTime":formateDate(),"isLogin":true});
+			}
+		}
+		if(!bExist){
+			newUsers.push({"name":userName,"LastloginTime":formateDate(),"isLogin":true});
+		}
+		var jsonAll= {
+		  "users":newUsers
+		};
+		updateOnlineUser(jsonAll);
+	 }
+	 
+     function showUser(jsonObj){
+		var userObj = jsonObj.users;
+		var loginUsers = [];
+		for(var i = 0; i < userObj.length; i++){
+			if(userObj[i].isLogin){
+				loginUsers.push(userObj[i].name);
+			}
+		}
+       loginUsers.forEach(listUser);
+	 }
 	 function listUser(value, index, array) {
      	var user = value;
 		var oLi= document.createElement('li');
 		var oLabel = document.createElement("label");
 		var label_text = document.createTextNode(user);
 		oLabel.appendChild(label_text);
-		oLi.appendChild(oLabel);
-		
-		md.vUser.Temp.appendChild(oLi);
+		oLi.appendChild(oLabel);		
+		if(md.vUser.Temp){
+		  md.vUser.Temp.appendChild(oLi);
+		}
      }
 	 var timerId;	 
 	 function readTimer(){
@@ -99,8 +159,8 @@ if(!md.run){
 	 }
 	
 	var allMsg="";
+	var globalJsonObj;
 	bl$(md.v.id).style.display = "none";
-	
 	//Login
 	md.vLogin = blo0.blDiv(md,md.id+"vLogin","User Name:",blColor[1]);
 	
@@ -121,7 +181,8 @@ if(!md.run){
        bl$(md.v.id).style.display = "block";
 	   bl$(md.vLogin.id).style.display = "none";
 	   timerId = setInterval(readTimer, 1000);
-
+	   getOnlineUser();
+	   setTimeout("login()", 1000);
 	}
 	//End Login
 	
@@ -171,7 +232,7 @@ if(!md.run){
 			}
 		}else{
 			var user_Name=md.vLogin.ta.value;
-			var sMsg = user_Name+":"+message;
+			var sMsg = formateDate()+"\n"+user_Name+":"+message;
 			SendMsg(sMsg);
 		}
 		
@@ -217,10 +278,65 @@ if(!md.run){
          }
 	}
 	
+	function getOnlineUser(){
+		var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/543738078?access_token="+getToken();
+		myAjaxCmd('GET',url, null, usercallback);
+	
+        function usercallback(response){
+			if(response.readyState == 4){
+			  if(response.status==200){
+				  var msgObj = JSON.parse(response.responseText);
+				  if(msgObj.body==null || msgObj.body==""){
+				  }else{ 
+					var jO = JSON.parse(msgObj.body);
+					globalJsonObj = jO;
+					showUser(jO);
+				}	  
+			  }
+		    }			 
+         }
+	}
+	
+	function updateOnlineUser(jsonAll)
+	{
+	    var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/543738078?access_token="+getToken();	
+		var bodyData = JSON.stringify(jsonAll);
+		var data= {
+		 "body": bodyData
+		};
+		
+		myAjaxCmd('PATCH',url, data, function(res) {         
+           if (res.readyState == 4) {            
+              if (res.status != 200) {
+				alert("Write:"+ res.status);
+             }
+           }
+        });
+	}
+	
 	function getToken(){		        
 		return "f89b0eccf7"+"4c65a65513"+"60062c3e47"+"98d0df4577";
 	}
 	
+	
+	function formateDate() {
+		var datetime = new Date();
+		var year = datetime.getFullYear(),
+			month = ("0" + (datetime.getMonth() + 1)).slice(-2),
+			date = ("0" + datetime.getDate()).slice(-2),
+			hour = ("0" + datetime.getHours()).slice(-2),
+			minute = ("0" + datetime.getMinutes()).slice(-2),
+			second = ("0" + datetime.getSeconds()).slice(-2);
+		var result = year + "-"+ month +"-"+ date +" "+ hour +":"+ minute +":" + second;
+		return result;
+	}
+	
+	function sleep(delay) {
+	  var start = (new Date()).getTime();
+	  while ((new Date()).getTime() - start < delay) {
+		continue;
+	  }
+	}
 	//This is a common method used for sending or receving information from Github
 	function myAjaxCmd(method, url, data, callback){
 		var xmlHttpReg = null;
