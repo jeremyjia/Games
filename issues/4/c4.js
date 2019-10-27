@@ -1,5 +1,5 @@
 //i4c4
-var s= "v0.0.54 "; 
+var s= "v0.0.55 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c4.js'"
 s += " style='color:blue;'";		s +=">"; s += "c4.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c4.js'"
@@ -40,6 +40,7 @@ if(!md.run){
     md.v.btnExit.onclick = function(){
 	   bl$(md.v.id).style.display = "none";
 	   bl$(md.vLogin.id).style.display = "block";
+	   clearInterval(timerId);
     }
 	
 	md.v.ta = blo0.blTextarea(md.v, "id_4_ta_showMsg", "", blGrey[3]);
@@ -91,11 +92,11 @@ if(!md.run){
 		
 		md.vUser.Temp.appendChild(oLi);
      }
-	 var timerId = setInterval(function()
-	 {
-	  readMsg();
-	  md.v.ta.value = allMsg;
-	 },1000);
+	 var timerId;	 
+	 function readTimer(){
+		readMsg();
+	    md.v.ta.value = allMsg; 
+	 }
 	
 	var allMsg="";
 	bl$(md.v.id).style.display = "none";
@@ -119,7 +120,7 @@ if(!md.run){
 	   md.v.userInfo.innerHTML ="User:" + userName;
        bl$(md.v.id).style.display = "block";
 	   bl$(md.vLogin.id).style.display = "none";
-	   
+	   timerId = setInterval(readTimer, 1000);
 
 	}
 	//End Login
@@ -175,16 +176,10 @@ if(!md.run){
 		}
 		
 	}
-	function SendMsg(ss){
-		     var xmlHttpReg = null;
-          if (window.ActiveXObject) {
-             xmlHttpReg = new ActiveXObject("Microsoft.XMLHTTP");
-	 } else if (window.XMLHttpRequest) {
-              xmlHttpReg = new XMLHttpRequest(); 
-         }
-
-        var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526806470?access_token="+getToken();
-		var myMsg=allMsg;
+	function SendMsg(ss)
+	{
+	    var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526806470?access_token="+getToken();	
+        var myMsg=allMsg;
 		if(myMsg!=""){
 			myMsg+="\n";
 		}
@@ -192,62 +187,60 @@ if(!md.run){
 		var data= {
 		"body": myMsg
 		};
-			  if (xmlHttpReg != null) {
-				  xmlHttpReg.open("PATCH", url, true);    
-			      xmlHttpReg.send(JSON.stringify(data));
-				  xmlHttpReg.onreadystatechange = SendCallBack;
-			  }else{
-			  alert("xmlHttpRequest is null!");
-		}
-
-          function SendCallBack() {         
-              if (xmlHttpReg.readyState == 4) {            
-                  if (xmlHttpReg.status == 200) {
-                   }else{
-					   alert("Write:"+xmlHttpReg.status);
-				   }
-              }
-         }
+		
+		myAjaxCmd('PATCH',url, data, function(res) {         
+           if (res.readyState == 4) {            
+              if (res.status != 200) {
+				alert("Write:"+ res.status);
+             }
+           }
+        });
 	}
 		
 	function readMsg() 
-	{	
-        var xmlHttpReg = null;
-          if (window.ActiveXObject) {
-             xmlHttpReg = new ActiveXObject("Microsoft.XMLHTTP");
-	   } else if (window.XMLHttpRequest) {
-              xmlHttpReg = new XMLHttpRequest(); 
-         }
-		 var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526806470?access_token="+getToken();
-			  if (xmlHttpReg != null) {
-				  xmlHttpReg.open("GET", url, true);
-				  xmlHttpReg.setRequestHeader('If-Modified-Since', '0');
-				  xmlHttpReg.send(null);
-				  xmlHttpReg.onreadystatechange = readCallBack; 
-			}else{
-			  alert("xmlHttpRequest is null!");
-		 }
-
-          function readCallBack() {         
-              if (xmlHttpReg.readyState == 4) {            
-                  if (xmlHttpReg.status == 200) {
-					 var msg = JSON.parse(xmlHttpReg.responseText);
-					 if(msg.body==null || msg.body==""){
-						 allMsg ="";
-					 }else
-					   allMsg=msg.body;
-                   }else{
-					   alert("The status code:"+xmlHttpReg.status);
-					   clearInterval(timerId);
-				   }
-              }
+	{
+		var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526806470?access_token="+getToken();
+		myAjaxCmd('GET',url, null, readCallBack);
+	
+        function readCallBack(resp){
+			if(resp.readyState == 4){
+			  if(resp.status==200){
+				  var msg = JSON.parse(resp.responseText);
+				  if(msg.body==null || msg.body==""){
+					allMsg ="";
+				  }else allMsg=msg.body;
+			  }else{
+				alert("The status code:"+resp.status);
+				clearInterval(timerId); 
+			  }
+		    }			 
          }
 	}
 	
 	function getToken(){		        
 		return "f89b0eccf7"+"4c65a65513"+"60062c3e47"+"98d0df4577";
 	}
-
+	
+	//This is a common method used for sending or receving information from Github
+	function myAjaxCmd(method, url, data, callback){
+		var xmlHttpReg = null;
+		if (window.XMLHttpRequest){
+		  xmlHttpReg = new XMLHttpRequest();
+		}else{
+		  xmlHttpReg = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		xmlHttpReg.onreadystatechange = function (){
+	      callback(xmlHttpReg);
+		};
+		xmlHttpReg.open(method, url, true);
+		if(method == "PATCH" || method == "POST"){
+			xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+			xmlHttpReg.send(JSON.stringify(data));
+		}else if(method == "GET"){
+			xmlHttpReg.setRequestHeader('If-Modified-Since', '0');
+			xmlHttpReg.send(null);
+		}
+	}
 }
 _on_off_div(this,md);
 
