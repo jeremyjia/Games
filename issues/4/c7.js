@@ -2,7 +2,7 @@
 // by littleflute
 // 2017/11/1 11:46am bjt
 "use strict";
-var _my_ver = "v0.7.153";
+var _my_ver = "chat_v0.7.213";
 
 function blClass ()
 {  
@@ -1618,7 +1618,7 @@ var _run	= function(id,x,y){
 
 }
 function _cmdClass(_o){        
-    this.bll0=  "<div id = 'id_div_4__cmdClass' title = 'title: _cmdClass'> _cmdClass: v0.0.15</div>";
+  this.bll0=  "<div id = 'id_div_4__cmdClass' title = 'title: _cmdClass'> _cmdClass: v0.0.15</div>";
  
   this.blrCmd1 = function(b,d){
     if(!d.v){
@@ -1638,8 +1638,19 @@ function _cmdClass(_o){
     if(!d.v){
       d.v = blo0.blDiv(d,d.id+"v","test1",blGrey[5]);
       d.v.b1 = blo0.blBtn( d.v, "id_4_Get","Get",blColor[2]);
+      d.vTimer = blo0.blDiv(d,d.id+"vTimer","vTimer",blGrey[3]);
+      d.vTimer.v = blo0.blDiv(d.vTimer, "id_timerDbg","timerDbg",blGrey[5]);
+      d.vTimer.fTimer = function(_u){
+        if(!d.vTimer.n) d.vTimer.n = 0;
+        d.vTimer.v.innerHTML = _u + ":" + d.vTimer.n++;
+        d.v.b1.click();
+      }
+      var dChat = bl$("div_ID_4_I4C4");
+      if(dChat) dChat.addTimerUser(d.vTimer);
 
       d.v.b1.onclick = function(){
+        if(!this.n) this.n = 0;
+        this.innerHTML = "get:" + this.n++;
         var ta = bl$("id_4_ta_ShowMsg"); 
         var ta = bl$("id_4_ta_showMsg");
 
@@ -1656,7 +1667,6 @@ function _cmdClass(_o){
     }
     _on_off_div(b,d); 
     b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
-
   }
 }
 _run("id_4_div_c7",100,100);  
