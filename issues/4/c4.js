@@ -1,5 +1,5 @@
 //i4c4
-var s= "v0.0.56 "; 
+var s= "chat_v0.0.103 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c4.js'"
 s += " style='color:blue;'";		s +=">"; s += "c4.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c4.js'"
@@ -8,6 +8,21 @@ s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c4Test
 s += " style='color:brown;'";		s +=">"; s += "c4Test.html";
 
 var md = blo0.blDiv(document.body, "div_ID_4_I4C4", s ,blGrey[0]);  
+md.addTimerUser = function(o){
+		if(!md.timerUsers) md.timerUsers = [];
+		if(o) md.timerUsers.push(o);
+}
+
+md.timer2Users = function(){
+		if(md.timerUsers){
+			for(i in md.timerUsers){
+				if(md.timerUsers[i].fTimer){
+					md.timerUsers[i].fTimer();
+				}
+			}
+		}
+}
+
 if(!md.run){
     md.run = true; 
 	var style ="position: absolute;";
@@ -156,6 +171,7 @@ if(!md.run){
 	 function readTimer(){
 		readMsg();
 	    md.v.ta.value = allMsg; 
+	    md.timer2Users();
 	 }
 	
 	var allMsg="";
