@@ -4,6 +4,7 @@ var fs = require('fs');
 var mysql = require('mysql');
 
 var iShow = require('./iShow');
+var iInsert = require('./iInsert');
 
 http.createServer(function (req, res) {
   console.log(req.url);
@@ -38,6 +39,11 @@ http.createServer(function (req, res) {
 
       res.end();
   }
+  else if (req.url == '/insert') { 
+    res.write('to do: add...'); 
+    iInsert.AddRow(res,"customers1"); 
+    res.end();
+  } 
   else if (req.url == '/show') { 
     iShow.showTable(res,"customers1");
   } else {
