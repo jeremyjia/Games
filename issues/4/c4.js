@@ -1,5 +1,5 @@
 //i4c4
-var s= "v0.0.56 "; 
+var s= "v0.0.57 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c4.js'"
 s += " style='color:blue;'";		s +=">"; s += "c4.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c4.js'"
@@ -43,7 +43,7 @@ if(!md.run){
 	   bl$(md.vLogin.id).style.display = "block";
 
 	   clearInterval(timerId);   
-	   getOnlineUser();
+	   getOnlineUser(false);
 	   setTimeout("logOff()", 1000);
 	   sleep(1000);
     }
@@ -77,14 +77,36 @@ if(!md.run){
 	
 	var oAhref = blo0.blLink(md.vUser, md.vUser.id+"refresh","Get online user",'javascript:void(0);',blGrey[0]);
 	oAhref.onclick = function(){
-		if(md.vUser.Temp)
-		{
-		   md.vUser.removeChild(md.vUser.Temp);
-		}
-		md.vUser.Temp = blo0.blDiv(md.vUser, md.vUser.id+"user_list","",blColor[2]);
-		getOnlineUser();
+		clearStatus(); //Clear the status of users whoes login time greater than 24 hours!
+		getOnlineUser(true);
     }
 
+     function clearStatus()
+	 {
+		var userObj = globalJsonObj.users;
+		var newUsers = [];
+		var nowTime = formateDate();
+		var isNeedClear=false;
+		for(var i = 0; i < userObj.length; i++)
+		{
+			if(userObj[i].isLogin && getTimeDiff(userObj[i].LastloginTime, nowTime, "hour")>24){
+			   isNeedClear = true;
+			   newUsers.push({"name":userObj[i].name,"LastloginTime":userObj[i].LastloginTime,"isLogin":false});
+			}
+			else{
+			   newUsers.push({"name":userObj[i].name,"LastloginTime":userObj[i].LastloginTime,"isLogin":userObj[i].isLogin});
+			}
+		}	
+		if(isNeedClear)
+		{
+			var jsonAll= {
+			 "users":newUsers
+			};
+		   updateOnlineUser(jsonAll);
+		   alert("Clear the status of users whoes login time greater than 24 hours!");
+		   sleep(2000);
+		 }	 
+	 }
      function logOff(){
 		var userObj = globalJsonObj.users;
 		var newUsers = [];
@@ -101,12 +123,6 @@ if(!md.run){
 		  "users":newUsers
 		};
 		updateOnlineUser(jsonAll);
-		   
-	   	if(md.vUser.Temp)
-		{
-		   md.vUser.removeChild(md.vUser.Temp);
-		   md.vUser.Temp = blo0.blDiv(md.vUser, md.vUser.id+"user_list","",blColor[2]);
-		}
 	 }
 	 
 	 function login(){
@@ -129,6 +145,12 @@ if(!md.run){
 		  "users":newUsers
 		};
 		updateOnlineUser(jsonAll);
+		
+	    if(md.vUser.Temp)
+		{
+		   md.vUser.removeChild(md.vUser.Temp);
+		   md.vUser.Temp = blo0.blDiv(md.vUser, md.vUser.id+"user_list","",blColor[2]);
+		}
 	 }
 	 
      function showUser(jsonObj){
@@ -139,19 +161,23 @@ if(!md.run){
 				loginUsers.push(userObj[i].name);
 			}
 		}
-       loginUsers.forEach(listUser);
-	 }
-	 function listUser(value, index, array) {
-     	var user = value;
-		var oLi= document.createElement('li');
-		var oLabel = document.createElement("label");
-		var label_text = document.createTextNode(user);
-		oLabel.appendChild(label_text);
-		oLi.appendChild(oLabel);		
+		
 		if(md.vUser.Temp){
-		  md.vUser.Temp.appendChild(oLi);
+		  md.vUser.removeChild(md.vUser.Temp);
 		}
+		md.vUser.Temp = blo0.blDiv(md.vUser, md.vUser.id+"user_list","",blColor[2]); 
+        loginUsers.forEach(listUser);
+	 }
+	 function listUser(value, index, array) {	
+		 var user = value;
+		 var oLi= document.createElement('li');
+		 var oLabel = document.createElement("label");
+		 var label_text = document.createTextNode(user);
+		 oLabel.appendChild(label_text);
+		 oLi.appendChild(oLabel);		
+		 md.vUser.Temp.appendChild(oLi);
      }
+	 
 	 var timerId;	 
 	 function readTimer(){
 		readMsg();
@@ -181,7 +207,8 @@ if(!md.run){
        bl$(md.v.id).style.display = "block";
 	   bl$(md.vLogin.id).style.display = "none";
 	   timerId = setInterval(readTimer, 1000);
-	   getOnlineUser();
+	   getOnlineUser(false);
+	   sleep(1000);
 	   setTimeout("login()", 1000);
 	}
 	//End Login
@@ -278,7 +305,7 @@ if(!md.run){
          }
 	}
 	
-	function getOnlineUser(){
+	function getOnlineUser(isShow){
 		var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/543738078?access_token="+getToken();
 		myAjaxCmd('GET',url, null, usercallback);
 	
@@ -290,7 +317,8 @@ if(!md.run){
 				  }else{ 
 					var jO = JSON.parse(msgObj.body);
 					globalJsonObj = jO;
-					showUser(jO);
+					 if(isShow)
+					   showUser(jO);
 				}	  
 			  }
 		    }			 
@@ -331,6 +359,29 @@ if(!md.run){
 		return result;
 	}
 	
+	function getTimeDiff(startTime, endTime, diffType) {
+		//xxxx-xx-xx -> xxxx/xx/xx
+		startTime = startTime.replace(/\-/g, "/");
+		endTime = endTime.replace(/\-/g, "/");
+		diffType = diffType.toLowerCase();
+		var sTime = new Date(startTime);
+		var eTime = new Date(endTime);
+		var timeType;
+		switch (diffType) {
+		  case "minute":
+            timeType = 1000*60;
+          break;
+		  case "hour":
+			timeType =1000*3600;
+		  break;
+		  case "day":
+			timeType = 1000*3600*24;
+		  break;
+		  default:
+		  break;
+        }
+    return parseInt((eTime.getTime()-sTime.getTime())/parseInt(timeType));
+}
 	function sleep(delay) {
 	  var start = (new Date()).getTime();
 	  while ((new Date()).getTime() - start < delay) {
