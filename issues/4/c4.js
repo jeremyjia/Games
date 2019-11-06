@@ -1,5 +1,5 @@
 //i4c4
-var s= "v0.0.57 "; 
+var s= "v0.0.58 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c4.js'"
 s += " style='color:blue;'";		s +=">"; s += "c4.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c4.js'"
@@ -35,7 +35,7 @@ if(!md.run){
 
 	md.v = blo0.blDiv(md,md.id+"v","",blColor[1]);
 	
-    md.v.userInfo = blo0.blDiv(md.v,md.v.id+"userInfo","User:",blColor[1]);
+    md.v.userInfo = blo0.blDiv(md.v,md.v.id+"userInfo","User:",blColor[6]);
 	md.v.btnExit = blo0.blBtn(md.v, md.v.id + "btnExit", 'Logoff', blGrey[1]);
 	//Logoff on click
     md.v.btnExit.onclick = function(){
@@ -177,7 +177,8 @@ if(!md.run){
 		 oLi.appendChild(oLabel);		
 		 md.vUser.Temp.appendChild(oLi);
      }
-	 
+	
+	 var nTokenNum; 
 	 var timerId;	 
 	 function readTimer(){
 		readMsg();
@@ -201,6 +202,12 @@ if(!md.run){
 	   if(md.vLogin.ta.value==""){
 		   alert("Please input a user name");
 		   return;
+	   }
+	   nTokenNum = Math.round(Math.random() * (1));//0,1
+	   if(nTokenNum==0) {
+	     md.v.style.background=blColor[1];
+	   }else{
+		 md.v.style.background="#EC64B5";
 	   }
 	   var userName= md.vLogin.ta.value;
 	   md.v.userInfo.innerHTML ="User:" + userName;
@@ -342,10 +349,12 @@ if(!md.run){
         });
 	}
 	
-	function getToken(){		        
-		return "f89b0eccf7"+"4c65a65513"+"60062c3e47"+"98d0df4577";
+	var tokenArray = new Array();
+	tokenArray[0] = "f89b0eccf7"+"4c65a65513"+"60062c3e47"+"98d0df4577"; //Jeremyjia
+	tokenArray[1] = "1857ba0e9f"+"43db389d91"+"ec4b4ae4cb"+"63c1fa682e"; //XiYu	
+	function getToken(){	
+	  return tokenArray[nTokenNum];
 	}
-	
 	
 	function formateDate() {
 		var datetime = new Date();
