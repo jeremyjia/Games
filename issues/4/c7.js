@@ -2,7 +2,7 @@
 // by littleflute
 // 2017/11/1 11:46am bjt
 "use strict";
-var _my_ver = "v0.7.153";
+var _my_ver = "chat_v0.7.321";
 
 function blClass ()
 {  
@@ -1292,7 +1292,8 @@ function xdBoardClass(oContainer, images, sounds) {
   this.millis = 0;
   this.computer = -1;
   this.result = RESULT_UNKNOWN;
-  this.busy = false;
+  this.busy   = false;
+  this.xdSet  = false;
 
   var style = oContainer.style;
   style.position = "relative";
@@ -1339,7 +1340,10 @@ xdBoardClass.prototype.flushBoard = function() {
 }
 
 xdBoardClass.prototype.clickSquare = function(sq_) {
-
+  if(this.xdSet){     
+    if(this.fSet) this.fSet(sq_);
+    return;
+  }
   if (this.busy || this.result != RESULT_UNKNOWN) {
 
     return;
@@ -1597,13 +1601,9 @@ var _run	= function(id,x,y){
   bl$("id_div_4_cmd").onclick = function(){
     var b = this;
     if(!this.cmd){
-      this.cmd = blo0.blMDiv(d4b, d4b.id + "cmd","cmd",450,-50,330,50,blGrey[0]);
-      this.cmd.v = blo0.blDiv(this.cmd, this.cmd.id + "v",blGrey[5]);
-      blo0.blShowObj2Div(this.cmd.v, new _cmdClass(d4b));
-
-      if(bl$("blrCmd1")){bl$("blrCmd1").click();} 
-      if(bl$("blrCmd2")){bl$("blrCmd2").click();} 
-
+      this.cmd = blo0.blMDiv(d4b, d4b.id + "cmd","cmd",520,-50,330,50,blGrey[0]);
+      this.cmd.v = blo0.blDiv(this.cmd,  "id_div_4_c7p1" ,blGrey[5]);
+      blo0.blScript("id_script_4_c7p1.js","c7p1.js"); 
       this.n = 1;
     }
     else{
@@ -1615,48 +1615,6 @@ var _run	= function(id,x,y){
       b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];   
     }
   }
-
 }
-function _cmdClass(_o){        
-    this.bll0=  "<div id = 'id_div_4__cmdClass' title = 'title: _cmdClass'> _cmdClass: v0.0.15</div>";
- 
-  this.blrCmd1 = function(b,d){
-    if(!d.v){
-      d.v = blo0.blDiv(d,d.id+"v","test1",blGrey[5]);
-      d.v.b1 = blo0.blBtn( d.v,"id_4_Go", "Go",blColor[2]);
-      d.v.b1.onclick = function(){ 
-        var ta = bl$("id_4_ta_SendMsg");
-        ta.value = "cc1:" + _o.board.pos.toFen() + ";";
-      }
-    }
-    _on_off_div(b,d); 
-    b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 
-  }
-  this.blline = "----";
-  this.blrCmd2 = function(b,d){
-    if(!d.v){
-      d.v = blo0.blDiv(d,d.id+"v","test1",blGrey[5]);
-      d.v.b1 = blo0.blBtn( d.v, "id_4_Get","Get",blColor[2]);
-
-      d.v.b1.onclick = function(){
-        var ta = bl$("id_4_ta_ShowMsg"); 
-        var ta = bl$("id_4_ta_showMsg");
-
-        var a = ta.value;
-        var b = a.split("cc1:");
-        var c = b[b.length-1]; 
-        var d = c.split(";");
-        var e = d[0];       
-
-        _o.board.pos.fromFen(e);
-        _o.board.flushBoard();
-      }
-
-    }
-    _on_off_div(b,d); 
-    b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
-
-  }
-}
 _run("id_4_div_c7",100,100);  

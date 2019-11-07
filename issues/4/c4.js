@@ -1,5 +1,7 @@
 //i4c4
-var s= "v0.0.58 "; 
+ 
+var s= "chat_v0.0.111 "; 
+ 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c4.js'"
 s += " style='color:blue;'";		s +=">"; s += "c4.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c4.js'"
@@ -8,6 +10,21 @@ s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c4Test
 s += " style='color:brown;'";		s +=">"; s += "c4Test.html";
 
 var md = blo0.blDiv(document.body, "div_ID_4_I4C4", s ,blGrey[0]);  
+md.addTimerUser = function(o){
+		if(!md.timerUsers) md.timerUsers = [];
+		if(o) md.timerUsers.push(o);
+}
+
+md.timer2Users = function(_u){
+		if(md.timerUsers){
+			for(i in md.timerUsers){
+				if(md.timerUsers[i].fTimer){
+					md.timerUsers[i].fTimer(_u);
+				}
+			}
+		}
+}
+
 if(!md.run){
     md.run = true; 
 	var style ="position: absolute;";
@@ -183,6 +200,7 @@ if(!md.run){
 	 function readTimer(){
 		readMsg();
 	    md.v.ta.value = allMsg; 
+	    md.timer2Users(md.vLogin.ta.value);
 	 }
 	
 	var allMsg="";
@@ -237,9 +255,9 @@ if(!md.run){
 			
 			var btnJS = blo0.blBtn(oTd, parentDiv.id+"btnJS"+index,index,blGrey[2]);
 			btnJS.onclick = function(_txt){
-			return function(){
-			eval( _txt);
-			}
+				return function(){
+					eval( _txt);
+				}
 			}(a);
 			var oA = blo0.blLink(oTd, parentDiv.id+"blLink"+index,"Delete",'javascript:;',blGrey[0]);
 			oA.onclick = function(){
