@@ -1,6 +1,6 @@
 //i4c4
  
-var s= "chat_v0.0.111 "; 
+var s= "v0.0.112 "; 
  
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c4.js'"
 s += " style='color:blue;'";		s +=">"; s += "c4.js* ";

@@ -2,7 +2,7 @@
 // by littleflute
 // 2017/11/1 11:46am bjt
 "use strict";
-var _my_ver = "chat_v0.7.321";
+var _my_ver = "v0.7.322";
 
 function blClass ()
 {  
