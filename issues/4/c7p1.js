@@ -8,9 +8,28 @@ if(bl$("id_4_Set")){bl$("id_4_Set").click();}
 if(bl$("id_4_Set")){bl$("id_4_Set").click();} 
 
 function _cmdClass(_o){   
-  var _pSet = 0;	     
-  this.bll0=  "<div id = 'id_div_4__cmdClass' title = 'title: _cmdClass'> _cmdClass: v0.0.121</div>";
+  var _pSet   = 0;	     
+  var _rState = 0;
+  var _player = null;
+
+  var _fTest =  function(){
+          var ta = bl$("id_4_ta_showMsg");
+          var a = ta.value;
+          var b = a.split("cc1:");
+          var c = b[b.length-1]; 
+          var d = c.split(";");
+          var e = d[0];       
+          var f = e.split(",");
+          return f;
+      }
+
+  _o.board.xdFun1 = function(p){
+            var r = _rState;
+            return r;
+  };
+  this.bll0=  "<div id = 'id_div_4__cmdClass' title = 'title: _cmdClass'> _cmdClass: v0.0.214</div>";
  
+
   this.blrCmd1 = function(b,d){
     if(!d.v){
       d.v = blo0.blDiv(d,d.id+"v","test1",blGrey[5]);
@@ -55,7 +74,7 @@ function _cmdClass(_o){
         }
         else{
         	_o.board.xdSet = true; 
-        	_o.board.fSet = function(p){
+        	_o.board.SetFun = function(p){
         		_o.board.pos.squares[p] = _pSet;
         		_o.board.flushBoard();
         	};
@@ -80,7 +99,7 @@ function _cmdClass(_o){
       d.v.b1 = blo0.blBtn( d.v,"id_4_Go", "Go",blColor[2]);
       d.v.b1.onclick = function(){ 
         var ta = bl$("id_4_ta_SendMsg");
-        ta.value = "cc1:" + _o.board.pos.toFen() + ";";
+        ta.value = "cc1:" + _o.board.pos.toFen() + ",-,-;";
       }
     }
     _on_off_div(b,d); 
@@ -97,24 +116,23 @@ function _cmdClass(_o){
       d.vTimer.fTimer = function(_u){
         if(!d.vTimer.n) d.vTimer.n = 0;
         d.vTimer.v.innerHTML = _u + ":" + d.vTimer.n++;
+        if(_player==null) _player = _u;
         //d.v.b1.click();
       }
       var dChat = bl$("div_ID_4_I4C4");
       if(dChat) dChat.addTimerUser(d.vTimer);
-
       d.v.b1.onclick = function(){
         if(!this.n) this.n = 0;
-        this.innerHTML = "get:" + this.n++;
-        var ta = bl$("id_4_ta_ShowMsg"); 
-        var ta = bl$("id_4_ta_showMsg");
-
-        var a = ta.value;
-        var b = a.split("cc1:");
-        var c = b[b.length-1]; 
-        var d = c.split(";");
-        var e = d[0];       
-
-        _o.board.pos.fromFen(e);
+        this.innerHTML = "get:" + this.n++; 
+        
+        var f = _fTest();
+        var a = f[0].split(" ");
+        var b = a[1];
+        
+        if(f[1]==_player && b=="w") _rState = 1;
+        else if(f[2]==_player && b=="b") _rState = 1;
+        else _rState = 0;
+        _o.board.pos.fromFen(f[0]);
         _o.board.flushBoard();
       }
 

@@ -2,7 +2,7 @@
 // by littleflute
 // 2017/11/1 11:46am bjt
 "use strict";
-var _my_ver = "v0.7.322";
+var _my_ver = "chatcchess_v0.7.324";
 
 function blClass ()
 {  
@@ -1341,11 +1341,14 @@ xdBoardClass.prototype.flushBoard = function() {
 
 xdBoardClass.prototype.clickSquare = function(sq_) {
   if(this.xdSet){     
-    if(this.fSet) this.fSet(sq_);
+    if(this.SetFun) this.SetFun(sq_);
     return;
   }
+  if(this.xdFun1){     
+    var r = this.xdFun1(sq_);
+    if(0==r)  return;
+  }
   if (this.busy || this.result != RESULT_UNKNOWN) {
-
     return;
   } 
   var sq = sq_;//this.flipped(sq_);
