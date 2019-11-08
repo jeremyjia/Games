@@ -27,7 +27,7 @@ function _cmdClass(_o){
             var r = _rState;
             return r;
   };
-  this.bll0=  "<div id = 'id_div_4__cmdClass' title = 'title: _cmdClass'> _cmdClass: v0.0.214</div>";
+  this.bll0=  "<div id = 'id_div_4__cmdClass' title = 'title: _cmdClass'> _cmdClass: v0.0.224</div>";
  
 
   this.blrCmd1 = function(b,d){
@@ -110,8 +110,14 @@ function _cmdClass(_o){
   this.blrCmd2 = function(b,d){
     if(!d.v){
       d.v = blo0.blDiv(d,d.id+"v","test1",blGrey[5]);
-      d.v.b1 = blo0.blBtn( d.v, "id_4_Get","Get",blColor[2]);
-      d.vTimer = blo0.blDiv(d,d.id+"vTimer","vTimer",blGrey[3]);
+      d.v.btnGet = blo0.blBtn( d.v, "id_4_Get","Get",blColor[2]);
+      d.vTimer = blo0.blDiv(d,d.id+"vTimer","vTimer",blGrey[3]);       
+      var v2 =  blo0.blDiv(d.vTimer,d.vTimer.id+"v2","v2",blGrey[3]);
+
+     //*  
+      v2.btnW = blo0.blBtn(v2, v2.id + "btnW","btnW","#f4bec7");
+      v2.btnB = blo0.blBtn(v2, v2.id + "btnB","btnB","lightgreen");
+      //*/
       d.vTimer.v = blo0.blDiv(d.vTimer, "id_timerDbg","timerDbg",blGrey[5]);
       d.vTimer.fTimer = function(_u){
         if(!d.vTimer.n) d.vTimer.n = 0;
@@ -121,11 +127,13 @@ function _cmdClass(_o){
       }
       var dChat = bl$("div_ID_4_I4C4");
       if(dChat) dChat.addTimerUser(d.vTimer);
-      d.v.b1.onclick = function(){
+      d.v.btnGet.onclick = function(){
         if(!this.n) this.n = 0;
         this.innerHTML = "get:" + this.n++; 
-        
+
         var f = _fTest();
+        _BoardState(v2,v2.btnW,v2.btnB,f[0],f[1],f[2]);
+
         var a = f[0].split(" ");
         var b = a[1];
         
@@ -140,4 +148,26 @@ function _cmdClass(_o){
     _on_off_div(b,d); 
     b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
   }
+}
+function _BoardState(v,btnW,btnB,fen,w,b){ 
+  btnW.innerHTML = w;
+  btnB.innerHTML = b;
+  if(w=="-"){
+    btnW.style.background = "grey";    
+  }
+  else{
+  }
+  if(b=="-"){
+    btnB.style.background = "grey";    
+  }
+  else{
+  }
+  
+  //*
+  var i = fen.split(" ");
+  var j = i[1]; 
+  if(j=="w") v.style.background = "#f4bec7";
+  else if(j=="b") v.style.background = "lightgreen";
+  else v.style.background = "grey";
+  //*/
 }
