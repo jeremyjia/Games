@@ -1,4 +1,4 @@
-# Assignment 3
+# Assignment 3 [v0.0.2](https://github.com/jeremyjia/Games/edit/master/issues/53/README.md) [i.html](i.html)
 
 **Assignment and Code Blog Entry due at 11:59pm on Monday 11/11/2019**
 
