@@ -2,7 +2,7 @@
 // by littleflute
 // 2017/11/1 11:46am bjt
 "use strict";
-var _my_ver = "v0.7.325";
+var _my_ver = "chatchess_v0.7.333";
 
 function blClass ()
 {  
@@ -1368,6 +1368,9 @@ xdBoardClass.prototype.clickSquare = function(sq_) {
   } 
   else if (this.sqSelected > 0) { 
     this.addMove(MOVE(this.sqSelected, sq), false);
+    if(this.xdFun2){     
+       this.xdFun2(MOVE(this.sqSelected, sq)); 
+    }
   }
 }
 
@@ -1606,7 +1609,8 @@ var _run	= function(id,x,y){
     if(!this.cmd){
       this.cmd = blo0.blMDiv(d4b, d4b.id + "cmd","cmd",520,-50,330,50,blGrey[0]);
       this.cmd.v = blo0.blDiv(this.cmd,  "id_div_4_c7p1" ,blGrey[5]);
-      blo0.blScript("id_script_4_c7p1.js","https://jeremyjia.github.io/Games/issues/4/c7p1.js"); 
+    //  blo0.blScript("id_script_4_c7p1.js","https://jeremyjia.github.io/Games/issues/4/c7p1.js"); 
+      blo0.blScript("id_script_4_c7p1.js","c7p1.js"); 
       this.n = 1;
     }
     else{

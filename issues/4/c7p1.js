@@ -11,6 +11,7 @@ function _cmdClass(_o){
   var _pSet   = 0;	     
   var _rState = 0;
   var _player = null;
+  var _v2      = null;
 
   var _fTest =  function(){
           var ta = bl$("id_4_ta_showMsg");
@@ -27,7 +28,18 @@ function _cmdClass(_o){
             var r = _rState;
             return r;
   };
-  this.bll0=  "<div id = 'id_div_4__cmdClass' title = 'title: _cmdClass'> _cmdClass: v0.0.224</div>";
+  _o.board.xdFun2 = function(p){
+        var ta = bl$("id_4_ta_SendMsg");
+        var s= "cc1:" + _o.board.pos.toFen();
+        s += ",";
+        s += _v2.btnW.innerHTML;
+        s += ",";
+        s += _v2.btnB.innerHTML;
+        s += ";";
+        ta.value = s;
+        var btn = bl$("id_4_btnSend"); btn.click();
+  };
+  this.bll0=  "<div id = 'id_div_4__cmdClass' title = 'title: _cmdClass'> _cmdClass: v0.0.252</div>";
  
 
   this.blrCmd1 = function(b,d){
@@ -95,12 +107,6 @@ function _cmdClass(_o){
         _o.board.pos.fromFen(fen);
         _o.board.flushBoard();
       }
-
-      d.v.b1 = blo0.blBtn( d.v,"id_4_Go", "Go",blColor[2]);
-      d.v.b1.onclick = function(){ 
-        var ta = bl$("id_4_ta_SendMsg");
-        ta.value = "cc1:" + _o.board.pos.toFen() + ",-,-;";
-      }
     }
     _on_off_div(b,d); 
     b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
@@ -112,11 +118,11 @@ function _cmdClass(_o){
       d.v = blo0.blDiv(d,d.id+"v","test1",blGrey[5]);
       d.v.btnGet = blo0.blBtn( d.v, "id_4_Get","Get",blColor[2]);
       d.vTimer = blo0.blDiv(d,d.id+"vTimer","vTimer",blGrey[3]);       
-      var v2 =  blo0.blDiv(d.vTimer,d.vTimer.id+"v2","v2",blGrey[3]);
+      _v2 =  blo0.blDiv(d.vTimer,d.vTimer.id+"v2","v2",blGrey[3]);
 
      //*  
-      v2.btnW = blo0.blBtn(v2, v2.id + "btnW","btnW","#f4bec7");
-      v2.btnB = blo0.blBtn(v2, v2.id + "btnB","btnB","lightgreen");
+      _v2.btnW = blo0.blBtn(_v2, _v2.id + "btnW","btnW","#f4bec7");
+      _v2.btnB = blo0.blBtn(_v2, _v2.id + "btnB","btnB","lightgreen");
       //*/
       d.vTimer.v = blo0.blDiv(d.vTimer, "id_timerDbg","timerDbg",blGrey[5]);
       d.vTimer.fTimer = function(_u){
@@ -132,7 +138,7 @@ function _cmdClass(_o){
         this.innerHTML = "get:" + this.n++; 
 
         var f = _fTest();
-        _BoardState(v2,v2.btnW,v2.btnB,f[0],f[1],f[2]);
+        _BoardState(_v2,_v2.btnW,_v2.btnB,f[0],f[1],f[2]);
 
         var a = f[0].split(" ");
         var b = a[1];
