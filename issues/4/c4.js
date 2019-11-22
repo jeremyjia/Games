@@ -1,6 +1,6 @@
 //i4c4
  
-var s= "v0.0.112 "; 
+var s= "chatchess_v0.0.113 "; 
  
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c4.js'"
 s += " style='color:blue;'";		s +=">"; s += "c4.js* ";
@@ -73,7 +73,7 @@ if(!md.run){
 	md.v.ta1.style.width="98%"; 
 	md.v.ta1.style.height="40px";
 	
-	md.v.btnSend = blo0.blBtn(md.v,md.v.id+"btnSend","SendMsg",blColor[4]);
+	md.v.btnSend = blo0.blBtn(md.v,"id_4_btnSend","SendMsg",blColor[4]);
 	md.v.btnClear = blo0.blBtn(md.v,md.v.id+"btnClear","ClearMsg",blColor[4]);
 	
 	md.v.btnSend.onclick= function(){	
