@@ -1,6 +1,6 @@
 //i4c4
  
-var s= "chatchess_v0.0.113 "; 
+var s= "v0.0.114 "; 
  
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c4.js'"
 s += " style='color:blue;'";		s +=">"; s += "c4.js* ";
