@@ -39,7 +39,7 @@ function _cmdClass(_o){
         ta.value = s;
         var btn = bl$("id_4_btnSend"); btn.click();
   };
-  this.bll0=  "<div id = 'id_div_4__cmdClass' title = 'title: _cmdClass'> _cmdClass: v0.0.252</div>";
+  this.bll0=  "<div id = 'id_div_4__cmdClass' title = 'title: _cmdClass'> _cmdClass: v0.0.255</div>";
  
 
   this.blrCmd1 = function(b,d){
@@ -107,6 +107,10 @@ function _cmdClass(_o){
         _o.board.pos.fromFen(fen);
         _o.board.flushBoard();
       }
+      d.v.btnSend = blo0.blBtn( d.vSet,"id_4_Send", "Send",blColor[6]);
+      d.v.btnSend.onclick = function(){  
+        _o.board.xdFun2();
+      }
     }
     _on_off_div(b,d); 
     b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
@@ -115,8 +119,7 @@ function _cmdClass(_o){
   this.blline = "----";
   this.blrCmd2 = function(b,d){
     if(!d.v){
-      d.v = blo0.blDiv(d,d.id+"v","test1",blGrey[5]);
-      d.v.btnGet = blo0.blBtn( d.v, "id_4_Get","Get",blColor[2]);
+      d.v = blo0.blDiv(d,d.id+"v","test1",blGrey[5]); 
       d.vTimer = blo0.blDiv(d,d.id+"vTimer","vTimer",blGrey[3]);       
       _v2 =  blo0.blDiv(d.vTimer,d.vTimer.id+"v2","v2",blGrey[3]);
 
@@ -127,13 +130,19 @@ function _cmdClass(_o){
       d.vTimer.v = blo0.blDiv(d.vTimer, "id_timerDbg","timerDbg",blGrey[5]);
       d.vTimer.fTimer = function(_u){
         if(!d.vTimer.n) d.vTimer.n = 0;
-        d.vTimer.v.innerHTML = _u + ":" + d.vTimer.n++;
+        var fen1 = _o.board.pos.toFen();
+
+        d.vTimer.v.innerHTML = _u + ":" + d.vTimer.n++ + ":" + fen1;
         if(_player==null) _player = _u;
-        //d.v.b1.click();
+        var f = _fTest();
+        var newFEN = f[0];
+        if(fen1!=newFEN){
+            d.v.myGet();
+        }
       }
       var dChat = bl$("div_ID_4_I4C4");
       if(dChat) dChat.addTimerUser(d.vTimer);
-      d.v.btnGet.onclick = function(){
+      d.v.myGet = function(){
         if(!this.n) this.n = 0;
         this.innerHTML = "get:" + this.n++; 
 
