@@ -80,7 +80,7 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
                 readMsg();
             }
         }, 1f, 2f);
-        //stage.setActionsRequestRendering(true);
+        stage.setActionsRequestRendering(true);
 
     }
 
@@ -169,6 +169,8 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
         int newScreenY = (int) yy;
         int x = (newScreenX - nX)/nCell;
         int y =  (newScreenY - nY)/nCell;
+
+        if (allChess[x][y]==1 || allChess[x][y] == 2) return false;
         app.log("MyTag", "touchDown: (" + x+","+y+")");
 
         if (x>NUM-1||y>NUM-1)
@@ -297,7 +299,7 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
                 allChess[i][j] = h.getInt(j);
             }
         }
-        //Gdx.graphics.requestRendering();
+        Gdx.graphics.requestRendering();
     }
 
     public static String convertArray2Json(int[][] arr) {
