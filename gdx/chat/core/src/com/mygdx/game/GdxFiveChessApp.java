@@ -315,6 +315,7 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
             {
                 sb.append(arr[i][j]+ ",");
             }
+            sb.deleteCharAt(sb.length() - 1);
             sb.append("]");
             first = false;
         }
