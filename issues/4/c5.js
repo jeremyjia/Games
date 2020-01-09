@@ -1,4 +1,4 @@
-var s = "id_mdiv_4_i4c5: v0.0.2 - ";
+var s = "id_mdiv_4_i4c5: v0.0.3 - ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c5.js'"
 s += " style='color:blue;'";	s +=">"; s += "c5.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c5.js'"
@@ -18,11 +18,15 @@ if(!d.v1){
 	style += "width: 540px";
 	d.style =style;
 	
+	var userName = generateUserName(10);
+	
     d.vToolBar = blo0.blDiv(d, d.id + "vToolBar ", 'vToolBar: ', blGrey[1]);
     d.vToolBar.btn1 = blo0.blBtn(d. vToolBar, d.vToolBar.id + "btn1 ", 'Begin New', blGrey[1]);
     d.vToolBar.btn1.onclick = function(){
 	    initMap();
     }
+	d.vToolBar.div = blo0.blDiv(d.vToolBar, d.vToolBar.id + "div1", "user", blGrey[1]);
+	d.vToolBar.div.innerHTML="Login User: "+userName;
 	d.vStatusBar = blo0.blDiv(d,d.id+"vStatusBar","turn",blColor[2]);
 	d.vStatusBar.innerHTML ="Turn Black";
 	blo0.blMakeDivMovable(d);
@@ -41,8 +45,8 @@ if(!d.v1){
 	var allMessage="";
 	var isBlackRun=1;
 	var curX=-1;
-	var curY=-1;
-	
+	var curY=-1;	
+	var user="";
 	var cellMatrix = [
 	[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 	[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -93,6 +97,7 @@ if(!d.v1){
 			if(allMessage!="")
 			{
 			   isBlackRun=JSON.parse(allMessage).isBlackRunKey;
+			   user=JSON.parse(allMessage).user;
 			   var pos=JSON.parse(allMessage).curPosKey;
 			   curX = pos.split(",")[0];
 			   curY = pos.split(",")[1];
@@ -100,13 +105,24 @@ if(!d.v1){
 			   var array = jsonToArray(arrData);
 	           fillData(array);
 			
-				if(isBlackRun){			  
-				  d.vStatusBar.innerHTML ="Turn Black";
+				if(isBlackRun){
+				  if(user==""){
+					 d.vStatusBar.innerHTML ="Turn Black"; 
+				  }	else{
+					  var msg="\""+user+"\""+" Done---Now Turn Black";
+					  d.vStatusBar.innerHTML = msg;
+				  }						  
 				}
 				else{
-				  d.vStatusBar.innerHTML ="Turn White";
+				  if(user==""){
+					 d.vStatusBar.innerHTML ="Turn White"; 
+				  }	else{
+					  var msg="\""+user+"\""+" Done---Now Turn White";
+					  d.vStatusBar.innerHTML = msg;
+				  
 				}
-		   }
+		       }
+			}
 		   
 	   },1000);
 	   
@@ -198,7 +214,7 @@ if(!d.v1){
 		 isBlackRun=1;
 		 curX=-1;
 		 curY=-1;
-		 SaveMap(zeroMatrix);
+		 SaveMap(zeroMatrix,"",0,0);
 	 }
 
             //Right button click on Canvas
@@ -231,7 +247,7 @@ if(!d.v1){
 			  }
 			  
               isBlackRun=!isBlackRun;		  
-			  SaveMap(cellMatrix,x,y);
+			  SaveMap(cellMatrix,userName,x,y);
               			  
 			}
 			
@@ -246,13 +262,14 @@ if(!d.v1){
 			   return objHttpRequest;
 			}
 			//Save data to Server
-			function SaveMap(array, X, Y)
+			function SaveMap(array, u, X, Y)
 			{
 			   var jsonArrayData = arrayToJson(array);
 			   var curPos = X+","+Y;
 			   var jsonAll= {
 				"isBlackRunKey": isBlackRun,
 				"curPosKey": curPos,
+				"user":u,
 				"arrayDataKey":jsonArrayData
 				};
 				var bodyData = JSON.stringify(jsonAll);
@@ -316,6 +333,16 @@ if(!d.v1){
 			function getToken(){		        
 		       return "f89b0eccf7"+"4c65a65513"+"60062c3e47"+"98d0df4577";
 	        }
+			
+			function generateUserName(n){
+				var str = "",
+				arr = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];		
+				for(var i=0; i<n; i++){
+					var pos = Math.round(Math.random() * (arr.length-1));
+					str += arr[pos];
+				}
+				return str;
+			}
  
 }
 _on_off_div(this,d);
