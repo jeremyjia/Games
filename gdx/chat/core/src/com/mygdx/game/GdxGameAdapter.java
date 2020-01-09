@@ -16,7 +16,7 @@ public class GdxGameAdapter extends ApplicationAdapter implements InputProcessor
 
         int number = new Random().nextInt(10);
         if (number%2 == 0){
-            app = new GdxFiveChessApp();
+            app = new GdxChatApp();
         }else{
             app = new GdxFiveChessApp();
         }
