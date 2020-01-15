@@ -2,6 +2,7 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Net;
 import com.badlogic.gdx.graphics.Camera;
@@ -29,41 +30,43 @@ import static com.badlogic.gdx.Gdx.*;
 
 public class GdxFiveChessApp extends ApplicationAdapter implements InputProcessor {
 
-    private Camera camera;
-    public SpriteBatch batch;
-    Texture img;
-    Texture dashboard;
-    boolean bPressed = false;
-    Pixmap pixmap;
+    private GdxGameAdapter parent;
 
-    Stage stage;
-    TextureRegion region;
-    Image image;
+    private Stage stage;
+    private Camera camera;
+    private SpriteBatch batch;
+    private Texture dashboard;
+    private Pixmap pixmap;
+    private TextureRegion region;
+    private Image image;
 
     private static final int NUM = 19;
     private static final int nY = 20;
     private static final int nX = 20;
     private static final int nCell = 20;
-    private  static final int nRadius = nCell/2-1;
+    private static final int nRadius = nCell/2-1;
     private int[][] allChess = new int[NUM][NUM];
 
-    int nWidth, nHeight;
-    boolean isBlackRun;
-    String strMsg;
+    private int nWidth, nHeight;
+    private boolean isBlackRun;
+    private String strMsg;
     private Timer timer;
-    String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526778839?access_token="+getToken();
+    private String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526778839?access_token="+PBZUtils.getToken();
 
+
+    public void init(GdxGameAdapter p) {
+        this.parent = p;
+        create();
+    }
     @Override
     public void create() {
         batch = new SpriteBatch();
-        img = new Texture("badlogic.jpg");
         camera = new OrthographicCamera();
         stage = new Stage(new StretchViewport(640, 480, camera));
 
         pixmap = new Pixmap(640, 480, Pixmap.Format.RGBA8888);
-
         dashboard = new Texture(pixmap);
-        input.setInputProcessor(this);
+        Gdx.input.setInputProcessor(this);
         region = new TextureRegion(dashboard, 640, 480);
         image = new Image(region);
         stage.addActor(image);
@@ -82,6 +85,12 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
         }, 1f, 2f);
         stage.setActionsRequestRendering(true);
 
+        parent.setButtonBar(stage);
+        InputMultiplexer inputMultiplexer = new InputMultiplexer();
+        inputMultiplexer.addProcessor(stage);
+        inputMultiplexer.addProcessor(this);
+        Gdx.input.setInputProcessor(inputMultiplexer);
+
     }
 
     @Override
@@ -89,10 +98,6 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
         gl.glClearColor(0, 1, 0, 1);
         gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
-        if(bPressed)
-        {
-            //batch.draw(img, X, Y);
-        }
         pixmap.setColor(Color.GRAY);
         pixmap.fillRectangle(nX,nY,nCell*NUM+5,nCell*NUM+5);
         dashboard.draw(pixmap, 0 ,0);
@@ -119,7 +124,6 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
             }
         }
 
-        //batch.draw(dashboard, 0, 0);
         stage.act();
         stage.draw();
         batch.end();
@@ -130,7 +134,6 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
     public void dispose() {
         pixmap.dispose();
         batch.dispose();
-        img.dispose();
         timer.stop();
     }
 
@@ -162,7 +165,6 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        bPressed = true;
         float xx = (float) ((640.0/(float)nWidth)*(float)screenX);
         float yy = (float) ((480.0/(float)nHeight)*(float)screenY);
         int newScreenX = (int) xx;
@@ -170,11 +172,11 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
         int x = (newScreenX - nX)/nCell;
         int y =  (newScreenY - nY)/nCell;
 
-        if (allChess[x][y]==1 || allChess[x][y] == 2) return false;
-        app.log("MyTag", "touchDown: (" + x+","+y+")");
-
         if (x>NUM-1||y>NUM-1)
             return false;
+
+        if (allChess[x][y]==1 || allChess[x][y] == 2) return false;
+        app.log("MyTag", "touchDown: (" + x+","+y+")");
 
         if (isBlackRun){
             allChess[x][y]=1;
@@ -186,11 +188,11 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
 
         String curPos = x+","+y;
         String user = "Jeremyjia"; //Hard code
-        String arr = convertArray2Json(allChess);
+        String arr = PBZUtils.convertArray2Json(allChess);
         String json = createJsonByMap(isBlackRun, curPos,user,arr);
         System.out.println("JSON:"+json);
         String newJson = StringEscapeUtils.escapeJava(json);
-        sendMsg(newJson);
+        PBZUtils.sendMessage(url, newJson);
 
         return false;
     }
@@ -213,10 +215,6 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
     @Override
     public boolean scrolled(int amount) {
         return false;
-    }
-
-    private String getToken() {
-        return "f89b0eccf7" + "4c65a65513" + "60062c3e47" + "98d0df4577";
     }
 
     private void readMsg() {
@@ -249,33 +247,6 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
         });
     }
 
-    private void sendMsg(String str) {
-
-        if (!str.trim().equals("")) {
-            System.out.println("Will send message " + str);
-            String requestContent = "{\"body\":\"" + str + "\"}";
-            Net.HttpRequest httpRequest = new Net.HttpRequest(Net.HttpMethods.POST);
-            httpRequest.setUrl(url);
-            httpRequest.setHeader("Content-Type", "text/plain");
-            httpRequest.setHeader("Cache-Control", "no-store");
-            httpRequest.setHeader("Cache-Control", "no-cache");
-            httpRequest.setContent(requestContent);
-
-            Gdx.net.sendHttpRequest(httpRequest, new Net.HttpResponseListener() {
-                public void handleHttpResponse(Net.HttpResponse httpResponse) {
-                    int statusCode = httpResponse.getStatus().getStatusCode();
-                    System.out.println("sendMsg() HTTP Request status: " + statusCode);
-                }
-                public void failed(Throwable t) {
-                    System.out.println("HTTP request failed!"+t.getMessage());
-                }
-                @Override
-                public void cancelled() {
-                }
-            });
-        }
-    }
-
     private void getChessData(String strMsg) {
         String jsonString = StringEscapeUtils.unescapeJson(strMsg);
         JSONObject jsonObj = new JSONObject(jsonString);
@@ -302,28 +273,7 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
         Gdx.graphics.requestRendering();
     }
 
-    public static String convertArray2Json(int[][] arr) {
-        StringBuffer sb = new StringBuffer();
-        boolean first = true;
-        sb.append("[");
-        for (int i = 0; i < arr.length; i++) {
-            if (!first) {
-                sb.append(",");
-            }
-            sb.append("[");
-            for (int j=0;j<arr.length;j++)
-            {
-                sb.append(arr[i][j]+ ",");
-            }
-            sb.deleteCharAt(sb.length() - 1);
-            sb.append("]");
-            first = false;
-        }
-        sb.append("]");
-        return sb.toString();
-    }
-
-    public static String createJsonByMap(boolean isBlackRun, String curPos, String user, String arr) {
+    private String createJsonByMap(boolean isBlackRun, String curPos, String user, String arr) {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("isBlackRunKey",isBlackRun);
         map.put("curPosKey", curPos);
