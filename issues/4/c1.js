@@ -1,5 +1,5 @@
 //i4c1
-var s= "v0.1. 25 ";
+var s= "v0.1. 31 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c1.js'"
 s += " style='color:blue;'";		s +=">"; s += "c1.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c1.js'"
