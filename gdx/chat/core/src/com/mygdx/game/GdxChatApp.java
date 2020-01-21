@@ -1,8 +1,6 @@
 package com.mygdx.game;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -23,7 +21,7 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 
-public class GdxChatApp extends ApplicationAdapter implements InputProcessor {
+public class GdxChatApp implements IGdxGame {
 
     public  Stage stage;
     private Camera camera;
@@ -48,15 +46,8 @@ public class GdxChatApp extends ApplicationAdapter implements InputProcessor {
     private String userName;
     private static final String version = "v:0.0.5";
 
-    private GdxGameAdapter parent;
-
-    public void init(GdxGameAdapter p) {
-        this.parent = p;
-        create();
-    }
-
+    @Override
     public void create() {
-
         camera = new OrthographicCamera();
         stage = new Stage(new StretchViewport(640, 480, camera));
 
@@ -163,8 +154,12 @@ public class GdxChatApp extends ApplicationAdapter implements InputProcessor {
             }
         }, 1f, 3f);
 
-        parent.setButtonBar(stage);
         Gdx.input.setInputProcessor(stage);
+
+    }
+
+    @Override
+    public void resize(int width, int height) {
 
     }
 
@@ -183,6 +178,7 @@ public class GdxChatApp extends ApplicationAdapter implements InputProcessor {
         PBZUtils.sendMessage(url,s);
     }
 
+    @Override
     public void render() {
         Gdx.gl.glClearColor(66 / 255f, 55 / 255f, 88 / 255f, 0.5f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -195,7 +191,17 @@ public class GdxChatApp extends ApplicationAdapter implements InputProcessor {
         batch.end();
     }
 
+    @Override
+    public void pause() {
 
+    }
+
+    @Override
+    public void resume() {
+
+    }
+
+    @Override
     public void dispose() {
         pixmapArea.dispose();
         pixmapField.dispose();
@@ -205,6 +211,16 @@ public class GdxChatApp extends ApplicationAdapter implements InputProcessor {
         batch.dispose();
         font.dispose();
         fontFromFile.dispose();
+    }
+
+    @Override
+    public void notifyBefore() {
+      timer.stop();
+    }
+
+    @Override
+    public void notifyAfter() {
+      timer.start();
     }
 
     @Override
@@ -245,5 +261,11 @@ public class GdxChatApp extends ApplicationAdapter implements InputProcessor {
     @Override
     public boolean scrolled(int amount) {
         return false;
+    }
+
+    @Override
+    public void initGame(GdxGameAdapter adapter) {
+        create();
+        adapter.registerStage(stage);
     }
 }

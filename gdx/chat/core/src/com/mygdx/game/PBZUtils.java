@@ -3,6 +3,8 @@ package com.mygdx.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Net;
 
+import org.json.JSONArray;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -55,6 +57,16 @@ public class PBZUtils {
         }
         sb.append("]");
         return sb.toString();
+    }
+
+    public static String[] toStringArray(JSONArray array) {
+        if(array == null)
+            return null;
+        String[] arr = new String[array.length()];
+        for(int i=0; i<arr.length; i++) {
+            arr[i] = array.optString(i);
+        }
+        return arr;
     }
 
     public static String readMessage(String url) {

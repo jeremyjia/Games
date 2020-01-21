@@ -4,6 +4,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.Net;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -18,22 +19,45 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GdxGameAdapter extends ApplicationAdapter implements InputProcessor {
 
-    private ApplicationAdapter  app = null;  //Current App handle
+    private IGdxGame  app = null;  //Current App instance
     private Pixmap pixMapBtn;
     private ButtonGroup buttonGroup = new ButtonGroup();
     private InputMultiplexer inputMultiplexer = new InputMultiplexer();
-    private List<ApplicationAdapter> allApps = new ArrayList<ApplicationAdapter>();
+    private List<IGdxGame> allApps = new ArrayList<IGdxGame>();
     private List<Stage> allStages = new ArrayList<Stage>();
-    private String appNames[] = {"Chat","FiveChess"};
-
+    private Map<String, Integer> appMap = new HashMap<String, Integer>();
+    private String appInfoUrl = "https://api.github.com/repos/jeremyjia/Games/issues/comments/576489012?access_token="+PBZUtils.getToken();
+    private String appClassNames[] = {};  //Getting the app class names from Github Server
 
     @Override
     public void create () {
+
+        getAppInfoFromServer();
+        int nWaitSeconds = 15;
+        while (appClassNames.length == 0 && --nWaitSeconds>0){
+            System.out.println("Waiting for loading app info from Github Server");
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        if (nWaitSeconds <=0){
+            System.out.println("Error:getAppInfoFromServer");
+            Gdx.app.exit();
+        }
 
         pixMapBtn = new Pixmap(20, 20, Pixmap.Format.RGBA4444);
         pixMapBtn.setColor(Color.VIOLET);
@@ -44,10 +68,9 @@ public class GdxGameAdapter extends ApplicationAdapter implements InputProcessor
                 new BitmapFont());
 
         buttonGroup.setMaxCheckCount(1);
-
-        for (int i = 0; i < appNames.length;i++){
-            String name = appNames[i];
-            String num = String.valueOf(i);
+        for (int i = 0; i < appClassNames.length;i++){
+            String name = appClassNames[i];
+            String num = String.valueOf(i+1);
             TextButton textBtn = new TextButton(num, btnStyle);
             textBtn.setName(name);
             textBtn.setPosition(20+i*22, 10);
@@ -55,43 +78,38 @@ public class GdxGameAdapter extends ApplicationAdapter implements InputProcessor
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     String appName = event.getListenerActor().getName();
-                    if (appName.equalsIgnoreCase("Chat")){
-                        System.out.println(appName);
-                        app = allApps.get(0);
-                        Stage stage = allStages.get(0);
-
-                        changeStage(stage);
-                        Gdx.input.setInputProcessor(stage);
-
-                    }else if (appName.equalsIgnoreCase("FiveChess")){
-                        System.out.println(appName);
-                        app = allApps.get(1);
-                        Stage stage = allStages.get(1);
-
-                        changeStage(stage);
-                        inputMultiplexer.clear();
-                        inputMultiplexer.addProcessor(stage);
-                        inputMultiplexer.addProcessor((InputProcessor) app);
-                        Gdx.input.setInputProcessor(inputMultiplexer);
-
-                    }else{
-
+                    int index = appMap.get(appName);
+                    System.out.println("Clicked:("+appName+","+index+")");
+                    if (index >= allApps.size()) {
+                        return;
                     }
+
+                    if (app == allApps.get(index)){
+                        return;
+                    }
+                    app.notifyBefore();
+                    app = allApps.get(index);
+                    app.notifyAfter();
+
+                    Stage stage = allStages.get(index);
+                    addBtnBarOnStage(stage);
+                    inputMultiplexer.clear();
+                    inputMultiplexer.addProcessor(stage);
+                    inputMultiplexer.addProcessor(app);
+                    Gdx.input.setInputProcessor(inputMultiplexer);
                 }
             });
 
             buttonGroup.add(textBtn);
+            appMap.put(name, new Integer(i));
+            IGdxGame instance = getAppInstance(name);
+            if (instance == null){
+                System.out.println("Class name error: "+name);
+                continue;
+            }
+            allApps.add(instance);
+            this.app = instance;
         }
-
-        GdxChatApp one = new GdxChatApp();
-        one.init(this);
-        allApps.add(one);
-
-        GdxFiveChessApp two = new GdxFiveChessApp();
-        two.init(this);
-        allApps.add(two);
-
-        app = two;
 
     }
 
@@ -105,59 +123,116 @@ public class GdxGameAdapter extends ApplicationAdapter implements InputProcessor
     @Override
     public void dispose () {
         pixMapBtn.dispose();
-        app.dispose();
+        for (IGdxGame gameInstance:allApps){
+            gameInstance.dispose();
+        }
     }
 
     @Override
     public boolean keyDown(int keycode) {
-        return ((InputProcessor)app).keyDown(keycode);
+        return app.keyDown(keycode);
     }
 
     @Override
     public boolean keyUp(int keycode) {
-        return ((InputProcessor)app).keyUp(keycode);
+        return app.keyUp(keycode);
     }
 
     @Override
     public boolean keyTyped(char character) {
-        return ((InputProcessor)app).keyTyped(character);
+        return app.keyTyped(character);
     }
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        return ((InputProcessor)app).touchDown(screenX, screenY, pointer, button);
+        return app.touchDown(screenX, screenY, pointer, button);
     }
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        return ((InputProcessor)app).touchUp(screenX, screenY, pointer, button);
+        return app.touchUp(screenX, screenY, pointer, button);
     }
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
-        return ((InputProcessor)app).touchDragged(screenX, screenY, pointer);
+        return app.touchDragged(screenX, screenY, pointer);
     }
 
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
-        return ((InputProcessor)app).mouseMoved(screenX, screenY);
+        return app.mouseMoved(screenX, screenY);
     }
 
     @Override
     public boolean scrolled(int amount) {
-        return ((InputProcessor)app).scrolled(amount);
+        return app.scrolled(amount);
     }
 
-    public void setButtonBar(Stage stage){
+    public void registerStage(Stage stage){
         allStages.add(stage);
-        changeStage(stage);
+        addBtnBarOnStage(stage);
     }
 
-    public void changeStage(Stage stage){
+    private void addBtnBarOnStage(Stage stage){
         Array<TextButton> allBtn = buttonGroup.getButtons();
         for (TextButton btn:allBtn)
         {
             stage.addActor(btn);
         }
+    }
+
+    private IGdxGame getAppInstance(String className){
+        Object myApp = null;
+        try
+        {
+            Class<?> appClass = Class.forName("com.mygdx.game."+className);
+            myApp = appClass.newInstance();
+            Method initMethod = appClass.getDeclaredMethod("initGame", GdxGameAdapter.class);
+            initMethod.setAccessible(true);
+            initMethod.invoke(myApp, this);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return null;
+        }
+        return (IGdxGame) myApp;
+    }
+
+    private void getAppInfoFromServer(){
+        Net.HttpRequest httpRequest = new Net.HttpRequest(Net.HttpMethods.GET);
+        httpRequest.setUrl(appInfoUrl);
+        httpRequest.setHeader("Content-Type", "text/plain");
+        httpRequest.setHeader("charset", "UTF-8");
+        httpRequest.setHeader("Cache-Control", "no-store");
+        httpRequest.setHeader("Cache-Control", "no-cache");
+        httpRequest.setContent(null);
+
+        Gdx.net.sendHttpRequest(httpRequest, new Net.HttpResponseListener() {
+            public void handleHttpResponse(Net.HttpResponse httpResponse) {
+                int statusCode = httpResponse.getStatus().getStatusCode();
+                System.out.println("getAppInfoFromServer() HTTP Request status: " + statusCode);
+                String response = httpResponse.getResultAsString();
+                int i = response.indexOf("body");
+                if (i != -1) {
+                    String sc = response.substring(i + 7, response.length() - 2);
+                    String allMessage = sc.replaceAll("\\\\n", "\n");
+
+                    String jsonString = StringEscapeUtils.unescapeJson(allMessage);
+                    JSONObject jsonObj = new JSONObject(jsonString);
+                    JSONArray jsonArr = jsonObj.getJSONArray("appClassNamesKey");
+                    appClassNames = PBZUtils.toStringArray(jsonArr);
+                    for (String appName :appClassNames){
+                        System.out.println(appName);
+                    }
+                }
+            }
+            public void failed(Throwable e) {
+                System.out.println("HTTP request failed! " + e.getMessage());
+            }
+            @Override
+            public void cancelled() {
+            }
+        });
     }
 }

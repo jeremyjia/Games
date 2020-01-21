@@ -1,9 +1,7 @@
 package com.mygdx.game;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Net;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
@@ -28,9 +26,7 @@ import java.util.Map;
 import static com.badlogic.gdx.Gdx.*;
 
 
-public class GdxFiveChessApp extends ApplicationAdapter implements InputProcessor {
-
-    private GdxGameAdapter parent;
+public class GdxFiveChessApp implements IGdxGame {
 
     private Stage stage;
     private Camera camera;
@@ -53,11 +49,6 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
     private Timer timer;
     private String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526778839?access_token="+PBZUtils.getToken();
 
-
-    public void init(GdxGameAdapter p) {
-        this.parent = p;
-        create();
-    }
     @Override
     public void create() {
         batch = new SpriteBatch();
@@ -84,8 +75,6 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
             }
         }, 1f, 2f);
         stage.setActionsRequestRendering(true);
-
-        parent.setButtonBar(stage);
         InputMultiplexer inputMultiplexer = new InputMultiplexer();
         inputMultiplexer.addProcessor(stage);
         inputMultiplexer.addProcessor(this);
@@ -131,10 +120,29 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
     }
 
     @Override
+    public void pause() {
+
+    }
+
+    @Override
+    public void resume() {
+    }
+
+    @Override
     public void dispose() {
         pixmap.dispose();
         batch.dispose();
         timer.stop();
+    }
+
+    @Override
+    public void notifyBefore() {
+       timer.stop();
+    }
+
+    @Override
+    public void notifyAfter() {
+      timer.start();
     }
 
     @Override
@@ -257,7 +265,6 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
         }else if(obj instanceof Boolean){
             this.isBlackRun = ((Boolean) obj).booleanValue();
         }
-        //Boolean isBlackRun = jsonObj.getBoolean("isBlackRunKey");
         String curPosKey = jsonObj.getString("curPosKey");
         System.out.println(user+" "+isBlackRun+" "+curPosKey);
         String array = jsonObj.getString("arrayDataKey");
@@ -283,4 +290,9 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
         return jsonObj.toString();
     }
 
+    @Override
+    public void initGame(GdxGameAdapter adapter) {
+        create();
+        adapter.registerStage(stage);
+    }
 }
