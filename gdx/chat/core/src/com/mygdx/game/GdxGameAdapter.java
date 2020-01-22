@@ -4,7 +4,6 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.Net;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -83,7 +82,6 @@ public class GdxGameAdapter extends ApplicationAdapter implements InputProcessor
                     if (index >= allApps.size()) {
                         return;
                     }
-
                     if (app == allApps.get(index)){
                         return;
                     }
@@ -200,39 +198,21 @@ public class GdxGameAdapter extends ApplicationAdapter implements InputProcessor
     }
 
     private void getAppInfoFromServer(){
-        Net.HttpRequest httpRequest = new Net.HttpRequest(Net.HttpMethods.GET);
-        httpRequest.setUrl(appInfoUrl);
-        httpRequest.setHeader("Content-Type", "text/plain");
-        httpRequest.setHeader("charset", "UTF-8");
-        httpRequest.setHeader("Cache-Control", "no-store");
-        httpRequest.setHeader("Cache-Control", "no-cache");
-        httpRequest.setContent(null);
-
-        Gdx.net.sendHttpRequest(httpRequest, new Net.HttpResponseListener() {
-            public void handleHttpResponse(Net.HttpResponse httpResponse) {
-                int statusCode = httpResponse.getStatus().getStatusCode();
-                System.out.println("getAppInfoFromServer() HTTP Request status: " + statusCode);
-                String response = httpResponse.getResultAsString();
-                int i = response.indexOf("body");
-                if (i != -1) {
-                    String sc = response.substring(i + 7, response.length() - 2);
-                    String allMessage = sc.replaceAll("\\\\n", "\n");
-
-                    String jsonString = StringEscapeUtils.unescapeJson(allMessage);
-                    JSONObject jsonObj = new JSONObject(jsonString);
-                    JSONArray jsonArr = jsonObj.getJSONArray("appClassNamesKey");
-                    appClassNames = PBZUtils.toStringArray(jsonArr);
-                    for (String appName :appClassNames){
-                        System.out.println(appName);
-                    }
+        PBZUtils.readMessage(appInfoUrl, new PBZUtils.IResponseListener() {
+            @Override
+            public void notify(String message) {
+                String jsonString = StringEscapeUtils.unescapeJson(message);
+                JSONObject jsonObj = new JSONObject(jsonString);
+                JSONArray jsonArr = jsonObj.getJSONArray("appClassNamesKey");
+                appClassNames = PBZUtils.toStringArray(jsonArr);
+                for (String appName :appClassNames){
+                    System.out.println(appName);
                 }
             }
-            public void failed(Throwable e) {
-                System.out.println("HTTP request failed! " + e.getMessage());
-            }
             @Override
-            public void cancelled() {
+            public void onError(Throwable e) {
             }
         });
+
     }
 }

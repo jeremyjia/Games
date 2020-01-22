@@ -2,7 +2,6 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.Net;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -20,6 +19,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.awt.Point;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,7 +45,9 @@ public class GdxFiveChessApp implements IGdxGame {
 
     private int nWidth, nHeight;
     private boolean isBlackRun;
-    private String strMsg;
+    private Point pt = new Point();
+    private String user = "";
+    private String userDone = "";
     private Timer timer;
     private String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526778839?access_token="+PBZUtils.getToken();
 
@@ -65,8 +67,9 @@ public class GdxFiveChessApp implements IGdxGame {
         nWidth = Gdx.graphics.getWidth();
         nHeight = Gdx.graphics.getHeight();
         System.out.println(nWidth+","+nHeight);
+
+        user = PBZUtils.generateUserID();
         isBlackRun = true;
-        strMsg = "";
         timer = new Timer();
         timer.scheduleTask(new Timer.Task() {
             @Override
@@ -103,11 +106,23 @@ public class GdxFiveChessApp implements IGdxGame {
                 if (this.allChess[i][j] == 1) {
                     pixmap.setColor(Color.BLACK);
                     pixmap.fillCircle(nX+ i*nCell+nCell/2, nY+j*nCell+nCell/2,nRadius);
-                    dashboard.draw(pixmap,0,0);
 
+                    if (pt.x == i && pt.y == j)
+                    {
+                        pixmap.setColor(Color.RED);
+                        pixmap.drawRectangle(nX+ i*nCell, nY+j*nCell, nCell,nCell);
+
+                    }
+                    dashboard.draw(pixmap,0,0);
                 }else if (this.allChess[i][j] == 2){
                     pixmap.setColor(Color.WHITE);
                     pixmap.fillCircle(nX + i*nCell+nCell/2, nY+j*nCell+nCell/2,nRadius);
+
+                    if (pt.x == i && pt.y == j)
+                    {
+                        pixmap.setColor(Color.GREEN);
+                        pixmap.drawRectangle(nX+ i*nCell, nY+j*nCell, nCell,nCell);
+                    }
                     dashboard.draw(pixmap,0,0);
                 }
             }
@@ -133,16 +148,17 @@ public class GdxFiveChessApp implements IGdxGame {
         pixmap.dispose();
         batch.dispose();
         timer.stop();
+        timer.clear();
     }
 
     @Override
     public void notifyBefore() {
-       timer.stop();
+        timer.stop();
     }
 
     @Override
     public void notifyAfter() {
-      timer.start();
+        timer.start();
     }
 
     @Override
@@ -195,7 +211,6 @@ public class GdxFiveChessApp implements IGdxGame {
         isBlackRun = !isBlackRun;
 
         String curPos = x+","+y;
-        String user = "Jeremyjia"; //Hard code
         String arr = PBZUtils.convertArray2Json(allChess);
         String json = createJsonByMap(isBlackRun, curPos,user,arr);
         System.out.println("JSON:"+json);
@@ -226,31 +241,14 @@ public class GdxFiveChessApp implements IGdxGame {
     }
 
     private void readMsg() {
-        Net.HttpRequest httpRequest = new Net.HttpRequest(Net.HttpMethods.GET);
-        httpRequest.setUrl(url);
-        httpRequest.setHeader("Content-Type", "text/plain");
-        httpRequest.setHeader("charset", "UTF-8");
-        httpRequest.setHeader("Cache-Control", "no-store");
-        httpRequest.setHeader("Cache-Control", "no-cache");
-        httpRequest.setContent(null);
-
-        Gdx.net.sendHttpRequest(httpRequest, new Net.HttpResponseListener() {
-            public void handleHttpResponse(Net.HttpResponse httpResponse) {
-                int statusCode = httpResponse.getStatus().getStatusCode();
-                System.out.println("readMsg() HTTP Request status: " + statusCode);
-                String s = httpResponse.getResultAsString();
-                int i = s.indexOf("body");
-                if (i != -1) {
-                    String sc = s.substring(i + 7, s.length() - 2);
-                    strMsg = sc.replaceAll("\\\\n", "\n");
-                    getChessData(strMsg);
-                }
-            }
-            public void failed(Throwable t) {
-                System.out.println("HTTP request failed! "+t.getMessage());
-            }
+        PBZUtils.readMessage(url, new PBZUtils.IResponseListener() {
             @Override
-            public void cancelled() {
+            public void notify(String jsonString) {
+                getChessData(jsonString);
+            }
+
+            @Override
+            public void onError(Throwable e) {
             }
         });
     }
@@ -258,7 +256,7 @@ public class GdxFiveChessApp implements IGdxGame {
     private void getChessData(String strMsg) {
         String jsonString = StringEscapeUtils.unescapeJson(strMsg);
         JSONObject jsonObj = new JSONObject(jsonString);
-        String user = jsonObj.getString("user");
+        userDone = jsonObj.getString("user");
         Object obj = jsonObj.get("isBlackRunKey");
         if(obj instanceof Integer){
             this.isBlackRun = true;
@@ -266,9 +264,11 @@ public class GdxFiveChessApp implements IGdxGame {
             this.isBlackRun = ((Boolean) obj).booleanValue();
         }
         String curPosKey = jsonObj.getString("curPosKey");
-        System.out.println(user+" "+isBlackRun+" "+curPosKey);
-        String array = jsonObj.getString("arrayDataKey");
+        String[] point = curPosKey.split(",");
+        pt.x = Integer.parseInt(point[0]);
+        pt.y = Integer.parseInt(point[1]);
 
+        String array = jsonObj.getString("arrayDataKey");
         JSONArray w = new JSONArray(array);
         for(int i = 0; i < w.length(); i ++)
         {

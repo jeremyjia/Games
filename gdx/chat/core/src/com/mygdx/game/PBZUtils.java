@@ -13,7 +13,7 @@ import java.util.Random;
 public class PBZUtils {
 
     public static String userName = null;
-    public static String allMessage = "";
+    private static boolean m_Finished;
 
     public static String getToken() {
         return "f89b0eccf7" + "4c65a65513" + "60062c3e47" + "98d0df4577";
@@ -69,7 +69,7 @@ public class PBZUtils {
         return arr;
     }
 
-    public static String readMessage(String url) {
+    public synchronized static void readMessage(String url, final IResponseListener listener) {
         Net.HttpRequest httpRequest = new Net.HttpRequest(Net.HttpMethods.GET);
         httpRequest.setUrl(url);
         httpRequest.setHeader("Content-Type", "text/plain");
@@ -78,31 +78,43 @@ public class PBZUtils {
         httpRequest.setHeader("Cache-Control", "no-cache");
         httpRequest.setContent(null);
 
+        m_Finished = false;
         Gdx.net.sendHttpRequest(httpRequest, new Net.HttpResponseListener() {
             public void handleHttpResponse(Net.HttpResponse httpResponse) {
                 int statusCode = httpResponse.getStatus().getStatusCode();
-                System.out.println("readMessage() HTTP Request status: " + statusCode);
+                System.out.println(listener.toString()+" readMessage() HTTP Request status: " + statusCode);
                 String response = httpResponse.getResultAsString();
                 int i = response.indexOf("body");
                 if (i != -1) {
-                    String sc = response.substring(i + 7, response.length() - 2);
-                    allMessage = sc.replaceAll("\\\\n", "\n");
+                    String rs = response.substring(i + 7, response.length() - 2);
+                    String jsonString = rs.replaceAll("\\\\n", "\n");
+                    listener.notify(jsonString);
+                    m_Finished = true;
                 }
             }
             public void failed(Throwable e) {
                 System.out.println("HTTP request failed! " + e.getMessage());
+                listener.onError(e);
+                m_Finished = true;
             }
             @Override
             public void cancelled() {
             }
         });
-        return allMessage;
+
+        while (m_Finished == false){
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public static void sendMessage(String url, String strMsg) {
 
         if (!strMsg.trim().equals("")) {
-            System.out.println("Will send message " + strMsg);
+            System.out.println("Will be sending message " + strMsg);
             String requestContent = "{\"body\":\"" + strMsg + "\"}";
             Net.HttpRequest httpRequest = new Net.HttpRequest(Net.HttpMethods.POST);
             httpRequest.setUrl(url);
@@ -114,7 +126,7 @@ public class PBZUtils {
             Gdx.net.sendHttpRequest(httpRequest, new Net.HttpResponseListener() {
                 public void handleHttpResponse(Net.HttpResponse httpResponse) {
                     int statusCode = httpResponse.getStatus().getStatusCode();
-                    System.out.println("sendMsg() HTTP Request status: " + statusCode);
+                    System.out.println("sendMessage() HTTP Request status: " + statusCode);
                 }
                 public void failed(Throwable e) {
                     System.out.println("HTTP request failed!" + e.getMessage());
@@ -124,5 +136,10 @@ public class PBZUtils {
                 }
             });
         }
+    }
+
+    public static interface IResponseListener {
+        public void notify (String jsonString);
+        public void onError(Throwable e);
     }
 }

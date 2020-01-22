@@ -44,7 +44,7 @@ public class GdxChatApp implements IGdxGame {
     private String strAllMsg = "";
     private String url;
     private String userName;
-    private static final String version = "v:0.0.5";
+    private static final String version = "v:0.0.6";
 
     @Override
     public void create() {
@@ -148,12 +148,12 @@ public class GdxChatApp implements IGdxGame {
         timer.scheduleTask(new Timer.Task() {
             @Override
             public void run() {
-                strAllMsg = PBZUtils.readMessage(url);
+                readMsg();
                 textArea.setText(strAllMsg);
 
             }
         }, 1f, 3f);
-
+        timer.stop();
         Gdx.input.setInputProcessor(stage);
 
     }
@@ -163,6 +163,18 @@ public class GdxChatApp implements IGdxGame {
 
     }
 
+    private void readMsg(){
+        PBZUtils.readMessage(url, new PBZUtils.IResponseListener() {
+            @Override
+            public void notify(String message) {
+                strAllMsg = message;
+            }
+
+            @Override
+            public void onError(Throwable e) {
+            }
+        });
+    }
     private void btnSendMsg() {
         String s = textField.getText();
         if (!s.trim().equals("")) {
@@ -211,6 +223,8 @@ public class GdxChatApp implements IGdxGame {
         batch.dispose();
         font.dispose();
         fontFromFile.dispose();
+        timer.stop();
+        timer.clear();
     }
 
     @Override
