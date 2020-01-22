@@ -143,7 +143,7 @@ public class GameM {
         }
         BitmapFont f = new BitmapFont();
         f.setColor(new Color(0xff1493ff));
-        f.draw(sb,"3x3Game:v0.1.4 \n -- " + s,450,400);
+        f.draw(sb,"3x3Game:v0.1.5 \n -- " + s,450,400);
     }
 
     public int xdGetSpriteNoByBoxNo(ArrayList<Sprite>Ss,int iBox){
