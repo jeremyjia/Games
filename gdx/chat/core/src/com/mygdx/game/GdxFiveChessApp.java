@@ -45,7 +45,7 @@ public class GdxFiveChessApp implements IGdxGame {
 
     private int nWidth, nHeight;
     private boolean isBlackRun;
-    private Point pt = new Point();
+    private int m_x,m_y;
     private String user = "";
     private String userDone = "";
     private Timer timer;
@@ -107,7 +107,7 @@ public class GdxFiveChessApp implements IGdxGame {
                     pixmap.setColor(Color.BLACK);
                     pixmap.fillCircle(nX+ i*nCell+nCell/2, nY+j*nCell+nCell/2,nRadius);
 
-                    if (pt.x == i && pt.y == j)
+                    if (m_x == i && m_y == j)
                     {
                         pixmap.setColor(Color.RED);
                         pixmap.drawRectangle(nX+ i*nCell, nY+j*nCell, nCell,nCell);
@@ -118,7 +118,7 @@ public class GdxFiveChessApp implements IGdxGame {
                     pixmap.setColor(Color.WHITE);
                     pixmap.fillCircle(nX + i*nCell+nCell/2, nY+j*nCell+nCell/2,nRadius);
 
-                    if (pt.x == i && pt.y == j)
+                    if (m_x == i && m_y == j)
                     {
                         pixmap.setColor(Color.GREEN);
                         pixmap.drawRectangle(nX+ i*nCell, nY+j*nCell, nCell,nCell);
@@ -265,8 +265,8 @@ public class GdxFiveChessApp implements IGdxGame {
         }
         String curPosKey = jsonObj.getString("curPosKey");
         String[] point = curPosKey.split(",");
-        pt.x = Integer.parseInt(point[0]);
-        pt.y = Integer.parseInt(point[1]);
+        m_x = Integer.parseInt(point[0]);
+        m_y = Integer.parseInt(point[1]);
 
         String array = jsonObj.getString("arrayDataKey");
         JSONArray w = new JSONArray(array);
