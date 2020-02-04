@@ -122,7 +122,7 @@ public class GdxFiveChessApp implements IGdxGame {
             }
         }, 1f, 2f);
 
-
+        timer.stop();
         pixmapBtn = new Pixmap(70, 30, Pixmap.Format.RGB888);
         pixmapBtn.setColor(Color.CORAL);
         pixmapBtn.fill();

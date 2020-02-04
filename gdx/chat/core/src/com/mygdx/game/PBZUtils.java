@@ -2,6 +2,8 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Net;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 
 import org.json.JSONArray;
 
@@ -12,8 +14,10 @@ import java.util.Random;
 
 public class PBZUtils {
 
-    public static String userName = null;
+    private static String userName = null;
     private static boolean m_Finished;
+    private static FreeTypeFontGenerator generator;
+    private static BitmapFont font;
 
     public static String getToken() {
         return "f89b0eccf7" + "4c65a65513" + "60062c3e47" + "98d0df4577";
@@ -141,5 +145,17 @@ public class PBZUtils {
     public static interface IResponseListener {
         public void notify (String jsonString);
         public void onError(Throwable e);
+    }
+
+    //This method is not ready yet
+    public static BitmapFont getGlobalFont() {
+        if (font == null) {
+            generator = new FreeTypeFontGenerator(Gdx.files.internal("cc.ttf"));
+            FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+            parameter.characters += "口罩北京";
+            parameter.size = 12;
+            font = generator.generateFont(parameter);
+        }
+        return font;
     }
 }
