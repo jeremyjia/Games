@@ -1,19 +1,23 @@
 package com.mygdx.game;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.Net;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 
@@ -27,43 +31,54 @@ import java.util.Map;
 import static com.badlogic.gdx.Gdx.*;
 
 
-public class GdxFiveChessApp extends ApplicationAdapter implements InputProcessor {
+public class GdxFiveChessApp implements IGdxGame {
 
+    private Stage stage;
     private Camera camera;
-    public SpriteBatch batch;
-    Texture img;
-    Texture dashboard;
-    boolean bPressed = false;
-    Pixmap pixmap;
+    private SpriteBatch batch;
+    private Texture dashboard;
+    private Pixmap pixmap;
+    private Pixmap pixmapBtn;
+    private TextureRegion region;
+    private Image image;
 
-    Stage stage;
-    TextureRegion region;
-    Image image;
+    private Label labelLoginUser;
+    private Label labelBlackUser;
+    private Label labelWhiteuser;
+    private TextButton btnJoin;
+    private TextButton btnLeave;
+    private TextButton btnClearAll;
+    private TextButton.TextButtonStyle btnGrayStyle;
+    private TextButton.TextButtonStyle btnStyle;
+    private TextureRegionDrawable drawable;
 
     private static final int NUM = 19;
     private static final int nY = 20;
     private static final int nX = 20;
     private static final int nCell = 20;
-    private  static final int nRadius = nCell/2-1;
+    private static final int nRadius = nCell/2-1;
     private int[][] allChess = new int[NUM][NUM];
 
-    int nWidth, nHeight;
-    boolean isBlackRun;
-    String strMsg;
+    private String blackUser="";
+    private String whiteUser="";
+    private String loginUser = "";
+    private String userDone = "";
+    private int nWidth, nHeight;
+    private boolean isBlackRun;
+    private String m_curPosKey;
+    private int m_x,m_y;
     private Timer timer;
-    String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526778839?access_token="+getToken();
+    private String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526778839?access_token="+PBZUtils.getToken();
 
     @Override
     public void create() {
         batch = new SpriteBatch();
-        img = new Texture("badlogic.jpg");
         camera = new OrthographicCamera();
         stage = new Stage(new StretchViewport(640, 480, camera));
 
         pixmap = new Pixmap(640, 480, Pixmap.Format.RGBA8888);
-
         dashboard = new Texture(pixmap);
-        input.setInputProcessor(this);
+        Gdx.input.setInputProcessor(this);
         region = new TextureRegion(dashboard, 640, 480);
         image = new Image(region);
         stage.addActor(image);
@@ -71,28 +86,159 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
         nWidth = Gdx.graphics.getWidth();
         nHeight = Gdx.graphics.getHeight();
         System.out.println(nWidth+","+nHeight);
+
+        loginUser = PBZUtils.generateUserID();
         isBlackRun = true;
-        strMsg = "";
         timer = new Timer();
         timer.scheduleTask(new Timer.Task() {
             @Override
             public void run() {
                 readMsg();
+
+                labelBlackUser.setText("[BLACK]BlackUser: [][MAROON]"+blackUser);
+                labelWhiteuser.setText("[WHITE]WhiteUser: [][MAROON]"+whiteUser);
+
+                //Join button status
+                if ((blackUser.isEmpty() && !loginUser.equalsIgnoreCase(whiteUser))
+                        ||(whiteUser.isEmpty()&& !loginUser.equalsIgnoreCase(blackUser)))
+                {
+                    btnJoin.setDisabled(false);
+                    btnJoin.setStyle(btnStyle);
+                }else{
+                    btnJoin.setDisabled(true);
+                    btnJoin.setStyle(btnGrayStyle);
+                }
+
+                //Leave button status
+                if ((!blackUser.isEmpty() && loginUser.equalsIgnoreCase(blackUser))
+                        || (!whiteUser.isEmpty()&&loginUser.equalsIgnoreCase(whiteUser))){
+                    btnLeave.setDisabled(false);
+                    btnLeave.setStyle(btnStyle);
+                }else{
+                    btnLeave.setDisabled(true);
+                    btnLeave.setStyle(btnGrayStyle);
+                }
+
             }
         }, 1f, 2f);
+
+        timer.stop();
+        pixmapBtn = new Pixmap(70, 30, Pixmap.Format.RGB888);
+        pixmapBtn.setColor(Color.CORAL);
+        pixmapBtn.fill();
+        drawable = new TextureRegionDrawable(new TextureRegion(new Texture(pixmapBtn)));
+        btnStyle = new TextButton.TextButtonStyle(drawable, null, null,
+                new BitmapFont());
+
+        pixmapBtn.setColor(Color.GRAY);
+        pixmapBtn.fill();
+        TextureRegionDrawable gray = new TextureRegionDrawable(new TextureRegion(new Texture(pixmapBtn)));
+        btnGrayStyle = new TextButton.TextButtonStyle(gray, null, null,
+                new BitmapFont());
+
+        btnJoin = new TextButton("Join", btnStyle);
+        btnJoin.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (!btnJoin.isDisabled()){
+                    System.out.println("btnJoin");
+
+                    String arr = PBZUtils.convertArray2Json(allChess);
+                    String json= "";
+                    if (blackUser.isEmpty()){
+                        json = createJsonByMap(isBlackRun, m_curPosKey, loginUser, arr, loginUser, whiteUser);
+                    }else {
+                        json = createJsonByMap(isBlackRun, m_curPosKey, loginUser, arr, blackUser, loginUser);
+                    }
+                    String newJson = StringEscapeUtils.escapeJava(json);
+                    PBZUtils.sendMessage(url, newJson);
+                }
+            }
+        });
+
+        btnLeave = new TextButton("Leave", btnStyle);
+        btnLeave.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (!btnLeave.isDisabled()){
+                    System.out.println("btnLeave");
+
+                    String arr = PBZUtils.convertArray2Json(allChess);
+                    String json= "";
+                    if (loginUser.equalsIgnoreCase(blackUser)){
+                        json = createJsonByMap(isBlackRun, m_curPosKey, loginUser, arr, "", whiteUser);
+                    }else {
+                        json = createJsonByMap(isBlackRun, m_curPosKey, loginUser, arr, blackUser, "");
+                    }
+                    String newJson = StringEscapeUtils.escapeJava(json);
+                    PBZUtils.sendMessage(url, newJson);
+                }
+            }
+        });
+
+        btnClearAll = new TextButton("Clear All", btnStyle);
+        btnClearAll.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                    System.out.println("ClearAll");
+                    int[][] emptyData = new int[NUM][NUM];
+                    for (int i = 0; i < NUM; i++) {
+                        for (int j = 0; j < NUM; j++){
+                            emptyData[i][j]= 0;
+                       }
+                    }
+                    String arr = PBZUtils.convertArray2Json(emptyData);
+                    String json = createJsonByMap(true, m_curPosKey, loginUser, arr, "", "");
+                    String newJson = StringEscapeUtils.escapeJava(json);
+                    PBZUtils.sendMessage(url, newJson);
+
+            }
+        });
+
+        btnJoin.setDisabled(true);
+        btnJoin.setStyle(btnGrayStyle);
+        btnLeave.setDisabled(true);
+        btnLeave.setStyle(btnGrayStyle);
+
+        BitmapFont font = new BitmapFont();
+        font.getData().markupEnabled = true;
+        labelLoginUser = new Label("[YELLOW]LoginUser: [][MAROON]"+loginUser,
+                new Label.LabelStyle(font, null));
+
+        labelBlackUser = new Label("[BLACK]BlackUser: [][MAROON]",
+                new Label.LabelStyle(font, null));
+
+        labelWhiteuser = new Label("[WHITE]WhiteUser: [][MAROON]",
+                new Label.LabelStyle(font, null));
+
+        //Set position
+        labelLoginUser.setPosition(22*nCell, 22*nCell);
+        labelBlackUser.setPosition(22*nCell, 20*nCell);
+        labelWhiteuser.setPosition(22*nCell, 18*nCell);
+        btnJoin.setPosition(22*nCell, 15*nCell);
+        btnLeave.setPosition(26*nCell, 15*nCell);
+        btnClearAll.setPosition(22*nCell, 4*nCell);
+
+        stage.addActor(labelLoginUser);
+        stage.addActor(labelBlackUser);
+        stage.addActor(labelWhiteuser);
+        stage.addActor(btnJoin);
+        stage.addActor(btnLeave);
+        stage.addActor(btnClearAll);
+
         stage.setActionsRequestRendering(true);
+        InputMultiplexer inputMultiplexer = new InputMultiplexer();
+        inputMultiplexer.addProcessor(stage);
+        inputMultiplexer.addProcessor(this);
+        Gdx.input.setInputProcessor(inputMultiplexer);
 
     }
 
     @Override
     public void render() {
-        gl.glClearColor(0, 1, 0, 1);
+        Gdx.gl.glClearColor(66 / 255f, 155 / 255f, 88 / 255f, 0.5f);
         gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
-        if(bPressed)
-        {
-            //batch.draw(img, X, Y);
-        }
         pixmap.setColor(Color.GRAY);
         pixmap.fillRectangle(nX,nY,nCell*NUM+5,nCell*NUM+5);
         dashboard.draw(pixmap, 0 ,0);
@@ -109,17 +255,28 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
                 if (this.allChess[i][j] == 1) {
                     pixmap.setColor(Color.BLACK);
                     pixmap.fillCircle(nX+ i*nCell+nCell/2, nY+j*nCell+nCell/2,nRadius);
-                    dashboard.draw(pixmap,0,0);
 
+                    if (m_x == i && m_y == j)
+                    {
+                        pixmap.setColor(Color.RED);
+                        pixmap.drawRectangle(nX+ i*nCell, nY+j*nCell, nCell,nCell);
+
+                    }
+                    dashboard.draw(pixmap,0,0);
                 }else if (this.allChess[i][j] == 2){
                     pixmap.setColor(Color.WHITE);
                     pixmap.fillCircle(nX + i*nCell+nCell/2, nY+j*nCell+nCell/2,nRadius);
+
+                    if (m_x == i && m_y == j)
+                    {
+                        pixmap.setColor(Color.GREEN);
+                        pixmap.drawRectangle(nX+ i*nCell, nY+j*nCell, nCell,nCell);
+                    }
                     dashboard.draw(pixmap,0,0);
                 }
             }
         }
 
-        //batch.draw(dashboard, 0, 0);
         stage.act();
         stage.draw();
         batch.end();
@@ -127,11 +284,31 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
     }
 
     @Override
+    public void pause() {
+
+    }
+
+    @Override
+    public void resume() {
+    }
+
+    @Override
     public void dispose() {
         pixmap.dispose();
+        pixmapBtn.dispose();
         batch.dispose();
-        img.dispose();
         timer.stop();
+        timer.clear();
+    }
+
+    @Override
+    public void notifyBefore() {
+        timer.stop();
+    }
+
+    @Override
+    public void notifyAfter() {
+        timer.start();
     }
 
     @Override
@@ -140,7 +317,7 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
         nWidth = width;
         nHeight = height;
         region.setRegionWidth(nWidth);
-        region.setRegionHeight(height);
+        region.setRegionHeight(nHeight);
     }
 
     @Override
@@ -162,7 +339,7 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        bPressed = true;
+
         float xx = (float) ((640.0/(float)nWidth)*(float)screenX);
         float yy = (float) ((480.0/(float)nHeight)*(float)screenY);
         int newScreenX = (int) xx;
@@ -170,11 +347,19 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
         int x = (newScreenX - nX)/nCell;
         int y =  (newScreenY - nY)/nCell;
 
+        if (x>NUM-1||y>NUM-1)
+            return false;
+
+        if(btnLeave.isDisabled()){
+            System.out.println("Not join yet!");
+            return false;
+        }
+
         if (allChess[x][y]==1 || allChess[x][y] == 2) return false;
         app.log("MyTag", "touchDown: (" + x+","+y+")");
 
-        if (x>NUM-1||y>NUM-1)
-            return false;
+        if (loginUser.equalsIgnoreCase(whiteUser) && isBlackRun) return false;
+        if (loginUser.equalsIgnoreCase(blackUser) && !isBlackRun) return false;
 
         if (isBlackRun){
             allChess[x][y]=1;
@@ -185,12 +370,11 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
         isBlackRun = !isBlackRun;
 
         String curPos = x+","+y;
-        String user = "Jeremyjia"; //Hard code
-        String arr = convertArray2Json(allChess);
-        String json = createJsonByMap(isBlackRun, curPos,user,arr);
+        String arr = PBZUtils.convertArray2Json(allChess);
+        String json = createJsonByMap(isBlackRun, curPos,loginUser,arr, blackUser, whiteUser);
         System.out.println("JSON:"+json);
         String newJson = StringEscapeUtils.escapeJava(json);
-        sendMsg(newJson);
+        PBZUtils.sendMessage(url, newJson);
 
         return false;
     }
@@ -215,82 +399,38 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
         return false;
     }
 
-    private String getToken() {
-        return "f89b0eccf7" + "4c65a65513" + "60062c3e47" + "98d0df4577";
-    }
-
     private void readMsg() {
-        Net.HttpRequest httpRequest = new Net.HttpRequest(Net.HttpMethods.GET);
-        httpRequest.setUrl(url);
-        httpRequest.setHeader("Content-Type", "text/plain");
-        httpRequest.setHeader("charset", "UTF-8");
-        httpRequest.setHeader("Cache-Control", "no-store");
-        httpRequest.setHeader("Cache-Control", "no-cache");
-        httpRequest.setContent(null);
-
-        Gdx.net.sendHttpRequest(httpRequest, new Net.HttpResponseListener() {
-            public void handleHttpResponse(Net.HttpResponse httpResponse) {
-                int statusCode = httpResponse.getStatus().getStatusCode();
-                System.out.println("readMsg() HTTP Request status: " + statusCode);
-                String s = httpResponse.getResultAsString();
-                int i = s.indexOf("body");
-                if (i != -1) {
-                    String sc = s.substring(i + 7, s.length() - 2);
-                    strMsg = sc.replaceAll("\\\\n", "\n");
-                    getChessData(strMsg);
-                }
-            }
-            public void failed(Throwable t) {
-                System.out.println("HTTP request failed! "+t.getMessage());
-            }
+        PBZUtils.readMessage(url, new PBZUtils.IResponseListener() {
             @Override
-            public void cancelled() {
+            public void notify(String jsonString) {
+                getChessData(jsonString);
+            }
+
+            @Override
+            public void onError(Throwable e) {
             }
         });
-    }
-
-    private void sendMsg(String str) {
-
-        if (!str.trim().equals("")) {
-            System.out.println("Will send message " + str);
-            String requestContent = "{\"body\":\"" + str + "\"}";
-            Net.HttpRequest httpRequest = new Net.HttpRequest(Net.HttpMethods.POST);
-            httpRequest.setUrl(url);
-            httpRequest.setHeader("Content-Type", "text/plain");
-            httpRequest.setHeader("Cache-Control", "no-store");
-            httpRequest.setHeader("Cache-Control", "no-cache");
-            httpRequest.setContent(requestContent);
-
-            Gdx.net.sendHttpRequest(httpRequest, new Net.HttpResponseListener() {
-                public void handleHttpResponse(Net.HttpResponse httpResponse) {
-                    int statusCode = httpResponse.getStatus().getStatusCode();
-                    System.out.println("sendMsg() HTTP Request status: " + statusCode);
-                }
-                public void failed(Throwable t) {
-                    System.out.println("HTTP request failed!"+t.getMessage());
-                }
-                @Override
-                public void cancelled() {
-                }
-            });
-        }
     }
 
     private void getChessData(String strMsg) {
         String jsonString = StringEscapeUtils.unescapeJson(strMsg);
         JSONObject jsonObj = new JSONObject(jsonString);
-        String user = jsonObj.getString("user");
+        userDone = jsonObj.getString("user");
         Object obj = jsonObj.get("isBlackRunKey");
         if(obj instanceof Integer){
             this.isBlackRun = true;
         }else if(obj instanceof Boolean){
             this.isBlackRun = ((Boolean) obj).booleanValue();
         }
-        //Boolean isBlackRun = jsonObj.getBoolean("isBlackRunKey");
-        String curPosKey = jsonObj.getString("curPosKey");
-        System.out.println(user+" "+isBlackRun+" "+curPosKey);
-        String array = jsonObj.getString("arrayDataKey");
+        m_curPosKey = jsonObj.getString("curPosKey");
+        String[] point = m_curPosKey.split(",");
+        m_x = Integer.parseInt(point[0]);
+        m_y = Integer.parseInt(point[1]);
 
+        blackUser = jsonObj.getString("blackUser");
+        whiteUser = jsonObj.getString("whiteUser");
+
+        String array = jsonObj.getString("arrayDataKey");
         JSONArray w = new JSONArray(array);
         for(int i = 0; i < w.length(); i ++)
         {
@@ -302,35 +442,21 @@ public class GdxFiveChessApp extends ApplicationAdapter implements InputProcesso
         Gdx.graphics.requestRendering();
     }
 
-    public static String convertArray2Json(int[][] arr) {
-        StringBuffer sb = new StringBuffer();
-        boolean first = true;
-        sb.append("[");
-        for (int i = 0; i < arr.length; i++) {
-            if (!first) {
-                sb.append(",");
-            }
-            sb.append("[");
-            for (int j=0;j<arr.length;j++)
-            {
-                sb.append(arr[i][j]+ ",");
-            }
-            sb.deleteCharAt(sb.length() - 1);
-            sb.append("]");
-            first = false;
-        }
-        sb.append("]");
-        return sb.toString();
-    }
-
-    public static String createJsonByMap(boolean isBlackRun, String curPos, String user, String arr) {
+    private String createJsonByMap(boolean isBlackRun, String curPos, String user, String arr, String blackUser, String whiteUser) {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("isBlackRunKey",isBlackRun);
         map.put("curPosKey", curPos);
         map.put("user", user);
+        map.put("blackUser",blackUser);
+        map.put("whiteUser", whiteUser);
         map.put("arrayDataKey", arr);
         JSONObject jsonObj = new JSONObject(map);
         return jsonObj.toString();
     }
 
+    @Override
+    public void initGame(GdxGameAdapter adapter) {
+        create();
+        adapter.registerStage(stage);
+    }
 }

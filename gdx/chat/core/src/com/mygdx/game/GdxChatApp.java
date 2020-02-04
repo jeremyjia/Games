@@ -1,9 +1,6 @@
 package com.mygdx.game;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.Net;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -24,15 +21,9 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Random;
+public class GdxChatApp implements IGdxGame {
 
-
-public class GdxChatApp extends ApplicationAdapter implements InputProcessor {
-
-    private Stage stage;
+    public  Stage stage;
     private Camera camera;
     private TextArea textArea;
     private TextField textField;
@@ -53,11 +44,10 @@ public class GdxChatApp extends ApplicationAdapter implements InputProcessor {
     private String strAllMsg = "";
     private String url;
     private String userName;
-    private static final String version = "v:0.0.4";
+    private static final String version = "v:0.0.6";
 
-
+    @Override
     public void create() {
-
         camera = new OrthographicCamera();
         stage = new Stage(new StretchViewport(640, 480, camera));
 
@@ -115,7 +105,6 @@ public class GdxChatApp extends ApplicationAdapter implements InputProcessor {
         btnClear = new TextButton("Clear", btnStyle);
         btnSend.setPosition(410, 40);
         btnClear.setPosition(485, 40);
-        Gdx.input.setInputProcessor(stage);
 
         stage.addActor(textArea);
         stage.addActor(textField);
@@ -150,8 +139,8 @@ public class GdxChatApp extends ApplicationAdapter implements InputProcessor {
             }
         });
 
-        url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526806470?access_token=" + getToken();
-        userName = generateUserID();
+        url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526806470?access_token=" + PBZUtils.getToken();
+        userName = PBZUtils.generateUserID();
         System.out.println("username " + userName);
 
         //SetTimer for reading Msg
@@ -164,113 +153,44 @@ public class GdxChatApp extends ApplicationAdapter implements InputProcessor {
 
             }
         }, 1f, 3f);
+        timer.stop();
+        Gdx.input.setInputProcessor(stage);
 
     }
 
+    @Override
+    public void resize(int width, int height) {
+
+    }
+
+    private void readMsg(){
+        PBZUtils.readMessage(url, new PBZUtils.IResponseListener() {
+            @Override
+            public void notify(String message) {
+                strAllMsg = message;
+            }
+
+            @Override
+            public void onError(Throwable e) {
+            }
+        });
+    }
     private void btnSendMsg() {
         String s = textField.getText();
         if (!s.trim().equals("")) {
-            String strMsg = strAllMsg + "\n" + getCurrentTime() + "\n" + userName + ":" + s;
+            String strMsg = strAllMsg + "\n" + PBZUtils.getCurrentTime() + "\n" + userName + ":" + s;
             strMsg = strMsg.replaceAll("\n", "\\\\n");
-            sendMsg(strMsg);
+            PBZUtils.sendMessage(url, strMsg);
             textField.setText("");
         }
     }
 
     private void btnClearMsg() {
         String s = "Let's chat";
-        sendMsg(s);
+        PBZUtils.sendMessage(url,s);
     }
 
-    private void sendMsg(String str) {
-
-        if (!str.trim().equals("")) {
-            System.out.println("Will send message " + str);
-            String requestContent = "{\"body\":\"" + str + "\"}";
-            Net.HttpRequest httpRequest = new Net.HttpRequest(Net.HttpMethods.POST);
-            httpRequest.setUrl(url);
-            httpRequest.setHeader("Content-Type", "text/plain");
-            httpRequest.setHeader("Cache-Control", "no-store");
-            httpRequest.setHeader("Cache-Control", "no-cache");
-            httpRequest.setContent(requestContent);
-
-            Gdx.net.sendHttpRequest(httpRequest, new Net.HttpResponseListener() {
-                public void handleHttpResponse(Net.HttpResponse httpResponse) {
-                    int statusCode = httpResponse.getStatus().getStatusCode();
-                    System.out.println("sendMsg() HTTP Request status: " + statusCode);
-                }
-
-                public void failed(Throwable t) {
-                    System.out.println("HTTP request failed!");
-                }
-
-                @Override
-                public void cancelled() {
-                }
-            });
-        }
-    }
-
-    private void readMsg() {
-        Net.HttpRequest httpRequest = new Net.HttpRequest(Net.HttpMethods.GET);
-        httpRequest.setUrl(url);
-
-        httpRequest.setHeader("Content-Type", "text/plain");
-        httpRequest.setHeader("charset", "UTF-8");
-        //Jeremy Debug
-        httpRequest.setHeader("Cache-Control", "no-store");
-        httpRequest.setHeader("Cache-Control", "no-cache");
-        //httpRequest.setHeader("If-Modified-Since", "0");
-        //httpRequest.setHeader("Cache-Control", "max-age=0");
-        httpRequest.setContent(null);
-
-        Gdx.net.sendHttpRequest(httpRequest, new Net.HttpResponseListener() {
-            public void handleHttpResponse(Net.HttpResponse httpResponse) {
-                int statusCode = httpResponse.getStatus().getStatusCode();
-                System.out.println("readMsg() HTTP Request status: " + statusCode);
-                System.out.println("Content:");
-                String s = httpResponse.getResultAsString();
-                System.out.println(s);
-
-                int i = s.indexOf("body");
-                if (i != -1) {
-                    String sc = s.substring(i + 7, s.length() - 2);
-                    strAllMsg = sc.replaceAll("\\\\n", "\n");
-                }
-            }
-
-            public void failed(Throwable t) {
-                System.out.println("HTTP request failed!");
-            }
-
-            @Override
-            public void cancelled() {
-            }
-        });
-    }
-
-    private String getToken() {
-        return "f89b0eccf7" + "4c65a65513" + "60062c3e47" + "98d0df4577";
-    }
-
-    private String getCurrentTime() {
-        Date date = new Date();
-        DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return format.format(date);
-
-    }
-
-    private String generateUserID() {
-        String str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        StringBuilder sb = new StringBuilder(6);
-        for (int i = 0; i < 6; i++) {
-            char ch = str.charAt(new Random().nextInt(str.length()));
-            sb.append(ch);
-        }
-        return sb.toString();
-    }
-
-
+    @Override
     public void render() {
         Gdx.gl.glClearColor(66 / 255f, 55 / 255f, 88 / 255f, 0.5f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -279,11 +199,21 @@ public class GdxChatApp extends ApplicationAdapter implements InputProcessor {
         stage.draw();
 
         batch.begin();
-        font.draw(batch, version, 10, 30);
+        font.draw(batch, version, Gdx.graphics.getWidth()/2, 30);
         batch.end();
     }
 
+    @Override
+    public void pause() {
 
+    }
+
+    @Override
+    public void resume() {
+
+    }
+
+    @Override
     public void dispose() {
         pixmapArea.dispose();
         pixmapField.dispose();
@@ -293,6 +223,18 @@ public class GdxChatApp extends ApplicationAdapter implements InputProcessor {
         batch.dispose();
         font.dispose();
         fontFromFile.dispose();
+        timer.stop();
+        timer.clear();
+    }
+
+    @Override
+    public void notifyBefore() {
+      timer.stop();
+    }
+
+    @Override
+    public void notifyAfter() {
+      timer.start();
     }
 
     @Override
@@ -333,5 +275,11 @@ public class GdxChatApp extends ApplicationAdapter implements InputProcessor {
     @Override
     public boolean scrolled(int amount) {
         return false;
+    }
+
+    @Override
+    public void initGame(GdxGameAdapter adapter) {
+        create();
+        adapter.registerStage(stage);
     }
 }
