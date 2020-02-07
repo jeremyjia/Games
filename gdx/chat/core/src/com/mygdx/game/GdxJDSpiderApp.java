@@ -52,7 +52,9 @@ public class GdxJDSpiderApp implements IGdxGame{
     public void create() {
 
         camera = new OrthographicCamera();
+        ((OrthographicCamera) camera).rotate(90);
         stage = new Stage(new StretchViewport(640, 480, camera));
+        ((OrthographicCamera) camera).position.add(-70f,-70f,0);
 
         pixmapBtn = new Pixmap(70, 30, Pixmap.Format.RGB888);
         pixmapBtn.setColor(Color.CORAL);
