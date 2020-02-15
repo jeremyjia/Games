@@ -93,6 +93,7 @@ project(":core") {
         compile 'org.json:json:20180130'
         compile 'org.jsoup:jsoup:1.12.1'
         compile 'org.apache.commons:commons-lang3:3.8.1'
+        compile 'io.apisense:rhino-android:1.0'
         compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
         
     }
