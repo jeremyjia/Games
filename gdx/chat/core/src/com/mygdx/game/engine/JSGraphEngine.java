@@ -3,19 +3,23 @@ package com.mygdx.game.engine;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.mygdx.game.GdxJSEngineApp;
 
 public class JSGraphEngine {
 
     private Pixmap pixmap;
     private Label labelMessage;
+    private GdxJSEngineApp game;
 
     private CanvasObj canvas = new CanvasObj();
     private ContextObj context = new ContextObj();
+    private ImageObj image = new ImageObj();
     private static String CANVAS_NAME = "canvas";
 
-    public JSGraphEngine(Pixmap pix, Label lb){
+    public JSGraphEngine(Pixmap pix, Label lb, GdxJSEngineApp o){
         pixmap = pix;
         labelMessage = lb;
+        game = o;
     }
 
     public CanvasObj getElementById(String id) {
@@ -27,8 +31,11 @@ public class JSGraphEngine {
         return canvas;
     }
 
-    public void showMessage(String msg){
-        labelMessage.setText("[WHITE]Message: [][MAROON]"+msg);
+    public void showMessage(String msg){ labelMessage.setText("[WHITE]Message: [][MAROON]"+msg); }
+    public ImageObj getImageObj() { return image; }
+
+    public void setTimer(Object o, int n){
+        game.setTimer(o,n);
     }
 
     //Inner Class
@@ -46,6 +53,12 @@ public class JSGraphEngine {
             pixmap.fillRectangle(x,y,width,height);
         }
 
+        public void drawImage(Object o, int x, int y){
+            ImageObj obj = (ImageObj) o;
+            System.out.println(obj.src);
+            game.drawImage(obj.src, x, y);
+
+        }
         private void applayColor(){
             if ("Blue".equalsIgnoreCase(fillStyle)){
                 pixmap.setColor(Color.BLUE);
@@ -61,5 +74,9 @@ public class JSGraphEngine {
                 pixmap.setColor(Color.BLACK);
             }
         }
+    }
+
+    public class ImageObj {
+        public String src="";
     }
 }
