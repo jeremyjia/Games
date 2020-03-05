@@ -39,7 +39,7 @@ function notify(o){
         updateOnlineUser(jsonAll);
         
         document.cookie = "username=; expires=Thu, 01 Jan 1980 00:00:00 GMT";
-         window.location.href='cTest.html';
+        window.location.href='cTest.html';
      }
      
 window.onload = function(){
@@ -51,7 +51,7 @@ function checkCookie(){
     var btnexit = document.getElementById("exitid");
 	if (user!=""){
         userLogin = user;
-        document.getElementById('logusertext').innerText = "用户:"+user+"已经登陆";
+        document.getElementById('logusertext').innerText = "用户:"+user+" 已登陆";
         btnlogin.style.display = "none"; 
         btnexit.style.display = "block";    
     }else{
