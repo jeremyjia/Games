@@ -34,13 +34,65 @@ function formateDate() {
   return result;
 }
 
+function getTimeDiff(startTime, endTime, diffType) {
+  //xxxx-xx-xx -> xxxx/xx/xx
+  startTime = startTime.replace(/\-/g, "/");
+  endTime = endTime.replace(/\-/g, "/");
+  diffType = diffType.toLowerCase();
+  var sTime = new Date(startTime);
+  var eTime = new Date(endTime);
+  var timeType;
+  switch (diffType) {
+    case "minute":
+          timeType = 1000*60;
+        break;
+    case "hour":
+    timeType =1000*3600;
+    break;
+    case "day":
+    timeType = 1000*3600*24;
+    break;
+    default:
+    break;
+      }
+  return parseInt((eTime.getTime()-sTime.getTime())/parseInt(timeType));
+}
+
 function getToken(){	
   return "f89b0eccf7"+"4c65a65513"+"60062c3e47"+"98d0df4577"; //Jeremyjia
 }
 
 //Web functions ------
-function getOnlineUser(callBackFun){
-  getGitHubComment(592918032, callBackFun);
+function getOnlineUser(userCallbackFun){
+  getGitHubComment(592918032, innerUserCallback);
+
+  function innerUserCallback(o){
+    var userObj = o.users;
+		var newUsers = [];
+		var nowTime = formateDate();
+		var isNeedClear=false;
+		for(var i = 0; i < userObj.length; i++)
+		{
+			if(userObj[i].isLogin && getTimeDiff(userObj[i].LastloginTime, nowTime, "minute")>60){
+			   isNeedClear = true;
+			   newUsers.push({"name":userObj[i].name,"LastloginTime":userObj[i].LastloginTime,"isLogin":false});
+			}
+			else{
+			   newUsers.push({"name":userObj[i].name,"LastloginTime":userObj[i].LastloginTime,"isLogin":userObj[i].isLogin});
+			}
+    }	
+    
+    var jsonAll= {
+      "users":newUsers
+     };
+     userCallbackFun(jsonAll); //Notify user'callback
+		if(isNeedClear)
+		{
+      updateOnlineUser(jsonAll);
+		  alert("Clear the status of users whoes login time greater than 60 minutes!");
+		 }	 
+
+  }
 }
 function updateOnlineUser(jsonAll)
 {
