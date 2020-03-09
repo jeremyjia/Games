@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<script language="javascript" type="text/javascript">
+
+var userLogin;
+function notify(o){
+  if(o){
+        var u=o.users;
+        var text="";
+        for(var i = 0; i < u.length; i++){
+		  if(u[i].isLogin){
+            text+=u[i].name+"\n";
+		  }
+       }
+       document.getElementById('onlineusertext').innerText = text;
+   }
+}
+      function logOff(o){
+		var userObj = o.users;
+		var newUsers = [];
+        var userName = userLogin;
+		for(var i = 0; i < userObj.length; i++)
+		{
+			if(userObj[i].name == userName){
+				newUsers.push({"name":userObj[i].name,"LastloginTime":userObj[i].LastloginTime,"isLogin":false});
+			}else{
+				newUsers.push({"name":userObj[i].name,"LastloginTime":userObj[i].LastloginTime,"isLogin":userObj[i].isLogin});
+			}
+		}
+		var jsonAll= {
+		  "users":newUsers
+		};
+        updateOnlineUser(jsonAll);
+        
+        document.cookie = "username=; expires=Thu, 01 Jan 1980 00:00:00 GMT";
+        window.location.href='cTest.html';
+     }
+     
+window.onload = function(){
+    checkCookie();
+}
+function checkCookie(){
+	var user = getCookie("username");
+    var btnlogin = document.getElementById("loginid");
+    var btnexit = document.getElementById("exitid");
+	if (user!=""){
+        userLogin = user;
+        document.getElementById('logusertext').innerText = "用户:"+user+" 已登陆";
+        btnlogin.style.display = "none"; 
+        btnexit.style.display = "block";    
+    }else{
+        btnlogin.style.display = "block"; 
+        btnexit.style.display = "none";       
+    }
+}
+</script>
+
+<div>
+     <h1>漂泊者乐园用户管理系统测试页面</h1> 
+     <p><button id="loginid">登陆</button></p>
+     <p><h2 id="logusertext"></h2><button id="exitid">退出</button></p>
+     <div>
+         <button id="onlineuserid">查询在线用户</button>
+         <h2 id="onlineusertext"></h2>
+     </div>
+   
+</div>
+
+<script src="https://littleflute.github.io/JavaScript/w3.js"></script>
+<script src="https://littleflute.github.io/JavaScript/blclass.js"></script>
+<script src="server.js" charset="utf-8"></script>
+
+        
+<script> 
+    var obj;
+    bl$("loginid").onclick = function(){
+        window.location.href='login.html';
+    }
+
+    bl$("exitid").onclick = function(){
+        getOnlineUser(logOff);    
+    }
+
+    bl$("onlineuserid").onclick = function(){
+        getOnlineUser(notify);
+    }
+</script>
+ 
+</body>
+
+</html>
