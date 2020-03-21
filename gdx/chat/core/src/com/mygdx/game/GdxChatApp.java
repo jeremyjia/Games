@@ -44,7 +44,7 @@ public class GdxChatApp implements IGdxGame {
     private String strAllMsg = "";
     private String url;
     private String userName;
-    private static final String version = "v:0.0.6";
+    private static final String version = "v:0.0.7";
 
     @Override
     public void create() {
@@ -234,7 +234,8 @@ public class GdxChatApp implements IGdxGame {
 
     @Override
     public void notifyAfter() {
-      timer.start();
+        userName = PBZUtils.getLoginUser();
+        timer.start();
     }
 
     @Override

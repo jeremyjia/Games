@@ -35,6 +35,15 @@ public class PBZUtils {
         return userName;
     }
 
+    public static String getLoginUser(){
+        if (userName != null)
+            return userName;
+        return generateUserID();
+    }
+    public static void resetLoginUser(String strUser){
+        userName = strUser;
+    }
+
     public static  String getCurrentTime() {
         Date date = new Date();
         DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
