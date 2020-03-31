@@ -308,6 +308,8 @@ public class GdxFiveChessApp implements IGdxGame {
 
     @Override
     public void notifyAfter() {
+        loginUser = PBZUtils.getLoginUser();
+        labelLoginUser.setText("[YELLOW]LoginUser: [][MAROON]"+loginUser);
         timer.start();
     }
 

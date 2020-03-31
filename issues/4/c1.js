@@ -1,5 +1,5 @@
 //i4c1
-var s= "v0.1. 25 ";
+var s= "v0.1. 31 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c1.js'"
 s += " style='color:blue;'";		s +=">"; s += "c1.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c1.js'"
@@ -78,13 +78,30 @@ function ftnPlayer( oDiv ){
 							var str = "var a =" +  txt;  
 						    eval(str);
 						    d.innerHTML = "";
-						    var s = "***";
+						    var s = "v0.0.12:";
 						    s += "<a href='https://github.com/littleflute/EXPLORATIONS/issues/1' target='_blank'>EXPLORATIONS:i1#<a/> - "; 
 						    s += "<a href='https://github.com/littleflute/EXPLORATIONS/edit/master/issues/1/i.js' target='_blank'>i.js* <a/> - ";
 						    s += "<a href='https://littleflute.github.io/EXPLORATIONS/issues/1/i.js' target='_blank'>i.js<a/>";
 						     blo0.blDiv(d,d.id+"_#9_", s,blColor[4]);
-						     var t = blo0.blDiv(d,d.id+"_title_", a.title,blColor[4]);
+						     var t = blo0.blDiv(d,d.id+"_title_", a.title,blColor[5]);
 						     t.v = blo0.blDiv(t,t.id+"v", "v",blColor[5]);
+						     t.v.onclick = function(){						     	
+						     	if(!t.v.dLrc){
+						     		t.v.dLrc = blo0.blMD("id_mdiv_Lrc", "Lrc", 300,100,500,400, blGrey[5]);
+						     		t.v.dLrc.sLrcFile = "";	
+						     		t.v.dLrc.v = blo0.blDiv(t.v.dLrc, t.v.dLrc.id + "v","cur Lrc",blGrey[3]);
+						     	} 
+						     	if(t.v.dLrc.sLrcFile!=t.v.innerHTML){
+						     		t.v.dLrc.sLrcFile = t.v.innerHTML;
+						     		var w = {};
+									w._2do = function(txt){
+									    t.v.dLrc.v.innerHTML = txt;
+									}
+									var urlLrc = t.v.dLrc.sLrcFile;
+									blo0.blAjx(w,urlLrc);
+						     	}
+						     	_on_off_div(this,t.v.dLrc);
+						     }
 						 
 						     for(i in a.songs){
 						           var p = bl$("myVideo");
