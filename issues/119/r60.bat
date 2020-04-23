@@ -1,4 +1,4 @@
-
+echo V0.0. 11 ;
 
 for /l %%x in (1, 1, 60) do (
    echo %%x 

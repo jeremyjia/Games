@@ -1,0 +1,1 @@
+ffmpeg -i %d.jpg -bf 0 -g 1 -s 1024x768 -vcodec mpeg4 v60s.mp4  
