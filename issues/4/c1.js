@@ -1,5 +1,5 @@
 //i4c1
-var s= "v0.1. 31 ";
+var s= "v0.1. 35 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c1.js'"
 s += " style='color:blue;'";		s +=">"; s += "c1.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c1.js'"
@@ -219,13 +219,32 @@ function ftnPlayer( oDiv ){
 								{
 									_this.v0 = blo0.blMDiv(_div,_div.id+"v1","v1",150,100,400,300,blGrey[0]);
 									var bUpdate = blo0.blBtn(_this.v0 ,_this.v0.id+"bUpdate","bUpdate",blGrey[4]);
+									var bShowLrc = blo0.blBtn(_this.v0 ,_this.v0.id+"bShowLrc","bShowLrc",blGrey[1]);
+									
 									_this.v1 = blo0.blDiv(_this.v0,_this.v0.id+"v1","v1",blGrey[0]);
+									bShowLrc.onclick = function(_this){
+										return function(){
+											if(!_this.v){
+												_this.v = blo0.blMD("id_mdiv_4bSHowLrc",
+												 		 "v4bShowLrc", 300,100,500,400, blGrey[0]);
+												var tArr = _div.lrcTimeArray;
+												var lArr = _div.lrcArray;
+												var s = "lrc v0.4:\n";
+												for(i in tArr){
+													s += i + ": [" + Math.floor(tArr[i]/60) + ":" + tArr[i]%60 +"]" + lArr[i] + "\n";
+												}
+												_this.v.ta = blo0.blTextarea(_this.v,_this.v.id+"ta",s,blGrey[1]);
+											}
+											_on_off_div(_this,_this.v);
+										}
+									}(bShowLrc);
 									bUpdate.onclick = function(){
 										_this.v1.innerHTML = "-";
-										for(i in _div.lrcTimeArray){
+										var tArray = _div.lrcTimeArray;
+										for(i in tArray){
 											var dl = blo0.blDiv(_this.v1, _this.v1.id+i,i,blGrey[i]);
-											dl.b1 = blo0.blBtn(dl,dl.id+"b1",_div.lrcTimeArray[i],blGrey[0]);
-											dl.b2 = blo0.blBtn(dl,dl.id+"b2",_div.lrcArray[i],blGrey[0]);
+											dl.b1 = blo0.blBtn(dl,dl.id+"b1",tArray[i],blGrey[0]);
+											
 											dl.b1.onclick = function(b1,player,t){
 												player.addListener(b1);
 												b1.timeFun = function(tNow){
@@ -235,7 +254,14 @@ function ftnPlayer( oDiv ){
 												return function(){
 													player.currentTime = t;
 												}
-											}(dl.b1,_p,_div.lrcTimeArray[i])
+											}(dl.b1,_p,tArray[i]);
+
+
+											var mm = tArray[i]/60;
+											var ss = tArray[i]%60;
+											var sb1a =  "[" + Math.floor(mm) + ":" + ss + "]";
+																																	dl.b1a = blo0.blBtn(dl,dl.id+"b1a",sb1a,"lightblue");
+											dl.b2 = blo0.blBtn(dl,dl.id+"b2",_div.lrcArray[i],blGrey[0]);
 										}
 									}
 									bUpdate.onclick();									
@@ -243,6 +269,7 @@ function ftnPlayer( oDiv ){
 								_on_off_div(_this,_this.v0);
 							}
 						}(b1,_d);
+
 						b2.onclick = function(_this,_div){													
 							return function(){
 								var ta 				= _div.vLrc.ta;
@@ -258,7 +285,8 @@ function ftnPlayer( oDiv ){
 								de.innerHTML = "";
 								for(i in b){
 									var l = blo0.blDiv(de,de.id+i, "l"+i + ":" + b[i],blColor[i]);
-									l.onclick = function(_div,_i,_timeA,_txtA, _player){
+									l.onclick = function(_div,_i,_timeA,_txtA, _player)
+									{
 										return function(){											
 											_timeA[_i] 	= _player.currentTime;
 											_txtA[_i]	= b[_i];
