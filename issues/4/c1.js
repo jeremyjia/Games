@@ -229,11 +229,18 @@ function ftnPlayer( oDiv ){
 												 		 "v4bShowLrc", 300,100,500,400, blGrey[0]);
 												var tArr = _div.lrcTimeArray;
 												var lArr = _div.lrcArray;
-												var s = "lrc v0.4:\n";
+												var s = "lrc v0.23:\n";
 												for(i in tArr){
-													s += i + ": [" + Math.floor(tArr[i]/60) + ":" + tArr[i]%60 +"]" + lArr[i] + "\n";
+													var mm = Math.floor(tArr[i]/60); 
+													mm = mm<10?"0"+mm:mm;
+													var ss = tArr[i]%60;
+													ss = ss<10?"0"+ss.toPrecision(3):ss.toPrecision(4);
+													s += i + ": [" + mm + ":" + ss  +"]" + lArr[i] + "\n";
 												}
 												_this.v.ta = blo0.blTextarea(_this.v,_this.v.id+"ta",s,blGrey[1]);
+												_this.v.ta.style.width = "98%";
+												_this.v.ta.style.height = "98%";
+												 
 											}
 											_on_off_div(_this,_this.v);
 										}
