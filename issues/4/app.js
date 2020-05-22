@@ -16,6 +16,10 @@ router.get('/c1Test',function(req,res){
   res.sendFile(path.join(__dirname+'/c1Test.html'));
 });
 
+router.get('/*.js',function(req,res){  
+  res.sendFile(path.join(__dirname+ req.path));
+});
+
 //add the router
 app.use('/', router);
 app.listen(process.env.port || 5000);

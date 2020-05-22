@@ -1,11 +1,11 @@
 {
   "name": "i4",
-  "version": "1.0.0",
+  "version": "1.0.11",
   "description": "node 4 i4",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js"
+    "start": "nodemon app.js"
   },
   "author": "littleflute",
   "license": "ISC",
