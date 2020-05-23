@@ -220,6 +220,15 @@ function ftnPlayer( oDiv ){
 									_this.v0 = blo0.blMDiv(_div,_div.id+"v1","v1",150,100,400,300,blGrey[0]);
 									var bUpdate = blo0.blBtn(_this.v0 ,_this.v0.id+"bUpdate","bUpdate",blGrey[4]);
 									var bShowLrc = blo0.blBtn(_this.v0 ,_this.v0.id+"bShowLrc","bShowLrc",blGrey[1]);
+									var bShowSrt = blo0.blBtn(_this.v0 ,_this.v0.id+"bShowSrt","bShowSrt",blGrey[1]);
+									bShowSrt.onclick = function(){
+										if(!blo0.plxSrt){
+											blo0.plxSrt = blo0.blMD(_div.id+"plxSrt","plxSrt",150,100,400,300,blGrey[0]);
+											blo0.plxSrt.ctx = _div;
+											blo0.blScript("id_4_js_plxSrt","c1/p1.js");
+										}
+										_on_off_div(this,blo0.plxSrt);
+									}
 									
 									_this.v1 = blo0.blDiv(_this.v0,_this.v0.id+"v1","v1",blGrey[0]);
 									bShowLrc.onclick = function(_this){
