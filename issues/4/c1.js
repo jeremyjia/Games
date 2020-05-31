@@ -1,5 +1,5 @@
 //i4c1
-var s= "v0.1. 35 ";
+var s= "v0.1. 42 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c1.js'"
 s += " style='color:blue;'";		s +=">"; s += "c1.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c1.js'"
@@ -220,6 +220,15 @@ function ftnPlayer( oDiv ){
 									_this.v0 = blo0.blMDiv(_div,_div.id+"v1","v1",150,100,400,300,blGrey[0]);
 									var bUpdate = blo0.blBtn(_this.v0 ,_this.v0.id+"bUpdate","bUpdate",blGrey[4]);
 									var bShowLrc = blo0.blBtn(_this.v0 ,_this.v0.id+"bShowLrc","bShowLrc",blGrey[1]);
+									var bShowSrt = blo0.blBtn(_this.v0 ,_this.v0.id+"bShowSrt","bShowSrt",blGrey[1]);
+									bShowSrt.onclick = function(){
+										if(!blo0.plxSrt){
+											blo0.plxSrt = blo0.blMD(_div.id+"plxSrt","plxSrt",150,100,400,300,blGrey[0]);
+											blo0.plxSrt.ctx = _div;
+											blo0.blScript("id_4_js_plxSrt","c1/p1.js");
+										}
+										_on_off_div(this,blo0.plxSrt);
+									}
 									
 									_this.v1 = blo0.blDiv(_this.v0,_this.v0.id+"v1","v1",blGrey[0]);
 									bShowLrc.onclick = function(_this){
@@ -229,11 +238,18 @@ function ftnPlayer( oDiv ){
 												 		 "v4bShowLrc", 300,100,500,400, blGrey[0]);
 												var tArr = _div.lrcTimeArray;
 												var lArr = _div.lrcArray;
-												var s = "lrc v0.4:\n";
+												var s = "";
 												for(i in tArr){
-													s += i + ": [" + Math.floor(tArr[i]/60) + ":" + tArr[i]%60 +"]" + lArr[i] + "\n";
+													var mm = Math.floor(tArr[i]/60); 
+													mm = mm<10?"0"+mm:mm;
+													var ss = tArr[i]%60;
+													ss = ss<10?"0"+ss.toPrecision(3):ss.toPrecision(4);
+													s += "[" + mm + ":" + ss  +"]" + lArr[i] + "\n";
 												}
 												_this.v.ta = blo0.blTextarea(_this.v,_this.v.id+"ta",s,blGrey[1]);
+												_this.v.ta.style.width = "98%";
+												_this.v.ta.style.height = "98%";
+												 
 											}
 											_on_off_div(_this,_this.v);
 										}
