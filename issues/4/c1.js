@@ -1,5 +1,5 @@
 //i4c1
-var s= "v0.1. 35 ";
+var s= "v0.1. 42 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c1.js'"
 s += " style='color:blue;'";		s +=">"; s += "c1.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c1.js'"
@@ -238,13 +238,13 @@ function ftnPlayer( oDiv ){
 												 		 "v4bShowLrc", 300,100,500,400, blGrey[0]);
 												var tArr = _div.lrcTimeArray;
 												var lArr = _div.lrcArray;
-												var s = "lrc v0.23:\n";
+												var s = "";
 												for(i in tArr){
 													var mm = Math.floor(tArr[i]/60); 
 													mm = mm<10?"0"+mm:mm;
 													var ss = tArr[i]%60;
 													ss = ss<10?"0"+ss.toPrecision(3):ss.toPrecision(4);
-													s += i + ": [" + mm + ":" + ss  +"]" + lArr[i] + "\n";
+													s += "[" + mm + ":" + ss  +"]" + lArr[i] + "\n";
 												}
 												_this.v.ta = blo0.blTextarea(_this.v,_this.v.id+"ta",s,blGrey[1]);
 												_this.v.ta.style.width = "98%";
