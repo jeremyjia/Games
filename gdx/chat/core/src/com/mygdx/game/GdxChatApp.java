@@ -23,7 +23,7 @@ import com.badlogic.gdx.utils.viewport.StretchViewport;
 
 public class GdxChatApp implements IGdxGame {
 
-    public  Stage stage;
+    public Stage stage;
     private Camera camera;
     private TextArea textArea;
     private TextField textField;
@@ -42,7 +42,7 @@ public class GdxChatApp implements IGdxGame {
 
     private Timer timer;
     private String strAllMsg = "";
-    private String url;
+    private String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526806470";
     private String userName;
     private static final String version = "v:0.0.7";
 
@@ -139,7 +139,6 @@ public class GdxChatApp implements IGdxGame {
             }
         });
 
-        url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526806470?access_token=" + PBZUtils.getToken();
         userName = PBZUtils.generateUserID();
         System.out.println("username " + userName);
 
@@ -163,7 +162,7 @@ public class GdxChatApp implements IGdxGame {
 
     }
 
-    private void readMsg(){
+    private void readMsg() {
         PBZUtils.readMessage(url, new PBZUtils.IResponseListener() {
             @Override
             public void notify(String message) {
@@ -175,6 +174,7 @@ public class GdxChatApp implements IGdxGame {
             }
         });
     }
+
     private void btnSendMsg() {
         String s = textField.getText();
         if (!s.trim().equals("")) {
@@ -187,7 +187,7 @@ public class GdxChatApp implements IGdxGame {
 
     private void btnClearMsg() {
         String s = "Let's chat";
-        PBZUtils.sendMessage(url,s);
+        PBZUtils.sendMessage(url, s);
     }
 
     @Override
@@ -199,7 +199,7 @@ public class GdxChatApp implements IGdxGame {
         stage.draw();
 
         batch.begin();
-        font.draw(batch, version, Gdx.graphics.getWidth()/2, 30);
+        font.draw(batch, version, Gdx.graphics.getWidth() / 2, 30);
         batch.end();
     }
 
@@ -229,7 +229,7 @@ public class GdxChatApp implements IGdxGame {
 
     @Override
     public void notifyBefore() {
-      timer.stop();
+        timer.stop();
     }
 
     @Override
