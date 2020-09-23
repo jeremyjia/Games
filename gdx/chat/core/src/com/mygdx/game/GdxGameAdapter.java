@@ -37,7 +37,7 @@ public class GdxGameAdapter extends ApplicationAdapter implements InputProcessor
     private List<IGdxGame> allApps = new ArrayList<IGdxGame>();
     private List<Stage> allStages = new ArrayList<Stage>();
     private Map<String, Integer> appMap = new HashMap<String, Integer>();
-    private String appInfoUrl = "https://api.github.com/repos/jeremyjia/Games/issues/comments/576489012?access_token="+PBZUtils.getToken();
+    private String appInfoUrl = "https://api.github.com/repos/jeremyjia/Games/issues/comments/576489012";
     private String appClassNames[] = {};  //Getting the app class names from Github Server
 
     @Override
@@ -201,8 +201,7 @@ public class GdxGameAdapter extends ApplicationAdapter implements InputProcessor
         PBZUtils.readMessage(appInfoUrl, new PBZUtils.IResponseListener() {
             @Override
             public void notify(String message) {
-                String jsonString = StringEscapeUtils.unescapeJson(message);
-                JSONObject jsonObj = new JSONObject(jsonString);
+                JSONObject jsonObj = new JSONObject(message);
                 JSONArray jsonArr = jsonObj.getJSONArray("appClassNamesKey");
                 appClassNames = PBZUtils.toStringArray(jsonArr);
                 for (String appName :appClassNames){

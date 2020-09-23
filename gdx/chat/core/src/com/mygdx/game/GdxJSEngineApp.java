@@ -19,15 +19,15 @@ import com.mygdx.game.engine.JSGraphEngine;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import static com.badlogic.gdx.Gdx.gl;
-import static org.apache.commons.lang3.StringEscapeUtils.unescapeJson;
 
-public class GdxJSEngineApp implements IGdxGame{
+public class GdxJSEngineApp implements IGdxGame {
 
     private Stage stage;
     private Camera camera;
@@ -40,19 +40,22 @@ public class GdxJSEngineApp implements IGdxGame{
 
     private Timer timer;
     private List<Image> images = new ArrayList<Image>();
-    private int mX,mY;
+    private int mX, mY;
     private String pictureName;
 
     private String commentId = "586664803";//585806600,586664803,588250364
-    private String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/"+commentId+"?access_token="+PBZUtils.getToken();
+    //Old API
+    // private String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/"+commentId+"?access_token="+PBZUtils.getToken();
+    private String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentId;
 
     private ScriptEngineManager sem = new ScriptEngineManager();
     private ScriptEngine se = sem.getEngineByName("javascript");
+
     @Override
     public void initGame(GdxGameAdapter adapter) {
         create();
         adapter.registerStage(stage);
-        se.put("document", new JSGraphEngine(pixmap,labelMsg,this));
+        se.put("document", new JSGraphEngine(pixmap, labelMsg, this));
         draw();
     }
 
@@ -83,16 +86,16 @@ public class GdxJSEngineApp implements IGdxGame{
 
     private void draw() {
         pixmap.setColor(Color.LIGHT_GRAY);
-        pixmap.fillRectangle(0,0,640,400);
-        dashboard.draw(pixmap, 0 ,0);
-        for (Image img: images){
+        pixmap.fillRectangle(0, 0, 640, 400);
+        dashboard.draw(pixmap, 0, 0);
+        for (Image img : images) {
             img.remove();
         }
 
         PBZUtils.readMessage(url, new PBZUtils.IResponseListener() {
             @Override
             public void notify(String jsonString) {
-                String scriptOnline = unescapeJson(jsonString);
+                String scriptOnline = jsonString;
                 try {
                     StringBuffer sb = new StringBuffer();
                     sb.append("function alert(msg) {print(msg); document.showMessage(msg);}");
@@ -108,6 +111,7 @@ public class GdxJSEngineApp implements IGdxGame{
                     e.printStackTrace();
                 }
             }
+
             @Override
             public void onError(Throwable e) {
             }
@@ -126,7 +130,7 @@ public class GdxJSEngineApp implements IGdxGame{
 
         stage.act();
         stage.draw();
-        dashboard.draw(pixmap, 0 ,0);
+        dashboard.draw(pixmap, 0, 0);
 
     }
 
@@ -142,12 +146,12 @@ public class GdxJSEngineApp implements IGdxGame{
     public void dispose() {
         pixmap.dispose();
         dashboard.dispose();
-        if (timer !=null) timer.stop();
+        if (timer != null) timer.stop();
     }
 
     @Override
     public void notifyBefore() {
-        if (timer !=null) timer.stop();
+        if (timer != null) timer.stop();
     }
 
     @Override
@@ -173,32 +177,32 @@ public class GdxJSEngineApp implements IGdxGame{
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 
-        System.out.println("touchDown:("+screenX+","+screenY+")");
-        float fx = (float) ((640.0/(float)nWidth)*(float)screenX);
-        float fy = (float) ((480.0/(float)nHeight)*(float)screenY);
+        System.out.println("touchDown:(" + screenX + "," + screenY + ")");
+        float fx = (float) ((640.0 / (float) nWidth) * (float) screenX);
+        float fy = (float) ((480.0 / (float) nHeight) * (float) screenY);
         int newScreenX = (int) fx;
         int newScreenY = (int) fy;
-        if (newScreenY>= 380) return false;
+        if (newScreenY >= 380) return false;
         MyPoint point = new MyPoint(newScreenX, newScreenY);
 
         Invocable invocable = (Invocable) se;
         Object obj = se.get("myObj");
-        if (obj == null){
+        if (obj == null) {
             System.out.println("The object myObj is null");
             return false;
         }
 
-        Object hasOnClickObj=null;
+        Object hasOnClickObj = null;
         try {
-            hasOnClickObj = invocable.invokeMethod(obj, "hasOnclickMethod",obj);
+            hasOnClickObj = invocable.invokeMethod(obj, "hasOnclickMethod", obj);
         } catch (ScriptException e) {
         } catch (NoSuchMethodException e) {
         }
-        if (hasOnClickObj==null || hasOnClickObj.equals(false))
+        if (hasOnClickObj == null || hasOnClickObj.equals(false))
             return false;
 
         try {
-            invocable.invokeMethod(obj, "onclick", point );
+            invocable.invokeMethod(obj, "onclick", point);
         } catch (ScriptException e) {
             e.printStackTrace();
         } catch (NoSuchMethodException e) {
@@ -228,14 +232,14 @@ public class GdxJSEngineApp implements IGdxGame{
         return false;
     }
 
-    public void drawImage(String url, int x, int y){
+    public void drawImage(String url, int x, int y) {
         mX = x;
         mY = y;
         pictureName = "br.gif";
-        if (url.contains("/")){
-            pictureName = url.substring(url.lastIndexOf("/")+1);
+        if (url.contains("/")) {
+            pictureName = url.substring(url.lastIndexOf("/") + 1);
         }
-        System.out.println("drawImage:"+pictureName);
+        System.out.println("drawImage:" + pictureName);
 
         Gdx.app.postRunnable(new Runnable() {
             @Override
@@ -244,13 +248,13 @@ public class GdxJSEngineApp implements IGdxGame{
                 int w = texture.getWidth();
                 int h = texture.getHeight();
                 float scale = 0.7f;
-                TextureRegion textureRegion = new TextureRegion(texture, 0,0, w, h);
+                TextureRegion textureRegion = new TextureRegion(texture, 0, 0, w, h);
                 Image img = new Image(textureRegion);
                 img.setScale(scale);
                 img.setRotation(0);
                 img.setOrigin(0, 0);
                 //img.setPosition(mX-w*scale/2, 480-mY-h*scale/2);
-                img.setPosition(mX, 480-h*scale-mY);
+                img.setPosition(mX, 480 - h * scale - mY);
                 stage.addActor(img);
                 images.add(img);
             }
@@ -258,7 +262,7 @@ public class GdxJSEngineApp implements IGdxGame{
 
     }
 
-    public boolean setTimer(final Object functionObj, int interval){
+    public boolean setTimer(final Object functionObj, int interval) {
         final Invocable invocable = (Invocable) se;
         final Object myObj = se.get("myObj");
 
@@ -267,22 +271,24 @@ public class GdxJSEngineApp implements IGdxGame{
             @Override
             public void run() {
                 try {
-                    invocable.invokeMethod(myObj, "scheduleTask", functionObj );
+                    invocable.invokeMethod(myObj, "scheduleTask", functionObj);
                 } catch (ScriptException e) {
                     e.printStackTrace();
                 } catch (NoSuchMethodException e) {
                     e.printStackTrace();
                 }
             }
-        }, 1f, interval/1000);
+        }, 1f, interval / 1000);
 
-        return  true;
+        return true;
     }
-    public class MyPoint{
-        public MyPoint(int x, int y){
+
+    public class MyPoint {
+        public MyPoint(int x, int y) {
             offsetX = x;
             offsetY = y;
         }
+
         public int offsetX;
         public int offsetY;
     }
