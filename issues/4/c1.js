@@ -1,5 +1,5 @@
 //i4c1
-var s= "v0.1. 42 ";
+var s= "v0.1. 43 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c1.js'"
 s += " style='color:blue;'";		s +=">"; s += "c1.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c1.js'"
@@ -66,8 +66,8 @@ function ftnPlayer( oDiv ){
 
 	v.tb = blo0.blDiv(v, v.id + "tb", "tb",blGrey[3]);
 
-	v.tb.b0 = blo0.blBtn(v.tb, v.tb+"b0","list",blGrey[0]);
-	v.tb.b0.onclick = function(){
+	v.tb.btnLists = blo0.blBtn(v.tb, v.tb+"btnLists","lists",blGrey[0]);
+	v.tb.btnLists.onclick = function(){
 		if(!this.v){
 			this.v = blo0.blDiv(v,v.id + "List","list", "lightblue");
 			var d = this.v;
@@ -84,7 +84,7 @@ function ftnPlayer( oDiv ){
 						    s += "<a href='https://littleflute.github.io/EXPLORATIONS/issues/1/i.js' target='_blank'>i.js<a/>";
 						     blo0.blDiv(d,d.id+"_#9_", s,blColor[4]);
 						     var t = blo0.blDiv(d,d.id+"_title_", a.title,blColor[5]);
-						     t.v = blo0.blDiv(t,t.id+"v", "v",blColor[5]);
+						     t.v = blo0.blDiv(t,t.id+"v", "v4Title",blColor[5]);
 						     t.v.onclick = function(){						     	
 						     	if(!t.v.dLrc){
 						     		t.v.dLrc = blo0.blMD("id_mdiv_Lrc", "Lrc", 300,100,500,400, blGrey[5]);
@@ -146,8 +146,10 @@ function ftnPlayer( oDiv ){
   			}
 
 			function _loadListComments(o) {
+				var n = 0;
 				for(i in o){ 
-					 var btn = blo0.blBtn(d.v,d.v.id + "_btn_"+i, i+1,blColor[i]);
+					 n++;
+					 var btn = blo0.blBtn(d.v,d.v.id + "_btn_"+i, n,blColor[i]);
 					 btn.txt = o[i].body; 
 					 btn.onclick = function(_this){
 					        return function (){_makeMp3List2Div(d.v4List,_this.txt);};
