@@ -84,11 +84,17 @@ function ftnPlayer( oDiv ){
 						    s += "<a href='https://littleflute.github.io/EXPLORATIONS/issues/1/i.js' target='_blank'>i.js<a/>";
 						     blo0.blDiv(d,d.id+"_#9_", s,blColor[4]);
 						     var t = blo0.blDiv(d,d.id+"_title_", a.title,blColor[5]);
-						     t.v = blo0.blDiv(t,t.id+"v", "v4Title",blColor[5]);
+						     t.v = blo0.blDiv(t,t.id+"v", "v4Title",blColor[6]);
 						     t.v.onclick = function(){						     	
 						     	if(!t.v.dLrc){
-						     		t.v.dLrc = blo0.blMD("id_mdiv_Lrc", "Lrc", 300,100,500,400, blGrey[5]);
+						     		t.v.dLrc = blo0.blMD("id_mdiv_Lrc", "md4Lrc", 300,100,500,400, blGrey[5]);
 						     		t.v.dLrc.sLrcFile = "";	
+									t.v.dLrc.tb = blo0.blDiv(t.v.dLrc, t.v.dLrc.id + "tb","tb",blGrey[0]);
+									var btn2Edit = blo0.blBtn(t.v.dLrc.tb,"btn2Edit","2Edit",blGrey[1]);
+									btn2Edit.onclick = function(){
+										var ta = bl$("ta1");
+										ta.value = t.v.dLrc.v.innerHTML;
+									} 
 						     		t.v.dLrc.v = blo0.blDiv(t.v.dLrc, t.v.dLrc.id + "v","cur Lrc",blGrey[3]);
 						     	} 
 						     	if(t.v.dLrc.sLrcFile!=t.v.innerHTML){
@@ -164,7 +170,7 @@ function ftnPlayer( oDiv ){
 
 	v.tb.b1 = blo0.blBtn(v.tb, v.tb+"b1","lyric",blGrey[0]);
 	v.tb.b1.onclick = function(){
-		var _TimeFun = function(_this){	      
+		var _fnTimer = function(_this){	      
 				var _t = 0;
 				var _src = "";
 				var _lrc = "";
@@ -189,7 +195,7 @@ function ftnPlayer( oDiv ){
 			this.v = blo0.blDiv(v,v.id + "v4b1","v4b1",blColor[9]);
 			this.v.src = blo0.blDiv(this.v, this.v.id + "src", "url",10,10,300,200,blGrey[0]);
 			this.v.lrc = blo0.blDiv(this.v, this.v.id + "lrc", "url",10,10,300,200,blGrey[5]);
-			this.v.mv = blo0.blMDiv(this.v, this.v.id + "mv", "mv4Lyrics",310,10,300,200,blGrey[1]);
+			this.v.mv = blo0.blMDiv(this.v, this.v.id + "mv", "mv4Lyrics",310,10,888,200,blGrey[1]);
 
 			this.v.mv.parseTxt = function(_d){
 
@@ -200,7 +206,7 @@ function ftnPlayer( oDiv ){
 							ii = i;	
 						} 
 					} 
-					oDiv.innerHTML = _txtA[ii];
+					oDiv.v.innerHTML = _txtA[ii];
 				    
 				}
 				return function(ta,ct,txt){
@@ -208,18 +214,19 @@ function ftnPlayer( oDiv ){
 						_d.v 	= blo0.blDiv(_d, _d.id + "v", "v", blGrey[0]);
 						_d.vLrc = blo0.blDiv(_d, _d.id + "vLrc", "vLrc", blGrey[3]);
 						var b1 	= blo0.blBtn(_d.vLrc, _d.vLrc.id+"b1","b1",blGrey[0]);
-						var b2 	= blo0.blBtn(_d.vLrc, _d.vLrc.id+"b2","b2",blGrey[0]);
-						_d.vLrc.ta = blo0.blTextarea(_d.vLrc,_d.vLrc.id+"ta","xxx",blGrey[1]);
+						var btnEditTime 	= blo0.blBtn(_d.vLrc, _d.vLrc.id+"eTime","eTime",blGrey[0]);
+						_d.vLrc.ta = blo0.blTextarea(_d.vLrc,"ta1","xxx...",blGrey[1]);
 						_d.vLrc.ta.style.width="95%"; 
 						_d.vLrc.ta.style.height="150px"; 
 
-						_d.v4MovingLrc = blo0.blDiv(_d, _d.id + "v4MovingLrc", "v4MovingLrc", blColor[9]);
+						_d.v4MovingLrc = blo0.blMDiv(_d, _d.id + "v4MovingLrc", "v4MovingLrc",0,-20,600,50, blColor[9]);
+						_d.v4MovingLrc.v = blo0.blMDiv(_d.v4MovingLrc,"id_v4MovingLrc_v","vvvv",blGrey[0]);
 
 						b1.onclick = function(_this,_div){	
 							return function(){
 								if(!_this.v0) 
 								{
-									_this.v0 = blo0.blMDiv(_div,_div.id+"v1","v1",150,100,400,300,blGrey[0]);
+									_this.v0 = blo0.blMDiv(_div,_div.id+"v1","v1111",150,100,400,300,blGrey[0]);
 									var bUpdate = blo0.blBtn(_this.v0 ,_this.v0.id+"bUpdate","bUpdate",blGrey[4]);
 									var bShowLrc = blo0.blBtn(_this.v0 ,_this.v0.id+"bShowLrc","bShowLrc",blGrey[1]);
 									var bShowSrt = blo0.blBtn(_this.v0 ,_this.v0.id+"bShowSrt","bShowSrt",blGrey[1]);
@@ -248,7 +255,7 @@ function ftnPlayer( oDiv ){
 													ss = ss<10?"0"+ss.toPrecision(3):ss.toPrecision(4);
 													s += "[" + mm + ":" + ss  +"]" + lArr[i] + "\n";
 												}
-												_this.v.ta = blo0.blTextarea(_this.v,_this.v.id+"ta",s,blGrey[1]);
+												_this.v.ta = blo0.blTextarea(_this.v,"ta2",s,blGrey[1]);
 												_this.v.ta.style.width = "98%";
 												_this.v.ta.style.height = "98%";
 												 
@@ -277,8 +284,8 @@ function ftnPlayer( oDiv ){
 
 											var mm = tArray[i]/60;
 											var ss = tArray[i]%60;
-											var sb1a =  "[" + Math.floor(mm) + ":" + ss + "]";
-																																	dl.b1a = blo0.blBtn(dl,dl.id+"b1a",sb1a,"lightblue");
+											var sb1a =  "[" + Math.floor(mm) + ":" + ss + "]";																																
+											dl.b1a = blo0.blBtn(dl,dl.id+"b1a",sb1a,"lightblue");
 											dl.b2 = blo0.blBtn(dl,dl.id+"b2",_div.lrcArray[i],blGrey[0]);
 										}
 									}
@@ -288,7 +295,7 @@ function ftnPlayer( oDiv ){
 							}
 						}(b1,_d);
 
-						b2.onclick = function(_this,_div){													
+						btnEditTime.onclick = function(_this,_div){													
 							return function(){
 								var ta 				= _div.vLrc.ta;
 								_div.lrcTimeArray 	= [];	
@@ -302,7 +309,7 @@ function ftnPlayer( oDiv ){
 								var b = a.split("\n");
 								de.innerHTML = "";
 								for(i in b){
-									var l = blo0.blDiv(de,de.id+i, "l"+i + ":" + b[i],blColor[i]);
+									var l = blo0.blDiv(de,de.id+i, "l"+i + ":" + b[i],blColor[i%blColor.length]);
 									l.onclick = function(_div,_i,_timeA,_txtA, _player)
 									{
 										return function(){											
@@ -316,7 +323,7 @@ function ftnPlayer( oDiv ){
 								}
 								_on_off_div(_this,_div.vLrc.de);
 							}
-						}(b2,_d);
+						}(btnEditTime,_d);
 					}
 					_d.v.innerHTML 		= ct + "   /    " + ta  + " n=" + _p.getListenerNum();
 
@@ -355,7 +362,7 @@ function ftnPlayer( oDiv ){
 					blo0.blAjx(_d,url);
 				}
 			}(this.v.mv);
-			this.timer = setInterval(_TimeFun , 100);   
+			this.timer = setInterval(_fnTimer , 100);   
 			_on_off_div(this,this.v);
 			var b = this; var d = this.v;
 			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
@@ -366,7 +373,7 @@ function ftnPlayer( oDiv ){
 				this.timer = null;
 			}
 			else{
-				this.timer = setInterval(_TimeFun , 100);   
+				this.timer = setInterval(_fnTimer , 100);   
 			}
 			_on_off_div(this,this.v);
 			var b = this; var d = this.v;
@@ -374,8 +381,8 @@ function ftnPlayer( oDiv ){
 		}
 	};
 
-	v.tb.b2 = blo0.blBtn(v.tb, v.tb+"b2","play",blGrey[0]);
-	v.tb.b2.onclick = function(){
+	v.tb.btnPlay = blo0.blBtn(v.tb, v.tb+"btnPlay","play",blGrey[0]);
+	v.tb.btnPlay.onclick = function(){
 		if(!this.run){
 			this.run = true;
 			this.style.backgroundColor = "green";
