@@ -54,7 +54,6 @@ public class GdxJSEngineApp implements IGdxGame {
     @Override
     public void initGame(GdxGameAdapter adapter) {
         create();
-        adapter.registerStage(stage);
         se.put("document", new JSGraphEngine(pixmap, labelMsg, this));
         draw();
     }
