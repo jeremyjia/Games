@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 
 public class GdxGameAdapter extends ApplicationAdapter implements InputProcessor {
-
     private IGdxGame  app = null;  //Current App instance
     private Pixmap pixMapBtn;
     private ButtonGroup buttonGroup = new ButtonGroup();
@@ -43,7 +42,9 @@ public class GdxGameAdapter extends ApplicationAdapter implements InputProcessor
     @Override
     public void create () {
 
-        getAppInfoFromServer();
+        //getAppInfoFromServer();
+        getMockAppInfoFromServer();
+
         int nWaitSeconds = 15;
         while (appClassNames.length == 0 && --nWaitSeconds>0){
             System.out.println("Waiting for loading app info from Github Server");
@@ -213,5 +214,19 @@ public class GdxGameAdapter extends ApplicationAdapter implements InputProcessor
             }
         });
 
+    }
+
+    private void getMockAppInfoFromServer() {
+        String s = "{\n" +
+               // "\"appClassNamesKey\": [\"GdxUserLoginApp\", \"GdxChatApp\",\"GdxFiveChessApp\",\"GdxJDSpiderApp\", \"GdxJSEngineApp\"],\n" +
+                "\"appClassNamesKey\": [\"GdxUserLoginApp\"],\n" +
+                "\"version\": \"1.0.0.2\"\n" +
+                "}";
+        JSONObject jsonObj = new JSONObject(s);
+        JSONArray jsonArr = jsonObj.getJSONArray("appClassNamesKey");
+        appClassNames = PBZUtils.toStringArray(jsonArr);
+        for (String appName :appClassNames){
+            System.out.println(appName);
+        }
     }
 }

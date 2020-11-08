@@ -138,14 +138,13 @@ public class GdxUserLoginApp implements IGdxGame {
         btnLogin.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                Gdx.app.log("Login:", "按钮被点击了");
+                Gdx.app.log("Login:", "xddbg...");
                 curLoginUser = textFieldUserName.getText();
                 curLoginUserPwd = textFieldPassword.getText();
                 if (!validateUserInpute()) {
                     return;
                 }
                 logOn();
-
             }
         });
 
@@ -248,7 +247,8 @@ public class GdxUserLoginApp implements IGdxGame {
 
     @Override
     public void notifyAfter() {
-        getRegisteredUser();
+       //etRegisteredUser();
+        getMockRegisteredUser();
     }
 
     @Override
@@ -311,6 +311,20 @@ public class GdxUserLoginApp implements IGdxGame {
         });
 
     }
+
+    private void getMockRegisteredUser() {
+        String s = "{\"users\":[{\"name\":\"u1\",\"password\":\"u1\",\"registerTime\":\"2020-03-05 22:06:28\"},{\"name\":\"贾鹏\",\"password\":\"password\",\"registerTime\":\"2020-03-05 22:50:57\"},{\"name\":\"Jeremy\",\"password\":\"Install@bj1\",\"registerTime\":\"2020-03-05 23:48:16\"},{\"name\":\"测试\",\"password\":\"123456\",\"registerTime\":\"2020-03-06 01:04:52\"},{\"name\":\"xd\",\"password\":\"xd12345\",\"registerTime\":\"2020-03-06 09:55:46\"},{\"name\":\"xy\",\"password\":\"123456\",\"registerTime\":\"2020-03-08 10:14:55\"}]}";
+
+        JSONObject jsonObj = new JSONObject(s);
+        JSONArray users = jsonObj.getJSONArray("users");
+        for (int i = 0; i < users.length(); i++) {
+            JSONObject jb = users.getJSONObject(i);
+            String name = jb.getString("name");
+            String password = jb.getString("password");
+            regUserMap.put(name, password);
+        }
+    }
+
 
     private void logOut() {
         PBZUtils.readMessage(urlLogUsers, new PBZUtils.IResponseListener() {
@@ -405,8 +419,6 @@ public class GdxUserLoginApp implements IGdxGame {
                 textFieldUserName.remove();
                 textFieldPassword.remove();
                 stage.addActor(btnLogout);
-
-
             }
 
             @Override
