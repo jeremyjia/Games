@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Group6Client</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script src="https://littleflute.github.io/JavaScript/w3.js" ></script>
+<script src="https://littleflute.github.io/JavaScript/blclass.js" ></script> 
+
+
+<script>
+$(document).ready(function(){
+  $("#btnLogin").click(function(){
+    var settings = {
+        "url": "http://localhost:3000/api/login",
+        "method": "POST",
+        "timeout": 0,
+        "headers": {
+            "accept": "application/json",
+            "Content-Type": "application/json"
+        },
+        "data": JSON.stringify({"UserName":"aaa1","Password":"aa"}),
+    };
+ 
+    $.ajax(settings).done(function (response) { 
+        $("#pLogin").html(JSON.stringify(response));
+    }); 
+  });
+  
+  $("#test1").click(function(){
+    var settings = {
+        "url": "http://localhost:3000/api/getPlayer?id=-1507897597",
+        "method": "GET",
+        "timeout": 0,
+        "headers": {
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InYiOiJ2MC4xMyIsImlkIjoxLCJ1c2VybmFtZSI6InlvbmdsaW5nIiwiZW1pYWwiOiJ5b25nbGluZy5odWFuZ0Bncm91cDYuaW8ifSwiaWF0IjoxNTkwNjEyODMxLCJleHAiOjE1OTA2MTY0MzF9.wRKDrvdI2e3vOCWWXuSpbhPkTyAvrIeNMTHhJdncG08"
+        },
+    };
+
+    $.ajax(settings).done(function (response) {
+        alert(response);
+    });
+  });
+});
+</script>
+</head>
+<body>
+<div style = "float:right;"> 
+    <button id="btnLogin">Login</button>
+    <button id= "test1">test1</button>
+    <button id= "id_btn_4_plx" style = "float:right;">plx</button>      
+</div>
+
+
+<p>v0.114: group6 test.
+  <a href="api-docs" target="_blank">api-docs</a>  
+  <a href="old" >old</a>
+</p>
+<p id="pLogin">pLogin</p>
+
+<div> 
+    <button id="id_plx1_btn">plxSocketClient</button>     
+    <input type = 'text' id = 'txtGameId'>
+    <div id  = 'dPlayers'></div>
+    <div id  = 'divBoard'></div> 
+    
+</div>
+
+<script>
+    var btnPlx = bl$("id_btn_4_plx");
+    var nClick = 0;
+    btnPlx.onclick = function(){
+        if(!blo0.vPlx){
+            blo0.blScript("id_script_plx","blPlx.js");   
+            _on_off_div(this,blo0.vPlx);            
+        }
+        else{
+            if(nClick==0) 
+            {
+                _on_off_div(this,blo0.vPlx);
+
+            }
+            _on_off_div(this,blo0.vPlx);
+            nClick++;
+        }
+    }
+</script>
+</body>
+
+<script src="old/js49/plx/p1.js"></script>
+</html>
