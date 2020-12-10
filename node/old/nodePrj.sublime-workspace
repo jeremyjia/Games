@@ -1,0 +1,675 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"_o",
+				"_on_off_div"
+			],
+			[
+				"_",
+				"_on_off_div"
+			],
+			[
+				"al",
+				"text-align\tproperty"
+			],
+			[
+				"get",
+				"getListenerNum"
+			],
+			[
+				"le",
+				"length"
+			],
+			[
+				"cu",
+				"currentTime"
+			],
+			[
+				"lrcT",
+				"lrcTimeArray"
+			],
+			[
+				"in",
+				"innerHTML"
+			],
+			[
+				"lr",
+				"lrcUlr"
+			],
+			[
+				"son",
+				"songData"
+			],
+			[
+				"backg",
+				"background-color"
+			],
+			[
+				"Response",
+				"ResponseBody"
+			],
+			[
+				"Respones",
+				"ResponseBody"
+			],
+			[
+				"gre",
+				"greeting"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "nodePrj.sublime-project",
+			"settings":
+			{
+				"buffer_size": 45,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "iInsert.js",
+			"settings":
+			{
+				"buffer_size": 973,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/C/Users/User/github/jeremyjia/Games/gdx/chat/core/src/com/mygdx/game/GdxChatGame.java",
+			"settings":
+			{
+				"buffer_size": 10031,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "i.js",
+			"settings":
+			{
+				"buffer_size": 1785,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "g6RunSQL.js",
+			"settings":
+			{
+				"buffer_size": 796,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "iDelete.js",
+			"settings":
+			{
+				"buffer_size": 813,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "iShow.js",
+			"settings":
+			{
+				"buffer_size": 1357,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"contents": "<!DOCTYPE html>\n<html>\n<head>\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<style>\nbody {\n  margin: 0;\n  font-family: \"Lato\", sans-serif;\n}\n\n.sidebar {\n  margin: 0;\n  padding: 0;\n  width: 200px;\n  background-color: #f1f1f1;\n  position: fixed;\n  height: 100%;\n  overflow: auto;\n}\n\n.sidebar a {\n  display: block;\n  color: black;\n  padding: 16px;\n  text-decoration: none;\n}\n \n.sidebar a.active {\n  background-color: #4CAF50;\n  color: white;\n}\n\n.sidebar a:hover:not(.active) {\n  background-color: #555;\n  color: white;\n}\n\ndiv.content {\n  margin-left: 200px;\n  padding: 1px 16px;\n  height: 1000px;\n}\n\n@media screen and (max-width: 700px) {\n  .sidebar {\n    width: 100%;\n    height: auto;\n    position: relative;\n  }\n  .sidebar a {float: left;}\n  div.content {margin-left: 0;}\n}\n\n@media screen and (max-width: 400px) {\n  .sidebar a {\n    text-align: center;\n    float: none;\n  }\n}\n\ntable {\n  border-spacing: 0;\n  width: 100%;\n  border: 1px solid #ddd;\n}\n\nth, td {\n  text-align: left;\n  padding: 16px;\n}\n\ntr:nth-child(even) {\n  background-color: #f2f2f2\n}\n\n</style>\n</head>\n<body>\n\n<div class=\"sidebar\">\n  <a class=\"active\" href=\"#home\">Home v0.0.135</a>\n  <a href=\"#show\" id=\"show\">show</a>\n  <a href=\"#insert\" id=\"insert\">insert</a> \n  <button id=\"id_btn_4_blApp\">+</button> \n</div>\n\n<div class=\"content\" id = \"content\">\n  <h2>Group6</h2>\n  <p>Node.js + MySQL Example</p> \n  <h3>12/3/2019</h3>\n</div>\n<script src=\"https://littleflute.github.io/JavaScript/w3.js\" ></script>\n<script src=\"https://littleflute.github.io/JavaScript/blclass.js\" ></script> \n<script src=\"\">\n  //https://littleflute.github.io/JavaScript/blApp.js\n</script>\n<script> \n\tvar n = bl$(\"show\");\n\tn.onclick = function(){\n\t\tvar w = {};\n\t\tw._2do = function(txt){  \n      bl$(\"content\").innerHTML = txt;\n      showDone(); \n    }\n\t\tvar urlLrc = \"show\";\n\t\tblo0.blAjx(w,urlLrc);\n\t}\n  var n = bl$(\"insert\");\n  n.n = 0;\n  n.onclick = function(){\n    n.n++;\n    var w = {};\n    w._2do = function(txt){  \n        bl$(\"content\").innerHTML = txt; \n        setTimeout(function(){ bl$(\"show\").click(); }, 1000);        \n    }\n    var urlLrc = \"insert?name=Name\"+n.n+\"&\"+\"address=Addr_NO.\"+n.n;\n    blo0.blAjx(w,urlLrc);\n  }\n  function showDone(){\n    var t = bl$(\"myTable\");\n\n    var bs = t.getElementsByTagName(\"button\");\n    for(i in bs){\n       bs[i].style.backgroundColor = \"lightblue\";\n       bs[i].onclick = function(_i,_this){\n            return function(){\n                   var a = _this.parentElement.parentElement.innerHTML;\n                   var b = a.split(\"</td>\");\n                   var c = b[2].split(\"<td>\");\n                 //  alert(c[1]);\n     \n                   var w = {};\n                  w._2do = function(txt){  setTimeout(function(){ bl$(\"show\").click(); }, 500); }\n                  var urlLrc = \"delete?address='\"+c[1]+\"'\";\n                  blo0.blAjx(w,urlLrc);\n            }\n       }(i,bs[i]);\n    } \n\n  }\n\n  var b1 = bl$(\"id_btn_4_blApp\");\n  b1.onclick = function(){\n      var s = \"blog_i#955: v0.0. 11\";\n      var d = blo0.blMDiv(document.body,\"id_MDIV_4_run_SQL\", s, 300,100,500,400, blGrey[5]);\n      d.ta = blo0.blTextarea(d, \"id_ta_4_SQL\", \"SELECT name, address FROM customers1\", blGrey[1]);\n      d.ta.style.width = \"98%\";\n      d.ta.style.height = \"50px\";\n      d.v1 = blo0.blDiv(d, d.id+\"v1\",\"v1\",blGrey[3]);\n      if(!d.v1.v){\n         d.v1.v = blo0.blDiv(d.v1,\"id_mdiv_loadIssue_blog_955\",\"v\",blGrey[0]);   \n         \n          function _loadIssue (o) { \n             eval(o.body); \n          }\n          var url = \"https://api.github.com/repos/littleflute/blog/issues/955\";\n          w3.getHttpObject(url, _loadIssue);\n      }\n\n      d.v2 = blo0.blDiv(d, d.id+\"v2\",\"v2\",blGrey[2]);\n      d.v1.btnRunSQL = blo0.blBtn(d.v1, d.v1.id+\"_b1\",\"runSQL\", \"green\");\n      d.v1.btnRunSQL.onclick = function(){\n              var w = {};\n              w._2do = function(txt){  \n                d.v2.innerHTML = txt;\n              }\n              var urlLrc = \"g6RunSQL?sql=\" + d.ta.value;\n              blo0.blAjx(w,urlLrc);\n      }\n\n      _on_off_div(this,d);\n      this.style.background = this.style.background==\"red\"?blGrey[5]:blColor[4]; \n  }\n\n  var b2 = blo0.blBtn(b1.parentElement,\"id_btn_4_b2\",\"b2\",blGrey[0]);\n  b2.onclick = function(){\n    var s = \"_issue14: v0.0. 12\";\n      var d = blo0.blMD(\"ttt\", s,    300,100,500,400, blGrey[5]); \n      if(!d.v){\n          d.v = blo0.blDiv(d, d.id+\"v\",\"v\",blGrey[0]);\n          function _loadIssue (o) {     \n            d.v.innerHTML = o.body;\n          }\n          var url = \"https://api.github.com/repos/littleflute/weixin/issues/481\";\n          w3.getHttpObject(url, _loadIssue ); \n\n\n          d.vtb = blo0.blDiv(d, d.id+\"vtb\",\"vtb\",blGrey[2]);\n          d.vtb.b1 = blo0.blBtn(d.vtb,d.vtb.id+\"b1\",\"b1\",blGrey[0]);\n          d.vtb.b1.onclick = function(_this){\n            return function(){\n              if(!_this.v){\n                _this.v = blo0.blMD(\"id_MDIV_4_Drawing\", \"drawing...\", 800,100,500,1400, blGrey[5]);\n                _this.v.d1 = blo0.blDiv(_this.v, _this.v.id+\"d1\",\"d1\",blGrey[1]);``\n                var x = document.createElement(\"CANVAS\");\n                x.style.height = \"1555px\";\n                x.id = \"i14_v5_canvas\";\n                var ctx = x.getContext(\"2d\");\n                ctx.fillStyle = \"#FFaabb\";\n                ctx.fillRect(1, 1, 55, 1555);\n                _this.v.appendChild(x);\n              }\n              _on_off_div(_this,_this.v);              \n            }\n          }(d.vtb.b1)\n\n          d.vc = blo0.blDiv(d, d.id+\"vc\",\"vc\",blGrey[1]);\n          d.vp = blo0.blDiv(d, d.id+\"vp\",\"vp\",blGrey[3]);\n          d.vp.ta = blo0.blTextarea(d.vp, d.vp.id+\"ta\",\"/[\\\\d][\\\\d]:[\\\\d][\\\\d]/g\",blGrey[0]);\n\n          d.vt = blo0.blDiv(d, d.id+\"vt\",\"vt\",blGrey[2]);\n          d.vt.ta = blo0.blTextarea(d.vt, d.vt.id+\"ta\",\"ta\",blGrey[3]);\n          d.vt.ta.style.width = \"91%\";\n          d.vt.ta.style.height = \"150px\";\n\n\n          d.v4srt = blo0.blDiv(d, d.id+\"v4srt\",\"v4srt\",blGrey[2]);\n          d.v4srt.ta = blo0.blTextarea(d.v4srt, d.v4srt.id+\"ta\",\"ta\",blGrey[3]);\n          d.v4srt.ta.style.width = \"91%\";\n          d.v4srt.ta.style.height = \"150px\";\n\n          function _Comments(o) {\n                  var _i = 0; \n                  var _v = d.vc;\n                  for(i in o){\n                    _i++;\n                    var a = o[i].body;\n                    var btnJS = blo0.blBtn(_v, _v.id+\"btnJS\"+i,_i,blGrey[2]);\n                    btnJS.onclick = function(_txt){\n                                return function(){\n                                      d.vt.ta.value = _txt;// eval( _txt);\n                                }\n                          }(a);\n                  }\n                  var b1 = blo0.blBtn(_v, _v.id+\"b1\",\"b1\",blGrey[3]);\n                  b1.onclick = function(){\n                        var str = d.vt.ta.value;  \n                        var a = d.vp.ta.value.split(\"/\"); \n                        var patt1 =  new RegExp(a[1],a[2]);\n                        var ss = \"==xd==\";\n                        var l = str.replace(patt1,ss);\n                        d.vt.ta.value = l;\n                        var ll = l.split(ss);  \n\n\n                        var t = str.match(patt1);\n                        var s = \"\";\n                        var i =0;\n                        for(;i<t.length;i++){\n                          var j = i+1;\n                          s += j;\n                          s += \"\\n\";\n                          s += \"00:\";\n                          s += t[i] +  \",000\";\n                          s += \" --> \";\n                          s += \"00:\";\n                          s += t[j]==undefined?t[i]:t[j];\n                          s += \",000\";\n                        //  s += \"\\n\";\n                          s += ll[j];\n                          s += \"\\n\";\n                        }\n                        d.v4srt.ta.value = s;               \n                  }\n                }\n          var _src = \"https://api.github.com/repos/littleflute/weixin/issues/481/comments\";\n          w3.getHttpObject(_src, _Comments);\n      }\n\n    _on_off_div(null,d);\n  }\n</script>\n</script>\n</body>\n</html>\n",
+			"file": "index.html",
+			"file_size": 8422,
+			"file_write_time": 132216926711312091,
+			"settings":
+			{
+				"buffer_size": 8148,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/C/Users/User/Downloads/response_1576802044950.json",
+			"settings":
+			{
+				"buffer_size": 277,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "package-lock.json",
+			"settings":
+			{
+				"buffer_size": 3136,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+		[
+			[
+				[
+					"Packages/C++/C Single File.sublime-build",
+					""
+				],
+				[
+					"Packages/C++/C Single File.sublime-build",
+					"Run"
+				],
+				[
+					"Packages/Makefile/Make.sublime-build",
+					""
+				],
+				[
+					"Packages/Makefile/Make.sublime-build",
+					"Clean"
+				]
+			],
+			[
+				"Packages/Makefile/Make.sublime-build",
+				""
+			]
+		]
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/C/Users/User/group6/battlecasters-mono/backend/node"
+	],
+	"file_history":
+	[
+		"/C/Users/User/github/MinGW-Win32-Application/Readme.md",
+		"/C/Users/User/AppData/Roaming/Sublime Text 3/Packages/User/mingw32-make.sublime-build",
+		"/C/Users/User/github/MinGW-Win32-Application/.gitignore",
+		"/C/Users/User/github/MinGW-Win32-Application/License.txt",
+		"/C/Users/User/github/MinGW-Win32-Application/res/Application.ico",
+		"/C/Users/User/github/MinGW-Win32-Application/res/Application.manifest",
+		"/C/Users/User/github/MinGW-Win32-Application/res/Resource.rc",
+		"/C/Users/User/github/MinGW-Win32-Application/include/AboutDialog.h",
+		"/C/Users/User/github/MinGW-Win32-Application/include/Globals.h",
+		"/C/Users/User/github/MinGW-Win32-Application/include/MainWindow.h",
+		"/C/Users/User/github/MinGW-Win32-Application/include/Resource.h",
+		"/C/Users/User/github/MinGW-Win32-Application/src/MainWindow.c",
+		"/C/Users/User/github/MinGW-Win32-Application/src/WinMain.c",
+		"/C/Users/User/github/MinGW-Win32-Application/r.bat",
+		"/C/Users/User/github/MinGW-Win32-Application/Makefile",
+		"/C/Users/User/github/blMp3Player/LICENSE",
+		"/C/Users/User/github/blMp3Player/Note Dec 5, 2017 (3).pdf",
+		"/C/Users/User/github/blMp3Player/README.md",
+		"/C/Users/User/github/blMp3Player/images/album_cover_mask.png",
+		"/C/Users/User/github/blMp3Player/javascript/musicPlayer.js",
+		"/C/Users/User/github/blMp3Player/images/index.jpg",
+		"/C/Users/User/github/blMp3Player/images/index.html",
+		"/C/Users/User/github/blMp3Player/images/control_panel_bg.png",
+		"/C/Users/User/github/testwebsite/src/gradlew",
+		"/C/Users/User/github/testwebsite/src/src/main/java/test1/Json.java",
+		"/C/Users/User/github/testwebsite/src/build.gradle",
+		"/C/Users/User/github/testwebsite/src/src/main/java/test1/GitHubService.java",
+		"/C/Users/User/github/jeremyjia/Games/issues/4/c1.js",
+		"/C/Users/User/gradle/src/test/java/io/group6/test1/AppTest.java"
+	],
+	"find":
+	{
+		"height": 27.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"_on",
+			"_o",
+			"blMD",
+			"vtb",
+			"vc",
+			"tb",
+			"url",
+			"getToken",
+			"token",
+			"generateUserID"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 7,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "nodePrj.sublime-project",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 45,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "iInsert.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 973,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								721,
+								727
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 216.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "/C/Users/User/github/jeremyjia/Games/gdx/chat/core/src/com/mygdx/game/GdxChatGame.java",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 10031,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								6346,
+								6247
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Java/Java.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 3123.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "i.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1785,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								675,
+								869
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 378.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "g6RunSQL.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 796,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								311,
+								311
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 216.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "iDelete.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 813,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								606,
+								580
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "iShow.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1357,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								352,
+								354
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 54.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "index.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 8148,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5065,
+								5065
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 3206.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "/C/Users/User/Downloads/response_1576802044950.json",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 277,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "package-lock.json",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3136,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 27.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 162.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "Packages/User/mingw32-make.sublime-build",
+	"project": "nodePrj.sublime-project",
+	"replace":
+	{
+		"height": 50.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 278.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

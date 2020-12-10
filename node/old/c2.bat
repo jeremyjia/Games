@@ -1,0 +1,1 @@
+curl -X GET "https://localhost:8080/getUserInfo"

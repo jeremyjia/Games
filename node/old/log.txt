@@ -1,0 +1,54 @@
+--2020/7/1--
+1. ps aux | grep node
+
+--2020/3/11--
+ 
+
+mysql> select * from mysql.user;
++-----------+------------------+-------------+-------------+-------------+-------------+-------------+-----------+-------------+---------------+--------------+-----------+------------+-----------------+------------+------------+--------------+------------+-----------------------+------------------+--------------+-----------------+------------------+------------------+----------------+---------------------+--------------------+------------------+------------+--------------+------------------------+----------+------------+-------------+--------------+---------------+-------------+-----------------+----------------------+-----------------------+-------------------------------------------+------------------+-----------------------+-------------------+----------------+
+| Host      | User             | Select_priv | Insert_priv | Update_priv | Delete_priv | Create_priv | Drop_priv | Reload_priv | Shutdown_priv | Process_priv | File_priv | Grant_priv | References_priv | Index_priv | Alter_priv | Show_db_priv | Super_priv | Create_tmp_table_priv | Lock_tables_priv | Execute_priv | Repl_slave_priv | Repl_client_priv | Create_view_priv | Show_view_priv | Create_routine_priv | Alter_routine_priv | Create_user_priv | Event_priv | Trigger_priv | Create_tablespace_priv | ssl_type | ssl_cipher | x509_issuer | x509_subject | max_questions | max_updates | max_connections | max_user_connections | plugin                | authentication_string                     | password_expired | password_last_changed | password_lifetime | account_locked |
++-----------+------------------+-------------+-------------+-------------+-------------+-------------+-----------+-------------+---------------+--------------+-----------+------------+-----------------+------------+------------+--------------+------------+-----------------------+------------------+--------------+-----------------+------------------+------------------+----------------+---------------------+--------------------+------------------+------------+--------------+------------------------+----------+------------+-------------+--------------+---------------+-------------+-----------------+----------------------+-----------------------+-------------------------------------------+------------------+-----------------------+-------------------+----------------+
+| localhost | root             | Y           | Y           | Y           | Y           | Y           | Y         | Y           | Y             | Y            | Y         | Y          | Y               | Y          | Y          | Y            | Y          | Y                     | Y                | Y            | Y               | Y                | Y                | Y              | Y                   | Y                  | Y                | Y          | Y            | Y                      |          |            |             |              |             0 |           0 |               0 |                    0 | auth_socket           |                                           | N                | 2020-02-25 22:02:16   |              NULL | N              |
+| localhost | mysql.session    | N           | N           | N           | N           | N           | N         | N           | N             | N            | N         | N          | N               | N          | N          | N            | Y          | N                     | N                | N            | N               | N                | N                | N              | N                   | N                  | N                | N          | N            | N                      |          |            |             |              |             0 |           0 |               0 |                    0 | mysql_native_password | *THISISNOTAVALIDPASSWORDTHATCANBEUSEDHERE | N                | 2020-02-25 22:02:16   |              NULL | Y              |
+| localhost | mysql.sys        | N           | N           | N           | N           | N           | N         | N           | N             | N            | N         | N          | N               | N          | N          | N            | N          | N                     | N                | N            | N               | N                | N                | N              | N                   | N                  | N                | N          | N            | N                      |          |            |             |              |             0 |           0 |               0 |                    0 | mysql_native_password | *THISISNOTAVALIDPASSWORDTHATCANBEUSEDHERE | N                | 2020-02-25 22:02:16   |              NULL | Y              |
+| localhost | debian-sys-maint | Y           | Y           | Y           | Y           | Y           | Y         | Y           | Y             | Y            | Y         | Y          | Y               | Y          | Y          | Y            | Y          | Y                     | Y                | Y            | Y               | Y                | Y                | Y              | Y                   | Y                  | Y                | Y          | Y            | Y                      |          |            |             |              |             0 |           0 |               0 |                    0 | mysql_native_password | *B4FFBA5F655481FE33F6E9C0F9680FAFA1A762B1 | N                | 2020-02-25 22:02:16   |              NULL | N              |
++-----------+------------------+-------------+-------------+-------------+-------------+-------------+-----------+-------------+---------------+--------------+-----------+------------+-----------------+------------+------------+--------------+------------+-----------------------+------------------+--------------+-----------------+------------------+------------------+----------------+---------------------+--------------------+------------------+------------+--------------+------------------------+----------+------------+-------------+--------------+---------------+-------------+-----------------+----------------------+-----------------------+-------------------------------------------+------------------+-----------------------+-------------------+----------------+
+4 rows in set (0.00 sec)
+
+
+ { Error: connect ECONNREFUSED 127.0.0.1:3306
+g6-node  |     at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1107:14)
+g6-node  |     --------------------
+g6-node  |     at Protocol._enqueue (/group6/nodeapp/node_modules/mysql/lib/protocol/Protocol.js:144:48)
+g6-node  |     at Protocol.handshake (/group6/nodeapp/node_modules/mysql/lib/protocol/Protocol.js:51:23)
+g6-node  |     at Connection.connect (/group6/nodeapp/node_modules/mysql/lib/Connection.js:116:18)
+g6-node  |     at _createDB4G6 (/group6/nodeapp/g6RunSQL.js:74:11)
+g6-node  |     at Object.exports.createDB (/group6/nodeapp/g6RunSQL.js:16:3)
+g6-node  |     at Server.<anonymous> (/group6/nodeapp/i.js:92:18)
+g6-node  |     at Server.emit (events.js:198:13)
+g6-node  |     at parserOnIncoming (_http_server.js:691:12)
+g6-node  |     at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+g6-node  |   errno: 'ECONNREFUSED',
+g6-node  |   code: 'ECONNREFUSED',
+g6-node  |   syscall: 'connect',
+g6-node  |   address: '127.0.0.1',
+g6-node  |   port: 3306,
+g6-node  |   fatal: true }
+g6-node  | undefined
+
+
+
+--2020/3/8----
+
+1. docker-build : bash build-node.sh
+2. deployment :  docker-compose up
+
+node i.js
+
+node i1.js
+
+edit: backend/docker-build/node/Dockerfile
+
+
+
+

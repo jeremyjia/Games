@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+  margin: 0;
+  font-family: "Lato", sans-serif;
+}
+
+.sidebar {
+  margin: 0;
+  padding: 0;
+  width: 200px;
+  background-color: #f1f1f1;
+  position: fixed;
+  height: 100%;
+  overflow: auto;
+}
+
+.sidebar a {
+  display: block;
+  color: black;
+  padding: 16px;
+  text-decoration: none;
+}
+ 
+.sidebar a.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.sidebar a:hover:not(.active) {
+  background-color: #555;
+  color: white;
+}
+
+div.content {
+  margin-left: 200px;
+  padding: 1px 16px;
+  height: 1000px;
+}
+
+@media screen and (max-width: 700px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+  .sidebar a {float: left;}
+  div.content {margin-left: 0;}
+}
+
+@media screen and (max-width: 400px) {
+  .sidebar a {
+    text-align: center;
+    float: none;
+  }
+}
+
+table {
+  border-spacing: 0;
+  width: 100%;
+  border: 1px solid #ddd;
+}
+
+th, td {
+  text-align: left;
+  padding: 16px;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2
+}
+
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <a class="active" href="#home">Node+MySQL Client v0.0.212</a>
+
+  <a href=".." id="parent">[..]</a>
+  <a href="." id="root">[.]</a>
+  <a href="#show" id="show">show</a>
+  <a href="#insert" id="insert">insert</a> 
+
+  <a href="g6CreateDB" id="g6CreateDB">g6CreateDB</a> 
+
+  <button id="id_btn_4_blApp">b1</button> 
+  <button id="id_btn_4_bl2">b2</button> 
+</div>
+
+<div class="content" id = "content">
+  <h2>Group6</h2>
+  <p>Node.js + MySQL Example</p> 
+  <h3>12/3/2019</h3>
+</div>
+<script src="w3.js" ></script>
+<script src="blclass.js" ></script> 
+<script src="">
+  //https://littleflute.github.io/JavaScript/blApp.js
+</script>
+<script> 
+	var n = bl$("show");
+	n.onclick = function(){
+		var w = {};
+		w._2do = function(txt){  
+      bl$("content").innerHTML = txt;
+      showDone(); 
+    }
+		var urlLrc = "show";
+		blo0.blAjx(w,urlLrc);
+	}
+  var n = bl$("insert");
+  n.n = 0;
+  n.onclick = function(){
+    n.n++;
+    var w = {};
+    w._2do = function(txt){  
+        bl$("content").innerHTML = txt; 
+        setTimeout(function(){ bl$("show").click(); }, 1000);        
+    }
+    var urlLrc = "insert?name=Name"+n.n+"&"+"address=Addr_NO."+n.n;
+    blo0.blAjx(w,urlLrc);
+  }
+  function showDone(){
+    var t = bl$("myTable");
+
+    var bs = t.getElementsByTagName("button");
+    for(i in bs){
+       bs[i].style.backgroundColor = "lightblue";
+       bs[i].onclick = function(_i,_this){
+            return function(){
+                   var a = _this.parentElement.parentElement.innerHTML;
+                   var b = a.split("</td>");
+                   var c = b[2].split("<td>");
+                 //  alert(c[1]);
+     
+                   var w = {};
+                  w._2do = function(txt){  setTimeout(function(){ bl$("show").click(); }, 500); }
+                  var urlLrc = "delete?address='"+c[1]+"'";
+                  blo0.blAjx(w,urlLrc);
+            }
+       }(i,bs[i]);
+    } 
+
+  }
+
+  var b1 = bl$("id_btn_4_blApp");
+  b1.onclick = function(){
+      var s = "group6_i#2: v0.0. 21";
+      var d = blo0.blMDiv(document.body,"id_MDIV_4_run_SQL", s, 300,100,500,400, blGrey[5]);
+      d.ta = blo0.blTextarea(d, "id_ta_4_SQL", "SELECT * FROM User_Info", blGrey[1]);
+      d.ta.style.width = "98%";
+      d.ta.style.height = "50px";
+      d.v1 = blo0.blDiv(d, d.id+"v1","v1",blGrey[3]);
+      if(!d.v1.v){
+         d.v1.v = blo0.blDiv(d.v1,"id_mdiv_loadIssue_group6_2","v",blGrey[0]);   
+         
+          function _loadIssue (o) { 
+             eval(o.body); 
+          }
+          var url = "https://api.github.com/repos/littleflute/group6/issues/2";
+          w3.getHttpObject(url, _loadIssue);
+      }
+
+      d.v2 = blo0.blDiv(d, d.id+"v2","v2",blGrey[2]);
+      d.v1.btnRunSQL = blo0.blBtn(d.v1, d.v1.id+"_runSQL","runSQL", "green");
+      d.v1.btnRunSQL.onclick = function(){
+              var w = {};
+              w._2do = function(txt){  
+                d.v2.innerHTML = txt;
+              }
+              var urlLrc = "g6RunSQL?sql=" + d.ta.value;
+              blo0.blAjx(w,urlLrc);
+      }
+      d.v1.btnP1 = blo0.blBtn(d.v1, d.v1.id+"_p1","p1", "grey");
+      d.v1.btnP1.onclick = function(){
+              var w = {};
+              w._2do = function(txt){  
+                var a = txt.split("=====================");
+                var b = a[1].split(":(v");
+                var c = b[0].split("[") ;
+               // var d = "["+c[1];
+               var e = c[1].split("<br>");
+                var s = "var f='[" + e[0] + "';" ;
+                eval(s); 
+                var g =  JSON.parse(f);
+                d.v2.innerHTML = "p2:";
+                for(i in g){
+                  var v = blo0.blDiv(d.v2, d.v2.id+"v" + i,"v"+i,blColor[i]);
+
+                  blo0.blShowObj2Div(v,g[i]);
+                }
+                 
+               // d.v2.innerHTML = g; 
+              }
+              var urlLrc = "g6RunSQL?sql=" + d.ta.value;
+              blo0.blAjx(w,urlLrc);
+      }
+      d.v1.btnSQL1 = blo0.blBtn(d.v1, d.v1.id+"btnSQL1","sql1", "grey");
+      d.v1.btnSQL1.onclick = function(){ 
+        d.ta.value = "drop table Group6Users";
+      }
+      d.v1.btnSQL2 = blo0.blBtn(d.v1, d.v1.id+"btnSQL2","sql2", "grey");
+      d.v1.btnSQL2.onclick = function(){ 
+        d.ta.value = "SELECT * FROM Group6Users";
+      }
+
+      _on_off_div(this,d);
+      this.style.background = this.style.background=="red"?blGrey[5]:blColor[4]; 
+  }
+ 
+  var b2 = bl$("id_btn_4_bl2");
+  b2.onclick = function(){        
+    var s = "bl2:v0.23";
+    var d = blo0.blMD("id_MDIV_4_ejson", s, 300,100,500,400, blGrey[5]);
+    if(!d.ejson){
+      d.efjon = blo0.blScript("id_js_ejson","plx/ejson.js");
+    }
+    /*
+    d.tb = blo0.blDiv(d,d.id+"tb", "tb",blGrey[1]);
+    d.v1 = blo0.blDiv(d,d.id+"v1", "v1", blGrey[0]);
+    d.tb.b1 = blo0.blBtn(d.tb,d.tb.id+"b1","b1",blGrey[2]);
+    d.tb.b2 = blo0.blBtn(d.tb,d.tb.id+"bb21","b2",blGrey[2]);
+
+    var w = {};
+    w._2do = function(txt){
+        d.v1.innerHTML = txt;
+    } 
+    d.tb.b1.onclick = function(){
+      blo0.blAjx(w,"https://littleflute.github.io/english/NewConceptEnglish/Book2/1.lrc");
+    }
+    d.tb.b2.onclick = function(){
+      var w2 = {}; 
+      w2._2do = function(txt){
+        eval("var o="+txt);
+        blo0.blShowObj2Div(d.v1,o.request.frames);
+      }
+      blo0.blAjx(w2,"http://localhost:3000/old/json/v1.json");
+    }
+
+    //*/
+
+    _on_off_div(this,d);
+    this.style.background = this.style.background=="red"?blGrey[5]:blColor[4]; 
+  }
+
+</script>
+</script>
+</body>
+</html>
