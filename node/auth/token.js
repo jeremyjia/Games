@@ -69,7 +69,7 @@ exports.verify = function(req,res, next){
 }
 
 exports.sign = function(payload, callback) { 
-	jwt1.sign(payload, secret)//,{ expiresIn: '3600s'})
+	jwt1.sign(payload, secret,{ expiresIn: '3600s'})
     .then((token)=>{
 			// your code
 			callback(token);
