@@ -45,7 +45,6 @@ public class GdxJDSpiderApp implements IGdxGame{
     public void initGame(GdxGameAdapter adapter) {
 
         create();
-        adapter.registerStage(stage);
     }
 
     @Override

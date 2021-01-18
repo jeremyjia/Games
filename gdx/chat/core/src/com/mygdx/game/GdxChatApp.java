@@ -357,6 +357,5 @@ public class GdxChatApp implements IGdxGame {
     @Override
     public void initGame(GdxGameAdapter adapter) {
         create();
-        adapter.registerStage(stage);
     }
 }
