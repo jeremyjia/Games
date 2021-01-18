@@ -15,7 +15,7 @@
   "license": "Unlicense",
   "private": true,
   "dependencies": {
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "body-parser": "^1.19.0",
     "canvas": "^2.6.1",
     "chai": "^4.2.0",
