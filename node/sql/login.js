@@ -49,7 +49,7 @@ exports.g6Login = function(loginInf,resolve,Service)
                         password: loginInf.Password  
                     }
                    
-                    token.sign({user: user},(err, token) => {    
+                    token.sign({user: user},(token) => {    
                         s.code = 1;
                         s.token = token;
                         s.userName = user.username;

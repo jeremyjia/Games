@@ -41,7 +41,7 @@ describe('Unit Test 1: admin login', function() {
                 assert(s.length > 11 , "token = " + token);
         })
   });    
-  ///*
+  /*
   it('Test 1.2: [/api/reset] (uAdmin)', function() {
         return request(ES.app) 
           .post('/api/reset')
@@ -62,7 +62,7 @@ describe('Unit Test 1: admin login', function() {
         })
   });  
   //*/
-  //*
+  /*
   it('Test 1.3: [/api/reset] (uAdmin)', function() {
     return request(ES.app) 
       .post('/api/reset')

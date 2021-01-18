@@ -1,4 +1,4 @@
-const tag = "[t2.test.js_v0.21]";
+const tag = "[t2.test.js_v0.22]";
 const config = require('../config'); 
 const ExpressServer = require('../expressServer');
 const ES = new ExpressServer(config.URL_PORT, config.OPENAPI_YAML);
@@ -8,6 +8,7 @@ var testData = require('../auth/data/testData.js');
 var ds = testData.getUserDatas(10); 
 
 describe('auto test 2: NewPlayer and check duplicate player', function() { 
+  /*
     var n = 0;
     for(i in ds){
       n++;
@@ -29,7 +30,9 @@ describe('auto test 2: NewPlayer and check duplicate player', function() {
           }
       }(ds,i));  
     }     
-    
+    //*/
+
+    /*
     for(i in ds){
       n++;
       it('Test 2.'+n+': check duplicate player.', function(_us,_i) {   
@@ -50,4 +53,5 @@ describe('auto test 2: NewPlayer and check duplicate player', function() {
           }
       }(ds,i));  
     }     
+    //*/
 });
