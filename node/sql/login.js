@@ -48,12 +48,13 @@ exports.g6Login = function(loginInf,resolve,Service)
                         username: loginInf.UserName, 
                         password: loginInf.Password  
                     }
-                   
-                    token.sign({user: user},(token) => {    
-                        s.code = 1;
-                        s.token = token;
+                                            
+                    token.sign({user: user},(_o) => {     
+                        s.code = _o.b?1:0;
+                        s.token = _o.r;
                         s.userName = user.username;
                         s.userID = user.id;
+
                         resolve(Service.successResponse(s));
                     }); 
                 }   

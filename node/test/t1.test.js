@@ -12,15 +12,10 @@ var testData = require('../auth/data/testData.js');
 const authHeader = `Bearer: ${token.getTestToken()}`;
 const ac  = '*/*'; 
 
-const uAdmin = { AdminName:'admin',      Password:'admin', resCode: 1, msg:'OK!'};
-const dReset =  [
-    {
-      "ID": 1,
-      "sql": "Drop table group6User"
-    }
-]; 
+const uAdmin = { AdminName:'admin',      Password:'admin', resCode: 11, msg:'OK!'};
 
 describe('Unit Test 1: admin login', function() {   
+  /*
   var token = "";
   it('Test 1.1: [/api/adminSignIn] (uAdmin)', function() {
         return request(ES.app) 
@@ -41,7 +36,8 @@ describe('Unit Test 1: admin login', function() {
                 assert(s.length > 11 , "token = " + token);
         })
   });    
-  
+  //*/
+
   /*
   it('Test 1.2: [/api/reset] (uAdmin)', function() {
         return request(ES.app) 

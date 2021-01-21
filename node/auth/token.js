@@ -72,11 +72,17 @@ exports.sign = function(payload, callback) {
 	jwt1.sign(payload, secret,{ expiresIn: '3600s'})
     .then((token)=>{
 			// your code
-			callback(token);
+			var o = {};
+			o.b = true;
+			o.r = token;
+			callback(o);
     })
     .catch((error)=>{
 			// error handling
-			l.tag1(tag,"xd dbg .................................");
+			var o = {};
+			o.b = false;
+			o.r = error;
+			callback(o); 
     });
 }
 
