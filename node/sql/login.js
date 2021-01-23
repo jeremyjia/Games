@@ -1,4 +1,4 @@
-const tag = "[sql/login.js_v0.232] "; 
+const tag = "[sql/login.js_v0.233] "; 
 const token = require('../auth/token');
 const mysql = require('mysql');
 const config = require('../config'); 
@@ -35,8 +35,9 @@ exports.g6Login = function(loginInf,resolve,Service)
         } 
         else{
             l.tag1(tag,result);
-            
+
             var n = result.length;
+            l.tag1(tag,n);
             if(n>0){    
                 sR = "  pw = " + result[0].Password ;
                 sR += " loginInf.Password = " + loginInf.Password  ;
