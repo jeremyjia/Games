@@ -1,4 +1,4 @@
-const tag = "[auth/token.js_v0.111]";
+const tag = "[auth/token.js_v0.112]";
 
 var redis = require('redis');
 var JWTR =  require('jwt-redis').default;
@@ -19,7 +19,7 @@ exports.verify = function(req,res, next){
 	var xdURL = req.url;
 	l.tag1(tag,xdURL);
 
-	admin.verifyAdmin(req,res,next);
+	//admin.verifyAdmin(req,res,next);
 
     // Get auth header value
     const bearerHeader = req.headers['authorization'];
