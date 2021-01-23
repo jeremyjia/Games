@@ -67,7 +67,7 @@ exports.g6Login = function(loginInf,resolve,Service)
             }   
             else{  
               s.code = 0;
-              s.token = "...: no user."
+              s.token = "...: wrong password"
               resolve(Service.successResponse(s));    
             } 
         }         
