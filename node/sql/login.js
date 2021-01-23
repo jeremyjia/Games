@@ -34,11 +34,10 @@ exports.g6Login = function(loginInf,resolve,Service)
           resolve(Service.successResponse(sR));    
         } 
         else{
-            console.log(result);  
-            var r = JSON.stringify(result);
-            console.log("query: " + r);
-            var l = result.length;
-            if(l>0){    
+            l.tag1(tag,result);
+            
+            var n = result.length;
+            if(n>0){    
                 sR = "  pw = " + result[0].Password ;
                 sR += " loginInf.Password = " + loginInf.Password  ;
 
