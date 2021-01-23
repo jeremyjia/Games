@@ -1,7 +1,11 @@
-const tag = "[sql/login.js_v0.231] "; 
+const tag = "[sql/login.js_v0.232] "; 
 const token = require('../auth/token');
 const mysql = require('mysql');
 const config = require('../config'); 
+
+const l = require('../logger');
+l.tag(tag); 
+
 
 exports.g6Login = function(loginInf,resolve,Service)
 {
@@ -25,8 +29,7 @@ exports.g6Login = function(loginInf,resolve,Service)
     con.connect();
     con.query(_sql, function (err, result, fields) {
         if (err)   {
-          console.log(err);  
-          console.log(err.sqlMessage);  
+          l.tag1(tag,err);
           sR = err.sqlMessage;
           resolve(Service.successResponse(sR));    
         } 
