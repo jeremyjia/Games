@@ -1,7 +1,8 @@
-const tag = "[sql/login.js_v0.233] "; 
+const tag = "[sql/login.js_v0.234] "; 
 const token = require('../auth/token');
 const mysql = require('mysql');
 const config = require('../config'); 
+const hash = require('../utils/hash'); 
 
 const l = require('../logger');
 l.tag(tag); 
@@ -41,15 +42,18 @@ exports.g6Login = function(loginInf,resolve,Service)
             if(n>0){    
                 sR = "  pw = " + result[0].Password ;
                 sR += " loginInf.Password = " + loginInf.Password  ;
+                var pwHash =  result[0].Password ; 
+                var bMatch = hash.toCompare(loginInf.Password,pwHash);     
+
 
                 
-                if(loginInf.Password ==  result[0].Password){                 
+                if(bMatch){                 
                      
                     const user = {
                         v: tag,
                         id: result[0].UserID ,
                         username: loginInf.UserName, 
-                        password: loginInf.Password  
+                        password: pwHash  
                     }
                                             
                     token.sign({user: user},(_o) => {     
