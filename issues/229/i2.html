@@ -2,21 +2,55 @@
 <html>
 <body>
 
-<p>v0.11</p>
+<p>v0.13</p>
  
 
 <p id="OregonUSA"></p>
 <p id="Beijing"></p>
+ 
 
 <script>
+  function renderTime(offset) {
+        var currentTime = new Date();
+        currentTime.setHours(currentTime.getHours()+offset);
+        var diem = "AM";
+        var h = currentTime.getHours();
+        var m = currentTime.getMinutes();
+        var s = currentTime.getSeconds();
+
+        if (h == 0) {
+            h = 12
+        } else if (h > 12) {
+            h = h - 12;
+            diem = "PM";
+        }
+
+        if (h < 10) {
+            h = "0" + h;
+        }
+
+        if (m < 10) {
+            m = "0" + m;
+        }
+
+        if (s < 10) {
+            s = "0" + s;
+        }
+ 
+        var r = h + ":" + m + ":" + s + " " + diem; 
+
+        return currentTime;
+}
+
 function myFunction() {
   var d = new Date();
   var n = d.getTimezoneOffset();
   document.getElementById("OregonUSA").innerHTML    = "usa: " + d + ":: n=" + n;
-  document.getElementById("Beijing").innerHTML      = "bjt: " + d + ":: n=" + n;
+  document.getElementById("Beijing").innerHTML      = "bjt: [" + renderTime(16) + "]      :: n=" + n;
   setTimeout ('myFunction()', 1000);
 }
 myFunction(); 
+
 </script>
 
 </body>
