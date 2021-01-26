@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<p>v0.11</p>
+ 
+
+<p id="OregonUSA"></p>
+<p id="Beijing"></p>
+
+<script>
+function myFunction() {
+  var d = new Date();
+  var n = d.getTimezoneOffset();
+  document.getElementById("OregonUSA").innerHTML    = "usa: " + d + ":: n=" + n;
+  document.getElementById("Beijing").innerHTML      = "bjt: " + d + ":: n=" + n;
+  setTimeout ('myFunction()', 1000);
+}
+myFunction(); 
+</script>
+
+</body>
+</html>
