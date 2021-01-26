@@ -8,13 +8,39 @@ const request = require('supertest');
 var assert = require('chai').assert;
 var testData = require('../auth/data/testData.js');
 
+var jwtRedis = require('../auth/jwtRedis.js');
+
 
 const authHeader = `Bearer: ${token.getTestToken()}`;
 const ac  = '*/*'; 
 
 const uAdmin = { AdminName:'admin',      Password:'admin', resCode: 11, msg:'OK!'};
 
-describe('Unit Test 1: admin login', function() {   
+describe('Unit Test 1: admin login', function() {  
+      assert(1==2,"test:"); 
+      /*
+      var token = "";
+      it('Test 1.1: [/api/adminSignIn] (uAdmin)', function() {
+            return request(ES.app) 
+              .post('/api/adminSignIn')
+              .send(uAdmin) 
+              .set('accept', ac)
+              .set('Content-Type','application/json') 
+              .expect('Content-Type', /json/)
+              .expect(200)
+              .then(response => {
+                    console.log(tag + " respoinse.body=" + response.body.msg);
+                    var s = "";
+                    s += 'response.body.code = ' + response.body.code;
+                    s += '; uAdmin.resCode = '+ uAdmin.resCode;
+                    token = response.body.token;
+                    assert(response.body.code == uAdmin.resCode, s);
+                    assert(response.body.msg == uAdmin.msg, "msg!="+uAdmin.msg);
+                    assert(s.length > 11 , "token = " + token);
+            })
+      });    
+      //*/
+    
   /*
   var token = "";
   it('Test 1.1: [/api/adminSignIn] (uAdmin)', function() {
