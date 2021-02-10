@@ -1,0 +1,39 @@
+﻿{
+    "request": {
+        "version": "v1.json: 1.0.3", 
+        "width": 760, 
+        "height": 480, 
+        "music": "1.mp3", 
+        "rate": "1", 
+        "frames": [
+            {
+                "number": "1", 
+                "time": 120, 
+                "objects": [
+                    {
+                        "text": "Lesson 1 A Private Conversation", 
+                        "x": 50, 
+                        "y": 700, 
+                        "size": 40, 
+                        "color": "0,20,255"
+                    }, 
+                    {
+                        "text": "Hello,this is designed by Jeremy", 
+                        "x": 50, 
+                        "y": 200, 
+                        "size": 50, 
+                        "color": "50,87,30"
+                    }, 
+                    {
+                        "text": "test by littleflute", 
+                        "x": 10, 
+                        "y": 200, 
+                        "size": 50, 
+                        "color": "250,1,30"
+                    }
+                ], 
+                "backgroundColor": "128,1,128"
+            }
+        ]
+    }
+}

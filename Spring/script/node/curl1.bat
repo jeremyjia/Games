@@ -1,0 +1,1 @@
+﻿curl -X POST http://localhost:3000/upload -H 'content-type: multipart/form-data;' -F 'theFile=@/Users/sidharth/Downloads/testFile.csv'
