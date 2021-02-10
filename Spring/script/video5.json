@@ -25,8 +25,25 @@
             {
                 "type": "picture",
                 "attribute": {
+                    "x1": 0,
+                    "y1": 0,
+                    "x2": 2048,
+                    "y2": 768,
+                    "size": 50,
+                    "color": "255,0,0",
+                    "name": "x1.jpg"
+                },
+                "frameRange": "(20,100)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+0",
+                    "step": -10
+                }
+            },
+            {
+                "type": "picture",
+                "attribute": {
                     "x1": 10,
-                    "y1": 300,
+                    "y1": 200,
                     "x2": 80,
                     "y2": 80,
                     "size": 50,
@@ -62,7 +79,7 @@
                 "type": "picture",
                 "attribute": {
                     "x1": 10,
-                    "y1": 300,
+                    "y1": 500,
                     "x2": 150,
                     "y2": 150,
                     "size": 50,
