@@ -1,0 +1,68 @@
+package com.pbz.demo.hello;
+
+import java.io.File;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.pbz.demo.hello.util.FileUtil;
+
+@RestController
+@EnableAutoConfiguration
+@SpringBootApplication
+public class HelloApplication {
+
+	@Value("${server.port}")
+	private String app_port;
+
+	@RequestMapping("/")
+	public ModelAndView index() {
+		ModelAndView mv = new ModelAndView();
+		mv.setViewName("homepage.html");
+
+		String swagger_url = "http://localhost:" + app_port + "/swagger-ui.html";
+		String upload_url = "http://localhost:" + app_port + "/uploadpage";
+		String video_url = "http://localhost:" + app_port + "/image/video?script=video.json";
+		String demo_url = "http://localhost:" + app_port + "/1.html";
+		mv.addObject("swagger_url", swagger_url);
+		mv.addObject("upload_url", upload_url);
+		mv.addObject("video_url", video_url);
+		mv.addObject("demo_url", demo_url);
+
+		return mv;
+	}
+
+	public static void main(String[] args) throws Exception {
+		ApplicationContext ctx = SpringApplication.run(HelloApplication.class, args);
+
+		// Copy resource files to current directory.
+		String applicationDir = System.getProperty("user.dir");
+		String rescourceFolder = applicationDir + "/" + "script";
+		if (!new File(rescourceFolder).exists()) {
+			rescourceFolder = applicationDir + "/" + "../script";
+			if (!new File(rescourceFolder).exists()) {
+				rescourceFolder = "";
+			}
+		}
+		if (rescourceFolder != "") {
+			System.out.println("Copy resource files");
+			FileUtil.copyDirectory(new File(rescourceFolder), new File(applicationDir));
+			FileUtil.copyDirectory(new File(rescourceFolder + "/" + "plx"), new File(applicationDir));
+			boolean isWindows = System.getProperty("os.name").startsWith("Windows");
+			if (!isWindows) {
+				String scriptPath = applicationDir + "/" + "jpg2video.sh";
+				FileUtil.chmod("755 " + scriptPath);
+				System.out.println("Chmod file " + scriptPath);
+			}
+		}
+		System.out.println("I am ready!");
+
+	}
+
+}
