@@ -8,21 +8,21 @@ l.tag(tag);
 
 
 async function queryList(myList) { 
-  const db = makeDb( config.oLocalDB);  
-  try {
-    l.tag1(tag,'------------------------------------------------------ ' ); 
-    for(i in myList){
-      l.tag1(tag,'ls: ' + myList[i]); 
-      const someRows = await db.query( myList[i] );
-      l.tag1(tag,'someRows: ' + JSON.stringify(someRows)); 
-    }
-    l.tag1(tag,'========================================================= ' ); 
-  } catch ( err ) {
-    // handle the error
-    console.log(tag + " error: "+Date());
-  } finally {
-    await db.close();
-  } 
+      const db = makeDb( config.oLocalDB);  
+      try {
+        l.tag1(tag,'xdTest111111111111------------------------------------------------------ ' ); 
+        for(i in myList){
+          l.tag1(tag, i + ' _ls: ' + myList[i]); 
+          const someRows = await db.query( myList[i] );
+          l.tag1(tag,'xdTest_someRows: ' + JSON.stringify(someRows)); 
+        }
+        l.tag1(tag,'========================================================= ' ); 
+      } catch ( err ) {
+        // handle the error
+        console.log(tag + " error: "+Date());
+      } finally {
+        await db.close();
+      } 
 }
 
 function start() {  
@@ -35,12 +35,10 @@ function start() {
 }
 
 // Call start
-(async() => {
-  console.log('before start');
-
-  await start();
-  
-  console.log('after start');
+(async() => { 
+        l.tag1(tag,"before   ---------------------------------------");
+        await start();
+        l.tag1(tag,"after    ========================================");        
 })();
 
 

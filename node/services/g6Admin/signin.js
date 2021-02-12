@@ -1,4 +1,4 @@
-const tag = "[g6Admin/signin.js_v0.24]";
+const tag = "[g6Admin/signin.js_v0.25]";
 const token = require('../../auth/token');
 const config = require('../../config');
 
@@ -23,7 +23,7 @@ exports.signin = function(reqInf,resolve,Service)
  
     if(reqInf.Password ==  "admin" && reqInf.AdminName == "admin"){                
                       
-        token.sign({user: user},(err, token) => {    
+        token.sign({user: user},(token) => {    
             r.code = 1;
             r.token = token;
             r.userName = user.username;

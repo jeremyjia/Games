@@ -1,6 +1,12 @@
-const tag = "[auth/token.js_v0.55]";
-const jwt = require('jsonwebtoken');
+const tag = "[auth/token.js_v0.112]";
+
+var redis = require('redis');
+var JWTR =  require('jwt-redis').default;
+var redisClient = redis.createClient();
+var jwt1 = new JWTR(redisClient);
+
 const admin = require('./admin/verifyAdmin.js');
+ 
 const l = require('../logger');
 l.tag(tag); 
 
@@ -13,7 +19,7 @@ exports.verify = function(req,res, next){
 	var xdURL = req.url;
 	l.tag1(tag,xdURL);
 
-	admin.verifyAdmin(req,res,next);
+	//admin.verifyAdmin(req,res,next);
 
     // Get auth header value
     const bearerHeader = req.headers['authorization'];
@@ -28,7 +34,7 @@ exports.verify = function(req,res, next){
 
         // Set the token
         req.token = bearerToken;
-		jwt.verify(bearerToken,'secretkey', (err, authData) => {
+		jwt1.verify(bearerToken,'secretkey', (err, authData) => {
 			if(err){
 				console.log("/api" + xdURL + ": " + err.message);
 				res.json({
@@ -37,8 +43,7 @@ exports.verify = function(req,res, next){
 				}); 
 
 				res.sendStatus(403);
-			} else{
-				// JWT is valid: Next middleware
+			} else{ 
 				console.log(authData);
 				next();  
 			}
@@ -63,10 +68,22 @@ exports.verify = function(req,res, next){
     }
 }
 
-exports.sign = function(obj, callback) {
-	jwt.sign(obj, secret, { expiresIn: '3600s'},(err, token) => {
-		callback(err, token);
-	});
+exports.sign = function(payload, callback) { 
+	jwt1.sign(payload, secret,{ expiresIn: '3600s'})
+    .then((token)=>{
+			// your code
+			var o = {};
+			o.b = true;
+			o.r = token;
+			callback(o);
+    })
+    .catch((error)=>{
+			// error handling
+			var o = {};
+			o.b = false;
+			o.r = error;
+			callback(o); 
+    });
 }
 
 exports.getTestToken = function() {
@@ -76,5 +93,5 @@ exports.getTestToken = function() {
 		username: 'TestUser',
 		email: 'test@example.com'
 	};
-	return jwt.sign({user: testUser}, secret, { expiresIn: '3600s'});
+	return jwt1.sign({user: testUser}, secret, { expiresIn: '3600s'});
 }

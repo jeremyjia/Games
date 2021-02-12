@@ -1,7 +1,12 @@
-const tag = "[sql/login.js_v0.231] "; 
+const tag = "[sql/login.js_v0.234] "; 
 const token = require('../auth/token');
 const mysql = require('mysql');
 const config = require('../config'); 
+const hash = require('../utils/hash'); 
+
+const l = require('../logger');
+l.tag(tag); 
+
 
 exports.g6Login = function(loginInf,resolve,Service)
 {
@@ -25,35 +30,38 @@ exports.g6Login = function(loginInf,resolve,Service)
     con.connect();
     con.query(_sql, function (err, result, fields) {
         if (err)   {
-          console.log(err);  
-          console.log(err.sqlMessage);  
+          l.tag1(tag,err);
           sR = err.sqlMessage;
           resolve(Service.successResponse(sR));    
         } 
         else{
-            console.log(result);  
-            var r = JSON.stringify(result);
-            console.log("query: " + r);
-            var l = result.length;
-            if(l>0){    
+            l.tag1(tag,result);
+
+            var n = result.length;
+            l.tag1(tag,n);
+            if(n>0){    
                 sR = "  pw = " + result[0].Password ;
                 sR += " loginInf.Password = " + loginInf.Password  ;
+                var pwHash =  result[0].Password ; 
+                var bMatch = hash.toCompare(loginInf.Password,pwHash);     
+
 
                 
-                if(loginInf.Password ==  result[0].Password){                 
+                if(bMatch){                 
                      
                     const user = {
                         v: tag,
                         id: result[0].UserID ,
                         username: loginInf.UserName, 
-                        password: loginInf.Password  
+                        password: pwHash  
                     }
-                   
-                    token.sign({user: user},(err, token) => {    
-                        s.code = 1;
-                        s.token = token;
+                                            
+                    token.sign({user: user},(_o) => {     
+                        s.code = _o.b?1:0;
+                        s.token = _o.r;
                         s.userName = user.username;
                         s.userID = user.id;
+
                         resolve(Service.successResponse(s));
                     }); 
                 }   
@@ -63,7 +71,7 @@ exports.g6Login = function(loginInf,resolve,Service)
             }   
             else{  
               s.code = 0;
-              s.token = "...: no user."
+              s.token = "...: wrong password"
               resolve(Service.successResponse(s));    
             } 
         }         

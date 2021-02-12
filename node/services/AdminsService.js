@@ -1,4 +1,4 @@
-const tag = "[AdminsService.js_v0.142]";
+const tag = "[AdminsService.js_v0.143]";
 const Service = require('./Service');
 const gameStarted = require('../sql/gameStarted.js');
 const gameEnded = require('../sql/gameEnded.js');
@@ -12,7 +12,7 @@ l.tag(tag);
 
 class AdminsService {
   static adminSignIn({ body: reqInf }) {
-    console.log(reqInf); 
+    l.tag1(tag,"xdtest1: ==========");
     
     return new Promise(
       async (resolve) => {

@@ -1,4 +1,4 @@
-const tag = "[t3.test.js_v0.25]";
+const tag = "[t3.test.js_v0.31]";
 const config = require('../config'); 
 const ExpressServer = require('../expressServer');
 const ES = new ExpressServer(config.URL_PORT, config.OPENAPI_YAML);
@@ -10,7 +10,9 @@ var ts = "auto test 3:";
 ts += "login & getAllPlayers & getPendingFriends & getFriends";
 ts += " & RequestToMakeFriend";
 ts += " & ReponseToMakeFriend";
+
 describe(ts, function() { 
+  /*
     var token = "";
     var n = 1; 
     it('Test 3.'+n+': login.', function() {     
@@ -29,7 +31,9 @@ describe(ts, function() {
                   assert(response.body.code == 1, s );  
           }) 
     });   
+    //*/
 
+    /*
     n++;
     var resAllPlayers = null;
     it('Test 3.'+n+': getAllPlayers.', function() {    
@@ -56,7 +60,9 @@ describe(ts, function() {
           assert(n==10,"n=" + n);
       }) 
     });     
+    //*/
     
+    /*
     n++; 
     it('Test 3.'+n+': getPendingFriends.', function() {    
       return request(ES.app)
@@ -72,7 +78,9 @@ describe(ts, function() {
           assert(response.body.str.length == 0,"Should be empty.")
       }) 
     }); 
+    //*/
 
+    /*
     n++;
     it('Test 3.'+n+': getFriends.', function() {    
       return request(ES.app)
@@ -88,7 +96,9 @@ describe(ts, function() {
           assert(response.body.str == '[]',"Should be empty.")
       }) 
     }); 
+    //*/
 
+    /*
     n++;
     var allPlayers = null;
     it('Test 3.'+n+': RequestToMakeFriend.', function() {     
@@ -109,6 +119,9 @@ describe(ts, function() {
           }) 
     });   
 
+    //*/
+
+    /*
     n++; 
     var allPendingFriends = null;
     it('Test 3.'+n+': getPendingFriends.', function() {    
@@ -125,8 +138,9 @@ describe(ts, function() {
            
       }) 
     }); 
-
-   //*
+    //*/
+ 
+    /*
     n++;
     it('Test 3.'+n+': ReponseToMakeFriend.', function() {     
           var o = {};
@@ -144,9 +158,10 @@ describe(ts, function() {
             .then(response => {
                   console.log(tag + "****************** respoinse.body=", response.body); 
           }) 
-    });   
-    //*/
-        n++;
+  });
+  //*/
+  /*
+  n++;
 	it('Test 3.'+n+': getFriends.', function() {
             return request(ES.app)
              .get('/api/getFriends')
@@ -162,5 +177,6 @@ describe(ts, function() {
                   eval(s);
                   assert(ls[0].fromID == testData.getUserID("u1",allPlayers),"fromID="+ls[0].fromID);
             })
-        });	
+  });	
+  //*/
 });
