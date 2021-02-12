@@ -1,0 +1,98 @@
+{
+    "request": {
+        "version": "0.0.6",
+        "width": 1024,
+        "height": 768,
+        "music": "1.mp3",
+        "rate": "5",
+        "frames": [
+            {
+                "number": "1",
+                "time": 100,
+                "objects": [
+                    {
+                        "text": "帧穿越循环动画效果演示",
+                        "x": 200,
+                        "y": 100,
+                        "size": 50,
+                        "color": "1,142,35"
+                    }
+                ],
+                "backgroundColor": "200,200,222"
+            }
+        ],
+        "superObjects": [
+            {
+                "type": "picture",
+                "attribute": {
+                    "x1": 0,
+                    "y1": 0,
+                    "x2": 2048,
+                    "y2": 768,
+                    "size": 50,
+                    "color": "255,0,0",
+                    "name": "x1.jpg"
+                },
+                "frameRange": "(20,100)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+0",
+                    "step": -10
+                }
+            },
+            {
+                "type": "picture",
+                "attribute": {
+                    "x1": 10,
+                    "y1": 200,
+                    "x2": 80,
+                    "y2": 80,
+                    "size": 50,
+                    "color": "255,0,0",
+                    "name": "r1.jpg"
+                },
+                "frameRange": "(20,100)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+200",
+                    "step": 20,
+                    "loop":["r1.jpg","r2.jpg","r3.jpg","r4.jpg"]
+                }
+            },
+            {
+                "type": "picture",
+                "attribute": {
+                    "x1": 300,
+                    "y1": 300,
+                    "x2": 180,
+                    "y2": 180,
+                    "size": 50,
+                    "color": "255,0,0",
+                    "name": "r1.jpg"
+                },
+                "frameRange": "(1,100)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+300",
+                    "step": 0,
+                    "loop":["r1.jpg","r2.jpg","r3.jpg","r4.jpg"]
+                }
+            },
+            {
+                "type": "picture",
+                "attribute": {
+                    "x1": 10,
+                    "y1": 500,
+                    "x2": 150,
+                    "y2": 150,
+                    "size": 50,
+                    "color": "255,0,0",
+                    "name": "l1.jpg"
+                },
+                "frameRange": "(5,90)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+500",
+                    "step": 10,
+                    "loop":["l1.jpg","l2.jpg","l3.jpg","l4.jpg"]
+                }
+            }
+        ]
+    }
+}

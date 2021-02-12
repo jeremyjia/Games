@@ -1,0 +1,1 @@
+curl -H "Content-Type: application/json" -X POST --data ‘{\"userName\":\"Jeremy\",\"userID\":110}’ http://localhost:8080/json?filename=aa.json

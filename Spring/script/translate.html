@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Translate</title>
+</head>
+
+<body>
+    <div id="SRC">
+        <textarea id="srcText" name="srcText " style="width:500px; height:120px;">
+</textarea>
+        <button id="Click" name="Click">Translate</button>
+    </div>
+
+    <br />
+    <hr />
+    <div id="DST">
+        <textarea id="dstText" name="dstText" style="width:500px; height:120px;">
+</textarea>
+    </div>
+</body>
+
+<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js" type="text/javascript"></script>
+<script src="./md5.js"></script>
+<script type="text/javascript">
+
+    $("#Click").click(function () {
+        var contents = $("#srcText").val();
+        var appid = '20200816000544285';  //Jeremyjia's 
+        var key = '_HQWPevq4AMqM1z99nhZ';  //Jeremyjia's
+        var salt = (new Date).getTime();
+        var query = contents;  //query='apple\norange\nbanana\npear'
+        var from = 'en';
+        var to = 'zh';
+        var str1 = appid + query + salt + key;
+        var sign = MD5(str1);
+
+        $.ajax({
+            url: 'http://api.fanyi.baidu.com/api/trans/vip/translate',
+            type: 'get',
+            dataType: 'jsonp',
+            data: {
+                q: query,
+                appid: appid,
+                salt: salt,
+                from: from,
+                to: to,
+                sign: sign
+            },
+            success: function (data) {
+                $("#dstText").empty();
+                console.log(data);
+                var result = "";
+                for (var i = 0; i < data.trans_result.length; i++) {
+                    console.log(data.trans_result[i].dst);
+                    result = data.trans_result[i].dst;
+                    $("#dstText").append(result + " <br />");
+                }
+            },
+            error: function () {
+                alert('Failed to translate with baidu API!');
+            }
+        });
+    });
+
+</script>
+
+</html>

@@ -368,7 +368,7 @@ if(!md.run){
 	}
 	
 	var tokenArray = new Array();
-	tokenArray[0] = "f89b0eccf7"+"4c65a65513"+"60062c3e47"+"98d0df4577"; //Jeremyjia
+	tokenArray[0] = "dcf9dc260a"+"1f2f9a7e9c"+"05198d95f0"+"b143f1a7bd"; //Jeremyjia
 	tokenArray[1] = "1857ba0e9f"+"43db389d91"+"ec4b4ae4cb"+"63c1fa682e"; //XiYu	
 	function getToken(){	
 	  return tokenArray[nTokenNum];
