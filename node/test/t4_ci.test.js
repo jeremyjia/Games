@@ -56,38 +56,8 @@ describe(ts, function() {
           assert(n==10,"n=" + n);
       }) 
     });     
-    
-    n++; 
-    it('Test 3.'+n+': getPendingFriends.', function() {    
-      return request(ES.app)
-        .get('/api/getPendingFriends')
-        .send(ds[1])
-        .set('accept', 'application/json')
-        .set('Authorization','Bearer ' + token) 
-        .expect(200) 
-        .then(response => {
-          console.log(tag + "****************** token=", token);   
-          console.log(tag + "****************** response.body=", response.body);     
-          assert(response.body.code == 1, "response.body.code="+response.body.code)         
-          assert(response.body.str.length == 0,"Should be empty.")
-      }) 
-    }); 
-
-    n++;
-    it('Test 3.'+n+': getFriends.', function() {    
-      return request(ES.app)
-        .get('/api/getFriends')
-        .send(ds[1])
-        .set('accept', 'application/json')
-        .set('Authorization','Bearer ' + token) 
-        .expect(200) 
-        .then(response => {
-          console.log(tag + "****************** token=", token);   
-          console.log(tag + "****************** response.body=", response.body);     
-          assert(response.body.code == 1, "response.body.code="+response.body.code)         
-          assert(response.body.str == '[]',"Should be empty.")
-      }) 
-    }); 
+     
+ 
 
     n++;
     var allPlayers = null;
@@ -157,7 +127,7 @@ describe(ts, function() {
              .then(response => {
                   console.log(tag + "****************** token=", token);
                   console.log(tag + "****************** response.body=", response.body);
-                  assert(response.body.code == 2, "response.body.code="+response.body.code);
+                  assert(response.body.code == 1, "response.body.code="+response.body.code);
                   var s = "var ls="+response.body.str;
                   eval(s);
                   assert(ls[0].fromID == testData.getUserID("u1",allPlayers),"fromID="+ls[0].fromID);
