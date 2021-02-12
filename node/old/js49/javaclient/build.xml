@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="testDemo" default="jar" basedir=".">
+
+    <!--主要的系统环境属性-->
+    <property environment="env"/>
+    <property name="java.home" value="${env.JAVA_HOME}"/>
+    <property name="src.dir" value="src" />
+    <property name="doc.dir" value="doc" />
+    <property name="src.main" value="${src.dir}/main"/>
+    <property name="lib.dir" value="./lib"/>
+    <property name="app.name" value="Demo"/>
+    <!--编译目录设置-->
+    <property name="build.dir" value="build" />
+    <property name="build.classes" value="${build.dir}/classes"/>
+    <property name="build.lib" value="${build.dir}/lib"/>
+
+    <!--构造打包时Class-Path需要的路径, pathsep是分隔符 -->
+    <pathconvert property="libs" pathsep=" ">
+        <mapper>
+            <chainedmapper>
+                <flattenmapper />
+                <globmapper from="*" to="lib/*" />
+            </chainedmapper>
+        </mapper>
+        <!--按照mapper定义的格式组合lib目录下面的所有jar文件，形成诸如lib/jar1.jar lib/jar2.jar的字符串-->
+        <fileset dir="${lib.dir}">
+            <include name="*.jar" />
+        </fileset>
+    </pathconvert>
+
+    <!--依赖的classpath-->
+    <path id="classpath">
+        <fileset dir="${lib.dir}">
+            <include name="*.jar" />
+        </fileset>
+        <fileset dir="${java.home}/lib">
+            <include name="tools.jar" />
+        </fileset>
+    </path>
+
+    <!--创建任务init，负责初始化一些条件-->
+    <target name="init">
+        <!--清除以前目录-->
+        <delete dir="${build.dir}"/>
+        <!--准备目录-->
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${build.classes}"/>
+        <mkdir dir="${build.lib}"/>
+    </target>
+
+    <!--拷贝配置文件和依赖的jar-->
+    <target name="conf_lib" depends="init" description="copy conf and lib">
+        <copy todir="${build.classes}">
+            <fileset dir="${src.main}/resources">
+                <include name="**" />
+            </fileset>
+        </copy>
+        <!-- copy lib 文件 -->
+        <copy todir="${build.lib}">
+            <fileset dir="${lib.dir}/"/>
+        </copy>
+    </target>
+
+    <!--创建编译任务，名字是compile,depends指定了comiple任务依赖init任务-->
+    <target name="compile" depends="conf_lib" description="comile target">
+        <!--编译-->
+        <javac srcdir="${src.main}" destdir="${build.classes}"  includeantruntime="true">
+            <classpath refid="classpath"/>
+        </javac>
+    </target>
+
+    <!--打成jar包-->
+    <target name="jar" depends="compile" description="jar taget">
+        <jar destfile="${build.dir}/${app.name}.jar" basedir="${build.classes}">
+            <manifest>
+                <!-- 此处需要根据需要进行修改 -->
+                <attribute name="Main-Class" value="com.JavaWebSocketClient"/>
+                <attribute name="Class-Path" value="${libs}"/>
+            </manifest>
+        </jar>
+    </target>
+</project>

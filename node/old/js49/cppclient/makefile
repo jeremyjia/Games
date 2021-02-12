@@ -1,0 +1,1 @@
+g++ -std=c++11 a.cpp -o app1 -lboost_system -lcrypto -lssl -lcpprest

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<p>文件上传</p>
+<form action="upload" method="POST" enctype="multipart/form-data">
+  <input type="file" name="file"/>
+  <input type="submit"/>
+</form>
+<hr/>
+<img src="../images/back.jpg" width="20" height="20" />
+<a th:href="@{${home_page_url}}">Back to HomePage</a><br />
+</body>
+</html>

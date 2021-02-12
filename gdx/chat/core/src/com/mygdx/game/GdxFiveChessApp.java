@@ -453,6 +453,5 @@ public class GdxFiveChessApp implements IGdxGame {
     @Override
     public void initGame(GdxGameAdapter adapter) {
         create();
-        adapter.registerStage(stage);
     }
 }

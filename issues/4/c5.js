@@ -331,7 +331,7 @@ if(!d.v1){
 			}
 			
 			function getToken(){		        
-		       return "f89b0eccf7"+"4c65a65513"+"60062c3e47"+"98d0df4577";
+		       return "dcf9dc260a"+"1f2f9a7e9c"+"05198d95f0"+"b143f1a7bd";
 	        }
 			
 			function generateUserName(n){
