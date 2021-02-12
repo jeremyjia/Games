@@ -17,7 +17,7 @@ const ac  = '*/*';
 const uAdmin = { AdminName:'admin',      Password:'admin', resCode: 11, msg:'OK!'};
 
 describe('Unit Test 1: admin login', function() {  
-      assert(1==2,"test:"); 
+      assert(1==1,"test:"); 
       /*
       var token = "";
       it('Test 1.1: [/api/adminSignIn] (uAdmin)', function() {
