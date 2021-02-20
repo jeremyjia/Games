@@ -1,4 +1,4 @@
-const tag = "[t1.test.js_v0.21]";
+const tag = "[t1.test.js_v0.22]";
 const config = require('../config'); 
 const ExpressServer = require('../expressServer');
 const ES = new ExpressServer(config.URL_PORT, config.OPENAPI_YAML);
@@ -7,18 +7,11 @@ const token = require('../auth/token');
 const request = require('supertest'); 
 var assert = require('chai').assert;
 var testData = require('../auth/data/testData.js');
-
-
-const authHeader = `Bearer: ${token.getTestToken()}`;
+ 
 const ac  = '*/*'; 
 
 const uAdmin = { AdminName:'admin',      Password:'admin', resCode: 1, msg:'OK!'};
-const dReset =  [
-    {
-      "ID": 1,
-      "sql": "Drop table group6User"
-    }
-]; 
+ 
 
 describe('Unit Test 1: admin login', function() {   
   var token = "";
@@ -57,7 +50,7 @@ describe('Unit Test 1: admin login', function() {
                 var s = "";
                 s += 'response.body.code = ' + testData.resReset.code; 
                 assert(response.body.code == testData.resReset.code, s + " : testData.v="+ testData.v); 
-                assert(response.body.n == 3, s + " ..."); 
+                assert(response.body.n == 4, s + " ..."); 
                 //assert(response.body.ls == "ls", s + " ls check error."); 
         })
   });  
@@ -77,10 +70,30 @@ describe('Unit Test 1: admin login', function() {
             var s = "";
             s += 'response.body.code = ' + testData.resReset.code; 
             assert(response.body.code == testData.resReset.code, s + " : testData.v="+ testData.v); 
-            assert(response.body.n == 3, s + " ..."); 
+            assert(response.body.n == 4, s + " ..."); 
             //assert(response.body.ls == "ls", s + " ls check error."); 
     })
-});  
+  });  
 //*/
 
+//*
+  it('Test 1.4: [/api/innerCheck] (uAdmin)', function() {
+    return request(ES.app) 
+      .post('/api/innerCheck')
+      .send(testData.reqReset_create_tables)  
+      .set('accept', ac)
+      .set('Authorization', 'Bearer ' + token)
+      .set('Content-Type', 'application/json') 
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .then(response => {
+            console.log(tag + " respoinse.body=", response.body);
+            var s = "";
+            s += 'response.body.code = ' + testData.resReset.code; 
+            assert(response.body.code == testData.resReset.code, s + " : testData.v="+ testData.v); 
+            assert(response.body.n == 4, s + " ..."); 
+            //assert(response.body.ls == "ls", s + " ls check error."); 
+    })
+  });  
+//*/
 });

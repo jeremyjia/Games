@@ -46,6 +46,10 @@ class Controller {
   static collectRequestParams(request) {
     this.collectFiles(request);
     const requestParams = {};
+    requestParams.curUserName = request.curUserName;
+    requestParams.curUserID   = request.curUserID;
+    requestParams.curToken   = request.curToken;
+
     if (request.openapi.schema.requestBody !== undefined) {
       requestParams.body = request.body;
     }
