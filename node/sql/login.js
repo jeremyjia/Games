@@ -1,12 +1,9 @@
-const tag = "[sql/login.js_v0.234] "; 
+const tag = "[sql/login.js_v0.235] "; 
 const token = require('../auth/token');
 const mysql = require('mysql');
+ 
 const config = require('../config'); 
 const hash = require('../utils/hash'); 
-
-const l = require('../logger');
-l.tag(tag); 
-
 
 exports.g6Login = function(loginInf,resolve,Service)
 {
@@ -15,7 +12,9 @@ exports.g6Login = function(loginInf,resolve,Service)
     s.code = 0;
     s.token = "...";
 
-    var _sql = "SELECT * FROM Group6Users where UserName ='"+loginInf.UserName+ "'";
+    var u = loginInf.UserName;
+
+    var _sql = "SELECT * FROM Group6Users where UserName = ?";
 
     
     console.log( tag + "_sql = " + _sql);
@@ -28,25 +27,21 @@ exports.g6Login = function(loginInf,resolve,Service)
     });
 
     con.connect();
-    con.query(_sql, function (err, result, fields) {
+    con.query(_sql, u , function (err, result, fields) {
         if (err)   {
-          l.tag1(tag,err);
+          console.log(err);  
+          console.log(err.sqlMessage);  
           sR = err.sqlMessage;
           resolve(Service.successResponse(sR));    
         } 
         else{
-            l.tag1(tag,result);
-
-            var n = result.length;
-            l.tag1(tag,n);
-            if(n>0){    
-                sR = "  pw = " + result[0].Password ;
-                sR += " loginInf.Password = " + loginInf.Password  ;
+            console.log(result);  
+            var r = JSON.stringify(result);
+            console.log("query: " + r);
+            var l = result.length;
+            if(l>0){    
                 var pwHash =  result[0].Password ; 
-                var bMatch = hash.toCompare(loginInf.Password,pwHash);     
-
-
-                
+                var bMatch = hash.toCompare(loginInf.Password,pwHash);                
                 if(bMatch){                 
                      
                     const user = {
@@ -55,23 +50,23 @@ exports.g6Login = function(loginInf,resolve,Service)
                         username: loginInf.UserName, 
                         password: pwHash  
                     }
-                                            
-                    token.sign({user: user},(_o) => {     
-                        s.code = _o.b?1:0;
-                        s.token = _o.r;
+                   
+                    token.sign({user: user},(err, token) => {    
+                        s.code = 1;
+                        s.token = token;
                         s.userName = user.username;
                         s.userID = user.id;
-
                         resolve(Service.successResponse(s));
                     }); 
                 }   
                 else{ 
+                  s.token = "...: Password error!";
                   resolve(Service.successResponse(s));
                 }          
             }   
             else{  
               s.code = 0;
-              s.token = "...: wrong password"
+              s.token = "...: no user."
               resolve(Service.successResponse(s));    
             } 
         }         
