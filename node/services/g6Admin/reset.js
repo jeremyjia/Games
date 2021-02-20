@@ -1,4 +1,4 @@
-const tag = "[services/g6Admin/reset.js_v0.41]"; 
+const tag = "[services/g6Admin/reset.js_v0.42]"; 
 const rSQL = require('../../sql/SQL.js'); 
 const config = require('../../config');
 
@@ -32,4 +32,4 @@ exports.reset = async function(reqInf,resolve,Service)
     r.s = s;
     resolve(Service.successResponse(r));   
     return 0;
-}
+} 
