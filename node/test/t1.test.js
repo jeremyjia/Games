@@ -1,4 +1,4 @@
-const tag = "[t1.test.js_v0.22]";
+const tag = "[t1.test.js_v0.23]";
 const config = require('../config'); 
 const ExpressServer = require('../expressServer');
 const ES = new ExpressServer(config.URL_PORT, config.OPENAPI_YAML);
@@ -48,7 +48,7 @@ describe('Unit Test 1: admin login', function() {
           .then(response => {
                 console.log(tag + " respoinse.body=", response.body);
                 var s = "";
-                s += 'response.body.code = ' + testData.resReset.code; 
+                s += 'response.body.code = ' + response.body.code; 
                 assert(response.body.code == testData.resReset.code, s + " : testData.v="+ testData.v); 
                 assert(response.body.n == 4, s + " ..."); 
                 //assert(response.body.ls == "ls", s + " ls check error."); 
