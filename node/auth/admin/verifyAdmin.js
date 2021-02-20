@@ -1,6 +1,9 @@
 var tag = "[auth/admin/verifyAdmin.js_v0.33]";
 var jwt = require('jsonwebtoken');
 var l = require('../../logger');
+
+const conf = require('../../config');
+
 l.tag(tag); 
 exports.verifyAdmin = function(req,res, next){ 
     var xdURL = req.url;
@@ -11,7 +14,7 @@ exports.verifyAdmin = function(req,res, next){
         var bearer = bearerHeader.split(' '); 
         var bearerToken = bearer[1];  
         req.token = bearerToken;
-		jwt.verify(bearerToken,'secretkey', (err, authData) => {
+		jwt.verify(bearerToken, conf.jwt_secret, (err, authData) => {
 			if(err){
 				console.log("xddbg:    /api" + xdURL + ": " + err.message);
 				res.json({
