@@ -1,12 +1,12 @@
-const tag = "[services/g6Admin/reset.js_v0.42]"; 
+const tag = "[services/g6Admin/innerCheck.js_v0.11]"; 
 const rSQL = require('../../sql/SQL.js'); 
 const config = require('../../config');
 
 const l = require('../../logger');
 l.tag(tag);   
 
-exports.reset = async function(reqInf,resolve,Service)
-{        
+exports.innerCheck = async function(reqInf,resolve,Service)
+{         
     var s = ""; 
     var a = reqInf;
     var n = 0;
@@ -32,4 +32,4 @@ exports.reset = async function(reqInf,resolve,Service)
     r.s = s;
     resolve(Service.successResponse(r));   
     return 0;
-} 
+}

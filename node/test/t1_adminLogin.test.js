@@ -1,4 +1,4 @@
-const tag = "[t1.test.js_v0.22]";
+const tag = "[t1_adminLogin.test.js _v0.24]";
 const config = require('../config'); 
 const ExpressServer = require('../expressServer');
 const ES = new ExpressServer(config.URL_PORT, config.OPENAPI_YAML);
@@ -34,7 +34,7 @@ describe('Unit Test 1: admin login', function() {
                 assert(s.length > 11 , "token = " + token);
         })
   });    
-  ///*
+  /*
   it('Test 1.2: [/api/reset] (uAdmin)', function() {
         return request(ES.app) 
           .post('/api/reset')
@@ -48,14 +48,14 @@ describe('Unit Test 1: admin login', function() {
           .then(response => {
                 console.log(tag + " respoinse.body=", response.body);
                 var s = "";
-                s += 'response.body.code = ' + testData.resReset.code; 
+                s += 'response.body.code = ' + response.body.code; 
                 assert(response.body.code == testData.resReset.code, s + " : testData.v="+ testData.v); 
                 assert(response.body.n == 4, s + " ..."); 
                 //assert(response.body.ls == "ls", s + " ls check error."); 
         })
   });  
   //*/
-  //*
+  /*
   it('Test 1.3: [/api/reset] (uAdmin)', function() {
     return request(ES.app) 
       .post('/api/reset')
@@ -76,7 +76,7 @@ describe('Unit Test 1: admin login', function() {
   });  
 //*/
 
-//*
+/*
   it('Test 1.4: [/api/innerCheck] (uAdmin)', function() {
     return request(ES.app) 
       .post('/api/innerCheck')

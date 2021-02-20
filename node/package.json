@@ -15,8 +15,8 @@
   "license": "Unlicense",
   "private": true,
   "dependencies": {
-    "axios": "^0.21.1",
-    "bcrpyt": "^2.0.0",
+    "@sendgrid/mail": "^7.4.2",
+    "axios": "^0.19.0",
     "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
     "canvas": "^2.6.1",
@@ -41,6 +41,7 @@
     "ono": "^5.0.1",
     "openapi-sampler": "^1.0.0-beta.15",
     "redis": "^3.0.2",
+    "redis-jwt": "^1.4.0",
     "request": "^2.88.2",
     "sqlstring": "^2.3.2",
     "supertest": "^4.0.2",
