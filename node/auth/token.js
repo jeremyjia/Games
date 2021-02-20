@@ -1,16 +1,9 @@
-const tag = "[auth/token.js_v0.112]";
-
-var redis = require('redis');
-var JWTR =  require('jwt-redis').default;
-var redisClient = redis.createClient();
-var jwt1 = new JWTR(redisClient);
-
+const tag = "[auth/token.js_v0.114]";
+//const jwt = require('jsonwebtoken');
+const jwt = require('./jwtRedis.js');
 const admin = require('./admin/verifyAdmin.js');
- 
 const l = require('../logger');
 l.tag(tag); 
-
-const secret = 'secretkey';
 
 // FORMAT OF TOKEN
 // Authorization: Bearer <access_token>
@@ -19,7 +12,7 @@ exports.verify = function(req,res, next){
 	var xdURL = req.url;
 	l.tag1(tag,xdURL);
 
-	//admin.verifyAdmin(req,res,next);
+	admin.verifyAdmin(req,res,next);
 
     // Get auth header value
     const bearerHeader = req.headers['authorization'];
@@ -34,18 +27,17 @@ exports.verify = function(req,res, next){
 
         // Set the token
         req.token = bearerToken;
-		jwt1.verify(bearerToken,'secretkey', (err, authData) => {
+		jwt.verify(bearerToken, (err, authData) => {
 			if(err){
-				console.log("/api" + xdURL + ": " + err.message);
-				res.json({
-					message: err.message,
-					v: 'v0.21'
-				}); 
-
+				console.log("/api" + xdURL + ": " + err.message);				 
 				res.sendStatus(403);
-			} else{ 
-				console.log(authData);
-				next();  
+			} else{
+				// JWT is valid: Next middleware 
+				l.tag1(tag,authData.user);
+				req.curUserName = authData.user.username;
+				req.curUserID 	= authData.user.id;
+				req.curToken = bearerToken;
+				next();			
 			}
 		});
 
@@ -61,6 +53,9 @@ exports.verify = function(req,res, next){
 		else if(a[0]==="/adminSignIn"){
 			next();
 		}
+		else if(a[0]==="/verify"){
+			next();
+		}
 		else{
 			// Forbidden
 			res.sendStatus(403);
@@ -68,24 +63,19 @@ exports.verify = function(req,res, next){
     }
 }
 
-exports.sign = function(payload, callback) { 
-	jwt1.sign(payload, secret,{ expiresIn: '3600s'})
-    .then((token)=>{
-			// your code
-			var o = {};
-			o.b = true;
-			o.r = token;
-			callback(o);
-    })
-    .catch((error)=>{
-			// error handling
-			var o = {};
-			o.b = false;
-			o.r = error;
-			callback(o); 
-    });
+exports.sign = function(payload, callback) {
+	jwt.sign(payload, { expiresIn: '3600s'},(err, token) => {
+		callback(err, token);
+	});
 }
 
+
+exports.destroy = function(token) {
+	 jwt.destroy(token);
+}
+
+
+/*
 exports.getTestToken = function() {
 	console.log("xd_dbg: "+Date());
 	const testUser = {
@@ -93,5 +83,6 @@ exports.getTestToken = function() {
 		username: 'TestUser',
 		email: 'test@example.com'
 	};
-	return jwt1.sign({user: testUser}, secret, { expiresIn: '3600s'});
+	return jwt.sign({user: testUser}, { expiresIn: '3600s'});
 }
+*/
