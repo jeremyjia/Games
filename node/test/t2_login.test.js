@@ -1,4 +1,4 @@
-const tag = "[t4_ci.test.js _v0.31] ";
+const tag = "[t2_login.test.js _v0.32] ";
 const config = require('../config'); 
 const ExpressServer = require('../expressServer');
 const ES = new ExpressServer(config.URL_PORT, config.OPENAPI_YAML);
