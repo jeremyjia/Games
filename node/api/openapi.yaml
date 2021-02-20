@@ -2,13 +2,13 @@ openapi: 3.0.1
 
 info:
   contact:
-    email: social@group6.io
-  description: Group 6 Studios API
+    email: littleflute@163.com
+  description: pbz API 
   license:
     name: AllRightsReserved
-    url: https://www.battlecasters.io/
-  title: Group 6 Studios API
-  version: 1.0.265
+    url: https://jeremyjia.github.io/Games/
+  title: bpz OpenAPI
+  version: 1.0.311
 
 servers:
 - url: http://localhost:8080/api
