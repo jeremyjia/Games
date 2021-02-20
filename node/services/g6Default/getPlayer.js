@@ -38,7 +38,7 @@ function _makeUserList (r){
       u.Version = "0.0.12";
       u.UserName = r[i].UserName;
       u.UserID = r[i].UserID;
-      u.IconID = r[i].IconID;
+      u.Icon = r[i].IconID;
       u.VerifyCode = r[i].VerifyCode;
       u.IsVerified = r[i].IsVerified;
       l.push(u);
