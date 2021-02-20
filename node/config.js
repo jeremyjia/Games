@@ -3,7 +3,7 @@ const path = require('path');
 const config = {
   ROOT_DIR: __dirname,
 
-  URL_PORT: process.env.URL_PORT ? process.env.URL_PORT : 8080,
+  URL_PORT: process.env.URL_PORT ? process.env.URL_PORT : 3000,
   URL_PATH: process.env.URL_PATH ? process.env.URL_PATH : 'http://localhost',
   WEB_SOCKET_PORT: 9090,
   BASE_VERSION: 'v2',
