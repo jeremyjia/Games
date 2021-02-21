@@ -121,7 +121,11 @@ public final class JsonSriptParser {
 								g.setColor(color);
 								Font font = new Font("黑体", Font.BOLD, size);
 								g.setFont(font);
-								g.drawString(text, x, y);
+								float nY = y;
+								for (String aLine : text.split("\n")) {
+									g.drawString(aLine, x, nY);
+									nY += g.getFontMetrics().getHeight();
+								}
 							}
 							// Graphic
 							if (obj.has("graphic")) {
@@ -227,19 +231,27 @@ public final class JsonSriptParser {
 			}
 		}
 		JSONObject actionObj = jObj.getJSONObject("action");
-		String actionTrace = actionObj.getString("trace"); // 目前只按照二次函数曲线来解析 Y=aX^2+bX+c
+		String actionTrace = actionObj.getString("trace"); // 目前只按照二次函数曲线来解析 Y=aX^2+bX+c Or X=100
 		float step = actionObj.getFloat("step");
 
 		String rangeValue = jObj.getString("frameRange");
 		String rangeArray[] = rangeValue.split(",");
 		String startFrameNumber = rangeArray[0].substring(1);
 		int sfNum = Integer.parseInt(startFrameNumber);
-		float X = x1 + (number - sfNum) * step;
-		String parm[] = actionTrace.split("\\+");
-		float a = Float.parseFloat(parm[0].substring(2, parm[0].indexOf("*")));
-		float b = Float.parseFloat(parm[1].substring(0, parm[1].indexOf("*")));
-		float c = Float.parseFloat(parm[2]);
-		float Y = (float) (a * X * X + b * X + c);
+
+		float X = 0, a = 0, b = 0, c = 0, Y = 0;
+		if (actionTrace.toLowerCase().startsWith("x")) {
+			String xValue = actionTrace.substring(2);
+			X = Integer.parseInt(xValue);
+			Y = y1 + (number - sfNum) * step;
+		} else {
+			X = x1 + (number - sfNum) * step;
+			String parm[] = actionTrace.split("\\+");
+			a = Float.parseFloat(parm[0].substring(2, parm[0].indexOf("*")));
+			b = Float.parseFloat(parm[1].substring(0, parm[1].indexOf("*")));
+			c = Float.parseFloat(parm[2]);
+			Y = (float) (a * X * X + b * X + c);
+		}
 
 		if (name != null && !name.trim().isEmpty()) {
 			if (!"text".equalsIgnoreCase(type) && !"picture".equalsIgnoreCase(type)) {
@@ -270,7 +282,12 @@ public final class JsonSriptParser {
 		} else if ("text".equalsIgnoreCase(type)) {
 			Font font = new Font("黑体", Font.BOLD, (int) fSize);
 			gp2d.setFont(font);
-			gp2d.drawString(name, X, Y);
+			float nY = Y;
+			for (String aLine : name.split("\n")) {
+				gp2d.drawString(aLine, X, nY);
+				nY += gp2d.getFontMetrics().getHeight();
+			}
+
 		} else if ("picture".equalsIgnoreCase(type)) {
 			String picFile = name;
 			if (actionObj.has("loop")) {
