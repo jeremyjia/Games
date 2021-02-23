@@ -1,4 +1,4 @@
-const tag = "[old/js49/plx/p1.js_v0.152]";
+const tag = "[old/js49/plx/p1.js_v0.153]";
 const p1Btn = bl$("id_plx1_btn");  
  
 var vBreakNews = null;  
