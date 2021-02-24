@@ -1,4 +1,4 @@
-const tag = "[old/js49/plx/p1.js_v0.153]";
+const tag = "[old/js49/plx/p1.js_v0.211]";
 const p1Btn = bl$("id_plx1_btn");  
  
 var vBreakNews = null;  
@@ -173,12 +173,38 @@ function _setSvr(wsurl,_btnDbg){
 
 p1Btn.onclick();
 
+function C4i201(){
+    var x = 0, y = 0, w=20,h=20,c="brown";
+    var _w = 100, _h = 100;
+    var a = new CBtn(x,y,w,h,c,function(){
+        c=c=="brown"?"blue":"brown";
+    }); 
+
+    this.f1 = function(cvs,_x,_y){
+        var d   = new Date();
+        var msg =  d.toLocaleTimeString();
+        blo0.blText(cvs,"C4i201::f1 " + msg,_x,_y+20,20,"red");
+        var sNews = vBreakNews.innerHTML;
+        blo0.blText(cvs,"sNews: " + sNews,_x,_y+40,20,"lightblue");
+        a.setXY(_x+_w,_y+_h);
+        a.setC(c);
+        a.draw(cvs);
+    }
+    this.mousedown = function(_x,_y){ 
+        a.click (_x,_y);
+    }
+    this.mouseup = function(_x,_y){ 
+        a.click (_x,_y);
+    }
+} 
+
 function CTest(){
     var md = null;
     var x = screen.width*0.021;
     var y = screen.height*0.15;
-    var w =  screen.width*0.8545;
+    var w =  screen.width*0.55;
     var h = screen.height*0.15;
+    var o201 = new C4i201();
     var myObj = {};
     myObj.playground = function(b,v){
         var c = "white";
@@ -208,6 +234,7 @@ function CTest(){
                     function(cvs,_x,_y,_w,_h){
                         blo0.blRect(cvs,_x,_y,_w,_h,"yellow");
                         blo0.blText(cvs,"server.drawing: ",_x,_y-5,20,c);
+                        o201.f1(cvs,_x,_y); 
                         eval(sss);
                     },
                     function(_btn){//init	  				
@@ -221,9 +248,11 @@ function CTest(){
                     },
                     function(_btn,_x,_y){//mousedown	  				  
                         _btn.setDown(true);
+                        o201.mousedown(_x,_y);
                     },
                     function(_btn,_x,_y){//mouseup	  
                         _btn.setDown(false);
+                        o201.mouseup(_x,_y);
                     },
                     function(_btn,_x,_y){	//mousemove	 
                         if(_btn.getDown()){
