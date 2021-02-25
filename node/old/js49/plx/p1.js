@@ -1,4 +1,4 @@
-const tag = "[old/js49/plx/p1.js_v0.211]";
+const tag = "[old/js49/plx/p1.js_v0.212]";
 const p1Btn = bl$("id_plx1_btn");  
  
 var vBreakNews = null;  
@@ -176,8 +176,16 @@ p1Btn.onclick();
 function C4i201(){
     var x = 0, y = 0, w=20,h=20,c="brown";
     var _w = 100, _h = 100;
+    var n = 0;
     var a = new CBtn(x,y,w,h,c,function(){
         c=c=="brown"?"blue":"brown";
+        n++;
+        const payLoad = {
+            "method": "M_i_201",
+            "clientId": "id1234",
+            "gameId": "gameId"
+        }
+        if(wso)        wso.send(JSON.stringify(payLoad));
     }); 
 
     this.f1 = function(cvs,_x,_y){
@@ -186,6 +194,7 @@ function C4i201(){
         blo0.blText(cvs,"C4i201::f1 " + msg,_x,_y+20,20,"red");
         var sNews = vBreakNews.innerHTML;
         blo0.blText(cvs,"sNews: " + sNews,_x,_y+40,20,"lightblue");
+        blo0.blText(cvs,"n=" + n,_x,_y+66,20,"lightgreen");
         a.setXY(_x+_w,_y+_h);
         a.setC(c);
         a.draw(cvs);

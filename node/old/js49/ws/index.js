@@ -1,4 +1,4 @@
-const tag = "[old/js49/ws/index.js_v0.221]"; 
+const tag = "[old/js49/ws/index.js_v0.222]"; 
 const http = require("http");
 const mb = require("./msgBox.js");
 const l = require('../../../logger');
@@ -60,8 +60,8 @@ wsServer.on("request", request => {
             }
         }
 
-        if (result.method === "javaTest") { 
-            console.log("javaclient:"+ result.msg);
+        if (result.method === "M_i_201") {  
+            l.tag1(tag,"------------------- " + result.clientId);
         }
         l.tag1(tag,mb);
         const ch = require("./chatHandle.js");
