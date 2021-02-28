@@ -1,7 +1,7 @@
-const tag = "[old/js49/ws/index.js_v0.222]"; 
+const tag = "[ws/index.js_v0.231]"; 
 const http = require("http");
-const mb = require("./msgBox.js");
-const l = require('../../../logger');
+const mb = require("../old/js49/ws/msgBox.js");
+const l = require('../logger');
 l.tag(tag);  
  
 const clientList = {};
@@ -64,7 +64,7 @@ wsServer.on("request", request => {
             l.tag1(tag,"------------------- " + result.clientId);
         }
         l.tag1(tag,mb);
-        const ch = require("./chatHandle.js");
+        const ch = require("../old/js49/ws/chatHandle.js");
         ch.toDo(result,clientList,mb);
         
         //a client want to join
@@ -160,7 +160,7 @@ const guid = () => (S4() + S4() + "-" + S4() + "-4" + S4().substr(0,3) + "-" + S
 exports.wsRun = function(port){
     httpServer.listen(port, () => {
         console.log( Date() + " ___________ websocket listening ... on " + port);
-        const bc = require("./broadCast.js");
+        const bc = require("../old/js49/ws/broadCast.js");
         bc.run(clientList); 
     });
 } 

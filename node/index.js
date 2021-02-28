@@ -20,7 +20,7 @@ const launchServer = async () => {
     await this.expressServer.launch();
     logger.info('Express server running  ' + Date() );
     
-    const wsSvr = require("./old/js49/ws/index.js");
+    const wsSvr = require("./ws/index.js");
     wsSvr.wsRun(config.WEB_SOCKET_PORT);
 
   } catch (error) {
