@@ -1,4 +1,4 @@
-const tag = "[old/js49/plx/p1.js_v0.213]";
+const tag = "[old/js49/plx/p1.js_v0.214]";
 const p1Btn = bl$("id_plx1_btn");  
  
 var vBreakNews = null;  
@@ -182,7 +182,7 @@ function C4i201(){
         c=c=="brown"?"blue":"brown";
         n++;
         if(d201==null) d201 = blo0.blMD("id_d201", tag ,100,100,100,100,"lightblue");
-
+        _on_off_div(null,d201);
 
         var d   = new Date();
         var msg =  d.toLocaleTimeString();
