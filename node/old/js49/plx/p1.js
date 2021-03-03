@@ -180,9 +180,11 @@ function C4i201(){
     var a = new CBtn(x,y,w,h,c,function(){
         c=c=="brown"?"blue":"brown";
         n++;
+        var d   = new Date();
+        var msg =  d.toLocaleTimeString();
         const payLoad = {
             "method": "M_i_201",
-            "clientId": "id1234",
+            "clientId": "id1234 msg = " + msg,
             "gameId": "gameId"
         }
         if(wso)        wso.send(JSON.stringify(payLoad));
