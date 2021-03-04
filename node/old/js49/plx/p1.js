@@ -1,4 +1,4 @@
-const tag = "[old/js49/plx/p1.js_v0.221]";
+const tag = "[old/js49/plx/p1.js_v0.223]";
 const p1Btn = bl$("id_plx1_btn");  
  
 var vBreakNews = null;  
@@ -7,6 +7,7 @@ let clientId = null;
 let gameId = null;
 let playerColor = null;
 
+var gs0 = "gs0..."; 
  
 const txtGameId = document.getElementById("txtGameId"); 
 const divBoard = document.getElementById("divBoard");    
@@ -85,6 +86,11 @@ function _setSvr(wsurl,_btnDbg){
             var v4game = bl$("id_div_4_Games");
             v4game.addGame(gameId);   
         }
+        //M_i_201
+        if (response.method === "M_i_201"){
+            gs0 = "m4gs0";
+        }
+
      
         if (response.method === "mBreakNews"){
             vBreakNews.innerHTML = response.news;
@@ -178,7 +184,6 @@ function C4i201(){
     var _w = 100, _h = 100;
     var n = 0;
     var d201 = null;
-    var _gs = "_gs..."; 
     var a = new CBtn(x,y,w,h,c,function(){
         c=c=="brown"?"blue":"brown";
         n++;
@@ -202,7 +207,7 @@ function C4i201(){
         var sNews = vBreakNews.innerHTML;
         blo0.blText(cvs,"sNews: " + sNews,_x,_y+40,20,"lightblue");
         blo0.blText(cvs,"n=" + n,_x,_y+66,20,"lightgreen");
-        blo0.blText(cvs,_gs, _x,_y+100,20,"yellow");
+        blo0.blText(cvs,gs0, _x,_y+222,20,"green");
         a.setXY(_x+_w,_y+_h);
         a.setC(c);
         a.draw(cvs);
