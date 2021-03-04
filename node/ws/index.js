@@ -1,4 +1,4 @@
-const tag = "[ws/index.js_v0.232]"; 
+const tag = "[ws/index.js_v0.233]"; 
 const http = require("http");
 const mb = require("../old/js49/ws/msgBox.js");
 const l = require('../logger');
@@ -75,6 +75,9 @@ wsServer.on("request", request => {
         const ch = require("../old/js49/ws/chatHandle.js");
         ch.toDo(result,clientList,mb);
         
+        const s201 = require("./server4_i201.js");
+        s201.toDo(result,clientList,mb);
+
         //a client want to join
         if (result.method === "join") { 
 
