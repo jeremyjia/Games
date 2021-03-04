@@ -407,8 +407,10 @@ function C4i201(){
         eval(ss);
 
         var dn = 0, dm = 0;
-        for(i in ls){
-            blo0.blRect(cvs,_x+dx*dn,_y+dy*dm,dw,dh,"white");
+        for(i in ls){ 
+            var bCard = new CBtn(_x+dx*dn,_y+dy*dm,dw,dh,"white");
+            bCard.draw(cvs);
+
             var sc = ls[i].num;
             blo0.blText(cvs,sc,_x+dx*dn+dx/2,_y+ dy*dm+dy/2,20,"green");
             if(ls[i].icon=='S')  drawSpade(cvs,_x+dx*dn+dx/3,_y+dy*dm+dy/3,15,15);
