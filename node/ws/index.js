@@ -76,7 +76,7 @@ wsServer.on("request", request => {
         ch.toDo(result,clientList,mb);
         
         const s201 = require("./server4_i201.js");
-        s201.toDo(result,clientList,mb);
+        s201.toDo(result,clientList);
 
         //a client want to join
         if (result.method === "join") { 
