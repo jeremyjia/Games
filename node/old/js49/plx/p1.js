@@ -1,4 +1,4 @@
-const tag = "[old/js49/plx/p1.js_v0.214]";
+const tag = "[old/js49/plx/p1.js_v0.215]";
 const p1Btn = bl$("id_plx1_btn");  
  
 var vBreakNews = null;  
@@ -183,7 +183,7 @@ function C4i201(){
     var _w = 100, _h = 100;
     var n = 0;
     var d201 = null;
-    var _gs = "_gs...;
+    var _gs = "_gs...";
     if(!wso.fromSrv){
         wso.fromSrv = function(){
             _gs = "stubSrv";
