@@ -75,7 +75,7 @@ wsServer.on("request", request => {
         const ch = require("../old/js49/ws/chatHandle.js");
         ch.toDo(result,clientList,mb);
         
-        const s201 = require("./server4_i201.js");
+        const s201 = require("../ws/server4_i201.js");
         s201.toDo(result,clientList);
 
         //a client want to join
