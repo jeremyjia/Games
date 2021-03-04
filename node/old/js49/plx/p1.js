@@ -1,4 +1,4 @@
-const tag = "[old/js49/plx/p1.js_v0.215]";
+const tag = "[old/js49/plx/p1.js_v0.221]";
 const p1Btn = bl$("id_plx1_btn");  
  
 var vBreakNews = null;  
@@ -79,12 +79,7 @@ function _setSvr(wsurl,_btnDbg){
             _btnDbg.setS(s);
         } 
       
-      
-        if (response.method === "m4_i201"){
-            if(o.fromSrv){
-                o.fromSrv();
-            }
-        }
+       
         if (response.method === "newGame"){
             gameId = response.game.id; 
             var v4game = bl$("id_div_4_Games");
@@ -183,12 +178,7 @@ function C4i201(){
     var _w = 100, _h = 100;
     var n = 0;
     var d201 = null;
-    var _gs = "_gs...";
-    if(!wso.fromSrv){
-        wso.fromSrv = function(){
-            _gs = "stubSrv";
-        }
-    }
+    var _gs = "_gs..."; 
     var a = new CBtn(x,y,w,h,c,function(){
         c=c=="brown"?"blue":"brown";
         n++;
