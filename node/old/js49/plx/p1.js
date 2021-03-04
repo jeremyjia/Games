@@ -186,14 +186,12 @@ function C4i201(){
     var d201 = null;
     var a = new CBtn(x,y,w,h,c,function(){
         c=c=="brown"?"blue":"brown";
-        n++;
-        if(d201==null) d201 = blo0.blMD("id_d201", tag ,100,100,100,100,"lightblue");
-        _on_off_div(null,d201);
+        n = wso + " : " + Date(); 
 
         var d   = new Date();
         var msg =  d.toLocaleTimeString();
         const payLoad = {
-            "method": "M_i_201",
+            "method": "mChat2All",//"M_i_201",
             "clientId": "id1234 msg = " + msg,
             "gameId": "gameId"
         }
