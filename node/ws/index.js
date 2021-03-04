@@ -1,4 +1,4 @@
-const tag = "[ws/index.js_v0.231]"; 
+const tag = "[ws/index.js_v0.232]"; 
 const http = require("http");
 const mb = require("../old/js49/ws/msgBox.js");
 const l = require('../logger');
@@ -62,6 +62,14 @@ wsServer.on("request", request => {
 
         if (result.method === "M_i_201") {  
             l.tag1(tag,"------------------- " + result.clientId);
+
+            const payLoad = {
+                "method": "M_i_201",
+                "data": "data_4_201"
+            }
+            game.clients.forEach(c => {
+                clientList[c.clientId].connection.send(JSON.stringify(payLoad))
+            })
         }
         l.tag1(tag,mb);
         const ch = require("../old/js49/ws/chatHandle.js");
