@@ -62,15 +62,7 @@ wsServer.on("request", request => {
             }
         }
 
-        if (result.method === "M_i_201") {  
-            l.tag1(tag,"------------------- " + result.clientId);
- 
-        }
-        if (result.method === "mChat2All") {  
-            l.tag1(tag,"mChat2All------------------- " + result.clientId);
- 
-        }
-
+        
         l.tag1(tag,mb);
         const ch = require("../old/js49/ws/chatHandle.js");
         ch.toDo(result,clientList,mb);
