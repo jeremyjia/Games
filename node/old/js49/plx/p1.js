@@ -80,6 +80,11 @@ function _setSvr(wsurl,_btnDbg){
         } 
       
       
+        if (response.method === "m4_i201"){
+            if(o.fromSrv){
+                o.fromSrv();
+            }
+        }
         if (response.method === "newGame"){
             gameId = response.game.id; 
             var v4game = bl$("id_div_4_Games");
@@ -178,6 +183,12 @@ function C4i201(){
     var _w = 100, _h = 100;
     var n = 0;
     var d201 = null;
+    var _gs = "_gs...;
+    if(!wso.fromSrv){
+        wso.fromSrv = function(){
+            _gs = "stubSrv";
+        }
+    }
     var a = new CBtn(x,y,w,h,c,function(){
         c=c=="brown"?"blue":"brown";
         n++;
@@ -194,13 +205,14 @@ function C4i201(){
         if(wso)        wso.send(JSON.stringify(payLoad));
     }); 
 
-    this.f1 = function(cvs,_x,_y){
+    this.onDraw = function(cvs,_x,_y){
         var d   = new Date();
         var msg =  d.toLocaleTimeString();
         blo0.blText(cvs,"C4i201::f1 " + msg,_x,_y+20,20,"red");
         var sNews = vBreakNews.innerHTML;
         blo0.blText(cvs,"sNews: " + sNews,_x,_y+40,20,"lightblue");
         blo0.blText(cvs,"n=" + n,_x,_y+66,20,"lightgreen");
+        blo0.blText(cvs,_gs, _x,_y+100,20,"yellow");
         a.setXY(_x+_w,_y+_h);
         a.setC(c);
         a.draw(cvs);
@@ -249,7 +261,7 @@ function CTest(){
                     function(cvs,_x,_y,_w,_h){
                         blo0.blRect(cvs,_x,_y,_w,_h,"yellow");
                         blo0.blText(cvs,"server.drawing: ",_x,_y-5,20,c);
-                        o201.f1(cvs,_x,_y); 
+                        o201.onDraw(cvs,_x,_y); 
                         eval(sss);
                     },
                     function(_btn){//init	  				
