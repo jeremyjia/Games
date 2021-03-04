@@ -191,7 +191,7 @@ function C4i201(){
         var d   = new Date();
         var msg =  d.toLocaleTimeString();
         const payLoad = {
-            "method": "mChat2All",//"M_i_201",
+            "method": "M_i_201",//"",
             "clientId": "id1234 msg = " + msg,
             "gameId": "gameId"
         }
