@@ -28,6 +28,7 @@ import com.pbz.demo.hello.service.VOAService;
 import com.pbz.demo.hello.util.ExecuteCommand;
 import com.pbz.demo.hello.util.FileUtil;
 import com.pbz.demo.hello.util.JsonSriptParser;
+import com.pbz.demo.hello.util.MacroResolver;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -177,6 +178,16 @@ public class ImageController {
 		String strResultMsg = "根据剧本生成视频粗错啦！";
 		boolean b = false;
 		try {
+			String strContent = FileUtil.readAllBytes(scriptFile);
+			if (MacroResolver.hasMacro(strContent)) {
+				File jsonTmpFile = new File("scriptTmpFile.json");
+				FileUtil.copyFile(new File(scriptFile).getAbsolutePath(), jsonTmpFile.getAbsolutePath(), true);
+
+				JsonSriptParser.setMacros(jsonTmpFile.getAbsolutePath());
+				FileUtil.writeStringToFile(jsonTmpFile.getAbsolutePath(), MacroResolver.resolve(strContent));
+				scriptFile = jsonTmpFile.getAbsolutePath();
+				System.out.println("Resolve file " + jsonTmpFile.getAbsolutePath());
+			}
 			b = JsonSriptParser.generateVideoByScriptFile(scriptFile);
 		} catch (Exception e) {
 			throw new HtmlRequestException("请检查剧本文件是否存在且书写正确. " + e.getMessage());
@@ -193,6 +204,7 @@ public class ImageController {
 		return mv;
 	}
 
+	@ApiIgnore
 	@RequestMapping(value = "/voa", method = RequestMethod.GET)
 	public ModelAndView voa(@RequestParam(name = "texturl") String htmlUrl,
 			@RequestParam(name = "audiourl") String audioUrl) throws Exception {
@@ -201,7 +213,7 @@ public class ImageController {
 		// https://jeremyjia.github.io/Games/issues/210/asa1.html
 		// https://jeremyjia.github.io/Games/issues/210/as20210213a1.mp3;
 
-		String text = voaService.getText(htmlUrl);
+		String text = voaService.getText(htmlUrl, "p", "utf-8", 65);
 		String title = voaService.getTitle(htmlUrl);
 		String fileName = audioUrl;
 		if (audioUrl.contains("/")) {
