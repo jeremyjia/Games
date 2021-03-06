@@ -19,23 +19,62 @@ import javax.imageio.ImageIO;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.pbz.demo.hello.service.VOAService;
+
 public final class JsonSriptParser {
 	private static final String subtitle_video_name = "vSubtitle.mp4";
 	private static final String final_video_name = "vFinal.mp4";
 	private static final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
 	private static List<Map<String, Object>> supperObjectsMapList = new ArrayList<Map<String, Object>>();
+	private static VOAService service = new VOAService();
+
+	public static void setMacros(String scriptFilePath) throws Exception {
+		String jsonString = getJsonString(scriptFilePath);
+		JSONObject jsonObj = new JSONObject(jsonString);
+		JSONObject requestObj = getJsonObjectbyName(jsonObj, "request");
+		String audioFilePath = requestObj.getString("music");
+		// Resolve all macros
+		Iterator<String> keys = requestObj.keys();
+		while (keys.hasNext()) {
+			String key = keys.next();
+			if (key.equalsIgnoreCase("Macros")) {
+				JSONArray macrosArray = (JSONArray) requestObj.get(key);
+				for (Object object : macrosArray) {
+					if (!(object instanceof JSONObject)) {
+						continue;
+					}
+					JSONObject macroObj = (JSONObject) object;
+					String varName = macroObj.optString("name");
+					String varValue = "";
+					Object obj = macroObj.get("value");
+					if (obj instanceof JSONObject) {
+						JSONObject valObj = (JSONObject) obj;
+						String href = valObj.getString("href");
+						String rule = valObj.getString("rule");
+						String number = valObj.getString("number");
+						String charset = valObj.getString("charset");
+						System.out.println("Get text from url: " + href);
+						varValue = service.getText(href, rule, charset, Integer.valueOf(number));
+						MacroResolver.setProperty(varName, varValue);
+					} else {
+						varValue = (String) obj;
+					}
+					MacroResolver.setProperty(varName, varValue);
+				}
+			}
+		}
+		// SetTime of video
+		audioFilePath = MacroResolver.resolve(audioFilePath);
+		String audioFile = downloadIf(audioFilePath);
+		String saveFile = System.getProperty("user.dir") + "/" + audioFile;
+		String audioTime = FileUtil.getAudioDuration(saveFile);
+		System.out.println("Audio file " + saveFile + " seconds:" + audioTime);
+		MacroResolver.setProperty("VAR_TIME", audioTime);
+
+	}
 
 	public static boolean generateVideoByScriptFile(String scriptFilePath) throws Exception {
-		String jsonString = new String(Files.readAllBytes(new File(scriptFilePath).toPath()));
-		// Fix input JSON string
-		int s = jsonString.indexOf("{");
-		if (s > 0) {
-			jsonString = jsonString.substring(s);
-			int e = jsonString.lastIndexOf("}");
-			jsonString = jsonString.substring(s - 1, e + 1);
-			jsonString = jsonString.replaceAll("\\\\", "");
-			System.out.println("Fix for this input JSON string");
-		}
+		String jsonString = getJsonString(scriptFilePath);
 		return generateVideo(jsonString);
 	}
 
@@ -48,7 +87,7 @@ public final class JsonSriptParser {
 		System.out.println("剧本版本:" + version);
 		int width = requestObj.getInt("width");
 		int height = requestObj.getInt("height");
-		String audioFile = requestObj.getString("music");
+		String audioFilePath = requestObj.getString("music");
 		String rate = requestObj.getString("rate");
 		int index = 0;
 
@@ -62,7 +101,9 @@ public final class JsonSriptParser {
 						continue;
 					}
 					JSONObject frameObj = (JSONObject) frame;
-					int times = frameObj.getInt("time");
+					String strTime = frameObj.optString("time");
+					int times = Integer.parseInt(strTime);
+
 					Color colorBackground = null;
 					if (frameObj.has("backgroundColor")) {
 						String color = frameObj.getString("backgroundColor");
@@ -158,6 +199,9 @@ public final class JsonSriptParser {
 				ffmpegPath = "/usr/local/bin/ffmpeg";
 			}
 		}
+
+		// Download audio file
+		String audioFile = downloadIf(audioFilePath);
 		// Cut the audio
 		if (!new File(audioFile).exists()) {
 			throw new Exception("The audio file " + audioFile + " doesn't exist!");
@@ -175,6 +219,36 @@ public final class JsonSriptParser {
 		String[] cmds = { ffmpegPath, "-y", "-i", subtitle_video_name, "-i", tmpAudioFile, final_video_name };
 		boolean bRunScript = ExecuteCommand.executeCommand(cmds, null, new File("."), null);
 		return bRunScript;
+	}
+
+	private static String downloadIf(String audioFilePath) {
+		String audioFile = audioFilePath;
+		if (audioFile.contains("/")) {
+			audioFile = audioFile.substring(audioFile.lastIndexOf("/") + 1);
+		}
+		String saveFile = System.getProperty("user.dir") + "/" + audioFile;
+		if (!new File(saveFile).exists()) {
+			long begintime = System.currentTimeMillis();
+			System.out.println("downloading file: " + audioFilePath);
+			FileUtil.downloadFile(audioFilePath, saveFile);
+			long endtime = System.currentTimeMillis();
+			System.out.println("downloadTime:" + (endtime - begintime));
+		}
+		return audioFile;
+	}
+
+	private static String getJsonString(String scriptFilePath) throws IOException {
+		String jsonString = new String(Files.readAllBytes(new File(scriptFilePath).toPath()));
+		// Fix input JSON string
+		int s = jsonString.indexOf("{");
+		if (s > 0) {
+			jsonString = jsonString.substring(s);
+			int e = jsonString.lastIndexOf("}");
+			jsonString = jsonString.substring(s - 1, e + 1);
+			jsonString = jsonString.replaceAll("\\\\", "");
+			System.out.println("Fix for this input JSON string");
+		}
+		return jsonString;
 	}
 
 	private static void initMap(JSONObject requestObj) {

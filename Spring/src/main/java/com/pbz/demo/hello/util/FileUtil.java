@@ -121,15 +121,16 @@ public class FileUtil {
 		}
 	}
 
-	public static String getHTMLContentByUrl(String url) throws IOException {
+	public static String getHTMLContentByUrl(String url, String charset) throws IOException {
 		URLConnection urlCon = new URL(url).openConnection();
 		InputStream is = urlCon.getInputStream();
-		BufferedReader reader = new BufferedReader(new InputStreamReader(is, "utf-8"));
+		BufferedReader reader = new BufferedReader(new InputStreamReader(is, charset));// GBK, utf-8
 		StringBuilder sb = new StringBuilder();
 		String line = "";
 		try {
 			while ((line = reader.readLine()) != null) {
 				sb.append(line);
+				sb.append("\\n");// Jeremy
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

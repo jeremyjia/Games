@@ -22,10 +22,10 @@ public class VOAService {
 	public void init() {
 	}
 
-	public String getText(String url) {
+	public String getText(String url, String rule, String charset, Integer i) {
 		try {
-			String text = parseTextFromHTML(url);
-			text = addLinefeeds(text, 65);
+			String text = parseTextFromHTML(url, rule, charset);
+			text = addLinefeeds(text, i);
 			return text;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -45,7 +45,7 @@ public class VOAService {
 	}
 
 	private String parseTitleFromHTML(String url) throws IOException {
-		String htmlText = FileUtil.getHTMLContentByUrl(url);
+		String htmlText = FileUtil.getHTMLContentByUrl(url, "utf-8");
 		Document doc = Jsoup.parse(htmlText);
 		Elements eles = doc.getElementsByTag("title");
 		Element titleElm = eles.get(0);
@@ -53,12 +53,12 @@ public class VOAService {
 		return titleElm.text();
 	}
 
-	private String parseTextFromHTML(String url) throws IOException {
-		String htmlText = FileUtil.getHTMLContentByUrl(url);
+	private String parseTextFromHTML(String url, String rule, String charset) throws IOException {
+		String htmlText = FileUtil.getHTMLContentByUrl(url, charset);
 		String endTag = "_______";
 		if (htmlText != null) {
 			Document doc = Jsoup.parse(htmlText);
-			Elements elements = (Elements) doc.getElementsByTag("p");
+			Elements elements = (Elements) doc.getElementsByTag(rule);
 			StringBuffer buffer = new StringBuffer();
 			Iterator<Element> it = elements.iterator();
 			while (it.hasNext()) {
