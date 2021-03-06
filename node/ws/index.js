@@ -1,6 +1,8 @@
-const tag = "[ws/index.js_v0.231]"; 
+const tag = "[ws/index.js_v0.234]"; 
 const http = require("http");
 const mb = require("../old/js49/ws/msgBox.js");
+
+const s201 = require("./server4_i201.js");
 const l = require('../logger');
 l.tag(tag);  
  
@@ -60,13 +62,13 @@ wsServer.on("request", request => {
             }
         }
 
-        if (result.method === "M_i_201") {  
-            l.tag1(tag,"------------------- " + result.clientId);
-        }
+        
         l.tag1(tag,mb);
         const ch = require("../old/js49/ws/chatHandle.js");
         ch.toDo(result,clientList,mb);
         
+        s201.toDo(result,clientList);
+
         //a client want to join
         if (result.method === "join") { 
 
