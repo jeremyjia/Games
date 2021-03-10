@@ -1,0 +1,3 @@
+开发过程中参考借鉴了以下产品，在此表示感谢：
+象棋巫师 : http://www.xqbase.com/
+鹏飞象棋 : http://pf.stk.me/
