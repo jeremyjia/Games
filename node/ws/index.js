@@ -1,6 +1,8 @@
-const tag = "[ws/index.js_v0.233]"; 
+const tag = "[ws/index.js_v0.234]"; 
 const http = require("http");
 const mb = require("../old/js49/ws/msgBox.js");
+
+const s201 = require("./server4_i201.js");
 const l = require('../logger');
 l.tag(tag);  
  
@@ -60,22 +62,11 @@ wsServer.on("request", request => {
             }
         }
 
-        if (result.method === "M_i_201") {  
-            l.tag1(tag,"------------------- " + result.clientId);
-
-            const payLoad = {
-                "method": "M_i_201",
-                "data": "data_4_201"
-            }
-            game.clients.forEach(c => {
-                clientList[c.clientId].connection.send(JSON.stringify(payLoad))
-            })
-        }
+        
         l.tag1(tag,mb);
         const ch = require("../old/js49/ws/chatHandle.js");
         ch.toDo(result,clientList,mb);
         
-        const s201 = require("../ws/server4_i201.js");
         s201.toDo(result,clientList);
 
         //a client want to join
