@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<body>  
+
+<canvas id="myCanvas" width="240" height="297"
+style="border:1px solid #d3d3d3;">
+Your browser does not support the HTML5 canvas tag.
+</canvas>
+<button id="play" >play</button>
+<button id="pause" >pause</button>
+<script>
+window.onload = function() {
+    var can = document.getElementById('myCanvas');
+    var ctx = can.getContext('2d');
+    var myVideo = document.createElement('video'); 
+    myVideo.src = "https://www.w3schools.com/tags/movie.mp4";
+    myVideo.autoplay = false;
+    myVideo.loop = false;
+    setInterval(function(){
+        ctx.drawImage(myVideo, 0, 0, 400, 400);
+    }, 60); 
+    var play = document.getElementById('play');
+    play.onclick = function(){
+    	myVideo.play();
+    }
+    var pause = document.getElementById('pause');
+    pause.onclick = function(){
+    	myVideo.pause();
+    }
+}; 
+</script>
+
+</body>
+</html>
