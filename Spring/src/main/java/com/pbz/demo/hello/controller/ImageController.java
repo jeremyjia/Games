@@ -175,6 +175,10 @@ public class ImageController {
 				break;
 			index++;
 		}
+
+		if (scriptFile.toLowerCase().startsWith("http")) {
+			scriptFile = FileUtil.downloadFileIfNeed(scriptFile);
+		}	
 		String strResultMsg = "根据剧本生成视频粗错啦！";
 		boolean b = false;
 		try {
@@ -203,7 +207,7 @@ public class ImageController {
 
 		return mv;
 	}
-
+	
 	@ApiIgnore
 	@RequestMapping(value = "/voa", method = RequestMethod.GET)
 	public ModelAndView voa(@RequestParam(name = "texturl") String htmlUrl,
