@@ -65,7 +65,7 @@ public final class JsonSriptParser {
 		}
 		// SetTime of video
 		audioFilePath = MacroResolver.resolve(audioFilePath);
-		String audioFile = downloadIf(audioFilePath);
+		String audioFile = FileUtil.downloadFileIfNeed(audioFilePath);
 		String saveFile = System.getProperty("user.dir") + "/" + audioFile;
 		String audioTime = FileUtil.getAudioDuration(saveFile);
 		System.out.println("Audio file " + saveFile + " seconds:" + audioTime);
@@ -201,7 +201,7 @@ public final class JsonSriptParser {
 		}
 
 		// Download audio file
-		String audioFile = downloadIf(audioFilePath);
+		String audioFile = FileUtil.downloadFileIfNeed(audioFilePath);
 		// Cut the audio
 		if (!new File(audioFile).exists()) {
 			throw new Exception("The audio file " + audioFile + " doesn't exist!");
@@ -219,22 +219,6 @@ public final class JsonSriptParser {
 		String[] cmds = { ffmpegPath, "-y", "-i", subtitle_video_name, "-i", tmpAudioFile, final_video_name };
 		boolean bRunScript = ExecuteCommand.executeCommand(cmds, null, new File("."), null);
 		return bRunScript;
-	}
-
-	private static String downloadIf(String audioFilePath) {
-		String audioFile = audioFilePath;
-		if (audioFile.contains("/")) {
-			audioFile = audioFile.substring(audioFile.lastIndexOf("/") + 1);
-		}
-		String saveFile = System.getProperty("user.dir") + "/" + audioFile;
-		if (!new File(saveFile).exists()) {
-			long begintime = System.currentTimeMillis();
-			System.out.println("downloading file: " + audioFilePath);
-			FileUtil.downloadFile(audioFilePath, saveFile);
-			long endtime = System.currentTimeMillis();
-			System.out.println("downloadTime:" + (endtime - begintime));
-		}
-		return audioFile;
 	}
 
 	private static String getJsonString(String scriptFilePath) throws IOException {

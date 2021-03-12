@@ -169,6 +169,22 @@ public class FileUtil {
 		return Integer.toString(len);
 	}
 
+	public static String downloadFileIfNeed(String file) {
+		String fileName = file;
+		if (fileName.contains("/")) {
+			fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
+		}
+		String saveFile = System.getProperty("user.dir") + "/" + fileName;
+		if (!new File(saveFile).exists()) {
+			long begintime = System.currentTimeMillis();
+			System.out.println("Downloading file: " + file);
+			FileUtil.downloadFile(file, saveFile);
+			long endtime = System.currentTimeMillis();
+			System.out.println("Download file Time:" + (endtime - begintime));
+		}
+		return fileName;
+	}
+
 	public static int chmod(String args) throws Exception {
 		int result = -1;
 		try {
