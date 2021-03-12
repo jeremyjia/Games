@@ -175,13 +175,12 @@ public class ImageController {
 				break;
 			index++;
 		}
-
-		if (scriptFile.toLowerCase().startsWith("http")) {
-			scriptFile = FileUtil.downloadFileIfNeed(scriptFile);
-		}	
 		String strResultMsg = "根据剧本生成视频出错啦！";
 		boolean b = false;
 		try {
+			if (scriptFile.toLowerCase().startsWith("http")) {
+				scriptFile = FileUtil.downloadFile(scriptFile);
+			}
 			String strContent = FileUtil.readAllBytes(scriptFile);
 			if (MacroResolver.hasMacro(strContent)) {
 				File jsonTmpFile = new File("scriptTmpFile.json");
@@ -207,7 +206,7 @@ public class ImageController {
 
 		return mv;
 	}
-	
+
 	@ApiIgnore
 	@RequestMapping(value = "/voa", method = RequestMethod.GET)
 	public ModelAndView voa(@RequestParam(name = "texturl") String htmlUrl,

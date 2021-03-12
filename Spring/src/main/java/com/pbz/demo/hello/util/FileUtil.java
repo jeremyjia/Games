@@ -185,6 +185,24 @@ public class FileUtil {
 		return fileName;
 	}
 
+	public static String downloadFile(String fileUrl) throws Exception {
+		if (!fileUrl.startsWith("http")) {
+			throw new Exception("The file url is not correct!");
+		}
+		String fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
+		String savedFilePath = System.getProperty("user.dir") + "/" + fileName;
+		if (new File(savedFilePath).exists()) {
+			savedFilePath = System.getProperty("user.dir") + "/" + fileName + ".bak";
+		}
+		long begintime = System.currentTimeMillis();
+		System.out.println("downloading file: " + fileUrl);
+		FileUtil.downloadFile(fileUrl, savedFilePath);
+		long endtime = System.currentTimeMillis();
+		System.out.println("download file time:" + (endtime - begintime));
+
+		return new File(savedFilePath).getName();
+	}
+
 	public static int chmod(String args) throws Exception {
 		int result = -1;
 		try {

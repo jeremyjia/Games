@@ -281,12 +281,17 @@ public final class JsonSriptParser {
 
 		String name = attributeObj.getString("name");
 		float fSize = attributeObj.getFloat("size");
+
 		if (attributeObj.has("color")) {
 			String cr = attributeObj.getString("color");
 			if (cr != null) {
 				Color color = getColor(cr);
 				gp2d.setColor(color);
 			}
+		}
+		JSONObject areaObj = null;
+		if (attributeObj.has("area")) {
+			areaObj = attributeObj.getJSONObject("area");
 		}
 		JSONObject actionObj = jObj.getJSONObject("action");
 		String actionTrace = actionObj.getString("trace"); // 目前只按照二次函数曲线来解析 Y=aX^2+bX+c Or X=100
@@ -341,9 +346,20 @@ public final class JsonSriptParser {
 			Font font = new Font("黑体", Font.BOLD, (int) fSize);
 			gp2d.setFont(font);
 			float nY = Y;
+			int fontH = gp2d.getFontMetrics().getHeight();
 			for (String aLine : name.split("\n")) {
-				gp2d.drawString(aLine, X, nY);
-				nY += gp2d.getFontMetrics().getHeight();
+				if (areaObj != null) {
+					int l = areaObj.getInt("left");
+					int t = areaObj.getInt("top");
+					int w = areaObj.getInt("width");
+					int h = areaObj.getInt("height");
+					if (X > l && X < (l + w) && (nY - fontH) > t && nY < (t + h)) {
+						gp2d.drawString(aLine, X, nY);
+					}
+				} else {
+					gp2d.drawString(aLine, X, nY);
+				}
+				nY += fontH;
 			}
 
 		} else if ("picture".equalsIgnoreCase(type)) {
