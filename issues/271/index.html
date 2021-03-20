@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <button id="start">start</button>
+
+<canvas id="canvas" width="200" height="100"
+style="border:1px solid #c3c3c3;">
+Your browser does not support the canvas element.
+</canvas>
+
+<script>
+//Bezier curve simulator
+function BezierSim(){
+	
+	var _this = this;
+	var width = window.innerWidth;
+	var height = window.innerHeight;
+	var	canvas = document.getElementById('canvas');
+	var mouse = {
+	    x: 0,
+	    y: 0
+	};
+	var request;
+	var mouseDown = false;
+	var selected = null;
+	var started = false;
+	
+	this.context = canvas.getContext('2d');
+	
+	//Set canvas to full screen.
+	canvas.width = width;
+	canvas.height = height;
+	
+	var points = [];
+	
+	//Controlable variables
+	this.steps = 150;
+	this.step = 0;
+	this.showDetail = true;
+		
+	this.init = function(){
+		
+		canvas.addEventListener('dblclick', doubleClick, false);
+		canvas.addEventListener('mousedown', mouseDown, false);
+		canvas.addEventListener('mouseup', mouseUp, false);
+		canvas.addEventListener('mousemove', mouseMove, false);
+
+		renderPoints();
+	}
+	
+	//Render the key points of the curve
+	var renderPoints = function(){
+			
+		clearCanvas();	
+		var i = 0;		
+		for (i; i < points.length; i++){		
+			//Large points
+			drawPoint(points[i], 7);
+			if (i + 1 < points.length){
+				drawBetweenPoints(points[i], points[i + 1])
+			}		
+		}
+	}
+
+	//Start and stop.
+	this.start = function(){
+	  //copyToClipboard();
+		if (points.length > 0) {
+			if (started == false) {
+				started = true;
+				//Start loop	
+				loop();
+			}
+			else {
+				started = false;
+			}
+		}
+	}
+	
+	this.reset = function(){
+		_this.step = 0;
+		started = false;
+/*		cancelRequestAnimationFrame(request);*/
+		renderPoints();
+	}
+		
+	//Loop through animation
+	var loop = function(){
+				
+		//Has reached the end. Revert to start - and stop.
+		if (_this.step > _this.steps){
+			_this.reset();		
+			return;
+		}
+		
+		//No longer looping
+		if (started == false){
+			return;
+		}
+		
+	    requestAnimationFrame(loop);
+	    animate();
+	}
+	
+	var drawPoint = function(point, size){
+		_this.context.fillStyle = 'rgba(0, 0, 0, 1)';
+		_this.context.lineWidth = 3;		
+		_this.context.beginPath();
+		_this.context.arc(point.x, point.y, size ,0 , Math.PI*2, true);
+		_this.context.closePath();
+		_this.context.stroke();	
+	}
+	
+	var drawBetweenPoints = function(point1, point2){
+		drawPoint(point1, 2);
+		drawPoint(point2, 2);
+		
+		_this.context.lineWidth = 0.4;		
+		_this.context.beginPath();
+		_this.context.moveTo(point1.x, point1.y);
+		_this.context.lineTo(point2.x, point2.y);
+		_this.context.stroke();	
+			
+	}
+		
+	//Recursively determines the epoch point
+	var getPointBetween = function(epoch, points){
+		var i = 0;
+		var foundPoints = [];
+		
+		if (points.length > 1) {
+			for (i = 0; i < points.length - 1; i++) {
+				
+				var point = {x:0, y:0};
+				
+				//B(t) = P0 + t(P1 - P0)	
+				point.x = points[i].x + epoch * (points[i + 1].x - points[i].x);
+				point.y = points[i].y + epoch * (points[i + 1].y - points[i].y);
+				
+				if (_this.showDetail == true) {
+					drawBetweenPoints(points[i], points[i + 1]);
+				}
+				foundPoints.push(point);
+			}
+			
+			//Recurse with new points
+			return getPointBetween(epoch, foundPoints);
+			
+		} else {
+			return points[0];
+		}
+	}
+	
+	var animate = function(){
+		
+		if (_this.showDetail == true){		
+			clearCanvas();
+		}
+		
+		renderPoints();
+		var epoch = _this.step/_this.steps;;
+		var point = getPointBetween(epoch, points);
+		
+		//Main point - Do not draw on first step (For ui purposes)
+		if (_this.step != 0) {
+			_this.context.fillStyle = 'rgba(0, 0, 0, 0.8)';
+			_this.context.beginPath();
+			_this.context.arc(point.x, point.y, 8, 0, Math.PI * 2, true);
+			_this.context.closePath();
+			_this.context.fill();
+		}
+		
+		//This allows it to still render while stopped
+		if (started == true){
+			_this.step++;
+		}
+	}
+	
+	 var clearCanvas = function(){
+		canvas.width = canvas.width;
+	}
+	
+	
+// ------------------------------------------------------------------------------
+//            Loading data / Saving data
+// ------------------------------------------------------------------------------
+	
+	//TODO: Investigate clean string addition in js
+	var copyToClipboard = function(){
+		var i = 0;
+		var url = location.href;
+		var url_parts = url.split('?');
+		var main_url = url_parts[0];
+		
+		var string = main_url + '?q=';
+		
+		for (i; i < points.length; i++) {
+			
+			//Scale data down, so it can be loaded equaly on another screen size
+			string = string + 'x' + Math.round((width/points[i].x) * 100)/100;
+			string = string + 'y' +  Math.round((height/points[i].y) * 100)/100;
+		}
+		
+		//console.log( string);
+	}
+	
+	//TODO: Learn the propper regex method
+	//Load data string.
+	this.loadData = function(dataString){
+		var i = 1; //skip first entry
+		var data = dataString.split('x');
+		for (i; i < data.length; i++){
+			
+			var point = data[i].split('y');
+			points.push({x:(width/parseFloat(point[0])), y:height/parseFloat(point[1])});		
+		}
+	}
+	
+	
+// ------------------------------------------------------------------------------
+//            Moving/Creating/Deleting points
+// ------------------------------------------------------------------------------
+	
+	var mouseUp = function(event){
+		mouseDown = false;
+		selected = null;
+
+	}
+	
+	var mouseMove = function(event){
+		mouse.x = event.offsetX || (event.layerX - canvas.offsetLeft);
+   		mouse.y = event.offsetY || (event.layerY - canvas.offsetTop);
+		
+		if (mouseDown == true && selected != null){
+			points[selected].x = mouse.x;
+			points[selected].y = mouse.y;
+			clearCanvas();
+			renderPoints();
+			
+			//Don't animate step 0
+			if(_this.step != 0){
+				animate();
+			}
+		}			
+	}
+	
+	var mouseDown = function(event){
+		
+		//Prevent draging of points from confusing the screen.
+		event.preventDefault();
+			
+		mouseDown = true;
+		var i = 0;
+		
+		for (i; i < points.length; i++) {
+		
+			dx = points[i].x - mouse.x;
+			dy = points[i].y - mouse.y;
+			sqrDist = Math.sqrt(dx * dx + dy * dy);
+			
+			//You may now drag selected point
+			if (sqrDist < 30) {
+				if (selected == null) {
+					selected = i;
+				}
+			}
+		}		
+	}
+	
+	var doubleClick = function(event){
+		var i = 0, dx, dy;
+		
+		mouse.x = event.offsetX || (event.layerX - canvas.offsetLeft);
+   		mouse.y = event.offsetY || (event.layerY - canvas.offsetTop);
+		
+		//If there are no points
+		if (points.length == 0){
+			createPoint({x: mouse.x, y: mouse.y});
+			return;
+		}
+		
+		for (i; i < points.length; i++){
+			
+			dx = points[i].x - mouse.x;
+            dy = points[i].y - mouse.y;
+            sqrDist = Math.sqrt(dx * dx + dy * dy);
+            
+			//If the double click was on another point
+            if (sqrDist < 30) {
+				
+				removePoint(i);
+				return;
+			}		
+		}
+		
+		createPoint({x: mouse.x, y: mouse.y});
+	}
+	
+	var removePoint = function(index){
+		points.splice(index, 1);
+		renderPoints();
+		animate();
+	}
+	
+	 var createPoint = function(point){
+	 	points.push(point);
+		renderPoints();
+		animate();
+	 }
+	 
+	 //Global function to clear
+	 this.clearPoints = function(){
+		points = new Array();
+		_this.reset();	
+	}
+	
+}
+
+/**
+ * Provides requestAnimationFrame in a cross browser way.
+ * http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+ */
+
+if ( !window.requestAnimationFrame ) {
+
+	window.requestAnimationFrame = (function(){
+    return  window.requestAnimationFrame       || 
+        window.webkitRequestAnimationFrame || 
+        window.mozRequestAnimationFrame    || 
+        window.oRequestAnimationFrame      || 
+        window.msRequestAnimationFrame     || 
+        function(/* function */ callback, /* DOMElement */ element){
+            return window.setTimeout(callback, 1000 / 60);
+        };
+})();
+
+}
+
+var bezierSim;
+
+// For the demo
+
+setTimeout( function() {
+  bezierSim = new BezierSim();
+  bezierSim.loadData( "x17.9y4.58x7.38y1.19x3.16y1.19x2.8y2.13x2.54y7.27x1.71y7.27x1.57y2.04x1.44y1.2x1.18y1.2x1.09y5.52");
+  bezierSim.init();
+  bezierSim.start();
+}, 10 );
+
+
+var startbutton = document.getElementById("start");
+startbutton.onclick = function() {
+ bezierSim.start(); 
+}
+</script>
+
+</body>
+</html>
+
