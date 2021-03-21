@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -133,50 +134,34 @@ public final class JsonSriptParser {
 						}
 
 						JSONArray objectArray = frameObj.getJSONArray("objects");
-						for (Object object : objectArray) {
-							JSONObject obj = (JSONObject) object;
-							// Picture
-							if (obj.has("picture")) {
-								String picFile = obj.getString("picture");
-								File imgFile = new File(picFile);
-								if (imgFile.exists()) {
-									Image img = ImageIO.read(imgFile);
-									int left = obj.getInt("x");
-									int top = obj.getInt("y");
-									int w = obj.getInt("width");
-									int h = obj.getInt("heigth");
-									g.drawImage(img, left, top, w, h, null);
-								} else {
-									System.out.println("WARNING: The file " + imgFile.getName() + " doesn't exist!");
-								}
-							}
-							// Text
-							if (obj.has("text")) {
-								String text = obj.getString("text");
-								int x = obj.getInt("x");
-								int y = obj.getInt("y");
-								int size = obj.getInt("size");
-								String c = obj.getString("color");
-								Color color = getColor(c);
-								System.out.println(text);
-								g.setColor(color);
-								Font font = new Font("黑体", Font.BOLD, size);
-								g.setFont(font);
-								float nY = y;
-								for (String aLine : text.split("\n")) {
-									g.drawString(aLine, x, nY);
-									nY += g.getFontMetrics().getHeight();
-								}
-							}
-							// Graphic
-							if (obj.has("graphic")) {
-								drawGraphic(obj, g);
-							}
-						}
-
 						List<JSONObject> objs = getSuperObjectsByframeNumber(index + 1);
-						for (JSONObject obj : objs) {
-							drawSupperObjects(obj, g, index + 1);
+
+						List<JSONObject> allSortedObjects = new ArrayList<>();
+						for (Object object : objectArray) {
+							allSortedObjects.add((JSONObject) object);
+						}
+						allSortedObjects.addAll(objs);
+						allSortedObjects.sort(new Comparator<JSONObject>() {
+							@Override
+							public int compare(JSONObject o1, JSONObject o2) {
+								int x = 0;
+								int y = 0;
+								if (o1.has("layer")) {
+									x = o1.getInt("layer");
+								}
+								if (o2.has("layer")) {
+									y = o2.getInt("layer");
+								}
+								return x - y;
+							}
+						});
+						// Draw all objects
+						for (JSONObject obj : allSortedObjects) {
+							if (obj.has("frameRange")) {
+								drawSupperObjects(obj, g, index + 1);
+							} else {
+								drawOrdinaryObjects(obj, g);
+							}
 						}
 						g.setColor(new Color(0, 0, 255));// 帧号颜色
 						g.setFont(new Font("黑体", Font.BOLD, 40));
@@ -219,6 +204,46 @@ public final class JsonSriptParser {
 		String[] cmds = { ffmpegPath, "-y", "-i", subtitle_video_name, "-i", tmpAudioFile, final_video_name };
 		boolean bRunScript = ExecuteCommand.executeCommand(cmds, null, new File("."), null);
 		return bRunScript;
+	}
+
+	private static void drawOrdinaryObjects(JSONObject obj, Graphics2D g) throws IOException {
+		// Picture
+		if (obj.has("picture")) {
+			String picFile = obj.getString("picture");
+			File imgFile = new File(picFile);
+			if (imgFile.exists()) {
+				Image img = ImageIO.read(imgFile);
+				int left = obj.getInt("x");
+				int top = obj.getInt("y");
+				int w = obj.getInt("width");
+				int h = obj.getInt("heigth");
+				g.drawImage(img, left, top, w, h, null);
+			} else {
+				System.out.println("WARNING: The file " + imgFile.getName() + " doesn't exist!");
+			}
+		}
+		// Text
+		if (obj.has("text")) {
+			String text = obj.getString("text");
+			int x = obj.getInt("x");
+			int y = obj.getInt("y");
+			int size = obj.getInt("size");
+			String c = obj.getString("color");
+			Color color = getColor(c);
+			System.out.println(text);
+			g.setColor(color);
+			Font font = new Font("黑体", Font.BOLD, size);
+			g.setFont(font);
+			float nY = y;
+			for (String aLine : text.split("\n")) {
+				g.drawString(aLine, x, nY);
+				nY += g.getFontMetrics().getHeight();
+			}
+		}
+		// Graphic
+		if (obj.has("graphic")) {
+			drawGraphic(obj, g);
+		}
 	}
 
 	private static String getJsonString(String scriptFilePath) throws IOException {
@@ -281,12 +306,17 @@ public final class JsonSriptParser {
 
 		String name = attributeObj.getString("name");
 		float fSize = attributeObj.getFloat("size");
+
 		if (attributeObj.has("color")) {
 			String cr = attributeObj.getString("color");
 			if (cr != null) {
 				Color color = getColor(cr);
 				gp2d.setColor(color);
 			}
+		}
+		JSONObject areaObj = null;
+		if (attributeObj.has("area")) {
+			areaObj = attributeObj.getJSONObject("area");
 		}
 		JSONObject actionObj = jObj.getJSONObject("action");
 		String actionTrace = actionObj.getString("trace"); // 目前只按照二次函数曲线来解析 Y=aX^2+bX+c Or X=100
@@ -341,9 +371,20 @@ public final class JsonSriptParser {
 			Font font = new Font("黑体", Font.BOLD, (int) fSize);
 			gp2d.setFont(font);
 			float nY = Y;
+			int fontH = gp2d.getFontMetrics().getHeight();
 			for (String aLine : name.split("\n")) {
-				gp2d.drawString(aLine, X, nY);
-				nY += gp2d.getFontMetrics().getHeight();
+				if (areaObj != null) {
+					int l = areaObj.getInt("left");
+					int t = areaObj.getInt("top");
+					int w = areaObj.getInt("width");
+					int h = areaObj.getInt("height");
+					if (X > l && X < (l + w) && (nY - fontH) > t && nY < (t + h)) {
+						gp2d.drawString(aLine, X, nY);
+					}
+				} else {
+					gp2d.drawString(aLine, X, nY);
+				}
+				nY += fontH;
 			}
 
 		} else if ("picture".equalsIgnoreCase(type)) {
