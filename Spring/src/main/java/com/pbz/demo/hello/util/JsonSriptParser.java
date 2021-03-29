@@ -113,6 +113,7 @@ public final class JsonSriptParser {
 					Image bgImg = null;
 					if (frameObj.has("backgroundPicture")) {
 						String srcImageFile = frameObj.getString("backgroundPicture");
+						srcImageFile = FileUtil.downloadFileIfNeed(srcImageFile);
 						File img = new File(srcImageFile);
 						if (img.exists()) {
 							bgImg = ImageIO.read(img);
@@ -210,6 +211,7 @@ public final class JsonSriptParser {
 		// Picture
 		if (obj.has("picture")) {
 			String picFile = obj.getString("picture");
+			picFile = FileUtil.downloadFileIfNeed(picFile);
 			File imgFile = new File(picFile);
 			if (imgFile.exists()) {
 				Image img = ImageIO.read(imgFile);
@@ -394,6 +396,7 @@ public final class JsonSriptParser {
 				int index = (number - sfNum) % loopArray.length();
 				picFile = (String) loopArray.get(index);
 			}
+			picFile = FileUtil.downloadFileIfNeed(picFile);
 			File imgFile = new File(picFile);
 			if (imgFile.exists()) {
 				Image img = null;
