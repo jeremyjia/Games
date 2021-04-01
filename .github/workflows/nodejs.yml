@@ -25,5 +25,5 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-      working-directory: ./node
+      working-directory: ./node1
       run: npm ci 
