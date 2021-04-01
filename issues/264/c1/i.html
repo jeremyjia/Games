@@ -12,16 +12,16 @@
 	<div class="field">
 		<canvas id="canvas"></canvas>
 		<div class="tools">
-			<button type="button" class="button">Undo</button>
-			<button type="button" class="button">Clear</button>
+			<button onClick="undo_last()" type="button" class="button">Undo</button>
+			<button onClick="clear_canvas()" type="button" class="button">Clear</button>
 
-			<div class="color-field" style="background: red;"></div>
-			<div class="color-field" style="background: blue;"></div>
-			<div class="color-field" style="background: green;"></div>
-			<div class="color-field" style="background: yellow;"></div>
+			<div onClick="change_color(this)" class="color-field" style="background: red;"></div>
+			<div onClick="change_color(this)" class="color-field" style="background: blue;"></div>
+			<div onClick="change_color(this)" class="color-field" style="background: green;"></div>
+			<div onClick="change_color(this)" class="color-field" style="background: yellow;"></div>
 
-			<input type="color" class="color-picker">
-			<input type="range" min="1" max="100" class="pen-range">
+			<input onInput="draw_color=this.value" type="color" class="color-picker">
+			<input onInput="draw_width = this.value" type="range" min="1" max="100" class="pen-range">
 		</div>
 	</div>
 </body>
