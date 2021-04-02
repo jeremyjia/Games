@@ -7,7 +7,10 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -16,11 +19,15 @@ import java.util.List;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.pbz.demo.hello.service.VOAService;
+import com.pbz.demo.hello.util.engine.JSGraphEngine;
 
 public final class JsonSriptParser {
 	private static final String subtitle_video_name = "vSubtitle.mp4";
@@ -28,6 +35,9 @@ public final class JsonSriptParser {
 	private static final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
 	private static List<Map<String, Object>> supperObjectsMapList = new ArrayList<Map<String, Object>>();
 	private static VOAService service = new VOAService();
+
+	private static ScriptEngineManager mgr = new ScriptEngineManager();
+	private static ScriptEngine engine = mgr.getEngineByName("JavaScript");
 
 	public static void setMacros(String scriptFilePath) throws Exception {
 		String jsonString = getJsonString(scriptFilePath);
@@ -129,6 +139,7 @@ public final class JsonSriptParser {
 						if (colorBackground != null) {
 							g.setColor(colorBackground);
 							g.fillRect(0, 0, width, height);
+							g.setBackground(colorBackground);
 						}
 						if (bgImg != null) {
 							g.drawImage(bgImg, 0, 0, width, height, null);
@@ -297,9 +308,12 @@ public final class JsonSriptParser {
 		return superObjects;
 	}
 
-	private static void drawSupperObjects(JSONObject jObj, Graphics2D gp2d, int number) {
+	private static void drawSupperObjects(JSONObject jObj, Graphics2D gp2d, int number) throws Exception {
 		String type = jObj.getString("type");
-
+		if (type.equalsIgnoreCase("javascript")) {
+			drawJavaScriptObject(jObj, gp2d, number);
+			return;
+		}
 		JSONObject attributeObj = jObj.getJSONObject("attribute");
 		int x1 = attributeObj.getInt("x1");// 初始X1坐标
 		int y1 = attributeObj.getInt("y1");
@@ -412,6 +426,19 @@ public final class JsonSriptParser {
 				System.out.println("WARNING: The file " + imgFile.getName() + " doesn't exist!");
 			}
 		}
+	}
+
+	private static void drawJavaScriptObject(JSONObject jObj, Graphics2D gp2d, int number) throws Exception {
+		JSONObject attributeObj = jObj.getJSONObject("attribute");
+		String striptFile = attributeObj.getString("script");
+		String functionName = attributeObj.getString("function");
+		int start = attributeObj.getInt("start");
+		engine.put("document", new JSGraphEngine(gp2d));
+		File f = new File(striptFile);
+		Reader r = new InputStreamReader(new FileInputStream(f));
+		engine.eval(r);
+		Invocable invoke = (Invocable) engine;
+		invoke.invokeFunction(functionName, new Object[] { number - start });
 	}
 
 	private static void drawGraphic(JSONObject jObj, Graphics2D gp2d) {
