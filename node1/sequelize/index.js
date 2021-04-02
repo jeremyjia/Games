@@ -1,6 +1,6 @@
 const mysql = require('mysql2/promise');
 
-const dbName = process.env.DB_SCHEMAS || "db1";
+const dbName = process.env.DB_SCHEMAS || "db2";
 const odb = {
     host: process.env.DB_HOST || "127.0.0.1",
     port: process.env.DB_PORT || "3306",
