@@ -4,11 +4,11 @@ function animateFrame(time) {
             
     ctx.clearRect(0, 0, 2048, 1536);
 
-    ctx.fillStyle = "Blue";
+    ctx.fillStyle = "red";
     var x = time;
     ctx.fillRect(10, 10, 100, 100);
 
-    ctx.fillStyle = "green";
+    ctx.fillStyle = "blue";
     for (var i = 0; i < 555; i++) {
         var x = i;
         var y = 222;

@@ -4,11 +4,11 @@
         "width": 1024,
         "height": 768,
         "music": "1.mp3",
-        "rate": "1",
+        "rate": "25",
         "frames": [
             {
                 "number": "1",
-                "time": "50",
+                "time": "1250",
                 "objects": [
                     {
                         "text": "${VAR_TITLE}",
@@ -25,7 +25,7 @@
         "superObjects": [
             {
                 "type": "javascript",
-                "frameRange": "(1,50)",
+                "frameRange": "(1,1250)",
                 "attribute": {
                     "script": "myplx1.js",
                     "function": "animateFrame",
