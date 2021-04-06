@@ -27,7 +27,7 @@
                 "type": "javascript",
                 "frameRange": "(1,50)",
                 "attribute": {
-                    "script": "p1.js",
+                    "script": "myplx1.js",
                     "function": "animateFrame",
                     "start": 1
                 },
