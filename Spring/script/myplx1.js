@@ -1,10 +1,5 @@
-
-var nTimes = 0;
 function animateFrame(time) {
-    if(time%100==0){
-        nTimes++;
-        if(nTimes>8) nTimes = 1;
-    }
+    var nTimes = ((time/100)%8)+1;
     var canvas = document.getElementById('myCanvas');
     var ctx = canvas.getContext('2d');
             
