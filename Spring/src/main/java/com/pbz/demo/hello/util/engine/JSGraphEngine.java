@@ -13,6 +13,17 @@ public class JSGraphEngine {
 
 	private Graphics2D graphics = null;
 
+	public Graphics2D getGraphics() {
+		return graphics;
+	}
+
+	public void setGraphics(Graphics2D graphics) {
+		this.graphics = graphics;
+	}
+
+	public JSGraphEngine() {
+	}
+
 	public JSGraphEngine(Graphics2D g2d) {
 		graphics = g2d;
 	}

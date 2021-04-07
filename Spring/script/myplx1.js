@@ -1,8 +1,11 @@
+var nTimes = 0;
 function animateFrame(time) {
-    var nTimes = ((time/100)%8)+1;
+    if(time%100==0){
+        nTimes++;
+        if(nTimes>8) nTimes = 1;
+    }
     var canvas = document.getElementById('myCanvas');
-    var ctx = canvas.getContext('2d');
-            
+    var ctx = canvas.getContext('2d');      
     ctx.clearRect(0, 0, 2048, 1536);
 
     ctx.fillStyle = "red";
