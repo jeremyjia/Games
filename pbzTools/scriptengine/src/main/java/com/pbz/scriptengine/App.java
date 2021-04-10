@@ -15,7 +15,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -52,7 +51,7 @@ public class App {
 		JLabel label = new JLabel("插件列表");
 		JComboBox<String> combo = new JComboBox<String>();
 		combo.addItem("--请选择插件--");
-		List<File> plugins = getPluginFiles();
+		List<File> plugins = AppUtil.getPluginFiles();
 		for (File plugin : plugins) {
 			combo.addItem(plugin.getName());
 		}
@@ -93,7 +92,7 @@ public class App {
 				}
 			}
 		});
-		
+
 		jp.add(label);
 		jp.add(combo);
 		jp.add(button);
@@ -153,21 +152,6 @@ public class App {
 
 		jp.setImage(image);
 		jp.repaint();
-	}
-
-	public static List<File> getPluginFiles() {
-		List<File> plugins = new ArrayList<>();
-		File dir = new File("./plugin");
-		if (!dir.exists()) {
-			dir = new File("../plugin");
-		}
-		File[] dirFiles = dir.listFiles();
-		for (File file : dirFiles) {
-			if (file.isFile() && file.getAbsolutePath().endsWith(".js")) {
-				plugins.add(file);
-			}
-		}
-		return plugins;
 	}
 
 	public class ImagePanel extends JPanel {
