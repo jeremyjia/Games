@@ -38,6 +38,8 @@ public final class JsonSriptParser {
 
 	private static ScriptEngineManager mgr = new ScriptEngineManager();
 	private static ScriptEngine engine = mgr.getEngineByName("JavaScript");
+	private static JSGraphEngine graphEngine = new JSGraphEngine();
+	private static boolean isScriptLoaded = false;
 
 	public static void setMacros(String scriptFilePath) throws Exception {
 		String jsonString = getJsonString(scriptFilePath);
@@ -433,10 +435,14 @@ public final class JsonSriptParser {
 		String striptFile = attributeObj.getString("script");
 		String functionName = attributeObj.getString("function");
 		int start = attributeObj.getInt("start");
-		engine.put("document", new JSGraphEngine(gp2d));
-		File f = new File(striptFile);
-		Reader r = new InputStreamReader(new FileInputStream(f));
-		engine.eval(r);
+		graphEngine.setGraphics(gp2d);
+		engine.put("document", graphEngine);
+		if (isScriptLoaded == false) {
+			File f = new File(striptFile);
+			Reader r = new InputStreamReader(new FileInputStream(f));
+			engine.eval(r);
+			isScriptLoaded = true;
+		}
 		Invocable invoke = (Invocable) engine;
 		invoke.invokeFunction(functionName, new Object[] { number - start });
 	}

@@ -1,4 +1,3 @@
-
 const sq = require('./sequelize')
 
 module.exports = function(){
