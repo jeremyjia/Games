@@ -1,4 +1,4 @@
-const tag = "[old/js49/plx/p1.js_v0.152]";
+const tag = "[old/js49/plx/p1.js_v0.224]";
 const p1Btn = bl$("id_plx1_btn");  
  
 var vBreakNews = null;  
@@ -7,6 +7,8 @@ let clientId = null;
 let gameId = null;
 let playerColor = null;
 
+var gs0 = "gs0..."; 
+var gs1 = "gs1..."; 
  
 const txtGameId = document.getElementById("txtGameId"); 
 const divBoard = document.getElementById("divBoard");    
@@ -79,12 +81,18 @@ function _setSvr(wsurl,_btnDbg){
             _btnDbg.setS(s);
         } 
       
-      
+       
         if (response.method === "newGame"){
             gameId = response.game.id; 
             var v4game = bl$("id_div_4_Games");
             v4game.addGame(gameId);   
         }
+              
+        if (response.method === "M_i_201"){
+            gs0 = response.data;
+            gs1 = response.over;
+        }
+
      
         if (response.method === "mBreakNews"){
             vBreakNews.innerHTML = response.news;
@@ -173,12 +181,100 @@ function _setSvr(wsurl,_btnDbg){
 
 p1Btn.onclick();
 
+function C4i201(){
+    var x = 0, y = 0, w=20,h=20,c="brown";
+    var _w = 111, _h = -20;
+    var dx = 45, dy = 67;
+    var dw = 44, dh = 66;
+    var n = 0;
+    
+    var a = new CBtn(x,y,w,h,c,function(){
+        c=c=="brown"?"blue":"brown";
+        n++; 
+ 
+        const payLoad = {
+            "method"    : "M_i_201", 
+            "gameAction": "action_4_new_game" 
+        }
+        if(wso)        wso.send(JSON.stringify(payLoad));
+    });  
+    var cs = [2,3,4,5,6,7,8,9,10,"J","Q","K","A",2,3,4,5,6,7,8,9,10,"J","Q","K","A",2,3,4,5,6,7,8,9,10,"J","Q","K","A",2,3,4,5,6,7,8,9,10,"J","Q","K","A"];
+	var cards = [];
+    for(i in cs){
+        var card = new CBtn(x,y,dw,dh,"white",function(_i){    
+            return function(){
+                const payLoad = {
+                    "method"    : "M_i_201", 
+                    "gameAction": "action_4_pick_a_card",
+                    "index"     : _i
+                }
+                if(wso)        wso.send(JSON.stringify(payLoad));
+
+            }
+        }(i));
+        cards.push(card);
+    }
+
+    this.onDraw = function(cvs,_x,_y){
+        var d   = new Date();
+        var msg =  d.toLocaleTimeString();
+        blo0.blText(cvs,"C4i201::f1 " + msg,_x,_y+20,20,"red");
+        var sNews = vBreakNews.innerHTML;
+        blo0.blText(cvs,"sNews: " + sNews,_x,_y+40,20,"lightblue");
+        blo0.blText(cvs,"n=" + n,_x,_y+66,20,"lightgreen");
+ 
+        var ss = "var ls = " + JSON.stringify( gs0 );
+        eval(ss);
+        var ss1 = "var os = " + JSON.stringify( gs1 );
+        eval(ss1);
+ 
+        
+        var dn = 0, dm = 0;
+        for(i in ls){               
+            cards[i].setXY(_x+dx*dn,_y+dy*dm);
+            cards[i].draw(cvs); 
+
+            var sc = ls[i].num;
+            blo0.blText(cvs,sc,_x+dx*dn+dx/2,_y+ dy*dm+dy/2,20,"green");
+            if(ls[i].icon=='S')  blo0.drawSpade(cvs,_x+dx*dn+dx/3,_y+dy*dm+dy/3,15,15);
+            if(ls[i].icon=='H')  blo0.drawHeart(cvs,_x+dx*dn+dx/3,_y+dy*dm+dy/3,15,15);
+            if(ls[i].icon=='C')  blo0.drawClub(cvs,_x+dx*dn+dx/3,_y+dy*dm+dy/3,15,15);
+            if(ls[i].icon=='D')  blo0.drawDiamond(cvs,_x+dx*dn+dx/3,_y+dy*dm+dy/3,15,15);
+            
+            blo0.blText(cvs,os[i],_x+dx*dn+dx/2,_y+ dy*dm+dy/2+25,20,"blue");
+            if(os[i] == 0) blo0.blRect(cvs,_x+dx*dn,_y+dy*dm,dx,dy,"lightgreen");
+            dn++;
+            if(dn==13){
+                dn=0;
+                dm++;
+            }
+        }         
+
+        a.setXY(_x+_w,_y+_h);
+        a.setC(c);
+        a.draw(cvs); 
+    }
+    this.mousedown = function(_x,_y){ 
+        a.click (_x,_y); 
+        for(i in cards){
+            cards[i].click(_x,_y);
+        }
+    }
+    this.mouseup = function(_x,_y){ 
+        a.click (_x,_y); 
+        for(i in cards){
+            cards[i].click(_x,_y);
+        }
+    }
+} 
+
 function CTest(){
     var md = null;
     var x = screen.width*0.021;
     var y = screen.height*0.15;
-    var w =  screen.width*0.8545;
+    var w =  screen.width*0.55;
     var h = screen.height*0.15;
+    var o201 = new C4i201();
     var myObj = {};
     myObj.playground = function(b,v){
         var c = "white";
@@ -208,6 +304,7 @@ function CTest(){
                     function(cvs,_x,_y,_w,_h){
                         blo0.blRect(cvs,_x,_y,_w,_h,"yellow");
                         blo0.blText(cvs,"server.drawing: ",_x,_y-5,20,c);
+                        o201.onDraw(cvs,_x,_y); 
                         eval(sss);
                     },
                     function(_btn){//init	  				
@@ -221,9 +318,11 @@ function CTest(){
                     },
                     function(_btn,_x,_y){//mousedown	  				  
                         _btn.setDown(true);
+                        o201.mousedown(_x,_y);
                     },
                     function(_btn,_x,_y){//mouseup	  
                         _btn.setDown(false);
+                        o201.mouseup(_x,_y);
                     },
                     function(_btn,_x,_y){	//mousemove	 
                         if(_btn.getDown()){
@@ -607,3 +706,4 @@ function addFun1(_tb,_btn,_wso){
         blon(b,b.v,"grey","green");
     }
 }
+

@@ -1,7 +1,9 @@
-const tag = "[sql/login.js_v0.231] "; 
+const tag = "[sql/login.js_v0.235] "; 
 const token = require('../auth/token');
 const mysql = require('mysql');
+ 
 const config = require('../config'); 
+const hash = require('../utils/hash'); 
 
 exports.g6Login = function(loginInf,resolve,Service)
 {
@@ -10,7 +12,9 @@ exports.g6Login = function(loginInf,resolve,Service)
     s.code = 0;
     s.token = "...";
 
-    var _sql = "SELECT * FROM Group6Users where UserName ='"+loginInf.UserName+ "'";
+    var u = loginInf.UserName;
+
+    var _sql = "SELECT * FROM Group6Users where UserName = ?";
 
     
     console.log( tag + "_sql = " + _sql);
@@ -23,7 +27,7 @@ exports.g6Login = function(loginInf,resolve,Service)
     });
 
     con.connect();
-    con.query(_sql, function (err, result, fields) {
+    con.query(_sql, u , function (err, result, fields) {
         if (err)   {
           console.log(err);  
           console.log(err.sqlMessage);  
@@ -36,17 +40,15 @@ exports.g6Login = function(loginInf,resolve,Service)
             console.log("query: " + r);
             var l = result.length;
             if(l>0){    
-                sR = "  pw = " + result[0].Password ;
-                sR += " loginInf.Password = " + loginInf.Password  ;
-
-                
-                if(loginInf.Password ==  result[0].Password){                 
+                var pwHash =  result[0].Password ; 
+                var bMatch = hash.toCompare(loginInf.Password,pwHash);                
+                if(bMatch){                 
                      
                     const user = {
                         v: tag,
                         id: result[0].UserID ,
                         username: loginInf.UserName, 
-                        password: loginInf.Password  
+                        password: pwHash  
                     }
                    
                     token.sign({user: user},(err, token) => {    
@@ -58,6 +60,7 @@ exports.g6Login = function(loginInf,resolve,Service)
                     }); 
                 }   
                 else{ 
+                  s.token = "...: Password error!";
                   resolve(Service.successResponse(s));
                 }          
             }   

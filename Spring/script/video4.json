@@ -1,0 +1,68 @@
+{
+    "request": {
+        "version": "0.0.8",
+        "width": 1024,
+        "height": 768,
+        "music": "${VAR_MP3}",
+        "rate": "1",
+        "frames": [
+            {
+                "number": "1",
+                "time": "${VAR_TIME}",
+                "objects": [
+                    {
+                        "text": "${VAR_TITLE}",
+                        "x": 100,
+                        "y": 600,
+                        "size": 50,
+                        "color": "1,142,35"
+                    }
+                ],
+                "backgroundColor": "200,200,222"
+            }
+        ],
+        "superObjects": [
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 20,
+                    "y1": 100,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 25,
+                    "color": "10,10,10",
+                    "name": "${VAR_TEXT}"
+                },
+                "frameRange": "(1,512)",
+                "action": {
+                    "trace": "x=20",
+                    "step": -4
+                }
+            }
+        ],
+        "Macros": [
+            {
+                "name": "VAR_MP3",
+                "value": "https://jeremyjia.github.io/Games/issues/210/as20210213a1.mp3"
+            },
+            {
+                "name": "VAR_TITLE",
+                "value": {
+                    "href": "https://jeremyjia.github.io/Games/issues/210/asa1.html",
+                    "rule": "title",
+                    "charset": "utf-8",
+                    "number": "30"
+                }
+            },
+            {
+                "name": "VAR_TEXT",
+                "value": {
+                    "href": "https://jeremyjia.github.io/Games/issues/210/asa1.html",
+                    "rule": "p",
+                    "charset": "utf-8",
+                    "number": "64"
+                }
+            }
+        ]
+    }
+}

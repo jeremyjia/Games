@@ -1,4 +1,4 @@
-const tag = "[controllers/DefaultController.js_v0.44]";
+const tag = "[controllers/DefaultController.js_v0.53]";
 const Controller = require('./Controller');
 const l = require('../logger');
 l.tag(tag); 
@@ -12,6 +12,20 @@ class DefaultController {
   async loginTest(request, response) {
     await Controller.handleRequest(request, response, this.service.loginTest);
   }
+  async logout(request, response) {
+    l.tag1(tag,"logout 1 ..." + request.curUser);
+    await Controller.handleRequest(request, response, this.service.logout);
+  }
+
+  async setIcon(request, response) {
+    l.tag1(tag,"xd2DoSetIcon ..." + request.curUser);
+    await Controller.handleRequest(request, response, this.service.setIcon);
+  }
+  
+  async verify(request, response) { 
+    await Controller.handleRequest(request, response, this.service.verify);
+  }
+
 
   async addPlayer(request, response) {
     console.log(tag + " request = " + request ); 
@@ -22,8 +36,8 @@ class DefaultController {
     await Controller.handleRequest(request, response, this.service.coinAndgem);
   }
 
-  async getPlayerGET(request, response) {
-    await Controller.handleRequest(request, response, this.service.getPlayerGET);
+  async getPlayer(request, response) {
+    await Controller.handleRequest(request, response, this.service.getPlayer);
   }
 
   async getAllPlayers(request, response) {

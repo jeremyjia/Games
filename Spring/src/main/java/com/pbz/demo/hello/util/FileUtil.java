@@ -1,14 +1,22 @@
 package com.pbz.demo.hello.util;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.StringTokenizer;
+
+import org.jaudiotagger.audio.mp3.MP3AudioHeader;
+import org.jaudiotagger.audio.mp3.MP3File;
 
 public class FileUtil {
 
@@ -42,6 +50,45 @@ public class FileUtil {
 		}
 	}
 
+	public static void copyFile(String source, String destination, boolean overwrite) throws Exception {
+		File src_f = new File(source);
+		File dst_f = new File(destination);
+
+		if (!src_f.exists() || !src_f.canRead()) {
+			throw new Exception("common.error.cannotFindFile" + src_f.getName());
+		} else if (dst_f.exists() && !overwrite) {
+			throw new Exception("common.error.destinationFileExists" + dst_f.getName());
+		}
+		if (overwrite)
+			dst_f.delete();
+
+		dst_f.getParentFile().mkdirs();
+
+		try {
+			FileInputStream src = new FileInputStream(src_f);
+			FileOutputStream dst = new FileOutputStream(dst_f);
+			byte[] buffer = new byte[4096];
+
+			while (true) {
+				int count = src.read(buffer);
+				if (count == -1) {
+					break;
+				}
+
+				dst.write(buffer, 0, count);
+			}
+
+			src.close();
+			dst.close();
+		} catch (IOException e) {
+			if (dst_f.exists()) {
+				dst_f.delete();
+			}
+
+			throw new Exception("Error during copy: " + e.getMessage());
+		}
+	}
+
 	public static void createDir(String path) {
 		StringTokenizer st = new StringTokenizer(path, File.separator);
 		String tmpPath = "";
@@ -64,9 +111,100 @@ public class FileUtil {
 		return content;
 	}
 
+	public static void writeStringToFile(String filename, String contents) throws Exception {
+		try {
+			FileWriter file = new FileWriter(filename);
+			file.write(contents);
+			file.close();
+		} catch (Exception exception) {
+			throw new Exception(exception);
+		}
+	}
+
+	public static String getHTMLContentByUrl(String url, String charset) throws IOException {
+		URLConnection urlCon = new URL(url).openConnection();
+		InputStream is = urlCon.getInputStream();
+		BufferedReader reader = new BufferedReader(new InputStreamReader(is, charset));// GBK, utf-8
+		StringBuilder sb = new StringBuilder();
+		String line = "";
+		try {
+			while ((line = reader.readLine()) != null) {
+				sb.append(line);
+				sb.append("\\n");// Jeremy
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				is.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		reader.close();
+		return sb.toString();
+	}
+
+	public static void downloadFile(String url, String saveFilePath) {
+		try {
+			URL fileUrl = new URL(url);
+			InputStream is = fileUrl.openStream();
+			OutputStream os = new FileOutputStream(saveFilePath);
+			byte bf[] = new byte[1024];
+			int length = 0;
+			while ((length = is.read(bf, 0, 1024)) != -1) {
+				os.write(bf, 0, length);
+			}
+			is.close();
+			os.close();
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
+	public static String getAudioDuration(String filePath) throws Exception {
+		MP3File file = new MP3File(filePath);
+		MP3AudioHeader audioHeader = (MP3AudioHeader) file.getAudioHeader();
+		int len = audioHeader.getTrackLength(); // Second
+		return Integer.toString(len);
+	}
+
+	public static String downloadFileIfNeed(String file) {
+		String fileName = file;
+		if (fileName.contains("/")) {
+			fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
+		}
+		String saveFile = System.getProperty("user.dir") + "/" + fileName;
+		if (!new File(saveFile).exists()) {
+			long begintime = System.currentTimeMillis();
+			System.out.println("Downloading file: " + file);
+			FileUtil.downloadFile(file, saveFile);
+			long endtime = System.currentTimeMillis();
+			System.out.println("Download file Time:" + (endtime - begintime));
+		}
+		return fileName;
+	}
+
+	public static String downloadFile(String fileUrl) throws Exception {
+		if (!fileUrl.startsWith("http")) {
+			throw new Exception("The file url is not correct!");
+		}
+		String fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
+		String savedFilePath = System.getProperty("user.dir") + "/" + fileName;
+		if (new File(savedFilePath).exists()) {
+			savedFilePath = System.getProperty("user.dir") + "/" + fileName + ".bak";
+		}
+		long begintime = System.currentTimeMillis();
+		System.out.println("downloading file: " + fileUrl);
+		FileUtil.downloadFile(fileUrl, savedFilePath);
+		long endtime = System.currentTimeMillis();
+		System.out.println("download file time:" + (endtime - begintime));
+
+		return new File(savedFilePath).getName();
+	}
+
 	public static int chmod(String args) throws Exception {
 		int result = -1;
-
 		try {
 			Process process = Runtime.getRuntime().exec("chmod " + args);
 			process.waitFor();
@@ -74,7 +212,6 @@ public class FileUtil {
 		} catch (Exception exception) {
 			throw new Exception(exception);
 		}
-
 		return result;
 
 	}

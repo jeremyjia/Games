@@ -24,8 +24,11 @@ import org.springframework.web.servlet.ModelAndView;
 import com.pbz.demo.hello.exception.HtmlRequestException;
 import com.pbz.demo.hello.service.ClockImageService;
 import com.pbz.demo.hello.service.SubtitleImageService;
+import com.pbz.demo.hello.service.VOAService;
 import com.pbz.demo.hello.util.ExecuteCommand;
+import com.pbz.demo.hello.util.FileUtil;
 import com.pbz.demo.hello.util.JsonSriptParser;
+import com.pbz.demo.hello.util.MacroResolver;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -42,6 +45,8 @@ public class ImageController {
 	private ClockImageService clockImageService;
 	@Autowired
 	private SubtitleImageService subtitleImageService;
+	@Autowired
+	private VOAService voaService;
 
 	@Value("${server.port}")
 	private String app_port;
@@ -170,9 +175,22 @@ public class ImageController {
 				break;
 			index++;
 		}
-		String strResultMsg = "根据剧本生成视频粗错啦！";
+		String strResultMsg = "根据剧本生成视频出错啦！";
 		boolean b = false;
 		try {
+			if (scriptFile.toLowerCase().startsWith("http")) {
+				scriptFile = FileUtil.downloadFile(scriptFile);
+			}
+			String strContent = FileUtil.readAllBytes(scriptFile);
+			if (MacroResolver.hasMacro(strContent)) {
+				File jsonTmpFile = new File("scriptTmpFile.json");
+				FileUtil.copyFile(new File(scriptFile).getAbsolutePath(), jsonTmpFile.getAbsolutePath(), true);
+
+				JsonSriptParser.setMacros(jsonTmpFile.getAbsolutePath());
+				FileUtil.writeStringToFile(jsonTmpFile.getAbsolutePath(), MacroResolver.resolve(strContent));
+				scriptFile = jsonTmpFile.getAbsolutePath();
+				System.out.println("Resolve file " + jsonTmpFile.getAbsolutePath());
+			}
 			b = JsonSriptParser.generateVideoByScriptFile(scriptFile);
 		} catch (Exception e) {
 			throw new HtmlRequestException("请检查剧本文件是否存在且书写正确. " + e.getMessage());
@@ -187,6 +205,48 @@ public class ImageController {
 		mv.addObject("home_page_url", strHomePageUrl);
 
 		return mv;
+	}
+
+	@ApiIgnore
+	@RequestMapping(value = "/voa", method = RequestMethod.GET)
+	public ModelAndView voa(@RequestParam(name = "texturl") String htmlUrl,
+			@RequestParam(name = "audiourl") String audioUrl) throws Exception {
+
+		// e.g,
+		// https://jeremyjia.github.io/Games/issues/210/asa1.html
+		// https://jeremyjia.github.io/Games/issues/210/as20210213a1.mp3;
+
+		String text = voaService.getText(htmlUrl, "p", "utf-8", 65);
+		String title = voaService.getTitle(htmlUrl);
+		String fileName = audioUrl;
+		if (audioUrl.contains("/")) {
+			fileName = audioUrl.substring(audioUrl.lastIndexOf("/") + 1);
+		}
+		String saveFile = System.getProperty("user.dir") + "/" + fileName;
+		if (!new File(saveFile).exists()) {
+			long begintime = System.currentTimeMillis();
+			FileUtil.downloadFile(audioUrl, saveFile);
+			long endtime = System.currentTimeMillis();
+			System.out.println("downloadTime:" + (endtime - begintime));
+		}
+		String audioTime = FileUtil.getAudioDuration(saveFile);
+
+		try {
+			File templateFile = new File("voa_template.json");
+			File voaFile = new File("voa.json");
+			FileUtil.copyFile(templateFile.getAbsolutePath(), voaFile.getAbsolutePath(), true);
+
+			String fileContent = FileUtil.readAllBytes(voaFile.getAbsolutePath());
+			fileContent = fileContent.replace("$VOA_TITLE$", title);
+			fileContent = fileContent.replace("$VOA_MP3$", fileName);
+			fileContent = fileContent.replace("\"$VOA_TIME$\"", audioTime);
+			fileContent = fileContent.replace("$VOA_TEXT$", text);
+			FileUtil.writeStringToFile(voaFile.getAbsolutePath(), fileContent);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return generateVideoByscenario("voa.json");
 	}
 
 	private void verifyParameter(String time) throws Exception {

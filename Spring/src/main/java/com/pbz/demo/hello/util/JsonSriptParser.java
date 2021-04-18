@@ -7,35 +7,87 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import com.pbz.demo.hello.service.VOAService;
+import com.pbz.demo.hello.util.engine.JSGraphEngine;
 
 public final class JsonSriptParser {
 	private static final String subtitle_video_name = "vSubtitle.mp4";
 	private static final String final_video_name = "vFinal.mp4";
 	private static final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
 	private static List<Map<String, Object>> supperObjectsMapList = new ArrayList<Map<String, Object>>();
+	private static VOAService service = new VOAService();
+
+	private static ScriptEngineManager mgr = new ScriptEngineManager();
+	private static ScriptEngine engine = mgr.getEngineByName("JavaScript");
+	private static JSGraphEngine graphEngine = new JSGraphEngine();
+	private static boolean isScriptLoaded = false;
+
+	public static void setMacros(String scriptFilePath) throws Exception {
+		String jsonString = getJsonString(scriptFilePath);
+		JSONObject jsonObj = new JSONObject(jsonString);
+		JSONObject requestObj = getJsonObjectbyName(jsonObj, "request");
+		String audioFilePath = requestObj.getString("music");
+		// Resolve all macros
+		Iterator<String> keys = requestObj.keys();
+		while (keys.hasNext()) {
+			String key = keys.next();
+			if (key.equalsIgnoreCase("Macros")) {
+				JSONArray macrosArray = (JSONArray) requestObj.get(key);
+				for (Object object : macrosArray) {
+					if (!(object instanceof JSONObject)) {
+						continue;
+					}
+					JSONObject macroObj = (JSONObject) object;
+					String varName = macroObj.optString("name");
+					String varValue = "";
+					Object obj = macroObj.get("value");
+					if (obj instanceof JSONObject) {
+						JSONObject valObj = (JSONObject) obj;
+						String href = valObj.getString("href");
+						String rule = valObj.getString("rule");
+						String number = valObj.getString("number");
+						String charset = valObj.getString("charset");
+						System.out.println("Get text from url: " + href);
+						varValue = service.getText(href, rule, charset, Integer.valueOf(number));
+						MacroResolver.setProperty(varName, varValue);
+					} else {
+						varValue = (String) obj;
+					}
+					MacroResolver.setProperty(varName, varValue);
+				}
+			}
+		}
+		// SetTime of video
+		audioFilePath = MacroResolver.resolve(audioFilePath);
+		String audioFile = FileUtil.downloadFileIfNeed(audioFilePath);
+		String saveFile = System.getProperty("user.dir") + "/" + audioFile;
+		String audioTime = FileUtil.getAudioDuration(saveFile);
+		System.out.println("Audio file " + saveFile + " seconds:" + audioTime);
+		MacroResolver.setProperty("VAR_TIME", audioTime);
+
+	}
 
 	public static boolean generateVideoByScriptFile(String scriptFilePath) throws Exception {
-		String jsonString = new String(Files.readAllBytes(new File(scriptFilePath).toPath()));
-		// Fix input JSON string
-		int s = jsonString.indexOf("{");
-		if (s > 0) {
-			jsonString = jsonString.substring(s);
-			int e = jsonString.lastIndexOf("}");
-			jsonString = jsonString.substring(s - 1, e + 1);
-			jsonString = jsonString.replaceAll("\\\\", "");
-			System.out.println("Fix for this input JSON string");
-		}
+		String jsonString = getJsonString(scriptFilePath);
 		return generateVideo(jsonString);
 	}
 
@@ -48,7 +100,7 @@ public final class JsonSriptParser {
 		System.out.println("剧本版本:" + version);
 		int width = requestObj.getInt("width");
 		int height = requestObj.getInt("height");
-		String audioFile = requestObj.getString("music");
+		String audioFilePath = requestObj.getString("music");
 		String rate = requestObj.getString("rate");
 		int index = 0;
 
@@ -62,7 +114,9 @@ public final class JsonSriptParser {
 						continue;
 					}
 					JSONObject frameObj = (JSONObject) frame;
-					int times = frameObj.getInt("time");
+					String strTime = frameObj.optString("time");
+					int times = Integer.parseInt(strTime);
+
 					Color colorBackground = null;
 					if (frameObj.has("backgroundColor")) {
 						String color = frameObj.getString("backgroundColor");
@@ -71,6 +125,7 @@ public final class JsonSriptParser {
 					Image bgImg = null;
 					if (frameObj.has("backgroundPicture")) {
 						String srcImageFile = frameObj.getString("backgroundPicture");
+						srcImageFile = FileUtil.downloadFileIfNeed(srcImageFile);
 						File img = new File(srcImageFile);
 						if (img.exists()) {
 							bgImg = ImageIO.read(img);
@@ -86,52 +141,41 @@ public final class JsonSriptParser {
 						if (colorBackground != null) {
 							g.setColor(colorBackground);
 							g.fillRect(0, 0, width, height);
+							g.setBackground(colorBackground);
 						}
 						if (bgImg != null) {
 							g.drawImage(bgImg, 0, 0, width, height, null);
 						}
 
 						JSONArray objectArray = frameObj.getJSONArray("objects");
-						for (Object object : objectArray) {
-							JSONObject obj = (JSONObject) object;
-							// Picture
-							if (obj.has("picture")) {
-								String picFile = obj.getString("picture");
-								File imgFile = new File(picFile);
-								if (imgFile.exists()) {
-									Image img = ImageIO.read(imgFile);
-									int left = obj.getInt("x");
-									int top = obj.getInt("y");
-									int w = obj.getInt("width");
-									int h = obj.getInt("heigth");
-									g.drawImage(img, left, top, w, h, null);
-								} else {
-									System.out.println("WARNING: The file " + imgFile.getName() + " doesn't exist!");
-								}
-							}
-							// Text
-							if (obj.has("text")) {
-								String text = obj.getString("text");
-								int x = obj.getInt("x");
-								int y = obj.getInt("y");
-								int size = obj.getInt("size");
-								String c = obj.getString("color");
-								Color color = getColor(c);
-								System.out.println(text);
-								g.setColor(color);
-								Font font = new Font("黑体", Font.BOLD, size);
-								g.setFont(font);
-								g.drawString(text, x, y);
-							}
-							// Graphic
-							if (obj.has("graphic")) {
-								drawGraphic(obj, g);
-							}
-						}
-
 						List<JSONObject> objs = getSuperObjectsByframeNumber(index + 1);
-						for (JSONObject obj : objs) {
-							drawSupperObjects(obj, g, index + 1);
+
+						List<JSONObject> allSortedObjects = new ArrayList<>();
+						for (Object object : objectArray) {
+							allSortedObjects.add((JSONObject) object);
+						}
+						allSortedObjects.addAll(objs);
+						allSortedObjects.sort(new Comparator<JSONObject>() {
+							@Override
+							public int compare(JSONObject o1, JSONObject o2) {
+								int x = 0;
+								int y = 0;
+								if (o1.has("layer")) {
+									x = o1.getInt("layer");
+								}
+								if (o2.has("layer")) {
+									y = o2.getInt("layer");
+								}
+								return x - y;
+							}
+						});
+						// Draw all objects
+						for (JSONObject obj : allSortedObjects) {
+							if (obj.has("frameRange")) {
+								drawSupperObjects(obj, g, index + 1);
+							} else {
+								drawOrdinaryObjects(obj, g);
+							}
 						}
 						g.setColor(new Color(0, 0, 255));// 帧号颜色
 						g.setFont(new Font("黑体", Font.BOLD, 40));
@@ -154,6 +198,9 @@ public final class JsonSriptParser {
 				ffmpegPath = "/usr/local/bin/ffmpeg";
 			}
 		}
+
+		// Download audio file
+		String audioFile = FileUtil.downloadFileIfNeed(audioFilePath);
 		// Cut the audio
 		if (!new File(audioFile).exists()) {
 			throw new Exception("The audio file " + audioFile + " doesn't exist!");
@@ -171,6 +218,61 @@ public final class JsonSriptParser {
 		String[] cmds = { ffmpegPath, "-y", "-i", subtitle_video_name, "-i", tmpAudioFile, final_video_name };
 		boolean bRunScript = ExecuteCommand.executeCommand(cmds, null, new File("."), null);
 		return bRunScript;
+	}
+
+	private static void drawOrdinaryObjects(JSONObject obj, Graphics2D g) throws IOException {
+		// Picture
+		if (obj.has("picture")) {
+			String picFile = obj.getString("picture");
+			picFile = FileUtil.downloadFileIfNeed(picFile);
+			File imgFile = new File(picFile);
+			if (imgFile.exists()) {
+				Image img = ImageIO.read(imgFile);
+				int left = obj.getInt("x");
+				int top = obj.getInt("y");
+				int w = obj.getInt("width");
+				int h = obj.getInt("heigth");
+				g.drawImage(img, left, top, w, h, null);
+			} else {
+				System.out.println("WARNING: The file " + imgFile.getName() + " doesn't exist!");
+			}
+		}
+		// Text
+		if (obj.has("text")) {
+			String text = obj.getString("text");
+			int x = obj.getInt("x");
+			int y = obj.getInt("y");
+			int size = obj.getInt("size");
+			String c = obj.getString("color");
+			Color color = getColor(c);
+			System.out.println(text);
+			g.setColor(color);
+			Font font = new Font("黑体", Font.BOLD, size);
+			g.setFont(font);
+			float nY = y;
+			for (String aLine : text.split("\n")) {
+				g.drawString(aLine, x, nY);
+				nY += g.getFontMetrics().getHeight();
+			}
+		}
+		// Graphic
+		if (obj.has("graphic")) {
+			drawGraphic(obj, g);
+		}
+	}
+
+	private static String getJsonString(String scriptFilePath) throws IOException {
+		String jsonString = new String(Files.readAllBytes(new File(scriptFilePath).toPath()));
+		// Fix input JSON string
+		int s = jsonString.indexOf("{");
+		if (s > 0) {
+			jsonString = jsonString.substring(s);
+			int e = jsonString.lastIndexOf("}");
+			jsonString = jsonString.substring(s - 1, e + 1);
+			jsonString = jsonString.replaceAll("\\\\", "");
+			System.out.println("Fix for this input JSON string");
+		}
+		return jsonString;
 	}
 
 	private static void initMap(JSONObject requestObj) {
@@ -208,9 +310,12 @@ public final class JsonSriptParser {
 		return superObjects;
 	}
 
-	private static void drawSupperObjects(JSONObject jObj, Graphics2D gp2d, int number) {
+	private static void drawSupperObjects(JSONObject jObj, Graphics2D gp2d, int number) throws Exception {
 		String type = jObj.getString("type");
-
+		if (type.equalsIgnoreCase("javascript")) {
+			drawJavaScriptObject(jObj, gp2d, number);
+			return;
+		}
 		JSONObject attributeObj = jObj.getJSONObject("attribute");
 		int x1 = attributeObj.getInt("x1");// 初始X1坐标
 		int y1 = attributeObj.getInt("y1");
@@ -219,6 +324,7 @@ public final class JsonSriptParser {
 
 		String name = attributeObj.getString("name");
 		float fSize = attributeObj.getFloat("size");
+
 		if (attributeObj.has("color")) {
 			String cr = attributeObj.getString("color");
 			if (cr != null) {
@@ -226,20 +332,32 @@ public final class JsonSriptParser {
 				gp2d.setColor(color);
 			}
 		}
+		JSONObject areaObj = null;
+		if (attributeObj.has("area")) {
+			areaObj = attributeObj.getJSONObject("area");
+		}
 		JSONObject actionObj = jObj.getJSONObject("action");
-		String actionTrace = actionObj.getString("trace"); // 目前只按照二次函数曲线来解析 Y=aX^2+bX+c
+		String actionTrace = actionObj.getString("trace"); // 目前只按照二次函数曲线来解析 Y=aX^2+bX+c Or X=100
 		float step = actionObj.getFloat("step");
 
 		String rangeValue = jObj.getString("frameRange");
 		String rangeArray[] = rangeValue.split(",");
 		String startFrameNumber = rangeArray[0].substring(1);
 		int sfNum = Integer.parseInt(startFrameNumber);
-		float X = x1 + (number - sfNum) * step;
-		String parm[] = actionTrace.split("\\+");
-		float a = Float.parseFloat(parm[0].substring(2, parm[0].indexOf("*")));
-		float b = Float.parseFloat(parm[1].substring(0, parm[1].indexOf("*")));
-		float c = Float.parseFloat(parm[2]);
-		float Y = (float) (a * X * X + b * X + c);
+
+		float X = 0, a = 0, b = 0, c = 0, Y = 0;
+		if (actionTrace.toLowerCase().startsWith("x")) {
+			String xValue = actionTrace.substring(2);
+			X = Integer.parseInt(xValue);
+			Y = y1 + (number - sfNum) * step;
+		} else {
+			X = x1 + (number - sfNum) * step;
+			String parm[] = actionTrace.split("\\+");
+			a = Float.parseFloat(parm[0].substring(2, parm[0].indexOf("*")));
+			b = Float.parseFloat(parm[1].substring(0, parm[1].indexOf("*")));
+			c = Float.parseFloat(parm[2]);
+			Y = (float) (a * X * X + b * X + c);
+		}
 
 		if (name != null && !name.trim().isEmpty()) {
 			if (!"text".equalsIgnoreCase(type) && !"picture".equalsIgnoreCase(type)) {
@@ -270,7 +388,23 @@ public final class JsonSriptParser {
 		} else if ("text".equalsIgnoreCase(type)) {
 			Font font = new Font("黑体", Font.BOLD, (int) fSize);
 			gp2d.setFont(font);
-			gp2d.drawString(name, X, Y);
+			float nY = Y;
+			int fontH = gp2d.getFontMetrics().getHeight();
+			for (String aLine : name.split("\n")) {
+				if (areaObj != null) {
+					int l = areaObj.getInt("left");
+					int t = areaObj.getInt("top");
+					int w = areaObj.getInt("width");
+					int h = areaObj.getInt("height");
+					if (X > l && X < (l + w) && (nY - fontH) > t && nY < (t + h)) {
+						gp2d.drawString(aLine, X, nY);
+					}
+				} else {
+					gp2d.drawString(aLine, X, nY);
+				}
+				nY += fontH;
+			}
+
 		} else if ("picture".equalsIgnoreCase(type)) {
 			String picFile = name;
 			if (actionObj.has("loop")) {
@@ -278,6 +412,7 @@ public final class JsonSriptParser {
 				int index = (number - sfNum) % loopArray.length();
 				picFile = (String) loopArray.get(index);
 			}
+			picFile = FileUtil.downloadFileIfNeed(picFile);
 			File imgFile = new File(picFile);
 			if (imgFile.exists()) {
 				Image img = null;
@@ -293,6 +428,23 @@ public final class JsonSriptParser {
 				System.out.println("WARNING: The file " + imgFile.getName() + " doesn't exist!");
 			}
 		}
+	}
+
+	private static void drawJavaScriptObject(JSONObject jObj, Graphics2D gp2d, int number) throws Exception {
+		JSONObject attributeObj = jObj.getJSONObject("attribute");
+		String striptFile = attributeObj.getString("script");
+		String functionName = attributeObj.getString("function");
+		int start = attributeObj.getInt("start");
+		graphEngine.setGraphics(gp2d);
+		engine.put("document", graphEngine);
+		if (isScriptLoaded == false) {
+			File f = new File(striptFile);
+			Reader r = new InputStreamReader(new FileInputStream(f));
+			engine.eval(r);
+			isScriptLoaded = true;
+		}
+		Invocable invoke = (Invocable) engine;
+		invoke.invokeFunction(functionName, new Object[] { number - start });
 	}
 
 	private static void drawGraphic(JSONObject jObj, Graphics2D gp2d) {

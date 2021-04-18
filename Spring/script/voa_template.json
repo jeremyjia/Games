@@ -1,0 +1,44 @@
+{
+    "request": {
+        "version": "0.0.7",
+        "width": 1024,
+        "height": 768,
+        "music": "$VOA_MP3$",
+        "rate": "1",
+        "frames": [
+            {
+                "number": "1",
+                "time": "$VOA_TIME$",
+                "objects": [
+                    {
+                        "text": "$VOA_TITLE$",
+                        "x": 100,
+                        "y": 600,
+                        "size": 50,
+                        "color": "1,142,35"
+                    }
+                ],
+                "backgroundColor": "200,200,222"
+            }
+        ],
+        "superObjects": [
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 20,
+                    "y1": 100,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 25,
+                    "color": "10,10,10",
+                    "name": "$VOA_TEXT$"
+                },
+                "frameRange": "(1,512)",
+                "action": {
+                    "trace": "x=20",
+                    "step": -4
+                }
+            }
+        ]
+    }
+}

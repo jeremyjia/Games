@@ -1,9 +1,11 @@
-const tag = "[AdminsService.js_v0.142]";
+const tag = "[AdminsService.js_v0.143]";
 const Service = require('./Service');
 const gameStarted = require('../sql/gameStarted.js');
 const gameEnded = require('../sql/gameEnded.js');
 const g6A = require('./g6Admin/signin.js'); 
 const adminReset = require('./g6Admin/reset.js');
+const innerCheck = require('./g6Admin/innerCheck.js');
+
 
 const l = require('../logger');
 l.tag(tag);  
@@ -63,6 +65,26 @@ class AdminsService {
           //r.test = "reset";
           //resolve(Service.successResponse(r));
           var r = adminReset.reset(reqInf,resolve,Service);  
+           
+        } catch (e) {
+          resolve(Service.rejectResponse(
+            e.message || 'Invalid input',
+            e.status || 405,
+          ));
+        }
+      },
+    );
+  }
+
+  static innerCheck({body: reqInf}) { 
+    
+    return new Promise(
+      async (resolve) => {
+        try {
+          //var r = {};
+          //r.test = "reset";
+          //resolve(Service.successResponse(r));
+          var r = innerCheck.innerCheck(reqInf,resolve,Service);  
            
         } catch (e) {
           resolve(Service.rejectResponse(
