@@ -32,11 +32,11 @@ body {   margin: 0;  font-family: Arial;}
     <a class="xd2" href="https://littleflute.github.io/Games/"  target="_blank">littleflute主页</a>
  
     <a class="xd3" href="https://maomaof.github.io/Games/"  target="_blank">maomaof主页</a> 
-    <a href="##" >v0.3.11</a> 
+    <a href="##" >v0.3.12</a> 
   </div>
 </div>
 
-<div style="float:right;"> <button id="id_btn_4_plugIn" >+blApp</button></div>
+<div style="float:right;"> <button id="plx_p1_btn" >+blApp</button></div>
 <div class="header-right"  id="id_div_4_issue4" style="background:gold">
 			<a href="https://github.com/jeremyjia/Games/issues/4" target="_blank">
 				div4-issue4:
@@ -50,13 +50,12 @@ body {   margin: 0;  font-family: Arial;}
 <script src="js/blclass.js" ></script> 
 
 <script>
-  var btn4BlPlx = bl$("id_btn_4_plugIn");
+  var btn4BlPlx = bl$("plx_p1_btn");
   btn4BlPlx.style.background = "grey";
   btn4BlPlx.onclick = function(){
     if(!this.load){
-      this.style.background=blGrey[5]; // @littleflute 2021.4.18
-      blo0.blScript("blApp.js","https://littleflute.github.io/JavaScript/blApp.js");
-      this.id = "id_btn_4_blApp";
+      this.style.background=blGrey[5]; // @littleflute 2021.4.23
+      blo0.blScript("blApp.js","Spring/script/plx/p1.js"); 
       blo0.load= 1;
     }
   }
