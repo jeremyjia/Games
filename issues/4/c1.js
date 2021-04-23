@@ -1,5 +1,5 @@
 //i4c1
-var s= "v0.1. 43 ";
+var s= "v0.1. 45 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c1.js'"
 s += " style='color:blue;'";		s +=">"; s += "c1.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c1.js'"
@@ -30,7 +30,7 @@ if(!md.run){
 
 	ftnPlayer(md);
 
-        blo0.blMakeDivMovable(md );
+    blo0.blMakeDivMovable(md );
 	md.style.left = "400px";
 	md.style.top = "40px";
 }
