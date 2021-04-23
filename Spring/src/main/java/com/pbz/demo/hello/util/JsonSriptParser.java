@@ -217,6 +217,13 @@ public final class JsonSriptParser {
 		// Combine silent video and audio to a final video
 		String[] cmds = { ffmpegPath, "-y", "-i", subtitle_video_name, "-i", tmpAudioFile, final_video_name };
 		boolean bRunScript = ExecuteCommand.executeCommand(cmds, null, new File("."), null);
+
+		boolean bGif = true; // TODO
+		if (bGif) {
+			String[] createGifCmd = { ffmpegPath, "-y", "-i", final_video_name, "vFinal.gif" };
+			bRunScript = ExecuteCommand.executeCommand(createGifCmd, null, new File("."), null);
+			MacroResolver.setProperty("VAR_GIF_ENABLED", "true");
+		}
 		return bRunScript;
 	}
 

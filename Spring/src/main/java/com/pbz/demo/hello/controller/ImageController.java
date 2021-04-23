@@ -203,6 +203,10 @@ public class ImageController {
 		mv.addObject("message", strResultMsg);
 		mv.addObject("video_url", strVideoUrl);
 		mv.addObject("home_page_url", strHomePageUrl);
+		if ("true".equalsIgnoreCase(MacroResolver.getProperty("VAR_GIF_ENABLED"))) {
+			mv.addObject("gif_url", strHomePageUrl + "/vFinal.gif");
+			mv.addObject("gif_enabled", true);
+		}
 
 		return mv;
 	}
