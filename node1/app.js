@@ -2,5 +2,5 @@ const sq = require('./sequelize')
 
 module.exports = function(){
   var s = sq.f1();
-  return 'to test gif: ok!';
+  return 'to test i297: done.';
 }

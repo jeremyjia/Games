@@ -32,33 +32,38 @@ body {   margin: 0;  font-family: Arial;}
     <a class="xd2" href="https://littleflute.github.io/Games/"  target="_blank">littleflute主页</a>
     <a class="xd3" href="https://maomaof.github.io/Games/"  target="_blank">maomaof主页</a> 
     <a class="xd4" href="https://waynexw.github.io/Games/"  target="_blank">waynexw主页</a> 
-    <a href="##" >v0.2.14</a> 
+    <a href="##" >v0.3.13</a> 
   </div>
 </div>
 
-<div style="float:right;"> <button id="id_btn_4_blApp" >+blApp</button></div>
-
+<div style="float:right;"> <button id="plx_p1_btn" >+blApp</button></div>
 <div class="header-right"  id="id_div_4_issue4" style="background:gold">
 			<a href="https://github.com/jeremyjia/Games/issues/4" target="_blank">
 				div4-issue4:
 			</a>
-
 </div>
 <div id ="id_div_4_User_plx" style="background-color:white">
   加载各自主页...
 </div>
 
 <script src="https://littleflute.github.io/JavaScript/w3.js" ></script>
-<script src="https://littleflute.github.io/JavaScript/blclass.js" ></script>
-<script src="https://littleflute.github.io/JavaScript/blApp.js"></script>
+<script src="js/blclass.js" ></script> 
 
 <script>
+  var btn4BlPlx = bl$("plx_p1_btn");
+  btn4BlPlx.style.background = "grey";
+  btn4BlPlx.onclick = function(){
+    if(!this.load){
+      this.style.background=blGrey[5]; // @littleflute 2021.4.23
+      blo0.blScript("blApp.js","Spring/script/plx/p1.js"); 
+      blo0.load= 1;
+    }
+  }
   function _loadIssue(o) {	
-	eval(o.body); 
-}
-w3.getHttpObject("https://api.github.com/repos/jeremyjia/Games/issues/4", _loadIssue);	
-
-w3.getHttpObject("https://api.github.com/repos/jeremyjia/Games/issues/96", _loadIssue);	//load UserPlxApp
+	  eval(o.body); 
+  }
+  w3.getHttpObject("https://api.github.com/repos/jeremyjia/Games/issues/4", _loadIssue);	
+  w3.getHttpObject("https://api.github.com/repos/jeremyjia/Games/issues/96", _loadIssue);	//load UserPlxApp
 
 </script> 
 	
