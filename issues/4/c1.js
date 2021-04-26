@@ -1,10 +1,10 @@
 //i4c1
-var s= "v0.1. 31 ";
+var s= "v0.1. 51 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c1.js'"
 s += " style='color:blue;'";		s +=">"; s += "c1.js* ";
-s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c1.js'"
+s += "<a target='_blank' href='issues/4/c1.js'"
 s += " style='color:green;'";		s +=">"; s += "c1.js ";
-s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c1Test.html'"
+s += "<a target='_blank' href='issues/4/c1Test.html'"
 s += " style='color:brown;'";		s +=">"; s += "c1Test.html";
 
 var md = blo0.blDiv(document.body, "div_ID_4_I4C1", s ,blGrey[0]);  
@@ -30,7 +30,7 @@ if(!md.run){
 
 	ftnPlayer(md);
 
-        blo0.blMakeDivMovable(md );
+    blo0.blMakeDivMovable(md );
 	md.style.left = "400px";
 	md.style.top = "40px";
 }
@@ -66,8 +66,8 @@ function ftnPlayer( oDiv ){
 
 	v.tb = blo0.blDiv(v, v.id + "tb", "tb",blGrey[3]);
 
-	v.tb.b0 = blo0.blBtn(v.tb, v.tb+"b0","list",blGrey[0]);
-	v.tb.b0.onclick = function(){
+	v.tb.btnLists = blo0.blBtn(v.tb, v.tb+"btnLists","lists",blGrey[0]);
+	v.tb.btnLists.onclick = function(){
 		if(!this.v){
 			this.v = blo0.blDiv(v,v.id + "List","list", "lightblue");
 			var d = this.v;
@@ -84,11 +84,17 @@ function ftnPlayer( oDiv ){
 						    s += "<a href='https://littleflute.github.io/EXPLORATIONS/issues/1/i.js' target='_blank'>i.js<a/>";
 						     blo0.blDiv(d,d.id+"_#9_", s,blColor[4]);
 						     var t = blo0.blDiv(d,d.id+"_title_", a.title,blColor[5]);
-						     t.v = blo0.blDiv(t,t.id+"v", "v",blColor[5]);
+						     t.v = blo0.blDiv(t,t.id+"v", "v4Title",blColor[6]);
 						     t.v.onclick = function(){						     	
 						     	if(!t.v.dLrc){
-						     		t.v.dLrc = blo0.blMD("id_mdiv_Lrc", "Lrc", 300,100,500,400, blGrey[5]);
+						     		t.v.dLrc = blo0.blMD("id_mdiv_Lrc", "md4Lrc", 300,100,500,400, blGrey[5]);
 						     		t.v.dLrc.sLrcFile = "";	
+									t.v.dLrc.tb = blo0.blDiv(t.v.dLrc, t.v.dLrc.id + "tb","tb",blGrey[0]);
+									var btn2Edit = blo0.blBtn(t.v.dLrc.tb,"btn2Edit","2Edit",blGrey[1]);
+									btn2Edit.onclick = function(){
+										var ta = bl$("ta1");
+										ta.value = t.v.dLrc.v.innerHTML;
+									} 
 						     		t.v.dLrc.v = blo0.blDiv(t.v.dLrc, t.v.dLrc.id + "v","cur Lrc",blGrey[3]);
 						     	} 
 						     	if(t.v.dLrc.sLrcFile!=t.v.innerHTML){
@@ -146,8 +152,10 @@ function ftnPlayer( oDiv ){
   			}
 
 			function _loadListComments(o) {
+				var n = 0;
 				for(i in o){ 
-					 var btn = blo0.blBtn(d.v,d.v.id + "_btn_"+i, i+1,blColor[i]);
+					 n++;
+					 var btn = blo0.blBtn(d.v,d.v.id + "_btn_"+i, n,blColor[i]);
 					 btn.txt = o[i].body; 
 					 btn.onclick = function(_this){
 					        return function (){_makeMp3List2Div(d.v4List,_this.txt);};
@@ -162,7 +170,7 @@ function ftnPlayer( oDiv ){
 
 	v.tb.b1 = blo0.blBtn(v.tb, v.tb+"b1","lyric",blGrey[0]);
 	v.tb.b1.onclick = function(){
-		var _TimeFun = function(_this){	      
+		var _fnTimer = function(_this){	      
 				var _t = 0;
 				var _src = "";
 				var _lrc = "";
@@ -187,7 +195,7 @@ function ftnPlayer( oDiv ){
 			this.v = blo0.blDiv(v,v.id + "v4b1","v4b1",blColor[9]);
 			this.v.src = blo0.blDiv(this.v, this.v.id + "src", "url",10,10,300,200,blGrey[0]);
 			this.v.lrc = blo0.blDiv(this.v, this.v.id + "lrc", "url",10,10,300,200,blGrey[5]);
-			this.v.mv = blo0.blMDiv(this.v, this.v.id + "mv", "mv4Lyrics",310,10,300,200,blGrey[1]);
+			this.v.mv = blo0.blMDiv(this.v, this.v.id + "mv", "mv4Lyrics",310,10,888,200,blGrey[1]);
 
 			this.v.mv.parseTxt = function(_d){
 
@@ -198,7 +206,7 @@ function ftnPlayer( oDiv ){
 							ii = i;	
 						} 
 					} 
-					oDiv.innerHTML = _txtA[ii];
+					oDiv.v.innerHTML = _txtA[ii];
 				    
 				}
 				return function(ta,ct,txt){
@@ -206,26 +214,62 @@ function ftnPlayer( oDiv ){
 						_d.v 	= blo0.blDiv(_d, _d.id + "v", "v", blGrey[0]);
 						_d.vLrc = blo0.blDiv(_d, _d.id + "vLrc", "vLrc", blGrey[3]);
 						var b1 	= blo0.blBtn(_d.vLrc, _d.vLrc.id+"b1","b1",blGrey[0]);
-						var b2 	= blo0.blBtn(_d.vLrc, _d.vLrc.id+"b2","b2",blGrey[0]);
-						_d.vLrc.ta = blo0.blTextarea(_d.vLrc,_d.vLrc.id+"ta","xxx",blGrey[1]);
+						var btnEditTime 	= blo0.blBtn(_d.vLrc, _d.vLrc.id+"eTime","eTime",blGrey[0]);
+						_d.vLrc.ta = blo0.blTextarea(_d.vLrc,"ta1","xxx...",blGrey[1]);
 						_d.vLrc.ta.style.width="95%"; 
 						_d.vLrc.ta.style.height="150px"; 
 
-						_d.v4MovingLrc = blo0.blDiv(_d, _d.id + "v4MovingLrc", "v4MovingLrc", blColor[9]);
+						_d.v4MovingLrc = blo0.blMDiv(_d, _d.id + "v4MovingLrc", "v4MovingLrc",0,-20,600,50, blColor[9]);
+						_d.v4MovingLrc.v = blo0.blMDiv(_d.v4MovingLrc,"id_v4MovingLrc_v","vvvv",blGrey[0]);
 
 						b1.onclick = function(_this,_div){	
 							return function(){
 								if(!_this.v0) 
 								{
-									_this.v0 = blo0.blMDiv(_div,_div.id+"v1","v1",150,100,400,300,blGrey[0]);
+									_this.v0 = blo0.blMDiv(_div,_div.id+"v1","v1111",150,100,400,300,blGrey[0]);
 									var bUpdate = blo0.blBtn(_this.v0 ,_this.v0.id+"bUpdate","bUpdate",blGrey[4]);
+									var bShowLrc = blo0.blBtn(_this.v0 ,_this.v0.id+"bShowLrc","bShowLrc",blGrey[1]);
+									var bShowSrt = blo0.blBtn(_this.v0 ,_this.v0.id+"bShowSrt","bShowSrt",blGrey[1]);
+									bShowSrt.onclick = function(){
+										if(!blo0.plxSrt){
+											blo0.plxSrt = blo0.blMD(_div.id+"plxSrt","plxSrt",150,100,400,300,blGrey[0]);
+											blo0.plxSrt.ctx = _div;
+											blo0.blScript("id_4_js_plxSrt","c1/p1.js");
+										}
+										_on_off_div(this,blo0.plxSrt);
+									}
+									
 									_this.v1 = blo0.blDiv(_this.v0,_this.v0.id+"v1","v1",blGrey[0]);
+									bShowLrc.onclick = function(_this){
+										return function(){
+											if(!_this.v){
+												_this.v = blo0.blMD("id_mdiv_4bSHowLrc",
+												 		 "v4bShowLrc", 300,100,500,400, blGrey[0]);
+												var tArr = _div.lrcTimeArray;
+												var lArr = _div.lrcArray;
+												var s = "";
+												for(i in tArr){
+													var mm = Math.floor(tArr[i]/60); 
+													mm = mm<10?"0"+mm:mm;
+													var ss = tArr[i]%60;
+													ss = ss<10?"0"+ss.toPrecision(3):ss.toPrecision(4);
+													s += "[" + mm + ":" + ss  +"]" + lArr[i] + "\n";
+												}
+												_this.v.ta = blo0.blTextarea(_this.v,"ta2",s,blGrey[1]);
+												_this.v.ta.style.width = "98%";
+												_this.v.ta.style.height = "98%";
+												 
+											}
+											_on_off_div(_this,_this.v);
+										}
+									}(bShowLrc);
 									bUpdate.onclick = function(){
 										_this.v1.innerHTML = "-";
-										for(i in _div.lrcTimeArray){
+										var tArray = _div.lrcTimeArray;
+										for(i in tArray){
 											var dl = blo0.blDiv(_this.v1, _this.v1.id+i,i,blGrey[i]);
-											dl.b1 = blo0.blBtn(dl,dl.id+"b1",_div.lrcTimeArray[i],blGrey[0]);
-											dl.b2 = blo0.blBtn(dl,dl.id+"b2",_div.lrcArray[i],blGrey[0]);
+											dl.b1 = blo0.blBtn(dl,dl.id+"b1",tArray[i],blGrey[0]);
+											
 											dl.b1.onclick = function(b1,player,t){
 												player.addListener(b1);
 												b1.timeFun = function(tNow){
@@ -235,7 +279,14 @@ function ftnPlayer( oDiv ){
 												return function(){
 													player.currentTime = t;
 												}
-											}(dl.b1,_p,_div.lrcTimeArray[i])
+											}(dl.b1,_p,tArray[i]);
+
+
+											var mm = tArray[i]/60;
+											var ss = tArray[i]%60;
+											var sb1a =  "[" + Math.floor(mm) + ":" + ss + "]";																																
+											dl.b1a = blo0.blBtn(dl,dl.id+"b1a",sb1a,"lightblue");
+											dl.b2 = blo0.blBtn(dl,dl.id+"b2",_div.lrcArray[i],blGrey[0]);
 										}
 									}
 									bUpdate.onclick();									
@@ -243,7 +294,8 @@ function ftnPlayer( oDiv ){
 								_on_off_div(_this,_this.v0);
 							}
 						}(b1,_d);
-						b2.onclick = function(_this,_div){													
+
+						btnEditTime.onclick = function(_this,_div){													
 							return function(){
 								var ta 				= _div.vLrc.ta;
 								_div.lrcTimeArray 	= [];	
@@ -257,8 +309,9 @@ function ftnPlayer( oDiv ){
 								var b = a.split("\n");
 								de.innerHTML = "";
 								for(i in b){
-									var l = blo0.blDiv(de,de.id+i, "l"+i + ":" + b[i],blColor[i]);
-									l.onclick = function(_div,_i,_timeA,_txtA, _player){
+									var l = blo0.blDiv(de,de.id+i, "l"+i + ":" + b[i],blColor[i%blColor.length]);
+									l.onclick = function(_div,_i,_timeA,_txtA, _player)
+									{
 										return function(){											
 											_timeA[_i] 	= _player.currentTime;
 											_txtA[_i]	= b[_i];
@@ -270,7 +323,7 @@ function ftnPlayer( oDiv ){
 								}
 								_on_off_div(_this,_div.vLrc.de);
 							}
-						}(b2,_d);
+						}(btnEditTime,_d);
 					}
 					_d.v.innerHTML 		= ct + "   /    " + ta  + " n=" + _p.getListenerNum();
 
@@ -309,7 +362,7 @@ function ftnPlayer( oDiv ){
 					blo0.blAjx(_d,url);
 				}
 			}(this.v.mv);
-			this.timer = setInterval(_TimeFun , 100);   
+			this.timer = setInterval(_fnTimer , 100);   
 			_on_off_div(this,this.v);
 			var b = this; var d = this.v;
 			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
@@ -320,7 +373,7 @@ function ftnPlayer( oDiv ){
 				this.timer = null;
 			}
 			else{
-				this.timer = setInterval(_TimeFun , 100);   
+				this.timer = setInterval(_fnTimer , 100);   
 			}
 			_on_off_div(this,this.v);
 			var b = this; var d = this.v;
@@ -328,8 +381,8 @@ function ftnPlayer( oDiv ){
 		}
 	};
 
-	v.tb.b2 = blo0.blBtn(v.tb, v.tb+"b2","play",blGrey[0]);
-	v.tb.b2.onclick = function(){
+	v.tb.btnPlay = blo0.blBtn(v.tb, v.tb+"btnPlay","play",blGrey[0]);
+	v.tb.btnPlay.onclick = function(){
 		if(!this.run){
 			this.run = true;
 			this.style.backgroundColor = "green";

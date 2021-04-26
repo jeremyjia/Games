@@ -1,0 +1,85 @@
+{
+    "request": {
+        "version": "0.0.9",
+        "width": 522,
+        "height": 578,
+        "music": "1.mp3",
+        "rate": "1",
+        "frames": [
+            {
+                "number": "1", 
+                "time": 20, 
+                "objects": [
+                    {
+                        "text": "象棋精彩对局", 
+                        "x": 100,
+                        "y": 100,
+                        "size": 50,
+                        "color": "0,255,120"
+                    },
+                    {
+                        "picture": "${VAR_PIC_RR}",
+                        "x": 150,
+                        "y": 150,
+                        "width":57,
+                        "heigth":57
+                    },
+                    {
+                        "picture": "${VAR_PIC_BN}",
+                        "x": 300,
+                        "y": 200,
+                        "width":57,
+                        "heigth":57
+                    }
+                ],
+                "backgroundPicture": "${VAR_PIC_BOARD}"
+            }
+        ],
+        "superObjects": [
+            {
+                "type": "picture",
+                "attribute": {
+                    "x1": 220,
+                    "y1": 450,
+                    "x2": 57,
+                    "y2": 57,
+                    "size": 50,
+                    "color": "255,0,0",
+                    "name": "${VAR_PIC_1}"
+                },
+                "frameRange": "(1,20)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+300",
+                    "step": 0,
+                    "loop":["${VAR_PIC_1}","${VAR_PIC_2}","${VAR_PIC_3}"]
+                }
+            }
+        ],
+        "Macros": [
+            {
+                "name": "VAR_PIC_BOARD",
+                "value": "https://jeremyjia.github.io/Games/issues/4/images/board.jpg"
+            },
+            {
+                "name": "VAR_PIC_BN",
+                "value": "https://jeremyjia.github.io/Games/issues/4/images/bn.gif"
+            },
+            {
+                "name": "VAR_PIC_RR",
+                "value": "https://jeremyjia.github.io/Games/issues/4/images/rr.gif"
+            },
+            {
+                "name": "VAR_PIC_1",
+                "value": "https://jeremyjia.github.io/Games/issues/4/images/ra.gif"
+            },
+            {
+                "name": "VAR_PIC_2",
+                "value": "https://jeremyjia.github.io/Games/issues/4/images/bp.gif"
+            },
+            {
+                "name": "VAR_PIC_3",
+                "value": "https://jeremyjia.github.io/Games/issues/4/images/rc.gif"
+            }
+        ]
+    }
+}

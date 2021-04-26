@@ -1,0 +1,25 @@
+<html>
+  <head>
+    <title>video</title>
+    <script type="text/javascript">
+      function play() {
+        var video = document.getElementById("video");
+        video.play();
+      }  
+    </script>
+  </head>
+  <body>
+   <p>Hello, <span th:text="${message}"></span></p>
+    <video controls="controls" width="50%">
+	   <source th:src="@{${video_url}}" type="video/mp4">
+	     Your browser does not support the video tag.
+	</video>
+    <hr/>
+    <p th:style="${gif_enabled!=null}?'':'display:none'">已经生成GIF：
+    <a th:href="@{${gif_url}}">View the GIF</a>
+    </p>
+    <hr/>
+	<img src="../images/back.jpg" width="20" height="20" />
+    <a th:href="@{${home_page_url}}">Back to HomePage</a><br />
+  </body>
+</html>

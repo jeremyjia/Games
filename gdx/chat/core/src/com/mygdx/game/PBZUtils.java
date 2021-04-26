@@ -12,6 +12,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 
+import static org.apache.commons.lang3.StringEscapeUtils.unescapeJson;
+
 public class PBZUtils {
 
     private static String userName = null;
@@ -23,7 +25,7 @@ public class PBZUtils {
         return "f89b0eccf7" + "4c65a65513" + "60062c3e47" + "98d0df4577";
     }
 
-    public static  String generateUserID() {
+    public static String generateUserID() {
         if (userName != null) return userName;
         String str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         StringBuilder sb = new StringBuilder(6);
@@ -35,16 +37,17 @@ public class PBZUtils {
         return userName;
     }
 
-    public static String getLoginUser(){
+    public static String getLoginUser() {
         if (userName != null)
             return userName;
         return generateUserID();
     }
-    public static void resetLoginUser(String strUser){
+
+    public static void resetLoginUser(String strUser) {
         userName = strUser;
     }
 
-    public static  String getCurrentTime() {
+    public static String getCurrentTime() {
         Date date = new Date();
         DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return format.format(date);
@@ -60,9 +63,8 @@ public class PBZUtils {
                 sb.append(",");
             }
             sb.append("[");
-            for (int j=0;j<arr.length;j++)
-            {
-                sb.append(arr[i][j]+ ",");
+            for (int j = 0; j < arr.length; j++) {
+                sb.append(arr[i][j] + ",");
             }
             sb.deleteCharAt(sb.length() - 1);
             sb.append("]");
@@ -73,10 +75,10 @@ public class PBZUtils {
     }
 
     public static String[] toStringArray(JSONArray array) {
-        if(array == null)
+        if (array == null)
             return null;
         String[] arr = new String[array.length()];
-        for(int i=0; i<arr.length; i++) {
+        for (int i = 0; i < arr.length; i++) {
             arr[i] = array.optString(i);
         }
         return arr;
@@ -89,33 +91,37 @@ public class PBZUtils {
         httpRequest.setHeader("charset", "UTF-8");
         httpRequest.setHeader("Cache-Control", "no-store");
         httpRequest.setHeader("Cache-Control", "no-cache");
+        httpRequest.setHeader("Authorization", "token " + getToken());
         httpRequest.setContent(null);
 
         m_Finished = false;
         Gdx.net.sendHttpRequest(httpRequest, new Net.HttpResponseListener() {
             public void handleHttpResponse(Net.HttpResponse httpResponse) {
                 int statusCode = httpResponse.getStatus().getStatusCode();
-                System.out.println(listener.toString()+" readMessage() HTTP Request status: " + statusCode);
+                System.out.println(listener.toString() + " readMessage() HTTP Request status: " + statusCode);
                 String response = httpResponse.getResultAsString();
                 int i = response.indexOf("body");
                 if (i != -1) {
-                    String rs = response.substring(i + 7, response.length() - 2);
-                    String jsonString = rs.replaceAll("\\\\n", "\n");
-                    listener.notify(jsonString);
+                    String notifyString = fixResponseString(response);
+                    listener.notify(notifyString);
                     m_Finished = true;
+                } else {
+                    System.out.println("Error format of response string!");
                 }
             }
+
             public void failed(Throwable e) {
                 System.out.println("HTTP request failed! " + e.getMessage());
                 listener.onError(e);
                 m_Finished = true;
             }
+
             @Override
             public void cancelled() {
             }
         });
 
-        while (m_Finished == false){
+        while (m_Finished == false) {
             try {
                 Thread.sleep(10);
             } catch (InterruptedException e) {
@@ -124,6 +130,22 @@ public class PBZUtils {
         }
     }
 
+    private static String fixResponseString(String response) {
+        String rs = response.substring(response.indexOf("body") + 7, response.length());
+        rs = rs.replaceAll("\\\\n", "\n");
+        String jsonString = unescapeJson(rs);
+
+        int i = jsonString.lastIndexOf("performed_via_github_app");
+        if (i != -1) {
+            jsonString = jsonString.substring(0, i - 3);
+        }
+        return jsonString;
+    }
+
+    /*
+        curl "https://api.github.com/user/repos?access_token=my_access_token"   Deprecation API
+        curl -H 'Authorization: token my_access_token' https://api.github.com/user/repos   New API
+     */
     public static void sendMessage(String url, String strMsg) {
 
         if (!strMsg.trim().equals("")) {
@@ -134,6 +156,7 @@ public class PBZUtils {
             httpRequest.setHeader("Content-Type", "text/plain");
             httpRequest.setHeader("Cache-Control", "no-store");
             httpRequest.setHeader("Cache-Control", "no-cache");
+            httpRequest.setHeader("Authorization", "token " + getToken());
             httpRequest.setContent(requestContent);
 
             Gdx.net.sendHttpRequest(httpRequest, new Net.HttpResponseListener() {
@@ -141,9 +164,11 @@ public class PBZUtils {
                     int statusCode = httpResponse.getStatus().getStatusCode();
                     System.out.println("sendMessage() HTTP Request status: " + statusCode);
                 }
+
                 public void failed(Throwable e) {
                     System.out.println("HTTP request failed!" + e.getMessage());
                 }
+
                 @Override
                 public void cancelled() {
                 }
@@ -152,7 +177,8 @@ public class PBZUtils {
     }
 
     public static interface IResponseListener {
-        public void notify (String jsonString);
+        public void notify(String jsonString);
+
         public void onError(Throwable e);
     }
 

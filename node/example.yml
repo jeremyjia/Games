@@ -1,0 +1,176 @@
+openapi: 3.0.1
+info:
+  contact:
+    email: social@group6.io
+  description: Group 6 Studios API
+  license:
+    name: AllRightsReserved
+  title: Group 6 Studios API
+  version: 1.0.4
+servers:
+- url: http://localhost:3000/api
+paths:
+  /getPlayer:
+    get:
+      operationId: getPlayerGET
+      parameters:
+      - description: query id.
+        in: query
+        name: id
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: '#/components/schemas/Group6User'
+                type: array
+          description: search results matching criteria
+        "400":
+          content: {}
+          description: bad input parameter
+  /NewPlayer:
+    post:
+      description: Adds an player to the system
+      operationId: addPlayer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Group6User'
+        description: Inventory item to add
+        required: false
+      responses:
+        "201":
+          content: {}
+          description: item created
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: an existing item already exists
+      summary: api/addPlayer
+  /GameStarted:
+    post:
+      description: Adds a new game to the system
+      operationId: newGame
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Group6Game'
+        description: Description of started game
+        required: false
+      responses:
+        "201":
+          content: {}
+          description: item created
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: an existing item already exists
+      summary: api/newGame
+      tags:
+      - admins
+  /GameEnded:
+    post:
+      description: ended a game
+      operationId: endGame
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Group6Game'
+        description: Inventory item to add
+        required: false
+      responses:
+        "201":
+          content: {}
+          description: item created
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: an existing item already exists
+      summary: api/endGame
+      tags:
+      - admins
+components:
+  schemas:
+    Group6User:
+      example:
+        UserID: d290f1ee-6c54-4b01-90e6-d701748f0851
+        UserName: Nes Cohen
+        Password: 123abc
+        FirstName: Nes
+        LastName: Cohen
+        EmailAddress: 123abc@group6.com
+        Location: wids132 at 3ewed
+        PhoneNumber: "214567896"
+      properties:
+        UserID:
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+          format: uuid
+          type: string
+        UserName:
+          example: Nes Cohen
+          type: string
+        Password:
+          example: 123abc
+          type: string
+        FirstName:
+          example: Nes
+          type: string
+        LastName:
+          example: Cohen
+          type: string
+        EmailAddress:
+          example: 123abc@group6.com
+          type: string
+        Location:
+          example: wids132 at 3ewed
+          type: string
+      required:
+      - EmailAddress
+      - FirstName
+      - LastName
+      - Location
+      - Password
+      - UserID
+      - UserName
+      type: object
+    Group6Game:
+      example:
+        id: d290f1ee-6c54-4b01-90e6-d701748f0851
+        competitor_1: Nes
+        competitor_2: yongling
+        start_time: 2020-01-01 00:00:01
+        end_time: 2020-01-01 00:05:01
+        winner: Nes
+      properties:
+        id:
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+          format: uuid
+          type: string
+        competitor_1:
+          example: yongling
+          type: string
+        competitor_2:
+          example: Nes
+          type: string
+        winner:
+          example: Nes
+          type: string
+      required:
+      - competitor_1
+      - competitor_2
+      - id
+      - winner
+      type: object

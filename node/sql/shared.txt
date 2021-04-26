@@ -1,0 +1,6 @@
+I have created a shared database that you guys can use for development. Here
+are the connection details:
+
+host: dev-userdatabase-instance-1.coawyv4mqnwk.us-west-2.rds.amazonaws.com
+user: admin
+pass: group6dev

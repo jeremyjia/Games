@@ -10,44 +10,59 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.TextArea;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
+import com.mygdx.game.net.JavaWebSocketClient;
+
+import org.java_websocket.WebSocket;
+
+import java.net.URISyntaxException;
 
 public class GdxChatApp implements IGdxGame {
 
-    public  Stage stage;
+    private static final String version = "v:0.0.8";
+    public Stage stage;
+    public boolean bIsWs = false;
     private Camera camera;
     private TextArea textArea;
     private TextField textField;
     private TextButton btnSend;
     private TextButton btnClear;
-
     private SpriteBatch batch;
     private BitmapFont font;
     private BitmapFont fontFromFile;
-
     private Pixmap pixmapArea;
     private Pixmap pixmapField;
     private Pixmap pixmapCur;
     private Pixmap pixmapBtnUp;
     private Texture textureBtnUp;
-
+    // 复选框选中状态的纹理
+    private Texture checkboxOnTexture;
+    private Texture checkboxOffTexture;
+    private BitmapFont bitmapFont;
+    private Pixmap pixmapCheckBoxOn;
+    private Pixmap pixmapCheckBoxOff;
+    private CheckBox checkBox;
+    private JavaWebSocketClient wsClient = null;
     private Timer timer;
     private String strAllMsg = "";
-    private String url;
+    private String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526806470";
     private String userName;
-    private static final String version = "v:0.0.7";
 
     @Override
     public void create() {
+
         camera = new OrthographicCamera();
         stage = new Stage(new StretchViewport(640, 480, camera));
 
@@ -70,6 +85,13 @@ public class GdxChatApp implements IGdxGame {
         pixmapBtnUp = new Pixmap(63, 50, Pixmap.Format.RGB888);
         pixmapBtnUp.setColor(Color.BLUE);
         pixmapBtnUp.fill();
+
+        pixmapCheckBoxOn = new Pixmap(15, 15, Pixmap.Format.RGB888);
+        pixmapCheckBoxOn.setColor(Color.GREEN);
+        pixmapCheckBoxOn.fill();
+        pixmapCheckBoxOff = new Pixmap(15, 15, Pixmap.Format.RGB888);
+        pixmapCheckBoxOff.setColor(Color.YELLOW);
+        pixmapCheckBoxOff.fill();
 
 
         TextField.TextFieldStyle textAreaStyle = new TextField.TextFieldStyle(fontFromFile,
@@ -106,11 +128,55 @@ public class GdxChatApp implements IGdxGame {
         btnSend.setPosition(410, 40);
         btnClear.setPosition(485, 40);
 
+
+        bitmapFont = new BitmapFont();
+        checkboxOnTexture = new Texture(pixmapCheckBoxOn);
+        checkboxOffTexture = new Texture(pixmapCheckBoxOff);
+        CheckBox.CheckBoxStyle style = new CheckBox.CheckBoxStyle();
+        style.checkboxOn = new TextureRegionDrawable(new TextureRegion(checkboxOnTexture));
+        style.checkboxOff = new TextureRegionDrawable(new TextureRegion(checkboxOffTexture));
+        style.font = bitmapFont;
+        style.fontColor = new Color(1, 0, 0, 1);
+        checkBox = new CheckBox("ws", style);
+        checkBox.setPosition(560, 430);
+
         stage.addActor(textArea);
         stage.addActor(textField);
         stage.setKeyboardFocus(textField);
         stage.addActor(btnSend);
         stage.addActor(btnClear);
+        stage.addActor(checkBox);
+
+        checkBox.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                bIsWs = checkBox.isChecked();
+                Gdx.app.log("TAG", "复选框是否被选中: " + bIsWs);
+
+                if (bIsWs) {
+                    timer.stop();
+                    try {
+                        wsClient = new JavaWebSocketClient("ws://127.0.0.1:9090", textArea);
+                        wsClient.connect();
+                        Thread.sleep(2000);
+                        if (!wsClient.getReadyState().equals(WebSocket.READYSTATE.OPEN)) {
+                            System.out.println("Server is not ready yet!");
+                            wsClient = null;
+                        } else {
+                            System.out.println("Created connection with WS Server.");
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    if (wsClient != null) {
+                        wsClient.close();
+                        wsClient = null;
+                    }
+                    timer.start();
+                }
+            }
+        });
 
         textField.setTextFieldListener(new TextField.TextFieldListener() {
             @Override
@@ -139,7 +205,6 @@ public class GdxChatApp implements IGdxGame {
             }
         });
 
-        url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526806470?access_token=" + PBZUtils.getToken();
         userName = PBZUtils.generateUserID();
         System.out.println("username " + userName);
 
@@ -163,7 +228,7 @@ public class GdxChatApp implements IGdxGame {
 
     }
 
-    private void readMsg(){
+    private void readMsg() {
         PBZUtils.readMessage(url, new PBZUtils.IResponseListener() {
             @Override
             public void notify(String message) {
@@ -175,19 +240,27 @@ public class GdxChatApp implements IGdxGame {
             }
         });
     }
+
     private void btnSendMsg() {
         String s = textField.getText();
-        if (!s.trim().equals("")) {
-            String strMsg = strAllMsg + "\n" + PBZUtils.getCurrentTime() + "\n" + userName + ":" + s;
-            strMsg = strMsg.replaceAll("\n", "\\\\n");
-            PBZUtils.sendMessage(url, strMsg);
-            textField.setText("");
+        if (bIsWs) {
+            if (wsClient != null) {
+                wsClient.send("{\"message\":\"" + s + "\"}");
+                textField.setText("");
+            }
+        } else {
+            if (!s.trim().equals("")) {
+                String strMsg = strAllMsg + "\n" + PBZUtils.getCurrentTime() + "\n" + userName + ":" + s;
+                strMsg = strMsg.replaceAll("\n", "\\\\n");
+                PBZUtils.sendMessage(url, strMsg);
+                textField.setText("");
+            }
         }
     }
 
     private void btnClearMsg() {
         String s = "Let's chat";
-        PBZUtils.sendMessage(url,s);
+        PBZUtils.sendMessage(url, s);
     }
 
     @Override
@@ -199,7 +272,7 @@ public class GdxChatApp implements IGdxGame {
         stage.draw();
 
         batch.begin();
-        font.draw(batch, version, Gdx.graphics.getWidth()/2, 30);
+        font.draw(batch, version, Gdx.graphics.getWidth() / 2, 30);
         batch.end();
     }
 
@@ -219,6 +292,8 @@ public class GdxChatApp implements IGdxGame {
         pixmapField.dispose();
         pixmapCur.dispose();
         pixmapBtnUp.dispose();
+        pixmapCheckBoxOn.dispose();
+        pixmapCheckBoxOff.dispose();
 
         batch.dispose();
         font.dispose();
@@ -229,13 +304,14 @@ public class GdxChatApp implements IGdxGame {
 
     @Override
     public void notifyBefore() {
-      timer.stop();
+        timer.stop();
     }
 
     @Override
     public void notifyAfter() {
         userName = PBZUtils.getLoginUser();
         timer.start();
+
     }
 
     @Override
@@ -281,6 +357,5 @@ public class GdxChatApp implements IGdxGame {
     @Override
     public void initGame(GdxGameAdapter adapter) {
         create();
-        adapter.registerStage(stage);
     }
 }

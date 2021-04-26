@@ -1,0 +1,1 @@
+curl -v http://localhost:8080/upload -X POST -F "file=@C:\FFOutput\2wx\xd\v2.json" -H "Content-Type: multipart/form-data"

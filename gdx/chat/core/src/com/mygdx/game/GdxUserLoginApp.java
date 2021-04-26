@@ -28,8 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.badlogic.gdx.graphics.Color.MAROON;
-
 public class GdxUserLoginApp implements IGdxGame {
 
     public Stage stage;
@@ -56,15 +54,14 @@ public class GdxUserLoginApp implements IGdxGame {
     private BitmapFont fontFromFile;
 
     private Map<String, String> regUserMap = new HashMap<String, String>();
-    private String curLoginUser="";
-    private String curLoginUserPwd="";
-    private String urlRegUsers = "https://api.github.com/repos/jeremyjia/Games/issues/comments/595100384?access_token="+PBZUtils.getToken();
-    private String urlLogUsers = "https://api.github.com/repos/jeremyjia/Games/issues/comments/592918032?access_token="+PBZUtils.getToken();
+    private String curLoginUser = "";
+    private String curLoginUserPwd = "";
+    private String urlRegUsers = "https://api.github.com/repos/jeremyjia/Games/issues/comments/595100384";
+    private String urlLogUsers = "https://api.github.com/repos/jeremyjia/Games/issues/comments/592918032";
 
     @Override
     public void initGame(GdxGameAdapter adapter) {
         create();
-        adapter.registerStage(stage);
 
     }
 
@@ -73,15 +70,15 @@ public class GdxUserLoginApp implements IGdxGame {
 
         Gdx.app.setLogLevel(Application.LOG_INFO);
         camera = new OrthographicCamera();
-        stage = new Stage(new StretchViewport(WORLD_WIDTH, WORLD_HEIGHT,camera));
+        stage = new Stage(new StretchViewport(WORLD_WIDTH, WORLD_HEIGHT, camera));
 
         BitmapFont font = new BitmapFont();
         font.getData().markupEnabled = true;
-        labelLoginUserName = new Label("[YELLOW]UserName:"+"",
+        labelLoginUserName = new Label("[YELLOW]UserName:" + "",
                 new Label.LabelStyle(font, null));
         labelLoginUserName.setPosition(50, 400);
 
-        labelLoginPassword = new Label("[YELLOW]Password:"+"",
+        labelLoginPassword = new Label("[YELLOW]Password:" + "",
                 new Label.LabelStyle(font, null));
         labelLoginPassword.setPosition(50, 300);
 
@@ -140,14 +137,13 @@ public class GdxUserLoginApp implements IGdxGame {
         btnLogin.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                Gdx.app.log("Login:", "按钮被点击了");
+                Gdx.app.log("Login:", "xddbg...");
                 curLoginUser = textFieldUserName.getText();
                 curLoginUserPwd = textFieldPassword.getText();
-                if(!validateUserInpute()){
+                if (!validateUserInpute()) {
                     return;
                 }
                 logOn();
-
             }
         });
 
@@ -178,35 +174,35 @@ public class GdxUserLoginApp implements IGdxGame {
     }
 
     private boolean validateUserInpute() {
-        if ("".equalsIgnoreCase(curLoginUser)){
+        if ("".equalsIgnoreCase(curLoginUser)) {
             String errorMessage = "Please input UserName";
-            labelInfo.setText("[YELLOW]Error: [][MAROON]"+errorMessage);
+            labelInfo.setText("[YELLOW]Error: [][MAROON]" + errorMessage);
             return false;
         }
-        if ("".equalsIgnoreCase(curLoginUserPwd)){
+        if ("".equalsIgnoreCase(curLoginUserPwd)) {
             String errorMessage = "Please input Password";
-            labelInfo.setText("[YELLOW]Error: [][MAROON]"+errorMessage);
+            labelInfo.setText("[YELLOW]Error: [][MAROON]" + errorMessage);
             return false;
         }
 
-        boolean bRegistered=false;
-        String password="";
+        boolean bRegistered = false;
+        String password = "";
         for (Map.Entry<String, String> me : regUserMap.entrySet()) {
-            if (curLoginUser.equalsIgnoreCase(me.getKey())){
+            if (curLoginUser.equalsIgnoreCase(me.getKey())) {
                 password = me.getValue();
-                bRegistered=true;
+                bRegistered = true;
             }
         }
-        if (!bRegistered){
-            String errorMessage1 = "User "+curLoginUser+" not register! You can use below link to register:";
+        if (!bRegistered) {
+            String errorMessage1 = "User " + curLoginUser + " not register! You can use below link to register:";
             String errorMessage2 = "\n https://jeremyjia.github.io/Games/issues/4/register.html";
-            labelInfo.setText("[YELLOW]Error: [][MAROON]"+errorMessage1+"[][GREEN]"+errorMessage2);
+            labelInfo.setText("[YELLOW]Error: [][MAROON]" + errorMessage1 + "[][GREEN]" + errorMessage2);
             return false;
         }
 
-        if (!curLoginUserPwd.equals(password)){
+        if (!curLoginUserPwd.equals(password)) {
             String errorMessage = "The password is not correct!";
-            labelInfo.setText("[YELLOW]Error: [][MAROON]"+errorMessage);
+            labelInfo.setText("[YELLOW]Error: [][MAROON]" + errorMessage);
             return false;
         }
         return true;
@@ -250,7 +246,8 @@ public class GdxUserLoginApp implements IGdxGame {
 
     @Override
     public void notifyAfter() {
-        getRegisteredUser();
+       //etRegisteredUser();
+        getMockRegisteredUser();
     }
 
     @Override
@@ -293,21 +290,20 @@ public class GdxUserLoginApp implements IGdxGame {
         return false;
     }
 
-    private void getRegisteredUser(){
+    private void getRegisteredUser() {
         PBZUtils.readMessage(urlRegUsers, new PBZUtils.IResponseListener() {
             @Override
             public void notify(String str) {
-                String jsonString = StringEscapeUtils.unescapeJson(str);
-                JSONObject jsonObj = new JSONObject(jsonString);
+                JSONObject jsonObj = new JSONObject(str);
                 JSONArray users = jsonObj.getJSONArray("users");
-                for(int i = 0; i < users.length(); i ++)
-                {
+                for (int i = 0; i < users.length(); i++) {
                     JSONObject jb = users.getJSONObject(i);
                     String name = jb.getString("name");
                     String password = jb.getString("password");
-                    regUserMap.put(name,password);
+                    regUserMap.put(name, password);
                 }
             }
+
             @Override
             public void onError(Throwable e) {
             }
@@ -315,16 +311,28 @@ public class GdxUserLoginApp implements IGdxGame {
 
     }
 
+    private void getMockRegisteredUser() {
+        String s = "{\"users\":[{\"name\":\"u1\",\"password\":\"u1\",\"registerTime\":\"2020-03-05 22:06:28\"},{\"name\":\"贾鹏\",\"password\":\"password\",\"registerTime\":\"2020-03-05 22:50:57\"},{\"name\":\"Jeremy\",\"password\":\"Install@bj1\",\"registerTime\":\"2020-03-05 23:48:16\"},{\"name\":\"测试\",\"password\":\"123456\",\"registerTime\":\"2020-03-06 01:04:52\"},{\"name\":\"xd\",\"password\":\"xd12345\",\"registerTime\":\"2020-03-06 09:55:46\"},{\"name\":\"xy\",\"password\":\"123456\",\"registerTime\":\"2020-03-08 10:14:55\"}]}";
+
+        JSONObject jsonObj = new JSONObject(s);
+        JSONArray users = jsonObj.getJSONArray("users");
+        for (int i = 0; i < users.length(); i++) {
+            JSONObject jb = users.getJSONObject(i);
+            String name = jb.getString("name");
+            String password = jb.getString("password");
+            regUserMap.put(name, password);
+        }
+    }
+
+
     private void logOut() {
         PBZUtils.readMessage(urlLogUsers, new PBZUtils.IResponseListener() {
             @Override
             public void notify(String str) {
-                String jsonString = StringEscapeUtils.unescapeJson(str);
-                JSONArray userArray = new JSONObject(jsonString).getJSONArray("users");
+                JSONArray userArray = new JSONObject(str).getJSONArray("users");
 
                 List<JSONObject> newJsonObjList = new ArrayList<JSONObject>();
-                for(int i = 0; i < userArray.length(); i ++)
-                {
+                for (int i = 0; i < userArray.length(); i++) {
                     JSONObject jb = userArray.getJSONObject(i);
                     String name = jb.getString("name");
                     if (name.equalsIgnoreCase(curLoginUser)) {
@@ -355,33 +363,33 @@ public class GdxUserLoginApp implements IGdxGame {
                 stage.addActor(textFieldPassword);
 
             }
+
             @Override
             public void onError(Throwable e) {
             }
         });
 
     }
+
     private void logOn() {
         PBZUtils.readMessage(urlLogUsers, new PBZUtils.IResponseListener() {
             @Override
             public void notify(String str) {
-                String jsonString = StringEscapeUtils.unescapeJson(str);
-                JSONArray userArray = new JSONObject(jsonString).getJSONArray("users");
+                JSONArray userArray = new JSONObject(str).getJSONArray("users");
 
-                boolean bExist=false;
+                boolean bExist = false;
                 List<JSONObject> newJsonObjList = new ArrayList<JSONObject>();
-                for(int i = 0; i < userArray.length(); i ++)
-                {
+                for (int i = 0; i < userArray.length(); i++) {
                     JSONObject jb = userArray.getJSONObject(i);
                     String name = jb.getString("name");
                     if (name.equalsIgnoreCase(curLoginUser)) {
                         bExist = true;
                         jb.put("LastloginTime", PBZUtils.getCurrentTime());
-                        jb.put("isLogin",true);
+                        jb.put("isLogin", true);
                     }
                     newJsonObjList.add(jb);
                 }
-                if (!bExist){
+                if (!bExist) {
                     JSONObject newObj = new JSONObject();
                     newObj.put("name", curLoginUser);
                     newObj.put("LastloginTime", PBZUtils.getCurrentTime());
@@ -402,7 +410,7 @@ public class GdxUserLoginApp implements IGdxGame {
                     e.printStackTrace();
                 }
 
-                labelInfo.setText("[YELLOW]Current LoginUser: [][MAROON]"+curLoginUser);
+                labelInfo.setText("[YELLOW]Current LoginUser: [][MAROON]" + curLoginUser);
                 PBZUtils.resetLoginUser(curLoginUser);
                 btnLogin.remove();
                 labelLoginUserName.remove();
@@ -410,9 +418,8 @@ public class GdxUserLoginApp implements IGdxGame {
                 textFieldUserName.remove();
                 textFieldPassword.remove();
                 stage.addActor(btnLogout);
-
-
             }
+
             @Override
             public void onError(Throwable e) {
             }

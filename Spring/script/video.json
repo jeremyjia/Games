@@ -1,0 +1,425 @@
+{
+    "request": {
+        "version": "0.0.2",
+        "width": 1024,
+        "height": 768,
+        "music": "1.mp3",
+        "rate": "1",
+        "frames": [
+            {
+                "number": "1", 
+                "time": 4, 
+                "objects": [
+                    {
+                        "text": "Lesson 1 A Private Conversation", 
+                        "x": 50,
+                        "y": 700,
+                        "size": 40,
+                        "color": "0,20,255"
+                    },
+                    {
+                        "text": "Hello,this is designed by Jeremy", 
+                        "x": 50,
+                        "y": 200,
+                        "size": 50,
+                        "color": "50,87,30"
+
+                    }
+                ],
+                "backgroundColor": "255,182,193"
+            },
+            {
+                "number": "2", 
+                "time": 5, 
+                "objects": [
+                    {
+                        "text": "First listen and then answer the question.", 
+                        "x": 50,
+                        "y": 700,
+                        "size": 40,
+                        "color": "0,0,0"
+                    },
+                    {
+                        "text": "hello,jeremy", 
+                        "x": 400,
+                        "y": 500,
+                        "size": 30,
+                        "color": "0,255,0"
+                    }
+                ],
+                "backgroundPicture": "bgpic.jpg"
+            },
+            {
+                "number": "3", 
+                "time": 5, 
+                "objects": [
+                    {
+                        "text": "Why did the writer complain to the people behind him?", 
+                        "x": 50,
+                        "y": 700,
+                        "size": 30,
+                        "color": "255,255,0"
+                    },
+                    {
+                        "text": "hello,jeremy", 
+                        "x": 200,
+                        "y": 20,
+                        "size": 30,
+                        "color": "0,255,255"
+                    }
+                ],
+                "backgroundColor": "255,0,193"
+            },
+            {
+                "number": "4", 
+                "time": 5, 
+                "objects": [
+                    {
+                        "text": "Last week I went to the theatre.", 
+                        "x": 50,
+                        "y": 700,
+                        "size": 40,
+                        "color": "0,60,255"
+                    },
+                    {
+                        "text": "Last", 
+                        "x": 150,
+                        "y": 160,
+                        "size": 50,
+                        "color": "0,0,255"
+                    },
+                    {
+                        "text": "week", 
+                        "x": 220,
+                        "y": 210,
+                        "size": 50,
+                        "color": "0,255,0"
+                    },
+                    {
+                        "text": "I", 
+                        "x": 290,
+                        "y": 270,
+                        "size": 50,
+                        "color": "255,0,0"
+                    },
+                    {
+                        "text": "went", 
+                        "x": 340,
+                        "y": 320,
+                        "size": 50,
+                        "color": "255,255,0"
+                    },
+                    {
+                        "text": "to", 
+                        "x": 390,
+                        "y": 370,
+                        "size": 50,
+                        "color": "155,0,255"
+                    },
+                    {
+                        "text": "the", 
+                        "x": 440,
+                        "y": 420,
+                        "size": 50,
+                        "color": "255,60,75"
+                    },
+                    {
+                        "text": "theatre", 
+                        "x": 490,
+                        "y": 470,
+                        "size": 50,
+                        "color": "155,255,205"
+                    }
+                ],
+                "backgroundColor": "200,182,193"
+            },
+            {
+                "number": "5", 
+                "time": 3, 
+                "objects": [
+                    {
+                        "text": "I had a very good seat.", 
+                        "x": 50,
+                        "y": 700,
+                        "size": 30,
+                        "color": "0,0,255"
+                    },
+                    {
+                        "text": "******", 
+                        "x": 50,
+                        "y": 200,
+                        "size": 40,
+                        "color": "0,255,255"
+                    }
+                ],
+                "backgroundColor": "200,182,193"
+            },
+            {
+                "number": "6", 
+                "time": 2, 
+                "objects": [
+                    {
+                        "text": "The play was very interesting.", 
+                        "x": 50,
+                        "y": 700,
+                        "size": 30,
+                        "color": "50,100,210"
+                    },
+                    {
+                        "text": "******", 
+                        "x": 60,
+                        "y": 200,
+                        "size": 40,
+                        "color": "0,255,255"
+                    }
+                ],
+                "backgroundColor": "20,200,193"
+            },
+            {
+                "number": "7", 
+                "time": 3, 
+                "objects": [
+                    {
+                        "text": "I did not enjoy it.", 
+                        "x": 50,
+                        "y": 700,
+                        "size": 30,
+                        "color": "50,100,210"
+                    },
+                    {
+                        "text": "******", 
+                        "x": 570,
+                        "y": 400,
+                        "size": 60,
+                        "color": "200,100,255"
+                    }
+                ],
+                "backgroundColor": "220,240,233"
+            },
+            {
+                "number": "8", 
+                "time": 4, 
+                "objects": [
+                    {
+                        "text": "A young man and a young woman were sitting behind me.", 
+                        "x": 50,
+                        "y": 700,
+                        "size": 30,
+                        "color": "50,100,210"
+                    },
+                    {
+                        "text": "******", 
+                        "x": 180,
+                        "y": 200,
+                        "size": 60,
+                        "color": "0,100,255"
+                    }
+                ],
+                "backgroundColor": "200,100,0"
+            },
+            {
+                "number": "9", 
+                "time": 3, 
+                "objects": [
+                    {
+                        "text": "They were talking loudly.", 
+                        "x": 50,
+                        "y": 700,
+                        "size": 30,
+                        "color": "50,100,210"
+                    },
+                    {
+                        "text": "******", 
+                        "x": 80,
+                        "y": 290,
+                        "size": 60,
+                        "color": "0,100,255"
+                    }
+                ],
+                "backgroundPicture": "bgpic.jpg"
+            },
+            {
+                "number": "10", 
+                "time": 2, 
+                "objects": [
+                    {
+                        "text": "I got very angry.", 
+                        "x": 50,
+                        "y": 700,
+                        "size": 30,
+                        "color": "50,100,210"
+                    },
+                    {
+                        "text": "我非常生气", 
+                        "x": 100,
+                        "y": 200,
+                        "size": 60,
+                        "color": "0,100,200"
+                    }
+                ],
+                "backgroundColor": "200,200,200"
+            },
+            {
+                "number": "11", 
+                "time": 4, 
+                "objects": [
+                    {
+                        "text": "I could not hear the actors.", 
+                        "x": 50,
+                        "y": 700,
+                        "size": 30,
+                        "color": "50,200,110"
+                    },
+                    {
+                        "text": "我什么也听不见啊", 
+                        "x": 100,
+                        "y": 200,
+                        "size": 60,
+                        "color": "0,100,200"
+                    }
+                ],
+                "backgroundColor": "200,182,193"
+            },
+            {
+                "number": "12", 
+                "time": 6, 
+                "objects": [
+                    {
+                        "text": "I turned round.I looked at the man and the woman angrily.", 
+                        "x": 50,
+                        "y": 700,
+                        "size": 30,
+                        "color": "50,100,210"
+                    },
+                    {
+                        "text": "气死我也!!!", 
+                        "x": 200,
+                        "y": 300,
+                        "size": 40,
+                        "color": "0,100,200"
+                    }
+                ],
+                "backgroundPicture": "bgpic.jpg"
+            },
+            {
+                "number": "13", 
+                "time": 4, 
+                "objects": [
+                    {
+                        "text": "They did not pay any attention.", 
+                        "x": 50,
+                        "y": 700,
+                        "size": 30,
+                        "color": "50,100,210"
+                    },
+                    {
+                        "text": "###", 
+                        "x": 200,
+                        "y": 300,
+                        "size": 40,
+                        "color": "0,100,200"
+                    }
+                ],
+                "backgroundColor": "200,182,200"
+            },
+            {
+                "number": "14", 
+                "time": 4, 
+                "objects": [
+                    {
+                        "text": "In the end,I could not bear it.", 
+                        "x": 50,
+                        "y": 700,
+                        "size": 30,
+                        "color": "50,100,210"
+                    },
+                    {
+                        "text": "+++", 
+                        "x": 200,
+                        "y": 240,
+                        "size": 40,
+                        "color": "0,100,200"
+                    },
+                    {
+                        "text": "+++++", 
+                        "x": 200,
+                        "y": 280,
+                        "size": 40,
+                        "color": "0,100,200"
+                    },
+                    {
+                        "text": "++++++++", 
+                        "x": 200,
+                        "y": 320,
+                        "size": 40,
+                        "color": "0,100,200"
+                    }
+                ],
+                "backgroundPicture": "bgpic.jpg"
+            },
+            {
+                "number": "15", 
+                "time": 8, 
+                "objects": [
+                    {
+                        "text": "I turned round again 'I can't hear a word!'I said angrily", 
+                        "x": 50,
+                        "y": 700,
+                        "size": 30,
+                        "color": "50,100,210"
+                    },
+                    {
+                        "text": "我一个字都听不见啦！", 
+                        "x": 200,
+                        "y": 300,
+                        "size": 40,
+                        "color": "220,100,19"
+                    }
+                ],
+                "backgroundColor": "200,182,200"
+            },
+            {
+                "number": "16", 
+                "time": 6, 
+                "objects": [
+                    {
+                        "text": "'It's none of your business,'the young man said rudely.", 
+                        "x": 50,
+                        "y": 700,
+                        "size": 30,
+                        "color": "50,100,210"
+                    },
+                    {
+                        "text": "我一个字都听不见啦！", 
+                        "x": 200,
+                        "y": 300,
+                        "size": 40,
+                        "color": "220,100,19"
+                    }
+                ],
+                "backgroundColor": "200,182,200"
+            },
+            {
+                "number": "17", 
+                "time": 3, 
+                "objects": [
+                    {
+                        "text": "'This is a private conversation!'", 
+                        "x": 50,
+                        "y": 700,
+                        "size": 30,
+                        "color": "50,100,210"
+                    },
+                    {
+                        "text": "这是私人谈话哦！", 
+                        "x": 200,
+                        "y": 200,
+                        "size": 60,
+                        "color": "220,100,19"
+                    }
+                ],
+                "backgroundColor": "200,182,200"
+            }
+        ]
+    }
+}
