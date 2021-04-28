@@ -6,7 +6,7 @@ function animateFrame(time) {
     }
     var canvas = document.getElementById('myCanvas');
     var ctx = canvas.getContext('2d');      
-    ctx.clearRect(0, 0, 2048, 1536);
+    ctx.clearRect(0, 0, 1111, 300);
 
     ctx.fillStyle = "red";
     for(var n = 0; n < nTimes -1 ; n++){
