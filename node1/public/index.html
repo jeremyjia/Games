@@ -10,10 +10,7 @@
     c.width = 1200;//window.innerWidth/2;
     c.height = 600;// window.innerHeight/2;
     let w = c.width;
-    let h = c.height;
-    //let gravity = new Vector(0, 0.01);
-    let fs = [];
-    let prevTs;
+    let h = c.height;  
     let gN = 0;
 
     function draw(ts) {
@@ -34,9 +31,7 @@
         ctx.restore();
     }
 
-    window.requestAnimationFrame(ts => {
-        prevTs = ts;
-        //fs.push(new Firework());
+    window.requestAnimationFrame(ts => { 
         draw(ts);
     });
 
