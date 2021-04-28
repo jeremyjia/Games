@@ -190,11 +190,11 @@ function animateFrame(time) {
     var ctx = canvas.getContext('2d');  
     ctx.fillStyle = 'red';
     ctx.font = "30px Verdana";
-    ctx.fillText("v0.25: n=" + n + " time=" + time, 110, 44);
+    ctx.fillText("v0.32: n=" + n + " time=" + time, 110, 44);
  
 	if (0==fs.length) {
 		fs.push(new Firework()); 
-	} 
+	}  
     for (let firework of fs) {
 		firework.applyForce(gravity);
 		firework.update();
@@ -204,5 +204,5 @@ function animateFrame(time) {
 		if (fs[i].wasDone()) {
 			fs.splice(i, 1);
 		}
-	} 
+	}  
 }
