@@ -183,11 +183,14 @@ let fs = [];
 var nTimes = 0;
 
 let gravity = new Vector(0, 0.01);
-function animateFrame(time,ctx) {    
+function animateFrame(time) {    
     var n = fs.length;
+
+    var canvas = document.getElementById('myCanvas');
+    var ctx = canvas.getContext('2d');  
     ctx.fillStyle = 'red';
     ctx.font = "30px Verdana";
-    ctx.fillText("v0.23: n=" + n, 110, 44);
+    ctx.fillText("v0.25: n=" + n + " time=" + time, 110, 44);
  
 	if (0==fs.length) {
 		fs.push(new Firework()); 
