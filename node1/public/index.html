@@ -2,15 +2,44 @@
 <html>
 
 <body>
-  <canvas id="myCanvas" width="2048" height="1536"></canvas>
+  <canvas id="myCanvas" width="444" height="333"></canvas>
   <script src="./js/firework.js"></script>
   <script type="text/javascript">
+    let c = document.querySelector('#myCanvas');
+    let ctx = c.getContext('2d');
+    c.width = window.innerWidth/2;
+    c.height = window.innerHeight/2;
+    let w = c.width;
+    let h = c.height;
+    //let gravity = new Vector(0, 0.01);
+    let fs = [];
+    let prevTs;
+    let gN = 0;
 
-    var time = 0;
-    var fun = function () {
-      animateFrame(time++);
+    function draw(ts) {
+        gN++;
+        clear(); 
+        animateFrame(gN);
+        window.requestAnimationFrame(ts => draw(ts));
     }
-    setInterval(fun, 11);
+
+    function clear() {
+        ctx.save();
+        ctx.fillStyle = 'grey';
+        ctx.fillRect(0, 0, w, h);
+        
+        ctx.fillStyle = 'blue';
+        ctx.font = "30px Verdana";
+        ctx.fillText(gN, 10, 44);
+        ctx.restore();
+    }
+
+    window.requestAnimationFrame(ts => {
+        prevTs = ts;
+        //fs.push(new Firework());
+        draw(ts);
+    });
+
   </script>
 
 </body>
