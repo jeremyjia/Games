@@ -16,7 +16,7 @@
     function draw(ts) {
         gN++;
         clear(); 
-        animateFrame(gN);
+        animateFrame(gN,ctx);
         window.requestAnimationFrame(ts => draw(ts));
     }
 

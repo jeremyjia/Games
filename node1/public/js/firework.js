@@ -178,40 +178,28 @@ class Firework {
 	}
 }
 
-
+let fs = [];
 
 var nTimes = 0;
-function animateFrame(time) {
-    if(time%100==0){
-        nTimes++;
-        if(nTimes>8) nTimes = 1;
-    }
-    var canvas = document.getElementById('myCanvas');
-    var ctx = canvas.getContext('2d');      
-    ctx.clearRect(0, 0, 1111, 300);
 
-    ctx.fillStyle = "red";
-    for(var n = 0; n < nTimes -1 ; n++){
-        ctx.fillRect(10 + n*110, 10, 100, 100); 
-        ctx.font = "30px Arial";
-        ctx.fillText(n+1, 10 + n*110, 210); 
-    }
-
-    var nn = Math.floor(nTimes);
-    ctx.font = "30px Arial";
-    ctx.fillText(nn, 10 , 310); 
-
-    
-    var x = time;
-    var y = 122;
-    ctx.fillStyle = "blue";
-    for (var i = 0; i < 110; i++) {
-        x = 10+i;  
-        if(nn%2) y = 122 + i;
-        else y = 244 - i;
-        x += 110*(nTimes-1);
-        ctx.beginPath();
-        ctx.arc(x, y, 5, 0, Math.PI * 2, true);
-        ctx.fill();
-    }
+let gravity = new Vector(0, 0.01);
+function animateFrame(time,ctx) {    
+    var n = fs.length;
+    ctx.fillStyle = 'red';
+    ctx.font = "30px Verdana";
+    ctx.fillText("v0.23: n=" + n, 110, 44);
+ 
+	if (0==fs.length) {
+		fs.push(new Firework()); 
+	} 
+    for (let firework of fs) {
+		firework.applyForce(gravity);
+		firework.update();
+		firework.render(ctx);
+	} 
+	for (let i = 0; i < fs.length; i++) {
+		if (fs[i].wasDone()) {
+			fs.splice(i, 1);
+		}
+	} 
 }
