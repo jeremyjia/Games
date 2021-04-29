@@ -1,4 +1,4 @@
-var tag = "server.js_v0.12";
+var tag = "server.js_v0.13";
 var tb = bl$("id_p1_tb"); 
     
 tb.btnServer = blo0.blBtn(tb,"btnServer","Server",blGrey[2]);
@@ -49,6 +49,7 @@ function CServer(parentDiv){
             o.getServerFiles(tb,v,"mp3"); 
             o.getServerFiles(tb,v,"mp4"); 
             o.getServerFiles(tb,v,"jpg"); 
+            o.getServerFiles(tb,v,"js"); 
 
             
             ui.draw = function(ctx){
