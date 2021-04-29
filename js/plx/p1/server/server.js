@@ -1,4 +1,4 @@
-var tag = "server.js_v0.13";
+var tag = "server.js_v0.22";
 var tb = bl$("id_p1_tb"); 
     
 tb.btnServer = blo0.blBtn(tb,"btnServer","Server",blGrey[2]);
@@ -24,7 +24,7 @@ function CServer(parentDiv){
     
     this.show = function(b){ 
         if(!ui){
-            ui=blo0.blMDiv(p,"id_mdiv_4_server","server",x,y,w,h,blGrey[0]);
+            ui=blo0.blMDiv(p,"id_mdiv_4_server",tag,x,y,w,h,blGrey[0]);
             
             ui.inf = {};
             ui.inf.x = 123;
@@ -47,9 +47,12 @@ function CServer(parentDiv){
             tb.b1 = o.dbgBtn(tb,"id_btn_4_dbgServer","dbg");
             o.getServerFiles(tb,v,"json"); 
             o.getServerFiles(tb,v,"mp3"); 
-            o.getServerFiles(tb,v,"mp4"); 
-            o.getServerFiles(tb,v,"jpg"); 
-            o.getServerFiles(tb,v,"js"); 
+            o.getServerFiles(tb,v,"mp4");   
+            
+            blo0.blScript("id_js_load_server-jpg","js/plx/p1/server/jpg.js");
+            blo0.blScript("id_js_load_server-js","js/plx/p1/server/js.js");
+            blo0.blScript("id_js_load_server-webm","js/plx/p1/server/webm.js");
+            blo0.blScript("id_js_load_server-html","js/plx/p1/server/html.js");
 
             
             ui.draw = function(ctx){
