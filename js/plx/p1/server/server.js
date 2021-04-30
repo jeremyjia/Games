@@ -1,4 +1,4 @@
-var tag = "server.js_v0.24";
+var tag = "server.js_v0.25";
 var tb = bl$("id_p1_tb"); 
     
 tb.btnServer = blo0.blBtn(tb,"btnServer","Server",blGrey[2]);
@@ -45,10 +45,10 @@ function CServer(parentDiv){
             var tb = blo0.blDiv(ui, "id_4_tb_server","tb",blGrey[1]);
             var v = blo0.blDiv(ui, "id_4_v_server","v",blGrey[2]);
             tb.b1 = o.dbgBtn(tb,"id_btn_4_dbgServer","dbg");
-            o.getServerFiles(tb,v,"json"); 
-            o.getServerFiles(tb,v,"mp3"); 
+            o.getServerFiles(tb,v,"json");  
             o.getServerFiles(tb,v,"mp4");   
             
+            blo0.blScript("id_js_load_server-mp3","js/plx/p1/server/mp3.js");
             blo0.blScript("id_js_load_server-jpg","js/plx/p1/server/jpg.js");
             blo0.blScript("id_js_load_server-js","js/plx/p1/server/js.js");
             blo0.blScript("id_js_load_server-webm","js/plx/p1/server/webm.js");
