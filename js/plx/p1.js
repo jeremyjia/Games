@@ -313,6 +313,7 @@ o._status = function(me){
         if(i=="c") bv.style.backgroundColor = me.inf[i];
         b.style.float="left";
         bv.style.float="left";
+        bv.style.color="white";
         bv.onclick = function(_this){
             return function(){
                 var uiPG = bl$("id_mdiv_4_playground");
