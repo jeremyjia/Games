@@ -1,6 +1,6 @@
 
 var tagVOA = "voa"; 
-var tagVersion = "_v0.43";
+var tagVersion = "_v0.44";
 
 var tb = bl$("id_4_tb_server");
 var v = bl$("id_4_v_server");
@@ -12,6 +12,12 @@ w._2do = function(txt){
 var sURL = "https://learningenglish.voanews.com/z/986"; 
 var sFN = "ac.voa";
 blo0.blAjx(w,"http://localhost:8080/download?url="+sURL +"&filename=" + sFN);
+
+
+var sURL = "https://learningenglish.voanews.com/z/3521"; 
+var sFN = "as.voa";
+blo0.blAjx(w,"http://localhost:8080/download?url="+sURL +"&filename=" + sFN);
+
 
 
 
@@ -45,7 +51,8 @@ function fcbVOA(p1,p2){
         
         tb.parseMe.onclick = function(){
             v.innerHTML = "" + Date();     
-            fParseType("ac",v.txt,v);
+            var t = p2.split(".");
+            fParseType(t[0],v.txt,v);
         }
 
     }
