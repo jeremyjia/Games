@@ -1,5 +1,5 @@
 ﻿
-const p1Tag = "[plx/p1.js_v0.312]";
+const p1Tag = "[plx/p1.js_v0.314]";
 
 const btn4p1 = bl$("plx_p1_btn");
 
@@ -188,8 +188,8 @@ o.img = function(ctx,f,x,y,w,h){
 o.rendFile = function(ctx,f,x,y,w,h){
     o.img(ctx,f,x,y,w,h);
 } 
-o.getServerFiles = function(tb,v,ft){o._getServerFiles(tb,v,ft);}
-o._getServerFiles = function(tb,v,ft){
+o.getServerFiles = function(tb,v,ft,fCallBack){o._getServerFiles(tb,v,ft,fCallBack);}
+o._getServerFiles = function(tb,v,ft,fCallBack){
     var b = blo0.blBtn(tb,tb.id+ft,ft,blGrey[1]);
     b.style.float = "left";
     b.onclick = function(_v,_ft){
@@ -210,13 +210,13 @@ o._getServerFiles = function(tb,v,ft){
                     var bf=blo0.blBtn(_v.d.v,_v.d.v.id+"_bf_"+i,ro.resource[i],blGrey[2]);
                     bf.style.float = "left";
                     bf.inf = {};
-                    bf.onclick = function(_this,_dbg,_me){
+                    bf.onclick = function(_this,_dbg,_me,_fCallBack){
                         return function(){    
                             _dbg.innerHTML = _me ; 
-                            o.makeINF(_this,_me);
+                            o.makeINF(_this,_me,_fCallBack);
                             o.status(_this);
                         }
-                    }(bf,_v.dbg,ro.resource[i]);
+                    }(bf,_v.dbg,ro.resource[i],fCallBack);
                 }
             }
             var url = 'http://localhost:8080/getResourceOnServer?filetype='+_ft;
@@ -224,7 +224,10 @@ o._getServerFiles = function(tb,v,ft){
         }
     }(v,ft);
 }
-o.makeINF = function(obj,fileName){
+o.makeINF = function(obj,fileName,fCallBack){
+    if(fCallBack){
+        fCallBack(obj,fileName);
+    }
     obj.inf.file = fileName; 
     var a = fileName.split(".");
     obj.inf.n = a.length;
