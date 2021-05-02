@@ -20,6 +20,7 @@ var sFN = "as.voa";
 blo0.blAjx(w,"http://localhost:8080/download?url="+sURL +"&filename=" + sFN);
 blo0.blScript("id_js_load_server-voa"+sFN,"js/plx/p1/server/voa/as.js");
 
+blo0.blScript("id_js_load_server-voa-util","js/plx/p1/server/voa/util.js");
 
 o.getServerFiles(tb,v,tagVOA,fcbVOA); 
 

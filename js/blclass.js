@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "blclass_v1.4.12"
+var g_ver_blClass = "blclass_v1.4.14"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -1227,9 +1227,9 @@ blo0.blGetGHI = function(_url,cb){  //git github issue
 	return r;
 }
 
-blo0.blPlayer = function(_id, _title,_x,_y,_w,_h,_c){
+blo0.blPlayer = function(_id, _title,_src,_x,_y,_w,_h,_c){
 	var d = blo0.blMD(_id, _title,_x,_y,_w,_h,_c);
-	ftnPlayer(d);
+	ftnPlayer(d,_src);
 	return d;
 }
 
@@ -1340,11 +1340,11 @@ function CCVSRect(_x,_y,_w,_h,_clr){
 }
 
 
-function ftnPlayer( oDiv ){
+function ftnPlayer( oDiv ,mySrc){
 	var v = blo0.blDiv(oDiv, oDiv.id + "Player", "Player",blGrey[0]);
 	var str4V = '<video id="myVideo" width="320" height="240" controls> ';				
 	str4V += '<source src=';
-	str4V += 'https://littleflute.github.io/ted1/docs/61/v0.mp4';
+	str4V += mySrc;// 'https://littleflute.github.io/ted1/docs/61/v0.mp4';
 	str4V +=' type="video/mp4">Your browser does not support HTML5 video.'; 	
 	str4V += '</video>';  										
 	var vPlayer = blo0.blDiv( v ,"id_div_4_myVideo" , str4V , 300,100,500,400,blColor[1]); 	
@@ -1364,7 +1364,7 @@ function ftnPlayer( oDiv ){
 			}
 		}
 	}(_p);
-	_p.src = 'https://littleflute.github.io/ted1/docs/61/v0.mp4';
+	_p.src = mySrc;//'https://littleflute.github.io/ted1/docs/61/v0.mp4';
 	_p.lrc = "https://littleflute.github.io/english/NewConceptEnglish/Book2/1.lrc";
 	_p.controls = false;
 
