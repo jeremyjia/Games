@@ -1,6 +1,6 @@
 
 var tagVOA = "voa"; 
-var tagVersion = "_v0.44";
+var tagVersion = "_v0.45";
 
 var tb = bl$("id_4_tb_server");
 var v = bl$("id_4_v_server");
@@ -19,12 +19,9 @@ var sFN = "as.voa";
 blo0.blAjx(w,"http://localhost:8080/download?url="+sURL +"&filename=" + sFN);
 
 
-
-
-
 o.getServerFiles(tb,v,tagVOA,fcbVOA); 
 
-function fcbVOA(p1,p2){
+function fcbVOA(p1,p2){ //p2: "ac.voa"
     p1.inf.toDo = function(v1){
         var vta = blo0.blDiv(v1,v1.id+"vta", tagVOA + tagVersion ,"grey"); 
         vta.innerHTML = "";
@@ -112,7 +109,7 @@ var fParseType =  function (_type,txt,_2v){
           var fn = _fileName;
           fn = fn.replace(" ","-");
           fn = fn.replace(", ","-");  
-          fn += ".html";
+          fn += "." + _type;
           var lastURL = "http://localhost:8080/download?url="+url +"&filename=" + fn;
           
             var w = {};
