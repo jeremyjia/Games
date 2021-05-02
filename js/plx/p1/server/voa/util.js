@@ -35,7 +35,8 @@ var f0 = function(d,txt,fileName){
       //v.innerHTML = txt;
     }
     var sURL = c; 
-    var sFN = fileName + ".mp3";
+    var a = fileName.split('.');
+    var sFN = a[0] + ".mp3";
     blo0.blAjx(w,"http://localhost:8080/download?url="+sURL +"&filename=" + sFN);
   }
 }

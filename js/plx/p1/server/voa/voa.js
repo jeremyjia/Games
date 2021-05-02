@@ -1,6 +1,6 @@
 
 var tagVOA = "voa"; 
-var tagVersion = "_v0.53";
+var tagVersion = "_v0.111";
 
 var tb = bl$("id_4_tb_server");
 var v = bl$("id_4_v_server");
@@ -11,14 +11,24 @@ w._2do = function(txt){
 }
 var sURL = "https://learningenglish.voanews.com/z/986"; 
 var sFN = "ac.voa";
-blo0.blAjx(w,"http://localhost:8080/download?url="+sURL +"&filename=" + sFN);
-blo0.blScript("id_js_load_server-voa"+sFN,"js/plx/p1/server/voa/ac.js");
-
+blo0.blAjx(w,"http://localhost:8080/download?url="+sURL +"&filename=" + sFN); 
 
 var sURL = "https://learningenglish.voanews.com/z/3521"; 
 var sFN = "as.voa";
-blo0.blAjx(w,"http://localhost:8080/download?url="+sURL +"&filename=" + sFN);
-blo0.blScript("id_js_load_server-voa"+sFN,"js/plx/p1/server/voa/as.js");
+blo0.blAjx(w,"http://localhost:8080/download?url="+sURL +"&filename=" + sFN); 
+
+var sURL = "https://learningenglish.voanews.com/z/959"; 
+var sFN = "edu.voa";
+blo0.blAjx(w,"http://localhost:8080/download?url="+sURL +"&filename=" + sFN); 
+
+
+var sURL = "https://learningenglish.voanews.com/z/955"; 
+var sFN = "hl.voa";
+blo0.blAjx(w,"http://localhost:8080/download?url="+sURL +"&filename=" + sFN); 
+
+var sURL = "https://learningenglish.voanews.com/z/1579"; 
+var sFN = "st.voa";
+blo0.blAjx(w,"http://localhost:8080/download?url="+sURL +"&filename=" + sFN); 
 
 blo0.blScript("id_js_load_server-voa-util","js/plx/p1/server/voa/util.js");
 
@@ -131,9 +141,11 @@ var fParsePage =  function (_voaType,fileName,pv,pageTxt){
     pageV.innerHTML = fileName;     
     var btnTest = blo0.blBtn(pageV,pageV.id+"btnTest","btnTest","brown");
     btnTest.onclick = function(){
-      var go = _voaType;
-      go += '(fileName,ta)';
-      eval(go); 
+      var w = {};
+      w._2do = function(txt){       
+          voa.parsePage(ta,txt,fileName);
+      }
+      blo0.blAjx(w,"http://localhost:8080/"+fileName);
     }
     var ta = blo0.blTextarea(pageV,pageV.id+"ta","ta","lightgreen");
     ta.style.width = 100 + "%";
