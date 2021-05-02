@@ -1,6 +1,6 @@
 
 var tagVOA = "voa"; 
-var tagVersion = "_v0.45";
+var tagVersion = "_v0.53";
 
 var tb = bl$("id_4_tb_server");
 var v = bl$("id_4_v_server");
@@ -12,17 +12,20 @@ w._2do = function(txt){
 var sURL = "https://learningenglish.voanews.com/z/986"; 
 var sFN = "ac.voa";
 blo0.blAjx(w,"http://localhost:8080/download?url="+sURL +"&filename=" + sFN);
+blo0.blScript("id_js_load_server-voa"+sFN,"js/plx/p1/server/voa/ac.js");
 
 
 var sURL = "https://learningenglish.voanews.com/z/3521"; 
 var sFN = "as.voa";
 blo0.blAjx(w,"http://localhost:8080/download?url="+sURL +"&filename=" + sFN);
+blo0.blScript("id_js_load_server-voa"+sFN,"js/plx/p1/server/voa/as.js");
 
 
 o.getServerFiles(tb,v,tagVOA,fcbVOA); 
 
 function fcbVOA(p1,p2){ //p2: "ac.voa"
     p1.inf.toDo = function(v1){
+        
         var vta = blo0.blDiv(v1,v1.id+"vta", tagVOA + tagVersion ,"grey"); 
         vta.innerHTML = "";
         var tb = blo0.blDiv(vta,vta.id + "tb","tb",blGrey[0]);
@@ -38,16 +41,15 @@ function fcbVOA(p1,p2){ //p2: "ac.voa"
                     var ta = blo0.blTextarea(v,v.id+"ta","ta","lightgreen");
                     ta.style.width = 100 + "%";
                     ta.style.height = 100 + "px";
-                    ta.value = txt;
+                    ta.value = v1.id;
                 }
                 blo0.blAjx(w,"http://localhost:8080/"+p2);
         }
         
-        tb.parseMe = blo0.blBtn(tb,tb.id+"parseMe","parseMe",blGrey[1]);
+        tb.parseMe = blo0.blBtn(tb,tb.id+"parseMe","parseMe","green");
         tb.parseMe.style.float="right";
         
-        tb.parseMe.onclick = function(){
-            v.innerHTML = "" + Date();     
+        tb.parseMe.onclick = function(){  
             var t = p2.split(".");
             fParseType(t[0],v.txt,v);
         }
@@ -59,7 +61,7 @@ var fParseType =  function (_type,txt,_2v){
     var d = _2v;
     var a = txt.split('<span class="date date--mb date--size-3" >');
     var date1 = new Date();        
-    d.innerHTML = date1.toLocaleTimeString();
+    d.innerHTML = _type + ":: " + date1.toLocaleTimeString();
     d.ls = [];
     d.loop = function(n){
       for(i in d.ls){
@@ -114,7 +116,7 @@ var fParseType =  function (_type,txt,_2v){
           
             var w = {};
             w._2do = function(txt){ 
-                fParsePage(lastURL,_this.parentElement,txt);
+                fParsePage(_type,fn,_this.parentElement,txt);
             } 
           blo0.blAjx(w,lastURL);
         }
@@ -123,11 +125,18 @@ var fParseType =  function (_type,txt,_2v){
     }     
   }
   
-var fParsePage =  function (fileName,pv,pageTxt){    
+var fParsePage =  function (_voaType,fileName,pv,pageTxt){    
     var pageV = blo0.blDiv(pv,pv.id+"pageV", "pageV" ,"lightblue"); 
     pageV.innerHTML = fileName;     
+    var btnTest = blo0.blBtn(pageV,pageV.id+"btnTest","btnTest","brown");
+    btnTest.onclick = function(){
+      var go = _voaType;
+      go += '(fileName,ta)';
+      eval(go); 
+    }
     var ta = blo0.blTextarea(pageV,pageV.id+"ta","ta","lightgreen");
     ta.style.width = 100 + "%";
     ta.style.height = 100 + "px";
     ta.value = pageTxt;
+
 }
