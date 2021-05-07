@@ -1,5 +1,5 @@
 ﻿
-const p1Tag = "[plx/p1.js_v0.314]";
+const p1Tag = "[plx/p1.js_v0.315]";
 
 const btn4p1 = bl$("plx_p1_btn");
 
@@ -7,6 +7,10 @@ if(btn4p1){
     btn4p1.v = blo0.blMD(btn4p1.id+p1Tag,p1Tag,210,11,555,150,blGrey[0]);
     var tb = blo0.blDiv(btn4p1.v,"id_p1_tb","tb0",blGrey[1]);
     
+    if(!tb.loadUtil){
+        blo0.blScript("id_js_loadPlayground","js/plx/p1/util/o.js");
+        tb.loadUtil = true;
+    }
     if(!tb.loadPlayground){
         blo0.blScript("id_js_loadPlayground","js/plx/p1/playground.js");
         tb.loadPlayground = true;
@@ -94,7 +98,7 @@ function CClient(){
     };
 }
 
-var o = {};
+
 o.music = "1.mp3";
 o.duration = 120;
 o.x = 50;
