@@ -1,4 +1,4 @@
-var tag = "server.js_v0.31";
+var tag = "server.js_v0.32";
 var tb = bl$("id_p1_tb"); 
     
 tb.btnServer = blo0.blBtn(tb,"btnServer","Server",blGrey[2]);
@@ -35,11 +35,9 @@ function CServer(parentDiv){
             ui.inf.text = "server.text";   
 
             
-            var tb4VOA = blo0.blDiv(ui,"id_tb4VOA","tb4VOA",blGrey[1]);
-            if(!tb4VOA.load_asItIs){ 
-                blo0.blScript("id_js_asItIs","js/plx/voa/asItIs.js");
-                tb4VOA.load_asItIs = true;
-            }
+            var tb4Client = blo0.blDiv(ui,"id_tb4Client","client-11",blGrey[1]);
+            blo0.blScript("id_js_Client","js/plx/p1/client/client.js");
+            
 
 
             var tb = blo0.blDiv(ui, "id_4_tb_server","tb",blGrey[1]);
