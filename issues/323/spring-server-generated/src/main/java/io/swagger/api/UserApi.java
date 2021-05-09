@@ -54,8 +54,7 @@ public interface UserApi {
         produces = { "application/json" }, 
         consumes = { "application/json" }, 
         method = RequestMethod.POST)
-    ResponseEntity<InlineResponse200> authenticateUser(@Parameter(in = ParameterIn.DEFAULT, description = "Email address and plain-text password for the User being authenticated.
-", required=true, schema=@Schema()) @Valid @RequestBody LoginInfo body);
+    ResponseEntity<InlineResponse200> authenticateUser(@Parameter(in = ParameterIn.DEFAULT, description = "Email address and plain-text password for the User being authenticated.", required=true, schema=@Schema()) @Valid @RequestBody LoginInfo body);
 
 
     @Operation(summary = "Fetch data about a specific User.", description = "Returns information about the specified User. Include username and church jointed. ", tags={ "User" })
