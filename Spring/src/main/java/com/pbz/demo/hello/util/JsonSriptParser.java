@@ -183,10 +183,6 @@ public final class JsonSriptParser {
 								drawOrdinaryObjects(obj, g);
 							}
 						}
-						g.setColor(new Color(0, 0, 255));// 帧号颜色
-						g.setFont(new Font("黑体", Font.BOLD, 40));
-						g.drawString(Integer.toString(index + 1), width - 100, 50);// 显示帧号
-						g.dispose();
 
 						AOIArea area = aoiMap.get(index + 1);
 						if (area != null) {
@@ -200,8 +196,12 @@ public final class JsonSriptParser {
 							grs.dispose();
 							ImageIO.write((BufferedImage) resultImage, "JPEG", new File(destImageFile));
 						} else {
+							g.setColor(new Color(0, 0, 255));// 帧号颜色
+							g.setFont(new Font("黑体", Font.BOLD, 40));
+							g.drawString(Integer.toString(index + 1), width - 100, 50);// 显示帧号
 							ImageIO.write((BufferedImage) image, "JPEG", new File(destImageFile));
 						}
+						g.dispose();
 						index++;
 					}
 				}
