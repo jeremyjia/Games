@@ -108,13 +108,20 @@ function _cmdClass(_o){
         _o.board.pos.fromFen(fen);
         _o.board.flushBoard();
       }
+      d.v.btn1 = blo0.blBtn( d.vSet,"id_4_btn1", "btn1","grey");
+      d.v.btn1.onclick = function(){ 
+      	var fen = "4kac2/3Pa4/4c4/9/9/9/9/4C4/3pA4/4KAC2%20w w - - 0 1";
+        _o.board.pos.fromFen(fen);
+        _o.board.flushBoard();
+      }
       d.v.btnSend = blo0.blBtn( d.vSet,"id_4_Send", "Send",blColor[6]);
       d.v.btnSend.onclick = function(){  
         _o.board.xdFun2();
       }
-      d.v.btnFen = blo0.blBtn( d.vSet,"id_4_FEN", "FEN","lightgreen");
+      d.v.btnFen = blo0.blBtn( d.vSet,"id_4_FEN", "FEN","brown");
+      d.v.btnFen.style.color = "white";
       d.v.btnFen.onclick = function(){           
-        var sLink = "https://littleflute.github.io/cchess/play/snj.html?f=";
+        var sLink = "https://littleflute.github.io/cchess/play/snj1.html?f=";
         sLink += _o.board.pos.toFen();
         var sHTML = "<a target='_blank' href='";
         sHTML += sLink;
