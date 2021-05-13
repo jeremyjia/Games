@@ -46,6 +46,7 @@ function _cmdClass(_o){
     if(!d.v){
       d.v = blo0.blDiv(d,d.id+"v","test1",blGrey[5]);
       d.vSet = blo0.blDiv(d,d.id+"vSet","vSet",blGrey[5]);
+      d.vLink = blo0.blDiv(d,d.id+"vLink","vLink",blGrey[5]);
       var dRed = blo0.blDiv(d.vSet, d.vSet + "dRed","::","grey");
       var P = ["帅","仕","相","马","车","炮","兵"];
       var bs = [];
@@ -110,6 +111,15 @@ function _cmdClass(_o){
       d.v.btnSend = blo0.blBtn( d.vSet,"id_4_Send", "Send",blColor[6]);
       d.v.btnSend.onclick = function(){  
         _o.board.xdFun2();
+      }
+      d.v.btnFen = blo0.blBtn( d.vSet,"id_4_FEN", "FEN","lightgreen");
+      d.v.btnFen.onclick = function(){           
+        var sLink = "https://littleflute.github.io/cchess/play/snj.html?f=";
+        sLink += _o.board.pos.toFen();
+        var sHTML = "<a target='_blank' href='";
+        sHTML += sLink;
+        sHTML +="'>play</a>";
+        d.vLink.innerHTML = sHTML; 
       }
     }
     _on_off_div(b,d); 
