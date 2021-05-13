@@ -1,5 +1,5 @@
  const tag = "xd.js";
 
 module.exports = function(){ 
-  return 'to test xdApp: doing.';
+  return 'to test xdApp: done.';
 }
