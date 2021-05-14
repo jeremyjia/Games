@@ -1,4 +1,4 @@
-var strV = "[myplx1.js] _ v0.34";
+var strV = "[myplx1.js] _ v0.35";
 var nIndex = 0;
 
 function CFrame(){
@@ -21,6 +21,9 @@ function CFrame(){
             ctx.fillRect(x,y,w,h);
 
             ctx.beginPath();
+            
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = "#FF0000";
             if(i%2==0){
                 ctx.moveTo(x, y);
                 ctx.lineTo(x+w, y+h);
