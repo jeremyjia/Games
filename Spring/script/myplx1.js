@@ -1,17 +1,48 @@
-var strV = "[myplx1.js] _ v0.24";
+var strV = "[myplx1.js] _ v0.34";
 var nIndex = 0;
 
 function CFrame(){
     var _n = 0;
+    var _ls = [];
     var _fpp = function(_i){
-        if(_i%100==0){
+        if(_i%50==0){
             _n++;
+            if(_n>8){
+                _n = 1;
+                _ls = [];
+            } 
+            _ls.push(_n);
+        }
+    }
+    var _lsDraw = function(ctx){
+        var x = 50;    var y = 333;        var w = 111, h = 111;
+        for(i in _ls){
+            x += w + 5;
+            ctx.fillRect(x,y,w,h);
+
+            ctx.beginPath();
+            if(i%2==0){
+                ctx.moveTo(x, y);
+                ctx.lineTo(x+w, y+h);
+            }
+            else{
+                ctx.moveTo(x, y+h);
+                ctx.lineTo(x+w, y);
+            }
+            ctx.stroke();
+
         }
     }
     var _render = function(ctx,_i){
         _fpp(_i);
-        ctx.fillText(_n, 333 , 22); 
+        var s = _n;
+        s+= " ";
+        s+=_ls;
+        
+        ctx.fillText(s, 333 , 22); 
+        _lsDraw(ctx);
     }
+
     this.frame = function(ctx,_i){
         _render(ctx,_i);
         ctx.fillText(strV, 10 , 22); 
