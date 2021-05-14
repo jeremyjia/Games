@@ -1,10 +1,12 @@
+var fwV = "[fireworks.js]_v0.11";
+
 function random(min, max) {
 	min = Math.ceil(min);
 	max = Math.floor(max);
 	return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive 
 }
 
-class Hsl {
+class xdHSL {
 	constructor(h, s, l, a) {
 		this.h = h;
 		this.s = s;
@@ -19,7 +21,7 @@ class Hsl {
 	}
 
 	static random() {
-		let hsl = new Hsl();
+		let hsl = new xdHSL();
 		hsl.h = random(0, 360);
 		hsl.s = random(0, 100);
 		hsl.l = random(0, 100);
@@ -104,7 +106,7 @@ class Firework {
 			random(0, 15) * (random(0, 1) ? -1 : 1),
 			random(-18, -10)
 		);
-		this.color = Hsl.random();
+		this.color = xdHSL.random();
 		this.color.s = 100;
 		this.color.l = 70;
 		this.exploder = new Particle(w / 2, h, vel, this.color);
@@ -190,7 +192,7 @@ function animateFrame(time) {
     var ctx = canvas.getContext('2d');  
     ctx.fillStyle = 'red';
     ctx.font = "30px Verdana";
-    ctx.fillText("v0.32: n=" + n + " time=" + time, 110, 44);
+    ctx.fillText( fwV + " n=" + n + " time=" + time, 110, 44);
  
 	if (0==fs.length) {
 		fs.push(new Firework()); 
