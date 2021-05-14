@@ -40,7 +40,7 @@
     "mysql": "^2.18.1",
     "ono": "^5.0.1",
     "openapi-sampler": "^1.0.0-beta.15",
-    "redis": "^3.0.2",
+    "redis": "^3.1.1",
     "redis-jwt": "^1.4.0",
     "request": "^2.88.2",
     "sqlstring": "^2.3.2",
