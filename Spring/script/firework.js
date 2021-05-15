@@ -1,4 +1,4 @@
-var fwV = "[fireworks.js]_v0.32";
+var fwV = "[fireworks.js]_v0.33";
 
 function _gRandom(min, max) {
 	min = Math.ceil(min);
@@ -50,10 +50,10 @@ function CVector(_x,_y){
 }
 
 var _gNewVector = function(){
-	let angle = _gRandom(0, 360) * Math.PI / 180;
-	let len = _gRandom(1, 5);
-	let x = Math.cos(angle) * len;
-	let y = Math.sin(angle) * len;
+	var angle = _gRandom(0, 360) * Math.PI / 180;
+	var len = _gRandom(1, 5);
+	var x = Math.cos(angle) * len;
+	var y = Math.sin(angle) * len;
 	return new CVector(x, y);
 }
 
