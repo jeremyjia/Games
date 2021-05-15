@@ -1,4 +1,4 @@
-var fwV = "[fireworks.js]_v0.42";
+var fwV = "[fireworks.js]_v0.44";
 
 function _gRandom(min, max) {
 	min = Math.ceil(min);
@@ -96,7 +96,86 @@ function CParticle(x, y, vel, color, explodeLifespan){
 	}
 } 
 
-class Firework {
+
+function CFirework(_x,_y){
+	var vel = new CVector(
+		_gRandom(0, 15) * (_gRandom(0, 1) ? -1 : 1),
+		_gRandom(-18, -10)
+	);
+	this.color = _gColor();
+	this.color.s = 100;
+	this.color.l = 70;
+	this.exploder = new CParticle(w / 2, h, vel, this.color);
+	this.explodeParticles = [];
+	this.nOfParticles = _gRandom(30, 40);
+	this.isExploded = false;
+
+	this.update = function() {
+		if (this.exploder.vel.y > 0 && !this.isExploded) {
+			this.isExploded = true;
+			this.initExplodeParticles();
+		}
+		if (!this.isExploded) {
+			this.exploder.update();
+		} else {
+			for (var p of this.explodeParticles) {
+				if (!p.wasDoneExploding()) {
+					p.update();
+				}
+			}
+		}
+	}
+
+	this.render = function(ctx) {
+		if (!this.isExploded) {
+			this.exploder.render(ctx);
+		} else if (!this.done) {
+			for (var p of this.explodeParticles) {
+				if (!p.wasDoneExploding()) {
+					p.render(ctx);
+				}
+			}
+		}
+	}
+
+	this.applyForce = function(force) {
+		if (!this.isExploded) {
+			this.exploder.applyForce(force);
+		} else if (!this.done) {
+			for (var p of this.explodeParticles) {
+				if (!p.wasDoneExploding()) {
+					p.applyForce(force);
+				}
+			}
+		}
+	}
+
+	this.initExplodeParticles = function() {
+		for (var i = 0; i < this.nOfParticles; i++) {
+			var particle = new CParticle(
+				this.exploder.loc.x, 
+				this.exploder.loc.y,
+				_gNewVector(),
+				this.color,
+				50
+			);
+			this.explodeParticles.push(particle);
+		}
+	}
+
+	this.wasDone = function() {
+		if (this.explodeParticles.length === 0) return false;
+
+		for (var p of this.explodeParticles) {
+			if (!p.wasDoneExploding()) {
+				return false;
+			}
+		}
+		return true;
+	}
+}
+
+class xdFirework {
 	constructor() {
 		var vel = new CVector(
 			_gRandom(0, 15) * (_gRandom(0, 1) ? -1 : 1),
@@ -191,7 +270,7 @@ function animateFrame(time) {
     ctx.fillText( fwV + " n=" + n + " time=" + time, 110, 44);
  
 	if (0==fs.length) {
-		fs.push(new Firework()); 
+		fs.push(new CFirework()); 
 	}  
     for (firework of fs) {
 		firework.applyForce(gravity);
