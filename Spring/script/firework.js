@@ -1,4 +1,4 @@
-var fwV = "[fireworks.js]_v0.55";
+var fwV = "[fireworks.js]_v0.111";
 
 function _gRandom(min, max) {
 	min = Math.ceil(min);
@@ -98,6 +98,7 @@ function CParticle(x, y, vel, color, explodeLifespan){
 
 
 function CFirework(_x,_y){
+	var _w = 1200, _h = 600;
 	var vel = new CVector(
 		_gRandom(0, 15) * (_gRandom(0, 1) ? -1 : 1),
 		_gRandom(-18, -10)
@@ -105,7 +106,7 @@ function CFirework(_x,_y){
 	this.color = _gColor();
 	this.color.s = 100;
 	this.color.l = 70;
-	this.exploder = new CParticle(w / 2, h, vel, this.color);
+	this.exploder = new CParticle(_w / 2, _h, vel, this.color);
 	this.explodeParticles = [];
 	this.nOfParticles = _gRandom(30, 40);
 	this.isExploded = false;
