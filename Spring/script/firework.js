@@ -1,4 +1,4 @@
-var fwV = "[fireworks.js]_v0.41";
+var fwV = "[fireworks.js]_v0.42";
 
 function _gRandom(min, max) {
 	min = Math.ceil(min);
@@ -71,7 +71,7 @@ function CParticle(x, y, vel, color, explodeLifespan){
 		this.loc.add(this.vel);
 		if (this.explodeLifespan) {
 			this.explodeCurrentLs++;
-			let progress = this.explodeCurrentLs / this.explodeLifespan;
+			var progress = this.explodeCurrentLs / this.explodeLifespan;
 			if (progress > 0.7 && progress < 1.0) {
 				this.color.a = 1 - (progress - 0.7) / 0.3;
 			}
@@ -98,7 +98,7 @@ function CParticle(x, y, vel, color, explodeLifespan){
 
 class Firework {
 	constructor() {
-		let vel = new CVector(
+		var vel = new CVector(
 			_gRandom(0, 15) * (_gRandom(0, 1) ? -1 : 1),
 			_gRandom(-18, -10)
 		);
@@ -119,7 +119,7 @@ class Firework {
 		if (!this.isExploded) {
 			this.exploder.update();
 		} else {
-			for (let p of this.explodeParticles) {
+			for (var p of this.explodeParticles) {
 				if (!p.wasDoneExploding()) {
 					p.update();
 				}
@@ -131,7 +131,7 @@ class Firework {
 		if (!this.isExploded) {
 			this.exploder.render(ctx);
 		} else if (!this.done) {
-			for (let p of this.explodeParticles) {
+			for (var p of this.explodeParticles) {
 				if (!p.wasDoneExploding()) {
 					p.render(ctx);
 				}
@@ -143,7 +143,7 @@ class Firework {
 		if (!this.isExploded) {
 			this.exploder.applyForce(force);
 		} else if (!this.done) {
-			for (let p of this.explodeParticles) {
+			for (var p of this.explodeParticles) {
 				if (!p.wasDoneExploding()) {
 					p.applyForce(force);
 				}
@@ -152,8 +152,8 @@ class Firework {
 	}
 
 	initExplodeParticles() {
-		for (let i = 0; i < this.nOfParticles; i++) {
-			let particle = new CParticle(
+		for (var i = 0; i < this.nOfParticles; i++) {
+			var particle = new CParticle(
 				this.exploder.loc.x, 
 				this.exploder.loc.y,
 				_gNewVector(),
@@ -167,7 +167,7 @@ class Firework {
 	wasDone() {
 		if (this.explodeParticles.length === 0) return false;
 
-		for (let p of this.explodeParticles) {
+		for (var p of this.explodeParticles) {
 			if (!p.wasDoneExploding()) {
 				return false;
 			}
@@ -176,11 +176,11 @@ class Firework {
 	}
 }
 
-let fs = [];
+var fs = [];
 
 var nTimes = 0;
 
-let gravity = new CVector(0, 0.01);
+var gravity = new CVector(0, 0.01);
 function animateFrame(time) {    
     var n = fs.length;
 
@@ -193,12 +193,12 @@ function animateFrame(time) {
 	if (0==fs.length) {
 		fs.push(new Firework()); 
 	}  
-    for (let firework of fs) {
+    for (firework of fs) {
 		firework.applyForce(gravity);
 		firework.update();
 		firework.render(ctx);
 	} 
-	for (let i = 0; i < fs.length; i++) {
+	for (var i = 0; i < fs.length; i++) {
 		if (fs[i].wasDone()) {
 			fs.splice(i, 1);
 		}
