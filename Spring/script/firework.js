@@ -1,4 +1,4 @@
-var fwV = "[fireworks.js]_v0.23";
+var fwV = "[fireworks.js]_v0.32";
 
 function _gRandom(min, max) {
 	min = Math.ceil(min);
@@ -40,42 +40,30 @@ var _gColor = function(){
 	return c;
 }
 
-class Vector {
-	constructor(x, y) {
-		this.x = x;
-		this.y = y;
-	}
-
-	add(vec) {
+function CVector(_x,_y){
+	this.x = _x;
+	this.y = _y;
+	this.add = function(vec){
 		this.x += vec.x;
 		this.y += vec.y;
 	}
-
-	sub(vec) {
-		this.x -= vec.x;
-		this.y -= vec.y;
-	}
-
-	mult(value) {
-		this.x *= value;
-		this.y *= value;
-	}
-
-	static randomVector() {
-		let angle = _gRandom(0, 360) * Math.PI / 180;
-		let len = _gRandom(1, 5);
-		let x = Math.cos(angle) * len;
-		let y = Math.sin(angle) * len;
-		return new Vector(x, y);
-	}
 }
+
+var _gNewVector = function(){
+	let angle = _gRandom(0, 360) * Math.PI / 180;
+	let len = _gRandom(1, 5);
+	let x = Math.cos(angle) * len;
+	let y = Math.sin(angle) * len;
+	return new CVector(x, y);
+}
+
 
 class Particle {
 	constructor(x, y, vel, color, explodeLifespan) {
 		this.r = 3;
-		this.loc = new Vector(x, y);
-		this.vel = vel || new Vector(0, 0);
-		this.acc = new Vector(0, 0);
+		this.loc = new CVector(x, y);
+		this.vel = vel || new CVector(0, 0);
+		this.acc = new CVector(0, 0);
 		this.explodeLifespan = explodeLifespan;
 		this.explodeCurrentLs = 0;
 		this.color = color;
@@ -113,7 +101,7 @@ class Particle {
 
 class Firework {
 	constructor() {
-		let vel = new Vector(
+		let vel = new CVector(
 			_gRandom(0, 15) * (_gRandom(0, 1) ? -1 : 1),
 			_gRandom(-18, -10)
 		);
@@ -171,7 +159,7 @@ class Firework {
 			let particle = new Particle(
 				this.exploder.loc.x, 
 				this.exploder.loc.y,
-				Vector.randomVector(),
+				_gNewVector(),
 				this.color,
 				50
 			);
@@ -195,7 +183,7 @@ let fs = [];
 
 var nTimes = 0;
 
-let gravity = new Vector(0, 0.01);
+let gravity = new CVector(0, 0.01);
 function animateFrame(time) {    
     var n = fs.length;
 
