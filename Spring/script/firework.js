@@ -1,4 +1,4 @@
-var fwV = "[fireworks.js]_v0.33";
+var fwV = "[fireworks.js]_v0.35";
 
 function _gRandom(min, max) {
 	min = Math.ceil(min);
@@ -57,8 +57,45 @@ var _gNewVector = function(){
 	return new CVector(x, y);
 }
 
+function CParticle(x, y, vel, color, explodeLifespan){
+	this.r = 3;
+	this.loc = new CVector(x, y);
+	this.vel = vel || new CVector(0, 0);
+	this.acc = new CVector(0, 0);
+	this.explodeLifespan = explodeLifespan;
+	this.explodeCurrentLs = 0;
+	this.color = color;
+	
+	this.update = function() {
+		this.vel.add(this.acc);
+		this.loc.add(this.vel);
+		if (this.explodeLifespan) {
+			this.explodeCurrentLs++;
+			let progress = this.explodeCurrentLs / this.explodeLifespan;
+			if (progress > 0.7 && progress < 1.0) {
+				this.color.a = 1 - (progress - 0.7) / 0.3;
+			}
+		}
+	}
+	
+	this.render = function(ctx) {
+		ctx.save();
+		ctx.beginPath();
+		ctx.arc(this.loc.x, this.loc.y, this.r, 0, Math.PI * 2);
+		ctx.fillStyle = this.color.toString();
+		ctx.fill();
+		ctx.restore();
+	}
 
-class Particle {
+	this.applyForce = function(force) {
+		this.acc.add(force);
+	}
+
+	this.wasDoneExploding = function() {
+		return this.explodeCurrentLs > this.explodeLifespan;
+	}
+}
+class xdParticle {
 	constructor(x, y, vel, color, explodeLifespan) {
 		this.r = 3;
 		this.loc = new CVector(x, y);
@@ -108,7 +145,7 @@ class Firework {
 		this.color = _gColor();
 		this.color.s = 100;
 		this.color.l = 70;
-		this.exploder = new Particle(w / 2, h, vel, this.color);
+		this.exploder = new CParticle(w / 2, h, vel, this.color);
 		this.explodeParticles = [];
 		this.nOfParticles = _gRandom(30, 40);
 		this.isExploded = false;
@@ -156,7 +193,7 @@ class Firework {
 
 	initExplodeParticles() {
 		for (let i = 0; i < this.nOfParticles; i++) {
-			let particle = new Particle(
+			let particle = new CParticle(
 				this.exploder.loc.x, 
 				this.exploder.loc.y,
 				_gNewVector(),
