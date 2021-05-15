@@ -1,4 +1,4 @@
-var fwV = "[fireworks.js]_v0.45";
+var fwV = "[fireworks.js]_v0.51";
 
 function _gRandom(min, max) {
 	min = Math.ceil(min);
@@ -118,9 +118,9 @@ function CFirework(_x,_y){
 		if (!this.isExploded) {
 			this.exploder.update();
 		} else {
-			for (var p of this.explodeParticles) {
-				if (!p.wasDoneExploding()) {
-					p.update();
+			for (i in this.explodeParticles) {
+				if (!this.explodeParticles[i].wasDoneExploding()) {
+					this.explodeParticles[i].update();
 				}
 			}
 		}
