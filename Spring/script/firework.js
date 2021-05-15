@@ -1,4 +1,4 @@
-var fwV = "[fireworks.js]_v0.22";
+var fwV = "[fireworks.js]_v0.23";
 
 function _gRandom(min, max) {
 	min = Math.ceil(min);
@@ -12,9 +12,23 @@ function CColor(){
 	this.l = 0;
 	this.a = 0;
 	this.toString = function(){
-		return this.a ? 
-			`hsla(${this.h}, ${this.s}%, ${this.l}%, ${this.a})` :
-			`hsl(${this.h}, ${this.s}%, ${this.l}%)`;
+		var s1 = 'hsla(';
+		s1 += this.h;
+		s1 += ',';
+		s1 += this.s;
+		s1 += '%,';
+		s1 += this.l;
+		s1 += '%,';
+		s1 += this.a;
+		s1 += ')';
+		var s2 = 'hsla(';
+		s2 += this.h;
+		s2 += ',';
+		s2 += this.s;
+		s2 += '%,';
+		s2 += this.l;
+		s2 += '%)';  
+		return this.a ? s1 : s2;
 	}
 }
 
