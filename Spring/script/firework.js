@@ -1,4 +1,4 @@
-var fwV = "[fireworks.js]_v0.112";
+var fwV = "[fireworks.js]_v0.113";
 
 function _gRandom(min, max) {
 	min = Math.ceil(min);
@@ -84,7 +84,7 @@ function CParticle(x, y, vel, color, explodeLifespan){
 		ctx.arc(this.loc.x, this.loc.y, this.r, 0, Math.PI * 2);
 		ctx.fillStyle = this.color.toString();
 		ctx.fill();
-		ctx.restore();
+		//ctx.restore();
 	}
 
 	this.applyForce = function(force) {
