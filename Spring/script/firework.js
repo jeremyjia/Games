@@ -1,32 +1,29 @@
-var fwV = "[fireworks.js]_v0.11";
+var fwV = "[fireworks.js]_v0.22";
 
-function random(min, max) {
+function _gRandom(min, max) {
 	min = Math.ceil(min);
 	max = Math.floor(max);
 	return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive 
 }
-
-class xdHSL {
-	constructor(h, s, l, a) {
-		this.h = h;
-		this.s = s;
-		this.l = l;
-		this.a = a;
-	}
-
-	toString() {
+ 
+function CColor(){
+	this.h = 0;
+	this.s = 0;
+	this.l = 0;
+	this.a = 0;
+	this.toString = function(){
 		return this.a ? 
 			`hsla(${this.h}, ${this.s}%, ${this.l}%, ${this.a})` :
 			`hsl(${this.h}, ${this.s}%, ${this.l}%)`;
 	}
+}
 
-	static random() {
-		let hsl = new xdHSL();
-		hsl.h = random(0, 360);
-		hsl.s = random(0, 100);
-		hsl.l = random(0, 100);
-		return hsl;
-	}
+var _gColor = function(){
+	var c = new CColor();
+	c.h = _gRandom(0, 360);
+	c.s = _gRandom(0, 100);
+	c.l = _gRandom(0, 100);
+	return c;
 }
 
 class Vector {
@@ -51,8 +48,8 @@ class Vector {
 	}
 
 	static randomVector() {
-		let angle = random(0, 360) * Math.PI / 180;
-		let len = random(1, 5);
+		let angle = _gRandom(0, 360) * Math.PI / 180;
+		let len = _gRandom(1, 5);
 		let x = Math.cos(angle) * len;
 		let y = Math.sin(angle) * len;
 		return new Vector(x, y);
@@ -103,15 +100,15 @@ class Particle {
 class Firework {
 	constructor() {
 		let vel = new Vector(
-			random(0, 15) * (random(0, 1) ? -1 : 1),
-			random(-18, -10)
+			_gRandom(0, 15) * (_gRandom(0, 1) ? -1 : 1),
+			_gRandom(-18, -10)
 		);
-		this.color = xdHSL.random();
+		this.color = _gColor();
 		this.color.s = 100;
 		this.color.l = 70;
 		this.exploder = new Particle(w / 2, h, vel, this.color);
 		this.explodeParticles = [];
-		this.nOfParticles = random(30, 40);
+		this.nOfParticles = _gRandom(30, 40);
 		this.isExploded = false;
 	}
 
