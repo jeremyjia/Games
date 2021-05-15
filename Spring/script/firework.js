@@ -1,4 +1,4 @@
-var fwV = "[fireworks.js]_v0.113";
+var fwV = "[fireworks.js]_v0.121";
 
 function _gRandom(min, max) {
 	min = Math.ceil(min);
@@ -188,6 +188,8 @@ function animateFrame(time) {
     ctx.fillStyle = 'red';
     ctx.font = "30px Verdana";
     ctx.fillText( fwV + " n=" + n + " time=" + time, 110, 44);
+	var d = new Date(); 
+    ctx.fillText( d.toLocaleString(), 110, 88);
  
 	if (0==fs.length) {
 		fs.push(new CFirework()); 
