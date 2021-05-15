@@ -1,4 +1,4 @@
-var fwV = "[fireworks.js]_v0.44";
+var fwV = "[fireworks.js]_v0.45";
 
 function _gRandom(min, max) {
 	min = Math.ceil(min);
@@ -174,92 +174,11 @@ function CFirework(_x,_y){
 		return true;
 	}
 }
-
-class xdFirework {
-	constructor() {
-		var vel = new CVector(
-			_gRandom(0, 15) * (_gRandom(0, 1) ? -1 : 1),
-			_gRandom(-18, -10)
-		);
-		this.color = _gColor();
-		this.color.s = 100;
-		this.color.l = 70;
-		this.exploder = new CParticle(w / 2, h, vel, this.color);
-		this.explodeParticles = [];
-		this.nOfParticles = _gRandom(30, 40);
-		this.isExploded = false;
-	}
-
-	update() {
-		if (this.exploder.vel.y > 0 && !this.isExploded) {
-			this.isExploded = true;
-			this.initExplodeParticles();
-		}
-		if (!this.isExploded) {
-			this.exploder.update();
-		} else {
-			for (var p of this.explodeParticles) {
-				if (!p.wasDoneExploding()) {
-					p.update();
-				}
-			}
-		}
-	}
-
-	render(ctx) {
-		if (!this.isExploded) {
-			this.exploder.render(ctx);
-		} else if (!this.done) {
-			for (var p of this.explodeParticles) {
-				if (!p.wasDoneExploding()) {
-					p.render(ctx);
-				}
-			}
-		}
-	}
-
-	applyForce(force) {
-		if (!this.isExploded) {
-			this.exploder.applyForce(force);
-		} else if (!this.done) {
-			for (var p of this.explodeParticles) {
-				if (!p.wasDoneExploding()) {
-					p.applyForce(force);
-				}
-			}
-		}
-	}
-
-	initExplodeParticles() {
-		for (var i = 0; i < this.nOfParticles; i++) {
-			var particle = new CParticle(
-				this.exploder.loc.x, 
-				this.exploder.loc.y,
-				_gNewVector(),
-				this.color,
-				50
-			);
-			this.explodeParticles.push(particle);
-		}
-	}
-
-	wasDone() {
-		if (this.explodeParticles.length === 0) return false;
-
-		for (var p of this.explodeParticles) {
-			if (!p.wasDoneExploding()) {
-				return false;
-			}
-		}
-		return true;
-	}
-}
-
+ 
 var fs = [];
-
 var nTimes = 0;
-
 var gravity = new CVector(0, 0.01);
+
 function animateFrame(time) {    
     var n = fs.length;
 
