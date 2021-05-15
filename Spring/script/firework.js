@@ -1,4 +1,4 @@
-var fwV = "[fireworks.js]_v0.54";
+var fwV = "[fireworks.js]_v0.55";
 
 function _gRandom(min, max) {
 	min = Math.ceil(min);
@@ -191,10 +191,10 @@ function animateFrame(time) {
 	if (0==fs.length) {
 		fs.push(new CFirework()); 
 	}  
-    for (firework of fs) {
-		firework.applyForce(gravity);
-		firework.update();
-		firework.render(ctx);
+    for (i in fs) {
+		fs[i].applyForce(gravity);
+		fs[i].update();
+		fs[i].render(ctx);
 	} 
 	for (var i = 0; i < fs.length; i++) {
 		if (fs[i].wasDone()) {
