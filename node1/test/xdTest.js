@@ -1,8 +1,8 @@
 const assert = require('chai').assert;
 const app = require('../app/xd.js');
 
-describe('App', function(){
+describe('xdApp', function(){
   it('xdTest', function(){
-    assert.equal(app(),'to test xdApp: done.');
+    assert.equal(app(),'to test xdApp(firework refactor): done.');
   });
 });
