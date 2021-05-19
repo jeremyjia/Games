@@ -1,6 +1,15 @@
-const voa = {};
+const voaUtil = {};
 
-voa.parsePage = function(ta,txt,fileName){
+voaUtil.reg2o = function(_o){
+  var dw = {};
+  dw.draw = function(ctx){
+    _o.rect(ctx,50,50,50,50,"green");   
+    _o.text(ctx,_inf.nn,50,50);
+  }
+  _o.reg2draw(dw);
+}
+
+voaUtil.parsePage = function(ta,txt,fileName){
     var pv = ta.parentElement;
     var v = blo0.blDiv(pv,pv.id+"v","v","grey"); 
     v.innerHTML = "xxxxx " + Date();

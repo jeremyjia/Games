@@ -267,6 +267,15 @@ o._status = function(me){
                 }
             }(b,v1,me,i);
         }
+        else if(i=="toDraw"){
+            bv.innerHTML = ".";
+            b.style.backgroundColor = "green";            
+            b.onclick = function(_this,_v1,_me,_i){
+                return function(){ 
+                    _me.inf[_i](_v1);
+                }
+            }(b,v1,me,i);
+        }
     } 
 }
 o.addCard= function(_ls){
