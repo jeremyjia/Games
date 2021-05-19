@@ -1,13 +1,46 @@
-const voaUtil = {};
+var voaV = "v0.34";
 
-voaUtil.reg2o = function(_o){
-  var dw = {};
-  dw.draw = function(ctx){
-    _o.rect(ctx,50,50,50,50,"green");   
-    _o.text(ctx,_inf.nn,50,50);
-  }
-  _o.reg2draw(dw);
+var bbbb = true;
+var nCDrawVOA = 0;
+function CDrawVOA(_o){
+  if(nCDrawVOA>0) return;
+
+  var b = true;  
+  this.onOff = function(){
+    bbbb = !bbbb;
+  } 
+  this.getB = function(){
+    return bbbb;
+  } 
+  this.draw = function(ctx){
+    if(bbbb){
+      _o.rect(ctx,50,150,50,50,"red");   
+      _o.text(ctx,voaV,50,150);
+    }
+  }  
+
+  _o.reg2draw(this);
+  nCDrawVOA++;
 }
+
+function CUtilVOA(){ 
+  var n = 0;
+  var drw = null;
+  this.reg2o = function(_o){
+    drw = new CDrawVOA(_o); 
+  } 
+  this.onOff = function(){
+    if(drw) drw.onOff();
+  } 
+  this.getN = function(){
+    n++;
+    return drw.getB() + " : " + n;
+  } 
+}
+const voaUtil = new CUtilVOA();
+
+
+
 
 voaUtil.parsePage = function(ta,txt,fileName){
     var pv = ta.parentElement;

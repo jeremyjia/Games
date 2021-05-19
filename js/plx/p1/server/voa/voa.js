@@ -1,6 +1,6 @@
 
 var tagVOA = "voa"; 
-var tagVersion = "_v0.125";
+var tagVersion = "_v0.134";
 
 var tb = bl$("id_4_tb_server");
 var v = bl$("id_4_v_server");
@@ -36,20 +36,10 @@ var _mo = o;
 
 _mo.getServerFiles(tb,v,tagVOA,fcbVOA); 
 
-//
-
-var ui = {};
-
-ui.draw = function(ctx){
-  {
-      _mo.rect(ctx,333,55,111,111,"red");     
-  }   
-}
-_mo.reg2draw(ui);
 
 function fcbVOA(p1,p2){ //p2: "ac.voa"
     
-    voaUtil.reg2o(_mo,p1.inf);
+    voaUtil.reg2o(_mo);
 
     if(!p1.inf.nn) p1.inf.nn = 0;
 
@@ -64,6 +54,8 @@ function fcbVOA(p1,p2){ //p2: "ac.voa"
       tb.onOff.style.float="right";
       tb.onOff.onclick = function(){
         p1.inf.nn++;
+        v.innerHTML = voaUtil.getN() + " - " + Date();
+        voaUtil.onOff();
       }
     }
     p1.inf.toDo = function(v1){
