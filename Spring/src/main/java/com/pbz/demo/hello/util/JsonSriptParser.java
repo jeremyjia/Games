@@ -3,6 +3,7 @@ package com.pbz.demo.hello.util;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -14,6 +15,7 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +28,7 @@ import javax.script.ScriptEngineManager;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.pbz.demo.hello.model.AOIArea;
 import com.pbz.demo.hello.service.VOAService;
 import com.pbz.demo.hello.util.engine.JSGraphEngine;
 
@@ -34,6 +37,7 @@ public final class JsonSriptParser {
 	private static final String final_video_name = "vFinal.mp4";
 	private static final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
 	private static List<Map<String, Object>> supperObjectsMapList = new ArrayList<Map<String, Object>>();
+	private static Map<Integer, AOIArea> aoiMap = new HashMap<>();
 	private static VOAService service = new VOAService();
 
 	private static ScriptEngineManager mgr = new ScriptEngineManager();
@@ -95,6 +99,9 @@ public final class JsonSriptParser {
 		JSONObject jsonObj = new JSONObject(jsonString);
 		JSONObject requestObj = getJsonObjectbyName(jsonObj, "request");
 		supperObjectsMapList.clear();
+		aoiMap.clear();
+		isScriptLoaded = false;
+
 		initMap(requestObj);
 		String version = requestObj.getString("version");
 		System.out.println("剧本版本:" + version);
@@ -177,11 +184,25 @@ public final class JsonSriptParser {
 								drawOrdinaryObjects(obj, g);
 							}
 						}
-						g.setColor(new Color(0, 0, 255));// 帧号颜色
-						g.setFont(new Font("黑体", Font.BOLD, 40));
-						g.drawString(Integer.toString(index + 1), width - 100, 50);// 显示帧号
+
+						AOIArea area = aoiMap.get(index + 1);
+						if (area != null) {
+							BufferedImage cutImage = ImageUtil.cutImage(image, area.left, area.top, area.width,
+									area.height);
+							BufferedImage resultImage = ImageUtil.scaleImage(cutImage, width, height);
+							Graphics grs = resultImage.getGraphics();
+							grs.setColor(new Color(0, 191, 255));
+							grs.setFont(new Font("黑体", Font.BOLD, 30));
+							grs.drawString(Integer.toString(index + 1), width - 100, 50);// 显示帧号
+							grs.dispose();
+							ImageIO.write((BufferedImage) resultImage, "JPEG", new File(destImageFile));
+						} else {
+							g.setColor(new Color(0, 0, 255));// 帧号颜色
+							g.setFont(new Font("黑体", Font.BOLD, 40));
+							g.drawString(Integer.toString(index + 1), width - 100, 50);// 显示帧号
+							ImageIO.write((BufferedImage) image, "JPEG", new File(destImageFile));
+						}
 						g.dispose();
-						ImageIO.write((BufferedImage) image, "JPEG", new File(destImageFile));
 						index++;
 					}
 				}
@@ -294,6 +315,29 @@ public final class JsonSriptParser {
 					}
 					JSONObject superObj = (JSONObject) object;
 					supperObjectsMapList.add(superObj.toMap());
+				}
+			} else if (key.equalsIgnoreCase("aois")) {
+				JSONArray aoiArray = (JSONArray) requestObj.get(key);
+				for (Object aoi : aoiArray) {
+					if (!(aoi instanceof JSONObject)) {
+						continue;
+					}
+					JSONObject aoiObj = (JSONObject) aoi;
+					String rangeValue = aoiObj.getString("range");
+					String rangeArray[] = rangeValue.split(",");
+					String s = rangeArray[0].substring(1);
+					String e = rangeArray[1].substring(0, rangeArray[1].length() - 1);
+					int nStart = Integer.parseInt(s);
+					int nEnd = Integer.parseInt(e);
+					JSONObject areaObj = aoiObj.getJSONObject("area");
+					int x1 = areaObj.getInt("left");
+					int y1 = areaObj.getInt("top");
+					int x2 = areaObj.getInt("width");
+					int y2 = areaObj.getInt("height");
+					for (int i = nStart; i <= nEnd; i++) {
+						AOIArea area = new AOIArea(x1, y1, x2, y2);
+						aoiMap.put(i, area);
+					}
 				}
 			}
 		}
@@ -440,11 +484,16 @@ public final class JsonSriptParser {
 	private static void drawJavaScriptObject(JSONObject jObj, Graphics2D gp2d, int number) throws Exception {
 		JSONObject attributeObj = jObj.getJSONObject("attribute");
 		String striptFile = attributeObj.getString("script");
+		striptFile = FileUtil.downloadFileIfNeed(striptFile);
 		String functionName = attributeObj.getString("function");
 		int start = attributeObj.getInt("start");
 		graphEngine.setGraphics(gp2d);
 		engine.put("document", graphEngine);
 		if (isScriptLoaded == false) {
+			StringBuffer preDefined = new StringBuffer();
+			preDefined.append("function Image() { return document.getImageObj()}");
+			engine.eval(preDefined.toString());
+
 			File f = new File(striptFile);
 			Reader r = new InputStreamReader(new FileInputStream(f));
 			engine.eval(r);
