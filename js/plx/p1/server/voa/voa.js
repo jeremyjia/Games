@@ -1,6 +1,6 @@
 
 var tagVOA = "voa"; 
-var tagVersion = "_v0.134";
+var tagVersion = "_v0.141";
 
 var tb = bl$("id_4_tb_server");
 var v = bl$("id_4_v_server");
@@ -35,6 +35,7 @@ blo0.blScript("id_js_load_server-voa-util","js/plx/p1/server/voa/util.js");
 var _mo = o;
 
 _mo.getServerFiles(tb,v,tagVOA,fcbVOA); 
+
 
 
 function fcbVOA(p1,p2){ //p2: "ac.voa"
@@ -170,7 +171,7 @@ var fParsePage =  function (_voaType,fileName,pv,pageTxt){
       }
       blo0.blAjx(w,"http://localhost:8080/"+fileName);
     }
-    var ta = blo0.blTextarea(pageV,pageV.id+"ta","ta","lightgreen");
+    var ta = blo0.blTextarea(pageV,"id_ta_Page_Txt","ta","lightgreen");
     ta.style.width = 100 + "%";
     ta.style.height = 100 + "px";
     ta.value = pageTxt;

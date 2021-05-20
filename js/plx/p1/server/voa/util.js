@@ -1,8 +1,8 @@
-var voaV = "v0.34";
+var voaV = "v0.44";
 
 var bbbb = true;
 var nCDrawVOA = 0;
-function CDrawVOA(_o){
+function CDrawVOA(_o,_parent){
   if(nCDrawVOA>0) return;
 
   var b = true;  
@@ -15,7 +15,8 @@ function CDrawVOA(_o){
   this.draw = function(ctx){
     if(bbbb){
       _o.rect(ctx,50,150,50,50,"red");   
-      _o.text(ctx,voaV,50,150);
+      _o.text(ctx,voaV + ":" + _parent.getN() ,50,150);
+      _parent.draw(_o,ctx);
     }
   }  
 
@@ -24,18 +25,40 @@ function CDrawVOA(_o){
 }
 
 function CUtilVOA(){ 
+  var curP = "curText";
+  var l = [];
   var n = 0;
   var drw = null;
-  this.reg2o = function(_o){
-    drw = new CDrawVOA(_o); 
+  this.reg2o = function(_o){    
+    drw = new CDrawVOA(_o,this); 
+  } 
+  
+  this.setCurP = function(_txt){
+    curP = _txt;
   } 
   this.onOff = function(){
-    if(drw) drw.onOff();
+    bbbb = !bbbb;
+    //if(drw) drw.onOff();
   } 
   this.getN = function(){
     n++;
-    return drw.getB() + " : " + n;
+    return  " : " + n;
   } 
+  this.add = function(item){
+    l.push(item);
+  } 
+  this.clear = function(){
+    l = [];
+  } 
+  this.draw = function(o,ctx){
+    o.text(ctx,"_parent: " + Date(),50,180); 
+    
+    o.text(ctx,curP,50,222);  
+
+    for(i in l){
+      o.rect(ctx,50 + i*55,350,50,50,"blue");   
+    }
+  }
 }
 const voaUtil = new CUtilVOA();
 
@@ -84,6 +107,55 @@ var f0 = function(d,txt,fileName){
 }
 
 var f1 = function(d,txt){
+  d.tb = blo0.blDiv(d,d.id+"tb","tb","grey");  
+  var mainTxtV = blo0.blDiv(d,d.id+"mainTxtV","mainTxtV","grey");  
   d.v = blo0.blDiv(d,d.id+"v","v","lightblue");  
   d.v.innerHTML = txt;
+  var btnOnOff = blo0.blBtn(d.tb,d.tb.id+"btnOnOff","btnOnOff",blGrey[0]);
+  btnOnOff.onclick = function(){
+    voaUtil.onOff();
+  }
+  var b1 = blo0.blBtn(d.tb,d.tb.id+"b1","b1","grey");
+  b1.onclick = function(){
+    voaUtil.add(b1);
+  }
+  var b2 = blo0.blBtn(d.tb,d.tb.id+"b2","b2","grey");
+  b2.onclick = function(){
+    voaUtil.clear();
+  }
+  var btnTxt2TA = blo0.blBtn(d.tb,d.tb.id+"btnTxt2TA","btnTxt2TA",blGrey[1]);
+  btnTxt2TA.onclick = function(){
+    var ta = bl$("id_ta_Page_Txt");
+    ta.value = txt;
+  }
+  
+  var btnGetMaintxt = blo0.blBtn(d.tb,d.tb.id+"btnGetMaintxt","btnGetMaintxt",blGrey[1]);
+  btnGetMaintxt.onclick = function(){
+    mainTxtV.innerHTML = "mainTxt" + Date();
+    var mainTxtToolBar = blo0.blDiv(mainTxtV,mainTxtV.id+"mainTxtToolBar","mainTxtToolBar",blGrey[2]);   
+    var btn4xd = blo0.blBtn(mainTxtToolBar,mainTxtToolBar.id+"xd","xd",blGrey[3]);  
+    var ps = [];
+    //*
+    var a = txt.split('<div id="comments" class="comments-parent">'); 
+    var b = a[0].split('<p>');
+    for(i in b){
+      var btn4P = blo0.blBtn(mainTxtToolBar,mainTxtToolBar.id+i,i,blGrey[3]); 
+      btn4P.onclick = function(_this,_i,_b){
+        return function(){                
+          _this.n = _i;
+          for(j in ps){
+            ps[j].style.backgroundColor	  = "grey";            
+            if(j==_this.n) ps[j].style.backgroundColor	  = "yellow";            
+          }
+
+          var ta = bl$("id_ta_Page_Txt");
+          ta.value = _b[_i]; 
+          voaUtil.setCurP(_b[_i]);
+
+        }
+      }(btn4P,i,b);
+      ps.push(btn4P);
+    }
+    //*/
+  }
 }
