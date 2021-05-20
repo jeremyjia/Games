@@ -100,6 +100,7 @@ public final class JsonSriptParser {
 		JSONObject requestObj = getJsonObjectbyName(jsonObj, "request");
 		supperObjectsMapList.clear();
 		aoiMap.clear();
+		isScriptLoaded = false;
 
 		initMap(requestObj);
 		String version = requestObj.getString("version");
@@ -483,11 +484,16 @@ public final class JsonSriptParser {
 	private static void drawJavaScriptObject(JSONObject jObj, Graphics2D gp2d, int number) throws Exception {
 		JSONObject attributeObj = jObj.getJSONObject("attribute");
 		String striptFile = attributeObj.getString("script");
+		striptFile = FileUtil.downloadFileIfNeed(striptFile);
 		String functionName = attributeObj.getString("function");
 		int start = attributeObj.getInt("start");
 		graphEngine.setGraphics(gp2d);
 		engine.put("document", graphEngine);
 		if (isScriptLoaded == false) {
+			StringBuffer preDefined = new StringBuffer();
+			preDefined.append("function Image() { return document.getImageObj()}");
+			engine.eval(preDefined.toString());
+
 			File f = new File(striptFile);
 			Reader r = new InputStreamReader(new FileInputStream(f));
 			engine.eval(r);
