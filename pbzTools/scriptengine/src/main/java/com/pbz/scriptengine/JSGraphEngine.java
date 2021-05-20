@@ -125,6 +125,7 @@ public class JSGraphEngine {
 
 		public void moveTo(int x, int y) {
 			applayStrokeColor();
+			graphics.setStroke(new BasicStroke(lineWidth));
 			from = x;
 			to = y;
 		}
@@ -145,6 +146,19 @@ public class JSGraphEngine {
 
 		private void applayColor() {
 			if (fillStyle.trim().length() > 0) {
+				if (fillStyle.startsWith("#")) {
+					int color = Integer.parseInt(fillStyle.substring(1), 16);
+					graphics.setColor(new Color(color));
+					return;
+				}
+				if (fillStyle.startsWith("hsl")) {
+					int red = (int) (Math.random() * 255);
+					int green = (int) (Math.random() * 255);
+					int blue = (int) (Math.random() * 255);
+					graphics.setColor(new Color(red, green, blue));
+					return;
+				}
+
 				if ("Blue".equalsIgnoreCase(fillStyle)) {
 					graphics.setColor(new Color(0, 0, 255));
 				} else if ("Red".equalsIgnoreCase(fillStyle)) {
@@ -165,6 +179,18 @@ public class JSGraphEngine {
 
 		private void applayStrokeColor() {
 			if (strokeStyle.trim().length() > 0) {
+				if (strokeStyle.startsWith("#")) {
+					int color = Integer.parseInt(strokeStyle.substring(1), 16);
+					graphics.setColor(new Color(color));
+					return;
+				}
+				if (strokeStyle.startsWith("hsl")) {
+					int red = (int) (Math.random() * 255);
+					int green = (int) (Math.random() * 255);
+					int blue = (int) (Math.random() * 255);
+					graphics.setColor(new Color(red, green, blue));
+					return;
+				}
 				if ("Blue".equalsIgnoreCase(strokeStyle)) {
 					graphics.setColor(new Color(0, 0, 255));
 				} else if ("Red".equalsIgnoreCase(strokeStyle)) {

@@ -1,0 +1,48 @@
+{
+    "request": {
+        "version": "0.0.12",
+        "width": 1024,
+        "height": 768,
+        "music": "1.mp3",
+        "rate": "10",
+        "frames": [
+            {
+                "number": "1",
+                "time": "100",
+                "objects": [
+                    {
+                        "text": "${VAR_TITLE}",
+                        "x": 100,
+                        "y": 600,
+                        "size": 50,
+                        "color": "50,150,120",
+                        "layer": 2
+                    }
+                ],
+                "backgroundColor": "200,200,222"
+            }
+        ],
+        "superObjects": [
+            {
+                "type": "javascript",
+                "frameRange": "(1,100)",
+                "attribute": {
+                    "script": "${VAR_JS_PLUGIN}",
+                    "function": "animateFrame",
+                    "start": 1
+                },
+                "layer": 1
+            }
+        ],
+        "Macros": [
+            {
+                "name": "VAR_TITLE",
+                "value": "JavaScript远程插件调用动画演示"
+            },
+            {
+                "name": "VAR_JS_PLUGIN",
+                "value": "https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxCloud.js"
+            }
+        ]
+    }
+}
