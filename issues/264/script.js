@@ -5,23 +5,23 @@ c.height = window.innerHeight;
 let w = c.width;
 let h = c.height;
 let gravity = new Vector(0, 0.01);
-let fireworks = [];
+let fs = [];
 let prevTs;
 
 function draw(ts) {
 	clear();
 	if (ts - prevTs > random(100, 300)) {
-		fireworks.push(new Firework());
+		fs.push(new Firework());
 		prevTs = ts;
 	}
-	for (let firework of fireworks) {
+	for (let firework of fs) {
 		firework.applyForce(gravity);
 		firework.update();
 		firework.render(ctx);
 	}
-	for (let i = 0; i < fireworks.length; i++) {
-		if (fireworks[i].wasDone()) {
-			fireworks.splice(i, 1);
+	for (let i = 0; i < fs.length; i++) {
+		if (fs[i].wasDone()) {
+			fs.splice(i, 1);
 		}
 	}
 
@@ -37,6 +37,6 @@ function clear() {
 
 window.requestAnimationFrame(ts => {
 	prevTs = ts;
-	fireworks.push(new Firework());
+	fs.push(new Firework());
 	draw(ts);
 });

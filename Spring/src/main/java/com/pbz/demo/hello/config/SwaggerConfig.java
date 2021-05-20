@@ -19,6 +19,9 @@ public class SwaggerConfig {
 
 	@Value("${server.port}")
 	private String app_port;
+	
+	@Value("${server.version}")
+	private String app_version;
 
 	@Bean
 	public Docket createRestApi() {
@@ -30,7 +33,7 @@ public class SwaggerConfig {
 	private ApiInfo apiInfo() {
 		String url = "http://localhost:" + app_port;
 		return new ApiInfoBuilder().title("API接口说明").description("用于描述已有API接口").termsOfServiceUrl("No term of service")
-				.contact(new Contact("Maomaof", "", "lalaxy87@hotmail.com")).version("1.02").license("Back to HomePage")
+				.contact(new Contact("Maomaof", "", "lalaxy87@hotmail.com")).version(app_version).license("Back to HomePage")
 				.licenseUrl(url).build();
 	}
 }
