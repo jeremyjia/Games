@@ -21,6 +21,9 @@ public class HelloApplication {
 	@Value("${server.port}")
 	private String app_port;
 
+	@Value("${server.version}")
+	private String app_version;
+
 	@RequestMapping("/")
 	public ModelAndView index() {
 		ModelAndView mv = new ModelAndView();
@@ -34,6 +37,7 @@ public class HelloApplication {
 		mv.addObject("upload_url", upload_url);
 		mv.addObject("video_url", video_url);
 		mv.addObject("demo_url", demo_url);
+		mv.addObject("server_version", app_version);
 
 		return mv;
 	}

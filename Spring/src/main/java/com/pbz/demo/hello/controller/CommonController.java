@@ -2,11 +2,13 @@ package com.pbz.demo.hello.controller;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -26,6 +28,9 @@ import springfox.documentation.annotations.ApiIgnore;
 public class CommonController {
 	private static Semaphore semaphore = new Semaphore(1);
 	private static final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
+	
+	@Value("${server.version}")
+	private String app_version;
 
 	@ApiOperation(value = "执行服务器端命令", notes = "执行服务器端命令")
 	@ApiImplicitParams({
@@ -91,6 +96,31 @@ public class CommonController {
 			System.out.println("-----------释放资源包----------");
 		}
 
+		return ret;
+	}
+	
+	@ApiOperation(value = "获取版本信息", notes = "获取应用版本、服务器等信息")
+	@RequestMapping(value = "/getServerInfo", method = RequestMethod.GET)
+	@ResponseBody
+	public LinkedHashMap<String, Object> getServerInfo() {
+		LinkedHashMap<String, Object> ret = new LinkedHashMap<String, Object>();
+		ret.put("Application Version", app_version);
+		
+		String app_path = System.getProperty("user.dir");
+		ret.put("Application Path", app_path);
+		
+		String os_name = System.getProperty("os.name");
+		ret.put("OS Name", os_name);
+		
+		String os_version = System.getProperty("os.version");
+		ret.put("OS Version", os_version);
+		
+		String os_arch = System.getProperty("os.arch");
+		ret.put("OS Architecture", os_arch);
+		
+		String java_version = System.getProperty("java.version");
+		ret.put("Java Runtime Version", java_version);
+		
 		return ret;
 	}
 }

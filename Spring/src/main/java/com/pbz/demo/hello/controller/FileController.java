@@ -127,8 +127,8 @@ public class FileController {
 			sourceFileName = url.substring(index + 1);
 		}
 		if (sourceFileName.trim().length() == 0 || sourceFileName.indexOf(".") == -1) {
-			resMap.put("error", "The url " + url + " is not correct!");
-			return resMap;
+//			resMap.put("error", "The url " + url + " is not correct!");
+//			return resMap;
 		}
 		if (outputFileName.indexOf(".") == -1) {
 			resMap.put("error", "The output file name " + outputFileName + " is not correct!");

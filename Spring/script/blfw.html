@@ -1,0 +1,42 @@
+<!DOCTYPE HTML>
+<html>
+
+<body>
+  <canvas id="myCanvas" width="444" height="333"></canvas>
+  <script src="firework.js"></script>
+  <script type="text/javascript">
+    let c = document.querySelector('#myCanvas');
+    let ctx = c.getContext('2d');
+    c.width = 1200;//window.innerWidth/2;
+    c.height = 600;// window.innerHeight/2;
+    let w = c.width;
+    let h = c.height;  
+    let gN = 0;
+
+    function draw(ts) {
+        gN++;
+        clear(); 
+        animateFrame(gN);
+        window.requestAnimationFrame(ts => draw(ts));
+    }
+
+    function clear() {
+        ctx.save();
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, w, h);
+        
+        ctx.fillStyle = 'blue';
+        ctx.font = "30px Verdana";
+        ctx.fillText(gN, 10, 44);
+        ctx.restore();
+    }
+
+    window.requestAnimationFrame(ts => { 
+        draw(ts);
+    });
+
+  </script>
+
+</body>
+
+</html>
