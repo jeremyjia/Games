@@ -66,4 +66,4 @@ if __name__ == '__main__':
         CORS = CORS(APP)
         APP.run(host='127.0.0.1', port=PORT, debug=True)
     else:
-        APP.run(host='127.0.0.1', port=PORT, debug=False)
+        APP.run(host='localhost', port=PORT, debug=False)
