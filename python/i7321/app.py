@@ -64,6 +64,6 @@ if __name__ == '__main__':
     if ARGS.debug:
         print("Running in debug mode")
         CORS = CORS(APP)
-        APP.run(host='0.0.0.0', port=PORT, debug=True)
+        APP.run(host='127.0.0.1', port=PORT, debug=True)
     else:
         APP.run(host='0.0.0.0', port=PORT, debug=False)
