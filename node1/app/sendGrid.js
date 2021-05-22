@@ -6,9 +6,14 @@
   
 const sgMail = require('@sendgrid/mail')
 
-module.exports = function(){ 
-    return 'to test sgMail: done.';
-  }
+var e = {};
+
+module.exports = e;
+
+e.sendMail = function(){
+
+    return "test to send email";
+}
 
 sgMail.setApiKey(process.env.pbzEmailKey)
 const msg = {

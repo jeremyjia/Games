@@ -17,7 +17,7 @@ app.get('/', (req, res) => {
 
 app.get('/email/', (req, res) => {
   var s = sgTest.sendEmail();
-  res.send('Hello email!')
+  res.send(s);
 })
 
 app.listen(port, () => { 
