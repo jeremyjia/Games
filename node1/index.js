@@ -4,6 +4,8 @@ var cors = require('cors')
 const path = require('path');
 var request = require('request');
 
+const sgTest = require('./app/sendGrid.js');
+
 const port = 3000
  
 app.use(express.static(path.join(__dirname, 'public')));
@@ -14,6 +16,7 @@ app.get('/', (req, res) => {
 })
 
 app.get('/email/', (req, res) => {
+  var s = sgTest.sendEmail();
   res.send('Hello email!')
 })
 
