@@ -13,7 +13,7 @@ module.exports = e;
 e.sendEmail  = function(){
     sgMail.setApiKey(process.env.pbzEmailKey)
     const msg = {
-    to: 'yongling@group6.io', // Change to your recipient
+    to: 'yongling.huang@group6.io', // Change to your recipient
     from: '13699175164@sina.cn', // Change to your verified sender
     subject: 'Sending with SendGrid is Fun',
     text: 'and easy to do anywhere, even with Node.js',
