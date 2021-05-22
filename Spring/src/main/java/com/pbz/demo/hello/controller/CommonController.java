@@ -106,6 +106,9 @@ public class CommonController {
 		LinkedHashMap<String, Object> ret = new LinkedHashMap<String, Object>();
 		ret.put("Application Version", app_version);
 		
+		String app_path = System.getProperty("user.dir");
+		ret.put("Application Path", app_path);
+		
 		String os_name = System.getProperty("os.name");
 		ret.put("OS Name", os_name);
 		
@@ -116,7 +119,7 @@ public class CommonController {
 		ret.put("OS Architecture", os_arch);
 		
 		String java_version = System.getProperty("java.version");
-		ret.put("Java Version", java_version);
+		ret.put("Java Runtime Version", java_version);
 		
 		return ret;
 	}

@@ -1,4 +1,4 @@
-var strV = "[myplx1.js] _ v0.35";
+var strV = "[myplx1.js] _ v0.36";
 var nIndex = 0;
 
 function CFrame(){
@@ -23,7 +23,7 @@ function CFrame(){
             ctx.beginPath();
             
             ctx.lineWidth = 10;
-            ctx.strokeStyle = "#FF0000";
+            ctx.strokeStyle = "#FF00AF";
             if(i%2==0){
                 ctx.moveTo(x, y);
                 ctx.lineTo(x+w, y+h);
@@ -63,6 +63,7 @@ function animateFrame(time) {
     var ctx = canvas.getContext('2d');      
     ctx.clearRect(0, 0, 2048, 1536);
 
+    ctx.fillStyle = "#0000ff";
     f.frame (ctx,time);    
 
     ctx.fillStyle = "red";

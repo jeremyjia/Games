@@ -4,13 +4,17 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.File;
+
+import javax.imageio.ImageIO;
+
+import com.pbz.demo.hello.util.FileUtil;
 
 public class JSGraphEngine {
 
 	private CanvasObj canvas = new CanvasObj();
-	private ContextObj context = new ContextObj();
-	private ImageObj image = new ImageObj();
-
 	private Graphics2D graphics = null;
 
 	public Graphics2D getGraphics() {
@@ -38,13 +42,13 @@ public class JSGraphEngine {
 	}
 
 	public ImageObj getImageObj() {
-		return image;
+		return new ImageObj();
 	}
 
 	// Inner Class
 	public class CanvasObj {
 		public ContextObj getContext(String ctx) {
-			return context;
+			return new ContextObj();
 		}
 	}
 
@@ -53,12 +57,20 @@ public class JSGraphEngine {
 		public String strokeStyle = "";
 		public String font = "30px Arial";
 		public int lineWidth = 1;
+		public double angle = 0;
 		public int from;
 		public int to;
 
 		public void fillRect(int x, int y, int width, int height) {
 			applayColor();
+			graphics.rotate(Math.toRadians(angle), width / 2, height / 2);
 			graphics.fillRect(x, y, width, height);
+		}
+
+		public void strokeRect(int x, int y, int width, int height) {
+			applayStrokeColor();
+			graphics.rotate(Math.toRadians(angle), width / 2, height / 2);
+			graphics.drawRect(x, y, width, height);
 		}
 
 		public void clearRect(int x, int y, int width, int height) {
@@ -66,9 +78,14 @@ public class JSGraphEngine {
 
 		}
 
+		public void rotate(double angle) {
+			this.angle = angle;
+		}
+
 		public void fillText(String text, float x, float y) {
 			applayColor();
 			applayFont();
+			graphics.rotate(Math.toRadians(angle), x / 2, y / 2);
 			graphics.drawString(text, x, y);
 		}
 
@@ -94,25 +111,56 @@ public class JSGraphEngine {
 			arc(x, y, r, startAngle, arcAngle, false);
 		}
 
-		public void drawImage(Object o, int x, int y) {
+		public void drawImage(Object o, int x, int y) throws Exception {
 			ImageObj obj = (ImageObj) o;
 			System.out.println(obj.src);
 
+			String srcImageFile = obj.src;
+			String fileName = FileUtil.downloadFileIfNeed(srcImageFile);
+			BufferedImage read = ImageIO.read(new File(fileName));
+			int width = (int) (read.getWidth() * 1);
+			int height = (int) (read.getHeight() * 1);
+			Image img = read.getScaledInstance(width, height, Image.SCALE_DEFAULT);
+
+			graphics.drawImage(img, x, y, null);
 		}
 
 		public void moveTo(int x, int y) {
+			applayStrokeColor();
+			graphics.setStroke(new BasicStroke(lineWidth));
 			from = x;
 			to = y;
 		}
 
 		public void lineTo(int x, int y) {
+			applayStrokeColor();
 			graphics.drawLine(from, to, x, y);
 			from = x;
 			to = y;
 		}
 
+		public void arcTo(int x1, int y1, int x2, int y2, int r) {
+		}
+
+		public void translate(int x, int y) {
+			graphics.translate(x, y);
+		}
+
 		private void applayColor() {
 			if (fillStyle.trim().length() > 0) {
+				if (fillStyle.startsWith("#")) {
+					int color = Integer.parseInt(fillStyle.substring(1), 16);
+					graphics.setColor(new Color(color));
+					return;
+				}
+				if (fillStyle.startsWith("hsl")) {
+					int red = (int) (Math.random() * 255);
+					int green = (int) (Math.random() * 255);
+					int blue = (int) (Math.random() * 255);
+					graphics.setColor(new Color(red, green, blue));
+					return;
+				}
+
 				if ("Blue".equalsIgnoreCase(fillStyle)) {
 					graphics.setColor(new Color(0, 0, 255));
 				} else if ("Red".equalsIgnoreCase(fillStyle)) {
@@ -133,6 +181,18 @@ public class JSGraphEngine {
 
 		private void applayStrokeColor() {
 			if (strokeStyle.trim().length() > 0) {
+				if (strokeStyle.startsWith("#")) {
+					int color = Integer.parseInt(strokeStyle.substring(1), 16);
+					graphics.setColor(new Color(color));
+					return;
+				}
+				if (strokeStyle.startsWith("hsl")) {
+					int red = (int) (Math.random() * 255);
+					int green = (int) (Math.random() * 255);
+					int blue = (int) (Math.random() * 255);
+					graphics.setColor(new Color(red, green, blue));
+					return;
+				}
 				if ("Blue".equalsIgnoreCase(strokeStyle)) {
 					graphics.setColor(new Color(0, 0, 255));
 				} else if ("Red".equalsIgnoreCase(strokeStyle)) {
@@ -177,6 +237,12 @@ public class JSGraphEngine {
 		}
 
 		public void fill() {
+		}
+
+		public void save() {
+		}
+
+		public void restore() {
 		}
 
 		public void stroke() {

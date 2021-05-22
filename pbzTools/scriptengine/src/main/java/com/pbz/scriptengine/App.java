@@ -84,7 +84,7 @@ public class App {
 						while (bStartPlay) {
 							try {
 								invokePluginFunction(iframe++);
-								Thread.sleep(100);
+								Thread.sleep(40);
 							} catch (Exception e1) {
 								e1.printStackTrace();
 							}
@@ -171,6 +171,7 @@ public class App {
 	}
 
 	public void invokePluginFunction(int frameNumber) throws Exception {
+		g2.clearRect(0, 0, w, h);
 		Invocable inv = (Invocable) m_engine;
 		inv.invokeFunction("animateFrame", new Object[] { frameNumber });
 
