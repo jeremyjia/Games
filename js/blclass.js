@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "blclass_v1.4.14"
+var g_ver_blClass = "CBlClass_v1.4.22"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -130,7 +130,7 @@ var blon = function(b,d,c1,c2){
 			return r;
 	}
 
-function blClass ()
+function CBlClass ()
 { 
     var _id = "id_div_4_blClass";
 	this.v = g_ver_blClass;
@@ -145,6 +145,31 @@ function blClass ()
 		return r;
 	} 
 
+	this.showMe = function(myHandle){ 
+		if(!myHandle.m){
+			myHandle.m = blo0.blMD(myHandle.id+"showMe"," blo0 ",555,50,555,500,"lightgreen");
+			myHandle.n = 1;
+			myHandle.b = true;
+			myHandle.style.backgroundColor = "green"; 
+			var v = blo0.blDiv(myHandle.m,myHandle.m.id+"v","v","lightblue");	
+			var tb			= blo0.blDiv(v,v.id + "tb" + this.v,this.v,"lightgreen");			
+			var d4URL			= blo0.blDiv(v,v.id + "d4URL","d4URL",blColor[4]);	
+			d4URL.innerHTML = blo0.blURL();
+			var dParseMe			= blo0.blDiv(v,v.id + "ShowMe","divShowMe",blColor[6]);
+			var b1			= blo0.blBtn(tb,tb.id+"blhInitUI_btn1","[blo0]",blGrey[0]);
+			b1.onclick		= function(this_){
+					return function(){
+						 	blo0.blShowObj2Div(dParseMe,blo0);blon(this_,dParseMe,"grey","green");
+					}
+			}(b1);
+			
+		}
+		if(myHandle.n>1){			blon(myHandle,myHandle.m,"grey","green");		}		myHandle.n++;
+	}
+
+	this.blURL = function(){
+		return window.location.href;
+	}
     this.blhMakeLink = function (txt,href,style,target) { return _blhMakeLink(txt,href,style,target); } 
     this.blrMax = function (b,d)
     {        
@@ -836,9 +861,9 @@ function blClass ()
 		return r;
 	}
 	
-}//END: function blClass ()
+}//END: function CBlClass ()
  
-var blo0 = new blClass;
+var blo0 = new CBlClass;
  
 blo0.lsCVS = [];
 var mousedownList = [];
