@@ -1,6 +1,6 @@
 {
     "request": {
-        "version": "0.0.13",
+        "version": "0.0.14",
         "width": 1024,
         "height": 768,
         "music": "1.mp3",
@@ -28,7 +28,7 @@
                 "frameRange": "(1,22)",
                 "attribute": {
                     "script": "${VAR_JS_PLUGIN_XD_CCHESS}",
-                    "function": "animateFrame",
+                    "function": "createFrame",
                     "start": 1
                 },
                 "layer": 1
