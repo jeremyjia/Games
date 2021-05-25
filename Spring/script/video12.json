@@ -1,6 +1,6 @@
 {
     "request": {
-        "version": "0.0.12",
+        "version": "0.0.13",
         "width": 1024,
         "height": 768,
         "music": "1.mp3",
@@ -8,7 +8,7 @@
         "frames": [
             {
                 "number": "1",
-                "time": "100",
+                "time": "200",
                 "objects": [
                     {
                         "text": "${VAR_TITLE}",
@@ -25,7 +25,17 @@
         "superObjects": [
             {
                 "type": "javascript",
-                "frameRange": "(1,50)",
+                "frameRange": "(1,22)",
+                "attribute": {
+                    "script": "${VAR_JS_PLUGIN_XD_CCHESS}",
+                    "function": "animateFrame",
+                    "start": 1
+                },
+                "layer": 1
+            },
+            {
+                "type": "javascript",
+                "frameRange": "(23,50)",
                 "attribute": {
                     "script": "${VAR_JS_PLUGIN1}",
                     "function": "animateFrame",
@@ -56,6 +66,10 @@
             {
                 "name": "VAR_JS_PLUGIN2",
                 "value": "https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxChessBoard.js"
+            },
+            {
+                "name": "VAR_JS_PLUGIN_XD_CCHESS",
+                "value": "https://raw.githubusercontent.com/littleflute/cchess/master/plxChessBoard.js"
             }
         ]
     }
