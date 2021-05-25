@@ -68,12 +68,20 @@ obj.init_chess = function () {
 	this.cheer_arr_ALL = this.cheer_arr_B.concat(this.cheer_arr_R);
 
 	//Jeremy for debug
-	Car_b1.color = "yellow";
+	Car_b1.color = "white";
 	Car_b1.bgcolor = "blue";
 	Car_b1.bgColor_b = "green";
 	Car_b1.type = "black";
 	this.drawPiece(Car_b1);
 	this.drawChessText(Car_b1);
+
+	
+	Car_b2.color = "white";
+	Car_b2.bgcolor = "blue";
+	Car_b2.bgColor_b = "green";
+	Car_b2.type = "black";
+	this.drawPiece(Car_b2);
+	this.drawChessText(Car_b2);
 }
 // 画横线
 obj.drawRowLine = function () {
