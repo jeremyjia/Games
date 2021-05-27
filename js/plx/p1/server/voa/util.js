@@ -6,6 +6,7 @@ function CDrawVOA(_o,_parent){
     var _x = 50;
     var _y = 150;
     var _c = "green";
+    var _bDown = false;
 
     if(nCDrawVOA>0) return;
 
@@ -24,17 +25,18 @@ function CDrawVOA(_o,_parent){
       }
     }  
     this.mousedown = function(x,y){   
-      _c = "red";
-      
-      _x = x;
-      _y = y;
+      _bDown = true;
+      _c = "red";      
     }
     this.mouseup = function(x,y){   
+      _bDown = false;
       _c = "green";
     }
     this.mousemove = function(x,y){   
-      _x = x;
-      _y = y;
+      if(_bDown){
+        _x = x;
+        _y = y;
+      }
     }
 
 
