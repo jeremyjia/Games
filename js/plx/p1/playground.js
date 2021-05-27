@@ -67,7 +67,7 @@ function CPlayground(parentDiv,_w,_h){
             cvs.addEventListener('mousemove', function (e) {
                 var x = e.offsetX;
                 var y = e.offsetY;
-                _mo.mouseup(cvs.getContext("2d"),x,y);                
+                _mo.mousemove(cvs.getContext("2d"),x,y);                
             });
             
             ui.mousedown = function(x,y){   

@@ -1,8 +1,10 @@
-var voaV = "v0.52";
+var voaV = "v0.55";
 
 var bbbb = true;
 var nCDrawVOA = 0;
 function CDrawVOA(_o,_parent){
+    var _x = 50;
+    var _y = 150;
     var _c = "green";
 
     if(nCDrawVOA>0) return;
@@ -16,17 +18,25 @@ function CDrawVOA(_o,_parent){
     } 
     this.draw = function(ctx){
       if(bbbb){
-        _o.rect(ctx,50,150,50,50,_c);   
-        _o.text(ctx,voaV + ":" + _parent.getN() ,50,150);
+        _o.rect(ctx,_x,_y,50,50,_c);   
+        _o.text(ctx,voaV + ":" + _parent.getN() + "[" + _x + "," + _y + "]",50,150);
         _parent.draw(_o,ctx);
       }
     }  
     this.mousedown = function(x,y){   
       _c = "red";
+      
+      _x = x;
+      _y = y;
     }
     this.mouseup = function(x,y){   
       _c = "green";
     }
+    this.mousemove = function(x,y){   
+      _x = x;
+      _y = y;
+    }
+
 
     _o.reg2draw(this);
     _o.regMousedown(this);
