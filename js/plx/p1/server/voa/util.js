@@ -1,4 +1,4 @@
-var voaV = "v0.142";
+var voaV = "v0.143";
 
 var bbbb = true;
 var nCDrawVOA = 0;
@@ -197,7 +197,7 @@ function CUtilVOA(){
     var fs =  [
       {
           "number": "1", 
-          "time": 5, 
+          "time": 335, 
           "objects": [  
               {
                   "graphic": "rect", 
