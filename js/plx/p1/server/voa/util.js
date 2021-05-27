@@ -1,8 +1,11 @@
-var voaV = "v0.123";
+var voaV = "v0.142";
 
 var bbbb = true;
 var nCDrawVOA = 0;
+const voaUtil = new CUtilVOA();
+
 function CDrawVOA(_o,_parent){
+    var _getResonseText = "_getResonseText";
     var _x = 50;
     var _y = 150;
     var _w = 50, _h = 50;
@@ -19,6 +22,9 @@ function CDrawVOA(_o,_parent){
       this.mousedown = function(x,y){ 
         if(_o.inRect(x,y,_x + _dx,_y + _dy,_dw,_dh)){  
           _myColor = "red";
+          if(_id==1){ 
+            _save_blVOA(_parent.blVOA(),"blVOA.json",_ls);
+          }
         }         
         else{
           _myColor = "grey";
@@ -28,11 +34,17 @@ function CDrawVOA(_o,_parent){
         _myColor = c;
       }
     }
+
     _ls.push(new CBtn(1,50, 55, 30,30));
     _ls.push(new CBtn(2,150, 55, 30,30));
     _ls.push(new CBtn(3,250, 55, 30,30));
     
+    _ls.getResponseText = function(txt){
+      _getResonseText = txt + " : " + Date();
+    }
     _ls.draw = function(oDraw,ctx,x,y){
+      
+      oDraw.text(ctx,_getResonseText,x+222,y);   
       oDraw.rect(ctx,x+60,y,100,30,"grey");   
       for(i in _ls){
         _ls[i].draw(oDraw,ctx,x,y);
@@ -88,6 +100,8 @@ function CDrawVOA(_o,_parent){
 }
 
 function CUtilVOA(){ 
+  var curType = "curType";
+  var originalMp3URL = "originMp3URL=";
   var curP = "curText";
   var l = [];
   var n = 0;
@@ -102,19 +116,19 @@ function CUtilVOA(){
   var f0 = function(d,txt,fileName){
     var a = txt.split('<a class="c-mmp__fallback-link" href="');
     var b = a[1].split('">');
-    var c = b[0];
-    d.innerHTML = c;
+    originalMp3URL = b[0];
+    d.innerHTML = originalMp3URL;
     blo0.blPlayer(d,"f0Test",c,100,100,400,300,"lightgreen");
     d.v = blo0.blDiv(d,"vvvvvv",c,"red"); 
-    var b1 = blo0.blBtn(d.v,d.v.id+"b1","b1","grey");
-    b1.onclick = function(){
+    var btnDownloadMp3 = blo0.blBtn(d.v,d.v.id+"btnDownloadMp3","btnDownloadMp3","grey");
+    btnDownloadMp3.onclick = function(){
       var w = {};
       w._2do = function(txt){
         //v.innerHTML = txt;
       }
       var sURL = c; 
       var a = fileName.split('.');
-      var sFN = a[0] + ".mp3";
+      var sFN = a[0] + ".mp3"; 
       blo0.blAjx(w,"http://localhost:8080/download?url="+sURL +"&filename=" + sFN);
     }
   }
@@ -173,10 +187,42 @@ function CUtilVOA(){
     }
   }
 
-  this.reg2o = function(_o){    
+  this.reg2o = function(_o,tyleFileName){    
+    curType = "[curType] " + tyleFileName;
     drw = new CDrawVOA(_o,this); 
   } 
-  
+  this.blVOA = function(){
+    var d = {};
+    var r = {};
+    var fs =  [
+      {
+          "number": "1", 
+          "time": 5, 
+          "objects": [  
+              {
+                  "graphic": "rect", 
+                  "attribute": {
+                      "left": 500, 
+                      "top": 400, 
+                      "width": 100, 
+                      "height": 150, 
+                      "color": "142,28,124"
+                  }
+              }
+          ], 
+          "backgroundColor": "1,100,222"
+      }
+    ];
+    r.version = "v0.14";
+    r.width = 1024;
+    r.height = 760;
+    r.music = originalMp3URL;
+    r.rate = "1";
+    r.frames = fs;
+    
+    d.request = r;
+    return d;
+  }
   this.setCurP = function(_txt){
     curP = _txt;
   } 
@@ -198,9 +244,10 @@ function CUtilVOA(){
     l = [];
   } 
   this.draw = function(o,ctx,x,y){
-    o.text(ctx,"_parent: " + Date(),x,y+30); 
-    
+    o.text(ctx,curType,x,y - 11);
+    o.text(ctx,"_parent: " + Date(),x,y+30);     
     o.text(ctx,curP,x,y+50);  
+    o.text(ctx,originalMp3URL,x,y + 111);
 
     for(i in l){
       o.rect(ctx,50 + i*55,350,50,50,"blue");   
@@ -222,8 +269,19 @@ function CUtilVOA(){
     }
 }
 }
-const voaUtil = new CUtilVOA();
 
 
+var _save_blVOA = function(jsonData2Save,jsonFN,objRecieve){  
+  var xhr = new XMLHttpRequest();
+  xhr.withCredentials = true;
+  xhr.addEventListener("readystatechange", function() {
+  if(this.readyState === 4) {
+    objRecieve.getResponseText( this.responseText );
+  }	
+  });
+  xhr.open("POST", "http://localhost:8080/json?fileName=" + jsonFN);
+  xhr.setRequestHeader("Content-Type", "text/plain");
 
+  xhr.send(JSON.stringify(jsonData2Save));
+}
  

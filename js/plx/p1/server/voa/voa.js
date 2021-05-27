@@ -40,7 +40,7 @@ _mo.getServerFiles(tb,v,tagVOA,fcbVOA);
 
 function fcbVOA(p1,p2){ //p2: "ac.voa"
     
-    voaUtil.reg2o(_mo);
+    voaUtil.reg2o(_mo,p2);
 
     if(!p1.inf.nn) p1.inf.nn = 0;
 
