@@ -1,27 +1,38 @@
-var voaV = "v0.44";
+var voaV = "v0.52";
 
 var bbbb = true;
 var nCDrawVOA = 0;
 function CDrawVOA(_o,_parent){
-  if(nCDrawVOA>0) return;
+    var _c = "green";
 
-  var b = true;  
-  this.onOff = function(){
-    bbbb = !bbbb;
-  } 
-  this.getB = function(){
-    return bbbb;
-  } 
-  this.draw = function(ctx){
-    if(bbbb){
-      _o.rect(ctx,50,150,50,50,"red");   
-      _o.text(ctx,voaV + ":" + _parent.getN() ,50,150);
-      _parent.draw(_o,ctx);
+    if(nCDrawVOA>0) return;
+
+    var b = true;  
+    this.onOff = function(){
+      bbbb = !bbbb;
+    } 
+    this.getB = function(){
+      return bbbb;
+    } 
+    this.draw = function(ctx){
+      if(bbbb){
+        _o.rect(ctx,50,150,50,50,_c);   
+        _o.text(ctx,voaV + ":" + _parent.getN() ,50,150);
+        _parent.draw(_o,ctx);
+      }
+    }  
+    this.mousedown = function(x,y){   
+      _c = "red";
     }
-  }  
+    this.mouseup = function(x,y){   
+      _c = "green";
+    }
 
-  _o.reg2draw(this);
-  nCDrawVOA++;
+    _o.reg2draw(this);
+    _o.regMousedown(this);
+    _o.regMouseup(this);
+    _o.regMousemove(this);
+    nCDrawVOA++;
 }
 
 function CUtilVOA(){ 

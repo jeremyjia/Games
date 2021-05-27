@@ -1,4 +1,4 @@
-var tag = "playground.js_v0.31";
+var tag = "playground.js_v0.32";
 var tb = bl$("id_p1_tb"); 
   
 tb.btnPlayground = blo0.blBtn(tb,"btnPlayground",tag,blGrey[2]);
@@ -57,6 +57,17 @@ function CPlayground(parentDiv,_w,_h){
                 var x = e.offsetX;
                 var y = e.offsetY;
                 _mo.mousedown(cvs.getContext("2d"),x,y);                
+            });
+            cvs.addEventListener('mouseup', function (e) {
+                var x = e.offsetX;
+                var y = e.offsetY;
+                _mo.mouseup(cvs.getContext("2d"),x,y);                
+            });
+            
+            cvs.addEventListener('mousemove', function (e) {
+                var x = e.offsetX;
+                var y = e.offsetY;
+                _mo.mouseup(cvs.getContext("2d"),x,y);                
             });
             
             ui.mousedown = function(x,y){   

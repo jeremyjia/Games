@@ -10,6 +10,8 @@ o.s = "o.s";
 o.s1 = "s1:";
 o.list2draw = [];
 o.listMousedown = [];
+o.listMouseup = [];
+o.listMousemove = [];
 o.listCards = [];
 o.curCard = 0;
 o.bPlay = false;
@@ -433,6 +435,12 @@ o.reg2draw  = function(user){
 o.regMousedown = function(user){
     o.listMousedown.push(user);
 }
+o.regMouseup = function(user){
+    o.listMouseup.push(user);
+}
+o.regMousemove = function(user){
+    o.listMousemove.push(user);
+}
 o.dbgBtn = function(tb,id,html){
     var btn = blo0.blBtn(tb,id,html,"grey"); 
            
@@ -460,6 +468,24 @@ o.mousedown = function(ctx,x,y){
         o.listMousedown[i].mousedown(x,y);
     }
 };
+
+o.mouseup = function(ctx,x,y){
+    o.s = x + ":" + y;
+    o.x = x;
+    o.y = y;    
+    for(i in o.listMouseup){
+        o.listMouseup[i].mouseup(x,y);
+    }
+};
+o.mousemove = function(ctx,x,y){
+    o.s = x + ":" + y;
+    o.x = x;
+    o.y = y;    
+    for(i in o.listMousemove){
+        o.listMousemove[i].mousemove(x,y);
+    }
+};
+
 o.ftnTimer = function(ctx,w,h){ 
     ctx.clearRect(0, 0, w, h);
     
