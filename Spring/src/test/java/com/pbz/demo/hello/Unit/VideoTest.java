@@ -135,7 +135,7 @@ public class VideoTest {
 			Assert.fail("Copy mp3 file failed");
 		}
 
-		VideoOperator.generateVideoByscenario(FILENAME_JSON);
+		VideoOperator.generateVideoByscenario(FILENAME_JSON, FILENAME_MP4);
 
 		File mp4File = new File(targetPath + "/" + FILENAME_MP4);
 		if (!mp4File.exists()) {
