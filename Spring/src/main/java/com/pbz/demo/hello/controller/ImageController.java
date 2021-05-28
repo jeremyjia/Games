@@ -160,11 +160,13 @@ public class ImageController {
 	@ApiOperation(value = "通过剧本协议生成视频", notes = "通过剧本协议生成视频")
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "script", value = "script file (*.json)", paramType = "query", required = true, dataType = "string", defaultValue = "example.json") })
-	@RequestMapping(value = "/video", method = RequestMethod.GET)
-	public ModelAndView generateVideoByscenario(@RequestParam(name = "script") String scriptFile)
+	@RequestMapping(value = "/json2video", method = RequestMethod.GET)
+	public ModelAndView generateVideoByscenario(@RequestParam(name = "script") String scriptFile,
+			@RequestParam(name = "video", defaultValue = final_video_name) String videoName)
 			throws HtmlRequestException {
 		ModelAndView mv = new ModelAndView();
 		mv.setViewName("video.html");
+		MacroResolver.setProperty("video_name", videoName);
 		int index = 1;
 		while (true) {
 			String jpgFile = System.getProperty("user.dir") + "/" + Integer.toString(index) + ".jpg";
@@ -195,11 +197,12 @@ public class ImageController {
 		} catch (Exception e) {
 			throw new HtmlRequestException("请检查剧本文件是否存在且书写正确. " + e.getMessage());
 		}
-		if (b) {
-			strResultMsg = "已为您合成视频文件，点击即可播放视频";
-		}
-		String strVideoUrl = "http://localhost:" + app_port + "/vFinal.mp4";
+
+		String strVideoUrl = "http://localhost:" + app_port + "/" + videoName;
 		String strHomePageUrl = "http://localhost:" + app_port;
+		if (b) {
+			strResultMsg = "已为您合成视频文件，点击即可播放视频，视频链接：" + strVideoUrl;
+		}
 		mv.addObject("message", strResultMsg);
 		mv.addObject("video_url", strVideoUrl);
 		mv.addObject("home_page_url", strHomePageUrl);
@@ -250,7 +253,7 @@ public class ImageController {
 			e.printStackTrace();
 		}
 
-		return generateVideoByscenario("voa.json");
+		return generateVideoByscenario("voa.json", final_video_name);
 	}
 
 	private void verifyParameter(String time) throws Exception {
