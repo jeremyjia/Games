@@ -1,4 +1,4 @@
-var voaV = "v0.212";
+var voaV = "v0.221";
 
 var bbbb = true;
 var nCDrawVOA = 0;
@@ -6,7 +6,7 @@ var nCDrawVOA = 0;
 
 const voaUtil = new CUtilVOA();
 
-var CBtn = function(id,dx,dy,dw,dh){
+var CBtn = function(oBoss,id,dx,dy,dw,dh){
 
   var _id = id; var _dx = dx; var _dy = dy; var _dw = dw; var _dh = dh; 
   var x0 = 0; var y0 = 0;
@@ -21,8 +21,8 @@ var CBtn = function(id,dx,dy,dw,dh){
   this.btnMousedown = function(x,y){ 
     if(blo0.blPiR(x,y,x0 + _dx,y0 + _dy,_dw,_dh)){  
       _myColor = "red";
-      if(_id==1){ 
-        _save_blVOA(_parent.blVOA(),"blVOA.json",_ls);
+      if(_id=="id_btn_2_save_blVOA"){ 
+        _save_blVOA(oBoss.blVOA(),"blVOA.json",oBoss);
       }
     }         
     else{
@@ -34,8 +34,7 @@ var CBtn = function(id,dx,dy,dw,dh){
   }
 }
 
-function CDrawVOA(_o,_parent){
-    var _getResonseText = "_getResonseText";
+function CDrawVOA(_o,_parent){ 
     var _x = 50;
     var _y = 150;
     var _w = 50, _h = 50;
@@ -43,16 +42,12 @@ function CDrawVOA(_o,_parent){
     var _bDown = false;
     var _ls = [];
 
-    _ls.push(new CBtn(1,50, 55, 30,30));
-    _ls.push(new CBtn(2,150, 55, 30,30));
-    _ls.push(new CBtn(3,250, 55, 30,30));
-    
-    _ls.getResponseText = function(txt){
-      _getResonseText = txt + " : " + Date();
-    }
+    _ls.push(new CBtn(_parent,"id_btn_2_save_blVOA",50, 55, 30,30));
+    _ls.push(new CBtn(_parent,2,150, 55, 30,30));
+    _ls.push(new CBtn(_parent,3,250, 55, 30,30));
+     
     _ls.draw = function(oDraw,ctx,x,y){
-      
-      oDraw.text(ctx,_getResonseText,x+222,y);   
+       
       oDraw.rect(ctx,x+60,y,100,30,"grey");   
       for(i in _ls){
         _ls[i].drawBtn(oDraw,ctx,x,y);
@@ -109,6 +104,7 @@ function CDrawVOA(_o,_parent){
 }
 
 function CUtilVOA(){ 
+  var _save_bl_VOA_Res = "bl_voa_res>>>";
   var curClick = "curClick";
   var curDuration = 345;
   var curType = "curType";
@@ -132,18 +128,18 @@ function CUtilVOA(){
     d.innerHTML = originalMp3URL;
     blo0.setPlayerURL(originalMp3URL); 
 
-    blo0.blPlayer(d,"f0Test",c,100,100,400,300,"lightgreen");
-    d.v = blo0.blDiv(d,"vvvvvv",c,"red"); 
+    blo0.blPlayer(d,"f0Test",originalMp3URL,100,100,400,300,"lightgreen");
+    d.v = blo0.blDiv(d,"vvvvvv",originalMp3URL,"red"); 
     var btnDownloadMp3 = blo0.blBtn(d.v,d.v.id+"btnDownloadMp3","btnDownloadMp3","grey");
     btnDownloadMp3.onclick = function(){
       var w = {};
       w._2do = function(txt){
         //v.innerHTML = txt;
       }
-      var sURL = c; 
+      
       var a = fileName.split('.');
       var sFN = a[0] + ".mp3"; 
-      blo0.blAjx(w,"http://localhost:8080/download?url="+sURL +"&filename=" + sFN);
+      blo0.blAjx(w,"http://localhost:8080/download?url="+originalMp3URL +"&filename=" + sFN);
     }
   }
 
@@ -219,8 +215,7 @@ function CUtilVOA(){
     var d = {};
     var r = {};
     
-    curDuration = Math.floor(blo0.getDuration());
-    
+    curDuration = Math.floor(blo0.getDuration()); 
     
     var fs =  [
       {
@@ -263,7 +258,7 @@ function CUtilVOA(){
         y += w + 2;
       }
       x += w + 2;
-      var btn = new CBtn(i,x, y, 30,30);
+      var btn = new CBtn(this,i,x, y, 30,30);
       _ps.push(btn);
     }
   } 
@@ -287,7 +282,11 @@ function CUtilVOA(){
   this.clear = function(){
     l = [];
   } 
+  this.getResponseText = function(txt){
+    _save_bl_VOA_Res = txt;
+  }
   this.drawUtil = function(o,ctx,x,y){
+    o.text(ctx,_save_bl_VOA_Res,x,y - 44);
     o.text(ctx,curDuration,x,y - 22);
     o.text(ctx,curType,x,y - 11);
     o.text(ctx,"_parent: " + Date(),x,y+30);     
