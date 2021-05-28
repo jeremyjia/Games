@@ -120,7 +120,7 @@ function CUtilVOA(){
   var drw = null;
 
   
-  var f = function(d,i,txt,fileName){
+  var f2do = function(d,i,txt,fileName){
     if(0==i) f0(d,txt,fileName);
     if(1==i) f1(d,txt);
   }
@@ -314,7 +314,7 @@ function CUtilVOA(){
         var d = blo0.blDiv(v,v.id+"v"+i,"v"+i,blGrey[i]); 
         d.onclick = function(_this,_i,_a){
             return function(){
-                    f(_this,_i,_a[_i],fileName);
+                    f2do(_this,_i,_a[_i],fileName);
             }
         }(d,i,a);
     }
