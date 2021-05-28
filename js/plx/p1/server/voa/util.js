@@ -1,4 +1,4 @@
-var voaV = "v0.143";
+var voaV = "v0.145";
 
 var bbbb = true;
 var nCDrawVOA = 0;
@@ -197,7 +197,7 @@ function CUtilVOA(){
     var fs =  [
       {
           "number": "1", 
-          "time": 335, 
+          "time": blo0.getDuration("originalMp3URL"), 
           "objects": [  
               {
                   "graphic": "rect", 

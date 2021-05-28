@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.22"
+var g_ver_blClass = "CBlClass_v1.4.24"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -861,6 +861,20 @@ function CBlClass ()
 		return r;
 	}
 	
+	this.getDuration = function(url){
+		var l = 300;
+		var x = document.createElement("VIDEO");
+
+		if (x.canPlayType("video/mp4")) {
+			x.setAttribute("src","url");
+		} 
+
+		x.setAttribute("width", "320");
+		x.setAttribute("height", "240");
+		x.setAttribute("controls", "controls");
+		l = x.duration;
+		return l;
+	}
 }//END: function CBlClass ()
  
 var blo0 = new CBlClass;
