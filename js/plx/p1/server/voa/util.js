@@ -1,8 +1,38 @@
-var voaV = "v0.152";
+var voaV = "v0.212";
 
 var bbbb = true;
 var nCDrawVOA = 0;
+
+
 const voaUtil = new CUtilVOA();
+
+var CBtn = function(id,dx,dy,dw,dh){
+
+  var _id = id; var _dx = dx; var _dy = dy; var _dw = dw; var _dh = dh; 
+  var x0 = 0; var y0 = 0;
+  var _myColor = "blue";
+  this.drawBtn = function(oDraw,ctx,x,y){
+    x0 = x;
+    y0 = y;
+    oDraw.rect(ctx,x0 + _dx,y0 + _dy,_dw,_dh,_myColor);   
+    oDraw.text(ctx,id, x0 + _dx,y0 + _dy + 15);
+    oDraw.text(ctx,"["+x0+","+y0+"]", x0 + _dx,y0 + _dy + 33);
+  }
+  this.btnMousedown = function(x,y){ 
+    if(blo0.blPiR(x,y,x0 + _dx,y0 + _dy,_dw,_dh)){  
+      _myColor = "red";
+      if(_id==1){ 
+        _save_blVOA(_parent.blVOA(),"blVOA.json",_ls);
+      }
+    }         
+    else{
+      _myColor = "grey";
+    }
+  }
+  this.setColor = function(c){
+    _myColor = c;
+  }
+}
 
 function CDrawVOA(_o,_parent){
     var _getResonseText = "_getResonseText";
@@ -12,28 +42,6 @@ function CDrawVOA(_o,_parent){
     var _c = "green";
     var _bDown = false;
     var _ls = [];
-    var CBtn = function(id,dx,dy,dw,dh){
-      var _id = id; var _dx = dx; var _dy = dy; var _dw = dw; var _dh = dh; 
-      var _myColor = "lightgreen";
-      this.draw = function(oDraw,ctx,x,y){
-        oDraw.rect(ctx,x + _dx,y + _dy,_dw,_dh,_myColor);   
-        oDraw.text(ctx,"[" + _x + "," + _y + "]", x + _dx,y + _dy + 15);
-      }
-      this.mousedown = function(x,y){ 
-        if(_o.inRect(x,y,_x + _dx,_y + _dy,_dw,_dh)){  
-          _myColor = "red";
-          if(_id==1){ 
-            _save_blVOA(_parent.blVOA(),"blVOA.json",_ls);
-          }
-        }         
-        else{
-          _myColor = "grey";
-        }
-      }
-      this.setColor = function(c){
-        _myColor = c;
-      }
-    }
 
     _ls.push(new CBtn(1,50, 55, 30,30));
     _ls.push(new CBtn(2,150, 55, 30,30));
@@ -47,12 +55,12 @@ function CDrawVOA(_o,_parent){
       oDraw.text(ctx,_getResonseText,x+222,y);   
       oDraw.rect(ctx,x+60,y,100,30,"grey");   
       for(i in _ls){
-        _ls[i].draw(oDraw,ctx,x,y);
+        _ls[i].drawBtn(oDraw,ctx,x,y);
       }
     }
-    _ls.mousedown = function(x,y){      
+    _ls.lsMousedown = function(x,y){      
       for(i in _ls){
-        _ls[i].mousedown(x,y);
+        _ls[i].btnMousedown(x,y);
       }
     } 
 
@@ -68,7 +76,7 @@ function CDrawVOA(_o,_parent){
       if(bbbb){
         _o.rect(ctx,_x,_y,_w,_h,_c);   
         _o.text(ctx,voaV + ":" + _parent.getN() + "[" + _x + "," + _y + "]",_x,_y);
-        _parent.draw(_o,ctx,_x,_y);
+        _parent.drawUtil(_o,ctx,_x,_y);
         _ls.draw(_o,ctx,_x,_y);
       }
     }  
@@ -77,8 +85,9 @@ function CDrawVOA(_o,_parent){
         _bDown = true;
         _c = "red";     
       } 
-      
-      _ls.mousedown(x,y);
+       
+      _parent.clickTest(x,y);
+      _ls.lsMousedown(x,y);     
     }
     this.mouseup = function(x,y){   
       _bDown = false;
@@ -100,9 +109,11 @@ function CDrawVOA(_o,_parent){
 }
 
 function CUtilVOA(){ 
+  var curClick = "curClick";
   var curDuration = 345;
   var curType = "curType";
   var originalMp3URL = "originMp3URL=";
+  var _ps = [];
   var curP = "curText";
   var l = [];
   var n = 0;
@@ -168,6 +179,8 @@ function CUtilVOA(){
       //*
       var a = txt.split('<div id="comments" class="comments-parent">'); 
       var b = a[0].split('<p>');
+      voaUtil.setCurPs(b);
+
       for(i in b){
         var btn4P = blo0.blBtn(mainTxtToolBar,mainTxtToolBar.id+i,i,blGrey[3]); 
         btn4P.onclick = function(_this,_i,_b){
@@ -194,6 +207,14 @@ function CUtilVOA(){
     curType = "[curType] " + tyleFileName;
     drw = new CDrawVOA(_o,this); 
   } 
+  this.clickTest = function(x,y){
+    curClick = "clickTest:" +x +","+ y;
+    for(i in _ps){      
+      _ps[i].btnMousedown(x,y);
+    }
+  }
+   
+
   this.blVOA = function(){
     var d = {};
     var r = {};
@@ -230,6 +251,22 @@ function CUtilVOA(){
     d.request = r;
     return d;
   }
+  
+  this.setCurPs = function(ls){
+    _ps = [];
+    var x = 50;
+    var y = 155;
+    var w = 30;
+    for(i in ls){
+      if(i%10==0){
+        x = 50;
+        y += w + 2;
+      }
+      x += w + 2;
+      var btn = new CBtn(i,x, y, 30,30);
+      _ps.push(btn);
+    }
+  } 
   this.setCurP = function(_txt){
     curP = _txt;
   } 
@@ -250,15 +287,21 @@ function CUtilVOA(){
   this.clear = function(){
     l = [];
   } 
-  this.draw = function(o,ctx,x,y){
+  this.drawUtil = function(o,ctx,x,y){
     o.text(ctx,curDuration,x,y - 22);
     o.text(ctx,curType,x,y - 11);
     o.text(ctx,"_parent: " + Date(),x,y+30);     
+    o.text(ctx,curClick,x,y+122);     
     o.text(ctx,curP,x,y+50);  
     o.text(ctx,originalMp3URL,x,y + 111);
+     
 
     for(i in l){
       o.rect(ctx,50 + i*55,350,50,50,"blue");   
+    }
+    
+    for(i in _ps){      
+      _ps[i].drawBtn(o,ctx,x,y);
     }
   }
   this.parsePage = function(ta,txt,fileName){
