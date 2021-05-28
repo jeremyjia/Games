@@ -159,7 +159,9 @@ public class ImageController {
 
 	@ApiOperation(value = "通过剧本协议生成视频", notes = "通过剧本协议生成视频")
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "script", value = "script file (*.json)", paramType = "query", required = true, dataType = "string", defaultValue = "example.json") })
+			@ApiImplicitParam(name = "script", value = "script file (*.json)", paramType = "query", required = true, dataType = "string", defaultValue = "video.json"),
+			@ApiImplicitParam(name = "video", value = "video name (*.mp4, *.mkv)", paramType = "query", required = false, dataType = "string", defaultValue = final_video_name) })
+
 	@RequestMapping(value = "/json2video", method = RequestMethod.GET)
 	public ModelAndView generateVideoByscenario(@RequestParam(name = "script") String scriptFile,
 			@RequestParam(name = "video", defaultValue = final_video_name) String videoName)
