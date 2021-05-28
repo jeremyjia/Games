@@ -166,7 +166,7 @@ o.makeINF = function(obj,fileName,fCallBack){
                 w._2do = function(txt){
                     v.innerHTML = txt;
                 }
-                blo0.blAjx(w,"http://localhost:8080/image/video?script="+fileName);
+                blo0.blAjx(w,"http://localhost:8080/image/json2video?script="+fileName + "&video=" + a[0] +".mp4");
             }
         }
     }
