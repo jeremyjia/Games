@@ -34,7 +34,6 @@ import com.pbz.demo.hello.util.engine.JSGraphEngine;
 
 public final class JsonSriptParser {
 	private static final String subtitle_video_name = "vSubtitle.mp4";
-	private static final String final_video_name = "vFinal.mp4";
 	private static final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
 	private static List<Map<String, Object>> supperObjectsMapList = new ArrayList<Map<String, Object>>();
 	private static Map<Integer, AOIArea> aoiMap = new HashMap<>();
@@ -236,6 +235,7 @@ public final class JsonSriptParser {
 		ExecuteCommand.executeCommand(cutAudioCmd, null, new File("."), null);
 
 		// Combine silent video and audio to a final video
+		String final_video_name = MacroResolver.getProperty("video_name");
 		String[] cmds = { ffmpegPath, "-y", "-i", subtitle_video_name, "-i", tmpAudioFile, final_video_name };
 		boolean bRunScript = ExecuteCommand.executeCommand(cmds, null, new File("."), null);
 

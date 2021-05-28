@@ -16,6 +16,7 @@ public class JSGraphEngine {
 
 	private CanvasObj canvas = new CanvasObj();
 	private Graphics2D graphics = null;
+	private static final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
 
 	public Graphics2D getGraphics() {
 		return graphics;
@@ -98,7 +99,8 @@ public class JSGraphEngine {
 				applayStrokeColor();
 				graphics.drawArc(x - r, y - r, 2 * r, 2 * r, (int) startAngle, (int) arcAngle); // 绘制圆弧（含整圆）
 				strokeStyle = "";
-			} else {
+			}
+			if (fillStyle.trim().length() > 0) {
 				applayColor();
 				graphics.fillArc(x - r, y - r, 2 * r, 2 * r, (int) startAngle, (int) arcAngle);
 			}
@@ -173,6 +175,8 @@ public class JSGraphEngine {
 					graphics.setColor(new Color(255, 255, 255));
 				} else if ("Black".equalsIgnoreCase(fillStyle)) {
 					graphics.setColor(new Color(0, 0, 0));
+				} else if ("lightblue".equalsIgnoreCase(fillStyle)) {
+					graphics.setColor(new Color(193, 210, 240));
 				} else {
 					graphics.setColor(new Color(220, 0, 0));
 				}
@@ -205,6 +209,8 @@ public class JSGraphEngine {
 					graphics.setColor(new Color(255, 255, 255));
 				} else if ("Black".equalsIgnoreCase(strokeStyle)) {
 					graphics.setColor(new Color(0, 0, 0));
+				} else if ("lightblue".equalsIgnoreCase(strokeStyle)) {
+					graphics.setColor(new Color(193, 210, 240));
 				} else {
 					graphics.setColor(new Color(220, 220, 0));
 				}
@@ -222,7 +228,12 @@ public class JSGraphEngine {
 				}
 				fontSize = fontSize.substring(0, index);
 				float fSzie = Float.parseFloat(fontSize);
-				Font font = new Font(fontName, Font.BOLD, (int) fSzie);
+				Font font = null;
+				if (isWindows) {
+					font = new Font("黑体", Font.BOLD, (int) fSzie);
+				} else {
+					font = new Font(fontName, Font.BOLD, (int) fSzie);
+				}
 				graphics.setFont(font);
 			} else {
 				Font font = new Font("黑体", Font.BOLD, 10);
