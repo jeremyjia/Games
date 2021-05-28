@@ -1,4 +1,4 @@
-var tag = "playground.js_v0.32";
+var tag = "playground.js_v0.34";
 var tb = bl$("id_p1_tb"); 
   
 tb.btnPlayground = blo0.blBtn(tb,"btnPlayground",tag,blGrey[2]);
@@ -38,6 +38,7 @@ function CPlayground(parentDiv,_w,_h){
             tb.btnPlay.style.float = "left";
             tb.btnPlay.onclick = function(){
                 _mo.play(this);
+                blo0.play();                
             }
             tb.b1 = _mo.dbgBtn(tb,"id_btn_4_dbgPlayground","dbg");
 

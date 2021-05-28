@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.24"
+var g_ver_blClass = "CBlClass_v1.4.41"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -134,6 +134,15 @@ function CBlClass ()
 { 
     var _id = "id_div_4_blClass";
 	this.v = g_ver_blClass;
+	var _blVideo = document.createElement("VIDEO");
+	_blVideo.id = "id_blVideo";
+	if (_blVideo.canPlayType("video/mp4")) {
+		_blVideo.setAttribute("src","https://av.voanews.com/clips/VLE/2021/05/21/7dd0e442-fb6b-4bc7-b76b-158ad803f866.mp3");
+	}
+	_blVideo.setAttribute("width", "1");
+	_blVideo.setAttribute("height", "1"); 
+	document.body.appendChild(_blVideo);
+
 	
 	function _blhMakeLink(txt,href,style,target){
 		var r = "";
@@ -144,6 +153,19 @@ function CBlClass ()
 		r += "</a>";   
 		return r;
 	} 
+
+	
+	this.setPlayerURL = function(url){
+		_blVideo.src = url;
+		_blVideo.load();
+	}
+
+	this.getDuration = function(){ 
+		return _blVideo.duration;
+	}
+	this.play = function(){ 
+		_blVideo.play();
+	}
 
 	this.showMe = function(myHandle){ 
 		if(!myHandle.m){
@@ -861,20 +883,7 @@ function CBlClass ()
 		return r;
 	}
 	
-	this.getDuration = function(url){
-		var l = 300;
-		var x = document.createElement("VIDEO");
-
-		if (x.canPlayType("video/mp4")) {
-			x.setAttribute("src","url");
-		} 
-
-		x.setAttribute("width", "320");
-		x.setAttribute("height", "240");
-		x.setAttribute("controls", "controls");
-		l = x.duration;
-		return l;
-	}
+	
 }//END: function CBlClass ()
  
 var blo0 = new CBlClass;

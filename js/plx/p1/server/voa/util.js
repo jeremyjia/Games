@@ -1,4 +1,4 @@
-var voaV = "v0.145";
+var voaV = "v0.152";
 
 var bbbb = true;
 var nCDrawVOA = 0;
@@ -100,6 +100,7 @@ function CDrawVOA(_o,_parent){
 }
 
 function CUtilVOA(){ 
+  var curDuration = 345;
   var curType = "curType";
   var originalMp3URL = "originMp3URL=";
   var curP = "curText";
@@ -118,6 +119,8 @@ function CUtilVOA(){
     var b = a[1].split('">');
     originalMp3URL = b[0];
     d.innerHTML = originalMp3URL;
+    blo0.setPlayerURL(originalMp3URL); 
+
     blo0.blPlayer(d,"f0Test",c,100,100,400,300,"lightgreen");
     d.v = blo0.blDiv(d,"vvvvvv",c,"red"); 
     var btnDownloadMp3 = blo0.blBtn(d.v,d.v.id+"btnDownloadMp3","btnDownloadMp3","grey");
@@ -194,10 +197,14 @@ function CUtilVOA(){
   this.blVOA = function(){
     var d = {};
     var r = {};
+    
+    curDuration = Math.floor(blo0.getDuration());
+    
+    
     var fs =  [
       {
           "number": "1", 
-          "time": blo0.getDuration("originalMp3URL"), 
+          "time": curDuration, 
           "objects": [  
               {
                   "graphic": "rect", 
@@ -244,6 +251,7 @@ function CUtilVOA(){
     l = [];
   } 
   this.draw = function(o,ctx,x,y){
+    o.text(ctx,curDuration,x,y - 22);
     o.text(ctx,curType,x,y - 11);
     o.text(ctx,"_parent: " + Date(),x,y+30);     
     o.text(ctx,curP,x,y+50);  
