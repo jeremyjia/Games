@@ -1,4 +1,4 @@
-var tag = "server.js_v0.33";
+var tagServer = "server.js_v0.34";
 var tb = bl$("id_p1_tb"); 
     
 tb.btnServer = blo0.blBtn(tb,"btnServer","Server",blGrey[2]);
@@ -25,7 +25,7 @@ function CServer(parentDiv){
     
     this.show = function(b){ 
         if(!ui){
-            ui=blo0.blMDiv(p,"id_mdiv_4_server",tag,x,y,w,h,blGrey[0]);
+            ui=blo0.blMDiv(p,"id_mdiv_4_server",tagServer,x,y,w,h,blGrey[0]);
             
             ui.inf = {};
             ui.inf.x = 123;
