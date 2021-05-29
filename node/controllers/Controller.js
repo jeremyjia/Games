@@ -9,11 +9,16 @@ class Controller {
      */
     response.status(payload.code || 200);
     const responsePayload = payload.payload !== undefined ? payload.payload : payload;
-    if (responsePayload instanceof Object) {
+    if(payload.url){
+        response.redirect(payload.url);
+    }
+    else if (responsePayload instanceof Object) {
       response.json(responsePayload);
-    } else {
+    }
+    else {
       response.end(responsePayload);
     }
+
   }
 
   static sendError(response, error) {
@@ -49,6 +54,7 @@ class Controller {
     requestParams.curUserName = request.curUserName;
     requestParams.curUserID   = request.curUserID;
     requestParams.curToken   = request.curToken;
+    //requestParams.response   = response;
 
     if (request.openapi.schema.requestBody !== undefined) {
       requestParams.body = request.body;
