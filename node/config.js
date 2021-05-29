@@ -6,7 +6,7 @@ const config = {
   VERIFY_REDIRECT_URL: process.env.VERIFY_REDIRECT_URL ? process.env.VERIFY_REDIRECT_URL : "http://localhost:3000/",
   RESET_PASSWORD_PAGE_URL: process.env.RESET_PASSWORD_PAGE_URL ? process.env.RESET_PASSWORD_PAGE_URL : "http://localhost:3000/reset_password",
   
-  HOST_PORT: process.env.HOST_PORT ? process.env.HOST_PORT : 8080,
+  HOST_PORT: process.env.HOST_PORT ? process.env.HOST_PORT : 3000,
   PUBLIC_URL: process.env.PUBLIC_URL ? process.env.PUBLIC_URL : 'http://localhost:8080',
   WEB_SOCKET_PORT: 9090,
   BASE_VERSION: 'v2',
