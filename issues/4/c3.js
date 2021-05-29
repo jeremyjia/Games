@@ -1,5 +1,5 @@
 //i4c3  
-var s= "v0.0. 122 "; 
+var s= "v0.0. 123 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c3.js'"
 s += " style='color:blue;'";		s +=">"; s += "c3.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c3.js'"
@@ -50,16 +50,30 @@ if(!md.run){
 }
 // 调用全局接口函数 _on_off_div，打开或关闭 DIV（此处为 md)
 _on_off_div(this,md);
+ 
 
 
+function _myJobClass(){       
+	var lastPath= "";
+	var sss = blo0.blURL();//"xd:";
+	var pos = sss.search("issues");
+	
+	var pos = sss.search("issues");
+	if(pos!=-1){
+					lastPath = "c3/";
+				}
+	else{
+					lastPath = "issues/4/c3/"
+	}
 
-function _myJobClass(){        
-    this.bll0=  "<div id = 'id_div_4__myJobClass' title = 'title: _myJobClass'> _myJobClass: v0.0. 11</div>";
+    this.bll0=  "<div id = 'id_div_4__myJobClass' title = 'title: _myJobClass'> [" + lastPath + "] _myJobClass: v0.0. 24</div>";
  
 	this.blrTest1 = function(b,d){
 		if(!d.v){ 
 			d.v = blo0.blDiv(d, "id_4_div_i4_c3_blrTest1","test1",blGrey[5]); 
-			blo0.blScript("id_4_js_i4_c3_blrTest1","c3/blrTest1.js");
+
+			
+			blo0.blScript("id_4_js_i4_c3_blrTest1",lastPath + "blrTest1.js");
 		}
 		_on_off_div(b,d);	
 		b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];     

@@ -34,7 +34,6 @@ import com.pbz.demo.hello.util.engine.JSGraphEngine;
 
 public final class JsonSriptParser {
 	private static final String subtitle_video_name = "vSubtitle.mp4";
-	private static final String final_video_name = "vFinal.mp4";
 	private static final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
 	private static List<Map<String, Object>> supperObjectsMapList = new ArrayList<Map<String, Object>>();
 	private static Map<Integer, AOIArea> aoiMap = new HashMap<>();
@@ -43,7 +42,7 @@ public final class JsonSriptParser {
 	private static ScriptEngineManager mgr = new ScriptEngineManager();
 	private static ScriptEngine engine = mgr.getEngineByName("JavaScript");
 	private static JSGraphEngine graphEngine = new JSGraphEngine();
-	private static boolean isScriptLoaded = false;
+	private static final String currentScript = "VAR_CURRENT_SCRIPT";
 
 	public static void setMacros(String scriptFilePath) throws Exception {
 		String jsonString = getJsonString(scriptFilePath);
@@ -100,7 +99,7 @@ public final class JsonSriptParser {
 		JSONObject requestObj = getJsonObjectbyName(jsonObj, "request");
 		supperObjectsMapList.clear();
 		aoiMap.clear();
-		isScriptLoaded = false;
+		MacroResolver.setProperty(currentScript, "");
 
 		initMap(requestObj);
 		String version = requestObj.getString("version");
@@ -236,6 +235,7 @@ public final class JsonSriptParser {
 		ExecuteCommand.executeCommand(cutAudioCmd, null, new File("."), null);
 
 		// Combine silent video and audio to a final video
+		String final_video_name = MacroResolver.getProperty("video_name");
 		String[] cmds = { ffmpegPath, "-y", "-i", subtitle_video_name, "-i", tmpAudioFile, final_video_name };
 		boolean bRunScript = ExecuteCommand.executeCommand(cmds, null, new File("."), null);
 
@@ -484,12 +484,18 @@ public final class JsonSriptParser {
 	private static void drawJavaScriptObject(JSONObject jObj, Graphics2D gp2d, int number) throws Exception {
 		JSONObject attributeObj = jObj.getJSONObject("attribute");
 		String striptFile = attributeObj.getString("script");
+		boolean isReLoadScript = false;
+		if (!striptFile.equalsIgnoreCase(MacroResolver.getProperty(currentScript))) {
+			MacroResolver.setProperty(currentScript, striptFile);
+			isReLoadScript = true;
+		}
 		striptFile = FileUtil.downloadFileIfNeed(striptFile);
 		String functionName = attributeObj.getString("function");
 		int start = attributeObj.getInt("start");
 		graphEngine.setGraphics(gp2d);
 		engine.put("document", graphEngine);
-		if (isScriptLoaded == false) {
+
+		if (isReLoadScript) {
 			StringBuffer preDefined = new StringBuffer();
 			preDefined.append("function Image() { return document.getImageObj()}");
 			engine.eval(preDefined.toString());
@@ -497,7 +503,6 @@ public final class JsonSriptParser {
 			File f = new File(striptFile);
 			Reader r = new InputStreamReader(new FileInputStream(f));
 			engine.eval(r);
-			isScriptLoaded = true;
 		}
 		Invocable invoke = (Invocable) engine;
 		invoke.invokeFunction(functionName, new Object[] { number - start });

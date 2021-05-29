@@ -31,7 +31,7 @@ public class HelloApplication {
 
 		String swagger_url = "http://localhost:" + app_port + "/swagger-ui.html";
 		String upload_url = "http://localhost:" + app_port + "/uploadpage";
-		String video_url = "http://localhost:" + app_port + "/image/video?script=video.json";
+		String video_url = "http://localhost:" + app_port + "/image/json2video?script=video.json";
 		String demo_url = "http://localhost:" + app_port + "/1.html";
 		mv.addObject("swagger_url", swagger_url);
 		mv.addObject("upload_url", upload_url);
