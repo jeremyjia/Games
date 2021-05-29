@@ -9,10 +9,11 @@
 
 
 <script>
+    var port = 8080;
 $(document).ready(function(){
   $("#btnLogin").click(function(){
     var settings = {
-        "url": "http://localhost:3000/api/login",
+        "url": "http://localhost:" + port+ "/api/login",
         "method": "POST",
         "timeout": 0,
         "headers": {
@@ -29,7 +30,7 @@ $(document).ready(function(){
   
   $("#test1").click(function(){
     var settings = {
-        "url": "http://localhost:3000/api/getPlayer?id=-1507897597",
+        "url": "http://localhost:" + port+ "/api/getPlayer?id=-1507897597",
         "method": "GET",
         "timeout": 0,
         "headers": {
@@ -52,7 +53,7 @@ $(document).ready(function(){
 </div>
 
 
-<p>v0.114: group6 test.
+<p>v0.115: group6 test.
   <a href="api-docs" target="_blank">api-docs</a>  
   <a href="old" >old</a>
 </p>
