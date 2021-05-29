@@ -8,10 +8,11 @@ info:
     name: AllRightsReserved
     url: https://www.battlecasters.io/
   title: Group 6 Studios API
-  version: 1.0.280
+  version: 1.0.281
 
 servers:
 - url: http://localhost:8080/api
+- url: http://localhost:3000/api
 
 security:
 - bearerAuth: []
