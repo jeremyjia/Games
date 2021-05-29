@@ -1,7 +1,7 @@
-var tag = "playground.js_v0.34";
+var tagPlayground = "playground.js_v0.35";
 var tb = bl$("id_p1_tb"); 
   
-tb.btnPlayground = blo0.blBtn(tb,"btnPlayground",tag,blGrey[2]);
+tb.btnPlayground = blo0.blBtn(tb,"btnPlayground",tagPlayground,blGrey[2]);
 tb.btnPlayground.style.float = "left";
     
 tb.btnPlayground.onclick = function(){ 
@@ -25,7 +25,7 @@ function CPlayground(parentDiv,_w,_h){
 
     this.show = function(b){
         if(!ui){
-            ui=blo0.blMDiv(p,"id_mdiv_4_playground",tag,555,5,w,111,blGrey[0]);
+            ui=blo0.blMDiv(p,"id_mdiv_4_playground",tagPlayground,555,5,w,111,blGrey[0]);
             ui.inf = {};
             ui.inf.x = 0;
             ui.inf.y = 0;
