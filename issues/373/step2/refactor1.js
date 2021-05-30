@@ -1,54 +1,6 @@
-<!DOCTYPE html>
-<html>
- <head>
- <meta charset="utf-8">
- <title>i373_step1_代码重构实例-中国象棋</title>
- <style>
- #canvasWrap{
-  width: 600px;
-  height: 550px;
-  margin: 50px auto;
- }
- #currActive{
-  font-size: 20px;
-  font-weight: bold;
-  /*text-align: center;*/
-  margin-left:230px ;
- }
- #canvas{
-  float: left;
-  background: #EAC591;
- }
- #panel{
-  width: 80px;
-  padding: 10px;
-  float: right;
- }
- #ul{
-  list-style: none;
-  margin: 0;
-  padding: 0;
- }
- #ul li{
-  padding: 2px;
- }
- </style>
- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
- 
- </head>
- <body>
- <div id="canvasWrap">
-  <div id="currActive"></div>
-  <canvas id="canvas" width="500" height="550"></canvas>
-  <div id="panel">
-  <ul id="ul"></ul>
-  </div>
- </div>
- <script src="refactor1.js"></script>
- </body>
-</html>function CRefactorChessBoard(){
+function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.13",10, 10);
+    ctx.fillText("v0.14",10, 10);
   }
 
   // 画楚河/漢界
@@ -64,6 +16,13 @@
       _this.ctx.fillText(_this.text_arr[i], _this.chunk*(i+1)-5,_this.chunk*10+30+10);
     }
   }
+
+  // 画横线
+  this.pbzDrawRowLine = function(_this){
+    for(var i =1;i<=10;i++){
+      _this.drawLine(1,i,9,i);
+    }
+  } 
 }
 
 
@@ -89,7 +48,8 @@ this.addEvent();
 }
 // 棋盘初始化
 obj.init_back = function(){
-    this.drawRowLine();
+    //this.drawRowLine();    
+    this.pbzDrawRowLine(this);
     this.drawColLine();
     this.ctx.clearRect(this.chunk+1, this.chunk*5+1, this.chunk*8-2, this.chunk-2);
     this.drawsharpS();
@@ -1154,4 +1114,3 @@ obj.init();
 //  ccr:3   // 候选小圆半径
 //  });
 
-
