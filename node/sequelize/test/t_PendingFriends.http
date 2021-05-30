@@ -1,0 +1,36 @@
+###
+GET http://localhost:8080/api1/pendingfriends
+
+###
+GET http://localhost:8080/api1/pendingfriends?UserName=myname
+
+###
+GET http://localhost:8080/api1/pendingfriends/19
+###
+GET http://localhost:8080/api1/pendingfriends/published
+
+###
+GET http://localhost:8080/api1/pendingfriends?UserID=849f1ae0-f60c-431b-9f01-4b81ea71df4d
+
+###
+DELETE  http://localhost:8080/api1/pendingfriends
+###
+DELETE  http://localhost:8080/api1/pendingfriends/14
+
+###
+POST http://localhost:8080/api1/pendingfriends
+content-type: application/json
+{
+    "RequestID": "abc",
+    "fromID": "abc" ,
+    "toID": "123" 
+}
+
+
+
+###
+PUT http://localhost:8080/api1/pendingfriends/1
+content-type: application/json
+{
+    "published": true
+}

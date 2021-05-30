@@ -19,12 +19,7 @@ exports.g6Login = function(loginInf,resolve,Service)
     
     console.log( tag + "_sql = " + _sql);
 
-    var con = mysql.createConnection({
-      host: config.h,
-      user: config.u,
-      password: config.pw,
-      database: config.db
-    });
+    var con = mysql.createConnection(config.oLocalDB);
 
     con.connect();
     con.query(_sql, u , function (err, result, fields) {
