@@ -1,4 +1,4 @@
  
 module.exports = function(){ 
-  return 'to test xdApp: todo(i373)';
+  return 'to test xdApp: done.';
 }
