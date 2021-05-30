@@ -1,5 +1,7 @@
-const tag = "[controllers/DefaultController.js_v0.53]";
+const tag = "[controllers/DefaultController.js_v0.114]";
 const Controller = require('./Controller');
+const sqlzCtrler = require("../sequelize/controllers/Group6User.controller.js");
+
 const l = require('../logger');
 l.tag(tag); 
 
@@ -18,7 +20,8 @@ class DefaultController {
   }
 
   async setIcon(request, response) {
-    l.tag1(tag,"xd2DoSetIcon ..." + request.curUser);
+    l.tag1(tag,"xd2DoSetIcon ...   curUserName=" + request.curUserName);
+    l.tag1(tag,"xd2DoSetIcon ...   curUserID=" + request.curUserID);
     await Controller.handleRequest(request, response, this.service.setIcon);
   }
   
@@ -26,9 +29,26 @@ class DefaultController {
     await Controller.handleRequest(request, response, this.service.verify);
   }
 
+  async checkUserName(request, response) { 
+    await Controller.handleRequest(request, response, this.service.checkUserName);
+  }
+
+  async checkEmailAddress(request, response) { 
+    await Controller.handleRequest(request, response, this.service.checkEmailAddress);
+  }
+
+  async resetPasswordRequest(request, response) { 
+    await Controller.handleRequest(request, response, this.service.resetPasswordRequest);
+  }
+
+  async toResetPassword(request, response) { 
+    await Controller.handleRequest(request, response, this.service.toResetPassword);
+  }
+
 
   async addPlayer(request, response) {
     console.log(tag + " request = " + request ); 
+    //await sqlzCtrler.addPlayer(request,response);
     await Controller.handleRequest(request, response, this.service.addPlayer);
   }
 

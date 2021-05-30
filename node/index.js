@@ -1,26 +1,23 @@
 const config = require('./config');
 const logger = require('./logger');
 const ExpressServer = require('./expressServer');
-// const App = require('./app');
+const sql = require('./sql/SQL.js'); 
 
-// const app = new App(config);
-// app.launch()
-//   .then(() => {
-//     logger.info('Server launched');
-//   })
-//   .catch((error) => {
-//     logger.error('found error, shutting down server');
-//     app.close()
-//       .catch(closeError => logger.error(closeError))
-//       .finally(() => logger.error(error));
-//   });
+const db = require("./sequelize/models");
+
+
 const launchServer = async () => {
   try {
-    this.expressServer = new ExpressServer(config.URL_PORT, config.OPENAPI_YAML);
-    await this.expressServer.launch();
-    logger.info('Express server running  ' + Date() );
+    sql.initMySQL();
+    db.sequelize.sync({alter:true});
     
-    const wsSvr = require("./ws/index.js");
+    this.expressServer = new ExpressServer(config.HOST_PORT, config.OPENAPI_YAML);
+    await this.expressServer.launch(); 
+      
+    logger.tag1("::",'process.env.DB_NAME = ' + process.env.DB_NAME + ', SENDGRID_API_KEY = ' + process.env.SENDGRID_API_KEY);
+ 
+
+    const wsSvr = require("./old/js49/ws/index.js");
     wsSvr.wsRun(config.WEB_SOCKET_PORT);
 
   } catch (error) {

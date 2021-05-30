@@ -1,4 +1,5 @@
-const tag = "[utils/sgMail.js_v0.22]";
+const tag = "[utils/sgMail.js_v0.31]"; 
+const config = require('../config'); 
 const l = require('../logger');
 l.tag(tag);
 
@@ -8,8 +9,11 @@ const sgMail = require('@sendgrid/mail');
 
 const e = {};
 
-e.sendMail = function(toEmail,userName,code){  
+e.sendMail_4_verify_code = function(toEmail,userName,code){  
     sgMail.setApiKey(process.env.SENDGRID_API_KEY); 
+    var myLink = config.PUBLIC_URL;
+    myLink += "/api/verify?code=" + code;
+
     const msg = {
       "from":{
          "email":"no-reply@group6.io"
@@ -22,7 +26,7 @@ e.sendMail = function(toEmail,userName,code){
                }
             ],
             "dynamic_template_data":{ 
-               "yourLink":"http://localhost:8080/api/verify?code="+code,
+               "yourLink": myLink,
                "userName": userName
             }
          }
@@ -43,6 +47,41 @@ e.sendMail = function(toEmail,userName,code){
       });
 } 
 
+e.sendMail_4_reset_password = function(toEmail,userName,code){  
+   l.tag1(tag,toEmail);
+   sgMail.setApiKey(process.env.SENDGRID_API_KEY);    
+   const msg = {
+     "from":{
+        "email":"no-reply@group6.io"
+     },
+     "personalizations":[
+        {
+           "to":[
+              {
+                 "email": toEmail
+              }
+           ],
+           "dynamic_template_data":{ 
+              "yourLink": config.RESET_PASSWORD_PAGE_URL + "?code=" + code,
+              "userName": userName + ": code = " + code
+           }
+        }
+           
+     ],
+     "template_id":"d-35041a421f854326910ffedfc21100ce"
+  };
+
+   //ES6
+   sgMail
+     .send(msg)
+     .then(() => {}, error => {
+       console.error(error);
+   
+       if (error.response) {
+         console.error(error.response.body)
+       }
+     });
+} 
 module.exports = e;
 
 

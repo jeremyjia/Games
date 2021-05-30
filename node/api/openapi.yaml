@@ -2,15 +2,16 @@ openapi: 3.0.1
 
 info:
   contact:
-    email: littleflute@163.com
-  description: pbz API ...
+    email: social@group6.io
+  description: Group 6 Studios API
   license:
     name: AllRightsReserved
-    url: https://jeremyjia.github.io/Games/
-  title: pbz API
-  version: 1.0.312
+    url: https://www.battlecasters.io/
+  title: Group 6 Studios API
+  version: 1.0.281
 
 servers:
+- url: http://localhost:8080/api
 - url: http://localhost:3000/api
 
 security:
@@ -72,9 +73,72 @@ paths:
         "409":
           content: {}
           description: an existing item already exists
-      summary: api/addPlayer
+      summary: api/verify
       x-openapi-router-controller: DefaultController
       x-openapi-router-service: DefaultService
+
+  /checkUserName:
+    get:
+      description: check User Name
+      operationId: checkUserName
+      parameters:
+      - description: query user name.
+        explode: true
+        in: query
+        name: UserName
+        required: true
+        schema:
+          type: string
+        style: form
+      security: []    
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResInf'
+          description: item created
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: an existing item already exists
+      summary: api/checkUserName
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+
+  /checkEmailAddress:
+    get:
+      description: check email address
+      operationId: checkEmailAddress
+      parameters:
+      - description: query email address
+        explode: true
+        in: query
+        name: EmailAddress
+        required: true
+        schema:
+          type: string
+        style: form
+      security: []    
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResInf'
+          description: item created
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: an existing item already exists
+      summary: api/checkEmailAddress
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+
   /login:
     post:
       description: login to the system
@@ -132,6 +196,76 @@ paths:
       x-openapi-router-controller: DefaultController
       x-openapi-router-service: DefaultService
 
+  /resetPasswordRequest:
+    get:
+      description: request to reset password  
+      operationId: resetPasswordRequest
+      parameters:
+      - description: query emailAddress.
+        explode: true
+        in: query
+        name: emailAddress
+        required: true
+        schema:
+          type: string
+        style: form
+      security: []      
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResInf'
+          description: item created
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: an existing item already exists
+      summary: api/resetPasswordRequest
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+  
+  /toResetPassword:
+    get:
+      description: to reset password  
+      operationId: toResetPassword
+      parameters:
+      - description: query code.
+        explode: true
+        in: query
+        name: code
+        required: true 
+        schema:
+          type: string
+        style: form 
+      - description: query newPW.
+        explode: true
+        in: query
+        name: newPW
+        required: true 
+        schema:
+          type: string
+        style: form 
+      security: []      
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResInf'
+          description: item created
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: an existing item already exists
+      summary: api/toResetPassword
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+      
   /getAllPlayers:
     get:
       operationId: getAllPlayers
@@ -665,6 +799,7 @@ components:
         DateOfBirth: 01/05/1998
         EmailAddress: yongling.huang@group6.io
         AgreeTerms: Yes
+        ReceiveNews: Yes
 
       properties:
         UserName:
@@ -682,12 +817,16 @@ components:
         AgreeTerms:
           example: Yes
           type: string
+        ReceiveNews:
+          example: Yes
+          type: string
       required:
       - UserName
       - Password
       - DateOfBirth
       - EmailAddress
-      - AgreeTerms
+      - AgreeTerms 
+      - ReceiveNews 
       type: object
 
     ListWrapper:
