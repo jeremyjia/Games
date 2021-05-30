@@ -1,19 +1,26 @@
-const tag = "[DefaultService.js_v0.152]";
+const tag = "[DefaultService.js_v0.215]";
 const g6Login = require('../sql/login.js');
 const g6Logout = require('./g6Default/logout.js');
 const Register = require('../sql/regester.js');
+const sqlzSignup = require('./g6Default/sqlzSignup.js');
+const sqlzLogin = require('./g6Default/sqlzLogin.js');
 const SQL = require('../sql/SQL.js');
 const getGameInfo = require('../sql/getGameInfo.js');
 const getGamebyUser = require('../sql/getGamebyUser.js');
 const deletePlayer = require('../sql/deletePlayer.js');
 const getAllPlayers = require('../sql/getAllPlayers.js'); 
-const getPendingFriends = require('../sql/getPendingFriends.js'); 
+const getPendingFriends = require('./g6Default/getPendingFriends.js'); 
 const toMakeFriendRequest = require('../sql/toMakeFriendRequest.js');   
 const ReponseToMakeFriend = require('./g6Default/ReponseToMakeFriend.js'); 
 const getFriends = require('./g6Default/getFriends.js'); 
 const setIcon = require('./g6Default/setIcon.js');
 const getPlayer = require('./g6Default/getPlayer.js');
 const verify = require('./g6Default/verify.js');
+const checkUserName = require('./g6Default/checkUserName.js');
+const checkEmailAddress = require('./g6Default/checkEmailAddress.js');
+const resetPasswordRequest = require('./g6Default/resetPasswordRequest.js');
+const toResetPassword = require('./g6Default/toResetPassword.js');
+const sqlz2MakeFriendRequest = require('./g6Default/sqlz2MakeFriendRequest.js'); 
  
 const Service = require('./Service');
 const l = require('../logger');
@@ -27,8 +34,8 @@ class DefaultService {
     return new Promise(
         async (resolve) => {
           try {
-            var r = g6Login.g6Login(loginInf,resolve,Service);
-            //resolve(Service.successResponse(tag + ' OK! r=' ));
+            //var r = g6Login.g6Login(loginInf,resolve,Service);
+            sqlzLogin.login(loginInf,resolve,Service); 
           } catch (e) {
             resolve(Service.rejectResponse(
               e.message || 'Invalid input',
@@ -59,13 +66,8 @@ class DefaultService {
         },
       );
   }
-  /**
-   * api/addPlayer
-   * Adds an player to the system
-   *
-   * group6User Group6User Inventory item to add (optional)
-   * no response value expected for this operation
-   **/
+
+  
   static addPlayer({body: group6User}) {
     
     l.tag1(tag,JSON.stringify(group6User));
@@ -73,7 +75,8 @@ class DefaultService {
     return new Promise(
         async (resolve) => {
           try {
-            Register.register(group6User,resolve,Service);
+           // Register.register(group6User,resolve,Service);
+            sqlzSignup.signup(group6User,resolve,Service);
             
           } catch (e) {
             resolve(Service.rejectResponse(
@@ -84,12 +87,12 @@ class DefaultService {
         },
       );
   }
-  static verify({ code }) {
+  static verify(req) {
 
     return new Promise(
       async (resolve) => {
         try {
-          verify.toVerify(code,resolve,Service);      
+          verify.toVerify(req,resolve,Service);      
         } catch (e) {
           resolve(Service.rejectResponse(
             e.message || 'Invalid input',
@@ -99,6 +102,69 @@ class DefaultService {
       },
     );
   }
+
+  static toResetPassword(req ) {
+
+    return new Promise(
+      async (resolve) => {
+        try {
+          toResetPassword.toResetPassword(req,resolve,Service);      
+        } catch (e) {
+          resolve(Service.rejectResponse(
+            e.message || 'Invalid input',
+            e.status || 405,
+          ));
+        }
+      },
+    );
+  }
+  static checkUserName({ UserName  }) {
+
+    return new Promise(
+      async (resolve) => {
+        try {
+          checkUserName.check(UserName ,resolve,Service);      
+        } catch (e) {
+          resolve(Service.rejectResponse(
+            e.message || 'Invalid input',
+            e.status || 405,
+          ));
+        }
+      },
+    );
+  }
+
+  static checkEmailAddress({ EmailAddress  }) {
+
+    return new Promise(
+      async (resolve) => {
+        try {
+          checkEmailAddress.check(EmailAddress ,resolve,Service);      
+        } catch (e) {
+          resolve(Service.rejectResponse(
+            e.message || 'Invalid input',
+            e.status || 405,
+          ));
+        }
+      },
+    );
+  }
+  static resetPasswordRequest({ emailAddress }) {
+
+    return new Promise(
+      async (resolve) => {
+        try {
+          resetPasswordRequest.resetPasswordRequest(emailAddress,resolve,Service);      
+        } catch (e) {
+          resolve(Service.rejectResponse(
+            e.message || 'Invalid input',
+            e.status || 405,
+          ));
+        }
+      },
+    );
+  }
+
 
   /**
    *
@@ -173,7 +239,8 @@ class DefaultService {
     return new Promise(
       async (resolve) => {
         try {
-          toMakeFriendRequest.toMakeFriendRequest(reqBody,resolve,Service);        
+          //toMakeFriendRequest.toMakeFriendRequest(reqBody,resolve,Service);        
+          sqlz2MakeFriendRequest.request2MakeFriend(reqBody,resolve,Service);
         } catch (e) {
           resolve(Service.rejectResponse(
             e.message || 'Invalid input',

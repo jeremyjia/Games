@@ -15,7 +15,7 @@ exports.toMakeFriendRequest = function(oBody,resolve,Service){
     var _sql = "INSERT INTO PendingFriends(RequestID,fromID,toID,status,request_time)VALUES ('";
     _sql += rID+ "','"+oBody.FromID+ "','"+oBody.ToID+ "','"+oBody.status+ "','"+rTime+ "' )" ;
 
-    var con = mysql.createConnection({ host: config.h, user: config.u, password: config.pw,  database: config.db});
+    var con = mysql.createConnection(config.oLocalDB);
     con.connect();
     con.query(_sql, function (err, result, fields) {
         if (err)   {

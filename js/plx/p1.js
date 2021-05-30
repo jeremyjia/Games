@@ -1,10 +1,10 @@
 ﻿
-const p1Tag = "[plx/p1.js_v0.321]";
+const p1Tag = "[plx/p1.js_v0.325]";
 
 const btn4p1 = bl$("plx_p1_btn");
 
 if(btn4p1){ 
-    btn4p1.v = blo0.blMD(btn4p1.id+p1Tag,p1Tag,210,11,555,150,blGrey[0]);
+    btn4p1.v = blo0.blMD(btn4p1.id+p1Tag,p1Tag,0,121,666,555,blGrey[0]);
     var tb = blo0.blDiv(btn4p1.v,"id_p1_tb","tb0",blGrey[1]);
     
     if(!tb.loadUtil){

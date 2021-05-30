@@ -1,0 +1,34 @@
+###
+GET http://localhost:8080/api1/tutorials
+
+###
+GET http://localhost:8080/api1/tutorials/2
+
+###
+GET http://localhost:8080/api1/tutorials/published
+
+###
+GET http://localhost:8080/api1/tutorials?title=part
+
+###
+DELETE  http://localhost:8080/api1/tutorials
+###
+DELETE  http://localhost:8080/api1/tutorials/14
+
+
+###
+POST http://localhost:8080/api1/tutorials
+content-type: application/json
+
+{
+    "title": "t2:part3",
+    "description": "tut#2: ....",
+    "test1": "content 4 test1"
+}
+###
+PUT http://localhost:8080/api1/tutorials/1
+content-type: application/json
+
+{
+    "published": true
+}

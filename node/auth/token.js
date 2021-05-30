@@ -1,4 +1,4 @@
-const tag = "[auth/token.js_v0.114]";
+const tag = "[auth/token.js_v0.124]";
 //const jwt = require('jsonwebtoken');
 const jwt = require('./jwtRedis.js');
 const admin = require('./admin/verifyAdmin.js');
@@ -47,6 +47,12 @@ exports.verify = function(req,res, next){
 		if(a[0]==="/login"){
 			next();
 		}
+		else if(a[0]==="/checkUserName" ){
+			next();
+		} 
+		else if(a[0]==="/checkEmailAddress" ){
+			next();
+		} 
 		else if(a[0]==="/NewPlayer"){
 			next();
 		} 
@@ -56,6 +62,9 @@ exports.verify = function(req,res, next){
 		else if(a[0]==="/verify"){
 			next();
 		}
+		else if(a[0]==="/resetPasswordRequest" || a[0]==="/toResetPassword"){
+			next();
+		} 
 		else{
 			// Forbidden
 			res.sendStatus(403);

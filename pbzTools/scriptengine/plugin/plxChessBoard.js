@@ -1,13 +1,17 @@
 // https://www.jb51.net/article/105958.htm
 
 function animateFrame(time) {
-	obj.init();
+	obj.XdInit();
 	obj.init_chess();
 }
+function Class1(){
 
-var obj = {};
+}
+var obj = new Class1();
+
+//var obj = {};
 // 初始化
-obj.init = function (args) {
+obj.XdInit = function () {
 	var canvas = document.getElementById("myCanvas");
 	this.ctx = canvas.getContext("2d");
 	this.radius = 23;
@@ -28,7 +32,7 @@ obj.init_back = function () {
 }
 // 棋子初始化
 obj.init_chess = function () {
-	var Car_b1 = { x: 1, y: 1, text: "車" }
+	var Car_b1 = { x: 1, y: 1, text: "2-車" }
 	var Horse_b1 = { x: 2, y: 1, text: "馬" }
 	var Elephant_b1 = { x: 3, y: 1, text: "象" }
 	var Scholar_b1 = { x: 4, y: 1, text: "士" }
@@ -68,12 +72,20 @@ obj.init_chess = function () {
 	this.cheer_arr_ALL = this.cheer_arr_B.concat(this.cheer_arr_R);
 
 	//Jeremy for debug
-	Car_b1.color = "yellow";
+	Car_b1.color = "white";
 	Car_b1.bgcolor = "blue";
 	Car_b1.bgColor_b = "green";
 	Car_b1.type = "black";
 	this.drawPiece(Car_b1);
 	this.drawChessText(Car_b1);
+
+	
+	Car_b2.color = "white";
+	Car_b2.bgcolor = "blue";
+	Car_b2.bgColor_b = "green";
+	Car_b2.type = "black";
+	this.drawPiece(Car_b2);
+	this.drawChessText(Car_b2);
 }
 // 画横线
 obj.drawRowLine = function () {

@@ -1,7 +1,83 @@
-
-
+function CP1Util (){
+    var _v = "CP1Util_v0.14";
+    this.getV = function(){return _v;}
+    this.status = function(me){   
+        var d = bl$("id_4_vStatus");
+        d.innerHTML = o.getV() + " : " + blo0.blTime(0);
+        var md = blo0.blMDiv(d,d.id+"md","o._status "+me.id+":"+me.style.backgroundColor,13,555,555,100,"lightgreen"); 
+        var vs = blo0.blDiv(md,md.id+"vs","",blGrey[1]);
+        var v1 = blo0.blDiv(md,md.id+"v1","v1",blGrey[1]);
+        var n = 0; 
+        for(i in me.inf){
+            n++;
+            var b = blo0.blBtn(vs,vs.id+"b" + n, i ,blGrey[1]);
+            var clr = "brown";
+            var bv = blo0.blBtn(vs,vs.id+"bv"+ n, me.inf[i] ,clr);
+            if(i=="c") bv.style.backgroundColor = me.inf[i];
+            b.style.float="left";
+            bv.style.float="left";
+            bv.style.color="white";
+            bv.onclick = function(_this){
+                return function(){
+                    var uiPG = bl$("id_mdiv_4_playground");
+                    uiPG.inf.click = _this.innerHTML;
+                }
+            }(bv);
+            if(i=="text" || i=="c"){
+                b.style.backgroundColor = "lightblue";
+                b.onclick = function(_this,_bv,_me,_i){
+                    return function(){ 
+                        var vta = blo0.blDiv(v1,v1.id+"vta","vta" ,"green"); 
+                        vta.innerHTML = "";
+                       if(_this.style.backgroundColor=="lightblue"){
+                            _this.style.backgroundColor="grey";
+                             _bv.ta = blo0.blTextarea(vta,vta.id+"ta",_me.inf[_i],"grey");
+                            _bv.ta.style.width= "100%";
+                            ta.value = _bv.innerHTML;
+                       }
+                       else if(_this.style.backgroundColor=="grey"){
+                            _this.style.backgroundColor="lightblue";
+                            _bv.innerHTML = _bv.ta.value;
+                            _me.inf[_i] = _bv.ta.value; 
+                            vta.innerHTML = "";
+                            o.status(_me);
+                       }
+                    }
+                }(b,bv,me,i);
+            }
+            else if(i=="toJSON"){
+                bv.innerHTML = "fn...";
+                b.style.backgroundColor = "green";            
+                b.onclick = function(_this,_v1,_me,_i){
+                    return function(){ 
+                        _me.inf[_i](_v1);
+                    }
+                }(b,v1,me,i);
+            }
+            else if(i=="toDo"){
+                bv.innerHTML = ".";
+                b.style.backgroundColor = "green";            
+                b.onclick = function(_this,_v1,_me,_i){
+                    return function(){ 
+                        _me.inf[_i](_v1);
+                    }
+                }(b,v1,me,i);
+            }
+            else if(i=="toDraw"){
+                bv.innerHTML = ".";
+                b.style.backgroundColor = "green";            
+                b.onclick = function(_this,_v1,_me,_i){
+                    return function(){ 
+                        _me.inf[_i](_v1);
+                    }
+                }(b,v1,me,i);
+            }
+        } 
+    }
+}
  
-var o = {};
+var o = new CP1Util();
+
 o.music = "1.mp3";
 o.duration = 120;
 o.x = 50;
@@ -10,6 +86,8 @@ o.s = "o.s";
 o.s1 = "s1:";
 o.list2draw = [];
 o.listMousedown = [];
+o.listMouseup = [];
+o.listMousemove = [];
 o.listCards = [];
 o.curCard = 0;
 o.bPlay = false;
@@ -164,7 +242,7 @@ o.makeINF = function(obj,fileName,fCallBack){
                 w._2do = function(txt){
                     v.innerHTML = txt;
                 }
-                blo0.blAjx(w,"http://localhost:8080/image/video?script="+fileName);
+                blo0.blAjx(w,"http://localhost:8080/image/json2video?script="+fileName + "&video=" + a[0] +".mp4");
             }
         }
     }
@@ -204,71 +282,7 @@ o.makeINF = function(obj,fileName,fCallBack){
         }
     }
 }
-o.status = function(me){    o._status(me);  }
-o._status = function(me){
-    var d = bl$("id_4_vStatus");
-    d.innerHTML = "";
-    var md = blo0.blMDiv(d,d.id+"md","o._status "+me.id+":"+me.style.backgroundColor,3,340,555,100,blGrey[0]); 
-    var vs = blo0.blDiv(md,md.id+"vs","",blGrey[1]);
-    var v1 = blo0.blDiv(md,md.id+"v1","v1",blGrey[1]);
-    var n = 0; 
-    for(i in me.inf){
-        n++;
-        var b = blo0.blBtn(vs,vs.id+"b" + n, i ,blGrey[1]);
-        var clr = "brown";
-        var bv = blo0.blBtn(vs,vs.id+"bv"+ n, me.inf[i] ,clr);
-        if(i=="c") bv.style.backgroundColor = me.inf[i];
-        b.style.float="left";
-        bv.style.float="left";
-        bv.style.color="white";
-        bv.onclick = function(_this){
-            return function(){
-                var uiPG = bl$("id_mdiv_4_playground");
-                uiPG.inf.click = _this.innerHTML;
-            }
-        }(bv);
-        if(i=="text" || i=="c"){
-            b.style.backgroundColor = "lightblue";
-            b.onclick = function(_this,_bv,_me,_i){
-                return function(){ 
-                    var vta = blo0.blDiv(v1,v1.id+"vta","vta" ,"green"); 
-                    vta.innerHTML = "";
-                   if(_this.style.backgroundColor=="lightblue"){
-                        _this.style.backgroundColor="grey";
-                         _bv.ta = blo0.blTextarea(vta,vta.id+"ta",_me.inf[_i],"grey");
-                        _bv.ta.style.width= "100%";
-                        ta.value = _bv.innerHTML;
-                   }
-                   else if(_this.style.backgroundColor=="grey"){
-                        _this.style.backgroundColor="lightblue";
-                        _bv.innerHTML = _bv.ta.value;
-                        _me.inf[_i] = _bv.ta.value; 
-                        vta.innerHTML = "";
-                        o.status(_me);
-                   }
-                }
-            }(b,bv,me,i);
-        }
-        else if(i=="toJSON"){
-            bv.innerHTML = "fn...";
-            b.style.backgroundColor = "green";            
-            b.onclick = function(_this,_v1,_me,_i){
-                return function(){ 
-                    _me.inf[_i](_v1);
-                }
-            }(b,v1,me,i);
-        }
-        else if(i=="toDo"){
-            bv.innerHTML = ".";
-            b.style.backgroundColor = "green";            
-            b.onclick = function(_this,_v1,_me,_i){
-                return function(){ 
-                    _me.inf[_i](_v1);
-                }
-            }(b,v1,me,i);
-        }
-    } 
-}
+
 o.addCard= function(_ls){
     return function(btn){
         var n = _ls.length;
@@ -424,6 +438,12 @@ o.reg2draw  = function(user){
 o.regMousedown = function(user){
     o.listMousedown.push(user);
 }
+o.regMouseup = function(user){
+    o.listMouseup.push(user);
+}
+o.regMousemove = function(user){
+    o.listMousemove.push(user);
+}
 o.dbgBtn = function(tb,id,html){
     var btn = blo0.blBtn(tb,id,html,"grey"); 
            
@@ -451,6 +471,24 @@ o.mousedown = function(ctx,x,y){
         o.listMousedown[i].mousedown(x,y);
     }
 };
+
+o.mouseup = function(ctx,x,y){
+    o.s = x + ":" + y;
+    o.x = x;
+    o.y = y;    
+    for(i in o.listMouseup){
+        o.listMouseup[i].mouseup(x,y);
+    }
+};
+o.mousemove = function(ctx,x,y){
+    o.s = x + ":" + y;
+    o.x = x;
+    o.y = y;    
+    for(i in o.listMousemove){
+        o.listMousemove[i].mousemove(x,y);
+    }
+};
+
 o.ftnTimer = function(ctx,w,h){ 
     ctx.clearRect(0, 0, w, h);
     
