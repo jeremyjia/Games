@@ -25,9 +25,19 @@
         "superObjects": [
             {
                 "type": "javascript",
-                "frameRange": "(1,100)",
+                "frameRange": "(1,50)",
                 "attribute": {
-                    "script": "${VAR_JS_PLUGIN}",
+                    "script": "${VAR_JS_PLUGIN1}",
+                    "function": "animateFrame",
+                    "start": 1
+                },
+                "layer": 1
+            },
+            {
+                "type": "javascript",
+                "frameRange": "(51,100)",
+                "attribute": {
+                    "script": "${VAR_JS_PLUGIN2}",
                     "function": "animateFrame",
                     "start": 1
                 },
@@ -37,11 +47,15 @@
         "Macros": [
             {
                 "name": "VAR_TITLE",
-                "value": "JavaScript远程插件调用动画演示"
+                "value": "JavaScript远程多插件调用动画演示"
             },
             {
-                "name": "VAR_JS_PLUGIN",
+                "name": "VAR_JS_PLUGIN1",
                 "value": "https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxCloud.js"
+            },
+            {
+                "name": "VAR_JS_PLUGIN2",
+                "value": "https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxChessBoard.js"
             }
         ]
     }
