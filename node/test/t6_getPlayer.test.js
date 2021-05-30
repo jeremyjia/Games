@@ -1,7 +1,7 @@
-const tag = "[t6_getPlayer.test.js v0.13] ";
+const tag = "[t6_getPlayer.test.js v0.15] ";
 const config = require('../config'); 
 const ExpressServer = require('../expressServer');
-const ES = new ExpressServer(config.URL_PORT, config.OPENAPI_YAML);
+const ES = new ExpressServer(config.HOST_PORT, config.OPENAPI_YAML);
 const request = require('supertest'); 
 var assert = require('chai').assert; 
 var testData = require('../auth/data/testData.js');
@@ -46,15 +46,15 @@ describe(ts, function() {
           console.log(tag + "xd3: ****************** resAllPlayers=", resAllPlayers);    
           var n = 0;
           assert(response.body.code == 1, "response.body.code="+response.body.code);
-          assert(response.body.n == ds.length,"n="+response.body.n); 
-          for(i in ds){   
+          assert(response.body.n == testData.nTest1,"n="+response.body.n); 
+          for(var i = 0; i < testData.nTest1; i++ ){   
             assert("0.0.1"==resAllPlayers[i].Version, "Version = " + resAllPlayers[i].Version); 
             assert(""!=resAllPlayers[i].UserID, i + " UserID = " + resAllPlayers[i].UserID); 
             assert(ds[i].UserName==resAllPlayers[i].UserName, "UserName = " + resAllPlayers[i].UserName); 
             assert(n==i,"n=" + n);
             n++;
           }   
-          assert(n==10,"n=" + n);
+          assert(n==testData.nTest1,"n=" + n);
       }) 
     });     
     
@@ -85,11 +85,18 @@ describe(ts, function() {
        .expect(200)
        .then(response => {      
             console.log(tag + "****************** response.body=", response.body);                 
-            var o = response.body;                 
-            var v = o[0].Version;                  
-            var i = o[0].IsVerified; 
-            assert("0.0.12" == v,"v=" + v);   
-            assert(null == i,"i=" + i);     
+            var o = response.body;  
+            if(0==o.length){
+              assert(0 == o.length,"l=" + o.length);  
+
+            } 
+            else{
+              var v = o[0].Version;                  
+              var i = o[0].IsVerified; 
+              assert("0.0.12" == v,"v=" + v);   
+              assert(null == i,"i=" + i);    
+
+            }               
       })
     });	 
 });

@@ -1,0 +1,35 @@
+###
+GET http://localhost:8080/api1/group6users
+
+###
+GET http://localhost:8080/api/checkUserName?UserName=myname
+
+###
+GET http://localhost:8080/api1/group6users/19
+###
+GET http://localhost:8080/api1/group6users/published
+
+###
+GET http://localhost:8080/api1/group6users?UserID=849f1ae0-f60c-431b-9f01-4b81ea71df4d
+
+###
+DELETE  http://localhost:8080/api1/group6users
+###
+DELETE  http://localhost:8080/api1/group6users/14
+
+###
+POST http://localhost:8080/api1/group6users
+content-type: application/json
+{
+    "UserName": "a4",
+    "EmailAddress": "u1.huang@group6.io" 
+}
+
+
+
+###
+PUT http://localhost:8080/api1/group6users/1
+content-type: application/json
+{
+    "published": true
+}

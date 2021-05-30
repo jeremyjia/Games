@@ -11,7 +11,7 @@ exports.getPendingFriends = function(resolve,Service){
  
     var _sql = "SELECT * FROM PendingFriends";
 
-    var con = mysql.createConnection({ host: config.h, user: config.u, password: config.pw,  database: config.db});
+    var con = mysql.createConnection(config.oLocalDB);
     con.connect();
     con.query(_sql, function (err, result, fields) {
         if (err)   {

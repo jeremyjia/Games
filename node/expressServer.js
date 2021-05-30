@@ -1,4 +1,4 @@
-const tag = "[expressServer.js_v0.34]";
+const tag = "[expressServer.js_v0.41]";
 // const { Middleware } = require('swagger-express-middleware');
 const path = require('path');
 const swaggerUI = require('swagger-ui-express');
@@ -40,13 +40,18 @@ class ExpressServer {
 
 	// verify authentitcation for all api endpoints
     this.app.use('/api', token.verify);
-
+ 
 
 	// OpenAPI Router for api.yaml file
     this.app.use(openapiRouter());
 
+    require("./sequelize/routes/turorial.routes")(this.app);
+    require("./sequelize/routes/group6user.routes")(this.app);
+    require("./sequelize/routes/pendingfriends.routes")(this.app);
+    require("./sequelize/routes/friends.routes")(this.app);
 
-	if (!config.PRODUCTION) { // development paths, disable for production
+
+	 if (!config.PRODUCTION) { // development paths, disable for production
       this.app.get('/login-redirect', (req, res) => {
         res.status(200);
         res.json(req.query);
@@ -87,8 +92,7 @@ class ExpressServer {
       		});
       	});
       });
-	}
-
+	  }
   }
 
   addErrorHandler() {
