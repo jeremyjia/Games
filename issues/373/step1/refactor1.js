@@ -1,3 +1,23 @@
+function CRefactorChessBoard(){
+  this.dbgText = function(ctx){
+    ctx.fillText("v0.13",10, 10);
+  }
+
+  // 画楚河/漢界
+  this.pbzDrawText = function(_this){    
+    _this.ctx.font = "bold 30px Courier New";
+    _this.ctx.fillStyle = "#000";
+    _this.ctx.fillText("楚 河", _this.chunk*2, _this.chunk*5+_this.chunk/2+10);
+    _this.ctx.fillText("漢 界", _this.chunk*6, _this.chunk*5+_this.chunk/2+10);
+    _this.ctx.font = "12px Courier New";
+    _this.text_arr =["九","八","七","六","五","四","三","二","一"];
+    for(var i=0;i<9;i++){
+      _this.ctx.fillText((i+1).toString(), _this.chunk*(i+1)-5, 20);
+      _this.ctx.fillText(_this.text_arr[i], _this.chunk*(i+1)-5,_this.chunk*10+30+10);
+    }
+  }
+}
+
 
 var obj = new CRefactorChessBoard();
 
@@ -21,12 +41,14 @@ this.addEvent();
 }
 // 棋盘初始化
 obj.init_back = function(){
-this.drawRowLine();
-this.drawColLine();
-this.ctx.clearRect(this.chunk+1, this.chunk*5+1, this.chunk*8-2, this.chunk-2);
-this.drawsharpS();
-this.drawX();
-this.drawText();
+    this.drawRowLine();
+    this.drawColLine();
+    this.ctx.clearRect(this.chunk+1, this.chunk*5+1, this.chunk*8-2, this.chunk-2);
+    this.drawsharpS();
+    this.drawX();
+   // this.drawText();
+    this.pbzDrawText(this);
+    this.dbgText(this.ctx);
 }
 // 棋子初始化
 obj.init_chess = function(){
@@ -179,19 +201,8 @@ this.drawLine(4,3,6,1,0.5);
 this.drawLine(4,8,6,10,0.5);
 this.drawLine(4,10,6,8,0.5);
 }
-// 画楚河/漢界
-obj.drawText = function(){
-this.ctx.font = "bold 30px Courier New";
-  this.ctx.fillStyle = "#000";
-  this.ctx.fillText("楚 河", this.chunk*2, this.chunk*5+this.chunk/2+10);
-  this.ctx.fillText("漢 界", this.chunk*6, this.chunk*5+this.chunk/2+10);
-  this.ctx.font = "12px Courier New";
-  this.text_arr =["九","八","七","六","五","四","三","二","一"];
-  for(var i=0;i<9;i++){
-  this.ctx.fillText((i+1).toString(), this.chunk*(i+1)-5, 20);
-  this.ctx.fillText(this.text_arr[i], this.chunk*(i+1)-5, this.chunk*10+30+10);
-  }
-}
+
+ 
 // 画棋子形状
 obj.drawPiece = function(e){
 this.ctx.beginPath();
@@ -1095,6 +1106,3 @@ obj.init();
 //  ccr:3   // 候选小圆半径
 //  });
 
-function CRefactorChessBoard(){
-
-}
