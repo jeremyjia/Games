@@ -1,6 +1,6 @@
 function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.15",10, 10);
+    ctx.fillText("v0.25",10, 10);
   }
 
   // 画楚河/漢界
@@ -37,21 +37,21 @@ var obj = new CRefactorChessBoard();
 
 // 初始化
 obj.init = function(args){
-var canvas = document.getElementById("canvas");
-this.ctx = canvas.getContext("2d");
-//  this.chunk =args&&args.chunk?args.chunk:50; 
-//  this.radius =args&&args.radius?args.radius:23; 
-//  this.CandidateCircleR =args&&args.ccr?args.ccr:5;
-this.radius = 23;
-this.chunk =50;
-this.CandidateCircleR = 5;
-$("#currActive").text("红方");
-this.steps = [];      // 记录步骤
-this.currActive = "red";  // 先下
-this.init_back();
-this.init_chess();
-$(canvas).unbind();
-this.addEvent();
+    var canvas = document.getElementById("canvas");
+    this.ctx = canvas.getContext("2d");
+    //  this.chunk =args&&args.chunk?args.chunk:50; 
+    //  this.radius =args&&args.radius?args.radius:23; 
+    //  this.CandidateCircleR =args&&args.ccr?args.ccr:5;
+    this.radius = 23;
+    this.chunk =50;
+    this.CandidateCircleR = 5;
+    $("#currActive").text("红方");
+    this.steps = [];      // 记录步骤
+    this.currActive = "red";  // 先下
+    this.init_back();
+    //this.init_chess();
+    $(canvas).unbind();
+    this.addEvent();
 }
 // 棋盘初始化
 obj.init_back = function(){ 
