@@ -1,6 +1,6 @@
 function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.34",10, 10);
+    ctx.fillText("v0.42",10, 10);
   }
 
   // 画楚河/漢界
@@ -20,14 +20,14 @@ function CRefactorChessBoard(){
   // 画横线
   this.pbzDrawRowLine = function(_this){
     for(var i =1;i<=10;i++){
-      _this.drawLine(1,i,9,i);
+      _this.drawLine(_this,1,i,9,i);
     }
   } 
 
   // 画竖线
   this.pbzDrawColLine = function(_this){
     for(var i =1;i<=9;i++){
-        _this.drawLine(i,1,i,10);
+        _this.drawLine(_this,i,1,i,10);
       }
   }
 
@@ -78,6 +78,29 @@ function CRefactorChessBoard(){
     _this.ctx.stroke();
     _this.ctx.closePath(); 
   }
+
+  // 画直线
+  this.drawLine = function(_this,x0,y0,x1,y1,lw){
+      var x0 = x0*_this.chunk;
+      var y0 = y0*_this.chunk;
+      var x1 = x1*_this.chunk;
+      var y1 = y1*_this.chunk;
+      _this.ctx.beginPath();
+      _this.ctx.strokeStyle = "#000";
+      _this.ctx.lineWidth =lw?lw:1;
+      _this.ctx.moveTo(x0,y0);
+      _this.ctx.lineTo(x1,y1);
+      _this.ctx.stroke();
+      _this.ctx.closePath();
+  }
+
+  // 画X
+  this.drawX = function(_this){
+    _this.drawLine(_this,4,1,6,3,0.5);
+    _this.drawLine(_this,4,3,6,1,0.5);
+    _this.drawLine(_this,4,8,6,10,0.5);
+    _this.drawLine(_this,4,10,6,8,0.5);
+  }
 }
 
 
@@ -107,7 +130,7 @@ obj.init_back = function(){
     this.pbzDrawColLine(this);
     this.ctx.clearRect(this.chunk+1, this.chunk*5+1, this.chunk*8-2, this.chunk-2);
     this.drawsharpS(this);
-    this.drawX();
+    this.drawX(this);
    // this.drawText();
     this.pbzDrawText(this);
     this.dbgText(this.ctx);
@@ -183,31 +206,6 @@ $.each(this.steps,function(iii,eee){
  $("#ul").append("<li>"+eee+"</li>");
 });
 } 
-
-// 画直线
-obj.drawLine = function(x0,y0,x1,y1,lw){
-var x0 = x0*this.chunk;
-var y0 = y0*this.chunk;
-var x1 = x1*this.chunk;
-var y1 = y1*this.chunk;
-this.ctx.beginPath();
-this.ctx.strokeStyle = "#000";
-this.ctx.lineWidth =lw?lw:1;
-this.ctx.moveTo(x0,y0);
-this.ctx.lineTo(x1,y1);
-this.ctx.stroke();
-this.ctx.closePath();
-}
-
-
-// 画X
-obj.drawX = function(){
-this.drawLine(4,1,6,3,0.5);
-this.drawLine(4,3,6,1,0.5);
-this.drawLine(4,8,6,10,0.5);
-this.drawLine(4,10,6,8,0.5);
-}
-
  
 // 画棋子形状
 obj.drawPiece = function(e){
