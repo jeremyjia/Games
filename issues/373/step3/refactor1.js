@@ -1,6 +1,6 @@
 function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.25",10, 10);
+    ctx.fillText("v0.34",10, 10);
   }
 
   // 画楚河/漢界
@@ -29,7 +29,55 @@ function CRefactorChessBoard(){
     for(var i =1;i<=9;i++){
         _this.drawLine(i,1,i,10);
       }
+  }
+
+  // 画#
+  this.drawsharpS = function(_this){
+    _this.round(_this,2,3);
+    _this.round(_this,8,3);
+    _this.round(_this,1,4);
+    _this.round(_this,3,4);
+    _this.round(_this,5,4);
+    _this.round(_this,7,4);
+    _this.round(_this,9,4);
+    _this.round(_this,2,8);
+    _this.round(_this,8,8);
+    _this.round(_this,1,7);
+    _this.round(_this,3,7);
+    _this.round(_this,5,7);
+    _this.round(_this,7,7);
+    _this.round(_this,9,7);
+  }
+  // 画单个#
+  this.round = function(_this,x0,y0){
+    var x0 = x0*_this.chunk;
+    var y0 = y0*_this.chunk;
+    _this.ctx.beginPath();
+    _this.ctx.strokeStyle = "#000";
+    _this.ctx.lineWidth =1;
+    if(x0!=_this.chunk){
+    // 左上
+    _this.ctx.moveTo(x0-5,y0-10);
+    _this.ctx.lineTo(x0-5,y0-5);
+    _this.ctx.lineTo(x0-10,y0-5);
+    // 左下
+    _this.ctx.moveTo(x0-5,y0+10);
+    _this.ctx.lineTo(x0-5,y0+5);
+    _this.ctx.lineTo(x0-10,y0+5);
     }
+    if(x0!=_this.chunk*9){
+    // 右上
+    _this.ctx.moveTo(x0+5,y0-10);
+    _this.ctx.lineTo(x0+5,y0-5);
+    _this.ctx.lineTo(x0+10,y0-5);
+    // 右下
+    _this.ctx.moveTo(x0+5,y0+10);
+    _this.ctx.lineTo(x0+5,y0+5);
+    _this.ctx.lineTo(x0+10,y0+5);
+    }
+    _this.ctx.stroke();
+    _this.ctx.closePath(); 
+  }
 }
 
 
@@ -58,7 +106,7 @@ obj.init_back = function(){
     this.pbzDrawRowLine(this);
     this.pbzDrawColLine(this);
     this.ctx.clearRect(this.chunk+1, this.chunk*5+1, this.chunk*8-2, this.chunk-2);
-    this.drawsharpS();
+    this.drawsharpS(this);
     this.drawX();
    // this.drawText();
     this.pbzDrawText(this);
@@ -150,53 +198,8 @@ this.ctx.lineTo(x1,y1);
 this.ctx.stroke();
 this.ctx.closePath();
 }
-// 画#
-obj.drawsharpS = function(){
-this.round(2,3);
-this.round(8,3);
-this.round(1,4);
-this.round(3,4);
-this.round(5,4);
-this.round(7,4);
-this.round(9,4);
-this.round(2,8);
-this.round(8,8);
-this.round(1,7);
-this.round(3,7);
-this.round(5,7);
-this.round(7,7);
-this.round(9,7);
-}
-// 画单个#
-obj.round = function(x0,y0){
-var x0 = x0*this.chunk;
-var y0 = y0*this.chunk;
-this.ctx.beginPath();
-this.ctx.strokeStyle = "#000";
-this.ctx.lineWidth =1;
-if(x0!=this.chunk){
- // 左上
- this.ctx.moveTo(x0-5,y0-10);
- this.ctx.lineTo(x0-5,y0-5);
- this.ctx.lineTo(x0-10,y0-5);
- // 左下
- this.ctx.moveTo(x0-5,y0+10);
- this.ctx.lineTo(x0-5,y0+5);
- this.ctx.lineTo(x0-10,y0+5);
-}
-if(x0!=this.chunk*9){
- // 右上
- this.ctx.moveTo(x0+5,y0-10);
- this.ctx.lineTo(x0+5,y0-5);
- this.ctx.lineTo(x0+10,y0-5);
- // 右下
- this.ctx.moveTo(x0+5,y0+10);
- this.ctx.lineTo(x0+5,y0+5);
- this.ctx.lineTo(x0+10,y0+5);
-}
-this.ctx.stroke();
-this.ctx.closePath(); 
-}
+
+
 // 画X
 obj.drawX = function(){
 this.drawLine(4,1,6,3,0.5);
