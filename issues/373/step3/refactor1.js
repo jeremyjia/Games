@@ -1,6 +1,6 @@
 function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.42",10, 10);
+    ctx.fillText("v0.45",10, 10);
   }
 
   // 画楚河/漢界
@@ -101,6 +101,17 @@ function CRefactorChessBoard(){
     _this.drawLine(_this,4,8,6,10,0.5);
     _this.drawLine(_this,4,10,6,8,0.5);
   }
+
+  // 棋盘初始化
+  this.drawBoard = function(_this){ 
+    _this.pbzDrawRowLine(_this);
+    _this.pbzDrawColLine(_this);
+    _this.ctx.clearRect(_this.chunk+1, _this.chunk*5+1, _this.chunk*8-2, _this.chunk-2);
+    _this.drawsharpS(_this);
+    _this.drawX(_this); 
+    _this.pbzDrawText(_this);
+    _this.dbgText(_this.ctx);
+  }
 }
 
 
@@ -119,22 +130,12 @@ obj.init = function(args){
     $("#currActive").text("红方");
     this.steps = [];      // 记录步骤
     this.currActive = "red";  // 先下
-    this.init_back();
+    this.drawBoard(this);
     //this.init_chess();
     $(canvas).unbind();
     this.addEvent();
 }
-// 棋盘初始化
-obj.init_back = function(){ 
-    this.pbzDrawRowLine(this);
-    this.pbzDrawColLine(this);
-    this.ctx.clearRect(this.chunk+1, this.chunk*5+1, this.chunk*8-2, this.chunk-2);
-    this.drawsharpS(this);
-    this.drawX(this);
-   // this.drawText();
-    this.pbzDrawText(this);
-    this.dbgText(this.ctx);
-}
+
 // 棋子初始化
 obj.init_chess = function(){
 var Car_b1 = {x:1,y:1,text:"車"}
@@ -195,7 +196,7 @@ this.cheer_arr_ALL = this.cheer_arr_B.concat(this.cheer_arr_R);
 // 更新棋局
 obj.updateChess = function(){
 this.ctx.clearRect(0,0,canvas.width,canvas.height);
-this.init_back();
+this.drawBoard(this);
 var that = this;
 $.each(this.cheer_arr_ALL,function(i,e){   
  that.drawPiece(e);
