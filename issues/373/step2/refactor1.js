@@ -1,6 +1,6 @@
 function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.14",10, 10);
+    ctx.fillText("v0.15",10, 10);
   }
 
   // 画楚河/漢界
@@ -56,7 +56,7 @@ this.addEvent();
 // 棋盘初始化
 obj.init_back = function(){ 
     this.pbzDrawRowLine(this);
-    this.pbzDrawColLine();
+    this.pbzDrawColLine(this);
     this.ctx.clearRect(this.chunk+1, this.chunk*5+1, this.chunk*8-2, this.chunk-2);
     this.drawsharpS();
     this.drawX();
@@ -134,13 +134,7 @@ $("#ul").empty();
 $.each(this.steps,function(iii,eee){
  $("#ul").append("<li>"+eee+"</li>");
 });
-}
-// 画横线
-obj.drawRowLine = function(){
-for(var i =1;i<=10;i++){
- this.drawLine(1,i,9,i);
-}
-}
+} 
 
 // 画直线
 obj.drawLine = function(x0,y0,x1,y1,lw){
