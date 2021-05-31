@@ -1,6 +1,6 @@
 function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.51",10, 10);
+    ctx.fillText("v0.53",10, 10);
   }
 
   // 画楚河/漢界
@@ -101,6 +101,29 @@ function CRefactorChessBoard(){
     _this.drawLine(_this,4,8,6,10,0.5);
     _this.drawLine(_this,4,10,6,8,0.5);
   }
+
+  // 棋盘初始化
+  this.drawBoard = function(_this){ 
+    _this.pbzDrawRowLine(_this);
+    _this.pbzDrawColLine(_this);
+    _this.ctx.clearRect(_this.chunk+1, _this.chunk*5+1, _this.chunk*8-2, _this.chunk-2);
+    _this.drawsharpS(_this);
+    _this.drawX(_this); 
+    _this.pbzDrawText(_this);
+    _this.dbgText(_this.ctx);
+  }
+
+  // 画棋子形状
+  this.drawPiece = function(_this,e){
+    _this.ctx.beginPath();
+    _this.ctx.fillStyle =e.bgcolor;
+    _this.ctx.strokeStyle = e.bgColor_b;
+    _this.ctx.lineWidth =2;
+    _this.ctx.arc(e.x*_this.chunk, e.y*_this.chunk, _this.radius, 0, Math.PI * 2, true);
+    _this.ctx.closePath();
+    _this.ctx.fill();
+    _this.ctx.stroke();
+  }
 }
 
 
@@ -119,22 +142,12 @@ obj.init = function(args){
     $("#currActive").text("红方");
     this.steps = [];      // 记录步骤
     this.currActive = "red";  // 先下
-    this.drawBoard();
+    this.drawBoard(this);
     this.drawAllChesses();
     $(canvas).unbind();
     this.addEvent();
-}
-// 棋盘初始化
-obj.drawBoard = function(){ 
-    this.pbzDrawRowLine(this);
-    this.pbzDrawColLine(this);
-    this.ctx.clearRect(this.chunk+1, this.chunk*5+1, this.chunk*8-2, this.chunk-2);
-    this.drawsharpS(this);
-    this.drawX(this);
-   // this.drawText();
-    this.pbzDrawText(this);
-    this.dbgText(this.ctx);
-}
+} 
+
 // 棋子初始化
 obj.drawAllChesses = function(){
 var Car_b1 = {x:1,y:1,text:"車"}
@@ -179,7 +192,7 @@ $.each(this.cheer_arr_B,function(i,e){
  e.bgcolor = "#fff";
  e.bgColor_b = "#000";
  e.type = "black";
- that.drawPiece(e);
+ that.drawPiece(that,e);
  that.drawChessText(e);
 });
 $.each(this.cheer_arr_R,function(i,e){ 
@@ -187,7 +200,7 @@ $.each(this.cheer_arr_R,function(i,e){
  e.bgcolor = "#fff";
  e.bgColor_b = "#f00";
  e.type = "red";
- that.drawPiece(e);
+ that.drawPiece(that,e);
  that.drawChessText(e);
 });
 this.cheer_arr_ALL = this.cheer_arr_B.concat(this.cheer_arr_R); 
@@ -195,10 +208,10 @@ this.cheer_arr_ALL = this.cheer_arr_B.concat(this.cheer_arr_R);
 // 更新棋局
 obj.updateChess = function(){
 this.ctx.clearRect(0,0,canvas.width,canvas.height);
-this.drawBoard();
+this.drawBoard(this);
 var that = this;
 $.each(this.cheer_arr_ALL,function(i,e){   
- that.drawPiece(e);
+ that.drawPiece(that,e);
  that.drawChessText(e);
 });
 $("#ul").empty();
@@ -207,17 +220,7 @@ $.each(this.steps,function(iii,eee){
 });
 } 
  
-// 画棋子形状
-obj.drawPiece = function(e){
-this.ctx.beginPath();
-this.ctx.fillStyle =e.bgcolor;
-this.ctx.strokeStyle = e.bgColor_b;
-this.ctx.lineWidth =2;
-     this.ctx.arc(e.x*this.chunk, e.y*this.chunk, this.radius, 0, Math.PI * 2, true);
-     this.ctx.closePath();
-     this.ctx.fill();
-     this.ctx.stroke();
-}
+
 // 画棋子文字
 obj.drawChessText = function(e){
 this.ctx.font = "bold 30px Courier New";
