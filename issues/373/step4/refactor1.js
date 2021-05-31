@@ -1,6 +1,6 @@
 function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.53",10, 10);
+    ctx.fillText("v0.54",10, 10);
   }
 
   // 画楚河/漢界
@@ -124,6 +124,14 @@ function CRefactorChessBoard(){
     _this.ctx.fill();
     _this.ctx.stroke();
   }
+
+  // 画棋子文字
+  this.drawChessText = function(_this,e){
+    _this.ctx.font = "bold 30px Courier New";
+    _this.ctx.fillStyle = e.color;
+    var offset = _this.ctx.measureText(e.text).width/2;
+    _this.ctx.fillText(e.text, e.x*_this.chunk-offset, e.y*_this.chunk+10);
+  }
 }
 
 
@@ -193,7 +201,7 @@ $.each(this.cheer_arr_B,function(i,e){
  e.bgColor_b = "#000";
  e.type = "black";
  that.drawPiece(that,e);
- that.drawChessText(e);
+ that.drawChessText(that,e);
 });
 $.each(this.cheer_arr_R,function(i,e){ 
  e.color = "#f00";
@@ -201,7 +209,7 @@ $.each(this.cheer_arr_R,function(i,e){
  e.bgColor_b = "#f00";
  e.type = "red";
  that.drawPiece(that,e);
- that.drawChessText(e);
+ that.drawChessText(that,e);
 });
 this.cheer_arr_ALL = this.cheer_arr_B.concat(this.cheer_arr_R); 
 }
@@ -212,7 +220,7 @@ this.drawBoard(this);
 var that = this;
 $.each(this.cheer_arr_ALL,function(i,e){   
  that.drawPiece(that,e);
- that.drawChessText(e);
+ that.drawChessText(that,e);
 });
 $("#ul").empty();
 $.each(this.steps,function(iii,eee){
@@ -221,13 +229,7 @@ $.each(this.steps,function(iii,eee){
 } 
  
 
-// 画棋子文字
-obj.drawChessText = function(e){
-this.ctx.font = "bold 30px Courier New";
-  this.ctx.fillStyle = e.color;
-  var offset = this.ctx.measureText(e.text).width/2;
-  this.ctx.fillText(e.text, e.x*this.chunk-offset, e.y*this.chunk+10);
-}
+
 // 增加点击事件
 obj.addEvent = function(){
 var that = this;
