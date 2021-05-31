@@ -1,6 +1,6 @@
 function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.43",10, 10);
+    ctx.fillText("v0.51",10, 10);
   }
 
   // 画楚河/漢界
@@ -120,7 +120,7 @@ obj.init = function(args){
     this.steps = [];      // 记录步骤
     this.currActive = "red";  // 先下
     this.drawBoard();
-    this.drawChess();
+    this.drawAllChesses();
     $(canvas).unbind();
     this.addEvent();
 }
@@ -136,7 +136,7 @@ obj.drawBoard = function(){
     this.dbgText(this.ctx);
 }
 // 棋子初始化
-obj.drawChess = function(){
+obj.drawAllChesses = function(){
 var Car_b1 = {x:1,y:1,text:"車"}
 var Horse_b1 = {x:2,y:1,text:"馬"}
 var Elephant_b1 = {x:3,y:1,text:"象"}
