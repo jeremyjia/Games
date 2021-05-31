@@ -1,6 +1,6 @@
 function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.54",10, 10);
+    ctx.fillText("v0.111",10, 10);
   }
 
   // 画楚河/漢界
@@ -132,6 +132,64 @@ function CRefactorChessBoard(){
     var offset = _this.ctx.measureText(e.text).width/2;
     _this.ctx.fillText(e.text, e.x*_this.chunk-offset, e.y*_this.chunk+10);
   }
+
+  // 棋子初始化
+  this.drawAllChesses = function(_this){
+    var Car_b1 = {x:1,y:1,text:"車"}
+    var Horse_b1 = {x:2,y:1,text:"馬"}
+    var Elephant_b1 = {x:3,y:1,text:"象"}
+    var Scholar_b1 = {x:4,y:1,text:"士"}
+    var Boss_b = {x:5,y:1,text:"将"} 
+    var Scholar_b2 = {x:6,y:1,text:"士"}
+    var Elephant_b2 = {x:7,y:1,text:"象"}
+    var Horse_b2 = {x:8,y:1,text:"馬"}
+    var Car_b2 = {x:9,y:1,text:"車"}
+    var Cannon_b1 = {x:2,y:3,text:"炮"}
+    var Cannon_b2 = {x:8,y:3,text:"炮"}
+    var Soldier_b1 = {x:1,y:4,text:"卒"}
+    var Soldier_b2 = {x:3,y:4,text:"卒"}
+    var Soldier_b3 = {x:5,y:4,text:"卒"}
+    var Soldier_b4 = {x:7,y:4,text:"卒"}
+    var Soldier_b5 = {x:9,y:4,text:"卒"}
+    var Car_r1 = {x:1,y:10,text:"車"}
+    var Horse_r1 = {x:2,y:10,text:"馬"}
+    var Elephant_r1 = {x:3,y:10,text:"相"}
+    var Scholar_r1 = {x:4,y:10,text:"仕"}
+    var Boss_r = {x:5,y:10,text:"帅"} 
+    var Scholar_r2 = {x:6,y:10,text:"仕"}
+    var Elephant_r2 = {x:7,y:10,text:"相"}
+    var Horse_r2 = {x:8,y:10,text:"馬"}
+    var Car_r2 = {x:9,y:10,text:"車"}
+    var Cannon_r1 = {x:2,y:8,text:"炮"}
+    var Cannon_r2 = {x:8,y:8,text:"炮"}
+    var Soldier_r1 = {x:1,y:7,text:"兵"}
+    var Soldier_r2 = {x:3,y:7,text:"兵"}
+    var Soldier_r3 = {x:5,y:7,text:"兵"}
+    var Soldier_r4 = {x:7,y:7,text:"兵"}
+    var Soldier_r5 = {x:9,y:7,text:"兵"}
+    _this.cheer_arr_B = [Car_b1,Horse_b1,Elephant_b1,Scholar_b1,Boss_b,Scholar_b2,Elephant_b2,Horse_b2,Car_b2,
+    Cannon_b1,Cannon_b2,Soldier_b1,Soldier_b2,Soldier_b3,Soldier_b4,Soldier_b5];
+    _this.cheer_arr_R = [Car_r1,Horse_r1,Elephant_r1,Scholar_r1,Boss_r,Scholar_r2,Elephant_r2,Horse_r2,Car_r2,
+    Cannon_r1,Cannon_r2,Soldier_r1,Soldier_r2,Soldier_r3,Soldier_r4,Soldier_r5];
+    var that = _this;
+    $.each(_this.cheer_arr_B,function(i,e){ 
+      e.color = "#000";
+      e.bgcolor = "#fff";
+      e.bgColor_b = "#000";
+      e.type = "black";
+      that.drawPiece(that,e);
+      that.drawChessText(that,e);
+    });
+    $.each(_this.cheer_arr_R,function(i,e){ 
+      e.color = "#f00";
+      e.bgcolor = "#fff";
+      e.bgColor_b = "#f00";
+      e.type = "red";
+      that.drawPiece(that,e);
+      that.drawChessText(that,e);
+    });
+    _this.cheer_arr_ALL = _this.cheer_arr_B.concat(_this.cheer_arr_R); 
+    }
 }
 
 
@@ -151,68 +209,13 @@ obj.init = function(args){
     this.steps = [];      // 记录步骤
     this.currActive = "red";  // 先下
     this.drawBoard(this);
-    this.drawAllChesses();
+    this.drawAllChesses(this);
     $(canvas).unbind();
     this.addEvent();
 } 
 
-// 棋子初始化
-obj.drawAllChesses = function(){
-var Car_b1 = {x:1,y:1,text:"車"}
-var Horse_b1 = {x:2,y:1,text:"馬"}
-var Elephant_b1 = {x:3,y:1,text:"象"}
-var Scholar_b1 = {x:4,y:1,text:"士"}
-var Boss_b = {x:5,y:1,text:"将"} 
-var Scholar_b2 = {x:6,y:1,text:"士"}
-var Elephant_b2 = {x:7,y:1,text:"象"}
-var Horse_b2 = {x:8,y:1,text:"馬"}
-var Car_b2 = {x:9,y:1,text:"車"}
-var Cannon_b1 = {x:2,y:3,text:"炮"}
-var Cannon_b2 = {x:8,y:3,text:"炮"}
-var Soldier_b1 = {x:1,y:4,text:"卒"}
-var Soldier_b2 = {x:3,y:4,text:"卒"}
-var Soldier_b3 = {x:5,y:4,text:"卒"}
-var Soldier_b4 = {x:7,y:4,text:"卒"}
-var Soldier_b5 = {x:9,y:4,text:"卒"}
-var Car_r1 = {x:1,y:10,text:"車"}
-var Horse_r1 = {x:2,y:10,text:"馬"}
-var Elephant_r1 = {x:3,y:10,text:"相"}
-var Scholar_r1 = {x:4,y:10,text:"仕"}
-var Boss_r = {x:5,y:10,text:"帅"} 
-var Scholar_r2 = {x:6,y:10,text:"仕"}
-var Elephant_r2 = {x:7,y:10,text:"相"}
-var Horse_r2 = {x:8,y:10,text:"馬"}
-var Car_r2 = {x:9,y:10,text:"車"}
-var Cannon_r1 = {x:2,y:8,text:"炮"}
-var Cannon_r2 = {x:8,y:8,text:"炮"}
-var Soldier_r1 = {x:1,y:7,text:"兵"}
-var Soldier_r2 = {x:3,y:7,text:"兵"}
-var Soldier_r3 = {x:5,y:7,text:"兵"}
-var Soldier_r4 = {x:7,y:7,text:"兵"}
-var Soldier_r5 = {x:9,y:7,text:"兵"}
-this.cheer_arr_B = [Car_b1,Horse_b1,Elephant_b1,Scholar_b1,Boss_b,Scholar_b2,Elephant_b2,Horse_b2,Car_b2,
-Cannon_b1,Cannon_b2,Soldier_b1,Soldier_b2,Soldier_b3,Soldier_b4,Soldier_b5];
-this.cheer_arr_R = [Car_r1,Horse_r1,Elephant_r1,Scholar_r1,Boss_r,Scholar_r2,Elephant_r2,Horse_r2,Car_r2,
-Cannon_r1,Cannon_r2,Soldier_r1,Soldier_r2,Soldier_r3,Soldier_r4,Soldier_r5];
-var that = this;
-$.each(this.cheer_arr_B,function(i,e){ 
- e.color = "#000";
- e.bgcolor = "#fff";
- e.bgColor_b = "#000";
- e.type = "black";
- that.drawPiece(that,e);
- that.drawChessText(that,e);
-});
-$.each(this.cheer_arr_R,function(i,e){ 
- e.color = "#f00";
- e.bgcolor = "#fff";
- e.bgColor_b = "#f00";
- e.type = "red";
- that.drawPiece(that,e);
- that.drawChessText(that,e);
-});
-this.cheer_arr_ALL = this.cheer_arr_B.concat(this.cheer_arr_R); 
-}
+
+
 // 更新棋局
 obj.updateChess = function(){
 this.ctx.clearRect(0,0,canvas.width,canvas.height);
