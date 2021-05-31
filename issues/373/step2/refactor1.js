@@ -23,6 +23,13 @@ function CRefactorChessBoard(){
       _this.drawLine(1,i,9,i);
     }
   } 
+
+  // 画竖线
+  this.pbzDrawColLine = function(_this){
+    for(var i =1;i<=9;i++){
+        _this.drawLine(i,1,i,10);
+      }
+    }
 }
 
 
@@ -47,10 +54,9 @@ $(canvas).unbind();
 this.addEvent();
 }
 // 棋盘初始化
-obj.init_back = function(){
-    //this.drawRowLine();    
+obj.init_back = function(){ 
     this.pbzDrawRowLine(this);
-    this.drawColLine();
+    this.pbzDrawColLine();
     this.ctx.clearRect(this.chunk+1, this.chunk*5+1, this.chunk*8-2, this.chunk-2);
     this.drawsharpS();
     this.drawX();
@@ -135,12 +141,7 @@ for(var i =1;i<=10;i++){
  this.drawLine(1,i,9,i);
 }
 }
-// 画竖线
-obj.drawColLine = function(){
-for(var i =1;i<=9;i++){
- this.drawLine(i,1,i,10);
-}
-}
+
 // 画直线
 obj.drawLine = function(x0,y0,x1,y1,lw){
 var x0 = x0*this.chunk;
