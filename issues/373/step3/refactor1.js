@@ -1,6 +1,6 @@
 function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.14",10, 10);
+    ctx.fillText("v0.15",10, 10);
   }
 
   // 画楚河/漢界
