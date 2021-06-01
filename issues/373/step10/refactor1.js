@@ -1,6 +1,6 @@
 function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.221",10, 10);
+    ctx.fillText("v0.222",10, 10);
   }
 
   // 画楚河/漢界
@@ -1080,23 +1080,23 @@ this.rule_Soldier_r = function(that,i,j){
   }
 
   // 初始化
-this.init = function(that,args){
-  var canvas = document.getElementById("canvas");
-  that.ctx = canvas.getContext("2d");
-  //  that.chunk =args&&args.chunk?args.chunk:50; 
-  //  that.radius =args&&args.radius?args.radius:23; 
-  //  that.CandidateCircleR =args&&args.ccr?args.ccr:5;
-  that.radius = 23;
-  that.chunk =50;
-  that.CandidateCircleR = 5;
-  $("#currActive").text("红方");
-  that.steps = [];      // 记录步骤
-  that.currActive = "red";  // 先下
-  that.drawBoard(that);
-  that.drawAllChesses(that);
-  $(canvas).unbind();
-  that.addEvent(that);
-} 
+  this.init = function(that,args){
+    var canvas = document.getElementById("canvas");
+    that.ctx = canvas.getContext("2d");
+    //  that.chunk =args&&args.chunk?args.chunk:50; 
+    //  that.radius =args&&args.radius?args.radius:23; 
+    //  that.CandidateCircleR =args&&args.ccr?args.ccr:5;
+    that.radius = 23;
+    that.chunk =50;
+    that.CandidateCircleR = 5;
+    $("#currActive").text("红方");
+    that.steps = [];      // 记录步骤
+    that.currActive = "red";  // 先下
+    that.drawBoard(that);
+    that.drawAllChesses(that);
+    $(canvas).unbind();
+    that.addEvent(that);
+  } 
 
 }
 var obj = new CRefactorChessBoard();
@@ -1121,14 +1121,15 @@ obj.updateChess = function(){
 
 
 obj.inArray = function(x,y){
-var hasObstacle = false;
-$.each(this.cheer_arr_ALL,function(ii,ee){
- if(ee.x ==x&&ee.y==y){
- hasObstacle = true;
- return false;
- }
-});
-return hasObstacle;
+  var that = this;
+  var hasObstacle = false;
+  $.each(that.cheer_arr_ALL,function(ii,ee){
+    if(ee.x ==x&&ee.y==y){
+      hasObstacle = true;
+      return false;
+    }
+  });
+  return hasObstacle;
 }
 obj.init(obj);
 //  obj.init({
