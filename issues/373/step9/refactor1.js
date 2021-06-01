@@ -1,6 +1,6 @@
 function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.161",10, 10);
+    ctx.fillText("v0.213",10, 10);
   }
 
   // 画楚河/漢界
@@ -735,21 +735,21 @@ this.drawCandidate = function(that){
       case "馬":
       return that.rule_Horse(that,i,j); 
       case "相":
-      return that.rule_Elephant_r(i,j);
+      return that.rule_Elephant_r(that,i,j);
       case "象":
-      return that.rule_Elephant_b(i,j);
+      return that.rule_Elephant_b(that,i,j);
       case "仕":
-      return that.rule_Scholar_r(i,j);
+      return that.rule_Scholar_r(that,i,j);
       case "士":
-      return that.rule_Scholar_b(i,j);
+      return that.rule_Scholar_b(that,i,j);
       case "帅":
-      return that.rule_Boss_r(i,j);
+      return that.rule_Boss_r(that,i,j);
       case "将":
-      return that.rule_Boss_b(i,j);
+      return that.rule_Boss_b(that,i,j);
       case "兵":
-      return that.rule_Soldier_r(i,j);
+      return that.rule_Soldier_r(that,i,j);
       case "卒":
-      return that.rule_Soldier_b(i,j);
+      return that.rule_Soldier_b(that,i,j);
       case "炮":
       if(that.rule_Cannon(that,i,j)==0){
         return true;
@@ -766,21 +766,21 @@ this.drawCandidate = function(that){
       case "馬":
       return that.rule_Horse(that,i,j); 
       case "相":
-      return that.rule_Elephant_r(i,j);
+      return that.rule_Elephant_r(that,i,j);
       case "象":
-      return that.rule_Elephant_b(i,j);
+      return that.rule_Elephant_b(that,i,j);
       case "仕":
-      return that.rule_Scholar_r(i,j);
+      return that.rule_Scholar_r(that,i,j);
       case "士":
-      return that.rule_Scholar_b(i,j);
+      return that.rule_Scholar_b(that,i,j);
       case "帅":
-      return that.rule_Boss_r(i,j);
+      return that.rule_Boss_r(that,i,j);
       case "将":
-      return that.rule_Boss_b(i,j);
+      return that.rule_Boss_b(that,i,j);
       case "兵":
-      return that.rule_Soldier_r(i,j);
+      return that.rule_Soldier_r(that,i,j);
       case "卒":
-      return that.rule_Soldier_b(i,j);
+      return that.rule_Soldier_b(that,i,j);
       case "炮":
       if(that.rule_Cannon(that,i,j)==1){
         return true;
@@ -960,6 +960,124 @@ this.drawCandidate = function(that){
     }
     return 2;
   }
+
+  
+// 红相的规则
+this.rule_Elephant_r = function(that,i,j){
+  var hasObstacle = false; 
+  if((Math.abs(that.preChess.x-i)==2&&Math.abs(that.preChess.y-j)==2)&&j>=6){
+   var vgaX = (that.preChess.x+i)/2;
+   var vgaY = (that.preChess.y+j)/2;
+   console.log(vgaX);
+   $.each(that.cheer_arr_ALL,function(ii,ee){
+   if(ee.x ==vgaX&&ee.y==vgaY){
+    hasObstacle =true;
+    return false;
+   }
+   });
+   if(hasObstacle){
+   return false;
+   }
+   return true;
+  }
+  return false;
+  }
+  // 黑象的规则
+  this.rule_Elephant_b = function(that,i,j){
+  var hasObstacle = false; 
+  if((Math.abs(that.preChess.x-i)==2&&Math.abs(that.preChess.y-j)==2)&&j<6){
+   var vgaX = (that.preChess.x+i)/2;
+   var vgaY = (that.preChess.y+j)/2;
+  //   console.log(vgaX);
+   $.each(that.cheer_arr_ALL,function(ii,ee){
+   if(ee.x ==vgaX&&ee.y==vgaY){
+    hasObstacle =true;
+    return false;
+   }
+   });
+   if(hasObstacle){
+   return false;
+   }
+   return true;
+  }
+  return false;
+  }
+
+  // 红仕的规则
+this.rule_Scholar_r = function(that,i,j){
+  if(that.preChess.x==5&&that.preChess.y==9){
+   if(Math.abs(that.preChess.x-i)==1&&Math.abs(that.preChess.y-j)==1){
+   return true;
+   }
+  }else if(i==5&&j==9){
+   return true;
+  }
+  return false;
+  }
+  // 黑仕的规则
+  this.rule_Scholar_b = function(that,i,j){
+  if(that.preChess.x==5&&that.preChess.y==2){
+   if(Math.abs(that.preChess.x-i)==1&&Math.abs(that.preChess.y-j)==1){
+   return true;
+   }
+  }else if(i==5&&j==2){
+   return true;
+  }
+  return false;
+  }
+
+  
+// 帅的规则
+this.rule_Boss_r = function(that,i,j){
+  if((Math.abs(that.preChess.x-i)==1&&that.preChess.y==j)
+  ||(that.preChess.x==i&&Math.abs(that.preChess.y-j)==1)){
+   if(i>=4&&i<=6&&j>=8&&j<=10){
+   return true;
+   }else{
+   return false;
+   }
+  }
+  return false;
+  }
+  // 将的规则
+  this.rule_Boss_b = function(that,i,j){
+  if((Math.abs(that.preChess.x-i)==1&&that.preChess.y==j)
+  ||(that.preChess.x==i&&Math.abs(that.preChess.y-j)==1)){
+   if(i>=4&&i<=6&&j>=1&&j<=3){
+   return true;
+   }else{
+   return false;
+   }
+  }
+  return false;
+  }
+
+  // 兵的规则
+this.rule_Soldier_r = function(that,i,j){
+  if(that.preChess.y<=5){
+   if((that.preChess.x ==i&&that.preChess.y-1==j)||(that.preChess.x-1 ==i&&that.preChess.y==j)||(that.preChess.x+1 ==i&&that.preChess.y==j)){
+   return true;
+   }
+  }else{
+   if(that.preChess.x ==i&&that.preChess.y-1==j){
+   return true;
+   }
+  }
+  return false;
+  }
+  // 卒的规则
+  this.rule_Soldier_b = function(that,i,j){
+  if(that.preChess.y>5){
+   if((that.preChess.x ==i&&that.preChess.y+1==j)||(that.preChess.x-1 ==i&&that.preChess.y==j)||(that.preChess.x+1 ==i&&that.preChess.y==j)){
+   return true;
+   }
+  }else{
+   if(that.preChess.x ==i&&that.preChess.y+1==j){
+   return true;
+   }
+  }
+  return false;
+  }
 }
 var obj = new CRefactorChessBoard();
 
@@ -998,120 +1116,8 @@ obj.updateChess = function(){
 } 
 
 
-// 红相的规则
-obj.rule_Elephant_r = function(i,j){
-var hasObstacle = false;
-var that = this;
-if((Math.abs(that.preChess.x-i)==2&&Math.abs(that.preChess.y-j)==2)&&j>=6){
- var vgaX = (that.preChess.x+i)/2;
- var vgaY = (that.preChess.y+j)/2;
- console.log(vgaX);
- $.each(that.cheer_arr_ALL,function(ii,ee){
- if(ee.x ==vgaX&&ee.y==vgaY){
-  hasObstacle =true;
-  return false;
- }
- });
- if(hasObstacle){
- return false;
- }
- return true;
-}
-return false;
-}
-// 黑象的规则
-obj.rule_Elephant_b = function(i,j){
-var hasObstacle = false;
-var that = this;
-if((Math.abs(that.preChess.x-i)==2&&Math.abs(that.preChess.y-j)==2)&&j<6){
- var vgaX = (that.preChess.x+i)/2;
- var vgaY = (that.preChess.y+j)/2;
-//   console.log(vgaX);
- $.each(that.cheer_arr_ALL,function(ii,ee){
- if(ee.x ==vgaX&&ee.y==vgaY){
-  hasObstacle =true;
-  return false;
- }
- });
- if(hasObstacle){
- return false;
- }
- return true;
-}
-return false;
-}
-// 红仕的规则
-obj.rule_Scholar_r = function(i,j){
-if(this.preChess.x==5&&this.preChess.y==9){
- if(Math.abs(this.preChess.x-i)==1&&Math.abs(this.preChess.y-j)==1){
- return true;
- }
-}else if(i==5&&j==9){
- return true;
-}
-return false;
-}
-// 黑仕的规则
-obj.rule_Scholar_b = function(i,j){
-if(this.preChess.x==5&&this.preChess.y==2){
- if(Math.abs(this.preChess.x-i)==1&&Math.abs(this.preChess.y-j)==1){
- return true;
- }
-}else if(i==5&&j==2){
- return true;
-}
-return false;
-}
-// 帅的规则
-obj.rule_Boss_r = function(i,j){
-if((Math.abs(this.preChess.x-i)==1&&this.preChess.y==j)
-||(this.preChess.x==i&&Math.abs(this.preChess.y-j)==1)){
- if(i>=4&&i<=6&&j>=8&&j<=10){
- return true;
- }else{
- return false;
- }
-}
-return false;
-}
-// 将的规则
-obj.rule_Boss_b = function(i,j){
-if((Math.abs(this.preChess.x-i)==1&&this.preChess.y==j)
-||(this.preChess.x==i&&Math.abs(this.preChess.y-j)==1)){
- if(i>=4&&i<=6&&j>=1&&j<=3){
- return true;
- }else{
- return false;
- }
-}
-return false;
-}
-// 兵的规则
-obj.rule_Soldier_r = function(i,j){
-if(this.preChess.y<=5){
- if((this.preChess.x ==i&&this.preChess.y-1==j)||(this.preChess.x-1 ==i&&this.preChess.y==j)||(this.preChess.x+1 ==i&&this.preChess.y==j)){
- return true;
- }
-}else{
- if(this.preChess.x ==i&&this.preChess.y-1==j){
- return true;
- }
-}
-return false;
-}
-// 卒的规则
-obj.rule_Soldier_b = function(i,j){
-if(this.preChess.y>5){
- if((this.preChess.x ==i&&this.preChess.y+1==j)||(this.preChess.x-1 ==i&&this.preChess.y==j)||(this.preChess.x+1 ==i&&this.preChess.y==j)){
- return true;
- }
-}else{
- if(this.preChess.x ==i&&this.preChess.y+1==j){
- return true;
- }
-}
-return false;
-}
+
+
 obj.inArray = function(x,y){
 var hasObstacle = false;
 $.each(this.cheer_arr_ALL,function(ii,ee){
