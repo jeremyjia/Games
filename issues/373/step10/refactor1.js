@@ -1,6 +1,6 @@
 function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.231",10, 10);
+    ctx.fillText("v0.234",10, 10);
   }
 
   // 画楚河/漢界
@@ -1090,6 +1090,20 @@ this.rule_Soldier_r = function(that,i,j){
     return hasObstacle;
   }
 
+  // 更新棋局
+this.updateChess = function(that){ 
+  that.ctx.clearRect(0,0,canvas.width,canvas.height);
+  that.drawBoard(that);
+  $.each(that.cheer_arr_ALL,function(i,e){   
+    that.drawPiece(that,e);
+    that.drawChessText(that,e);
+  });
+  $("#ul").empty();
+  $.each(that.steps,function(iii,eee){
+    $("#ul").append("<li>"+eee+"</li>");
+  });
+} 
+
   // 初始化
   this.init = function(that,args){
     var canvas = document.getElementById("canvas");
@@ -1112,26 +1126,6 @@ this.rule_Soldier_r = function(that,i,j){
 
 }
 var obj = new CRefactorChessBoard();
-
-
-// 更新棋局
-obj.updateChess = function(that){ 
-  that.ctx.clearRect(0,0,canvas.width,canvas.height);
-  that.drawBoard(that);
-  $.each(that.cheer_arr_ALL,function(i,e){   
-    that.drawPiece(that,e);
-    that.drawChessText(that,e);
-  });
-  $("#ul").empty();
-  $.each(that.steps,function(iii,eee){
-    $("#ul").append("<li>"+eee+"</li>");
-  });
-} 
-
-
-
-
-
 obj.init(obj);
 //  obj.init({
 //  chunk:50, // 格子大小
