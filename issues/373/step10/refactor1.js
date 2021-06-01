@@ -1,6 +1,6 @@
 function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.224",10, 10);
+    ctx.fillText("v0.231",10, 10);
   }
 
   // 画楚河/漢界
@@ -219,11 +219,11 @@ this.addEvent = function(_this){
       that.checked = true;
      }else if(that.preChess.x == ee.x&&that.preChess.y == ee.y){
   //      console.log("点在原棋子上");
-      that.updateChess();
+      that.updateChess(that);
       that.checked = false;
      }else if(that.preChess.type == ee.type){
   //      console.log("切换棋子");
-      that.updateChess();
+      that.updateChess(that);
       that.drawChecked(that,p);
       that.preChess = ee;
       that.drawCandidate(that);
@@ -390,7 +390,7 @@ this.addEvent = function(_this){
         return false;
       }
     });
-    that.updateChess();
+    that.updateChess(that);
     that.checked = false;
   }
 
@@ -1115,16 +1115,15 @@ var obj = new CRefactorChessBoard();
 
 
 // 更新棋局
-obj.updateChess = function(){
-  this.ctx.clearRect(0,0,canvas.width,canvas.height);
-  this.drawBoard(this);
-  var that = this;
-  $.each(this.cheer_arr_ALL,function(i,e){   
+obj.updateChess = function(that){ 
+  that.ctx.clearRect(0,0,canvas.width,canvas.height);
+  that.drawBoard(that);
+  $.each(that.cheer_arr_ALL,function(i,e){   
     that.drawPiece(that,e);
     that.drawChessText(that,e);
   });
   $("#ul").empty();
-  $.each(this.steps,function(iii,eee){
+  $.each(that.steps,function(iii,eee){
     $("#ul").append("<li>"+eee+"</li>");
   });
 } 
