@@ -1,6 +1,6 @@
 function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.114",10, 10);
+    ctx.fillText("v0.121",10, 10);
   }
 
   // 画楚河/漢界
@@ -294,6 +294,63 @@ this.addEvent = function(_this){
    }
   });
   }
+
+  
+ // 记谱
+ this.note = function(that,ee,i,j){    
+    var distance = Math.abs(ee.y-j);
+    var step;
+    if(ee.type=="red"){
+    $("#currActive").text("黑方");
+    var oldP = that.text_arr[ee.x-1];
+    var newP = that.text_arr[i-1];
+    var num = that.text_arr[9-distance];
+    if(j<ee.y){
+    if(ee.x == i){
+      console.log(ee.text+oldP+"进"+num);
+      step = ee.text+oldP+"进"+num;
+    }else{
+      console.log(ee.text+oldP+"进"+newP);
+      step = ee.text+oldP+"进"+newP;
+    }
+    }else if(j>ee.y){
+    if(ee.x == i){
+      console.log(ee.text+oldP+"退"+num);
+      step = ee.text+oldP+"退"+num;
+    }else{
+      console.log(ee.text+oldP+"退"+newP);
+      step = ee.text+oldP+"退"+newP;
+    }
+    }else{
+    console.log(ee.text+oldP+"平"+newP);
+    step = ee.text+oldP+"平"+newP;
+    }
+    }else{
+    $("#currActive").text("红方");
+    if(j>ee.y){
+    if(ee.x == i){
+      console.log(ee.text+ee.x+"进"+distance);
+      step = ee.text+ee.x+"进"+distance
+    }else{
+      console.log(ee.text+ee.x+"进"+i);
+      step = ee.text+ee.x+"进"+i;
+    }
+    }else if(j<ee.y){
+    if(ee.x == i){
+      console.log(ee.text+ee.x+"退"+distance);
+      step = ee.text+ee.x+"退"+distance;
+    }else{
+      console.log(ee.text+ee.x+"退"+i);
+      step = ee.text+ee.x+"退"+i;
+    }
+    }else{
+    console.log(ee.text+ee.x+"平"+i);
+    step = ee.text+ee.x+"平"+i;
+    } 
+    }
+    that.steps.push(step); 
+  }
+
 }
 var obj = new CRefactorChessBoard();
 
@@ -336,60 +393,7 @@ obj.updateChess = function(){
 
 
 
-// 记谱
-obj.note = function(ee,i,j){
-var distance = Math.abs(ee.y-j);
-var step;
-if(ee.type=="red"){
- $("#currActive").text("黑方");
- var oldP = this.text_arr[ee.x-1];
- var newP = this.text_arr[i-1];
- var num = this.text_arr[9-distance];
- if(j<ee.y){
- if(ee.x == i){
-  console.log(ee.text+oldP+"进"+num);
-  step = ee.text+oldP+"进"+num;
- }else{
-  console.log(ee.text+oldP+"进"+newP);
-  step = ee.text+oldP+"进"+newP;
- }
- }else if(j>ee.y){
- if(ee.x == i){
-  console.log(ee.text+oldP+"退"+num);
-  step = ee.text+oldP+"退"+num;
- }else{
-  console.log(ee.text+oldP+"退"+newP);
-  step = ee.text+oldP+"退"+newP;
- }
- }else{
- console.log(ee.text+oldP+"平"+newP);
- step = ee.text+oldP+"平"+newP;
- }
-}else{
- $("#currActive").text("红方");
- if(j>ee.y){
- if(ee.x == i){
-  console.log(ee.text+ee.x+"进"+distance);
-  step = ee.text+ee.x+"进"+distance
- }else{
-  console.log(ee.text+ee.x+"进"+i);
-  step = ee.text+ee.x+"进"+i;
- }
- }else if(j<ee.y){
- if(ee.x == i){
-  console.log(ee.text+ee.x+"退"+distance);
-  step = ee.text+ee.x+"退"+distance;
- }else{
-  console.log(ee.text+ee.x+"退"+i);
-  step = ee.text+ee.x+"退"+i;
- }
- }else{
- console.log(ee.text+ee.x+"平"+i);
- step = ee.text+ee.x+"平"+i;
- } 
-}
-this.steps.push(step); 
-}
+
 // 是否结束
 obj.isOver = function(ee){
 if(ee.text == "将"){
@@ -419,7 +423,7 @@ obj.move = function(i,j){
 var that = this;
 $.each(that.cheer_arr_ALL,function(iii,eee){
  if(eee.x ==that.preChess.x&&eee.y==that.preChess.y){
- that.note(eee,i,j);
+ that.note(that,eee,i,j);
  eee.x= i;
  eee.y = j;
  that.currActive = eee.type=="red"?"black":"red";
