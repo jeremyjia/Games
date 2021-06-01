@@ -1,6 +1,6 @@
 function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.222",10, 10);
+    ctx.fillText("v0.224",10, 10);
   }
 
   // 画楚河/漢界
@@ -238,7 +238,7 @@ this.addEvent = function(_this){
        if(eee.x ==that.preChess.x&&eee.y==j){
         if(eee.text == "将"){
         for(var t=that.preChess.y-1;t>j;t--){
-         if(that.inArray(that.preChess.x,t)){
+         if(that.inArray(that,that,that.preChess.x,t)){
          canEat = false;
          break;
          }
@@ -260,7 +260,7 @@ this.addEvent = function(_this){
        if(eee.x ==that.preChess.x&&eee.y==j){
         if(eee.text == "帅"){
         for(var t=that.preChess.y+1;t<j;t++){
-         if(that.inArray(that.preChess.x,t)){
+         if(that.inArray(that,that.preChess.x,t)){
          canEat = false;
          break;
          }
@@ -422,188 +422,188 @@ this.drawCandidate = function(that){
   switch(that.preChess.text){
    case "車":
    var temp_y = that.preChess.y;
-   while(!that.inArray(that.preChess.x,++temp_y)&&temp_y<=10){
+   while(!that.inArray(that,that.preChess.x,++temp_y)&&temp_y<=10){
     that.drawCircleOfCandidate(that,that.preChess.x,temp_y);
    }
    var temp_y = that.preChess.y;
-   while(!that.inArray(that.preChess.x,--temp_y)&&temp_y>0){
+   while(!that.inArray(that,that.preChess.x,--temp_y)&&temp_y>0){
     that.drawCircleOfCandidate(that,that.preChess.x,temp_y);
    }
    var temp_x = that.preChess.x;
-   while(!that.inArray(++temp_x,that.preChess.y)&&temp_x<10){
+   while(!that.inArray(that,++temp_x,that.preChess.y)&&temp_x<10){
     that.drawCircleOfCandidate(that,temp_x,that.preChess.y);
    }
    var temp_x = that.preChess.x;
-   while(!that.inArray(--temp_x,that.preChess.y)&&temp_x>0){
+   while(!that.inArray(that,--temp_x,that.preChess.y)&&temp_x>0){
     that.drawCircleOfCandidate(that,temp_x,that.preChess.y);
    }
    break;
    case "馬":
-   if(!that.inArray(that.preChess.x-2,that.preChess.y-1)
+   if(!that.inArray(that,that.preChess.x-2,that.preChess.y-1)
    &&that.preChess.x-2>=1&&that.preChess.y-1>=1
-   &&!that.inArray(that.preChess.x-1,that.preChess.y)){
+   &&!that.inArray(that,that.preChess.x-1,that.preChess.y)){
     that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y-1);
    }
-   if(!that.inArray(that.preChess.x-1,that.preChess.y-2)
+   if(!that.inArray(that,that.preChess.x-1,that.preChess.y-2)
    &&that.preChess.x-1>=1&&that.preChess.y-2>=1
-   &&!that.inArray(that.preChess.x,that.preChess.y-1)){
+   &&!that.inArray(that,that.preChess.x,that.preChess.y-1)){
     that.drawCircleOfCandidate(that,that.preChess.x-1,that.preChess.y-2);
    }
-   if(!that.inArray(that.preChess.x+1,that.preChess.y-2)
+   if(!that.inArray(that,that.preChess.x+1,that.preChess.y-2)
    &&that.preChess.x+1<=9&&that.preChess.y-2>=1
-   &&!that.inArray(that.preChess.x,that.preChess.y-1)){
+   &&!that.inArray(that,that.preChess.x,that.preChess.y-1)){
     that.drawCircleOfCandidate(that,that.preChess.x+1,that.preChess.y-2);
    }
-   if(!that.inArray(that.preChess.x+2,that.preChess.y-1)
+   if(!that.inArray(that,that.preChess.x+2,that.preChess.y-1)
    &&that.preChess.x+2<=9&&that.preChess.y-1>=1
-   &&!that.inArray(that.preChess.x+1,that.preChess.y)){
+   &&!that.inArray(that,that.preChess.x+1,that.preChess.y)){
     that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y-1);
    }
-   if(!that.inArray(that.preChess.x+2,that.preChess.y+1)
+   if(!that.inArray(that,that.preChess.x+2,that.preChess.y+1)
    &&that.preChess.x+2<=9&&that.preChess.y+1<=10
-   &&!that.inArray(that.preChess.x+1,that.preChess.y)){
+   &&!that.inArray(that,that.preChess.x+1,that.preChess.y)){
     that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y+1);
    }
-   if(!that.inArray(that.preChess.x+1,that.preChess.y+2)
+   if(!that.inArray(that,that.preChess.x+1,that.preChess.y+2)
    &&that.preChess.x+1<=9&&that.preChess.y+2<=10
-   &&!that.inArray(that.preChess.x,that.preChess.y+1)){
+   &&!that.inArray(that,that.preChess.x,that.preChess.y+1)){
     that.drawCircleOfCandidate(that,that.preChess.x+1,that.preChess.y+2);
    }
-   if(!that.inArray(that.preChess.x-1,that.preChess.y+2)
+   if(!that.inArray(that,that.preChess.x-1,that.preChess.y+2)
    &&that.preChess.x-1>=1&&that.preChess.y+2<=10
-   &&!that.inArray(that.preChess.x,that.preChess.y+1)){
+   &&!that.inArray(that,that.preChess.x,that.preChess.y+1)){
     that.drawCircleOfCandidate(that,that.preChess.x-1,that.preChess.y+2);
    }
-   if(!that.inArray(that.preChess.x-2,that.preChess.y+1)
+   if(!that.inArray(that,that.preChess.x-2,that.preChess.y+1)
    &&that.preChess.x-2>=1&&that.preChess.y+1<=10
-   &&!that.inArray(that.preChess.x-1,that.preChess.y)){
+   &&!that.inArray(that,that.preChess.x-1,that.preChess.y)){
     that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y+1);
    }
    break;
    case "相":
    if(that.preChess.y==10){
-    if(!that.inArray(that.preChess.x-2,that.preChess.y-2)
-    &&!that.inArray(that.preChess.x-1,that.preChess.y-1)){
+    if(!that.inArray(that,that.preChess.x-2,that.preChess.y-2)
+    &&!that.inArray(that,that.preChess.x-1,that.preChess.y-1)){
     that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y-2);
     }
-    if(!that.inArray(that.preChess.x+2,that.preChess.y-2)
-    &&!that.inArray(that.preChess.x+1,that.preChess.y-1)){
+    if(!that.inArray(that,that.preChess.x+2,that.preChess.y-2)
+    &&!that.inArray(that,that.preChess.x+1,that.preChess.y-1)){
     that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y-2);
     }
    }else if(that.preChess.y==6){
-    if(!that.inArray(that.preChess.x-2,that.preChess.y+2)
-    &&!that.inArray(that.preChess.x-1,that.preChess.y+1)){
+    if(!that.inArray(that,that.preChess.x-2,that.preChess.y+2)
+    &&!that.inArray(that,that.preChess.x-1,that.preChess.y+1)){
     that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y+2);
     }
-    if(!that.inArray(that.preChess.x+2,that.preChess.y+2)
-    &&!that.inArray(that.preChess.x+1,that.preChess.y+1)){
+    if(!that.inArray(that,that.preChess.x+2,that.preChess.y+2)
+    &&!that.inArray(that,that.preChess.x+1,that.preChess.y+1)){
     that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y+2);
     }
    }else if(that.preChess.x==1){
-    if(!that.inArray(that.preChess.x+2,that.preChess.y-2)
-    &&!that.inArray(that.preChess.x+1,that.preChess.y-1)){
+    if(!that.inArray(that,that.preChess.x+2,that.preChess.y-2)
+    &&!that.inArray(that,that.preChess.x+1,that.preChess.y-1)){
     that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y-2);
     }
-    if(!that.inArray(that.preChess.x+2,that.preChess.y+2)
-    &&!that.inArray(that.preChess.x+1,that.preChess.y+1)){
+    if(!that.inArray(that,that.preChess.x+2,that.preChess.y+2)
+    &&!that.inArray(that,that.preChess.x+1,that.preChess.y+1)){
     that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y+2);
     }
    }else if(that.preChess.x==9){
-    if(!that.inArray(that.preChess.x-2,that.preChess.y-2)
-    &&!that.inArray(that.preChess.x-1,that.preChess.y-1)){
+    if(!that.inArray(that,that.preChess.x-2,that.preChess.y-2)
+    &&!that.inArray(that,that.preChess.x-1,that.preChess.y-1)){
     that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y-2);
     }
-    if(!that.inArray(that.preChess.x-2,that.preChess.y+2)
-    &&!that.inArray(that.preChess.x-1,that.preChess.y+1)){
+    if(!that.inArray(that,that.preChess.x-2,that.preChess.y+2)
+    &&!that.inArray(that,that.preChess.x-1,that.preChess.y+1)){
     that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y+2);
     }
    }else{
-    if(!that.inArray(that.preChess.x+2,that.preChess.y-2)
-    &&!that.inArray(that.preChess.x+1,that.preChess.y-1)){
+    if(!that.inArray(that,that.preChess.x+2,that.preChess.y-2)
+    &&!that.inArray(that,that.preChess.x+1,that.preChess.y-1)){
     that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y-2);
     }
-    if(!that.inArray(that.preChess.x+2,that.preChess.y+2)
-    &&!that.inArray(that.preChess.x+1,that.preChess.y+1)){
+    if(!that.inArray(that,that.preChess.x+2,that.preChess.y+2)
+    &&!that.inArray(that,that.preChess.x+1,that.preChess.y+1)){
     that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y+2);
     }
-    if(!that.inArray(that.preChess.x-2,that.preChess.y-2)
-    &&!that.inArray(that.preChess.x-1,that.preChess.y-1)){
+    if(!that.inArray(that,that.preChess.x-2,that.preChess.y-2)
+    &&!that.inArray(that,that.preChess.x-1,that.preChess.y-1)){
     that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y-2);
     }
-    if(!that.inArray(that.preChess.x-2,that.preChess.y+2)
-    &&!that.inArray(that.preChess.x-1,that.preChess.y+1)){
+    if(!that.inArray(that,that.preChess.x-2,that.preChess.y+2)
+    &&!that.inArray(that,that.preChess.x-1,that.preChess.y+1)){
     that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y+2);
     }
    }
    break;
    case "象":
    if(that.preChess.y==1){
-    if(!that.inArray(that.preChess.x-2,that.preChess.y+2)
-    &&!that.inArray(that.preChess.x-1,that.preChess.y+1)){
+    if(!that.inArray(that,that.preChess.x-2,that.preChess.y+2)
+    &&!that.inArray(that,that.preChess.x-1,that.preChess.y+1)){
     that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y+2);
     }
-    if(!that.inArray(that.preChess.x+2,that.preChess.y+2)
-    &&!that.inArray(that.preChess.x+1,that.preChess.y+1)){
+    if(!that.inArray(that,that.preChess.x+2,that.preChess.y+2)
+    &&!that.inArray(that,that.preChess.x+1,that.preChess.y+1)){
     that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y+2);
     }
    }else if(that.preChess.y==5){
-    if(!that.inArray(that.preChess.x-2,that.preChess.y-2)
-    &&!that.inArray(that.preChess.x-1,that.preChess.y-1)){
+    if(!that.inArray(that,that.preChess.x-2,that.preChess.y-2)
+    &&!that.inArray(that,that.preChess.x-1,that.preChess.y-1)){
     that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y-2);
     }
-    if(!that.inArray(that.preChess.x+2,that.preChess.y-2)
-    &&!that.inArray(that.preChess.x+1,that.preChess.y-1)){
+    if(!that.inArray(that,that.preChess.x+2,that.preChess.y-2)
+    &&!that.inArray(that,that.preChess.x+1,that.preChess.y-1)){
     that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y-2);
     }
    }else if(that.preChess.x==1){
-    if(!that.inArray(that.preChess.x+2,that.preChess.y-2)
-    &&!that.inArray(that.preChess.x+1,that.preChess.y-1)){
+    if(!that.inArray(that,that.preChess.x+2,that.preChess.y-2)
+    &&!that.inArray(that,that.preChess.x+1,that.preChess.y-1)){
     that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y-2);
     }
-    if(!that.inArray(that.preChess.x+2,that.preChess.y+2)
-    &&!that.inArray(that.preChess.x+1,that.preChess.y+1)){
+    if(!that.inArray(that,that.preChess.x+2,that.preChess.y+2)
+    &&!that.inArray(that,that.preChess.x+1,that.preChess.y+1)){
     that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y+2);
     }
    }else if(that.preChess.x==9){
-    if(!that.inArray(that.preChess.x-2,that.preChess.y-2)
-    &&!that.inArray(that.preChess.x-1,that.preChess.y-1)){
+    if(!that.inArray(that,that.preChess.x-2,that.preChess.y-2)
+    &&!that.inArray(that,that.preChess.x-1,that.preChess.y-1)){
     that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y-2);
     }
-    if(!that.inArray(that.preChess.x-2,that.preChess.y+2)
-    &&!that.inArray(that.preChess.x-1,that.preChess.y+1)){
+    if(!that.inArray(that,that.preChess.x-2,that.preChess.y+2)
+    &&!that.inArray(that,that.preChess.x-1,that.preChess.y+1)){
     that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y+2);
     }
    }else{
-    if(!that.inArray(that.preChess.x+2,that.preChess.y-2)
-    &&!that.inArray(that.preChess.x+1,that.preChess.y-1)){
+    if(!that.inArray(that,that.preChess.x+2,that.preChess.y-2)
+    &&!that.inArray(that,that.preChess.x+1,that.preChess.y-1)){
     that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y-2);
     }
-    if(!that.inArray(that.preChess.x+2,that.preChess.y+2)
-    &&!that.inArray(that.preChess.x+1,that.preChess.y+1)){
+    if(!that.inArray(that,that.preChess.x+2,that.preChess.y+2)
+    &&!that.inArray(that,that.preChess.x+1,that.preChess.y+1)){
     that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y+2);
     }
-    if(!that.inArray(that.preChess.x-2,that.preChess.y-2)
-    &&!that.inArray(that.preChess.x-1,that.preChess.y-1)){
+    if(!that.inArray(that,that.preChess.x-2,that.preChess.y-2)
+    &&!that.inArray(that,that.preChess.x-1,that.preChess.y-1)){
     that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y-2);
     }
-    if(!that.inArray(that.preChess.x-2,that.preChess.y+2)
-    &&!that.inArray(that.preChess.x-1,that.preChess.y+1)){
+    if(!that.inArray(that,that.preChess.x-2,that.preChess.y+2)
+    &&!that.inArray(that,that.preChess.x-1,that.preChess.y+1)){
     that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y+2);
     }
    }
    break;
    case "仕":
    if(that.preChess.x==5&&that.preChess.y==9){
-    if(!that.inArray(that.preChess.x-1,that.preChess.y-1)){
+    if(!that.inArray(that,that.preChess.x-1,that.preChess.y-1)){
     that.drawCircleOfCandidate(that,that.preChess.x-1,that.preChess.y-1);
     }
-    if(!that.inArray(that.preChess.x-1,that.preChess.y+1)){
+    if(!that.inArray(that,that.preChess.x-1,that.preChess.y+1)){
     that.drawCircleOfCandidate(that,that.preChess.x-1,that.preChess.y+1);
     }
-    if(!that.inArray(that.preChess.x+1,that.preChess.y-1)){
+    if(!that.inArray(that,that.preChess.x+1,that.preChess.y-1)){
     that.drawCircleOfCandidate(that,that.preChess.x+1,that.preChess.y-1);
     }
-    if(!that.inArray(that.preChess.x+1,that.preChess.y+1)){
+    if(!that.inArray(that,that.preChess.x+1,that.preChess.y+1)){
     that.drawCircleOfCandidate(that,that.preChess.x+1,that.preChess.y+1);
     }
    }else{
@@ -612,16 +612,16 @@ this.drawCandidate = function(that){
    break;
    case "士":
    if(that.preChess.x==5&&that.preChess.y==2){
-    if(!that.inArray(that.preChess.x-1,that.preChess.y-1)){
+    if(!that.inArray(that,that.preChess.x-1,that.preChess.y-1)){
     that.drawCircleOfCandidate(that,that.preChess.x-1,that.preChess.y-1);
     }
-    if(!that.inArray(that.preChess.x-1,that.preChess.y+1)){
+    if(!that.inArray(that,that.preChess.x-1,that.preChess.y+1)){
     that.drawCircleOfCandidate(that,that.preChess.x-1,that.preChess.y+1);
     }
-    if(!that.inArray(that.preChess.x+1,that.preChess.y-1)){
+    if(!that.inArray(that,that.preChess.x+1,that.preChess.y-1)){
     that.drawCircleOfCandidate(that,that.preChess.x+1,that.preChess.y-1);
     }
-    if(!that.inArray(that.preChess.x+1,that.preChess.y+1)){
+    if(!that.inArray(that,that.preChess.x+1,that.preChess.y+1)){
     that.drawCircleOfCandidate(that,that.preChess.x+1,that.preChess.y+1);
     }
    }else{
@@ -629,78 +629,78 @@ this.drawCandidate = function(that){
    }
    break;
    case "帅":
-   if(!that.inArray(that.preChess.x,that.preChess.y-1)&&that.preChess.y>8){
+   if(!that.inArray(that,that.preChess.x,that.preChess.y-1)&&that.preChess.y>8){
     that.drawCircleOfCandidate(that,that.preChess.x,that.preChess.y-1);
    }
-   if(!that.inArray(that.preChess.x,that.preChess.y+1)&&that.preChess.y<10){
+   if(!that.inArray(that,that.preChess.x,that.preChess.y+1)&&that.preChess.y<10){
     that.drawCircleOfCandidate(that,that.preChess.x,that.preChess.y+1);
    }
-   if(!that.inArray(that.preChess.x-1,that.preChess.y)&&that.preChess.x>4){
+   if(!that.inArray(that,that.preChess.x-1,that.preChess.y)&&that.preChess.x>4){
     that.drawCircleOfCandidate(that,that.preChess.x-1,that.preChess.y);
    }
-   if(!that.inArray(that.preChess.x+1,that.preChess.y)&&that.preChess.x<6){
+   if(!that.inArray(that,that.preChess.x+1,that.preChess.y)&&that.preChess.x<6){
     that.drawCircleOfCandidate(that,that.preChess.x+1,that.preChess.y);
    }
    break;
    case "将":
-   if(!that.inArray(that.preChess.x,that.preChess.y-1)&&that.preChess.y>1){
+   if(!that.inArray(that,that.preChess.x,that.preChess.y-1)&&that.preChess.y>1){
     that.drawCircleOfCandidate(that,that.preChess.x,that.preChess.y-1);
    }
-   if(!that.inArray(that.preChess.x,that.preChess.y+1)&&that.preChess.y<3){
+   if(!that.inArray(that,that.preChess.x,that.preChess.y+1)&&that.preChess.y<3){
     that.drawCircleOfCandidate(that,that.preChess.x,that.preChess.y+1);
    }
-   if(!that.inArray(that.preChess.x-1,that.preChess.y)&&that.preChess.x>4){
+   if(!that.inArray(that,that.preChess.x-1,that.preChess.y)&&that.preChess.x>4){
     that.drawCircleOfCandidate(that,that.preChess.x-1,that.preChess.y);
    }
-   if(!that.inArray(that.preChess.x+1,that.preChess.y)&&that.preChess.x<6){
+   if(!that.inArray(that,that.preChess.x+1,that.preChess.y)&&that.preChess.x<6){
     that.drawCircleOfCandidate(that,that.preChess.x+1,that.preChess.y);
    }
    break;
    case "兵":
-   if(that.preChess.y>5&&!that.inArray(that.preChess.x,that.preChess.y-1)){
+   if(that.preChess.y>5&&!that.inArray(that,that.preChess.x,that.preChess.y-1)){
     that.drawCircleOfCandidate(that,that.preChess.x,that.preChess.y-1);
    }else if(that.preChess.y<=5){
-    if(!that.inArray(that.preChess.x,that.preChess.y-1)&&that.preChess.y>1){
+    if(!that.inArray(that,that.preChess.x,that.preChess.y-1)&&that.preChess.y>1){
     that.drawCircleOfCandidate(that,that.preChess.x,that.preChess.y-1);
     }
-    if(!that.inArray(that.preChess.x-1,that.preChess.y)&&that.preChess.x>1){
+    if(!that.inArray(that,that.preChess.x-1,that.preChess.y)&&that.preChess.x>1){
     that.drawCircleOfCandidate(that,that.preChess.x-1,that.preChess.y);
     }
-    if(!that.inArray(that.preChess.x+1,that.preChess.y)&&that.preChess.x<9){
+    if(!that.inArray(that,that.preChess.x+1,that.preChess.y)&&that.preChess.x<9){
     that.drawCircleOfCandidate(that,that.preChess.x+1,that.preChess.y);
     }
    }
    break;
    case "卒":
-   if(that.preChess.y<=5&&!that.inArray(that.preChess.x,that.preChess.y+1)){
+   if(that.preChess.y<=5&&!that.inArray(that,that.preChess.x,that.preChess.y+1)){
     that.drawCircleOfCandidate(that,that.preChess.x,that.preChess.y+1);
    }else if(that.preChess.y>5){
-    if(!that.inArray(that.preChess.x,that.preChess.y+1)&&that.preChess.y<10){
+    if(!that.inArray(that,that.preChess.x,that.preChess.y+1)&&that.preChess.y<10){
     that.drawCircleOfCandidate(that,that.preChess.x,that.preChess.y+1);
     }
-    if(!that.inArray(that.preChess.x-1,that.preChess.y)&&that.preChess.x>1){
+    if(!that.inArray(that,that.preChess.x-1,that.preChess.y)&&that.preChess.x>1){
     that.drawCircleOfCandidate(that,that.preChess.x-1,that.preChess.y);
     }
-    if(!that.inArray(that.preChess.x+1,that.preChess.y)&&that.preChess.x<9){
+    if(!that.inArray(that,that.preChess.x+1,that.preChess.y)&&that.preChess.x<9){
     that.drawCircleOfCandidate(that,that.preChess.x+1,that.preChess.y);
     }
    }
    break;
    case "炮":
    var temp_y = that.preChess.y;
-   while(!that.inArray(that.preChess.x,++temp_y)&&temp_y<=10){
+   while(!that.inArray(that,that.preChess.x,++temp_y)&&temp_y<=10){
     that.drawCircleOfCandidate(that,that.preChess.x,temp_y);
    }
    var temp_y = that.preChess.y;
-   while(!that.inArray(that.preChess.x,--temp_y)&&temp_y>0){
+   while(!that.inArray(that,that.preChess.x,--temp_y)&&temp_y>0){
     that.drawCircleOfCandidate(that,that.preChess.x,temp_y);
    }
    var temp_x = that.preChess.x;
-   while(!that.inArray(++temp_x,that.preChess.y)&&temp_x<10){
+   while(!that.inArray(that,++temp_x,that.preChess.y)&&temp_x<10){
     that.drawCircleOfCandidate(that,temp_x,that.preChess.y);
    }
    var temp_x = that.preChess.x;
-   while(!that.inArray(--temp_x,that.preChess.y)&&temp_x>0){
+   while(!that.inArray(that,--temp_x,that.preChess.y)&&temp_x>0){
     that.drawCircleOfCandidate(that,temp_x,that.preChess.y);
    }
    break;
@@ -797,7 +797,7 @@ this.drawCandidate = function(that){
     //    console.log("下");
       var hasObstacle = false;
       for(var p = that.preChess.y+1;p<j;p++){
-      if(that.inArray(i,p)){
+      if(that.inArray(that,i,p)){
       hasObstacle = true;
       break;
       }
@@ -810,7 +810,7 @@ this.drawCandidate = function(that){
     //    console.log("上");
       var hasObstacle = false;
       for(var p = that.preChess.y-1;p>j;p--){
-      if(that.inArray(i,p)){
+      if(that.inArray(that,i,p)){
       hasObstacle = true;
       break;
       }
@@ -825,7 +825,7 @@ this.drawCandidate = function(that){
     //    console.log("右");
       var hasObstacle = false;
       for(var p = that.preChess.x+1;p<i;p++){
-      if(that.inArray(p,j)){
+      if(that.inArray(that,p,j)){
       hasObstacle = true;
       break;
       }
@@ -838,7 +838,7 @@ this.drawCandidate = function(that){
     //    console.log("左");
       var hasObstacle = false;
       for(var p = that.preChess.x-1;p>i;p--){
-      if(that.inArray(p,j)){
+      if(that.inArray(that,p,j)){
       hasObstacle = true;
       break;
       }
@@ -1079,6 +1079,17 @@ this.rule_Soldier_r = function(that,i,j){
   return false;
   }
 
+  this.inArray = function(that,x,y){  
+    var hasObstacle = false;
+    $.each(that.cheer_arr_ALL,function(ii,ee){
+      if(ee.x ==x&&ee.y==y){
+        hasObstacle = true;
+        return false;
+      }
+    });
+    return hasObstacle;
+  }
+
   // 初始化
   this.init = function(that,args){
     var canvas = document.getElementById("canvas");
@@ -1097,6 +1108,7 @@ this.rule_Soldier_r = function(that,i,j){
     $(canvas).unbind();
     that.addEvent(that);
   } 
+
 
 }
 var obj = new CRefactorChessBoard();
@@ -1120,17 +1132,7 @@ obj.updateChess = function(){
 
 
 
-obj.inArray = function(x,y){
-  var that = this;
-  var hasObstacle = false;
-  $.each(that.cheer_arr_ALL,function(ii,ee){
-    if(ee.x ==x&&ee.y==y){
-      hasObstacle = true;
-      return false;
-    }
-  });
-  return hasObstacle;
-}
+
 obj.init(obj);
 //  obj.init({
 //  chunk:50, // 格子大小
