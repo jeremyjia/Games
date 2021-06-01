@@ -1,6 +1,6 @@
 function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.213",10, 10);
+    ctx.fillText("v0.221",10, 10);
   }
 
   // 画楚河/漢界
@@ -1078,27 +1078,29 @@ this.rule_Soldier_r = function(that,i,j){
   }
   return false;
   }
+
+  // 初始化
+this.init = function(that,args){
+  var canvas = document.getElementById("canvas");
+  that.ctx = canvas.getContext("2d");
+  //  that.chunk =args&&args.chunk?args.chunk:50; 
+  //  that.radius =args&&args.radius?args.radius:23; 
+  //  that.CandidateCircleR =args&&args.ccr?args.ccr:5;
+  that.radius = 23;
+  that.chunk =50;
+  that.CandidateCircleR = 5;
+  $("#currActive").text("红方");
+  that.steps = [];      // 记录步骤
+  that.currActive = "red";  // 先下
+  that.drawBoard(that);
+  that.drawAllChesses(that);
+  $(canvas).unbind();
+  that.addEvent(that);
+} 
+
 }
 var obj = new CRefactorChessBoard();
 
-// 初始化
-obj.init = function(args){
-    var canvas = document.getElementById("canvas");
-    this.ctx = canvas.getContext("2d");
-    //  this.chunk =args&&args.chunk?args.chunk:50; 
-    //  this.radius =args&&args.radius?args.radius:23; 
-    //  this.CandidateCircleR =args&&args.ccr?args.ccr:5;
-    this.radius = 23;
-    this.chunk =50;
-    this.CandidateCircleR = 5;
-    $("#currActive").text("红方");
-    this.steps = [];      // 记录步骤
-    this.currActive = "red";  // 先下
-    this.drawBoard(this);
-    this.drawAllChesses(this);
-    $(canvas).unbind();
-    this.addEvent(this);
-} 
 
 // 更新棋局
 obj.updateChess = function(){
@@ -1128,7 +1130,7 @@ $.each(this.cheer_arr_ALL,function(ii,ee){
 });
 return hasObstacle;
 }
-obj.init();
+obj.init(obj);
 //  obj.init({
 //  chunk:50, // 格子大小
 //  radius:23, // 棋子半径
