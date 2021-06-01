@@ -1,6 +1,6 @@
 function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.111",10, 10);
+    ctx.fillText("v0.114",10, 10);
   }
 
   // 画楚河/漢界
@@ -189,10 +189,112 @@ function CRefactorChessBoard(){
       that.drawChessText(that,e);
     });
     _this.cheer_arr_ALL = _this.cheer_arr_B.concat(_this.cheer_arr_R); 
+  }
+
+  // 增加点击事件
+this.addEvent = function(_this){
+  var that = _this;
+  this.checked = false;
+  $(canvas).on("mousedown",function(ev){
+   for(var j=1;j<=10;j++){
+   for(var i=1;i<=9;i++){
+    var temp_i = i*that.chunk;
+    var temp_j = j*that.chunk;
+    var distanct = Math.sqrt(Math.pow(temp_i-ev.offsetX,2)+Math.pow(temp_j-ev.offsetY,2));
+    if(distanct<=that.radius){
+    var overChess = false;
+    $.each(that.cheer_arr_ALL,function(ii,ee){
+     if(ee.x ==i&&ee.y==j){
+     overChess = true;
+     var p ={x:ee.x,y:ee.y};
+  //     console.log(that.checked); 
+     if(that.currActive != ee.type&&!that.checked){
+      return false;
+     }
+     if(!that.checked){
+  //      console.log("选中一个棋子");
+      that.drawChecked(p);
+      that.preChess = ee;
+      that.drawCandidate();
+      that.checked = true;
+     }else if(that.preChess.x == ee.x&&that.preChess.y == ee.y){
+  //      console.log("点在原棋子上");
+      that.updateChess();
+      that.checked = false;
+     }else if(that.preChess.type == ee.type){
+  //      console.log("切换棋子");
+      that.updateChess();
+      that.drawChecked(p);
+      that.preChess = ee;
+      that.drawCandidate();
+     }else{
+      // 是否能吃子
+      if(that.Eat_rule(i,j)){
+        that.eat(ii,ee,i,j);
+      }else if(that.preChess.text == "帅"){ // 对将
+      if(that.preChess.x == i){
+       var canEat =true;
+       $.each(that.cheer_arr_ALL,function(iii,eee){
+       if(eee.x ==that.preChess.x&&eee.y==j){
+        if(eee.text == "将"){
+        for(var t=that.preChess.y-1;t>j;t--){
+         if(that.inArray(that.preChess.x,t)){
+         canEat = false;
+         break;
+         }
+        }
+        }else{
+        canEat = false;
+        }
+        return false;
+       }
+       });
+       if(canEat){
+       that.eat(ii,ee,i,j);
+       }
+      }
+      }else if(that.preChess.text == "将"){
+      if(that.preChess.x == i){
+       var canEat =true;
+       $.each(that.cheer_arr_ALL,function(iii,eee){
+       if(eee.x ==that.preChess.x&&eee.y==j){
+        if(eee.text == "帅"){
+        for(var t=that.preChess.y+1;t<j;t++){
+         if(that.inArray(that.preChess.x,t)){
+         canEat = false;
+         break;
+         }
+        }
+        }else{
+        canEat = false;
+        }
+        return false;
+       }
+       });
+       if(canEat){
+       that.eat(ii,ee,i,j);
+       }
+      }
+      }
+     } 
+     return false;
+     }
+    });
+    if(overChess){
+  //     alert("点在棋子上");
+    }else{
+     // 是否能移动
+     if(that.checked&&that.Move_rule(i,j)){
+  //     console.log("移动棋子");
+     that.move(i,j);
+     }
     }
+    }
+   }
+   }
+  });
+  }
 }
-
-
 var obj = new CRefactorChessBoard();
 
 // 初始化
@@ -211,131 +313,29 @@ obj.init = function(args){
     this.drawBoard(this);
     this.drawAllChesses(this);
     $(canvas).unbind();
-    this.addEvent();
+    this.addEvent(this);
 } 
 
 
 
 // 更新棋局
 obj.updateChess = function(){
-this.ctx.clearRect(0,0,canvas.width,canvas.height);
-this.drawBoard(this);
-var that = this;
-$.each(this.cheer_arr_ALL,function(i,e){   
- that.drawPiece(that,e);
- that.drawChessText(that,e);
-});
-$("#ul").empty();
-$.each(this.steps,function(iii,eee){
- $("#ul").append("<li>"+eee+"</li>");
-});
+  this.ctx.clearRect(0,0,canvas.width,canvas.height);
+  this.drawBoard(this);
+  var that = this;
+  $.each(this.cheer_arr_ALL,function(i,e){   
+    that.drawPiece(that,e);
+    that.drawChessText(that,e);
+  });
+  $("#ul").empty();
+  $.each(this.steps,function(iii,eee){
+    $("#ul").append("<li>"+eee+"</li>");
+  });
 } 
  
 
 
-// 增加点击事件
-obj.addEvent = function(){
-var that = this;
-this.checked = false;
-$(canvas).on("mousedown",function(ev){
- for(var j=1;j<=10;j++){
- for(var i=1;i<=9;i++){
-  var temp_i = i*that.chunk;
-  var temp_j = j*that.chunk;
-  var distanct = Math.sqrt(Math.pow(temp_i-ev.offsetX,2)+Math.pow(temp_j-ev.offsetY,2));
-  if(distanct<=that.radius){
-  var overChess = false;
-  $.each(that.cheer_arr_ALL,function(ii,ee){
-   if(ee.x ==i&&ee.y==j){
-   overChess = true;
-   var p ={x:ee.x,y:ee.y};
-//     console.log(that.checked); 
-   if(that.currActive != ee.type&&!that.checked){
-    return false;
-   }
-   if(!that.checked){
-//      console.log("选中一个棋子");
-    that.drawChecked(p);
-    that.preChess = ee;
-    that.drawCandidate();
-    that.checked = true;
-   }else if(that.preChess.x == ee.x&&that.preChess.y == ee.y){
-//      console.log("点在原棋子上");
-    that.updateChess();
-    that.checked = false;
-   }else if(that.preChess.type == ee.type){
-//      console.log("切换棋子");
-    that.updateChess();
-    that.drawChecked(p);
-    that.preChess = ee;
-    that.drawCandidate();
-   }else{
-    // 是否能吃子
-    if(that.Eat_rule(i,j)){
-    that.eat(ii,ee,i,j);
-    }else if(that.preChess.text == "帅"){ // 对将
-    if(that.preChess.x == i){
-     var canEat =true;
-     $.each(that.cheer_arr_ALL,function(iii,eee){
-     if(eee.x ==that.preChess.x&&eee.y==j){
-      if(eee.text == "将"){
-      for(var t=that.preChess.y-1;t>j;t--){
-       if(that.inArray(that.preChess.x,t)){
-       canEat = false;
-       break;
-       }
-      }
-      }else{
-      canEat = false;
-      }
-      return false;
-     }
-     });
-     if(canEat){
-     that.eat(ii,ee,i,j);
-     }
-    }
-    }else if(that.preChess.text == "将"){
-    if(that.preChess.x == i){
-     var canEat =true;
-     $.each(that.cheer_arr_ALL,function(iii,eee){
-     if(eee.x ==that.preChess.x&&eee.y==j){
-      if(eee.text == "帅"){
-      for(var t=that.preChess.y+1;t<j;t++){
-       if(that.inArray(that.preChess.x,t)){
-       canEat = false;
-       break;
-       }
-      }
-      }else{
-      canEat = false;
-      }
-      return false;
-     }
-     });
-     if(canEat){
-     that.eat(ii,ee,i,j);
-     }
-    }
-    }
-   } 
-   return false;
-   }
-  });
-  if(overChess){
-//     alert("点在棋子上");
-  }else{
-   // 是否能移动
-   if(that.checked&&that.Move_rule(i,j)){
-//     console.log("移动棋子");
-   that.move(i,j);
-   }
-  }
-  }
- }
- }
-});
-}
+
 // 记谱
 obj.note = function(ee,i,j){
 var distance = Math.abs(ee.y-j);
