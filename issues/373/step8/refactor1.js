@@ -1,6 +1,6 @@
 function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.151",10, 10);
+    ctx.fillText("v0.154",10, 10);
   }
 
   // 画楚河/漢界
@@ -229,7 +229,7 @@ this.addEvent = function(_this){
       that.drawCandidate(that);
      }else{
       // 是否能吃子
-      if(that.Eat_rule(i,j)){
+      if(that.Eat_rule(that,i,j)){
         that.eat(that,ii,ee,i,j);
       }else if(that.preChess.text == "帅"){ // 对将
       if(that.preChess.x == i){
@@ -284,7 +284,7 @@ this.addEvent = function(_this){
   //     alert("点在棋子上");
     }else{
      // 是否能移动
-     if(that.checked&&that.Move_rule(i,j)){
+     if(that.checked&&that.Move_rule(that,i,j)){
   //     console.log("移动棋子");
      that.move(that,i,j);
      }
@@ -725,6 +725,133 @@ this.drawCandidate = function(that){
     that.ctx.fill();
     that.ctx.stroke();
   }
+
+  
+  // 棋子移动规则
+  this.Move_rule = function(that,i,j){ 
+    switch(that.preChess.text){
+      case "車":
+      return that.rule_Car(that,i,j);
+      case "馬":
+      return that.rule_Horse(i,j); 
+      case "相":
+      return that.rule_Elephant_r(i,j);
+      case "象":
+      return that.rule_Elephant_b(i,j);
+      case "仕":
+      return that.rule_Scholar_r(i,j);
+      case "士":
+      return that.rule_Scholar_b(i,j);
+      case "帅":
+      return that.rule_Boss_r(i,j);
+      case "将":
+      return that.rule_Boss_b(i,j);
+      case "兵":
+      return that.rule_Soldier_r(i,j);
+      case "卒":
+      return that.rule_Soldier_b(i,j);
+      case "炮":
+      if(that.rule_Cannon(i,j)==0){
+        return true;
+      }
+      return false;
+    }
+  }
+  
+  // 棋子吃子规则
+  this.Eat_rule = function(that,i,j){
+    switch(that.preChess.text){
+      case "車":
+      return that.rule_Car(that,i,j);
+      case "馬":
+      return that.rule_Horse(i,j); 
+      case "相":
+      return that.rule_Elephant_r(i,j);
+      case "象":
+      return that.rule_Elephant_b(i,j);
+      case "仕":
+      return that.rule_Scholar_r(i,j);
+      case "士":
+      return that.rule_Scholar_b(i,j);
+      case "帅":
+      return that.rule_Boss_r(i,j);
+      case "将":
+      return that.rule_Boss_b(i,j);
+      case "兵":
+      return that.rule_Soldier_r(i,j);
+      case "卒":
+      return that.rule_Soldier_b(i,j);
+      case "炮":
+      if(that.rule_Cannon(i,j)==1){
+        return true;
+      }
+      return false;
+    }
+  }
+
+  // 車的规则
+  this.rule_Car = function(that,i,j){
+    if(that.preChess.x ==i||that.preChess.y==j){
+    if(that.preChess.x ==i){
+    if(that.preChess.y<j){
+    //    console.log("下");
+      var hasObstacle = false;
+      for(var p = that.preChess.y+1;p<j;p++){
+      if(that.inArray(i,p)){
+      hasObstacle = true;
+      break;
+      }
+      }
+      if(hasObstacle){
+      return false;
+      }
+    }
+    if(that.preChess.y>j){
+    //    console.log("上");
+      var hasObstacle = false;
+      for(var p = that.preChess.y-1;p>j;p--){
+      if(that.inArray(i,p)){
+      hasObstacle = true;
+      break;
+      }
+      }
+      if(hasObstacle){
+      return false;
+      }
+    }
+    }
+    if(that.preChess.y ==j){
+    if(that.preChess.x <i){
+    //    console.log("右");
+      var hasObstacle = false;
+      for(var p = that.preChess.x+1;p<i;p++){
+      if(that.inArray(p,j)){
+      hasObstacle = true;
+      break;
+      }
+      }
+      if(hasObstacle){
+      return false;
+      }
+    }
+    if(that.preChess.x >i){
+    //    console.log("左");
+      var hasObstacle = false;
+      for(var p = that.preChess.x-1;p>i;p--){
+      if(that.inArray(p,j)){
+      hasObstacle = true;
+      break;
+      }
+      }
+      if(hasObstacle){
+      return false;
+      }
+    }
+    }
+    return true;
+    }
+    return false;
+  }
 }
 var obj = new CRefactorChessBoard();
 
@@ -762,129 +889,7 @@ obj.updateChess = function(){
   });
 } 
 
-// 棋子移动规则
-obj.Move_rule = function(i,j){
-switch(this.preChess.text){
- case "車":
- return this.rule_Car(i,j);
- case "馬":
- return this.rule_Horse(i,j); 
- case "相":
- return this.rule_Elephant_r(i,j);
- case "象":
- return this.rule_Elephant_b(i,j);
- case "仕":
- return this.rule_Scholar_r(i,j);
- case "士":
- return this.rule_Scholar_b(i,j);
- case "帅":
- return this.rule_Boss_r(i,j);
- case "将":
- return this.rule_Boss_b(i,j);
- case "兵":
- return this.rule_Soldier_r(i,j);
- case "卒":
- return this.rule_Soldier_b(i,j);
- case "炮":
- if(this.rule_Cannon(i,j)==0){
-  return true;
- }
- return false;
-}
-}
-// 棋子吃子规则
-obj.Eat_rule = function(i,j){
-switch(this.preChess.text){
- case "車":
- return this.rule_Car(i,j);
- case "馬":
- return this.rule_Horse(i,j); 
- case "相":
- return this.rule_Elephant_r(i,j);
- case "象":
- return this.rule_Elephant_b(i,j);
- case "仕":
- return this.rule_Scholar_r(i,j);
- case "士":
- return this.rule_Scholar_b(i,j);
- case "帅":
- return this.rule_Boss_r(i,j);
- case "将":
- return this.rule_Boss_b(i,j);
- case "兵":
- return this.rule_Soldier_r(i,j);
- case "卒":
- return this.rule_Soldier_b(i,j);
- case "炮":
- if(this.rule_Cannon(i,j)==1){
-  return true;
- }
- return false;
-}
-}
-// 車的规则
-obj.rule_Car = function(i,j){
-if(this.preChess.x ==i||this.preChess.y==j){
- if(this.preChess.x ==i){
- if(this.preChess.y<j){
-//    console.log("下");
-  var hasObstacle = false;
-  for(var p = this.preChess.y+1;p<j;p++){
-  if(this.inArray(i,p)){
-   hasObstacle = true;
-   break;
-  }
-  }
-  if(hasObstacle){
-  return false;
-  }
- }
- if(this.preChess.y>j){
-//    console.log("上");
-  var hasObstacle = false;
-  for(var p = this.preChess.y-1;p>j;p--){
-  if(this.inArray(i,p)){
-   hasObstacle = true;
-   break;
-  }
-  }
-  if(hasObstacle){
-  return false;
-  }
- }
- }
- if(this.preChess.y ==j){
- if(this.preChess.x <i){
-//    console.log("右");
-  var hasObstacle = false;
-  for(var p = this.preChess.x+1;p<i;p++){
-  if(this.inArray(p,j)){
-   hasObstacle = true;
-   break;
-  }
-  }
-  if(hasObstacle){
-  return false;
-  }
- }
- if(this.preChess.x >i){
-//    console.log("左");
-  var hasObstacle = false;
-  for(var p = this.preChess.x-1;p>i;p--){
-  if(this.inArray(p,j)){
-   hasObstacle = true;
-   break;
-  }
-  }
-  if(hasObstacle){
-  return false;
-  }
- }
- }
- return true;
-}
-return false;
-}
+
 // 馬的规则
 obj.rule_Horse = function(i,j){
 var hasObstacle = false;
