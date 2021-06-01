@@ -1,6 +1,6 @@
 function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.134",10, 10);
+    ctx.fillText("v0.145",10, 10);
   }
 
   // 画楚河/漢界
@@ -215,7 +215,7 @@ this.addEvent = function(_this){
   //      console.log("选中一个棋子");
       that.drawChecked(that,p);
       that.preChess = ee;
-      that.drawCandidate();
+      that.drawCandidate(that);
       that.checked = true;
      }else if(that.preChess.x == ee.x&&that.preChess.y == ee.y){
   //      console.log("点在原棋子上");
@@ -226,7 +226,7 @@ this.addEvent = function(_this){
       that.updateChess();
       that.drawChecked(that,p);
       that.preChess = ee;
-      that.drawCandidate();
+      that.drawCandidate(that);
      }else{
       // 是否能吃子
       if(that.Eat_rule(i,j)){
@@ -417,6 +417,314 @@ this.addEvent = function(_this){
     that.ctx.closePath(); 
   }
 
+  // 画候选位置
+this.drawCandidate = function(that){ 
+  switch(that.preChess.text){
+   case "車":
+   var temp_y = that.preChess.y;
+   while(!that.inArray(that.preChess.x,++temp_y)&&temp_y<=10){
+    that.drawCircleOfCandidate(that,that.preChess.x,temp_y);
+   }
+   var temp_y = that.preChess.y;
+   while(!that.inArray(that.preChess.x,--temp_y)&&temp_y>0){
+    that.drawCircleOfCandidate(that,that.preChess.x,temp_y);
+   }
+   var temp_x = that.preChess.x;
+   while(!that.inArray(++temp_x,that.preChess.y)&&temp_x<10){
+    that.drawCircleOfCandidate(that,temp_x,that.preChess.y);
+   }
+   var temp_x = that.preChess.x;
+   while(!that.inArray(--temp_x,that.preChess.y)&&temp_x>0){
+    that.drawCircleOfCandidate(that,temp_x,that.preChess.y);
+   }
+   break;
+   case "馬":
+   if(!that.inArray(that.preChess.x-2,that.preChess.y-1)
+   &&that.preChess.x-2>=1&&that.preChess.y-1>=1
+   &&!that.inArray(that.preChess.x-1,that.preChess.y)){
+    that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y-1);
+   }
+   if(!that.inArray(that.preChess.x-1,that.preChess.y-2)
+   &&that.preChess.x-1>=1&&that.preChess.y-2>=1
+   &&!that.inArray(that.preChess.x,that.preChess.y-1)){
+    that.drawCircleOfCandidate(that,that.preChess.x-1,that.preChess.y-2);
+   }
+   if(!that.inArray(that.preChess.x+1,that.preChess.y-2)
+   &&that.preChess.x+1<=9&&that.preChess.y-2>=1
+   &&!that.inArray(that.preChess.x,that.preChess.y-1)){
+    that.drawCircleOfCandidate(that,that.preChess.x+1,that.preChess.y-2);
+   }
+   if(!that.inArray(that.preChess.x+2,that.preChess.y-1)
+   &&that.preChess.x+2<=9&&that.preChess.y-1>=1
+   &&!that.inArray(that.preChess.x+1,that.preChess.y)){
+    that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y-1);
+   }
+   if(!that.inArray(that.preChess.x+2,that.preChess.y+1)
+   &&that.preChess.x+2<=9&&that.preChess.y+1<=10
+   &&!that.inArray(that.preChess.x+1,that.preChess.y)){
+    that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y+1);
+   }
+   if(!that.inArray(that.preChess.x+1,that.preChess.y+2)
+   &&that.preChess.x+1<=9&&that.preChess.y+2<=10
+   &&!that.inArray(that.preChess.x,that.preChess.y+1)){
+    that.drawCircleOfCandidate(that,that.preChess.x+1,that.preChess.y+2);
+   }
+   if(!that.inArray(that.preChess.x-1,that.preChess.y+2)
+   &&that.preChess.x-1>=1&&that.preChess.y+2<=10
+   &&!that.inArray(that.preChess.x,that.preChess.y+1)){
+    that.drawCircleOfCandidate(that,that.preChess.x-1,that.preChess.y+2);
+   }
+   if(!that.inArray(that.preChess.x-2,that.preChess.y+1)
+   &&that.preChess.x-2>=1&&that.preChess.y+1<=10
+   &&!that.inArray(that.preChess.x-1,that.preChess.y)){
+    that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y+1);
+   }
+   break;
+   case "相":
+   if(that.preChess.y==10){
+    if(!that.inArray(that.preChess.x-2,that.preChess.y-2)
+    &&!that.inArray(that.preChess.x-1,that.preChess.y-1)){
+    that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y-2);
+    }
+    if(!that.inArray(that.preChess.x+2,that.preChess.y-2)
+    &&!that.inArray(that.preChess.x+1,that.preChess.y-1)){
+    that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y-2);
+    }
+   }else if(that.preChess.y==6){
+    if(!that.inArray(that.preChess.x-2,that.preChess.y+2)
+    &&!that.inArray(that.preChess.x-1,that.preChess.y+1)){
+    that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y+2);
+    }
+    if(!that.inArray(that.preChess.x+2,that.preChess.y+2)
+    &&!that.inArray(that.preChess.x+1,that.preChess.y+1)){
+    that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y+2);
+    }
+   }else if(that.preChess.x==1){
+    if(!that.inArray(that.preChess.x+2,that.preChess.y-2)
+    &&!that.inArray(that.preChess.x+1,that.preChess.y-1)){
+    that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y-2);
+    }
+    if(!that.inArray(that.preChess.x+2,that.preChess.y+2)
+    &&!that.inArray(that.preChess.x+1,that.preChess.y+1)){
+    that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y+2);
+    }
+   }else if(that.preChess.x==9){
+    if(!that.inArray(that.preChess.x-2,that.preChess.y-2)
+    &&!that.inArray(that.preChess.x-1,that.preChess.y-1)){
+    that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y-2);
+    }
+    if(!that.inArray(that.preChess.x-2,that.preChess.y+2)
+    &&!that.inArray(that.preChess.x-1,that.preChess.y+1)){
+    that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y+2);
+    }
+   }else{
+    if(!that.inArray(that.preChess.x+2,that.preChess.y-2)
+    &&!that.inArray(that.preChess.x+1,that.preChess.y-1)){
+    that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y-2);
+    }
+    if(!that.inArray(that.preChess.x+2,that.preChess.y+2)
+    &&!that.inArray(that.preChess.x+1,that.preChess.y+1)){
+    that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y+2);
+    }
+    if(!that.inArray(that.preChess.x-2,that.preChess.y-2)
+    &&!that.inArray(that.preChess.x-1,that.preChess.y-1)){
+    that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y-2);
+    }
+    if(!that.inArray(that.preChess.x-2,that.preChess.y+2)
+    &&!that.inArray(that.preChess.x-1,that.preChess.y+1)){
+    that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y+2);
+    }
+   }
+   break;
+   case "象":
+   if(that.preChess.y==1){
+    if(!that.inArray(that.preChess.x-2,that.preChess.y+2)
+    &&!that.inArray(that.preChess.x-1,that.preChess.y+1)){
+    that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y+2);
+    }
+    if(!that.inArray(that.preChess.x+2,that.preChess.y+2)
+    &&!that.inArray(that.preChess.x+1,that.preChess.y+1)){
+    that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y+2);
+    }
+   }else if(that.preChess.y==5){
+    if(!that.inArray(that.preChess.x-2,that.preChess.y-2)
+    &&!that.inArray(that.preChess.x-1,that.preChess.y-1)){
+    that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y-2);
+    }
+    if(!that.inArray(that.preChess.x+2,that.preChess.y-2)
+    &&!that.inArray(that.preChess.x+1,that.preChess.y-1)){
+    that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y-2);
+    }
+   }else if(that.preChess.x==1){
+    if(!that.inArray(that.preChess.x+2,that.preChess.y-2)
+    &&!that.inArray(that.preChess.x+1,that.preChess.y-1)){
+    that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y-2);
+    }
+    if(!that.inArray(that.preChess.x+2,that.preChess.y+2)
+    &&!that.inArray(that.preChess.x+1,that.preChess.y+1)){
+    that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y+2);
+    }
+   }else if(that.preChess.x==9){
+    if(!that.inArray(that.preChess.x-2,that.preChess.y-2)
+    &&!that.inArray(that.preChess.x-1,that.preChess.y-1)){
+    that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y-2);
+    }
+    if(!that.inArray(that.preChess.x-2,that.preChess.y+2)
+    &&!that.inArray(that.preChess.x-1,that.preChess.y+1)){
+    that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y+2);
+    }
+   }else{
+    if(!that.inArray(that.preChess.x+2,that.preChess.y-2)
+    &&!that.inArray(that.preChess.x+1,that.preChess.y-1)){
+    that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y-2);
+    }
+    if(!that.inArray(that.preChess.x+2,that.preChess.y+2)
+    &&!that.inArray(that.preChess.x+1,that.preChess.y+1)){
+    that.drawCircleOfCandidate(that,that.preChess.x+2,that.preChess.y+2);
+    }
+    if(!that.inArray(that.preChess.x-2,that.preChess.y-2)
+    &&!that.inArray(that.preChess.x-1,that.preChess.y-1)){
+    that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y-2);
+    }
+    if(!that.inArray(that.preChess.x-2,that.preChess.y+2)
+    &&!that.inArray(that.preChess.x-1,that.preChess.y+1)){
+    that.drawCircleOfCandidate(that,that.preChess.x-2,that.preChess.y+2);
+    }
+   }
+   break;
+   case "仕":
+   if(that.preChess.x==5&&that.preChess.y==9){
+    if(!that.inArray(that.preChess.x-1,that.preChess.y-1)){
+    that.drawCircleOfCandidate(that,that.preChess.x-1,that.preChess.y-1);
+    }
+    if(!that.inArray(that.preChess.x-1,that.preChess.y+1)){
+    that.drawCircleOfCandidate(that,that.preChess.x-1,that.preChess.y+1);
+    }
+    if(!that.inArray(that.preChess.x+1,that.preChess.y-1)){
+    that.drawCircleOfCandidate(that,that.preChess.x+1,that.preChess.y-1);
+    }
+    if(!that.inArray(that.preChess.x+1,that.preChess.y+1)){
+    that.drawCircleOfCandidate(that,that.preChess.x+1,that.preChess.y+1);
+    }
+   }else{
+    that.drawCircleOfCandidate(that,5,9);
+   }
+   break;
+   case "士":
+   if(that.preChess.x==5&&that.preChess.y==2){
+    if(!that.inArray(that.preChess.x-1,that.preChess.y-1)){
+    that.drawCircleOfCandidate(that,that.preChess.x-1,that.preChess.y-1);
+    }
+    if(!that.inArray(that.preChess.x-1,that.preChess.y+1)){
+    that.drawCircleOfCandidate(that,that.preChess.x-1,that.preChess.y+1);
+    }
+    if(!that.inArray(that.preChess.x+1,that.preChess.y-1)){
+    that.drawCircleOfCandidate(that,that.preChess.x+1,that.preChess.y-1);
+    }
+    if(!that.inArray(that.preChess.x+1,that.preChess.y+1)){
+    that.drawCircleOfCandidate(that,that.preChess.x+1,that.preChess.y+1);
+    }
+   }else{
+    that.drawCircleOfCandidate(that,5,2);
+   }
+   break;
+   case "帅":
+   if(!that.inArray(that.preChess.x,that.preChess.y-1)&&that.preChess.y>8){
+    that.drawCircleOfCandidate(that,that.preChess.x,that.preChess.y-1);
+   }
+   if(!that.inArray(that.preChess.x,that.preChess.y+1)&&that.preChess.y<10){
+    that.drawCircleOfCandidate(that,that.preChess.x,that.preChess.y+1);
+   }
+   if(!that.inArray(that.preChess.x-1,that.preChess.y)&&that.preChess.x>4){
+    that.drawCircleOfCandidate(that,that.preChess.x-1,that.preChess.y);
+   }
+   if(!that.inArray(that.preChess.x+1,that.preChess.y)&&that.preChess.x<6){
+    that.drawCircleOfCandidate(that,that.preChess.x+1,that.preChess.y);
+   }
+   break;
+   case "将":
+   if(!that.inArray(that.preChess.x,that.preChess.y-1)&&that.preChess.y>1){
+    that.drawCircleOfCandidate(that,that.preChess.x,that.preChess.y-1);
+   }
+   if(!that.inArray(that.preChess.x,that.preChess.y+1)&&that.preChess.y<3){
+    that.drawCircleOfCandidate(that,that.preChess.x,that.preChess.y+1);
+   }
+   if(!that.inArray(that.preChess.x-1,that.preChess.y)&&that.preChess.x>4){
+    that.drawCircleOfCandidate(that,that.preChess.x-1,that.preChess.y);
+   }
+   if(!that.inArray(that.preChess.x+1,that.preChess.y)&&that.preChess.x<6){
+    that.drawCircleOfCandidate(that,that.preChess.x+1,that.preChess.y);
+   }
+   break;
+   case "兵":
+   if(that.preChess.y>5&&!that.inArray(that.preChess.x,that.preChess.y-1)){
+    that.drawCircleOfCandidate(that,that.preChess.x,that.preChess.y-1);
+   }else if(that.preChess.y<=5){
+    if(!that.inArray(that.preChess.x,that.preChess.y-1)&&that.preChess.y>1){
+    that.drawCircleOfCandidate(that,that.preChess.x,that.preChess.y-1);
+    }
+    if(!that.inArray(that.preChess.x-1,that.preChess.y)&&that.preChess.x>1){
+    that.drawCircleOfCandidate(that,that.preChess.x-1,that.preChess.y);
+    }
+    if(!that.inArray(that.preChess.x+1,that.preChess.y)&&that.preChess.x<9){
+    that.drawCircleOfCandidate(that,that.preChess.x+1,that.preChess.y);
+    }
+   }
+   break;
+   case "卒":
+   if(that.preChess.y<=5&&!that.inArray(that.preChess.x,that.preChess.y+1)){
+    that.drawCircleOfCandidate(that,that.preChess.x,that.preChess.y+1);
+   }else if(that.preChess.y>5){
+    if(!that.inArray(that.preChess.x,that.preChess.y+1)&&that.preChess.y<10){
+    that.drawCircleOfCandidate(that,that.preChess.x,that.preChess.y+1);
+    }
+    if(!that.inArray(that.preChess.x-1,that.preChess.y)&&that.preChess.x>1){
+    that.drawCircleOfCandidate(that,that.preChess.x-1,that.preChess.y);
+    }
+    if(!that.inArray(that.preChess.x+1,that.preChess.y)&&that.preChess.x<9){
+    that.drawCircleOfCandidate(that,that.preChess.x+1,that.preChess.y);
+    }
+   }
+   break;
+   case "炮":
+   var temp_y = that.preChess.y;
+   while(!that.inArray(that.preChess.x,++temp_y)&&temp_y<=10){
+    that.drawCircleOfCandidate(that,that.preChess.x,temp_y);
+   }
+   var temp_y = that.preChess.y;
+   while(!that.inArray(that.preChess.x,--temp_y)&&temp_y>0){
+    that.drawCircleOfCandidate(that,that.preChess.x,temp_y);
+   }
+   var temp_x = that.preChess.x;
+   while(!that.inArray(++temp_x,that.preChess.y)&&temp_x<10){
+    that.drawCircleOfCandidate(that,temp_x,that.preChess.y);
+   }
+   var temp_x = that.preChess.x;
+   while(!that.inArray(--temp_x,that.preChess.y)&&temp_x>0){
+    that.drawCircleOfCandidate(that,temp_x,that.preChess.y);
+   }
+   break;
+  }
+  }
+
+  // 画候选形状
+  this.drawCircleOfCandidate = function(that,x,y){ 
+    that.ctx.beginPath();
+    that.ctx.fillStyle ="#eee";
+    that.ctx.strokeStyle = "#000";
+    that.ctx.lineWidth =2;
+    that.ctx.arc(x*that.chunk, y*that.chunk, that.CandidateCircleR, 0, Math.PI * 2, true);
+
+    //  that.ctx.translate(x*that.chunk,y*that.chunk);
+    //  that.ctx.rotate(45*Math.PI/180);
+    //  that.ctx.translate(1*that.chunk,1*that.chunk);//设置画布上的(0,0)位置，也就是旋转的中心点
+    //   that.ctx.rotate(1*Math.PI/180);
+    //       that.ctx.fillRect(x*that.chunk-5,y*that.chunk-5,10,10);
+
+    that.ctx.closePath();
+    that.ctx.fill();
+    that.ctx.stroke();
+  }
 }
 var obj = new CRefactorChessBoard();
 
@@ -439,8 +747,6 @@ obj.init = function(args){
     this.addEvent(this);
 } 
 
-
-
 // 更新棋局
 obj.updateChess = function(){
   this.ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -456,313 +762,6 @@ obj.updateChess = function(){
   });
 } 
 
-// 画候选位置
-obj.drawCandidate = function(){
-switch(this.preChess.text){
- case "車":
- var temp_y = this.preChess.y;
- while(!this.inArray(this.preChess.x,++temp_y)&&temp_y<=10){
-  this.drawCandidateCircle(this.preChess.x,temp_y);
- }
- var temp_y = this.preChess.y;
- while(!this.inArray(this.preChess.x,--temp_y)&&temp_y>0){
-  this.drawCandidateCircle(this.preChess.x,temp_y);
- }
- var temp_x = this.preChess.x;
- while(!this.inArray(++temp_x,this.preChess.y)&&temp_x<10){
-  this.drawCandidateCircle(temp_x,this.preChess.y);
- }
- var temp_x = this.preChess.x;
- while(!this.inArray(--temp_x,this.preChess.y)&&temp_x>0){
-  this.drawCandidateCircle(temp_x,this.preChess.y);
- }
- break;
- case "馬":
- if(!this.inArray(this.preChess.x-2,this.preChess.y-1)
- &&this.preChess.x-2>=1&&this.preChess.y-1>=1
- &&!this.inArray(this.preChess.x-1,this.preChess.y)){
-  this.drawCandidateCircle(this.preChess.x-2,this.preChess.y-1);
- }
- if(!this.inArray(this.preChess.x-1,this.preChess.y-2)
- &&this.preChess.x-1>=1&&this.preChess.y-2>=1
- &&!this.inArray(this.preChess.x,this.preChess.y-1)){
-  this.drawCandidateCircle(this.preChess.x-1,this.preChess.y-2);
- }
- if(!this.inArray(this.preChess.x+1,this.preChess.y-2)
- &&this.preChess.x+1<=9&&this.preChess.y-2>=1
- &&!this.inArray(this.preChess.x,this.preChess.y-1)){
-  this.drawCandidateCircle(this.preChess.x+1,this.preChess.y-2);
- }
- if(!this.inArray(this.preChess.x+2,this.preChess.y-1)
- &&this.preChess.x+2<=9&&this.preChess.y-1>=1
- &&!this.inArray(this.preChess.x+1,this.preChess.y)){
-  this.drawCandidateCircle(this.preChess.x+2,this.preChess.y-1);
- }
- if(!this.inArray(this.preChess.x+2,this.preChess.y+1)
- &&this.preChess.x+2<=9&&this.preChess.y+1<=10
- &&!this.inArray(this.preChess.x+1,this.preChess.y)){
-  this.drawCandidateCircle(this.preChess.x+2,this.preChess.y+1);
- }
- if(!this.inArray(this.preChess.x+1,this.preChess.y+2)
- &&this.preChess.x+1<=9&&this.preChess.y+2<=10
- &&!this.inArray(this.preChess.x,this.preChess.y+1)){
-  this.drawCandidateCircle(this.preChess.x+1,this.preChess.y+2);
- }
- if(!this.inArray(this.preChess.x-1,this.preChess.y+2)
- &&this.preChess.x-1>=1&&this.preChess.y+2<=10
- &&!this.inArray(this.preChess.x,this.preChess.y+1)){
-  this.drawCandidateCircle(this.preChess.x-1,this.preChess.y+2);
- }
- if(!this.inArray(this.preChess.x-2,this.preChess.y+1)
- &&this.preChess.x-2>=1&&this.preChess.y+1<=10
- &&!this.inArray(this.preChess.x-1,this.preChess.y)){
-  this.drawCandidateCircle(this.preChess.x-2,this.preChess.y+1);
- }
- break;
- case "相":
- if(this.preChess.y==10){
-  if(!this.inArray(this.preChess.x-2,this.preChess.y-2)
-  &&!this.inArray(this.preChess.x-1,this.preChess.y-1)){
-  this.drawCandidateCircle(this.preChess.x-2,this.preChess.y-2);
-  }
-  if(!this.inArray(this.preChess.x+2,this.preChess.y-2)
-  &&!this.inArray(this.preChess.x+1,this.preChess.y-1)){
-  this.drawCandidateCircle(this.preChess.x+2,this.preChess.y-2);
-  }
- }else if(this.preChess.y==6){
-  if(!this.inArray(this.preChess.x-2,this.preChess.y+2)
-  &&!this.inArray(this.preChess.x-1,this.preChess.y+1)){
-  this.drawCandidateCircle(this.preChess.x-2,this.preChess.y+2);
-  }
-  if(!this.inArray(this.preChess.x+2,this.preChess.y+2)
-  &&!this.inArray(this.preChess.x+1,this.preChess.y+1)){
-  this.drawCandidateCircle(this.preChess.x+2,this.preChess.y+2);
-  }
- }else if(this.preChess.x==1){
-  if(!this.inArray(this.preChess.x+2,this.preChess.y-2)
-  &&!this.inArray(this.preChess.x+1,this.preChess.y-1)){
-  this.drawCandidateCircle(this.preChess.x+2,this.preChess.y-2);
-  }
-  if(!this.inArray(this.preChess.x+2,this.preChess.y+2)
-  &&!this.inArray(this.preChess.x+1,this.preChess.y+1)){
-  this.drawCandidateCircle(this.preChess.x+2,this.preChess.y+2);
-  }
- }else if(this.preChess.x==9){
-  if(!this.inArray(this.preChess.x-2,this.preChess.y-2)
-  &&!this.inArray(this.preChess.x-1,this.preChess.y-1)){
-  this.drawCandidateCircle(this.preChess.x-2,this.preChess.y-2);
-  }
-  if(!this.inArray(this.preChess.x-2,this.preChess.y+2)
-  &&!this.inArray(this.preChess.x-1,this.preChess.y+1)){
-  this.drawCandidateCircle(this.preChess.x-2,this.preChess.y+2);
-  }
- }else{
-  if(!this.inArray(this.preChess.x+2,this.preChess.y-2)
-  &&!this.inArray(this.preChess.x+1,this.preChess.y-1)){
-  this.drawCandidateCircle(this.preChess.x+2,this.preChess.y-2);
-  }
-  if(!this.inArray(this.preChess.x+2,this.preChess.y+2)
-  &&!this.inArray(this.preChess.x+1,this.preChess.y+1)){
-  this.drawCandidateCircle(this.preChess.x+2,this.preChess.y+2);
-  }
-  if(!this.inArray(this.preChess.x-2,this.preChess.y-2)
-  &&!this.inArray(this.preChess.x-1,this.preChess.y-1)){
-  this.drawCandidateCircle(this.preChess.x-2,this.preChess.y-2);
-  }
-  if(!this.inArray(this.preChess.x-2,this.preChess.y+2)
-  &&!this.inArray(this.preChess.x-1,this.preChess.y+1)){
-  this.drawCandidateCircle(this.preChess.x-2,this.preChess.y+2);
-  }
- }
- break;
- case "象":
- if(this.preChess.y==1){
-  if(!this.inArray(this.preChess.x-2,this.preChess.y+2)
-  &&!this.inArray(this.preChess.x-1,this.preChess.y+1)){
-  this.drawCandidateCircle(this.preChess.x-2,this.preChess.y+2);
-  }
-  if(!this.inArray(this.preChess.x+2,this.preChess.y+2)
-  &&!this.inArray(this.preChess.x+1,this.preChess.y+1)){
-  this.drawCandidateCircle(this.preChess.x+2,this.preChess.y+2);
-  }
- }else if(this.preChess.y==5){
-  if(!this.inArray(this.preChess.x-2,this.preChess.y-2)
-  &&!this.inArray(this.preChess.x-1,this.preChess.y-1)){
-  this.drawCandidateCircle(this.preChess.x-2,this.preChess.y-2);
-  }
-  if(!this.inArray(this.preChess.x+2,this.preChess.y-2)
-  &&!this.inArray(this.preChess.x+1,this.preChess.y-1)){
-  this.drawCandidateCircle(this.preChess.x+2,this.preChess.y-2);
-  }
- }else if(this.preChess.x==1){
-  if(!this.inArray(this.preChess.x+2,this.preChess.y-2)
-  &&!this.inArray(this.preChess.x+1,this.preChess.y-1)){
-  this.drawCandidateCircle(this.preChess.x+2,this.preChess.y-2);
-  }
-  if(!this.inArray(this.preChess.x+2,this.preChess.y+2)
-  &&!this.inArray(this.preChess.x+1,this.preChess.y+1)){
-  this.drawCandidateCircle(this.preChess.x+2,this.preChess.y+2);
-  }
- }else if(this.preChess.x==9){
-  if(!this.inArray(this.preChess.x-2,this.preChess.y-2)
-  &&!this.inArray(this.preChess.x-1,this.preChess.y-1)){
-  this.drawCandidateCircle(this.preChess.x-2,this.preChess.y-2);
-  }
-  if(!this.inArray(this.preChess.x-2,this.preChess.y+2)
-  &&!this.inArray(this.preChess.x-1,this.preChess.y+1)){
-  this.drawCandidateCircle(this.preChess.x-2,this.preChess.y+2);
-  }
- }else{
-  if(!this.inArray(this.preChess.x+2,this.preChess.y-2)
-  &&!this.inArray(this.preChess.x+1,this.preChess.y-1)){
-  this.drawCandidateCircle(this.preChess.x+2,this.preChess.y-2);
-  }
-  if(!this.inArray(this.preChess.x+2,this.preChess.y+2)
-  &&!this.inArray(this.preChess.x+1,this.preChess.y+1)){
-  this.drawCandidateCircle(this.preChess.x+2,this.preChess.y+2);
-  }
-  if(!this.inArray(this.preChess.x-2,this.preChess.y-2)
-  &&!this.inArray(this.preChess.x-1,this.preChess.y-1)){
-  this.drawCandidateCircle(this.preChess.x-2,this.preChess.y-2);
-  }
-  if(!this.inArray(this.preChess.x-2,this.preChess.y+2)
-  &&!this.inArray(this.preChess.x-1,this.preChess.y+1)){
-  this.drawCandidateCircle(this.preChess.x-2,this.preChess.y+2);
-  }
- }
- break;
- case "仕":
- if(this.preChess.x==5&&this.preChess.y==9){
-  if(!this.inArray(this.preChess.x-1,this.preChess.y-1)){
-  this.drawCandidateCircle(this.preChess.x-1,this.preChess.y-1);
-  }
-  if(!this.inArray(this.preChess.x-1,this.preChess.y+1)){
-  this.drawCandidateCircle(this.preChess.x-1,this.preChess.y+1);
-  }
-  if(!this.inArray(this.preChess.x+1,this.preChess.y-1)){
-  this.drawCandidateCircle(this.preChess.x+1,this.preChess.y-1);
-  }
-  if(!this.inArray(this.preChess.x+1,this.preChess.y+1)){
-  this.drawCandidateCircle(this.preChess.x+1,this.preChess.y+1);
-  }
- }else{
-  this.drawCandidateCircle(5,9);
- }
- break;
- case "士":
- if(this.preChess.x==5&&this.preChess.y==2){
-  if(!this.inArray(this.preChess.x-1,this.preChess.y-1)){
-  this.drawCandidateCircle(this.preChess.x-1,this.preChess.y-1);
-  }
-  if(!this.inArray(this.preChess.x-1,this.preChess.y+1)){
-  this.drawCandidateCircle(this.preChess.x-1,this.preChess.y+1);
-  }
-  if(!this.inArray(this.preChess.x+1,this.preChess.y-1)){
-  this.drawCandidateCircle(this.preChess.x+1,this.preChess.y-1);
-  }
-  if(!this.inArray(this.preChess.x+1,this.preChess.y+1)){
-  this.drawCandidateCircle(this.preChess.x+1,this.preChess.y+1);
-  }
- }else{
-  this.drawCandidateCircle(5,2);
- }
- break;
- case "帅":
- if(!this.inArray(this.preChess.x,this.preChess.y-1)&&this.preChess.y>8){
-  this.drawCandidateCircle(this.preChess.x,this.preChess.y-1);
- }
- if(!this.inArray(this.preChess.x,this.preChess.y+1)&&this.preChess.y<10){
-  this.drawCandidateCircle(this.preChess.x,this.preChess.y+1);
- }
- if(!this.inArray(this.preChess.x-1,this.preChess.y)&&this.preChess.x>4){
-  this.drawCandidateCircle(this.preChess.x-1,this.preChess.y);
- }
- if(!this.inArray(this.preChess.x+1,this.preChess.y)&&this.preChess.x<6){
-  this.drawCandidateCircle(this.preChess.x+1,this.preChess.y);
- }
- break;
- case "将":
- if(!this.inArray(this.preChess.x,this.preChess.y-1)&&this.preChess.y>1){
-  this.drawCandidateCircle(this.preChess.x,this.preChess.y-1);
- }
- if(!this.inArray(this.preChess.x,this.preChess.y+1)&&this.preChess.y<3){
-  this.drawCandidateCircle(this.preChess.x,this.preChess.y+1);
- }
- if(!this.inArray(this.preChess.x-1,this.preChess.y)&&this.preChess.x>4){
-  this.drawCandidateCircle(this.preChess.x-1,this.preChess.y);
- }
- if(!this.inArray(this.preChess.x+1,this.preChess.y)&&this.preChess.x<6){
-  this.drawCandidateCircle(this.preChess.x+1,this.preChess.y);
- }
- break;
- case "兵":
- if(this.preChess.y>5&&!this.inArray(this.preChess.x,this.preChess.y-1)){
-  this.drawCandidateCircle(this.preChess.x,this.preChess.y-1);
- }else if(this.preChess.y<=5){
-  if(!this.inArray(this.preChess.x,this.preChess.y-1)&&this.preChess.y>1){
-  this.drawCandidateCircle(this.preChess.x,this.preChess.y-1);
-  }
-  if(!this.inArray(this.preChess.x-1,this.preChess.y)&&this.preChess.x>1){
-  this.drawCandidateCircle(this.preChess.x-1,this.preChess.y);
-  }
-  if(!this.inArray(this.preChess.x+1,this.preChess.y)&&this.preChess.x<9){
-  this.drawCandidateCircle(this.preChess.x+1,this.preChess.y);
-  }
- }
- break;
- case "卒":
- if(this.preChess.y<=5&&!this.inArray(this.preChess.x,this.preChess.y+1)){
-  this.drawCandidateCircle(this.preChess.x,this.preChess.y+1);
- }else if(this.preChess.y>5){
-  if(!this.inArray(this.preChess.x,this.preChess.y+1)&&this.preChess.y<10){
-  this.drawCandidateCircle(this.preChess.x,this.preChess.y+1);
-  }
-  if(!this.inArray(this.preChess.x-1,this.preChess.y)&&this.preChess.x>1){
-  this.drawCandidateCircle(this.preChess.x-1,this.preChess.y);
-  }
-  if(!this.inArray(this.preChess.x+1,this.preChess.y)&&this.preChess.x<9){
-  this.drawCandidateCircle(this.preChess.x+1,this.preChess.y);
-  }
- }
- break;
- case "炮":
- var temp_y = this.preChess.y;
- while(!this.inArray(this.preChess.x,++temp_y)&&temp_y<=10){
-  this.drawCandidateCircle(this.preChess.x,temp_y);
- }
- var temp_y = this.preChess.y;
- while(!this.inArray(this.preChess.x,--temp_y)&&temp_y>0){
-  this.drawCandidateCircle(this.preChess.x,temp_y);
- }
- var temp_x = this.preChess.x;
- while(!this.inArray(++temp_x,this.preChess.y)&&temp_x<10){
-  this.drawCandidateCircle(temp_x,this.preChess.y);
- }
- var temp_x = this.preChess.x;
- while(!this.inArray(--temp_x,this.preChess.y)&&temp_x>0){
-  this.drawCandidateCircle(temp_x,this.preChess.y);
- }
- break;
-}
-}
-// 画候选形状
-obj.drawCandidateCircle = function(x,y){
-this.ctx.beginPath();
-this.ctx.fillStyle ="#eee";
-this.ctx.strokeStyle = "#000";
-this.ctx.lineWidth =2;
-     this.ctx.arc(x*this.chunk, y*this.chunk, this.CandidateCircleR, 0, Math.PI * 2, true);
-
-//  this.ctx.translate(x*this.chunk,y*this.chunk);
-//  this.ctx.rotate(45*Math.PI/180);
-//  this.ctx.translate(1*this.chunk,1*this.chunk);//设置画布上的(0,0)位置，也就是旋转的中心点
-//   this.ctx.rotate(1*Math.PI/180);
-//       this.ctx.fillRect(x*this.chunk-5,y*this.chunk-5,10,10);
-
-     this.ctx.closePath();
-     this.ctx.fill();
-     this.ctx.stroke();
-}
 // 棋子移动规则
 obj.Move_rule = function(i,j){
 switch(this.preChess.text){
