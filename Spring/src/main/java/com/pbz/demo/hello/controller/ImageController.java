@@ -67,10 +67,10 @@ public class ImageController {
 	@RequestMapping(value = "/clock")
 	@ResponseBody
 	public void getClockImage(@RequestParam(name = "time") String time) throws Exception {
-		Object username = request.getSession().getAttribute("name");
-		if (!"admin".equals(username)) {
-			throw new Exception("Please login first!");
-		}
+//		Object username = request.getSession().getAttribute("name");
+//		if (!"admin".equals(username)) {
+//			throw new Exception("Please login first!");
+//		}
 		verifyParameter(time);
 
 		response.setHeader("Pragma", "No-cache");
