@@ -1,6 +1,6 @@
 function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.121",10, 10);
+    ctx.fillText("v0.131",10, 10);
   }
 
   // 画楚河/漢界
@@ -230,7 +230,7 @@ this.addEvent = function(_this){
      }else{
       // 是否能吃子
       if(that.Eat_rule(i,j)){
-        that.eat(ii,ee,i,j);
+        that.eat(that,ii,ee,i,j);
       }else if(that.preChess.text == "帅"){ // 对将
       if(that.preChess.x == i){
        var canEat =true;
@@ -250,7 +250,7 @@ this.addEvent = function(_this){
        }
        });
        if(canEat){
-       that.eat(ii,ee,i,j);
+       that.eat(that,ii,ee,i,j);
        }
       }
       }else if(that.preChess.text == "将"){
@@ -272,7 +272,7 @@ this.addEvent = function(_this){
        }
        });
        if(canEat){
-       that.eat(ii,ee,i,j);
+       that.eat(that,ii,ee,i,j);
        }
       }
       }
@@ -286,7 +286,7 @@ this.addEvent = function(_this){
      // 是否能移动
      if(that.checked&&that.Move_rule(i,j)){
   //     console.log("移动棋子");
-     that.move(i,j);
+     that.move(that,i,j);
      }
     }
     }
@@ -351,6 +351,49 @@ this.addEvent = function(_this){
     that.steps.push(step); 
   }
 
+  // 是否结束
+  this.isOver = function(ee){
+    if(ee.text == "将"){
+      alert("you win"); 
+      $("#ul").empty();
+      return true;
+    }else if(ee.text == "帅"){
+      alert("you lose");
+      $("#ul").empty();
+      return true;
+    }else{
+      return false;
+    }
+  }
+
+  
+  // 吃子
+  this.eat = function(that,ii,ee,i,j){ 
+    that.cheer_arr_ALL.splice(ii,1);
+    that.move(that,i,j);
+    if(that.isOver(ee)){
+      that.ctx.clearRect(0,0,canvas.width,canvas.height);
+      that.init();
+      return false;
+    };
+  }
+
+    
+  // 移动
+  this.move = function(that,i,j){  
+    $.each(that.cheer_arr_ALL,function(iii,eee){
+      if(eee.x ==that.preChess.x&&eee.y==that.preChess.y){
+        that.note(that,eee,i,j);
+        eee.x= i;
+        eee.y = j;
+        that.currActive = eee.type=="red"?"black":"red";
+        return false;
+      }
+    });
+    that.updateChess();
+    that.checked = false;
+  }
+
 }
 var obj = new CRefactorChessBoard();
 
@@ -394,45 +437,8 @@ obj.updateChess = function(){
 
 
 
-// 是否结束
-obj.isOver = function(ee){
-if(ee.text == "将"){
- alert("you win");
- $("#ul").empty();
- return true;
-}else if(ee.text == "帅"){
- alert("you lose");
- $("#ul").empty();
- return true;
-}else{
- return false;
-}
-}
-// 吃子
-obj.eat = function(ii,ee,i,j){
-this.cheer_arr_ALL.splice(ii,1);
-this.move(i,j);
-if(this.isOver(ee)){
- this.ctx.clearRect(0,0,canvas.width,canvas.height);
- this.init();
- return false;
-};
-}
-// 移动
-obj.move = function(i,j){
-var that = this;
-$.each(that.cheer_arr_ALL,function(iii,eee){
- if(eee.x ==that.preChess.x&&eee.y==that.preChess.y){
- that.note(that,eee,i,j);
- eee.x= i;
- eee.y = j;
- that.currActive = eee.type=="red"?"black":"red";
- return false;
- }
-});
-that.updateChess();
-that.checked = false;
-}
+
+
 // 画选中棋子状态
 obj.drawChecked = function(p){
 var temp_x = p.x*this.chunk;
