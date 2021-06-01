@@ -1,6 +1,6 @@
 function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.132",10, 10);
+    ctx.fillText("v0.134",10, 10);
   }
 
   // 画楚河/漢界
@@ -213,7 +213,7 @@ this.addEvent = function(_this){
      }
      if(!that.checked){
   //      console.log("选中一个棋子");
-      that.drawChecked(p);
+      that.drawChecked(that,p);
       that.preChess = ee;
       that.drawCandidate();
       that.checked = true;
@@ -224,7 +224,7 @@ this.addEvent = function(_this){
      }else if(that.preChess.type == ee.type){
   //      console.log("切换棋子");
       that.updateChess();
-      that.drawChecked(p);
+      that.drawChecked(that,p);
       that.preChess = ee;
       that.drawCandidate();
      }else{
@@ -394,6 +394,29 @@ this.addEvent = function(_this){
     that.checked = false;
   }
 
+    // 画选中棋子状态
+  this.drawChecked = function(that,p){
+    var temp_x = p.x*that.chunk;
+    var temp_y = p.y*that.chunk;
+    that.ctx.beginPath();
+    that.ctx.strokeStyle = "#00f";
+    that.ctx.lineWidth =1;
+    that.ctx.moveTo(temp_x-that.radius,temp_y-that.radius+10);
+    that.ctx.lineTo(temp_x-that.radius,temp_y-that.radius);
+    that.ctx.lineTo(temp_x-that.radius+10,temp_y-that.radius);
+    that.ctx.moveTo(temp_x-that.radius,temp_y+that.radius-10);
+    that.ctx.lineTo(temp_x-that.radius,temp_y+that.radius);
+    that.ctx.lineTo(temp_x-that.radius+10,temp_y+that.radius);
+    that.ctx.moveTo(temp_x+that.radius,temp_y-that.radius+10);
+    that.ctx.lineTo(temp_x+that.radius,temp_y-that.radius);
+    that.ctx.lineTo(temp_x+that.radius-10,temp_y-that.radius);
+    that.ctx.moveTo(temp_x+that.radius,temp_y+that.radius-10);
+    that.ctx.lineTo(temp_x+that.radius,temp_y+that.radius);
+    that.ctx.lineTo(temp_x+that.radius-10,temp_y+that.radius);
+    that.ctx.stroke();
+    that.ctx.closePath(); 
+  }
+
 }
 var obj = new CRefactorChessBoard();
 
@@ -432,35 +455,7 @@ obj.updateChess = function(){
     $("#ul").append("<li>"+eee+"</li>");
   });
 } 
- 
 
-
-
-
-
-
-// 画选中棋子状态
-obj.drawChecked = function(p){
-var temp_x = p.x*this.chunk;
-var temp_y = p.y*this.chunk;
-this.ctx.beginPath();
-this.ctx.strokeStyle = "#00f";
-this.ctx.lineWidth =1;
-this.ctx.moveTo(temp_x-this.radius,temp_y-this.radius+10);
-this.ctx.lineTo(temp_x-this.radius,temp_y-this.radius);
-this.ctx.lineTo(temp_x-this.radius+10,temp_y-this.radius);
-this.ctx.moveTo(temp_x-this.radius,temp_y+this.radius-10);
-this.ctx.lineTo(temp_x-this.radius,temp_y+this.radius);
-this.ctx.lineTo(temp_x-this.radius+10,temp_y+this.radius);
-this.ctx.moveTo(temp_x+this.radius,temp_y-this.radius+10);
-this.ctx.lineTo(temp_x+this.radius,temp_y-this.radius);
-this.ctx.lineTo(temp_x+this.radius-10,temp_y-this.radius);
-this.ctx.moveTo(temp_x+this.radius,temp_y+this.radius-10);
-this.ctx.lineTo(temp_x+this.radius,temp_y+this.radius);
-this.ctx.lineTo(temp_x+this.radius-10,temp_y+this.radius);
-this.ctx.stroke();
-this.ctx.closePath(); 
-}
 // 画候选位置
 obj.drawCandidate = function(){
 switch(this.preChess.text){
