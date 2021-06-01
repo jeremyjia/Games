@@ -1,6 +1,6 @@
 function CRefactorChessBoard(){
   this.dbgText = function(ctx){
-    ctx.fillText("v0.154",10, 10);
+    ctx.fillText("v0.155",10, 10);
   }
 
   // 画楚河/漢界
@@ -733,7 +733,7 @@ this.drawCandidate = function(that){
       case "車":
       return that.rule_Car(that,i,j);
       case "馬":
-      return that.rule_Horse(i,j); 
+      return that.rule_Horse(that,i,j); 
       case "相":
       return that.rule_Elephant_r(i,j);
       case "象":
@@ -751,7 +751,7 @@ this.drawCandidate = function(that){
       case "卒":
       return that.rule_Soldier_b(i,j);
       case "炮":
-      if(that.rule_Cannon(i,j)==0){
+      if(that.rule_Cannon(that,i,j)==0){
         return true;
       }
       return false;
@@ -764,7 +764,7 @@ this.drawCandidate = function(that){
       case "車":
       return that.rule_Car(that,i,j);
       case "馬":
-      return that.rule_Horse(i,j); 
+      return that.rule_Horse(that,i,j); 
       case "相":
       return that.rule_Elephant_r(i,j);
       case "象":
@@ -782,7 +782,7 @@ this.drawCandidate = function(that){
       case "卒":
       return that.rule_Soldier_b(i,j);
       case "炮":
-      if(that.rule_Cannon(i,j)==1){
+      if(that.rule_Cannon(that,i,j)==1){
         return true;
       }
       return false;
@@ -852,6 +852,114 @@ this.drawCandidate = function(that){
     }
     return false;
   }
+
+  
+  // 馬的规则
+  this.rule_Horse = function(that,i,j){
+    var hasObstacle = false; 
+    if((Math.abs(that.preChess.x-i)==1&&Math.abs(that.preChess.y-j)==2)
+    ||(Math.abs(that.preChess.x-i)==2&&Math.abs(that.preChess.y-j)==1)){
+    if(that.preChess.x-i==2){ // 左
+    $.each(that.cheer_arr_ALL,function(ii,ee){
+      if(ee.x ==that.preChess.x-1&&ee.y==that.preChess.y){
+      hasObstacle =true;
+      return false;
+      }
+    });
+    if(hasObstacle){
+      return false;
+    }
+    }else if(i-that.preChess.x==2){ // 右
+    $.each(that.cheer_arr_ALL,function(ii,ee){
+      if(ee.x ==that.preChess.x+1&&ee.y==that.preChess.y){
+      hasObstacle =true;
+      return false;
+      }
+    });
+    if(hasObstacle){
+      return false;
+    }
+    }else if(that.preChess.y-j==2){ // 上
+    $.each(that.cheer_arr_ALL,function(ii,ee){
+      if(ee.x ==that.preChess.x&&ee.y==that.preChess.y-1){
+      hasObstacle =true;
+      return false;
+      }
+    });
+    if(hasObstacle){
+      return false;
+    }
+    }else if(j-that.preChess.y==2){ // 下
+    $.each(that.cheer_arr_ALL,function(ii,ee){
+      if(ee.x ==that.preChess.x&&ee.y==that.preChess.y+1){
+      hasObstacle =true;
+      return false;
+      }
+    });
+    if(hasObstacle){
+      return false;
+    }
+    }
+    return true;
+    }
+    return false;
+  }
+
+  
+  // 炮的规则
+  this.rule_Cannon = function(that,i,j){ 
+    if(that.preChess.x ==i||that.preChess.y==j){
+    var t =0;
+    if(that.preChess.x ==i){
+    var temp = that.preChess.y;
+    if(temp<j){
+      while(++temp!=j){
+      $.each(that.cheer_arr_ALL,function(ii,ee){
+      if(ee.x ==that.preChess.x&&ee.y==temp){
+      t++;
+      return false;
+      }
+      });
+      }
+      return t;
+    }else{
+      while(--temp!=j){
+      $.each(that.cheer_arr_ALL,function(ii,ee){
+      if(ee.x ==that.preChess.x&&ee.y==temp){
+      t++;
+      return false;
+      }
+      });
+      }
+      return t;
+    }
+    }else{
+    var temp = that.preChess.x;
+    if(temp<i){
+      while(++temp!=i){
+      $.each(that.cheer_arr_ALL,function(ii,ee){
+      if(ee.x ==temp&&ee.y==that.preChess.y){
+      t++;
+      return false;
+      }
+      });
+      }
+      return t;
+    }else{
+      while(--temp!=i){
+      $.each(that.cheer_arr_ALL,function(ii,ee){
+      if(ee.x ==temp&&ee.y==that.preChess.y){
+      t++;
+      return false;
+      }
+      });
+      }
+      return t;
+    }
+    }
+    }
+    return 2;
+  }
 }
 var obj = new CRefactorChessBoard();
 
@@ -890,57 +998,6 @@ obj.updateChess = function(){
 } 
 
 
-// 馬的规则
-obj.rule_Horse = function(i,j){
-var hasObstacle = false;
-var that = this;
-if((Math.abs(this.preChess.x-i)==1&&Math.abs(this.preChess.y-j)==2)
-||(Math.abs(this.preChess.x-i)==2&&Math.abs(this.preChess.y-j)==1)){
- if(this.preChess.x-i==2){ // 左
- $.each(that.cheer_arr_ALL,function(ii,ee){
-  if(ee.x ==that.preChess.x-1&&ee.y==that.preChess.y){
-  hasObstacle =true;
-  return false;
-  }
- });
- if(hasObstacle){
-  return false;
- }
- }else if(i-that.preChess.x==2){ // 右
- $.each(that.cheer_arr_ALL,function(ii,ee){
-  if(ee.x ==that.preChess.x+1&&ee.y==that.preChess.y){
-  hasObstacle =true;
-  return false;
-  }
- });
- if(hasObstacle){
-  return false;
- }
- }else if(that.preChess.y-j==2){ // 上
- $.each(that.cheer_arr_ALL,function(ii,ee){
-  if(ee.x ==that.preChess.x&&ee.y==that.preChess.y-1){
-  hasObstacle =true;
-  return false;
-  }
- });
- if(hasObstacle){
-  return false;
- }
- }else if(j-that.preChess.y==2){ // 下
- $.each(that.cheer_arr_ALL,function(ii,ee){
-  if(ee.x ==that.preChess.x&&ee.y==that.preChess.y+1){
-  hasObstacle =true;
-  return false;
-  }
- });
- if(hasObstacle){
-  return false;
- }
- }
- return true;
-}
-return false;
-}
 // 红相的规则
 obj.rule_Elephant_r = function(i,j){
 var hasObstacle = false;
@@ -1054,61 +1111,6 @@ if(this.preChess.y>5){
  }
 }
 return false;
-}
-// 炮的规则
-obj.rule_Cannon = function(i,j){
-var that = this;
-if(this.preChess.x ==i||this.preChess.y==j){
- var t =0;
- if(this.preChess.x ==i){
- var temp = this.preChess.y;
- if(temp<j){
-  while(++temp!=j){
-  $.each(this.cheer_arr_ALL,function(ii,ee){
-   if(ee.x ==that.preChess.x&&ee.y==temp){
-   t++;
-   return false;
-   }
-  });
-  }
-  return t;
- }else{
-  while(--temp!=j){
-  $.each(this.cheer_arr_ALL,function(ii,ee){
-   if(ee.x ==that.preChess.x&&ee.y==temp){
-   t++;
-   return false;
-   }
-  });
-  }
-  return t;
- }
- }else{
- var temp = this.preChess.x;
- if(temp<i){
-  while(++temp!=i){
-  $.each(this.cheer_arr_ALL,function(ii,ee){
-   if(ee.x ==temp&&ee.y==that.preChess.y){
-   t++;
-   return false;
-   }
-  });
-  }
-  return t;
- }else{
-  while(--temp!=i){
-  $.each(this.cheer_arr_ALL,function(ii,ee){
-   if(ee.x ==temp&&ee.y==that.preChess.y){
-   t++;
-   return false;
-   }
-  });
-  }
-  return t;
- }
- }
-}
-return 2;
 }
 obj.inArray = function(x,y){
 var hasObstacle = false;
