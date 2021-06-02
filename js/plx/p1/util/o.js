@@ -1,5 +1,8 @@
 function CP1Util (){
-    var _v = "CP1Util_v0.14";
+    var _v = "CP1Util_v0.21";
+    var _list4Cards = [];
+    
+    this.listCards = function(){ return _list4Cards;}
     this.getV = function(){return _v;}
     this.status = function(me){   
         var d = bl$("id_4_vStatus");
@@ -88,7 +91,6 @@ o.list2draw = [];
 o.listMousedown = [];
 o.listMouseup = [];
 o.listMousemove = [];
-o.listCards = [];
 o.curCard = 0;
 o.bPlay = false;
 
@@ -336,7 +338,8 @@ o.addCard= function(_ls){
         b.inf.objects = [];
         b.inf.c = "skyblue";
         b.inf.text = "Card.txt"; 
-      //  o.AddObj2Frame(b.inf.objects,o.newObj("circle",111,111,222,222,5,"red"));
+      
+        o.AddObj2Frame(b.inf.objects,o.newObj("circle",111,111,222,222,5,"red"));
       // o.AddObj2Frame(b.inf.objects,o.newObj("rect",111,10,100,100,5,"blue"));
        // o.AddObj2Frame(b.inf.objects,o.newTextObj("test",10,10,60,"0,255,255"));
         o.AddObj2Frame(b.inf.objects,o.newObj("text",15,110,333,222,5,"255,255,1"));
@@ -363,13 +366,14 @@ o.addCard= function(_ls){
         b.onclick = function(_o,_this){
             return function(){
                 _o.curCard = _this.No;
-                for(i in _o.listCards){
+                var _l = _o.listCards();
+                for(i in _l){
                     if((_this.No-1)==i){
-                        _o.listCards[i].style.backgroundColor = "yellow";
+                        _l[i].style.backgroundColor = "yellow";
                         _o.status(_this);
                     }
                     else{
-                        _o.listCards[i].style.backgroundColor = "grey";
+                        _l[i].style.backgroundColor = "grey";
                     }
                 }
             }
@@ -383,7 +387,7 @@ o.addCard= function(_ls){
                 var c = _this.inf.c;
                 var s = "o.bPlay: " + o.bPlay ;
                 s += " o.list2draw.length=" + o.list2draw.length;
-                s += ": " + o.curCard + "/" + o.listCards.length;
+                s += ": " + o.curCard + "/" + o.listCards().length;
                 o.text(ctx,s,x,y);        
                 o.rect(ctx,x,y,w,h,c);
                 s = _this.inf.text + ": N[Obj]=" + _this.inf.objects.length;
@@ -397,7 +401,7 @@ o.addCard= function(_ls){
         }(b);
         _ls.push(b);
     }
-}(o.listCards);
+}(o.listCards());
 
 o.play = function(btn){
     if(o.bPlay){
@@ -420,8 +424,8 @@ o.inRect = function(x,y,x0,y0,w,h){
     return b;
 }
 o._2drawCurCard = function(ctx){
-     
-    o.listCards[o.curCard-1]._2_draw(ctx);
+    var _l = o.listCards(); 
+    _l[o.curCard-1]._2_draw(ctx);
 }
  
 o.draw = function(ctx){
