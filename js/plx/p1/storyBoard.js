@@ -1,4 +1,4 @@
-var tag = "storyBoard.js_v0.14";
+var tag = "storyBoard.js_v0.15";
 var tb = bl$("id_p1_tb"); 
 
 tb.btnStoryBoard = blo0.blBtn(tb,"btnStoryBoard","storyBoard",blGrey[2]);
@@ -109,14 +109,13 @@ function CStoryBoard(parentDiv){
             }
             tb.btnAdd5Cards = blo0.blBtn(tb,"id_4_btnAdd5Cards","+5",blGrey[2]);
             tb.btnAdd5Cards.style.float="left";
-            tb.btnAdd5Cards.onclick = function(){
-                o.addCard(this);o.addCard(this);o.addCard(this);o.addCard(this);o.addCard(this);
+            tb.btnAdd5Cards.onclick = function(){ 
+                for(var i = 0; i < 5; i++ ){o.addCard(this);}
             }
             tb.btnAdd10Cards = blo0.blBtn(tb,"id_4_btnAdd10Cards","+10",blGrey[2]);
             tb.btnAdd10Cards.style.float="left";
-            tb.btnAdd10Cards.onclick = function(){
-                o.addCard(this);o.addCard(this);o.addCard(this);o.addCard(this);o.addCard(this);
-                o.addCard(this);o.addCard(this);o.addCard(this);o.addCard(this);o.addCard(this);
+            tb.btnAdd10Cards.onclick = function(){                
+                for(var i = 0; i < 10; i++ ){o.addCard(this);}
             }
             tb.btnAdd100Cards = blo0.blBtn(tb,"id_4_btnAdd100Cards","+100",blGrey[2]);
             tb.btnAdd100Cards.style.float="left";
