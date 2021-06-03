@@ -1,4 +1,4 @@
-var voaV = "v0.222";
+var voaV = "v0.223";
 
 var bbbb = true;
 var nObjDrawVOA = 0;
@@ -119,6 +119,20 @@ function CUtilVOA(){
   var curP = "curText";
   var l = [];
   var n = 0;
+  var _op = {
+    v: "op-0.11",
+    n: 0,
+    parse_Page: function(txt){
+      this.n = txt.length;
+      blo0.txtPage = txt;
+    },
+    draw: function(_o,_ctx,_x,_y){
+      _o.rect(_ctx,_x,_y,100,20,"yellow");   
+      _o.text(_ctx,this.v,_x,_y-20);    
+      _o.text(_ctx,this.n,_x,_y-5);    
+    },
+  }; 
+
   var drw = null;
 
   
@@ -239,13 +253,41 @@ function CUtilVOA(){
           n++;
         } 
         
+        var a1 = a[i].split('href="');
+        var a2 = a1[1].split('"');
+
         var t = curTypeFN.split('.');
         var fileName = d1[0] + "_"+t[0]+n; 
-        ls.push(fileName);
+        var o = {};
+        o.url = a2[0];
+        o.fileName = fileName;
+        ls.push(o);
       }
+
       that.setCurPs(ls,t[0],133,50,4,function(_MyType){
-        return function(n){
-           curP = _MyType + ":" + n + ": setCurPs_in_parseType";
+        return function(n,ls){
+           curP = _MyType + ":" + n + " - https://learningenglish.voanews.com"+ ls[n].url+": setCurPs_in_parseType";
+
+           var url = "https://learningenglish.voanews.com" + ls[n].url; 
+          
+          var fn = ls[n].fileName;
+          fn = fn.replace(" ","-");
+          fn = fn.replace(", ","-");  
+          fn += "." + _MyType;
+          var lastURL = "http://localhost:8080/download?url="+url +"&filename=" + fn;
+          
+          var w = {};
+          w._2do = function(txt){ 
+            curP = blo0.blTime(0) + ": " + txt;
+
+            var w1 = {};
+            w1._2do = function(txtPage){        
+              _op.parse_Page(txtPage);
+            }
+            blo0.blAjx(w1,"http://localhost:8080/"+fn);
+          } 
+          blo0.blAjx(w,lastURL);
+
         }
       }(t[0]));          
     }
@@ -300,11 +342,11 @@ function CUtilVOA(){
         y += h + 2;
       }
       x += w + 2; 
-      var btn = new CBtn(this,ls[i] + "-" + i,x, y, 30,30,function(_i){
+      var btn = new CBtn(this,ls[i] + "-" + i,x, y, 30,30,function(_i,_ls){
         return function(){
-          if(fCB) fCB(_i);
+          if(fCB) fCB(_i,_ls);
         }
-      }(i));
+      }(i,ls));
       _ps.push(btn);
     }
   } 
@@ -339,6 +381,7 @@ function CUtilVOA(){
     o.text(ctx,curClick,x,y+122);     
     o.text(ctx,curP,x,y+50);  
     o.text(ctx,originalMp3URL,x,y + 111);
+    _op.draw(o,ctx,x+100,y-30);
      
 
     for(i in l){
