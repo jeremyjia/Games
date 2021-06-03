@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.42"
+var g_ver_blClass = "CBlClass_v1.4.43"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -883,11 +883,14 @@ function CBlClass ()
 		return r;
 	}
 	this.blTime = function(nOption){
-		var d = Date();
+		var d = new Date();
 		switch(nOption){
 			case 0:
-				return d;
+				return d.toLocaleTimeString();
 				break;			
+			default:
+				return d;
+				break;
 		}
 	}
 	
