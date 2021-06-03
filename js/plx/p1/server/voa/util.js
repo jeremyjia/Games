@@ -1,12 +1,12 @@
-var voaV = "v0.221";
+var voaV = "v0.222";
 
 var bbbb = true;
-var nCDrawVOA = 0;
+var nObjDrawVOA = 0;
 
 
 const voaUtil = new CUtilVOA();
 
-var CBtn = function(oBoss,id,dx,dy,dw,dh){
+var CBtn = function(oBoss,id,dx,dy,dw,dh,fBtnCB){
 
   var _id = id; var _dx = dx; var _dy = dy; var _dw = dw; var _dh = dh; 
   var x0 = 0; var y0 = 0;
@@ -16,14 +16,19 @@ var CBtn = function(oBoss,id,dx,dy,dw,dh){
     y0 = y;
     oDraw.rect(ctx,x0 + _dx,y0 + _dy,_dw,_dh,_myColor);   
     oDraw.text(ctx,id, x0 + _dx,y0 + _dy + 15);
-    oDraw.text(ctx,"["+x0+","+y0+"]", x0 + _dx,y0 + _dy + 33);
+    //oDraw.text(ctx,"["+x0+","+y0+"]", x0 + _dx,y0 + _dy + 33);
+    if(oBoss.drawInBtn) oBoss.drawInBtn(oDraw,ctx,x0 + _dx, y0 + _dy);
   }
   this.btnMousedown = function(x,y){ 
     if(blo0.blPiR(x,y,x0 + _dx,y0 + _dy,_dw,_dh)){  
       _myColor = "red";
       if(_id=="id_btn_2_save_blVOA"){ 
-        _save_blVOA(oBoss.blVOA(),"blVOA.json",oBoss);
+        _save_blVOA(oBoss.blMakeVOAScript(),"blVOA.json",oBoss);
       }
+      if(_id=="id_btn_2_parseType"){ 
+        oBoss.blParseType();
+      }
+      if(fBtnCB) fBtnCB();
     }         
     else{
       _myColor = "grey";
@@ -43,7 +48,7 @@ function CDrawVOA(_o,_parent){
     var _ls = [];
 
     _ls.push(new CBtn(_parent,"id_btn_2_save_blVOA",50, 55, 30,30));
-    _ls.push(new CBtn(_parent,2,150, 55, 30,30));
+    _ls.push(new CBtn(_parent,"id_btn_2_parseType",150, 55, 30,30));
     _ls.push(new CBtn(_parent,3,250, 55, 30,30));
      
     _ls.draw = function(oDraw,ctx,x,y){
@@ -59,7 +64,7 @@ function CDrawVOA(_o,_parent){
       }
     } 
 
-    if(nCDrawVOA>0) return;
+    if(nObjDrawVOA>0) return;
  
     this.onOff = function(){
       bbbb = !bbbb;
@@ -100,14 +105,15 @@ function CDrawVOA(_o,_parent){
     _o.regMousedown(this);
     _o.regMouseup(this);
     _o.regMousemove(this);
-    nCDrawVOA++;
+    nObjDrawVOA++;
 }
 
 function CUtilVOA(){ 
   var _save_bl_VOA_Res = "bl_voa_res>>>";
   var curClick = "curClick";
   var curDuration = 345;
-  var curType = "curType";
+  var curTypeFN = "";
+  var txtParseType = "";
   var originalMp3URL = "originMp3URL=";
   var _ps = [];
   var curP = "curText";
@@ -175,7 +181,7 @@ function CUtilVOA(){
       //*
       var a = txt.split('<div id="comments" class="comments-parent">'); 
       var b = a[0].split('<p>');
-      voaUtil.setCurPs(b);
+      voaUtil.setCurPs(b,"P",50,30,10);
 
       for(i in b){
         var btn4P = blo0.blBtn(mainTxtToolBar,mainTxtToolBar.id+i,i,blGrey[3]); 
@@ -200,7 +206,7 @@ function CUtilVOA(){
   }
 
   this.reg2o = function(_o,tyleFileName){    
-    curType = "[curType] " + tyleFileName;
+    curTypeFN =  tyleFileName;
     drw = new CDrawVOA(_o,this); 
   } 
   this.clickTest = function(x,y){
@@ -210,8 +216,43 @@ function CUtilVOA(){
     }
   }
    
+  this.drawInBtn = function(_oDraw,_ctx,_x,_y){
+    _oDraw.rect(_ctx,_x,_y,10,10,"red");
+  }
 
-  this.blVOA = function(){
+  this.blParseType = function(){ 
+    var w = {};
+    var that = this;
+    w._2do = function(txt){         
+      var ls = [];
+      var a = txt.split('<span class="date date--mb date--size-3" >');
+      var newData = null;
+      var n = 0;
+      for(i in a){
+        if(i==0) continue;
+        var d1 = a[i].split('</span>');
+        if(newData!=d1[0]){
+          newData=d1[0];
+          n = 1;
+        }
+        else {
+          n++;
+        } 
+        
+        var t = curTypeFN.split('.');
+        var fileName = d1[0] + "_"+t[0]+n; 
+        ls.push(fileName);
+      }
+      that.setCurPs(ls,t[0],133,50,4,function(_MyType){
+        return function(n){
+           curP = _MyType + ":" + n + ": setCurPs_in_parseType";
+        }
+      }(t[0]));          
+    }
+    blo0.blAjx(w,"http://localhost:8080/"+curTypeFN);
+  }
+
+  this.blMakeVOAScript = function(){
     var d = {};
     var r = {};
     
@@ -247,18 +288,23 @@ function CUtilVOA(){
     return d;
   }
   
-  this.setCurPs = function(ls){
+  this.setCurPs = function(ls,_typeFN,_w,_h,_nCol,fCB){
     _ps = [];
-    var x = 50;
-    var y = 155;
-    var w = 30;
+    var x = 11;
+    var y = 55;
+    var w = _w?_w:50;
+    var h = _h?_h:30;
     for(i in ls){
-      if(i%10==0){
-        x = 50;
-        y += w + 2;
+      if(i%_nCol==0){
+        x = 11;
+        y += h + 2;
       }
-      x += w + 2;
-      var btn = new CBtn(this,i,x, y, 30,30);
+      x += w + 2; 
+      var btn = new CBtn(this,ls[i] + "-" + i,x, y, 30,30,function(_i){
+        return function(){
+          if(fCB) fCB(_i);
+        }
+      }(i));
       _ps.push(btn);
     }
   } 
@@ -288,7 +334,7 @@ function CUtilVOA(){
   this.drawUtil = function(o,ctx,x,y){
     o.text(ctx,_save_bl_VOA_Res,x,y - 44);
     o.text(ctx,curDuration,x,y - 22);
-    o.text(ctx,curType,x,y - 11);
+    o.text(ctx,curTypeFN,x,y - 11);
     o.text(ctx,"_parent: " + Date(),x,y+30);     
     o.text(ctx,curClick,x,y+122);     
     o.text(ctx,curP,x,y+50);  
@@ -317,7 +363,7 @@ function CUtilVOA(){
             }
         }(d,i,a);
     }
-}
+  }
 }
 
 
