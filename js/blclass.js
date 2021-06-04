@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.52"
+var g_ver_blClass = "CBlClass_v1.4.53"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -173,10 +173,12 @@ function CBlClass ()
 
 	this.blrAboutMe= function(b,d){		
 		var s = ""; 
-		s += _blhMakeLink('blclass.js ','https://littleflute.github.io/JavaScript/blclass.js','color:skyblue;','_blank');
-		s += _blhMakeLink(' blclass.js*','https://github.com/littleflute/JavaScript/edit/master/blclass.js','color:skyblue;','_blank');
+		s += _blhMakeLink('blclass.js ','https://littleflute.github.io/Games/blclass.js','color:skyblue;','_blank');
+		s += _blhMakeLink(' blclass.js*','https://github.com/littleflute/Games/edit/master/blclass.js','color:skyblue;','_blank');
+		s += _blhMakeLink(' blog','https://github.com/littleflute/blog','color:yellow;','_blank');
 		d.innerHTML = s;
 		_on_off_div(b,d);
+		b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 	}
 	this.blhInitUI		= function(divUI){	
 		var divMove		= blo0.blMDiv(document.body,_id,"divShowMe_divMove_blClass",550,150,500,200,blColor[8]);
@@ -914,6 +916,7 @@ function CBlClass ()
 }//END: function CBlClass ()
  
 var blo0 = new CBlClass;
+ 
  
 blo0.lsCVS = [];
 var mousedownList = [];
