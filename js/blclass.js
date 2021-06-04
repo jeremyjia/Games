@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.43"
+var g_ver_blClass = "CBlClass_v1.4.52"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -133,6 +133,10 @@ var blon = function(b,d,c1,c2){
 function CBlClass ()
 { 
     var _id = "id_div_4_blClass";
+	var _tmp = {
+		in: "inTest",
+		out: "outTest"
+	};
 	this.v = g_ver_blClass;
 	var _blVideo = document.createElement("VIDEO");
 	_blVideo.id = "id_blVideo";
@@ -167,38 +171,6 @@ function CBlClass ()
 		_blVideo.play();
 	}
 
-	this.showMe = function(myHandle){ 
-		if(!myHandle.m){
-			myHandle.m = blo0.blMD(myHandle.id+"showMe"," blo0 ",555,50,555,500,"lightgreen");
-			myHandle.n = 1;
-			myHandle.b = true;
-			myHandle.style.backgroundColor = "green"; 
-			var v = blo0.blDiv(myHandle.m,myHandle.m.id+"v","v","lightblue");	
-			var tb			= blo0.blDiv(v,v.id + "tb" + this.v,this.v,"lightgreen");			
-			var d4URL			= blo0.blDiv(v,v.id + "d4URL","d4URL",blColor[4]);	
-			d4URL.innerHTML = blo0.blURL();
-			var dParseMe			= blo0.blDiv(v,v.id + "ShowMe","divShowMe",blColor[6]);
-			var b1			= blo0.blBtn(tb,tb.id+"blhInitUI_btn1","[blo0]",blGrey[0]);
-			b1.onclick		= function(this_){
-					return function(){
-						 	blo0.blShowObj2Div(dParseMe,blo0);blon(this_,dParseMe,"grey","green");
-					}
-			}(b1);
-			
-		}
-		if(myHandle.n>1){			blon(myHandle,myHandle.m,"grey","green");		}		myHandle.n++;
-	}
-
-	this.blURL = function(){
-		return window.location.href;
-	}
-    this.blhMakeLink = function (txt,href,style,target) { return _blhMakeLink(txt,href,style,target); } 
-    this.blrMax = function (b,d)
-    {        
-		 d.parentElement.parentElement.style.left = 0+"px";
-		 d.parentElement.parentElement.style.top = 0+"px";
-		 d.parentElement.parentElement.style.width = "100%";
-	}
 	this.blrAboutMe= function(b,d){		
 		var s = ""; 
 		s += _blhMakeLink('blclass.js ','https://littleflute.github.io/JavaScript/blclass.js','color:skyblue;','_blank');
@@ -214,6 +186,50 @@ function CBlClass ()
 		b1.onclick		= function(this_){	return function(){ 	blo0.blShowObj2Div(dMe,this_);_on_off_div(this,divMove);}}(this);
 		
 	};
+	this.blParseText = function(_txt,_oCfg){  
+		_oCfg.parse = "parseTest"; 
+	}
+	
+	this.showMe = function(myHandle){ 
+		if(!myHandle.m){
+			myHandle.m = blo0.blMD(myHandle.id+"showMe"," blo0 ",555,50,555,500,"lightgreen");
+			myHandle.n = 1;
+			myHandle.b = true;
+			myHandle.style.backgroundColor = "green"; 
+			var v = blo0.blDiv(myHandle.m,myHandle.m.id+"v","v","lightblue");	
+			var tb			= blo0.blDiv(v,v.id + "tb" + this.v,this.v,"lightgreen");			
+			var d4URL			= blo0.blDiv(v,v.id + "d4URL","d4URL",blColor[4]);	
+			d4URL.innerHTML = blo0.blURL();
+			var div4Parse			= blo0.blDiv(v,v.id + "ShowMe","divShowMe",blColor[6]);
+			var btnParseMe			= blo0.blBtn(tb,tb.id+"btnParseMe","[blo0]",blGrey[0]);
+			btnParseMe.onclick		= function(_this,_v){
+					return function(){
+						 	blo0.blShowObj2Div(_v,blo0);blon(_this,_v,"grey","green");
+					}
+			}(btnParseMe,div4Parse);
+			var btnParseTmp			= blo0.blBtn(tb,tb.id+"btnParseTmp","[tmp]",blGrey[0]);
+			btnParseTmp.onclick		= function(_this,_v){
+					return function(){ 
+						_v.innerHTML = _this.id;
+						blo0.blParseText("abc",_tmp);
+						blo0.blShowObj2Div(_v,_tmp);blon(_this,_v,"grey","green");
+					}
+			}(btnParseTmp,div4Parse);
+			
+		}
+		if(myHandle.n>1){			blon(myHandle,myHandle.m,"grey","green");		}		myHandle.n++;
+	}
+
+	this.blURL = function(){
+		return window.location.href;
+	}
+    this.blhMakeLink = function (txt,href,style,target) { return _blhMakeLink(txt,href,style,target); } 
+    this.blrMax = function (b,d)
+    {        
+		 d.parentElement.parentElement.style.left = 0+"px";
+		 d.parentElement.parentElement.style.top = 0+"px";
+		 d.parentElement.parentElement.style.width = "100%";
+	}
     this.blCreatePage = function (titleTxt,bodyHtml){
 		var r = "";
 		r	+= "<HTML><HEAD><TITLE>";
@@ -1249,6 +1265,7 @@ blo0.blCanvase = function(d,w,h,color){
 	var interval = setInterval(fTimer, 20);
 	return cvs;
 }
+
 blo0.blParseURL = function(_url,cb){  
 	myAjaxCmd('GET',_url, null, ajaxFun);
 	function ajaxFun(resp){

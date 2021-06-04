@@ -1,4 +1,4 @@
-var voaV = "v0.223";
+var voaV = "v0.225";
 
 var bbbb = true;
 var nObjDrawVOA = 0;
@@ -120,11 +120,17 @@ function CUtilVOA(){
   var l = [];
   var n = 0;
   var _op = {
-    v: "op-0.11",
+    v: "op-0.12",
     n: 0,
     parse_Page: function(txt){
       this.n = txt.length;
       blo0.txtPage = txt;
+
+      var a = txt.split('<a class="c-mmp__fallback-link" href="');
+      var b = a[1].split('">');
+      originalMp3URL = b[0]; 
+      blo0.setPlayerURL(originalMp3URL); 
+
     },
     draw: function(_o,_ctx,_x,_y){
       _o.rect(_ctx,_x,_y,100,20,"yellow");   
