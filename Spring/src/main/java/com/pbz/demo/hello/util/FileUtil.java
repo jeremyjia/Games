@@ -9,16 +9,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jaudiotagger.audio.mp3.MP3AudioHeader;
 import org.jaudiotagger.audio.mp3.MP3File;
 
 public class FileUtil {
+
+	private static String zhPattern = "[\\u4e00-\\u9fa5]";
 
 	public static void copyDirectory(File sourceDir, File targetDir) throws IOException {
 
@@ -147,6 +153,7 @@ public class FileUtil {
 
 	public static void downloadFile(String url, String saveFilePath) {
 		try {
+			url = fixInputUrl(url);
 			URL fileUrl = new URL(url);
 			InputStream is = fileUrl.openStream();
 			OutputStream os = new FileOutputStream(saveFilePath);
@@ -162,6 +169,27 @@ public class FileUtil {
 		}
 	}
 
+	private static String fixInputUrl(String url) throws IOException {
+		url = encode(url, "UTF-8");
+		String replaceString = "raw.githubusercontent.com";
+		if (url.contains(replaceString)) {
+			String sIn = new String(url);
+			int index = sIn.indexOf(replaceString);
+			index = index + replaceString.length() + 1;
+			String temp = sIn.substring(index);
+			int index2 = temp.indexOf("/");
+			String firstWord = temp.substring(0, index2);
+			String leftWords = temp.substring(index2);
+			String result = "https://" + firstWord + ".github.io" + leftWords;
+			result = result.replaceAll("master/", "");
+			System.out.println("fixed url:" + result);
+			return result;
+		} else {
+			System.out.println("encoded url:" + url);
+			return url;
+		}
+	}
+
 	public static String getAudioDuration(String filePath) throws Exception {
 		MP3File file = new MP3File(filePath);
 		MP3AudioHeader audioHeader = (MP3AudioHeader) file.getAudioHeader();
@@ -169,7 +197,7 @@ public class FileUtil {
 		return Integer.toString(len);
 	}
 
-	public static String downloadFileIfNeed(String file) {
+	public static String downloadFileIfNeed(String file) throws IOException {
 		String fileName = file;
 		if (fileName.contains("/")) {
 			fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
@@ -201,6 +229,17 @@ public class FileUtil {
 		System.out.println("download file time:" + (endtime - begintime));
 
 		return new File(savedFilePath).getName();
+	}
+
+	public static String encode(String str, String charset) throws UnsupportedEncodingException {
+		Pattern p = Pattern.compile(zhPattern);
+		Matcher m = p.matcher(str);
+		StringBuffer b = new StringBuffer();
+		while (m.find()) {
+			m.appendReplacement(b, URLEncoder.encode(m.group(0), charset));
+		}
+		m.appendTail(b);
+		return b.toString();
 	}
 
 	public static int chmod(String args) throws Exception {
