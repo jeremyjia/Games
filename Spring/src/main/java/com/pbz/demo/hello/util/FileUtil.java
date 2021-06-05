@@ -25,6 +25,7 @@ import org.jaudiotagger.audio.mp3.MP3File;
 public class FileUtil {
 
 	private static String zhPattern = "[\\u4e00-\\u9fa5]";
+	private static final String replaceString = "raw.githubusercontent.com";
 
 	public static void copyDirectory(File sourceDir, File targetDir) throws IOException {
 
@@ -153,7 +154,7 @@ public class FileUtil {
 
 	public static void downloadFile(String url, String saveFilePath) {
 		try {
-			url = fixInputUrl(url);
+			url = fixUrl(url);
 			URL fileUrl = new URL(url);
 			InputStream is = fileUrl.openStream();
 			OutputStream os = new FileOutputStream(saveFilePath);
@@ -166,27 +167,6 @@ public class FileUtil {
 			os.close();
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
-		}
-	}
-
-	private static String fixInputUrl(String url) throws IOException {
-		url = encode(url, "UTF-8");
-		String replaceString = "raw.githubusercontent.com";
-		if (url.contains(replaceString)) {
-			String sIn = new String(url);
-			int index = sIn.indexOf(replaceString);
-			index = index + replaceString.length() + 1;
-			String temp = sIn.substring(index);
-			int index2 = temp.indexOf("/");
-			String firstWord = temp.substring(0, index2);
-			String leftWords = temp.substring(index2);
-			String result = "https://" + firstWord + ".github.io" + leftWords;
-			result = result.replaceAll("master/", "");
-			System.out.println("fixed url:" + result);
-			return result;
-		} else {
-			System.out.println("encoded url:" + url);
-			return url;
 		}
 	}
 
@@ -231,7 +211,29 @@ public class FileUtil {
 		return new File(savedFilePath).getName();
 	}
 
-	public static String encode(String str, String charset) throws UnsupportedEncodingException {
+	private static String fixUrl(String url) throws IOException {
+		url = encodeString(url, "UTF-8");
+		if (url.contains(replaceString)) {
+			// https://raw.githubusercontent.com/littleflute/cchess/master/blCChess.json ->
+			// https://littleflute.github.io/cchess/blCChess.json
+			String sIn = new String(url);
+			int index = sIn.indexOf(replaceString);
+			index = index + replaceString.length() + 1;
+			String temp = sIn.substring(index);
+			int index2 = temp.indexOf("/");
+			String firstWord = temp.substring(0, index2);
+			String leftWords = temp.substring(index2);
+			String result = "https://" + firstWord + ".github.io" + leftWords;
+			result = result.replaceAll("master/", "");
+			System.out.println("fixed url:" + result);
+			return result;
+		} else {
+			System.out.println("encoded url:" + url);
+			return url;
+		}
+	}
+
+	public static String encodeString(String str, String charset) throws UnsupportedEncodingException {
 		Pattern p = Pattern.compile(zhPattern);
 		Matcher m = p.matcher(str);
 		StringBuffer b = new StringBuffer();
