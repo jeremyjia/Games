@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.53"
+var g_ver_blClass = "CBlClass_v1.4.55"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -533,8 +533,10 @@ function CBlClass ()
             if (xmlhttp.readyState==4 && xmlhttp.status==200){
                worker._2do(xmlhttp.responseText);
             }
-			else{
-              // worker._error("xmlhttp.status:" + xmlhttp.status);
+			else{ 
+			  var r = {};
+			  r.status = xmlhttp.status;	  
+			  worker._2do(r);
 			}
         }
         xmlhttp.open("GET",href,true);
