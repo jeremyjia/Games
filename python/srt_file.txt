@@ -1,0 +1,434 @@
+{'text': "yo what's up guys welcome back to my", 'start': 0.64, 'duration': 2.96}
+{'text': "youtube channel today i'll show you guys", 'start': 2.0, 'duration': 2.72}
+{'text': 'how you can um', 'start': 3.6, 'duration': 3.6}
+{'text': 'take any youtube video subtitle and', 'start': 4.72, 'duration': 4.32}
+{'text': 'translate into your you know prefer the', 'start': 7.2, 'duration': 2.479}
+{'text': 'language', 'start': 9.04, 'duration': 2.8}
+{'text': "so let's say you go on to your you you", 'start': 9.679, 'duration': 3.04}
+{'text': 'know youtube', 'start': 11.84, 'duration': 4.48}
+{'text': 'and search up kizuna ie uh like', 'start': 12.719, 'duration': 6.161}
+{'text': 'introduction', 'start': 16.32, 'duration': 2.56}
+{'text': 'and you so you click on it and then you', 'start': 19.199, 'duration': 4.721}
+{'text': 'click on the subtitle', 'start': 21.119, 'duration': 5.041}
+{'text': 'oh this is english here so sometimes', 'start': 23.92, 'duration': 3.76}
+{'text': "there's only gonna be japanese or", 'start': 26.16, 'duration': 3.199}
+{'text': 'japanese um', 'start': 27.68, 'duration': 3.599}
+{'text': "generate it and you'd have no idea what", 'start': 29.359, 'duration': 3.601}
+{'text': "they're saying so you can actually", 'start': 31.279, 'duration': 4.481}
+{'text': 'take these subtitles and actually um you', 'start': 32.96, 'duration': 4.4}
+{'text': 'know change it into your favorite', 'start': 35.76, 'duration': 2.4}
+{'text': 'language', 'start': 37.36, 'duration': 3.92}
+{'text': "so let's try another one so japanese", 'start': 38.16, 'duration': 5.919}
+{'text': 'asmr will play something like that and', 'start': 41.28, 'duration': 3.52}
+{'text': "let's see if", 'start': 44.079, 'duration': 5.281}
+{'text': 'um you got anything here uh', 'start': 44.8, 'duration': 8.079}
+{'text': "okay let's see", 'start': 49.36, 'duration': 5.839}
+{'text': "uh get the subtitles okay good so that's", 'start': 52.879, 'duration': 4.32}
+{'text': 'gonna be japanese author generated', 'start': 55.199, 'duration': 3.52}
+{'text': "nice so we're going to take these two", 'start': 57.199, 'duration': 3.52}
+{'text': 'video as an example even though this', 'start': 58.719, 'duration': 3.761}
+{'text': "video is at one so we're gonna mainly", 'start': 60.719, 'duration': 3.201}
+{'text': "use this one because this one's only one", 'start': 62.48, 'duration': 3.039}
+{'text': 'minute and 25 seconds', 'start': 63.92, 'duration': 3.76}
+{'text': "and that one is one minute and i'm sorry", 'start': 65.519, 'duration': 4.161}
+{'text': "an hour more than an hour so we're just", 'start': 67.68, 'duration': 4.32}
+{'text': 'gonna use this one as a main example', 'start': 69.68, 'duration': 5.52}
+{'text': 'but if you have time to use that one so', 'start': 72.0, 'duration': 4.799}
+{'text': 'first you want to open you know your', 'start': 75.2, 'duration': 3.04}
+{'text': 'pycharm and python', 'start': 76.799, 'duration': 3.201}
+{'text': "and if you don't know what is python and", 'start': 78.24, 'duration': 3.04}
+{'text': "python i'm just going to go up to", 'start': 80.0, 'duration': 1.92}
+{'text': 'youtube', 'start': 81.28, 'duration': 5.199}
+{'text': 'and search up this thing for me python', 'start': 81.92, 'duration': 6.0}
+{'text': "and you don't need to watch the whole", 'start': 86.479, 'duration': 3.841}
+{'text': 'video um okay my', 'start': 87.92, 'duration': 4.64}
+{'text': 'internet is going very slow for some', 'start': 90.32, 'duration': 4.96}
+{'text': 'reason um', 'start': 92.56, 'duration': 2.72}
+{'text': "uh okay so python i think it's that one", 'start': 95.68, 'duration': 5.04}
+{'text': "and you don't want to watch everything", 'start': 99.04, 'duration': 3.439}
+{'text': 'you just need to watch like the whole', 'start': 100.72, 'duration': 4.0}
+{'text': 'the first tier uh the first two minutes', 'start': 102.479, 'duration': 3.521}
+{'text': 'to unless you need to know how to', 'start': 104.72, 'duration': 2.88}
+{'text': 'install python pycharm', 'start': 106.0, 'duration': 3.36}
+{'text': 'after that you open a new project you', 'start': 107.6, 'duration': 3.519}
+{'text': 'want to go to your python', 'start': 109.36, 'duration': 3.36}
+{'text': "click onto your terminal and then you're", 'start': 111.119, 'duration': 3.28}
+{'text': 'going to install two things the first', 'start': 112.72, 'duration': 2.48}
+{'text': 'thing is', 'start': 114.399, 'duration': 2.641}
+{'text': 'keep install now type these two things', 'start': 115.2, 'duration': 3.599}
+{'text': 'for me the first thing is here install', 'start': 117.04, 'duration': 5.119}
+{'text': 'um youtube transcript', 'start': 118.799, 'duration': 7.92}
+{'text': 'api uh just', 'start': 122.159, 'duration': 4.56}
+{'text': 'api and', 'start': 126.96, 'duration': 5.76}
+{'text': "because i already installed so it's", 'start': 131.44, 'duration': 2.48}
+{'text': 'going to say requirement already', 'start': 132.72, 'duration': 2.56}
+{'text': "satisfied but on your computer it's", 'start': 133.92, 'duration': 2.8}
+{'text': "going to say something it's successfully", 'start': 135.28, 'duration': 2.16}
+{'text': 'installed', 'start': 136.72, 'duration': 2.08}
+{'text': "the next thing you're going to install", 'start': 137.44, 'duration': 3.68}
+{'text': 'is install google translate', 'start': 138.8, 'duration': 5.04}
+{'text': 'so install google translate as you can', 'start': 141.12, 'duration': 4.16}
+{'text': 'see pip installed right here', 'start': 143.84, 'duration': 2.8}
+{'text': "and now you're gonna click enter and", 'start': 145.28, 'duration': 3.28}
+{'text': "it's like i said i already installed it", 'start': 146.64, 'duration': 2.56}
+{'text': "so it's", 'start': 148.56, 'duration': 2.399}
+{'text': 'already satisfied for me but on your', 'start': 149.2, 'duration': 3.52}
+{'text': "computer it's gonna say something else", 'start': 150.959, 'duration': 3.761}
+{'text': 'so the next the first thing you wanna do', 'start': 152.72, 'duration': 4.96}
+{'text': "is you're going to go to from", 'start': 154.72, 'duration': 5.599}
+{'text': "youtube transcript api and then you're", 'start': 157.68, 'duration': 4.0}
+{'text': 'going to import', 'start': 160.319, 'duration': 3.2}
+{'text': "youtube transcript api and then you're", 'start': 161.68, 'duration': 3.44}
+{'text': 'going to say next thing you do almost', 'start': 163.519, 'duration': 6.321}
+{'text': 'the same thing google translate google', 'start': 165.12, 'duration': 5.839}
+{'text': "now the first thing you're going to", 'start': 169.84, 'duration': 4.479}
+{'text': 'create is a um', 'start': 170.959, 'duration': 3.36}
+{'text': "sorry i'm a limit i need to bring", 'start': 175.12, 'duration': 3.199}
+{'text': 'olympic bars', 'start': 177.44, 'duration': 2.48}
+{'text': "uh so the first thing i'll do is a", 'start': 178.319, 'duration': 3.361}
+{'text': 'translator so this guy', 'start': 179.92, 'duration': 3.599}
+{'text': "is going to be the guy who's going to do", 'start': 181.68, 'duration': 4.08}
+{'text': 'all the translating so google translate', 'start': 183.519, 'duration': 3.521}
+{'text': "i'm going to be uh you're going to", 'start': 185.76, 'duration': 3.36}
+{'text': 'create a translator from google', 'start': 187.04, 'duration': 3.76}
+{'text': 'translated class', 'start': 189.12, 'duration': 2.96}
+{'text': "and the next thing you're going to do is", 'start': 190.8, 'duration': 2.32}
+{'text': "you're going to get all the youtube", 'start': 192.08, 'duration': 2.079}
+{'text': 'video subtitle', 'start': 193.12, 'duration': 2.399}
+{'text': 'now the first thing you want to do is', 'start': 194.159, 'duration': 3.121}
+{'text': "i'm going to create some few constant", 'start': 195.519, 'duration': 5.121}
+{'text': 'so youtube uh', 'start': 197.28, 'duration': 3.36}
+{'text': "video codes i'm gonna talk this a little", 'start': 201.44, 'duration': 4.799}
+{'text': "bit later and the next thing you'll do", 'start': 204.64, 'duration': 2.08}
+{'text': 'is', 'start': 206.239, 'duration': 3.601}
+{'text': "uh language actually you're just the", 'start': 206.72, 'duration': 6.64}
+{'text': 'youtube video code i think length', 'start': 209.84, 'duration': 6.0}
+{'text': 'language', 'start': 213.36, 'duration': 2.48}
+{'text': 'let you a uee', 'start': 216.56, 'duration': 7.52}
+{'text': 'name which now okay', 'start': 220.08, 'duration': 4.0}
+{'text': "yeah there we go so it's cap", 'start': 224.56, 'duration': 4.239}
+{'text': "no uh yeah i think and that's how you", 'start': 229.28, 'duration': 3.84}
+{'text': 'spell it', 'start': 232.0, 'duration': 4.0}
+{'text': "yeah pretty sure that's how you spell it", 'start': 233.12, 'duration': 3.28}
+{'text': 'so', 'start': 236.0, 'duration': 2.08}
+{'text': 'after you go to your translation google', 'start': 236.4, 'duration': 3.44}
+{'text': 'translator the next thing you can do is', 'start': 238.08, 'duration': 3.12}
+{'text': 'you want to get off the youtube video', 'start': 239.84, 'duration': 2.399}
+{'text': 'subtitle', 'start': 241.2, 'duration': 2.8}
+{'text': "and you're going to do that um certain", 'start': 242.239, 'duration': 3.28}
+{'text': 'language to', 'start': 244.0, 'duration': 4.72}
+{'text': 'change to language', 'start': 245.519, 'duration': 6.401}
+{'text': 'code to change that so the next thing', 'start': 248.72, 'duration': 4.799}
+{'text': 'you do is uh forget how the youtube', 'start': 251.92, 'duration': 3.039}
+{'text': "video subtitle and you're gonna do that", 'start': 253.519, 'duration': 2.241}
+{'text': 'by', 'start': 254.959, 'duration': 2.641}
+{'text': 'create a variable name youtube video', 'start': 255.76, 'duration': 3.599}
+{'text': 'subtitle or video sub', 'start': 257.6, 'duration': 4.319}
+{'text': "title and you're gonna write as youtube", 'start': 259.359, 'duration': 4.4}
+{'text': 'transcript api dot', 'start': 261.919, 'duration': 4.081}
+{'text': "get transcript and you're gonna get the", 'start': 263.759, 'duration': 3.121}
+{'text': 'youtube', 'start': 266.0, 'duration': 3.68}
+{'text': 'video id so video id we gonna fill in', 'start': 266.88, 'duration': 3.52}
+{'text': 'this part', 'start': 269.68, 'duration': 2.16}
+{'text': "but we're just gonna so you're gonna", 'start': 270.4, 'duration': 3.359}
+{'text': 'copy like this youtube video', 'start': 271.84, 'duration': 4.48}
+{'text': 'code and then the next thing is language', 'start': 273.759, 'duration': 4.88}
+{'text': "it's gonna be equal", 'start': 276.32, 'duration': 5.599}
+{'text': 'to so in the second so you get a open', 'start': 278.639, 'duration': 4.801}
+{'text': 'square bracket like this', 'start': 281.919, 'duration': 3.681}
+{'text': "and um you're gonna create a double your", 'start': 283.44, 'duration': 3.6}
+{'text': "solids you're gonna create like four", 'start': 285.6, 'duration': 2.08}
+{'text': 'code', 'start': 287.04, 'duration': 3.439}
+{'text': 'uh four double quotes uh double quotes', 'start': 287.68, 'duration': 3.519}
+{'text': 'like certain', 'start': 290.479, 'duration': 2.72}
+{'text': 'for double height what do you call this', 'start': 291.199, 'duration': 3.601}
+{'text': "again when you're gonna keep it four of", 'start': 293.199, 'duration': 2.56}
+{'text': 'these thing and then', 'start': 294.8, 'duration': 2.24}
+{'text': "you're gonna separate two then by a", 'start': 295.759, 'duration': 3.44}
+{'text': 'comma and in this one in between these', 'start': 297.04, 'duration': 3.52}
+{'text': "two things you're gonna pri", 'start': 299.199, 'duration': 3.681}
+{'text': 'type en and in this four brackets you', 'start': 300.56, 'duration': 4.079}
+{'text': 'know type your desired language sorry', 'start': 302.88, 'duration': 3.2}
+{'text': 'not your desired language', 'start': 304.639, 'duration': 4.481}
+{'text': 'but the language that um that the videos', 'start': 306.08, 'duration': 5.28}
+{'text': 'uh have so like the subtitle language', 'start': 309.12, 'duration': 3.76}
+{'text': "so for this one uh it's gonna be", 'start': 311.36, 'duration': 3.92}
+{'text': "japanese so it's gonna be ja", 'start': 312.88, 'duration': 4.159}
+{'text': 'it can be you know but this thing can be', 'start': 315.28, 'duration': 3.12}
+{'text': 'friends or anything', 'start': 317.039, 'duration': 3.281}
+{'text': "but if it's a you know it but it's but", 'start': 318.4, 'duration': 3.76}
+{'text': "if it has like sub french subtitles it's", 'start': 320.32, 'duration': 2.64}
+{'text': 'gonna be fro', 'start': 322.16, 'duration': 2.56}
+{'text': 'something like that so the next thing', 'start': 322.96, 'duration': 4.4}
+{'text': "you're going to do is going to get", 'start': 324.72, 'duration': 4.8}
+{'text': 'to uh to the part where you actually', 'start': 327.36, 'duration': 3.279}
+{'text': 'translating into', 'start': 329.52, 'duration': 4.48}
+{'text': 'uh into you know into your', 'start': 330.639, 'duration': 6.481}
+{'text': "sorry uh into your thing so that's not", 'start': 334.0, 'duration': 4.16}
+{'text': 'into your thing into', 'start': 337.12, 'duration': 3.28}
+{'text': 'your desired language so for the youtube', 'start': 338.16, 'duration': 3.039}
+{'text': 'video code', 'start': 340.4, 'duration': 2.88}
+{'text': "it's gonna be this part right here so", 'start': 341.199, 'duration': 3.361}
+{'text': 'like after the v', 'start': 343.28, 'duration': 3.6}
+{'text': "equal to so it's gonna be this one so", 'start': 344.56, 'duration': 3.84}
+{'text': "you're gonna copy it control c and", 'start': 346.88, 'duration': 2.48}
+{'text': "you're gonna put it", 'start': 348.4, 'duration': 3.2}
+{'text': 'between this double quote string and', 'start': 349.36, 'duration': 3.279}
+{'text': 'then um', 'start': 351.6, 'duration': 2.879}
+{'text': 'double quotation or something and for', 'start': 352.639, 'duration': 3.28}
+{'text': 'the language you tend to because if you', 'start': 354.479, 'duration': 2.081}
+{'text': 'want to change to', 'start': 355.919, 'duration': 2.161}
+{'text': "in your design language it's gonna be", 'start': 356.56, 'duration': 3.04}
+{'text': 'end', 'start': 358.08, 'duration': 3.44}
+{'text': "like that now you're gonna check now", 'start': 359.6, 'duration': 3.68}
+{'text': "here's the ps4 how you're gonna", 'start': 361.52, 'duration': 2.48}
+{'text': 'translate', 'start': 363.28, 'duration': 3.199}
+{'text': "into your thing so you're gonna say four", 'start': 364.0, 'duration': 3.36}
+{'text': 'part in', 'start': 366.479, 'duration': 4.0}
+{'text': 'video subtitle', 'start': 367.36, 'duration': 3.119}
+{'text': 'um four point five uh text equal', 'start': 370.56, 'duration': 6.16}
+{'text': 'to part now because i already use it so', 'start': 373.759, 'duration': 4.72}
+{'text': 'i know um so i know what', 'start': 376.72, 'duration': 4.16}
+{'text': 'what does this video subtitle what kind', 'start': 378.479, 'duration': 3.921}
+{'text': 'of uh', 'start': 380.88, 'duration': 3.759}
+{'text': 'what kind of you know cup what type is', 'start': 382.4, 'duration': 3.919}
+{'text': 'is the video subtitle', 'start': 384.639, 'duration': 3.361}
+{'text': 'uh is the video subtitle is just', 'start': 386.319, 'duration': 3.6}
+{'text': 'basically a bunch of dictionary', 'start': 388.0, 'duration': 5.44}
+{'text': 'in a string so i know because i already', 'start': 389.919, 'duration': 5.601}
+{'text': 'print it as i know what it is but if you', 'start': 393.44, 'duration': 4.4}
+{'text': 'can you can try your own as well', 'start': 395.52, 'duration': 5.36}
+{'text': "so anyways um so for text it's going to", 'start': 397.84, 'duration': 3.44}
+{'text': 'be', 'start': 400.88, 'duration': 3.599}
+{'text': 'part.text so it clicks like this', 'start': 401.28, 'duration': 6.88}
+{'text': 'and translated text', 'start': 404.479, 'duration': 8.081}
+{'text': "it's going to be google translator", 'start': 408.16, 'duration': 8.0}
+{'text': 'text and then', 'start': 412.56, 'duration': 6.72}
+{'text': 'text and language', 'start': 416.16, 'duration': 7.039}
+{'text': 'target i believe that was what link', 'start': 419.28, 'duration': 6.56}
+{'text': 'so now google translated my back is uh', 'start': 423.199, 'duration': 5.161}
+{'text': 'just the translator himself', 'start': 425.84, 'duration': 4.639}
+{'text': "translator.translate and it's gonna be", 'start': 428.36, 'duration': 3.559}
+{'text': 'uh', 'start': 430.479, 'duration': 4.881}
+{'text': "text and it's gonna be a language", 'start': 431.919, 'duration': 6.481}
+{'text': 'target which is gonna be uh', 'start': 435.36, 'duration': 4.559}
+{'text': "because that's the language you want to", 'start': 438.4, 'duration': 3.28}
+{'text': 'change to and see when', 'start': 439.919, 'duration': 3.041}
+{'text': 'we already have the code right here so', 'start': 441.68, 'duration': 4.32}
+{'text': "we're just gonna check it into", 'start': 442.96, 'duration': 3.04}
+{'text': 'language', 'start': 448.84, 'duration': 2.919}
+{'text': "we're going to change it so we can just", 'start': 450.0, 'duration': 3.52}
+{'text': 'you know replace the en with this', 'start': 451.759, 'duration': 3.521}
+{'text': 'whole variable right here and the next', 'start': 453.52, 'duration': 3.6}
+{'text': "thing we'll do is we're going to", 'start': 455.28, 'duration': 4.88}
+{'text': 'try to write in the file uh', 'start': 457.12, 'duration': 6.0}
+{'text': "so um let me think about how it's going", 'start': 460.16, 'duration': 3.599}
+{'text': 'to be done', 'start': 463.12, 'duration': 3.84}
+{'text': "okay so we're going to replace", 'start': 463.759, 'duration': 3.201}
+{'text': 'text import to', 'start': 467.039, 'duration': 5.521}
+{'text': "translated text now you're going to have", 'start': 470.4, 'duration': 3.28}
+{'text': 'a try block', 'start': 472.56, 'duration': 2.639}
+{'text': 'and the tribal is going to be something', 'start': 473.68, 'duration': 4.639}
+{'text': "like this i'm going to open a file", 'start': 475.199, 'duration': 4.641}
+{'text': "and you're gonna write the name of", 'start': 478.319, 'duration': 5.361}
+{'text': 'itself uh file name', 'start': 479.84, 'duration': 3.84}
+{'text': "and it's gonna be you can buy this file", 'start': 484.16, 'duration': 3.599}
+{'text': "name as anything that you want but i'm", 'start': 486.16, 'duration': 2.56}
+{'text': 'gonna write as', 'start': 487.759, 'duration': 5.201}
+{'text': 'uh subtitles dot txt', 'start': 488.72, 'duration': 7.36}
+{'text': "you're gonna open that one", 'start': 492.96, 'duration': 3.12}
+{'text': "uh sorry you don't need to put it in the", 'start': 496.319, 'duration': 3.361}
+{'text': 'stream file name', 'start': 498.4, 'duration': 3.359}
+{'text': "and you're gonna save it as a file to", 'start': 499.68, 'duration': 3.919}
+{'text': 'the person you know save it into a', 'start': 501.759, 'duration': 3.601}
+{'text': "name file right here and you're going to", 'start': 503.599, 'duration': 3.201}
+{'text': 'write file', 'start': 505.36, 'duration': 4.399}
+{'text': "dot right and what i'm uh and you know", 'start': 506.8, 'duration': 4.48}
+{'text': 'the mode that you want to be open at is', 'start': 509.759, 'duration': 2.801}
+{'text': 'the append mode', 'start': 511.28, 'duration': 2.879}
+{'text': 'which is something like mode and then', 'start': 512.56, 'duration': 3.839}
+{'text': "you're gonna type it double quote double", 'start': 514.159, 'duration': 3.76}
+{'text': 'quotation and then between those gonna', 'start': 516.399, 'duration': 4.801}
+{'text': "be a and for you it's going to be", 'start': 517.919, 'duration': 5.92}
+{'text': 'you know right as so the first thing is', 'start': 521.2, 'duration': 4.4}
+{'text': 'i usually like to do is', 'start': 523.839, 'duration': 6.081}
+{'text': 'put a new line here and the other plus', 'start': 525.6, 'duration': 8.4}
+{'text': "okay so i think it's going to string", 'start': 529.92, 'duration': 4.08}
+{'text': "it's going to be let's say you're going", 'start': 543.44, 'duration': 3.68}
+{'text': 'to put it in a new line', 'start': 545.04, 'duration': 5.84}
+{'text': 'and plus part dot types again', 'start': 547.12, 'duration': 7.6}
+{'text': 'and i think something is wrong here', 'start': 550.88, 'duration': 7.04}
+{'text': "so it's gonna be like that", 'start': 554.72, 'duration': 3.2}
+{'text': 'okay so good so everything is currently', 'start': 560.24, 'duration': 3.68}
+{'text': 'very good now and the next thing is', 'start': 562.16, 'duration': 3.6}
+{'text': "you're gonna put an exception here it's", 'start': 563.92, 'duration': 3.52}
+{'text': 'called unicode arrow', 'start': 565.76, 'duration': 4.4}
+{'text': 'so the reason why you have this uh uni', 'start': 567.44, 'duration': 4.24}
+{'text': 'and code arrow is sometimes when you', 'start': 570.16, 'duration': 3.52}
+{'text': 'translate into your preferred language', 'start': 571.68, 'duration': 4.4}
+{'text': 'so sometimes it can be friends chinese', 'start': 573.68, 'duration': 3.04}
+{'text': 'or maybe', 'start': 576.08, 'duration': 2.72}
+{'text': 'japanese or maybe like vietnamese or any', 'start': 576.72, 'duration': 3.28}
+{'text': 'kind of language like that', 'start': 578.8, 'duration': 3.599}
+{'text': 'then sometimes the the the language', 'start': 580.0, 'duration': 3.92}
+{'text': 'course or the way that the', 'start': 582.399, 'duration': 2.801}
+{'text': 'like the letter is written in that', 'start': 583.92, 'duration': 3.44}
+{'text': 'language is maybe uh might be', 'start': 585.2, 'duration': 3.84}
+{'text': 'it might be in a different kind of', 'start': 587.36, 'duration': 4.72}
+{'text': 'encoding you know encoding for unicode', 'start': 589.04, 'duration': 5.68}
+{'text': "so it's this can cause an arrow so in", 'start': 592.08, 'duration': 4.0}
+{'text': 'that case you can just you know type', 'start': 594.72, 'duration': 4.08}
+{'text': "continuous really doesn't matter", 'start': 596.08, 'duration': 5.36}
+{'text': "now now if you run here so let's say if", 'start': 598.8, 'duration': 3.36}
+{'text': 'you run', 'start': 601.44, 'duration': 3.28}
+{'text': 'and wait for a second because now the', 'start': 602.16, 'duration': 3.44}
+{'text': 'program is still', 'start': 604.72, 'duration': 3.52}
+{'text': 'is still currently wandering or running', 'start': 605.6, 'duration': 3.84}
+{'text': 'as you can see that', 'start': 608.24, 'duration': 5.12}
+{'text': 'the the the things like the', 'start': 609.44, 'duration': 5.839}
+{'text': "the red square haven't disappeared so", 'start': 613.36, 'duration': 3.36}
+{'text': 'the prime is still running', 'start': 615.279, 'duration': 3.441}
+{'text': 'and what happening in the background is', 'start': 616.72, 'duration': 3.04}
+{'text': 'um', 'start': 618.72, 'duration': 5.04}
+{'text': 'this uh this like python is getting uh', 'start': 619.76, 'duration': 4.48}
+{'text': 'getting', 'start': 623.76, 'duration': 2.0}
+{'text': "the language uh so we're getting the", 'start': 624.24, 'duration': 3.279}
+{'text': 'transcript the subtitles', 'start': 625.76, 'duration': 5.28}
+{'text': 'from that language from data from that', 'start': 627.519, 'duration': 5.121}
+{'text': 'uh from you know from the video youtube', 'start': 631.04, 'duration': 2.32}
+{'text': 'video and', 'start': 632.64, 'duration': 2.639}
+{'text': 'actually using google translate to', 'start': 633.36, 'duration': 4.159}
+{'text': 'translate it so actually so the process', 'start': 635.279, 'duration': 3.921}
+{'text': 'process is finished now so you click on', 'start': 637.519, 'duration': 3.521}
+{'text': 'the subtitles as you can see at two', 'start': 639.2, 'duration': 2.639}
+{'text': 'minutes', 'start': 641.04, 'duration': 3.28}
+{'text': 'four seconds uh that guy gonna say uh', 'start': 641.839, 'duration': 4.321}
+{'text': 'and then add this one', 'start': 644.32, 'duration': 4.32}
+{'text': 'he gonna you know uh at that one kizuna', 'start': 646.16, 'duration': 4.16}
+{'text': 'is gonna say that something like can you', 'start': 648.64, 'duration': 3.36}
+{'text': 'sit can you hear me nice to meet you', 'start': 650.32, 'duration': 4.24}
+{'text': 'and stuff like that as you can see now', 'start': 652.0, 'duration': 3.2}
+{'text': 'so', 'start': 654.56, 'duration': 2.32}
+{'text': 'some people might be might be like oh', 'start': 655.2, 'duration': 3.36}
+{'text': 'you might i just download the you know', 'start': 656.88, 'duration': 3.12}
+{'text': "english subtitles and i'm", 'start': 658.56, 'duration': 4.48}
+{'text': 'i guarantee you that i did not so i if i', 'start': 660.0, 'duration': 6.24}
+{'text': 'go and print text right here', 'start': 663.04, 'duration': 6.88}
+{'text': 'and if i go and print print another', 'start': 666.24, 'duration': 5.92}
+{'text': 'print translated text right at this', 'start': 669.92, 'duration': 3.919}
+{'text': 'point', 'start': 672.16, 'duration': 4.799}
+{'text': 'then if i go this and', 'start': 673.839, 'duration': 5.361}
+{'text': "you can see that every time it's here", 'start': 676.959, 'duration': 3.44}
+{'text': "it's going to be a japanese and then", 'start': 679.2, 'duration': 2.639}
+{'text': "it's going to be like the", 'start': 680.399, 'duration': 3.921}
+{'text': 'in the english part of it and you can', 'start': 681.839, 'duration': 4.321}
+{'text': 'actually do it with a very long video', 'start': 684.32, 'duration': 3.519}
+{'text': 'but the longer the video are though', 'start': 686.16, 'duration': 3.76}
+{'text': 'actually um', 'start': 687.839, 'duration': 3.761}
+{'text': "uh the more time it's gonna text so", 'start': 689.92, 'duration': 4.24}
+{'text': "you're gonna can't you'll see that", 'start': 691.6, 'duration': 5.52}
+{'text': "and then uh you're gonna put so let's so", 'start': 694.16, 'duration': 4.64}
+{'text': "we're gonna replace the code so", 'start': 697.12, 'duration': 3.36}
+{'text': "if you wanna use this video you're gonna", 'start': 698.8, 'duration': 3.2}
+{'text': "you can't you'll see like this", 'start': 700.48, 'duration': 3.44}
+{'text': "part right here so let's start copying", 'start': 702.0, 'duration': 3.12}
+{'text': "and then you're gonna control v right", 'start': 703.92, 'duration': 2.4}
+{'text': 'there so paste it', 'start': 705.12, 'duration': 2.959}
+{'text': 'right at the double quotation string and', 'start': 706.32, 'duration': 4.639}
+{'text': 'now you run the program again', 'start': 708.079, 'duration': 5.521}
+{'text': "uh you can see that it's gonna translate", 'start': 710.959, 'duration': 4.081}
+{'text': "however this is there's going to be a", 'start': 713.6, 'duration': 1.919}
+{'text': 'bug', 'start': 715.04, 'duration': 2.56}
+{'text': 'and that is you as you can see that the', 'start': 715.519, 'duration': 3.601}
+{'text': 'kizuna you know', 'start': 717.6, 'duration': 4.96}
+{'text': 'part is still going to be here and uh', 'start': 719.12, 'duration': 4.8}
+{'text': "the papa is going to channel it's going", 'start': 722.56, 'duration': 3.12}
+{'text': 'to get down here so what you want to do', 'start': 723.92, 'duration': 2.4}
+{'text': 'is you want to', 'start': 725.68, 'duration': 3.279}
+{'text': 'actually delete the file so because you', 'start': 726.32, 'duration': 3.28}
+{'text': 'open it in', 'start': 728.959, 'duration': 2.481}
+{'text': "a pen mode so it's not gonna delete", 'start': 729.6, 'duration': 3.52}
+{'text': 'everything that it has already written', 'start': 731.44, 'duration': 2.16}
+{'text': 'in there', 'start': 733.12, 'duration': 2.88}
+{'text': 'so what you wanna do now is gonna you', 'start': 733.6, 'duration': 4.08}
+{'text': 'know actually delete the file', 'start': 736.0, 'duration': 5.6}
+{'text': "so we're gonna write a comment here as a", 'start': 737.68, 'duration': 8.24}
+{'text': 'create a text file', 'start': 741.6, 'duration': 5.6}
+{'text': "and you're going to write comment down", 'start': 745.92, 'duration': 4.479}
+{'text': 'here as delete', 'start': 747.2, 'duration': 5.28}
+{'text': "oh text file and you're going to do that", 'start': 750.399, 'duration': 4.0}
+{'text': 'by with open i think the easiest way to', 'start': 752.48, 'duration': 2.479}
+{'text': 'do this', 'start': 754.399, 'duration': 4.481}
+{'text': 'is file name', 'start': 754.959, 'duration': 7.921}
+{'text': "that's file and file dot run", 'start': 758.88, 'duration': 5.759}
+{'text': "you're just basically going to put an", 'start': 762.88, 'duration': 3.04}
+{'text': 'empty string in there', 'start': 764.639, 'duration': 4.081}
+{'text': 'and now if you run the program again', 'start': 765.92, 'duration': 3.28}
+{'text': 'also', 'start': 768.72, 'duration': 3.52}
+{'text': "something file dot right it's not", 'start': 769.2, 'duration': 6.079}
+{'text': 'should be more equal right yeah i forget', 'start': 772.24, 'duration': 4.719}
+{'text': 'about if you run the program again', 'start': 775.279, 'duration': 5.36}
+{'text': "as you can see it's already deleted so", 'start': 776.959, 'duration': 5.281}
+{'text': 'if you wait a little bit more second and', 'start': 780.639, 'duration': 3.281}
+{'text': 'you load the', 'start': 782.24, 'duration': 3.12}
+{'text': "you can see that it's you know it's", 'start': 783.92, 'duration': 3.039}
+{'text': "you're currently like writing into this", 'start': 785.36, 'duration': 2.24}
+{'text': 'file', 'start': 786.959, 'duration': 2.641}
+{'text': "every time it's going to refresh uh it's", 'start': 787.6, 'duration': 3.76}
+{'text': 'going to get it longer and longer every', 'start': 789.6, 'duration': 2.32}
+{'text': 'time we', 'start': 791.36, 'duration': 2.479}
+{'text': "click on it however there's a bug right", 'start': 791.92, 'duration': 3.359}
+{'text': "here as soon as it's not like a bug", 'start': 793.839, 'duration': 2.8}
+{'text': 'something is really bothering me is that', 'start': 795.279, 'duration': 2.321}
+{'text': 'the fact that', 'start': 796.639, 'duration': 3.681}
+{'text': "it's the minutes it start in seconds so", 'start': 797.6, 'duration': 3.919}
+{'text': 'time time is might be a little bit', 'start': 800.32, 'duration': 2.56}
+{'text': 'annoying for you guys and you guys can', 'start': 801.519, 'duration': 2.32}
+{'text': 'replace it', 'start': 802.88, 'duration': 2.24}
+{'text': 'and if you guys feel a little bit', 'start': 803.839, 'duration': 2.641}
+{'text': 'annoying to have all these things', 'start': 805.12, 'duration': 2.24}
+{'text': 'together', 'start': 806.48, 'duration': 4.08}
+{'text': 'all of these like minutes then you can', 'start': 807.36, 'duration': 4.96}
+{'text': 'basically fix it by just', 'start': 810.56, 'duration': 4.88}
+{'text': 'uh delete the delete this whole part', 'start': 812.32, 'duration': 6.0}
+{'text': "then you wouldn't you not gonna see the", 'start': 815.44, 'duration': 4.24}
+{'text': 'the timestamp of them', 'start': 818.32, 'duration': 3.199}
+{'text': 'but i prefer to have the stamp stamps', 'start': 819.68, 'duration': 3.279}
+{'text': "i'm gonna leave it like that", 'start': 821.519, 'duration': 3.68}
+{'text': 'now so i think basically this is like', 'start': 822.959, 'duration': 3.521}
+{'text': 'basically everything', 'start': 825.199, 'duration': 2.88}
+{'text': 'um however i want to tell you guys', 'start': 826.48, 'duration': 3.919}
+{'text': 'something um i think you guys have spent', 'start': 828.079, 'duration': 3.521}
+{'text': 'how long again', 'start': 830.399, 'duration': 3.041}
+{'text': "maybe i can't i can't even see the time", 'start': 831.6, 'duration': 3.359}
+{'text': "on here but i think you've spent like a", 'start': 833.44, 'duration': 1.92}
+{'text': 'good', 'start': 834.959, 'duration': 3.201}
+{'text': 'ten minutes to follow this tutorial then', 'start': 835.36, 'duration': 3.839}
+{'text': "i'm gonna say you guys you guys just", 'start': 838.16, 'duration': 2.72}
+{'text': 'have to waste a lot of time because', 'start': 839.199, 'duration': 3.361}
+{'text': 'basically what you can do is just', 'start': 840.88, 'duration': 4.24}
+{'text': 'uh click on the caption that you like so', 'start': 842.56, 'duration': 3.279}
+{'text': 'for example', 'start': 845.12, 'duration': 2.64}
+{'text': "like let's say it's only has japanese", 'start': 845.839, 'duration': 3.44}
+{'text': 'you can just click on', 'start': 847.76, 'duration': 3.12}
+{'text': 'you know just basically click on this', 'start': 849.279, 'duration': 3.041}
+{'text': 'open transcript right here', 'start': 850.88, 'duration': 3.199}
+{'text': 'you can basically just copy everything', 'start': 852.32, 'duration': 3.44}
+{'text': 'right here and then you can just copy it', 'start': 854.079, 'duration': 2.88}
+{'text': 'to google translate', 'start': 855.76, 'duration': 3.12}
+{'text': "so i'm so sorry that i've wasted your", 'start': 856.959, 'duration': 3.12}
+{'text': 'time but', 'start': 858.88, 'duration': 2.639}
+{'text': "it's kind of unlucky for you guys to", 'start': 860.079, 'duration': 3.041}
+{'text': 'just uh', 'start': 861.519, 'duration': 4.32}
+{'text': 'be like that so anyways um yeah i think', 'start': 863.12, 'duration': 3.2}
+{'text': 'this', 'start': 865.839, 'duration': 2.081}
+{'text': 'that is for this video you can basically', 'start': 866.32, 'duration': 3.199}
+{'text': 'do it to work either just copy the whole', 'start': 867.92, 'duration': 3.2}
+{'text': 'thing and put it in google translate', 'start': 869.519, 'duration': 3.361}
+{'text': 'or you can actually just do this you', 'start': 871.12, 'duration': 3.36}
+{'text': 'know write a bunch of you know python', 'start': 872.88, 'duration': 3.12}
+{'text': 'code and just have it to do it with you', 'start': 874.48, 'duration': 2.64}
+{'text': 'and write into a', 'start': 876.0, 'duration': 3.519}
+{'text': "subtitle so anyway that's it i hope you", 'start': 877.12, 'duration': 4.6}
+{'text': 'guys have a good day', 'start': 879.519, 'duration': 5.201}
+{'text': 'goodbye', 'start': 881.72, 'duration': 3.0}
