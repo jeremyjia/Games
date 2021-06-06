@@ -4,9 +4,9 @@ var vc = bl$("id_tb4Client");
 vc.vtb = blo0.blDiv(vc, vc.id+"vtb","client-vtb","lightgreen");
 vc.v0 = blo0.blDiv(vc, vc.id+"v0","client-v0","lightblue");
 vc.v1 = blo0.blDiv(vc, vc.id+"v1","client-v1","grey");
-vc.b1 = blo0.blBtn(vc.vtb,vc.vtb.id+"b1","b1",blGrey[0]);
+vc.btnClientUI = blo0.blBtn(vc.vtb,vc.vtb.id+"btnClientUI","btnClientUI",blGrey[0]);
 
-vc.b1.onclick = function(_v0,_v1){
+vc.btnClientUI.onclick = function(_v0,_v1){
     var c = new CClient();
     return function(){
         c.exeCmd(_v0,_v1);
@@ -27,7 +27,7 @@ function CClient(){
         } 
         {
             ta.value = "exeCmd" + Date();
-            var btnRun = blo0.blBtn(v0, v0.id+ "btnRun", "run", "green");
+            var btnRun = blo0.blBtn(v0, v0.id+ "btnRun", "runShellScript", "green");
             btnRun.onclick = function(){                    
                 w._2do = function(txt){ 
                     v1.innerHTML = txt;        
