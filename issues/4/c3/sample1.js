@@ -6,13 +6,14 @@ _btn.click();
 
 
 function CSample1 (_id){
-    var _v = "CSample1_v0.51 (auto test framework)";
+    var _v = "CSample1_v0.52 (auto test framework)";
     this.getValue = function(){
         var s = "// ";
         s += _v;
         s += "\n";
         s += "var os1 ={};\n";
         s += _addFun2Obj("os1","blrTest_getServerInfo",blrTest_getServerInfo);
+        s += _addFun2Obj("os1","blrTest_combine",blrTest_combine);
         s += _addFun2Obj("os1","bll0","'--'");
         s += "os1.run="+_f1;
         s += "\n";
@@ -31,13 +32,28 @@ function CSample1 (_id){
             var w = {};
             w._2do = function(txt){ 
                 d.innerHTML = txt;
-                /*
+                //*
                 var s = "var r =" + txt;
                 eval(s);
                 blo0.blShowObj2Div(d,r);   
-                */
+                //*/
             }
             blo0.blAjx(w,"http://localhost:8080/getServerInfo");
+            _on_off_div(b,d);
+        }
+        else{
+            _on_off_div(b,d);
+        }
+    }
+    
+    var blrTest_combine = function(b,d){
+        if(!d.load){
+            d.load = true;
+            var w = {};
+            w._2do = function(txt){ 
+                d.innerHTML = txt; 
+            }
+            blo0.blAjx(w,"http://localhost:8080/image/combine?subtitlefile=https://littleflute.github.io/english/NewConceptEnglish/Book2/1.srt&audiofile=https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3");
             _on_off_div(b,d);
         }
         else{
