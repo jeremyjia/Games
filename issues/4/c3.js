@@ -70,9 +70,7 @@ function _myJobClass(){
  
 	this.blrTest1 = function(b,d){
 		if(!d.v){ 
-			d.v = blo0.blDiv(d, "id_4_div_i4_c3_blrTest1","test1",blGrey[5]); 
-
-			
+			d.v = blo0.blDiv(d, "id_4_div_i4_c3_blrTest1","test1",blGrey[5]); 			
 			blo0.blScript("id_4_js_i4_c3_blrTest1",lastPath + "blrTest1.js");
 		}
 		_on_off_div(b,d);	

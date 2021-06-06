@@ -6,7 +6,7 @@ _btn.click();
 
 
 function CSample1 (_id){
-    var _v = "CSample1_v0.51 (auto test framework)";
+    var _v = "CSample1_v0.52 (auto test framework)";
     this.getValue = function(){
         var s = "// ";
         s += _v;
@@ -14,9 +14,9 @@ function CSample1 (_id){
         s += "var os1 ={};\n";
         s += _addFun2Obj("os1","blrTest_getServerInfo",blrTest_getServerInfo);
         s += _addFun2Obj("os1","bll0","'--'");
-        s += "os1.run="+_f1;
+        s += "var run="+_f1;
         s += "\n";
-        s += "os1.run(os1,'" + _v + "');";
+        s += "run(os1,'" + _v + "');";
         return s;
     }
 
@@ -31,11 +31,11 @@ function CSample1 (_id){
             var w = {};
             w._2do = function(txt){ 
                 d.innerHTML = txt;
-                /*
+                //*
                 var s = "var r =" + txt;
                 eval(s);
                 blo0.blShowObj2Div(d,r);   
-                */
+                //*/
             }
             blo0.blAjx(w,"http://localhost:8080/getServerInfo");
             _on_off_div(b,d);

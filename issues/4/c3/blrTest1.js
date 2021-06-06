@@ -22,8 +22,8 @@ v.getBtn = function(i){
 }
 
 var n = 1;
-var s = blo0.blBtn(v,v.id+"s"+n,n,blGrey[0]); s.n = n; v.bs.push(s); n++;
-var s = blo0.blBtn(v,v.id+"s"+n,n,blGrey[0]); s.n = n; v.bs.push(s); n++;
+var s = blo0.blBtn(v,v.id+"s"+n,"fwTest",blGrey[0]); s.n = n; v.bs.push(s); n++;
+var s = blo0.blBtn(v,v.id+"s"+n,"voa2Video",blGrey[0]); s.n = n; v.bs.push(s); n++;
 var s = blo0.blBtn(v,v.id+"s"+n,n,blGrey[0]); s.n = n; v.bs.push(s); n++;
 
 for(i in v.bs){
