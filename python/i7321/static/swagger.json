@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "description": "sean",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "title": "Seans-Python3-Flask-Rest-Boilerplate",
     "license": {
       "name": "MIT",
