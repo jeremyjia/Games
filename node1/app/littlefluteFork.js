@@ -1,5 +1,5 @@
  
 module.exports = function(){ 
-    return 'to test littlefluteForkApp: done._pr385';
+    return 'to test littlefluteForkApp: done._test frame work';
   }
   
