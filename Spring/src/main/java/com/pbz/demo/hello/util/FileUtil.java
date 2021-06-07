@@ -244,6 +244,20 @@ public class FileUtil {
 		return b.toString();
 	}
 
+	public static void removeTempFiles() {
+		int index = 1;
+		while (true) {
+			String jpgFile = System.getProperty("user.dir") + "/" + Integer.toString(index) + ".jpg";
+			File file = new File(jpgFile);
+			if (file.exists()) {
+				file.delete();
+			} else
+				break;
+			index++;
+		}
+
+	}
+
 	public static int chmod(String args) throws Exception {
 		int result = -1;
 		try {
