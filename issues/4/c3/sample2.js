@@ -7,7 +7,7 @@ _btn.click();
 
 function CVoa2Video (){
     var _v = "CVoa2Video_v0.42";
-    var fn = ["blrAsItIs","f2"];
+    var fn = ["blrAsItIs","f2","f3"];
     var fb = [];
     this.getValue = function(){
         var s = "// ";
@@ -29,6 +29,10 @@ function CVoa2Video (){
             d.load = true;
             var w = {};
             w._2do = function(txt){ 
+                if("error"==txt) {
+                    d.innerHTML = "error: " + Date();
+                    return;
+                }
                 var s = "var o = " + txt; 
                 eval(s);
                 var o1 = {};
@@ -53,23 +57,61 @@ function CVoa2Video (){
     
     var f2 = function(d,url,ss){
         var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
-        var v = blo0.blDiv(d,d.id+"v","v",blGrey[0]);
+        var v1 = blo0.blDiv(d,"id_AsItIs_v1","v1",blGrey[0]);
+        var v2 = blo0.blDiv(d,d.id+"v2","v2",blGrey[1]);
         var w = {};
         w._2do = function(txt){
             var a = txt.split(ss[0]);
             for(i in a){ 
                 if(0==i) continue;
                 var btn = blo0.blBtn(tb,tb.id+i,"b"+i,blGrey[1]);
-                btn.onclick = function(_btn,_i,_a,_v){
-                    return function(){
-                        _v.innerHTML = _a[_i];
+                btn.onclick = function(_btn,_i,_a,_v1,_v2){
+                    return function(){ 
+                        var s1 = _a[_i].replace(/href="/g,'target="_blank" href="https://learningenglish.voanews.com');                                            
+                        _v1.innerHTML = s1.replace(/data-src/g,'src');
+
+                        var links = _v1.getElementsByTagName( 'a' ); 
+                        var url = links[0];
+                        os1.f3(_v2,url,_v1);
                     }
-                }(btn,i,a,v);
+                }(btn,i,a,v1,v2);
             }
         }
         blo0.blAjx(w,url);
     }
     fb.push(f2);
+
+    var f3 = function(d,url,dHTML){
+        d.innerHTML = url; 
+        var a = dHTML.getElementsByTagName( 'span' ); 
+        
+        var b = a.length==2? a[1].getInnerHTML() : a[0].getInnerHTML();
+        var c = b.replace(',',"_"); 
+        var saveFN =  c.replace(' ',"_");
+
+        var w = {};
+        w._2do = function(txt){ 
+                if("error"==txt) {
+                    d.innerHTML = "error: " + Date();
+                    return;
+                }
+                var s = "var o2 = " + txt; 
+                eval(s);
+                var o1 = {};
+                o1.originalURL = url;
+                o1.src = "http://localhost:8080/" + o2.filename;
+                o1.ss = ['a',];
+                o1.blrParse = function(_o1){
+                    return function(b,d){
+                        d.innerHTML = "<a href=" + _o1.src + " target='_blank'>" + _o1.src + "</a>";
+                    }
+                }(o1);
+                blo0.blShowObj2Div(d,o1);
+        }
+        blo0.blAjx(w,"http://localhost:8080/download?url=" + url +"&filename=" + saveFN + ".html");
+            
+    }
+    fb.push(f3);
     
     var _addFun2Obj = function(_objName,fnName,fnBody){ 
         var r = _objName + "." +  fnName + "=" + fnBody;
