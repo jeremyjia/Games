@@ -7,7 +7,7 @@ _btn.click();
 
 function CVoa2Video (){
     var _v = "CVoa2Video_v0.42";
-    var fn = ["blrAsItIs","f2","f3"];
+    var fn = ["blrAsItIs","f2","f3","f4"];
     var fb = [];
     this.getValue = function(){
         var s = "// ";
@@ -99,11 +99,15 @@ function CVoa2Video (){
                 eval(s);
                 var o1 = {};
                 o1.originalURL = url;
-                o1.src = "http://localhost:8080/" + o2.filename;
+                o1.saveasURL = "http://localhost:8080/" + o2.filename;
                 o1.ss = ['a',];
                 o1.blrParse = function(_o1){
                     return function(b,d){
-                        d.innerHTML = "<a href=" + _o1.src + " target='_blank'>" + _o1.src + "</a>";
+                        var w = {};
+                        w._2do = function(txt){                            
+                            os1.f4(d,txt);
+                        }
+                        blo0.blAjx(w,_o1.saveasURL); 
                     }
                 }(o1);
                 blo0.blShowObj2Div(d,o1);
@@ -112,6 +116,28 @@ function CVoa2Video (){
             
     }
     fb.push(f3);
+
+    
+    var f4 = function(d,txt){ 
+        var o = {};
+        o.blrGetPS = function(_d,_txt){
+            return function(b,d){  
+                var ts = document.getElementsByTagName('textarea');
+                var v = bl$("blrTxtDiv");
+                var ps = v.getElementsByTagName('p');
+                blo0.blShowObj2Div(d,ps);
+            }
+        }(d,txt);  
+        o.blrTxt = function(_d,_txt){
+            return function(b,d){ 
+                var ts = document.getElementsByTagName('textarea');
+                //ts[0].value = _txt; 
+                d.innerHTML = _txt;
+            }
+        }(d,txt);    
+        blo0.blShowObj2Div(d,o);    
+    }
+    fb.push(f4);
     
     var _addFun2Obj = function(_objName,fnName,fnBody){ 
         var r = _objName + "." +  fnName + "=" + fnBody;
