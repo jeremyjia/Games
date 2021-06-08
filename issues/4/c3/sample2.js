@@ -6,8 +6,8 @@ _btn.click();
 
 
 function CVoa2Video (){
-    var _v = "CVoa2Video_v0.35";
-    var fn = ["blrAsItIs","blrf2"];
+    var _v = "CVoa2Video_v0.42";
+    var fn = ["blrAsItIs","f2"];
     var fb = [];
     this.getValue = function(){
         var s = "// ";
@@ -29,7 +29,18 @@ function CVoa2Video (){
             d.load = true;
             var w = {};
             w._2do = function(txt){ 
-                d.innerHTML = "<a href='http://localhost:8080/as.html' target='_blank'>as.html</a>"; 
+                var s = "var o = " + txt; 
+                eval(s);
+                var o1 = {};
+                o1.id = "indexAsItIs";
+                o1.src = "http://localhost:8080/" + o.filename;
+                o1.ss = ['<li class="col-xs-12 col-sm-6 col-md-3 col-lg-3">',];
+                o1.blrParse = function(_o1){
+                    return function(b,d){
+                        os1.f2(d,_o1.src,o1.ss);
+                    }
+                }(o1);
+                blo0.blShowObj2Div(d,o1);
             }
             blo0.blAjx(w,"http://localhost:8080/download?url=https%3A%2F%2Flearningenglish.voanews.com%2Fz%2F3521&filename=as.html");
             _on_off_div(b,d);
@@ -40,11 +51,21 @@ function CVoa2Video (){
     }
     fb.push(blrAsItIs);
     
-    var f2 = function(b,d){
-        var url = "https://learningenglish.voanews.com/z/3521";
+    var f2 = function(d,url,ss){
+        var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
+        var v = blo0.blDiv(d,d.id+"v","v",blGrey[0]);
         var w = {};
         w._2do = function(txt){
-            d.innerHTML = txt;
+            var a = txt.split(ss[0]);
+            for(i in a){ 
+                if(0==i) continue;
+                var btn = blo0.blBtn(tb,tb.id+i,"b"+i,blGrey[1]);
+                btn.onclick = function(_btn,_i,_a,_v){
+                    return function(){
+                        _v.innerHTML = _a[_i];
+                    }
+                }(btn,i,a,v);
+            }
         }
         blo0.blAjx(w,url);
     }

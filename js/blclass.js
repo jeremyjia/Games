@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.111"
+var g_ver_blClass = "CBlClass_v1.4.112"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -188,6 +188,13 @@ function CBlClass ()
 		b1.onclick		= function(this_){	return function(){ 	blo0.blShowObj2Div(dMe,this_);_on_off_div(this,divMove);}}(this);
 		
 	};
+	this.blParseObj2Div= function(_o,_d){  
+		for(i in _o){
+
+		}
+		_blShowObj2Div(_d,_o);
+	}
+	
 	this.blParseText = function(_txt,_oCfg){  
 		_oCfg.parse = "parseTest"; 
 	}
@@ -384,7 +391,7 @@ function CBlClass ()
 		}
 	    	return md;
     }
-    _blShowObj2Div_all = function (oBoss,obj,l) //blclassdbg 1039
+    _blShowObj_2_Div_all = function (oBoss,obj,l) //blclassdbg 1039
     {	  
         oBoss.innerHTML = "";
         for(i in obj)
@@ -405,7 +412,7 @@ function CBlClass ()
 			  var d = document.createElement("div");
 			  if("object" == typeof obj[i])
 			  {
-					_blShowObj2Div_all(d,obj[i],l+1);
+					_blShowObj_2_Div_all(d,obj[i],l+1);
 			  }
 			  else{
 				d.innerHTML = obj[i];
@@ -433,7 +440,7 @@ function CBlClass ()
 	}
     this.blShowObj2Div_all = function (oBoss,obj,l) 
     {	 
-        _blShowObj2Div_all(oBoss,obj,l);	 
+        _blShowObj_2_Div_all(oBoss,obj,l);	 
 	}
     this.blShowObj2Div = function (oDivBoss,obj)
     {	 
