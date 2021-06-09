@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.113"
+var g_ver_blClass = "CBlClass_v1.4.125"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -160,14 +160,43 @@ function CBlClass ()
 
 	
 	this.blMakeScript = function(){		
+		var blAd = "Learning English v0.13";
+		var now = new Date();
+		now = now.toLocaleString();
 		var d = {};
 		var r = {};		
+		r.version = "v0.21";
+		r.width = 1920;
+		r.height = 1080;
+		r.music = _blVideo.src;
+		r.rate = "1";
 		var fs =  [
 			{
 				"number": "1", 
 				"time": Math.floor(_blVideo.duration), 
-				"objects": [  
-					{
+				"objects": [  					
+                    {
+                        "text": blAd, 
+                        "x": 100,
+                        "y": 50,
+                        "size": 50,
+                        "color": "0,255,0"
+                    }, 					
+                    {
+                        "text": "by Littleflute", 
+                        "x": 100,
+                        "y": 111,
+                        "size": 50,
+                        "color": "0,255,0"
+                    },	
+                    {
+                        "text": now, 
+                        "x": 100,
+                        "y": 155,
+                        "size": 50,
+                        "color": "0,255,0"
+                    },
+					{						
 						"graphic": "rect", 
 						"attribute": {
 							"left": 500, 
@@ -181,11 +210,6 @@ function CBlClass ()
 				"backgroundColor": "1,100,222"
 			}
 		];
-		r.version = "v0.14";
-		r.width = 1024;
-		r.height = 760;
-		r.music = _blVideo.src;
-		r.rate = "1";
 		r.frames = fs;
 		
 		d.request = r;
@@ -1323,6 +1347,21 @@ blo0.blParseURL = function(_url,cb){
 		  }
 		}			 
 	 } 
+}
+blo0.blPOST = function(_url,_jsonData,_cb){  
+	var xhr = new XMLHttpRequest();
+	xhr.withCredentials = true;
+	xhr.addEventListener("readystatechange", function() {
+		if(this.readyState === 4 && this.status==200) {
+			_cb( this.responseText );
+		}	
+		else{
+			_cb("error: " + this.readyState + "," + this.status);
+		}
+	});
+	xhr.open("POST", _url);
+	xhr.setRequestHeader("Content-Type", "text/plain");
+	xhr.send(JSON.stringify(_jsonData));
 }
 blo0.blGetGHI = function(_url,cb){  //git github issue
 	var r = "blo0.blGetGHI： "+ _url + "_" + cb + ":"+ Date();
