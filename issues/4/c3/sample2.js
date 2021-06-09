@@ -121,9 +121,9 @@ function CVoa2Video (){
     var f4 = function(d,txt){ 
         var vf4 = "[v0.12] ";
         var o = {};
-        o.blrMakePlayScript = function(b,d){
+        o.blrMakePlayScript = function(b,d){ 
             d.innerHTML = vf4 + Math.floor(blo0.getDuration());  
-            
+
             var d = {};
             var r = {};
             
