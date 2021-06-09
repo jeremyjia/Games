@@ -119,13 +119,81 @@ function CVoa2Video (){
 
     
     var f4 = function(d,txt){ 
+        var vf4 = "[v0.12] ";
         var o = {};
+        o.blrMakePlayScript = function(b,d){
+            d.innerHTML = vf4 + Math.floor(blo0.getDuration());  
+            
+            var d = {};
+            var r = {};
+            
+            var curDuration = Math.floor(blo0.getDuration()); 
+            
+            var fs =  [
+            {
+                "number": "1", 
+                "time": curDuration, 
+                "objects": [  
+                    {
+                        "graphic": "rect", 
+                        "attribute": {
+                            "left": 500, 
+                            "top": 400, 
+                            "width": 100, 
+                            "height": 150, 
+                            "color": "142,28,124"
+                        }
+                    }
+                ], 
+                "backgroundColor": "1,100,222"
+            }
+            ];
+            r.version = "v0.14";
+            r.width = 1024;
+            r.height = 760;
+            r.music = originalMp3URL;
+            r.rate = "1";
+            r.frames = fs;
+            
+            d.request = r;
+            return d;
+        }
+        o.blrGetAudio = function(_d,_txt){
+            return function(b,d){  
+                var ts = document.getElementsByTagName('textarea');
+                var v = bl$("blrTxtDiv");
+                var as = v.getElementsByTagName('audio'); 
+
+                d.tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
+                d.v = blo0.blDiv(d,d.id+"v","v",blGrey[0]);
+                for(var i=0; i<as.length;i++){
+                    var btn = blo0.blBtn(d.tb,d.tb.id+i,i,blGrey[1]);
+                    btn.onclick = function(_btn,_d,_as,_i){
+                        return function(){                     
+                            _d.v.innerHTML =  _as[_i].src; 
+                            blo0.setPlayerURL(_as[_i].src); 
+                        }
+                    }(btn,d,as,i);
+                } 
+            }
+        }(d,txt);  
         o.blrGetPS = function(_d,_txt){
             return function(b,d){  
                 var ts = document.getElementsByTagName('textarea');
                 var v = bl$("blrTxtDiv");
                 var ps = v.getElementsByTagName('p');
-                blo0.blShowObj2Div(d,ps);
+                var ls = [];
+                d.tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
+                d.v = blo0.blDiv(d,d.id+"v","v",blGrey[0]);
+                for(var i=0; i<ps.length;i++){
+                    var btn = blo0.blBtn(d.tb,d.tb.id+i,i,blGrey[1]);
+                    btn.onclick = function(_btn,_d,_ps,_i){
+                        return function(){                    
+                            var cn = _ps[_i].className?_ps[_i].className + "_ " : "xxxx_ ";
+                            _d.v.innerHTML = cn + _ps[_i].innerHTML; 
+                        }
+                    }(btn,d,ps,i);
+                } 
             }
         }(d,txt);  
         o.blrTxt = function(_d,_txt){
