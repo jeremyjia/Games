@@ -1,7 +1,11 @@
 {
   "openapi": "3.0.0",
   "info": {
+<<<<<<< HEAD:python/i7321/static/swagger.json
     "description": "sean",
+=======
+    "description": "sean n' way",
+>>>>>>> upstream/master:python/swagger/static/swagger.json
     "version": "1.0.1",
     "title": "Seans-Python3-Flask-Rest-Boilerplate",
     "license": {
