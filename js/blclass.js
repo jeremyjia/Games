@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.112"
+var g_ver_blClass = "CBlClass_v1.4.113"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -159,15 +159,51 @@ function CBlClass ()
 	} 
 
 	
+	this.blMakeScript = function(){		
+		var d = {};
+		var r = {};		
+		var fs =  [
+			{
+				"number": "1", 
+				"time": Math.floor(_blVideo.duration), 
+				"objects": [  
+					{
+						"graphic": "rect", 
+						"attribute": {
+							"left": 500, 
+							"top": 400, 
+							"width": 100, 
+							"height": 150, 
+							"color": "142,28,124"
+						}
+					}
+				], 
+				"backgroundColor": "1,100,222"
+			}
+		];
+		r.version = "v0.14";
+		r.width = 1024;
+		r.height = 760;
+		r.music = _blVideo.src;
+		r.rate = "1";
+		r.frames = fs;
+		
+		d.request = r;
+		
+		return d;		 
+	}
 	this.setPlayerURL = function(url){
 		_blVideo.src = url;
 		_blVideo.load();
+	}
+	this.getPlayerSrc = function(url){
+		return _blVideo.src;
 	}
 
 	this.getDuration = function(){ 
 		return _blVideo.duration;
 	}
-	this.play = function(){ 
+	this.toPlay = function(){ 
 		_blVideo.play();
 	}
 

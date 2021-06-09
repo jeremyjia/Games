@@ -123,40 +123,6 @@ function CVoa2Video (){
         var o = {};
         o.blrMakePlayScript = function(b,d){ 
             d.innerHTML = vf4 + Math.floor(blo0.getDuration());  
-
-            var d = {};
-            var r = {};
-            
-            var curDuration = Math.floor(blo0.getDuration()); 
-            
-            var fs =  [
-            {
-                "number": "1", 
-                "time": curDuration, 
-                "objects": [  
-                    {
-                        "graphic": "rect", 
-                        "attribute": {
-                            "left": 500, 
-                            "top": 400, 
-                            "width": 100, 
-                            "height": 150, 
-                            "color": "142,28,124"
-                        }
-                    }
-                ], 
-                "backgroundColor": "1,100,222"
-            }
-            ];
-            r.version = "v0.14";
-            r.width = 1024;
-            r.height = 760;
-            r.music = originalMp3URL;
-            r.rate = "1";
-            r.frames = fs;
-            
-            d.request = r;
-            return d;
         }
         o.blrGetAudio = function(_d,_txt){
             return function(b,d){  
@@ -165,7 +131,7 @@ function CVoa2Video (){
                 var as = v.getElementsByTagName('audio'); 
 
                 d.tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
-                d.v = blo0.blDiv(d,d.id+"v","v",blGrey[0]);
+                d.v = blo0.blDiv(d,d.id+"v","v","green");
                 for(var i=0; i<as.length;i++){
                     var btn = blo0.blBtn(d.tb,d.tb.id+i,i,blGrey[1]);
                     btn.onclick = function(_btn,_d,_as,_i){
