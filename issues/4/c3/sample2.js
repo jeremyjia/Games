@@ -6,8 +6,9 @@ _btn.click();
 
 
 function CVoa2Video (){
-    var _v = "CVoa2Video_v0.42";
-    var fn = ["blrAsItIs","f2","f3","f4"];
+    var _v = "CVoa2Video_v0.44";
+
+    var fn = ["blrVLE","parseType","f3","f4"];
     var fb = [];
     this.getValue = function(){
         var s = "// ";
@@ -24,62 +25,114 @@ function CVoa2Video (){
         return s;
     }
 
-    var blrAsItIs = function(b,d){
+    var blrVLE = function(b,d){
         if(!d.load){
             d.load = true;
-            var w = {};
-            w._2do = function(txt){ 
-                if("error"==txt) {
-                    d.innerHTML = "error: " + Date();
-                    return;
-                }
-                var s = "var o = " + txt; 
-                eval(s);
-                var o1 = {};
-                o1.id = "indexAsItIs";
-                o1.src = "http://localhost:8080/" + o.filename;
-                o1.ss = ['<li class="col-xs-12 col-sm-6 col-md-3 col-lg-3">',];
-                o1.blrParse = function(_o1){
-                    return function(b,d){
-                        os1.f2(d,_o1.src,o1.ss);
+            
+            var vles = [];
+            var _add = function(t,n){
+                var o = {};
+                o.type = t;
+                o.n = n;
+                vles.push(o);
+            }; 
+            _add("ARTS_CULTURE",986);
+            _add("AsItIs",3521);
+            _add("EDUCATION",959);
+            _add("HEALTH_LIFESTYLE",955);
+            _add("SCIENCE_TECHNOLOGY",1579);
+
+            var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);  
+            var v1 = blo0.blDiv(d,"id_VLE_v1","v1",blGrey[0]);
+
+            for(i in vles){
+                var btn1 = blo0.blBtn(tb,tb.id+"btn" + i, i,blGrey[0]);
+                //*
+                btn1.onclick = function(_v1,_vles,_i){
+                    return function(){ 
+                        //*
+                        var w = {};
+                        w._2do = function(txt){ 
+                            if("error"==txt) {
+                                _v1.innerHTML = "error: " + Date();
+                                return;
+                            }
+                            var s = "var o = " + txt; 
+                            eval(s);
+                            var o1 = {};
+                            o1.type = _vles[_i].type;
+                            o1.src = "http://localhost:8080/" + o.filename;
+                            o1.ss = ['<li class="col-xs-12 col-sm-6 col-md-3 col-lg-3">',];
+                            o1.blrTypeParse = function(_o1){
+                                return function(b,d){
+                                    os1.parseType(d,_o1.src,o1.ss);
+                                    _on_off_div(b,d);
+                                }
+                            }(o1);
+                            blo0.blShowObj2Div(_v1,o1);
+                            bl$("blrTypeParse").click();
+                        }
+                        blo0.blAjx(w,"http://localhost:8080/download?url=https%3A%2F%2Flearningenglish.voanews.com%2Fz%2F"+_vles[_i].n+"&filename="+_vles[_i].type+".html");
+                        //*/
                     }
-                }(o1);
-                blo0.blShowObj2Div(d,o1);
+                }(v1,vles,i);
+                //*/
             }
-            blo0.blAjx(w,"http://localhost:8080/download?url=https%3A%2F%2Flearningenglish.voanews.com%2Fz%2F3521&filename=as.html");
+
             _on_off_div(b,d);
         }
         else{
             _on_off_div(b,d);
         }
     }
-    fb.push(blrAsItIs);
+    fb.push(blrVLE);
     
-    var f2 = function(d,url,ss){
-        var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
+    var parseType = function(d,url,ss){
+        var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]); tb.bs = [];
         var v1 = blo0.blDiv(d,"id_AsItIs_v1","v1",blGrey[0]);
         var v2 = blo0.blDiv(d,d.id+"v2","v2",blGrey[1]);
+        var v3 = blo0.blDiv(d,d.id+"v3","v3",blGrey[1]);
         var w = {};
         w._2do = function(txt){
             var a = txt.split(ss[0]);
             for(i in a){ 
                 if(0==i) continue;
-                var btn = blo0.blBtn(tb,tb.id+i,"b"+i,blGrey[1]);
-                btn.onclick = function(_btn,_i,_a,_v1,_v2){
-                    return function(){ 
-                        var s1 = _a[_i].replace(/href="/g,'target="_blank" href="https://learningenglish.voanews.com');                                            
-                        _v1.innerHTML = s1.replace(/data-src/g,'src');
+                var btn = blo0.blBtn(tb,tb.id+i,"b"+i,blGrey[1]);  
+                btn.style.color = "white";
+                
+                var s1 = a[i].replace(/href="/g,'target="_blank" href="https://learningenglish.voanews.com');                                         
+                var s2  = s1.replace(/data-src/g,'src');  btn.txt = s2; v3.innerHTML = s2;
+         
+                
+                var pos = s2.search("r1.png");
+                if(pos>-1) btn.style.backgroundColor = blGrey[3];
+                else {
+                    btn.style.backgroundColor = blGrey[0];
+                }
 
+                btn.onclick = function(_btn,_i,_a,_v1,_v2,_bs){
+                    return function(){                         
+                        for(i in _bs){
+                            if(_btn.id==_bs[i].id){
+                                _bs[i].style.color = "yellow";
+                            }
+                            else{
+                                _bs[i].style.color = "white";
+                            }
+                        }
+                        _v1.innerHTML = _btn.txt;
+                        v3.innerHTML = Date();
                         var links = _v1.getElementsByTagName( 'a' ); 
                         var url = links[0];
                         os1.f3(_v2,url,_v1);
                     }
-                }(btn,i,a,v1,v2);
+                }(btn,i,a,v1,v2,tb.bs);
+                tb.bs.push(btn);
             }
         }
         blo0.blAjx(w,url);
     }
-    fb.push(f2);
+    fb.push(parseType);
 
     var f3 = function(d,url,dHTML){
         d.innerHTML = url; 
@@ -101,7 +154,7 @@ function CVoa2Video (){
                 o1.originalURL = url;
                 o1.saveasURL = "http://localhost:8080/" + o2.filename;
                 o1.ss = ['a',];
-                o1.blrParse = function(_o1){
+                o1.blrPageParse = function(_o1){
                     return function(b,d){
                         var w = {};
                         w._2do = function(txt){                            
