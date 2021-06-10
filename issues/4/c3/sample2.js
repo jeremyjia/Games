@@ -56,7 +56,7 @@ function CVoa2Video (){
     fb.push(blrAsItIs);
     
     var f2 = function(d,url,ss){
-        var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
+        var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]); tb.bs = [];
         var v1 = blo0.blDiv(d,"id_AsItIs_v1","v1",blGrey[0]);
         var v2 = blo0.blDiv(d,d.id+"v2","v2",blGrey[1]);
         var w = {};
@@ -64,17 +64,34 @@ function CVoa2Video (){
             var a = txt.split(ss[0]);
             for(i in a){ 
                 if(0==i) continue;
-                var btn = blo0.blBtn(tb,tb.id+i,"b"+i,blGrey[1]);
-                btn.onclick = function(_btn,_i,_a,_v1,_v2){
-                    return function(){ 
-                        var s1 = _a[_i].replace(/href="/g,'target="_blank" href="https://learningenglish.voanews.com');                                            
-                        _v1.innerHTML = s1.replace(/data-src/g,'src');
+                var btn = blo0.blBtn(tb,tb.id+i,"b"+i,blGrey[1]);  
+                btn.style.color = "white";
+                
+                var s1 = a[i].replace(/href="/g,'target="_blank" href="https://learningenglish.voanews.com');                                         
+                var s2  = s1.replace(/data-src/g,'src');  btn.txt = s2;
+                var pos = s2.search("r1.png");
+                if(pos>-1) btn.style.backgroundColor = blGrey[3];
+                else {
+                    btn.style.backgroundColor = blGrey[0];
+                }
 
+                btn.onclick = function(_btn,_i,_a,_v1,_v2,_bs){
+                    return function(){                         
+                        for(i in _bs){
+                            if(_btn.id==_bs[i].id){
+                                _bs[i].style.color = "yellow";
+                            }
+                            else{
+                                _bs[i].style.color = "white";
+                            }
+                        }
+                        _v1.innerHTML = _btn.txt;
                         var links = _v1.getElementsByTagName( 'a' ); 
                         var url = links[0];
                         os1.f3(_v2,url,_v1);
                     }
-                }(btn,i,a,v1,v2);
+                }(btn,i,a,v1,v2,tb.bs);
+                tb.bs.push(btn);
             }
         }
         blo0.blAjx(w,url);
