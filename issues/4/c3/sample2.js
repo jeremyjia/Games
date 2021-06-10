@@ -91,6 +91,7 @@ function CVoa2Video (){
         var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]); tb.bs = [];
         var v1 = blo0.blDiv(d,"id_AsItIs_v1","v1",blGrey[0]);
         var v2 = blo0.blDiv(d,d.id+"v2","v2",blGrey[1]);
+        var v3 = blo0.blDiv(d,d.id+"v3","v3",blGrey[1]);
         var w = {};
         w._2do = function(txt){
             var a = txt.split(ss[0]);
@@ -100,7 +101,9 @@ function CVoa2Video (){
                 btn.style.color = "white";
                 
                 var s1 = a[i].replace(/href="/g,'target="_blank" href="https://learningenglish.voanews.com');                                         
-                var s2  = s1.replace(/data-src/g,'src');  btn.txt = s2;
+                var s2  = s1.replace(/data-src/g,'src');  btn.txt = s2; v3.innerHTML = s2;
+         
+                
                 var pos = s2.search("r1.png");
                 if(pos>-1) btn.style.backgroundColor = blGrey[3];
                 else {
