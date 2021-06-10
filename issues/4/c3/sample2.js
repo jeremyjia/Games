@@ -6,9 +6,9 @@ _btn.click();
 
 
 function CVoa2Video (){
-    var _v = "CVoa2Video_v0.43";
+    var _v = "CVoa2Video_v0.44";
 
-    var fn = ["blrVLE","f2","f3","f4"];
+    var fn = ["blrVLE","parseType","f3","f4"];
     var fb = [];
     this.getValue = function(){
         var s = "// ";
@@ -63,14 +63,14 @@ function CVoa2Video (){
                             o1.type = _vles[_i].type;
                             o1.src = "http://localhost:8080/" + o.filename;
                             o1.ss = ['<li class="col-xs-12 col-sm-6 col-md-3 col-lg-3">',];
-                            o1.blrParse = function(_o1){
+                            o1.blrTypeParse = function(_o1){
                                 return function(b,d){
-                                    os1.f2(d,_o1.src,o1.ss);
+                                    os1.parseType(d,_o1.src,o1.ss);
                                     _on_off_div(b,d);
                                 }
                             }(o1);
                             blo0.blShowObj2Div(_v1,o1);
-                            bl$("blrParse").click();
+                            bl$("blrTypeParse").click();
                         }
                         blo0.blAjx(w,"http://localhost:8080/download?url=https%3A%2F%2Flearningenglish.voanews.com%2Fz%2F"+_vles[_i].n+"&filename="+_vles[_i].type+".html");
                         //*/
@@ -87,7 +87,7 @@ function CVoa2Video (){
     }
     fb.push(blrVLE);
     
-    var f2 = function(d,url,ss){
+    var parseType = function(d,url,ss){
         var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]); tb.bs = [];
         var v1 = blo0.blDiv(d,"id_AsItIs_v1","v1",blGrey[0]);
         var v2 = blo0.blDiv(d,d.id+"v2","v2",blGrey[1]);
@@ -128,7 +128,7 @@ function CVoa2Video (){
         }
         blo0.blAjx(w,url);
     }
-    fb.push(f2);
+    fb.push(parseType);
 
     var f3 = function(d,url,dHTML){
         d.innerHTML = url; 
@@ -150,7 +150,7 @@ function CVoa2Video (){
                 o1.originalURL = url;
                 o1.saveasURL = "http://localhost:8080/" + o2.filename;
                 o1.ss = ['a',];
-                o1.blrParse = function(_o1){
+                o1.blrPageParse = function(_o1){
                     return function(b,d){
                         var w = {};
                         w._2do = function(txt){                            
