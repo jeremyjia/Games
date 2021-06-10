@@ -6,7 +6,7 @@ _btn.click();
 
 
 function CVoa2Video (){
-    var _v = "CVoa2Video_v0.45";
+    var _v = "CVoa2Video_v0.51";
 
     var fn = ["blrVLE","parseType","f3","f4"];
     var fb = [];
@@ -41,6 +41,7 @@ function CVoa2Video (){
             _add("EDUCATION",959);
             _add("HEALTH_LIFESTYLE",955);
             _add("SCIENCE_TECHNOLOGY",1579);
+            _add("VLE",1689);
 
             var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);  
             var v1 = blo0.blDiv(d,"id_VLE_v1","v1",blGrey[0]);
