@@ -121,6 +121,7 @@ function CVoa2Video (){
                             }
                         }
                         _v1.innerHTML = _btn.txt;
+                        v3.innerHTML = Date();
                         var links = _v1.getElementsByTagName( 'a' ); 
                         var url = links[0];
                         os1.f3(_v2,url,_v1);
