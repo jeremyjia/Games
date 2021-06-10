@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.125"
+var g_ver_blClass = "CBlClass_v1.4.131"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -133,6 +133,10 @@ var blon = function(b,d,c1,c2){
 function CBlClass ()
 { 
     var _id = "id_div_4_blClass";
+	
+	var blAd = "Learning English v0.14";
+	var blTitle4Script = "No title";
+
 	var _tmp = {
 		in: "inTest",
 		out: "outTest"
@@ -160,7 +164,6 @@ function CBlClass ()
 
 	
 	this.blMakeScript = function(){		
-		var blAd = "Learning English v0.13";
 		var now = new Date();
 		now = now.toLocaleString();
 		var d = {};
@@ -181,20 +184,27 @@ function CBlClass ()
                         "y": 50,
                         "size": 50,
                         "color": "0,255,0"
-                    }, 					
+                    }, 				
+                    {
+                        "text": blTitle4Script, 
+                        "x": 100,
+                        "y": 150,
+                        "size": 50,
+                        "color": "255,255,0"
+                    }, 						
                     {
                         "text": "by Littleflute", 
                         "x": 100,
-                        "y": 111,
+                        "y": 222,
                         "size": 50,
                         "color": "0,255,0"
                     },	
                     {
                         "text": now, 
                         "x": 100,
-                        "y": 155,
+                        "y": 311,
                         "size": 50,
-                        "color": "0,255,0"
+                        "color": "0,255,255"
                     },
 					{						
 						"graphic": "rect", 
@@ -215,6 +225,9 @@ function CBlClass ()
 		d.request = r;
 		
 		return d;		 
+	}
+	this.setTitle4Script = function(title){
+		blTitle4Script = title;
 	}
 	this.setPlayerURL = function(url){
 		_blVideo.src = url;

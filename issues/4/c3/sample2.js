@@ -6,7 +6,7 @@ _btn.click();
 
 
 function CVoa2Video (){
-    var _v = "CVoa2Video_v0.44";
+    var _v = "CVoa2Video_v0.45";
 
     var fn = ["blrVLE","parseType","f3","f4"];
     var fb = [];
@@ -182,17 +182,19 @@ function CVoa2Video (){
                 var ts = document.getElementsByTagName('textarea');
                 var v = bl$("blrTxtDiv");
                 var as = v.getElementsByTagName('audio'); 
+                var h1 = v.getElementsByTagName('h1'); 
 
                 d.tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
                 d.v = blo0.blDiv(d,d.id+"v","v","green");
                 for(var i=0; i<as.length;i++){
                     var btn = blo0.blBtn(d.tb,d.tb.id+i,i,blGrey[1]);
-                    btn.onclick = function(_btn,_d,_as,_i){
+                    btn.onclick = function(_btn,_d,_as,_h1,_i){
                         return function(){                     
                             _d.v.innerHTML =  _as[_i].src; 
                             blo0.setPlayerURL(_as[_i].src); 
+                            blo0.setTitle4Script(_h1[_i].innerHTML); 
                         }
-                    }(btn,d,as,i);
+                    }(btn,d,as,h1,i);
                 } 
             }
         }(d,txt);  
