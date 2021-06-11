@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.131"
+var g_ver_blClass = "CBlClass_v1.4.134"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -133,6 +133,7 @@ var blon = function(b,d,c1,c2){
 function CBlClass ()
 { 
     var _id = "id_div_4_blClass";
+	var _tmpDiv = null;
 	
 	var blAd = "Learning English v0.14";
 	var blTitle4Script = "No title";
@@ -160,9 +161,17 @@ function CBlClass ()
 		r +=">" + txt; 
 		r += "</a>";   
 		return r;
+	}  
+	this.blTags = function(txtHTML,tagName){ 
+		if(!_tmpDiv)
+		{
+			_tmpDiv = this.blDiv(document.body,"id_div_4_tmpDiv","","green");
+			_tmpDiv.style.display = "none";
+		}
+		_tmpDiv.innerHTML = txtHTML;
+		var rs = _tmpDiv.getElementsByTagName(tagName);
+		return rs;
 	} 
-
-	
 	this.blMakeScript = function(){		
 		var now = new Date();
 		now = now.toLocaleString();

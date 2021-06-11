@@ -1,5 +1,5 @@
 //i4c3  
-var s= "v0.0. 123 "; 
+var s= "v0.0. 125 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c3.js'"
 s += " style='color:blue;'";		s +=">"; s += "c3.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c3.js'"
@@ -100,7 +100,12 @@ function _myJobClass(){
 				var _i = 0;
 				var _s = "<a target='_balnk' href ='";
 				_s += "https://github.com/jeremyjia/Games/issues/21'";
-				_s += ">#21</a>"; 
+				_s += ">issue#21</a>"; 
+				
+				_s += "<a target='_balnk' href ='";
+				_s += "https://jeremyjia.github.io/Games/issues/21'";
+				_s += ">page#21</a>"; 
+
 				var _v = blo0.blDiv(d.v,d.v.id+"_v", _s, blGrey[1]);
 				_v.bs = [];
 				for(i in o){
