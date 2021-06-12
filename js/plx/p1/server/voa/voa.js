@@ -1,6 +1,6 @@
 
 var tagVOA = "voa"; 
-var tagVersion = "_v0.111";
+var tagVersion = "_v0.141";
 
 var tb = bl$("id_4_tb_server");
 var v = bl$("id_4_v_server");
@@ -32,10 +32,35 @@ blo0.blAjx(w,"http://localhost:8080/download?url="+sURL +"&filename=" + sFN);
 
 blo0.blScript("id_js_load_server-voa-util","js/plx/p1/server/voa/util.js");
 
-o.getServerFiles(tb,v,tagVOA,fcbVOA); 
+var _mo = o;
+
+_mo.getServerFiles(tb,v,tagVOA,fcbVOA); 
+
+
 
 function fcbVOA(p1,p2){ //p2: "ac.voa"
+    
+    voaUtil.reg2o(_mo,p2);
+
+    if(!p1.inf.nn) p1.inf.nn = 0;
+
+
+    p1.inf.toDraw = function(_myV){
+      _myV.innerHTML = Date(); 
+      var vta = blo0.blDiv(_myV,_myV.id+"toDraw", tagVOA + tagVersion ,"lightgreen"); 
+      vta.innerHTML = Date();
+      var tb = blo0.blDiv(vta,vta.id + "tb","tb",blGrey[0]);
+      var v = blo0.blDiv(vta,vta.id + "v","v",blGrey[0]);
+      tb.onOff = blo0.blBtn(tb,tb.id+"onOff","Off",blGrey[1]);
+      tb.onOff.style.float="right";
+      tb.onOff.onclick = function(){
+        p1.inf.nn++;
+        v.innerHTML = voaUtil.getN() + " - " + Date();
+        voaUtil.onOff();
+      }
+    }
     p1.inf.toDo = function(v1){
+      v1.innerHTML = Date(); 
         
         var vta = blo0.blDiv(v1,v1.id+"vta", tagVOA + tagVersion ,"grey"); 
         vta.innerHTML = "";
@@ -64,7 +89,6 @@ function fcbVOA(p1,p2){ //p2: "ac.voa"
             var t = p2.split(".");
             fParseType(t[0],v.txt,v);
         }
-
     }
 }
 
@@ -143,11 +167,11 @@ var fParsePage =  function (_voaType,fileName,pv,pageTxt){
     btnTest.onclick = function(){
       var w = {};
       w._2do = function(txt){       
-          voa.parsePage(ta,txt,fileName);
+        voaUtil.parsePage(ta,txt,fileName);
       }
       blo0.blAjx(w,"http://localhost:8080/"+fileName);
     }
-    var ta = blo0.blTextarea(pageV,pageV.id+"ta","ta","lightgreen");
+    var ta = blo0.blTextarea(pageV,"id_ta_Page_Txt","ta","lightgreen");
     ta.style.width = 100 + "%";
     ta.style.height = 100 + "px";
     ta.value = pageTxt;

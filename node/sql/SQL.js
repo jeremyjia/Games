@@ -1,8 +1,9 @@
-const tag = "[SQL.js_v0.154]";
+const tag = "[SQL.js_v0.155]";
 const util = require( 'util' ); 
 var mysql = require('mysql');
+const mysql2 = require('mysql2/promise');
 const config = require('../config');  
-
+var myData = require('../auth/data/testData.js');
 const l = require('../logger');
 l.tag(tag); 
 
@@ -36,12 +37,7 @@ async function _g6Query(_sql,_cbFun) {
     l.tag1(tag," close: " + Date());
     await db.close();
   } 
-}
- 
-
-
-
-
+} 
 function makeDb( config ) {    
   l.tag1(tag,'makeDb: ' + JSON.stringify(config));
   const connection = mysql.createConnection( config );
@@ -72,27 +68,24 @@ exports._2RunSQLList = async function(sqlList){
  exports._2RunSQL1 = function(_sql,_cbFun){  
    _g6Query(_sql,_cbFun);
  };
- 
-exports.init = function(){ 
-    //check table1  db    Group6Users    t1
-    var sql1 = "CREATE TABLE if not exists Group6Users(UserID varchar(255), UserName varchar(255), Password varchar(255), Coin int, Gem int, FirstName varchar(255),LastName varchar(255),EmailAddress varchar(255),Location varchar(255), PhoneNumber int, create_date TIMESTAMP, MMR int, is_Active boolean, is_Delete boolean, PRIMARY KEY (UserID), UNIQUE (UserName));";
-    //check table2  db
-    var sql2 = "CREATE TABLE if not exists Group6Game(GameID varchar(255), competitor_1 int, competitor_2 int, start_time varchar(255), end_time varchar(255), winner varchar(255), PRIMARY KEY (GameID));";
-    var sql3 = "CREATE TABLE if not exists PendingFriends(RequestID varchar(255),fromID varchar(255),toID varchar(255), request_time varchar(255),PRIMARY KEY (RequestID));";
-   
-    _runSQL(sql1);
-    _runSQL(sql2);   
-    _runSQL(sql3);   
+  
+exports.initMySQL = async function(){
+  l.tag1(tag,"initMySQL..."); 
+  await exports.create_db_if_not_exists();
+  await exports._2RunSQLList (myData.tables_4_init);
+  l.tag1(tag,"initMySQL... finished.============"); 
+} 
+exports.create_db_if_not_exists = async function(){ 
+    // create db if it doesn't already exist     
+    const { host, port, user, password, database } = config.oLocalDB;
+    const connection = await mysql2.createConnection({ host, port, user, password });
+    await connection.query(`CREATE DATABASE IF NOT EXISTS \`${database}\`;`);
 }
  
+
 function _runSQL(sql){ 
   console.log("_runSQL: sql="+sql);  
-  var con = mysql.createConnection({
-    host: config.h,
-    user: config.u,
-    password: config.pw,
-    database: config.db
-  });
+  var con = mysql.createConnection(config.oLocalDB);
 
   con.connect();
   con.query(sql, function (err, result, fields) {

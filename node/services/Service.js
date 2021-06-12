@@ -6,6 +6,10 @@ class Service {
   static successResponse(payload, code = 200) {
     return { payload, code };
   }
+  
+  static redirectResponse(url, code = 302) {
+    return { url, code };
+  }
 }
 
 module.exports = Service;

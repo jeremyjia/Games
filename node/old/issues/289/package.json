@@ -1,0 +1,19 @@
+{
+  "name": "289",
+  "version": "1.0.11",
+  "description": "",
+  "main": "i.js",
+  "dependencies": { 
+    "jwt-redis": "^6.0.0",
+    "redis": "^3.0.2",
+    "redis-jwt": "^1.4.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "prestart": "npm install",
+    "start"   : "node i.js",
+    "test"    : "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

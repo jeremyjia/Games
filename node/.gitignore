@@ -4,12 +4,9 @@ node_modules/
 
 ./**/node_modules/
 
-<<<<<<< HEAD
-*.log
-=======
 combined.log
 error.log
 
 *.swp
 *.swo
->>>>>>> master
+sendgrid.env
