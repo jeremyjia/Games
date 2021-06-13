@@ -6,7 +6,7 @@ _btn.click();
 
 
 function CVoa2Video (){
-    var _v = "CVoa2Video_v0.114";
+    var _v = "CVoa2Video_v0.121";
 
     var fn = ["blrVLE","parseType","f3","f4"];
     var fb = [];
@@ -100,6 +100,8 @@ function CVoa2Video (){
             btnDbg.onclick = function(){
                 ts[0].value = _o.type + " : " + a.length;
             }
+            tb.idx = 0;
+            tb.curDate = "";
             for(i in a){ 
                 if(0==i) continue;
                 
@@ -114,13 +116,24 @@ function CVoa2Video (){
                 var pos = s2.search("38CEF907-F6F1-40A7-AC67-CDE6A3271344_w66_r1.png"); 
                 if(pos>-1){
                     btn.style.backgroundColor = blGrey[3]; 
-                    btn.innerHTML += t1[1].innerHTML;
+                    btn.innerHTML = t1[1].innerHTML;
                 } 
                 else {
                     btn.style.backgroundColor = blGrey[0];                     
-                    btn.innerHTML += t1[0].innerHTML;
+                    btn.innerHTML = t1[0].innerHTML;
                     if(_o.type=="VLE") btn.innerHTML = t1[1].innerHTML;
                 }  
+
+                if(tb.curDate!=btn.innerHTML){
+                    tb.curDate = btn.innerHTML;
+                    tb.idx = 1;
+                }
+                else{
+                    tb.idx++;
+                }
+                btn.innerHTML = _o.type +"_" + tb.idx + "_" + tb.curDate;
+
+
                 btn.onclick = function(_btn,_i,_a,_v1,_v2,_bs){
                     return function(){                         
                         for(i in _bs){
