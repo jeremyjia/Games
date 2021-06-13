@@ -47,7 +47,7 @@ function CVoa2Video (){
             var v1 = blo0.blDiv(d,"id_VLE_v1","v1",blGrey[0]);
 
             for(i in vles){
-                var btn1 = blo0.blBtn(tb,tb.id+"btn" + i, i,blGrey[0]);
+                var btn1 = blo0.blBtn(tb,tb.id+"btn" + i, vles[i].type,blGrey[0]);
                 //*
                 btn1.onclick = function(_v1,_vles,_i){
                     return function(){ 
