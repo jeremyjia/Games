@@ -134,7 +134,7 @@ function CVoa2Video (){
                 btn.innerHTML = _o.type +"_" + tb.idx + "_" + tb.curDate;
 
 
-                btn.onclick = function(_btn,_i,_a,_v1,_v2,_bs){
+                btn.onclick = function(_btn,_i,_a,_v1,_v2,_bs,_idx,_type){
                     return function(){                         
                         for(i in _bs){
                             if(_btn.id==_bs[i].id){
@@ -148,9 +148,9 @@ function CVoa2Video (){
                         ts[0].value = _btn.txt;
                         var links = _v1.getElementsByTagName( 'a' ); 
                         var url = links[0];
-                        os1.f3(_v2,url,_v1);
+                        os1.f3(_v2,url,_v1,_idx,_o.type);
                     }
-                }(btn,i,a,v1,v2,tb.bs);
+                }(btn,i,a,v1,v2,tb.bs,tb.idx);
                 tb.bs.push(btn);
             }
         }
@@ -158,13 +158,14 @@ function CVoa2Video (){
     }
     fb.push(parseType);
 
-    var f3 = function(d,url,dHTML){
+    var f3 = function(d,url,dHTML,_idx,_type){
         d.innerHTML = url; 
         var a = dHTML.getElementsByTagName( 'span' ); 
         
         var b = a.length==2? a[1].getInnerHTML() : a[0].getInnerHTML();
         var c = b.replace(',',"_"); 
         var saveFN =  c.replace(' ',"_");
+        saveFN = _type + "_"+_idx + "_" + saveFN;
 
         var w = {};
         w._2do = function(txt){ 
