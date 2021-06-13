@@ -22,6 +22,11 @@ BOOK_REQUESTS = {
         'title': u'Bad Book',
         'email': u'testuser2@test.com',
         'timestamp': (datetime.today() - timedelta(2)).timestamp()
+    },
+    "01c3e86c-13b9-4102-a44f-646015dfd966": {
+        'title': u'Land Book',
+        'email': u'testuser3@maple.com',
+        'timestamp': (datetime.today() - timedelta(3)).timestamp()
     }
 }
 

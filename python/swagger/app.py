@@ -15,7 +15,11 @@ APP = Flask(__name__)
 def index():
     now = datetime.now()
     dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-    return "<html><body><h3>The Current Time: <script>var myDate = new Date(); document.write(myDate.toLocaleString())</script></h3><div <p>Please go to the index page: <a href=http://localhost:5000/swagger/>Swagger</a></p></div></body></html>"
+    return "<html><body>\
+        <h3>The Current Time: \
+        <script>var myDate = new Date(); document.write(myDate.toLocaleString())</script></h3>\
+        <div <p>Please go to the index page: <a href=http://localhost:5000/swagger/>Swagger</a>\
+        </p></div></body></html>"
     #return render_template('index.html') 
     #return "<body><div <h3>This is a header</h3> <p>This is a paragraph.</p> </div></body>"
     
