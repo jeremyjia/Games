@@ -66,7 +66,7 @@ function CVoa2Video (){
                             o1.ss = ['<li class="col-xs-12 col-sm-6 col-md-3 col-lg-3">',];
                             o1.blrTypeParse = function(_o1){
                                 return function(b,d){
-                                    os1.parseType(d,_o1.src,o1.ss);
+                                    os1.parseType(d,_o1,_o1.src,o1.ss);
                                     _on_off_div(b,d);
                                 }
                             }(o1);
@@ -88,36 +88,39 @@ function CVoa2Video (){
     }
     fb.push(blrVLE);
     
-    var parseType = function(d,url,ss){
+    var parseType = function(d,_o,url,ss){
+        var ts = document.getElementsByTagName('textarea');
         var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]); tb.bs = [];
         var v1 = blo0.blDiv(d,"id_AsItIs_v1","v1",blGrey[0]);
         var v2 = blo0.blDiv(d,d.id+"v2","v2",blGrey[1]); 
         var w = {};
         w._2do = function(txt){
             var a = txt.split(ss[0]);
+            var btnDbg = blo0.blBtn(tb,tb.id+"btnDbg","btnDbg",blGrey[1]);  
+            btnDbg.onclick = function(){
+                ts[0].value = _o.type + " : " + a.length;
+            }
             for(i in a){ 
                 if(0==i) continue;
                 
                 var s1 = a[i].replace(/href="/g,'target="_blank" href="https://learningenglish.voanews.com');                                         
                 var s2  = s1.replace(/data-src/g,'src');  
-                var ts = document.getElementsByTagName('textarea');
                 
                 var btn = blo0.blBtn(tb,tb.id+i,i,blGrey[1]);  
                 btn.style.color = "white";
                 btn.txt = s2;  
-         
-                
-                var pos = s2.search("r1.png");
+          
                 var t1 = blo0.blTags(s2,"span");
+                var pos = s2.search("38CEF907-F6F1-40A7-AC67-CDE6A3271344_w66_r1.png"); 
                 if(pos>-1){
-                    btn.style.backgroundColor = blGrey[3];
-                    btn.innerHTML = t1[1].innerHTML;
+                    btn.style.backgroundColor = blGrey[3]; 
+                    btn.innerHTML += t1[1].innerHTML;
                 } 
                 else {
-                    btn.style.backgroundColor = blGrey[0];
-                    btn.innerHTML = t1[0].innerHTML;
-                }
-
+                    btn.style.backgroundColor = blGrey[0];                     
+                    btn.innerHTML += t1[0].innerHTML;
+                    if(_o.type=="VLE") btn.innerHTML = t1[1].innerHTML;
+                }  
                 btn.onclick = function(_btn,_i,_a,_v1,_v2,_bs){
                     return function(){                         
                         for(i in _bs){
