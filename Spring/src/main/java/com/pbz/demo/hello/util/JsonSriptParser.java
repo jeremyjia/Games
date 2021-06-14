@@ -100,6 +100,7 @@ public final class JsonSriptParser {
 		supperObjectsMapList.clear();
 		aoiMap.clear();
 		MacroResolver.setProperty(currentScript, "");
+		MacroResolver.setProperty("VAR_BGAUDIO", "");
 
 		initMap(requestObj);
 		String version = requestObj.getString("version");
@@ -229,8 +230,8 @@ public final class JsonSriptParser {
 			}
 		}
 
-		String audioFile = "";
-		if (MacroResolver.getProperty("VAR_BGAUDIO") != null) {
+		String audioFile = MacroResolver.getProperty("VAR_BGAUDIO");
+		if (audioFile != null && audioFile.trim().length() != 0) {
 			audioFile = MacroResolver.getProperty("VAR_BGAUDIO");
 		} else {
 			audioFile = FileUtil.downloadFileIfNeed(audioFilePath);
