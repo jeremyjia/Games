@@ -6,9 +6,9 @@ _btn.click();
 
 
 function CVoa2Video (){
-    var _v = "CVoa2Video_v0.121";
+    var _v = "CVoa2Video_v0.125";
 
-    var fn = ["blrVLE","parseType","f3","f4"];
+    var fn = ["blrVLE","parseType","downloadPage","f4"];
     var fb = [];
     this.getValue = function(){
         var s = "// ";
@@ -148,7 +148,7 @@ function CVoa2Video (){
                         ts[0].value = _btn.txt;
                         var links = _v1.getElementsByTagName( 'a' ); 
                         var url = links[0];
-                        os1.f3(_v2,url,_v1,_idx,_o.type);
+                        os1.downloadPage(_v2,url,_v1,_idx,_o.type);
                     }
                 }(btn,i,a,v1,v2,tb.bs,tb.idx);
                 tb.bs.push(btn);
@@ -158,7 +158,7 @@ function CVoa2Video (){
     }
     fb.push(parseType);
 
-    var f3 = function(d,url,dHTML,_idx,_type){
+    var downloadPage = function(d,url,dHTML,_idx,_type){
         d.innerHTML = url; 
         var a = dHTML.getElementsByTagName( 'span' ); 
         
@@ -179,24 +179,24 @@ function CVoa2Video (){
                 o1.originalURL = url;
                 o1.saveasURL = "http://localhost:8080/" + o2.filename;
                 o1.ss = ['a',];
-                o1.blrPageParse = function(_o1){
+                o1.blrPageParse = function(_o1,_filename){
                     return function(b,d){
                         var w = {};
                         w._2do = function(txt){                            
-                            os1.f4(d,txt);
+                            os1.f4(d,txt,_filename);
                         }
                         blo0.blAjx(w,_o1.saveasURL); 
                     }
-                }(o1);
+                }(o1,saveFN);
                 blo0.blShowObj2Div(d,o1);
         }
         blo0.blAjx(w,"http://localhost:8080/download?url=" + url +"&filename=" + saveFN + ".html");
             
     }
-    fb.push(f3);
+    fb.push(downloadPage);
 
     
-    var f4 = function(d,txt){ 
+    var f4 = function(d,txt,_filename){ 
         var vf4 = "[v0.12] ";
         var o = {};
         o.blrMakePlayScript = function(b,d){ 
@@ -216,8 +216,17 @@ function CVoa2Video (){
                     btn.onclick = function(_btn,_d,_as,_h1,_i){
                         return function(){                     
                             _d.v.innerHTML =  _as[_i].src; 
-                            blo0.setPlayerURL(_as[_i].src); 
                             blo0.setTitle4Script(_h1[_i].innerHTML); 
+                            var url2Download = "http://localhost:8080/download?url=";
+                            url2Download += _as[_i].src;
+                            url2Download += "&filename=" + _filename + ".mp3"; 
+                            var wMp3 = {};           
+                            wMp3._2do = function(txt){
+                                _d.v.innerHTML =  txt + ":: " + _filename + ".mp3";                                 
+                                blo0.setPlayerURL(_filename + ".mp3"); 
+                            }           
+                            
+                            blo0.blAjx(wMp3,url2Download);
                         }
                     }(btn,d,as,h1,i);
                 } 
