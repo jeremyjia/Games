@@ -6,7 +6,7 @@ _btn.click();
 
 
 function CVoa2Video (){
-    var _v = "CVoa2Video_v0.125";
+    var _v = "CVoa2Video_v0.131";
 
     var fn = ["blrVLE","parseType","downloadPage","f4"];
     var fb = [];
@@ -223,7 +223,7 @@ function CVoa2Video (){
                             var wMp3 = {};           
                             wMp3._2do = function(txt){
                                 _d.v.innerHTML =  txt + ":: " + _filename + ".mp3";                                 
-                                blo0.setPlayerURL(_filename + ".mp3"); 
+                                blo0.setPlayerURL("http://localhost:8080/" + _filename + ".mp3"); 
                             }           
                             
                             blo0.blAjx(wMp3,url2Download);
