@@ -107,8 +107,11 @@ public final class JsonSriptParser {
 		int width = requestObj.getInt("width");
 		int height = requestObj.getInt("height");
 		String audioFilePath = requestObj.getString("music");
+		String videoFilePath = requestObj.optString("video");
 		String rate = requestObj.getString("rate");
 		int index = 0;
+
+		extractInfoFromVideo(videoFilePath, rate);
 
 		Iterator<String> keys = requestObj.keys();
 		while (keys.hasNext()) {
@@ -151,6 +154,13 @@ public final class JsonSriptParser {
 						}
 						if (bgImg != null) {
 							g.drawImage(bgImg, 0, 0, width, height, null);
+						}
+
+						String jpegFile = System.getProperty("user.dir") + "/" + Integer.toString(index + 1) + ".jpeg";
+						File file = new File(jpegFile);
+						if (file.exists()) {
+							Image videoImage = ImageIO.read(file);
+							g.drawImage(videoImage, 0, 0, width, height, null);
 						}
 
 						JSONArray objectArray = frameObj.getJSONArray("objects");
@@ -219,8 +229,12 @@ public final class JsonSriptParser {
 			}
 		}
 
-		// Download audio file
-		String audioFile = FileUtil.downloadFileIfNeed(audioFilePath);
+		String audioFile = "";
+		if (MacroResolver.getProperty("VAR_BGAUDIO") != null) {
+			audioFile = MacroResolver.getProperty("VAR_BGAUDIO");
+		} else {
+			audioFile = FileUtil.downloadFileIfNeed(audioFilePath);
+		}
 		// Cut the audio
 		if (!new File(audioFile).exists()) {
 			throw new Exception("The audio file " + audioFile + " doesn't exist!");
@@ -246,6 +260,31 @@ public final class JsonSriptParser {
 			MacroResolver.setProperty("VAR_GIF_ENABLED", "true");
 		}
 		return bRunScript;
+	}
+
+	private static void extractInfoFromVideo(String videoFilePath, String rate) throws Exception {
+		if (videoFilePath == null || videoFilePath.trim().length() == 0) {
+			return;
+		}
+		String ffmpegPath = "ffmpeg";
+		if (!isWindows) {
+			ffmpegPath = "/usr/bin/ffmpeg";
+			if (!new File(ffmpegPath).exists()) {
+				ffmpegPath = "/usr/local/bin/ffmpeg";
+			}
+		}
+
+		String videoFile = FileUtil.downloadFileIfNeed(videoFilePath);
+		if (!new File(videoFile).exists()) {
+			throw new Exception("The video file " + videoFile + " doesn't exist!");
+		}
+		String[] extractPicturesCmd = { ffmpegPath, "-y", "-i", videoFile, "-r", rate, "-f", "image2", "%d.jpeg" };
+		ExecuteCommand.executeCommand(extractPicturesCmd, null, new File("."), null);
+
+		String extractMP3 = "extractAudio.mp3";
+		String[] extractAudioCmd = { ffmpegPath, "-y", "-i", videoFile, extractMP3 };
+		ExecuteCommand.executeCommand(extractAudioCmd, null, new File("."), null);
+		MacroResolver.setProperty("VAR_BGAUDIO", extractMP3);
 	}
 
 	private static void drawOrdinaryObjects(JSONObject obj, Graphics2D g) throws IOException {
