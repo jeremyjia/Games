@@ -1,4 +1,4 @@
-var version = "i21c1_v0. 22";
+var version = "i21c1_v0. 23";
 var s = version;
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/21/c1/c1.js'"
 s += " style='color:blue;'";		s +=">"; s += " c1.js* ";
@@ -11,7 +11,7 @@ s += b[0];
 s += "/Games/issues/21/c1/index.html'"
 s += " style='color:brown;'";		s +=">"; s += " index.html";
 
-var d = blo0.blMD("div_ID_4_I21_C1"+version, s ,555,100,500,400, "lightgreen"); 
+var d = blo0.blMD("div_ID_4_I21_C1", s ,555,100,500,400, "lightgreen"); 
 
 d.v = blo0.blDiv(d,d.id+"v","v",blGrey[0]);
 var ui = {};
