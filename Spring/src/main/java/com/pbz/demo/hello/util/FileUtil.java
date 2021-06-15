@@ -247,12 +247,22 @@ public class FileUtil {
 	public static void removeTempFiles() {
 		int index = 1;
 		while (true) {
-			String jpgFile = System.getProperty("user.dir") + "/" + Integer.toString(index) + ".jpg";
-			File file = new File(jpgFile);
-			if (file.exists()) {
-				file.delete();
-			} else
+			String jpgFilePath = System.getProperty("user.dir") + "/" + Integer.toString(index) + ".jpg";
+			File jpgFile = new File(jpgFilePath);
+
+			String jpegFilePath = System.getProperty("user.dir") + "/" + Integer.toString(index) + ".jpeg";
+			File jpegFile = new File(jpegFilePath);
+
+			if (!jpgFile.exists() && !jpegFile.exists()) {
 				break;
+			}
+			if (jpgFile.exists()) {
+				jpgFile.delete();
+
+			}
+			if (jpegFile.exists()) {
+				jpegFile.delete();
+			}
 			index++;
 		}
 
