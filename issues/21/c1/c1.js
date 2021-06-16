@@ -1,4 +1,4 @@
-var version = "i21c1_v0. 54";
+var version = "i21c1_v0. 113";
 var s = version;
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/21/c1/c1.js'"
 s += " style='color:blue;'";		s +=">"; s += " c1.js* ";
@@ -93,6 +93,7 @@ ui.blrSaveJSON = function(b,d){
               }(fs,i);
             } 
           }
+
           var btnMakeMP4 = blo0.blBtn(v.tb,v.tb.id+"btnMakeMP4","btnMakeMP4",blGrey[1]);
           btnMakeMP4.onclick = function(){ 
             var a = bls.request.music;
@@ -124,10 +125,27 @@ ui.blrSaveJSON = function(b,d){
         blo0.blAjx(this,url);
       }
   }
-  _on_off_div(b,d);
+  _on_off_div(b,d);  
+  b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 }; 
+ui.bll = "-";
+ui.blrShowScript = function(b,d){
+  if(!d.bShow){
+    d.bShow = true;
+    d.innerHTML = Date();
+    var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
+    var v = blo0.blDiv(d,d.id+"v","v",blGrey[3]);
+    var b1 = blo0.blBtn(tb,tb.id+"b1","b1",blGrey[1]);
+    b1.onclick = function(){
+      blo0.blShowScript(v);
+    }
+  }
+  _on_off_div(b,d);
+  b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+};
 
 blo0.blShowObj2Div(d.v,ui);
 bl$("blrSaveJSON").click();
+bl$("blrShowScript").click();
    
 _on_off_div(null,d);

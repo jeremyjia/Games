@@ -152,6 +152,29 @@ function CBlClass ()
 	_blVideo.setAttribute("height", "1"); 
 	document.body.appendChild(_blVideo);
 
+	function CFrame(_number,_time,_backgroundColor){
+		this.number = _number;
+		this.time = _time;
+		this.backgroundColor = _backgroundColor;
+		this.objects = [];
+	};
+	function CBlScript(){
+		var about = {};
+		about.version = "v0.0.11";
+		this.blrAbout = function(b,d){
+			_blShowObj2Div(d,about);
+			_on_off_div(b,d);
+			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+		};
+		this.bll1 = "-1-";
+		this.blrFrames = function(b,d){
+			_on_off_div(b,d);
+			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+		};
+		this.bll2 = "-2-";
+	};
+	var _blScript = new CBlScript();
+
 	
 	function _blhMakeLink(txt,href,style,target){
 		var r = "";
@@ -172,6 +195,14 @@ function CBlClass ()
 		var rs = _tmpDiv.getElementsByTagName(tagName);
 		return rs;
 	} 
+	this.blShowScript = function(_v){
+		var now = new Date();
+		now = now.toLocaleString();	 
+		_blScript.now = now;
+		_blShowObj2Div(_v,_blScript);
+		bl$("blrAbout").click();
+		bl$("blrFrames").click();
+	}
 	this.blMakeScript = function(){		
 		var now = new Date();
 		now = now.toLocaleString();
