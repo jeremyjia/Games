@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.134"
+var g_ver_blClass = "CBlClass_v1.4.143"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -135,7 +135,7 @@ function CBlClass ()
     var _id = "id_div_4_blClass";
 	var _tmpDiv = null;
 	
-	var blAd = "Learning English v0.14";
+	var blAd = "Learning English v0.15";
 	var blTitle4Script = "No title";
 
 	var _tmp = {
@@ -152,26 +152,124 @@ function CBlClass ()
 	_blVideo.setAttribute("height", "1"); 
 	document.body.appendChild(_blVideo);
 
-	function CFrame(_number,_time,_backgroundColor){
-		this.number = _number;
-		this.time = _time;
-		this.backgroundColor = _backgroundColor;
-		this.objects = [];
-	};
+	
 	function CBlScript(){
-		var about = {};
-		about.version = "v0.0.11";
+		function CFrame(_number,_time,_backgroundColor){
+			this.number = _number;
+			this.time = _time;
+			this.backgroundColor = _backgroundColor;
+			this.objects = [];
+			this.addObj = function(_o){
+				this.objects.push(_o);
+			};
+			this.addTextAsObj = function(_txt,_x,_y,_size,_r,_g,_b){
+				var _o = {};
+				_o.text = _txt;
+				_o.x = _x;
+				_o.y = _y;
+				_o.size = _size;
+				_o.color = _r + ","+_g+","+_b;
+				this.objects.push(_o);
+			};
+		};
+		var _bl2MakeScript = function(_os,_fs){		 
+			var s = {};
+			var r = {};		
+			r.version = _os.version;
+			r.width = _os.width;
+			r.height = _os.height;
+			r.music = _os.music;
+			r.rate = _os.rate; 
+			r.frames = _fs;			
+			s.request = r;			
+			return s;		 
+		}
+		
+		var _oScript = {};
+		_oScript.version = "v0.0.42";
+		_oScript.width = 1920;
+		_oScript.height = 1080;
+		_oScript.music = _blVideo.src;
+		_oScript.rate = "1";
+		_oScript.blrPlay = function(b,d){
+			_blVideo.play();
+		}
+		_oScript.blrPause = function(b,d){
+			_blVideo.pause();
+		}		
+		_oScript.blrSaveScript = function(b,d){ 
+			_oScript.music = _blVideo.src;
+			var url = "http://localhost:8080/json?fileName=a1.json"; 
+			var pl = _bl2MakeScript(_oScript,_frames);
+        	blo0.blPOST(url,pl,function(txt){
+         		 d.innerHTML = txt;
+        	});
+		}
+		_oScript.blrShowPlainScript = function(b,d){
+			var os = _bl2MakeScript(_oScript,_frames);
+			var txt = JSON.stringify(os);
+			d.innerHTML = txt;
+		}
+		
+		var _frames = [];
 		this.blrAbout = function(b,d){
-			_blShowObj2Div(d,about);
+			_blShowObj2Div(d,_oScript);
 			_on_off_div(b,d);
 			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 		};
 		this.bll1 = "-1-";
 		this.blrFrames = function(b,d){
+			var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
+			var v = blo0.blDiv(d,d.id+"v","v",blGrey[1]);
+			for(i in _frames){
+				var btn = blo0.blBtn(tb,tb.id+i,i,blGrey[2]);
+				btn.onclick = function(_fs,_i){
+					return function(){
+						v.innerHTML = _fs[_i].number;
+					}
+				}(_frames,i);
+			}
+
 			_on_off_div(b,d);
 			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 		};
 		this.bll2 = "-2-";
+		this.blrAddFrames = function(b,d){
+			for(var i = 0; i < _blVideo.duration; i++){
+				var n = _frames.length;
+				var B = n*50%255;
+				var f = new CFrame(n,"1","255,255," + B);
+				var t1 = {
+					"text": i + ": by Littleflute", 
+					"x": 100,
+					"y": 555,
+					"size": 111,
+					"color": "0,1,255"
+				};
+				f.addObj(t1);
+				f.addTextAsObj(blAd,100,111,100,255,0,0);				
+				f.addTextAsObj(blTitle4Script,100,222,55,255,0,250);
+				
+				_frames.push(f);
+			}
+
+			bl$("blrFrames").click();bl$("blrFrames").click();
+		}
+		this.blrTimer = function(b,d){
+			if(!d.bTimerRun){
+				d.bTimerRun = true;
+				var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
+				var v = blo0.blDiv(d,d.id+"v","v",blGrey[1]);
+				var _fn4Timer = function(_v){
+					return function(){
+						_v.innerHTML = _blVideo.currentTime  + "/" + _blVideo.duration;
+					}
+				}(v);
+				_blScript.timer = setInterval(_fn4Timer, 20);
+			}
+			_on_off_div(b,d);
+			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];			
+		}
 	};
 	var _blScript = new CBlScript();
 
@@ -201,7 +299,8 @@ function CBlClass ()
 		_blScript.now = now;
 		_blShowObj2Div(_v,_blScript);
 		bl$("blrAbout").click();
-		bl$("blrFrames").click();
+		bl$("blrFrames").click();		
+		bl$("blrTimer").click();
 	}
 	this.blMakeScript = function(){		
 		var now = new Date();
@@ -268,6 +367,9 @@ function CBlClass ()
 	}
 	this.setTitle4Script = function(title){
 		blTitle4Script = title;
+	}
+	this.getTitle4Script = function(){
+		return blTitle4Script;
 	}
 	this.setPlayerURL = function(url){
 		_blVideo.src = url;

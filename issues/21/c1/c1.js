@@ -1,4 +1,4 @@
-var version = "i21c1_v0. 113";
+var version = "i21c1_v0. 114";
 var s = version;
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/21/c1/c1.js'"
 s += " style='color:blue;'";		s +=">"; s += " c1.js* ";
