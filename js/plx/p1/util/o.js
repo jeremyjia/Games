@@ -322,7 +322,7 @@ o._getServerFiles = function(tb,v,ft,fCallBack){
                     bf.inf = {};
                     bf.onclick = function(_this,_dbg,_me,_fCallBack){
                         return function(){    
-                            _dbg.innerHTML = _me ; 
+                            _dbg.innerHTML = _me + " : " + blo0.blTime(0) ; 
                             o.makeINF(_this,_me,_fCallBack);
                             o.status(_this);
                         }
