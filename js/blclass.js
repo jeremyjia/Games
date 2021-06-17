@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.143"
+var g_ver_blClass = "CBlClass_v1.4.155"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -135,8 +135,10 @@ function CBlClass ()
     var _id = "id_div_4_blClass";
 	var _tmpDiv = null;
 	
-	var blAd = "Learning English v0.15";
+	var blAd = "Learning English v0.21";
 	var blTitle4Script = "No title";
+	var _ps = [];
+	var _ts = [];
 
 	var _tmp = {
 		in: "inTest",
@@ -221,13 +223,25 @@ function CBlClass ()
 		this.blrFrames = function(b,d){
 			var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
 			var v = blo0.blDiv(d,d.id+"v","v",blGrey[1]);
+			var ls = [];
 			for(i in _frames){
 				var btn = blo0.blBtn(tb,tb.id+i,i,blGrey[2]);
-				btn.onclick = function(_fs,_i){
+				btn.onclick = function(_fs,_i,_ls,_btn){
 					return function(){
 						v.innerHTML = _fs[_i].number;
+						_blVideo.currentTime = _fs[_i].number;
+						for(j in _ls){
+							if(_btn.id==_ls[j].id){
+								_btn.style.backgroundColor = "yellow";
+							}
+							else{
+								_ls[j].style.backgroundColor = "grey";
+							}
+						}
+						
 					}
-				}(_frames,i);
+				}(_frames,i,ls,btn);
+				ls.push(btn);
 			}
 
 			_on_off_div(b,d);
@@ -238,7 +252,7 @@ function CBlClass ()
 			for(var i = 0; i < _blVideo.duration; i++){
 				var n = _frames.length;
 				var B = n*50%255;
-				var f = new CFrame(n,"1","255,255," + B);
+				var f = new CFrame(n,"1","111,255," + B);
 				var t1 = {
 					"text": i + ": by Littleflute", 
 					"x": 100,
@@ -249,6 +263,7 @@ function CBlClass ()
 				f.addObj(t1);
 				f.addTextAsObj(blAd,100,111,100,255,0,0);				
 				f.addTextAsObj(blTitle4Script,100,222,55,255,0,250);
+				f.addTextAsObj('"'+_ps.length+'"',500,222,55,55,220,250);
 				
 				_frames.push(f);
 			}
@@ -365,12 +380,15 @@ function CBlClass ()
 		
 		return d;		 
 	}
+	this.blSetPS = function(ps){		_ps = ps;	}
 	this.setTitle4Script = function(title){
 		blTitle4Script = title;
 	}
 	this.getTitle4Script = function(){
 		return blTitle4Script;
 	}
+	this.blGetCurTime = function(){		return _blVideo.currentTime;	}
+	this.blGetPS = function(){		return _ps;	}
 	this.setPlayerURL = function(url){
 		_blVideo.src = url;
 		_blVideo.load();

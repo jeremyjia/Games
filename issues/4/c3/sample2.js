@@ -6,7 +6,7 @@ _btn.click();
 
 
 function CVoa2Video (){
-    var _v = "CVoa2Video_v0.131";
+    var _v = "CVoa2Video_v0.132";
 
     var fn = ["blrVLE","parseType","downloadPage","f4"];
     var fb = [];
@@ -237,17 +237,32 @@ function CVoa2Video (){
                 var ts = document.getElementsByTagName('textarea');
                 var v = bl$("blrTxtDiv");
                 var ps = v.getElementsByTagName('p');
+                blo0.blSetPS(ps);
                 var ls = [];
                 d.tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
-                d.v = blo0.blDiv(d,d.id+"v","v",blGrey[0]);
+                d.v = blo0.blDiv(d,d.id+"v","v",blGrey[3]);
                 for(var i=0; i<ps.length;i++){
                     var btn = blo0.blBtn(d.tb,d.tb.id+i,i,blGrey[1]);
-                    btn.onclick = function(_btn,_d,_ps,_i){
+                    btn.onclick = function(_btn,_d,_ps,_i,_ls){
                         return function(){                    
                             var cn = _ps[_i].className?_ps[_i].className + "_ " : "xxxx_ ";
-                            _d.v.innerHTML = cn + _ps[_i].innerHTML; 
+                            var t = Math.floor(blo0.blGetCurTime());
+                            _ps[_i].t = t;
+                            var s1 = t;
+                            s1 += " : " + cn;
+                            s1 += _ps[_i].innerHTML;
+                            _d.v.innerHTML = s1 ; 
+                            for(i in _ls){
+                                if(_btn.id==_ls[i].id){
+                                    _btn.style.backgroundColor = "yellow";
+                                }
+                                else{
+                                    _ls[i].style.backgroundColor = "grey";
+                                }
+                            }
                         }
-                    }(btn,d,ps,i);
+                    }(btn,d,ps,i,ls);
+                    ls.push(btn);
                 } 
             }
         }(d,txt);  
