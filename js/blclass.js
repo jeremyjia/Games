@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.215"
+var g_ver_blClass = "CBlClass_v1.4.222"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -249,15 +249,7 @@ function CBlClass ()
 					return function(){
 						v.innerHTML = _fs[_i].number;
 						_blVideo.currentTime = _fs[_i].number;
-						for(j in _ls){
-							if(_btn.id==_ls[j].id){
-								_btn.style.backgroundColor = "yellow";
-							}
-							else{
-								_ls[j].style.backgroundColor = "grey";
-							}
-						}
-						
+						blo0.blMarkBtnInList(_btn,_ls,"green","grey");
 					}
 				}(_frames,i,ls,btn);
 				ls.push(btn);
@@ -442,11 +434,16 @@ function CBlClass ()
 		b1.onclick		= function(this_){	return function(){ 	blo0.blShowObj2Div(dMe,this_);_on_off_div(this,divMove);}}(this);
 		
 	};
-	this.blParseObj2Div= function(_o,_d){  
-		for(i in _o){
 
-		}
-		_blShowObj2Div(_d,_o);
+	this.blMarkBtnInList= function(_btn,_ls,_highlightColor,_darkColor){  
+		for(j in _ls){
+			if(_btn.id==_ls[j].id){
+				_btn.style.backgroundColor = _highlightColor;
+			}
+			else{
+				_ls[j].style.backgroundColor = _darkColor;
+			}
+		}		
 	}
 	
 	this.blParseText = function(_txt,_oCfg){  
