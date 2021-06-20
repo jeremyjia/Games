@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,7 +29,7 @@ import springfox.documentation.annotations.ApiIgnore;
 public class CommonController {
 	private static Semaphore semaphore = new Semaphore(1);
 	private static final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
-	
+
 	@Value("${server.version}")
 	private String app_version;
 
@@ -98,29 +99,58 @@ public class CommonController {
 
 		return ret;
 	}
-	
+
+	@RequestMapping(value = "/commit2github", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> commitFiles2GitHub(@RequestParam(name = "files") String files,
+			@RequestParam(name = "comments", defaultValue = "add files") String comments) throws Exception {
+
+		Map<String, Object> status = new HashMap<String, Object>();
+
+		String gitPath = "git";
+		if (!isWindows) {
+			gitPath = "/usr/bin/git";
+		}
+
+		String[] addCmd = { gitPath, "add", files };
+		boolean bRes = ExecuteCommand.executeCommand(addCmd, null, new File("."), null);
+
+		String[] commitCmd = { gitPath, "commit", "-m", comments };
+		bRes = ExecuteCommand.executeCommand(commitCmd, null, new File("."), null);
+
+		String[] pushCmd = { gitPath, "push" };
+		bRes = ExecuteCommand.executeCommand(pushCmd, null, new File("."), null);
+
+		if (bRes) {
+			status.put("Status", "OK!");
+		} else {
+			status.put("Status", "Failed!");
+		}
+		return status;
+	}
+
 	@ApiOperation(value = "获取版本信息", notes = "获取应用版本、服务器等信息")
 	@RequestMapping(value = "/getServerInfo", method = RequestMethod.GET)
 	@ResponseBody
 	public LinkedHashMap<String, Object> getServerInfo() {
 		LinkedHashMap<String, Object> ret = new LinkedHashMap<String, Object>();
 		ret.put("Application Version", app_version);
-		
+
 		String app_path = System.getProperty("user.dir");
 		ret.put("Application Path", app_path);
-		
+
 		String os_name = System.getProperty("os.name");
 		ret.put("OS Name", os_name);
-		
+
 		String os_version = System.getProperty("os.version");
 		ret.put("OS Version", os_version);
-		
+
 		String os_arch = System.getProperty("os.arch");
 		ret.put("OS Architecture", os_arch);
-		
+
 		String java_version = System.getProperty("java.version");
 		ret.put("Java Runtime Version", java_version);
-		
+
 		return ret;
 	}
 }
