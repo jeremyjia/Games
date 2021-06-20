@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.224"
+var g_ver_blClass = "CBlClass_v1.4.233"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -135,7 +135,7 @@ function CBlClass ()
     var _id = "id_div_4_blClass";
 	var _tmpDiv = null;
 	
-	var blAd = "Learning English v0.21";
+	var blAd = "Learning English v0.22";
 	var blTitle4Script = "No title";
 	var _ps = [];
 	var _ts = [];
@@ -160,26 +160,8 @@ function CBlClass ()
 			this.number = _number;
 			this.time = _time;
 			this.backgroundColor = _backgroundColor;
-			this.objects = [];
-			this.addTextFromPS = function(ps,_x,_y,_size,_r,_g,_b){
-				var _o = {};
-				for(i in ps){
-					if(ps[i].t==this.number){
-						_o.text = "----" + i + "::" +this.number+ ":: " + ps[i].innerHTML;
-						ps.lastText = _o.text;
-						break;
-					}
-					else{
-						_o.text = "p" + i +  ":: frame" +  this.number+ " ====" + ps.lastText;
-					}
-				} 
+			this.objects = []; 
 
-				_o.x = _x;
-				_o.y = _y;
-				_o.size = _size;
-				_o.color = _r + ","+_g+","+_b; 
-				this.objects.push(_o);
-			};
 			this.addObj = function(_o){
 				this.objects.push(_o);
 			};
@@ -230,6 +212,8 @@ function CBlClass ()
 			var os = _bl2MakeScript(_oScript,_frames);
 			var txt = JSON.stringify(os);
 			d.innerHTML = txt;
+			_on_off_div(b,d);
+			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 		}
 		
 		var _frames = [];
@@ -242,6 +226,26 @@ function CBlClass ()
 		this.blrFrames = function(b,d){
 			var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
 			var v = blo0.blDiv(d,d.id+"v","v",blGrey[1]);
+			var btnAddPS = blo0.blBtn(tb,tb.id+"btnAddPS","btnAddPS",blGrey[2]);
+			btnAddPS.onclick = function(){
+				var ps = blo0.blGetPS();
+				ps.lastText = "";
+				for(i in _frames){
+					var f = _frames[i];
+					var s = "ps:" + f.number;
+					var find = false;
+					for(j in ps){
+						if(ps[j].t==f.number){
+							s += ps[j].innerHTML;	
+							ps.lastText = s;
+							find = true;						
+							break;
+						}
+					}
+					if(false==find) s = ps.lastText;
+					f.addTextAsObj(s,100,333,50,255,255,1);
+				}
+			}
 			var ls = [];
 			for(i in _frames){
 				var btn = blo0.blBtn(tb,tb.id+i,i,blGrey[2]);
@@ -285,8 +289,8 @@ function CBlClass ()
 		this.blrAddFrames = function(b,d){
 			for(var i = 0; i < _blVideo.duration; i++){
 				var n = _frames.length;
-				var B = 123;//n*50%255;
-				var f = new CFrame(n,"1","1,2," + B);
+				var B = 11;//n*50%255;
+				var f = new CFrame(n,"1","111,2," + B);
 				var t1 = {
 					"text": i + ": by Littleflute", 
 					"x": 100,
@@ -297,10 +301,7 @@ function CBlClass ()
 				f.addObj(t1);
 				f.addTextAsObj(blAd,100,111,100,255,0,0);				
 				f.addTextAsObj(blTitle4Script,100,222,55,255,0,250);
-				f.addTextAsObj('"'+_ps.length+'"',500,222,55,55,220,250);
-				f.addTextFromPS(_ps,100,888,33,111,220,250);
-				
-				
+				f.addTextAsObj('"'+_ps.length+'"',500,222,55,55,220,250); 
 				_frames.push(f);
 			}
 
