@@ -1,0 +1,60 @@
+
+> test@1.0.0 test C:\FFOutput\gh\littleflute\Games\node1
+> mocha
+
+
+
+  app4i301
+    √ test: app4i301
+
+  App
+    √ test: app4i304
+
+  app4i316
+    √ test: app4i316
+
+  App
+    √ test: app4i330
+
+  app4i349
+    √ test: app4i349
+
+  App
+    √ test: App
+
+  App4i264Test
+    √ test1
+
+  App4-i-332-Test
+    √ test1
+
+  littlefluteFork
+    1) littlefluteFork
+
+  python
+    √ test: python
+
+  wx
+    √ test: wx
+
+  xdApp
+    √ xd dev
+
+
+  11 passing (101ms)
+  1 failing
+
+  1) littlefluteFork
+       littlefluteFork:
+
+      AssertionError: expected 'to test littlefluteForkApp: done._i363_voa2video' to equal 'to test littlefluteForkApp: done.'
+      + expected - actual
+
+      -to test littlefluteForkApp: done._i363_voa2video
+      +to test littlefluteForkApp: done.
+      
+      at Context.<anonymous> (test\littlefluteForkTest.js:6:12)
+
+
+
+Database create or successfully checked

@@ -1,0 +1,291 @@
+var v = bl$("id_4_div_i4_c3_blrTest1");
+var _ss = new CVoa2Video(); 
+var _btn = v.getBtn(1);
+_btn.value = _ss.getValue();
+_btn.click();
+
+
+function CVoa2Video (){
+    var _v = "CVoa2Video_v0.132";
+
+    var fn = ["blrVLE","parseType","downloadPage","f4"];
+    var fb = [];
+    this.getValue = function(){
+        var s = "// ";
+        s += _v;
+        s += "\n";
+        s += "var os1 ={};\n"; 
+        for(i in fn){
+            s += "os1."+fn[i] + "=" + fb[i] + "\n";
+            s += _addFun2Obj("os1","bll"+fn[i],"'===='");
+        }
+        s += "var run="+_run;
+        s += "\n";
+        s += "run(os1);";
+        return s;
+    } 
+
+    var blrVLE = function(b,d){
+        if(!d.load){
+            d.load = true;
+            
+            var vles = [];
+            var _add = function(t,n){
+                var o = {};
+                o.type = t;
+                o.n = n;
+                vles.push(o);
+            }; 
+            _add("ARTS_CULTURE",986);
+            _add("AsItIs",3521);
+            _add("EDUCATION",959);
+            _add("HEALTH_LIFESTYLE",955);
+            _add("SCIENCE_TECHNOLOGY",1579);
+            _add("VLE",1689);
+
+            var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);  
+            var v1 = blo0.blDiv(d,"id_VLE_v1","v1",blGrey[0]);
+
+            for(i in vles){
+                var btn1 = blo0.blBtn(tb,tb.id+"btn" + i, vles[i].type,blGrey[0]);
+                //*
+                btn1.onclick = function(_v1,_vles,_i){
+                    return function(){ 
+                        //*
+                        var w = {};
+                        w._2do = function(txt){ 
+                            if("error"==txt) {
+                                _v1.innerHTML = "error: " + Date();
+                                return;
+                            }
+                            var s = "var o = " + txt; 
+                            eval(s);
+                            var o1 = {};
+                            o1.type = _vles[_i].type;
+                            o1.src = "http://localhost:8080/" + o.filename;
+                            o1.ss = ['<li class="col-xs-12 col-sm-6 col-md-3 col-lg-3">',];
+                            o1.blrTypeParse = function(_o1){
+                                return function(b,d){
+                                    os1.parseType(d,_o1,_o1.src,o1.ss);
+                                    _on_off_div(b,d);
+                                }
+                            }(o1);
+                            blo0.blShowObj2Div(_v1,o1);
+                            bl$("blrTypeParse").click();
+                        }
+                        blo0.blAjx(w,"http://localhost:8080/download?url=https%3A%2F%2Flearningenglish.voanews.com%2Fz%2F"+_vles[_i].n+"&filename="+_vles[_i].type+".html");
+                        //*/
+                    }
+                }(v1,vles,i);
+                //*/
+            }
+
+            _on_off_div(b,d);
+        }
+        else{
+            _on_off_div(b,d);
+        }
+    }
+    fb.push(blrVLE);
+    
+    var parseType = function(d,_o,url,ss){
+        var ts = document.getElementsByTagName('textarea');
+        var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]); tb.bs = [];
+        var v1 = blo0.blDiv(d,"id_AsItIs_v1","v1",blGrey[0]);
+        var v2 = blo0.blDiv(d,d.id+"v2","v2",blGrey[1]); 
+        var w = {};
+        w._2do = function(txt){
+            var a = txt.split(ss[0]);
+            var btnDbg = blo0.blBtn(tb,tb.id+"btnDbg","btnDbg",blGrey[1]);  
+            btnDbg.onclick = function(){
+                ts[0].value = _o.type + " : " + a.length;
+            }
+            tb.idx = 0;
+            tb.curDate = "";
+            for(i in a){ 
+                if(0==i) continue;
+                
+                var s1 = a[i].replace(/href="/g,'target="_blank" href="https://learningenglish.voanews.com');                                         
+                var s2  = s1.replace(/data-src/g,'src');  
+                
+                var btn = blo0.blBtn(tb,tb.id+i,i,blGrey[1]);  
+                btn.style.color = "white";
+                btn.txt = s2;  
+          
+                var t1 = blo0.blTags(s2,"span");
+                var pos = s2.search("38CEF907-F6F1-40A7-AC67-CDE6A3271344_w66_r1.png"); 
+                if(pos>-1){
+                    btn.style.backgroundColor = blGrey[3]; 
+                    btn.innerHTML = t1[1].innerHTML;
+                } 
+                else {
+                    btn.style.backgroundColor = blGrey[0];                     
+                    btn.innerHTML = t1[0].innerHTML;
+                    if(_o.type=="VLE") btn.innerHTML = t1[1].innerHTML;
+                }  
+
+                if(tb.curDate!=btn.innerHTML){
+                    tb.curDate = btn.innerHTML;
+                    tb.idx = 1;
+                }
+                else{
+                    tb.idx++;
+                }
+                btn.innerHTML = _o.type +"_" + tb.idx + "_" + tb.curDate;
+
+
+                btn.onclick = function(_btn,_i,_a,_v1,_v2,_bs,_idx,_type){
+                    return function(){                         
+                        for(i in _bs){
+                            if(_btn.id==_bs[i].id){
+                                _bs[i].style.color = "yellow";
+                            }
+                            else{
+                                _bs[i].style.color = "white";
+                            }
+                        }
+                        _v1.innerHTML = _btn.txt;
+                        ts[0].value = _btn.txt;
+                        var links = _v1.getElementsByTagName( 'a' ); 
+                        var url = links[0];
+                        os1.downloadPage(_v2,url,_v1,_idx,_o.type);
+                    }
+                }(btn,i,a,v1,v2,tb.bs,tb.idx);
+                tb.bs.push(btn);
+            }
+        }
+        blo0.blAjx(w,url);
+    }
+    fb.push(parseType);
+
+    var downloadPage = function(d,url,dHTML,_idx,_type){
+        d.innerHTML = url; 
+        var a = dHTML.getElementsByTagName( 'span' ); 
+        
+        var b = a.length==2? a[1].getInnerHTML() : a[0].getInnerHTML();
+        var c = b.replace(',',"_"); 
+        var saveFN =  c.replace(' ',"_");
+        saveFN = _type + "_"+_idx + "_" + saveFN;
+
+        var w = {};
+        w._2do = function(txt){ 
+                if("error"==txt) {
+                    d.innerHTML = "error: " + Date();
+                    return;
+                }
+                var s = "var o2 = " + txt; 
+                eval(s);
+                var o1 = {};
+                o1.originalURL = url;
+                o1.saveasURL = "http://localhost:8080/" + o2.filename;
+                o1.ss = ['a',];
+                o1.blrPageParse = function(_o1,_filename){
+                    return function(b,d){
+                        var w = {};
+                        w._2do = function(txt){                            
+                            os1.f4(d,txt,_filename);
+                        }
+                        blo0.blAjx(w,_o1.saveasURL); 
+                    }
+                }(o1,saveFN);
+                blo0.blShowObj2Div(d,o1);
+        }
+        blo0.blAjx(w,"http://localhost:8080/download?url=" + url +"&filename=" + saveFN + ".html");
+            
+    }
+    fb.push(downloadPage);
+
+    
+    var f4 = function(d,txt,_filename){ 
+        var vf4 = "[v0.12] ";
+        var o = {};
+        o.blrMakePlayScript = function(b,d){ 
+            d.innerHTML = vf4 + Math.floor(blo0.getDuration());  
+        }
+        o.blrGetAudio = function(_d,_txt){
+            return function(b,d){  
+                var ts = document.getElementsByTagName('textarea');
+                var v = bl$("blrTxtDiv");
+                var as = v.getElementsByTagName('audio'); 
+                var h1 = v.getElementsByTagName('h1'); 
+
+                d.tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
+                d.v = blo0.blDiv(d,d.id+"v","v","green");
+                for(var i=0; i<as.length;i++){
+                    var btn = blo0.blBtn(d.tb,d.tb.id+i,i,blGrey[1]);
+                    btn.onclick = function(_btn,_d,_as,_h1,_i){
+                        return function(){                     
+                            _d.v.innerHTML =  _as[_i].src; 
+                            blo0.setTitle4Script(_h1[_i].innerHTML); 
+                            var url2Download = "http://localhost:8080/download?url=";
+                            url2Download += _as[_i].src;
+                            url2Download += "&filename=" + _filename + ".mp3"; 
+                            var wMp3 = {};           
+                            wMp3._2do = function(txt){
+                                _d.v.innerHTML =  txt + ":: " + _filename + ".mp3";                                 
+                                blo0.setPlayerURL("http://localhost:8080/" + _filename + ".mp3"); 
+                            }           
+                            
+                            blo0.blAjx(wMp3,url2Download);
+                        }
+                    }(btn,d,as,h1,i);
+                } 
+            }
+        }(d,txt);  
+        o.blrGetPS = function(_d,_txt){
+            return function(b,d){  
+                var ts = document.getElementsByTagName('textarea');
+                var v = bl$("blrTxtDiv");
+                var ps = v.getElementsByTagName('p');
+                blo0.blSetPS(ps);
+                var ls = [];
+                d.tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
+                d.v = blo0.blDiv(d,d.id+"v","v",blGrey[3]);
+                for(var i=0; i<ps.length;i++){
+                    var btn = blo0.blBtn(d.tb,d.tb.id+i,i,blGrey[1]);
+                    btn.onclick = function(_btn,_d,_ps,_i,_ls){
+                        return function(){                    
+                            var cn = _ps[_i].className?_ps[_i].className + "_ " : "xxxx_ ";
+                            var t = Math.floor(blo0.blGetCurTime());
+                            _ps[_i].t = t;
+                            var s1 = t;
+                            s1 += " : " + cn;
+                            s1 += _ps[_i].innerHTML;
+                            _d.v.innerHTML = s1 ; 
+                            for(i in _ls){
+                                if(_btn.id==_ls[i].id){
+                                    _btn.style.backgroundColor = "yellow";
+                                }
+                                else{
+                                    _ls[i].style.backgroundColor = "grey";
+                                }
+                            }
+                        }
+                    }(btn,d,ps,i,ls);
+                    ls.push(btn);
+                } 
+            }
+        }(d,txt);  
+        o.blrTxt = function(_d,_txt){
+            return function(b,d){ 
+                var ts = document.getElementsByTagName('textarea');
+                //ts[0].value = _txt; 
+                d.innerHTML = _txt;
+            }
+        }(d,txt);    
+        blo0.blShowObj2Div(d,o);    
+    }
+    fb.push(f4);
+    
+    var _addFun2Obj = function(_objName,fnName,fnBody){ 
+        var r = _objName + "." +  fnName + "=" + fnBody;
+        r += "\n";
+        return r;
+    }
+    var _run = function (_o2show){
+        var d = blo0.blMD("id_i4_c3_CVoa2Video", "xd*",    555,100,500,400, "lightgreen"); 
+        d.v = blo0.blDiv(d,d.id+"v","v",blGrey[0]);
+        blo0.blShowObj2Div(d.v,_o2show);        
+        _on_off_div(null,d);
+    };
+}
