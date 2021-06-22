@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.143"
+var g_ver_blClass = "CBlClass_v1.4.234"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -135,8 +135,10 @@ function CBlClass ()
     var _id = "id_div_4_blClass";
 	var _tmpDiv = null;
 	
-	var blAd = "Learning English v0.15";
+	var blAd = "Learning English v0.22";
 	var blTitle4Script = "No title";
+	var _ps = [];
+	var _ts = [];
 
 	var _tmp = {
 		in: "inTest",
@@ -158,7 +160,8 @@ function CBlClass ()
 			this.number = _number;
 			this.time = _time;
 			this.backgroundColor = _backgroundColor;
-			this.objects = [];
+			this.objects = []; 
+
 			this.addObj = function(_o){
 				this.objects.push(_o);
 			};
@@ -209,6 +212,8 @@ function CBlClass ()
 			var os = _bl2MakeScript(_oScript,_frames);
 			var txt = JSON.stringify(os);
 			d.innerHTML = txt;
+			_on_off_div(b,d);
+			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 		}
 		
 		var _frames = [];
@@ -221,13 +226,60 @@ function CBlClass ()
 		this.blrFrames = function(b,d){
 			var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
 			var v = blo0.blDiv(d,d.id+"v","v",blGrey[1]);
+			var btnAddPS = blo0.blBtn(tb,tb.id+"btnAddPS","btnAddPS",blGrey[2]);
+			btnAddPS.onclick = function(){
+				var ps = blo0.blGetPS();
+				ps.lastText = "";
+				for(i in _frames){
+					var f = _frames[i];
+					var s = "ps:" + f.number;
+					var find = false;
+					for(j in ps){
+						if(ps[j].t==f.number){
+							s += ps[j].innerHTML;	
+							ps.lastText = s;
+							find = true;						
+							break;
+						}
+					}
+					if(false==find) s = ps.lastText;
+					f.addTextAsObj(s,100,333,50,255,255,1);
+				}
+			}
+			var ls = [];
 			for(i in _frames){
 				var btn = blo0.blBtn(tb,tb.id+i,i,blGrey[2]);
-				btn.onclick = function(_fs,_i){
+				btn.onclick = function(_fs,_i,_ls,_btn){
 					return function(){
+						blo0.blMarkBtnInList(_btn,_ls,"green","grey");
+						_blVideo.currentTime = _fs[_i].number;
+
 						v.innerHTML = _fs[_i].number;
+						v.tb = blo0.blDiv(v,v.id+"tb","tb",blGrey[0]);
+						v.v = blo0.blDiv(v,v.id+"v","v",blGrey[2]);
+						var btnObjs = blo0.blBtn(v.tb,v.tb.id+"btnObjs","btnObjs",blGrey[1]);
+						btnObjs.onclick = function(){
+							//_blShowObj2Div(v.v,_fs[_i].objects);
+							v.v.innerHTML = "";
+							var otb = blo0.blDiv(v.v,v.v.id+"otb","otb",blGrey[0]);
+							var ov = blo0.blDiv(v.v,v.v.id+"ov","ov",blGrey[1]);
+							var fos = _fs[_i].objects;
+							var lsobtn = [];
+							for(i in fos){
+								var obtn = blo0.blBtn(otb,otb.id+i,i,blGrey[1]);
+								obtn.onclick = function(_fos,_i,_obtn){
+									return function(){
+										blo0.blMarkBtnInList(_obtn,lsobtn,"green","grey");
+										_blShowObj2Div(ov,_fos[_i]);
+									}
+								}(fos,i,obtn);
+								lsobtn.push(obtn);
+							}
+						}
+						btnObjs.click();
 					}
-				}(_frames,i);
+				}(_frames,i,ls,btn);
+				ls.push(btn);
 			}
 
 			_on_off_div(b,d);
@@ -237,8 +289,8 @@ function CBlClass ()
 		this.blrAddFrames = function(b,d){
 			for(var i = 0; i < _blVideo.duration; i++){
 				var n = _frames.length;
-				var B = n*50%255;
-				var f = new CFrame(n,"1","255,255," + B);
+				var B = 122;//n*50%255;
+				var f = new CFrame(n,"1","111,222," + B);
 				var t1 = {
 					"text": i + ": by Littleflute", 
 					"x": 100,
@@ -249,7 +301,7 @@ function CBlClass ()
 				f.addObj(t1);
 				f.addTextAsObj(blAd,100,111,100,255,0,0);				
 				f.addTextAsObj(blTitle4Script,100,222,55,255,0,250);
-				
+				f.addTextAsObj('"'+_ps.length+'"',500,222,55,55,220,250); 
 				_frames.push(f);
 			}
 
@@ -365,12 +417,15 @@ function CBlClass ()
 		
 		return d;		 
 	}
+	this.blSetPS = function(ps){		_ps = ps;	}
 	this.setTitle4Script = function(title){
 		blTitle4Script = title;
 	}
 	this.getTitle4Script = function(){
 		return blTitle4Script;
 	}
+	this.blGetCurTime = function(){		return _blVideo.currentTime;	}
+	this.blGetPS = function(){		return _ps;	}
 	this.setPlayerURL = function(url){
 		_blVideo.src = url;
 		_blVideo.load();
@@ -403,11 +458,16 @@ function CBlClass ()
 		b1.onclick		= function(this_){	return function(){ 	blo0.blShowObj2Div(dMe,this_);_on_off_div(this,divMove);}}(this);
 		
 	};
-	this.blParseObj2Div= function(_o,_d){  
-		for(i in _o){
 
-		}
-		_blShowObj2Div(_d,_o);
+	this.blMarkBtnInList= function(_btn,_ls,_highlightColor,_darkColor){  
+		for(j in _ls){
+			if(_btn.id==_ls[j].id){
+				_btn.style.backgroundColor = _highlightColor;
+			}
+			else{
+				_ls[j].style.backgroundColor = _darkColor;
+			}
+		}		
 	}
 	
 	this.blParseText = function(_txt,_oCfg){  
