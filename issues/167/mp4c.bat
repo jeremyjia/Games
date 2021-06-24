@@ -1,0 +1,1 @@
+ffmpeg -f concat -i mp4List.txt -c copy all.mp4
