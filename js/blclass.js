@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.241"
+var g_ver_blClass = "CBlClass_v1.4.242"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -318,7 +318,7 @@ function CBlClass ()
 						var ct = Math.floor(_blVideo.currentTime);
 
 						_v1.innerHTML = _blVideo.currentTime  + "/" + _blVideo.duration;
-						_v2.innerHTML = "f="+_frames[ct].objects[4];
+						_v2.innerHTML = "f="+_frames[ct].objects[4].text;
 					}
 				}(v1,v2);
 				_blScript.timer = setInterval(_fn4Timer, 100);
