@@ -6,15 +6,18 @@ _btn.click();
 
 
 function CSample1 (_id){
-    var _v = "CSample1_v0.52 (auto test framework)";
+    var _v = "CSample1_v0.55 (auto test framework)";
     this.getValue = function(){
         var s = "// ";
         s += _v;
         s += "\n";
         s += "var os1 ={};\n";
         s += _addFun2Obj("os1","blrTest_getServerInfo",blrTest_getServerInfo);
+        s += _addFun2Obj("os1","bll1","'-1-'");
         s += _addFun2Obj("os1","blrTest_combine",blrTest_combine);
-        s += _addFun2Obj("os1","bll0","'--'");
+        s += _addFun2Obj("os1","bll2","'-2-'");
+        s += _addFun2Obj("os1","blrTest_download",blrTest_download);
+        s += _addFun2Obj("os1","bll3","'-3-'");
         s += "var run="+_f1;
         s += "\n";
         s += "run(os1,'" + _v + "');";
@@ -49,11 +52,29 @@ function CSample1 (_id){
     var blrTest_combine = function(b,d){
         if(!d.load){
             d.load = true;
+            var urlTest = "http://localhost:8080/image/combine?subtitlefile=https://littleflute.github.io/english/NewConceptEnglish/Book2/1.srt&audiofile=https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3";
             var w = {};
             w._2do = function(txt){ 
                 d.innerHTML = txt; 
             }
-            blo0.blAjx(w,"http://localhost:8080/image/combine?subtitlefile=https://littleflute.github.io/english/NewConceptEnglish/Book2/1.srt&audiofile=https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3");
+            blo0.blAjx(w,urlTest);
+            _on_off_div(b,d);
+        }
+        else{
+            _on_off_div(b,d);
+        }
+    }
+    var blrTest_download = function(b,d){
+        if(!d.load){
+            d.load = true;
+            
+            var urlTest = "http://localhost:8080/download?url=https://learningenglish.voanews.com/z/986&filename=acType.html";
+            var w = {};
+            w._2do = function(txt){ 
+                d.innerHTML = txt; 
+            }
+            blo0.blAjx(w,urlTest);
+
             _on_off_div(b,d);
         }
         else{
