@@ -219,6 +219,7 @@ function CVoa2Video (){
                         return function(){                     
                             _d.v.innerHTML =  _as[_i].src; 
                             blo0.setTitle4Script(_h1[_i].innerHTML); 
+                            blo0.setScriptName(_filename); 
                             var url2Download = "http://localhost:8080/download?url=";
                             url2Download += _as[_i].src;
                             url2Download += "&filename=" + _filename + ".mp3"; 

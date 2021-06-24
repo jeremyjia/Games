@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.242"
+var g_ver_blClass = "CBlClass_v1.4.245"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -135,8 +135,9 @@ function CBlClass ()
     var _id = "id_div_4_blClass";
 	var _tmpDiv = null;
 	
-	var blAd = "Learning English v0.22";
+	var blAd = "Learning English v0.23";
 	var blTitle4Script = "No title";
+	var blScriptName = "noName";
 	var _ps = [];
 	var _ts = [];
 
@@ -199,10 +200,15 @@ function CBlClass ()
 		}
 		_oScript.blrPause = function(b,d){
 			_blVideo.pause();
+		}	
+		_oScript.blrScript2Mp4 = function(b,d){ 			
+			var url = "http://localhost:8080/image/json2video?script=" + blScriptName + ".json&video=" + blScriptName + ".mp4"; 
+			b._2do = function(txt){d.innerHTML = txt};
+			blo0.blAjx(b,url);
 		}		
 		_oScript.blrSaveScript = function(b,d){ 
 			_oScript.music = _blVideo.src;
-			var url = "http://localhost:8080/json?fileName=a1.json"; 
+			var url = "http://localhost:8080/json?fileName=" + blScriptName + ".json"; 
 			var pl = _bl2MakeScript(_oScript,_frames);
         	blo0.blPOST(url,pl,function(txt){
          		 d.innerHTML = txt;
@@ -286,11 +292,11 @@ function CBlClass ()
 			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 		};
 		this.bll2 = "-2-";
-		this.blrAddFrames = function(b,d){
+		this.blrAddFrames = function(b,d){ 
 			for(var i = 0; i < _blVideo.duration; i++){
 				var n = _frames.length;
-				var B = 122;//n*50%255;
-				var f = new CFrame(n,"1","222,111," + B);
+				var B = 222;//n*50%255;
+				var f = new CFrame(n,"1","111,222," + B);
 				var t1 = {
 					"text": i + ": by Littleflute", 
 					"x": 100,
@@ -422,6 +428,9 @@ function CBlClass ()
 		return d;		 
 	}
 	this.blSetPS = function(ps){		_ps = ps;	}
+	this.setScriptName = function(_scriptName){
+		blScriptName = _scriptName;
+	}
 	this.setTitle4Script = function(title){
 		blTitle4Script = title;
 	}
