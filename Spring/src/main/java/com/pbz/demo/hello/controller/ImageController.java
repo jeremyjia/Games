@@ -203,7 +203,7 @@ public class ImageController {
 		String strVideoUrl = "http://localhost:" + app_port + "/" + videoName;
 		String strHomePageUrl = "http://localhost:" + app_port;
 		if (b) {
-			strResultMsg = "已为您合成视频文件，点击即可播放视频，视频链接：" + strVideoUrl;
+			strResultMsg = "已为您合成视频文件，点击即可播放视频，视频链接：";
 		}
 		mv.addObject("message", strResultMsg);
 		mv.addObject("video_url", strVideoUrl);
