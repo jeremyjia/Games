@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.234"
+var g_ver_blClass = "CBlClass_v1.4.235"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -290,7 +290,7 @@ function CBlClass ()
 			for(var i = 0; i < _blVideo.duration; i++){
 				var n = _frames.length;
 				var B = 122;//n*50%255;
-				var f = new CFrame(n,"1","111,222," + B);
+				var f = new CFrame(n,"1","222,111," + B);
 				var t1 = {
 					"text": i + ": by Littleflute", 
 					"x": 100,
