@@ -6,7 +6,7 @@ _btn.click();
 
 
 function CVoa2Video (){
-    var _v = "CVoa2Video_v0.132";
+    var _v = "CVoa2Video_v0.141";
 
     var fn = ["blrVLE","parseType","downloadPage","f4"];
     var fb = [];
@@ -44,7 +44,7 @@ function CVoa2Video (){
             _add("VLE",1689);
 
             var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);  
-            var v1 = blo0.blDiv(d,"id_VLE_v1","v1",blGrey[0]);
+            var v1 = blo0.blDiv(d,"id_VLE_v1","v1",blGrey[3]);
 
             for(i in vles){
                 var btn1 = blo0.blBtn(tb,tb.id+"btn" + i, vles[i].type,blGrey[0]);
@@ -52,10 +52,11 @@ function CVoa2Video (){
                 btn1.onclick = function(_v1,_vles,_i){
                     return function(){ 
                         //*
+                        var blTypeURL = "http://localhost:8080/download?url=https://learningenglish.voanews.com/z/"+_vles[_i].n+"&filename="+_vles[_i].type+".html";
                         var w = {};
                         w._2do = function(txt){ 
                             if("error"==txt) {
-                                _v1.innerHTML = "error: " + Date();
+                                _v1.innerHTML = "error: " + blTypeURL;
                                 return;
                             }
                             var s = "var o = " + txt; 
@@ -73,7 +74,7 @@ function CVoa2Video (){
                             blo0.blShowObj2Div(_v1,o1);
                             bl$("blrTypeParse").click();
                         }
-                        blo0.blAjx(w,"http://localhost:8080/download?url=https%3A%2F%2Flearningenglish.voanews.com%2Fz%2F"+_vles[_i].n+"&filename="+_vles[_i].type+".html");
+                        blo0.blAjx(w,blTypeURL);
                         //*/
                     }
                 }(v1,vles,i);
@@ -92,7 +93,7 @@ function CVoa2Video (){
         var ts = document.getElementsByTagName('textarea');
         var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]); tb.bs = [];
         var v1 = blo0.blDiv(d,"id_AsItIs_v1","v1",blGrey[0]);
-        var v2 = blo0.blDiv(d,d.id+"v2","v2",blGrey[1]); 
+        var v2 = blo0.blDiv(d,d.id+"v2","v2","lightgreen"); 
         var w = {};
         w._2do = function(txt){
             var a = txt.split(ss[0]);
@@ -167,10 +168,11 @@ function CVoa2Video (){
         var saveFN =  c.replace(' ',"_");
         saveFN = _type + "_"+_idx + "_" + saveFN;
 
+        var blURL = "http://localhost:8080/download?url=" + url +"&filename=" + saveFN + ".html";
         var w = {};
         w._2do = function(txt){ 
                 if("error"==txt) {
-                    d.innerHTML = "error: " + Date();
+                    d.innerHTML = "error: " + blURL;
                     return;
                 }
                 var s = "var o2 = " + txt; 
@@ -190,7 +192,7 @@ function CVoa2Video (){
                 }(o1,saveFN);
                 blo0.blShowObj2Div(d,o1);
         }
-        blo0.blAjx(w,"http://localhost:8080/download?url=" + url +"&filename=" + saveFN + ".html");
+        blo0.blAjx(w,blURL);
             
     }
     fb.push(downloadPage);

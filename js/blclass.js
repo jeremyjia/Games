@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.235"
+var g_ver_blClass = "CBlClass_v1.4.241"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -311,13 +311,17 @@ function CBlClass ()
 			if(!d.bTimerRun){
 				d.bTimerRun = true;
 				var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
-				var v = blo0.blDiv(d,d.id+"v","v",blGrey[1]);
-				var _fn4Timer = function(_v){
+				var v1 = blo0.blDiv(d,d.id+"v1","v1","green");
+				var v2 = blo0.blDiv(d,d.id+"v2","v2","green");
+				var _fn4Timer = function(_v1,_v2){
 					return function(){
-						_v.innerHTML = _blVideo.currentTime  + "/" + _blVideo.duration;
+						var ct = Math.floor(_blVideo.currentTime);
+
+						_v1.innerHTML = _blVideo.currentTime  + "/" + _blVideo.duration;
+						_v2.innerHTML = "f="+_frames[ct].objects[4];
 					}
-				}(v);
-				_blScript.timer = setInterval(_fn4Timer, 20);
+				}(v1,v2);
+				_blScript.timer = setInterval(_fn4Timer, 100);
 			}
 			_on_off_div(b,d);
 			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];			
