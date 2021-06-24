@@ -1,0 +1,2 @@
+rem ffmpeg -i <output from silent and short clip> -i <original long clip> -filter_complex "amix=inputs=2:duration=longest:dropout_transition=0, volume=2" <output audio file>
+ffmpeg -i %1  -i %2 -filter_complex "amix=inputs=2:duration=longest:dropout_transition=0, volume=2" %3
