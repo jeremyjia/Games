@@ -9,14 +9,16 @@
     </script>
   </head>
   <body>
-   <p>Hello, <span th:text="${message}"></span></p>
-    <video controls="controls" width="50%">
+   <p>Hello, <span th:text="${message}"></span>
+    <a th:href="@{${video_url}}" target="_blank">View the video</a>
+  </p>
+  <video controls="controls" width="50%">
 	   <source th:src="@{${video_url}}" type="video/mp4">
 	     Your browser does not support the video tag.
 	</video>
     <hr/>
     <p th:style="${gif_enabled!=null}?'':'display:none'">已经生成GIF：
-    <a th:href="@{${gif_url}}">View the GIF</a>
+    <a th:href="@{${gif_url}}" target="_blank">View the GIF</a>
     </p>
     <hr/>
 	<img src="../images/back.jpg" width="20" height="20" />
