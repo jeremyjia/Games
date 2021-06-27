@@ -1,5 +1,6 @@
 """The Endpoints to manage the BOOK_REQUESTS"""
 import uuid
+import json
 from datetime import datetime, timedelta
 from flask import jsonify, abort, request, Blueprint
 
@@ -11,19 +12,36 @@ def get_blueprint():
     """Return the blueprint for the main app module"""
     return REQUEST_API
 
+# get the data from local json file. -wayne W
+with open("./routes/data1.json", 'r', encoding='utf-8') as f:
+  json_data = json.load(f)
+# print(json_data)
 
-BOOK_REQUESTS = {
-    "8c36e86c-13b9-4102-a44f-646015dfd981": {
-        'title': u'Good Book',
-        'email': u'testuser1@test.com',
-        'timestamp': (datetime.today() - timedelta(1)).timestamp()
-    },
-    "04cfc704-acb2-40af-a8d3-4611fab54ada": {
-        'title': u'Bad Book',
-        'email': u'testuser2@test.com',
-        'timestamp': (datetime.today() - timedelta(2)).timestamp()
-    }
-}
+BOOK_REQUESTS = json_data
+
+#{   
+    # "8c36e86c-13b9-4102-a44f-646015dfd981": {
+    #    'title': u'Good Book',
+    #    'email': u'testuser1@test.com',
+    #    'timestamp': (datetime.today() - timedelta(1)).timestamp()
+    # },
+    # "04cfc704-acb2-40af-a8d3-4611fab54ada": {
+    #     'title': u'Cad Book',
+    #     'email': u'testuser2@test.com',
+    #     'timestamp': (datetime.today() - timedelta(2)).timestamp()
+    # },
+    # "01c3e86c-13b9-4102-a44f-646015dfd966": {
+    #     'title': u'Land Book',
+    #     'email': u'testuser3@maple.com',
+    #     'timestamp': (datetime.today() - timedelta(3)).timestamp()
+    # },
+    # "56d3e86c-13b9-4102-a44f-646015dfd946": {
+    #     'title': u'Sea Book',
+    #     'email': u'testuser4@maple.com',
+    #     'timestamp': (datetime.today() - timedelta(4)).timestamp()
+    # }
+
+#}
 
 
 @REQUEST_API.route('/request', methods=['GET'])
@@ -75,9 +93,15 @@ def create_record():
         'timestamp': datetime.now().timestamp()
     }
     BOOK_REQUESTS[new_uuid] = book_request
+    # save the new book to jason file, further jobs: need to rewrite the file under the formatal style for read it easily. -wayne W
+    # json_data = json.dumps(json_data)
+    fo = open("./routes/data1.json", "w")
+    # json.dump(str(jason_data),fo)
+    fo.write( str(json.dumps(json_data)) )
+    fo.close()
     # HTTP 201 Created
     return jsonify({"id": new_uuid}), 201
-
+    
 
 @REQUEST_API.route('/request/<string:_id>', methods=['PUT'])
 def edit_record(_id):
@@ -109,6 +133,11 @@ def edit_record(_id):
     }
 
     BOOK_REQUESTS[_id] = book_request
+    # save the new book to jason file, further jobs: need to rewrite the file under the formatal style for read it easily. -wayne W
+    fo = open("./routes/data1.json", "w")
+    # json.dump(str(jason_data),fo)
+    fo.write( str(json.dumps(json_data)) )
+    fo.close()
     return jsonify(BOOK_REQUESTS[_id]), 200
 
 
@@ -123,5 +152,9 @@ def delete_record(_id):
         abort(404)
 
     del BOOK_REQUESTS[_id]
-
+    # save the new book to jason file, further jobs: need to rewrite the file under the formatal style for read it easily. -wayne W
+    fo = open("./routes/data1.json", "w")
+    # json.dump(str(jason_data),fo)
+    fo.write( str(json.dumps(json_data)) )
+    fo.close()
     return '', 204
