@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.251"
+var g_ver_blClass = "CBlClass_v1.4.254"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -138,6 +138,7 @@ function CBlClass ()
 	var blAd = "Learning English v0.23";
 	var blTitle4Script = "No title";
 	var blScriptName = "noName";
+	var blRed = 0, blGreen=0, blBlue=0;
 	var _ps = [];
 	var _ts = [];
 
@@ -232,6 +233,21 @@ function CBlClass ()
 		this.blrFrames = function(b,d){
 			var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
 			var v = blo0.blDiv(d,d.id+"v","v",blGrey[1]);
+			var btnC1 = blo0.blBtn(tb,tb.id+"btnC1","btnC1","rgb(255,0,0)");
+			btnC1.onclick = function(){
+				v.style.backgroundColor = "rgb(255,0,0)";
+				blRed = 255; blGreen = 0; blBlue = 0;
+			}
+			var btnC2 = blo0.blBtn(tb,tb.id+"btnC2","btnC2","rgb(0,255,0)");
+			btnC2.onclick = function(){
+				v.style.backgroundColor = "rgb(0,255,0)";
+				blRed = 0; blGreen = 255; blBlue = 0;
+			}
+			var btnC3 = blo0.blBtn(tb,tb.id+"btnC3","btnC3","rgb(0,0,255)");
+			btnC3.onclick = function(){
+				v.style.backgroundColor = "rgb(0,0,255)";
+				blRed = 0; blGreen = 0; blBlue = 255;
+			}
 			var btnAddPS = blo0.blBtn(tb,tb.id+"btnAddPS","btnAddPS",blGrey[2]);
 			btnAddPS.onclick = function(){
 				var ps = blo0.blGetPS();
@@ -294,9 +310,8 @@ function CBlClass ()
 		this.bll2 = "-2-";
 		this.blrAddFrames = function(b,d){ 
 			for(var i = 0; i < _blVideo.duration; i++){
-				var n = _frames.length;
-				var B = 222;//n*50%255;
-				var f = new CFrame(n,"1","222,11," + B);
+				var n = _frames.length;				
+				var f = new CFrame(n,"1",blRed+ ","+blGreen+","+blBlue);
 				var t1 = {
 					"text": i + ": by Littleflute", 
 					"x": 100,
