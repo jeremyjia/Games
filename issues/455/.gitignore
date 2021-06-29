@@ -1,5 +1,11 @@
+*.jpg
+*.html
+*.json
+*.mp3
 *.mp4
+*.gif
 *.jar
 jpg2video.bat
+
 
 
