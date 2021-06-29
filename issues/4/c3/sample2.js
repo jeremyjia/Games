@@ -6,7 +6,7 @@ _btn.click();
 
 
 function CVoa2Video (){
-    var _v = "CVoa2Video_v0.141";
+    var _v = "CVoa2Video_v0.152";
 
     var fn = ["blrVLE","parseType","downloadPage","f4"];
     var fb = [];
@@ -247,21 +247,46 @@ function CVoa2Video (){
                 for(var i=0; i<ps.length;i++){
                     var btn = blo0.blBtn(d.tb,d.tb.id+i,i,blGrey[1]);
                     btn.onclick = function(_btn,_d,_ps,_i,_ls){
-                        return function(){                    
+                        return function(){              
+                            if(_ps[_i].t != undefined) {
+                                var btnFrame = bl$("FRAME_ID_"+_ps[_i].t);
+                                btnFrame.click();      
+                            }
                             var cn = _ps[_i].className?_ps[_i].className + "_ " : "xxxx_ ";
-                            var t = Math.floor(blo0.blGetCurTime());
-                            _ps[_i].t = t;
-                            var s1 = t;
+                            
+                            var s1 = _ps[_i].t;
                             s1 += " : " + cn;
                             s1 += _ps[_i].innerHTML;
-                            _d.v.innerHTML = s1 ; 
-                            for(i in _ls){
-                                if(_btn.id==_ls[i].id){
-                                    _btn.style.backgroundColor = "yellow";
-                                }
-                                else{
-                                    _ls[i].style.backgroundColor = "grey";
-                                }
+                            _d.v.innerHTML = "" ; 
+                            
+						    blo0.blMarkBtnInList(_btn,_ls,"yellow","grey"); 
+                            
+                            var pv = blo0.blDiv(_d.v,_d.v.id+"pv","pv",blGrey[3]);
+                            pv.innerHTML = s1;
+                            var ptb = blo0.blDiv(_d.v,_d.v.id+"ptb","ptb",blGrey[0]);
+                            var btnCur = blo0.blBtn(ptb,ptb.id+"btnCurl","cur",blGrey[1]);
+                            btnCur.onclick = function(){
+                                _ps[_i].t = Math.floor(blo0.blGetCurTime()); ;
+                                var s1 = _ps[_i].t;
+                                s1 += " : " + cn;
+                                s1 += _ps[_i].innerHTML; 
+                                pv.innerHTML = s1;
+                            }
+                            var btnPlus1 = blo0.blBtn(ptb,ptb.id+"btnPlus1","+1",blGrey[1]);
+                            btnPlus1.onclick = function(){
+                                _ps[_i].t += 1;
+                                var s1 = _ps[_i].t;
+                                s1 += " : " + cn;
+                                s1 += _ps[_i].innerHTML; 
+                                pv.innerHTML = s1;
+                            }
+                            var btnMinus1 = blo0.blBtn(ptb,ptb.id+"btnMinus1","-1",blGrey[1]);
+                            btnMinus1.onclick = function(){
+                                _ps[_i].t -= 1;
+                                var s1 = _ps[_i].t;
+                                s1 += " : " + cn;
+                                s1 += _ps[_i].innerHTML; 
+                                pv.innerHTML = s1;
                             }
                         }
                     }(btn,d,ps,i,ls);
