@@ -1,5 +1,5 @@
 //i4c3  
-var s= "v0.0. 131 "; 
+var s= "v0.0. 132 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c3.js'"
 s += " style='color:blue;'";		s +=">"; s += "c3.js* ";
 s += "<a target='_blank' href='issues/4/c3.js'"
@@ -47,7 +47,10 @@ if(!md.run){
     // 调用的全局接口函数 bl$,获取 id 为 “blrRunJS" 的 DOM对象（此处为按钮，点击此按钮）
     if(bl$("blrRunJS")){bl$("blrRunJS").click();} 
     // 调用的全局接口函数 bl$,获取 id 为 “blrRunJS" 的 DOM对象（此处为按钮，点击此按钮）
-    if(bl$("blrTest1")){bl$("blrTest1").click();bl$("blrTest1").click();} 
+    if(bl$("blrTest1")){
+		bl$("blrTest1").click();
+		//bl$("blrTest1").click();
+	} 
 }
 // 调用全局接口函数 _on_off_div，打开或关闭 DIV（此处为 md)
 _on_off_div(this,md);
@@ -61,10 +64,10 @@ function _myJobClass(){
 	
 	var pos = sss.search("issues");
 	if(pos!=-1){
-					lastPath = "c3/";
-				}
+		lastPath = "c3/";
+	}
 	else{
-					lastPath = "issues/4/c3/"
+		lastPath = "issues/4/c3/"
 	}
 
     this.bll0=  "<div id = 'id_div_4__myJobClass' title = 'title: _myJobClass'> [" + lastPath + "] _myJobClass: v0.0. 24</div>";
