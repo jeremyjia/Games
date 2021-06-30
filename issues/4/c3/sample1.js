@@ -13,6 +13,7 @@ function CSample1 (_id){
         s += "\n";
         s += "var os1 ={};\n";
         s += _addFun2Obj("os1","blrTest_getServerInfo",blrTest_getServerInfo);
+        s += _addFun2Obj("os1","bll0","'-0-'");
         s += _addFun2Obj("os1","bll1","'-1-'");
         s += _addFun2Obj("os1","blrTest_combine",blrTest_combine);
         s += _addFun2Obj("os1","bll2","'-2-'");
@@ -32,20 +33,37 @@ function CSample1 (_id){
     var blrTest_getServerInfo = function(b,d){
         if(!d.load){
             d.load = true;
-            var w = {};
-            w._2do = function(txt){ 
-                d.innerHTML = txt;
-                //*
-                var s = "var r =" + txt;
-                eval(s);
-                blo0.blShowObj2Div(d,r);   
-                //*/
+            d.tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
+            d.v = blo0.blDiv(d,d.id+"v","v",blGrey[1]);            
+            d.v.style.float = "left";
+
+            var btnServerHomePage = blo0.blBtn(d.tb,d.tb.id+"btnServerHomePage","btnServerHomePage",blGrey[1]);
+            btnServerHomePage.style.float = "right";
+            
+            var btnServerInfo = blo0.blBtn(d.tb,d.tb.id+"btnServerInfo","serverInfo",blGrey[1]);
+            btnServerInfo.style.float = "right";
+            
+
+            btnServerInfo.onclick = function(){
+                var w = {};
+                w._2do = function(txt){  
+                    var s = "var r =" + txt;
+                    eval(s);
+                    blo0.blShowObj2Div(d.v,r);    
+                }
+                blo0.blAjx(w,"http://localhost:8080/getServerInfo");                 
             }
-            blo0.blAjx(w,"http://localhost:8080/getServerInfo");
+            btnServerHomePage.onclick = function(){
+                var s = "<a target='_blank' href='http://localhost:8080/'>http://localhost:8080</a>"; 
+                d.v.innerHTML = s;                 
+            }
+
             _on_off_div(b,d);
+            b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];     
         }
         else{
             _on_off_div(b,d);
+            b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];     
         }
     }
     
@@ -85,6 +103,12 @@ function CSample1 (_id){
         var d = blo0.blMD(_uiName, _uiName,555,100,500,400, "lightgreen"); 
         d.v = blo0.blDiv(d,d.id+"v","v",blGrey[0]);
         blo0.blShowObj2Div(d.v,_o2show);        
+
+        var btn_blr1 = bl$("blrTest_getServerInfo");
+        btn_blr1.style.float = "left";
+        btn_blr1.click();
+
+        
         _on_off_div(null,d);
     };
 }
