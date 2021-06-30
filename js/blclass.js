@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.254"
+var g_ver_blClass = "CBlClass_v1.4.311"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -135,7 +135,7 @@ function CBlClass ()
     var _id = "id_div_4_blClass";
 	var _tmpDiv = null;
 	
-	var blAd = "Learning English v0.23";
+	var blAd = "Learning English v0.24";
 	var blTitle4Script = "No title";
 	var blScriptName = "noName";
 	var blRed = 0, blGreen=0, blBlue=0;
@@ -175,6 +175,41 @@ function CBlClass ()
 				_o.size = _size;
 				_o.color = _r + ","+_g+","+_b;
 				this.objects.push(_o);
+			};
+			this.add_Text_As_Obj_1 = function(_txt,_x,_y,_size,_r,_g,_b){
+				var s1 = _txt.split(" ");
+				var n = 0;
+				var line = "";
+				var lineNum = 0;
+				for(var i=0; i<s1.length; i++){
+					n++;
+					line += s1[i] + " ";
+					if(n>10){							
+						var _o = {};
+						_o.text = line;
+						_o.x = _x;
+						_o.y = _y + lineNum * _size	;
+						_o.size = _size;
+						_o.color = _r + ","+_g+","+_b;
+						this.objects.push(_o);
+						n = 0;
+						line = "";						
+						lineNum ++;	
+					}
+				}
+				
+				if(n>0){							
+					var _o = {};
+					_o.text = line;
+					_o.x = _x;
+					_o.y = _y + lineNum * _size	;
+					_o.size = _size;
+					_o.color = _r + ","+_g+","+_b;
+					this.objects.push(_o);
+					n = 0;
+					line = "";						
+					lineNum ++;	
+				}
 			};
 		};
 		var _bl2MakeScript = function(_os,_fs){		 
@@ -265,12 +300,12 @@ function CBlClass ()
 						}
 					}
 					if(false==find) s = ps.lastText;
-					f.addTextAsObj(s,100,333,50,255,255,1);
+					f.add_Text_As_Obj_1(s,100,333,50,255,255,1);
 				}
 			}
 			var ls = [];
 			for(i in _frames){
-				var btn = blo0.blBtn(tb,tb.id+i,i,blGrey[2]);
+				var btn = blo0.blBtn(tb,"FRAME_ID_" + i,i,blGrey[2]);
 				btn.onclick = function(_fs,_i,_ls,_btn){
 					return function(){
 						blo0.blMarkBtnInList(_btn,_ls,"green","grey");

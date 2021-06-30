@@ -1,11 +1,12 @@
 //i4c3  
-var s= "v0.0. 125 "; 
+var s= "v0.0. 131 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c3.js'"
 s += " style='color:blue;'";		s +=">"; s += "c3.js* ";
-s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c3.js'"
+s += "<a target='_blank' href='issues/4/c3.js'"
 s += " style='color:green;'";		s +=">"; s += "c3.js ";
-s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c3Test.html'"
+s += "<a target='_blank' href='issues/4/c3Test.html'"
 s += " style='color:brown;'";		s +=">"; s += "c3Test.html";
+s += "</a>";
 
 // blo0 是 blclass 库中的一个全局对象
 // 调用 blo0.blDiv 接口函数，创建 DIV。 
