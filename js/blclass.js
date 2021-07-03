@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.311"
+var g_ver_blClass = "CBlClass_v1.4.312"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -135,7 +135,7 @@ function CBlClass ()
     var _id = "id_div_4_blClass";
 	var _tmpDiv = null;
 	
-	var blAd = "Learning English v0.24";
+	var blAd = "Learning English v0.25";
 	var blTitle4Script = "No title";
 	var blScriptName = "noName";
 	var blRed = 0, blGreen=0, blBlue=0;
@@ -212,7 +212,7 @@ function CBlClass ()
 				}
 			};
 		};
-		var _bl2MakeScript = function(_os,_fs){		 
+		var _bl2MakeScript = function(_os,_fs,_supObjs){		 
 			var s = {};
 			var r = {};		
 			r.version = _os.version;
@@ -220,7 +220,8 @@ function CBlClass ()
 			r.height = _os.height;
 			r.music = _os.music;
 			r.rate = _os.rate; 
-			r.frames = _fs;			
+			r.frames = _fs;		
+			r.superObjects = _supObjs;	
 			s.request = r;			
 			return s;		 
 		}
@@ -243,9 +244,12 @@ function CBlClass ()
 			blo0.blAjx(b,url);
 		}		
 		_oScript.blrSaveScript = function(b,d){ 
+			var _sos = [];
+			
+			var pl = _bl2MakeScript(_oScript,_frames,_sos);
 			_oScript.music = _blVideo.src;
+
 			var url = "http://localhost:8080/json?fileName=" + blScriptName + ".json"; 
-			var pl = _bl2MakeScript(_oScript,_frames);
         	blo0.blPOST(url,pl,function(txt){
          		 d.innerHTML = txt;
         	});
