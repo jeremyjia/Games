@@ -225,7 +225,26 @@ function CBlClass ()
 			s.request = r;			
 			return s;		 
 		}
-		
+		var _sos = [];
+			var so1 ={
+                "type": "text",
+                "attribute": {
+                    "x1": 50,
+                    "y1": 500,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 50,
+                    "color": "200,182,193",
+                    "name": "漂泊者乐园是个好地方"
+                },
+                "frameRange": "(2,100)",
+                "action": {
+                    "trace": "y=0*x*x+1*x+0",
+                    "step": 10
+                }
+            };
+		_sos.push(so1);
+
 		var _oScript = {};
 		_oScript.version = "v0.0.42";
 		_oScript.width = 1920;
@@ -243,9 +262,8 @@ function CBlClass ()
 			b._2do = function(txt){d.innerHTML = txt};
 			blo0.blAjx(b,url);
 		}		
-		_oScript.blrSaveScript = function(b,d){ 
-			var _sos = [];
-			
+		_oScript.blrSaveScript = function(b,d){ 			
+
 			var pl = _bl2MakeScript(_oScript,_frames,_sos);
 			_oScript.music = _blVideo.src;
 
@@ -255,7 +273,7 @@ function CBlClass ()
         	});
 		}
 		_oScript.blrShowPlainScript = function(b,d){
-			var os = _bl2MakeScript(_oScript,_frames);
+			var os = _bl2MakeScript(_oScript,_frames,_sos);
 			var txt = JSON.stringify(os);
 			d.innerHTML = txt;
 			_on_off_div(b,d);
