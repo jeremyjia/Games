@@ -243,7 +243,42 @@ function CBlClass ()
                     "step": 10
                 }
             };
-		_sos.push(so1);
+		var so2 =  {
+			"type": "circle",
+			"attribute": {
+				"x1": 20,
+				"y1": 200,
+				"x2": 100,
+				"y2": 100,
+				"size": 0.0,
+				"color": "255,250,0",
+				"name": "circle3"
+			},
+			"frameRange": "(2,100)",
+			"action": {
+				"trace": "y=0*x*x+0*x+300",
+				"step": 10
+			}
+		};
+		var so3 = {};
+		so3.type = "circle";
+		so3.frameRange = "(2,100)";
+		var a = {};
+		a.x1 = 20;
+		a.y1 = 200;
+		a.x2 = 20;
+		a.y2 = 200;
+		a.size = 0.0;
+		a.color = "255,250,0";
+		a.name = "circle3";
+		so3.attribute = a;
+		var ac = {};
+		ac.trace = "y=0*x*x+0*x+300";
+		ac.step = 10;
+
+		so3.action = ac;
+		//_sos.push(so1);
+		_sos.push(so3);
 
 		var _oScript = {};
 		_oScript.version = "v0.0.42";
