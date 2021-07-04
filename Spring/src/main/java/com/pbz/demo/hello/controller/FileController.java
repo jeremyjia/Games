@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -98,6 +99,7 @@ public class FileController {
 	@ResponseBody
 	public String saveJson2File(@RequestParam("fileName") String fileName, @RequestBody String jsonString)
 			throws Exception {
+		jsonString = URLEncoder.encode(jsonString, "UTF-8");
 		jsonString = URLDecoder.decode(jsonString, "UTF-8");
 
 		String file = System.getProperty("user.dir") + "/" + fileName;
