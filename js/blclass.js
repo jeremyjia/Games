@@ -129,6 +129,7 @@ var blon = function(b,d,c1,c2){
 			r.y=event.clientY+scrlY; 
 			return r;
 	}
+	
 
 function CBlClass ()
 { 
@@ -273,7 +274,7 @@ function CBlClass ()
 		a.name = "circle3";
 		so3.attribute = a;
 		var ac = {};
-		ac.trace = "y=0*x*x+0*x+300";
+		ac.trace = "y=800";
 		ac.step = 10;
 
 		so3.action = ac;

@@ -1,6 +1,6 @@
 {
     "request": {
-        "version": "0.0.5",
+        "version": "0.0.11",
         "width": 1024,
         "height": 768,
         "music": "1.mp3",
@@ -161,11 +161,28 @@
                     "y2": 80,
                     "size": 50,
                     "color": "255,0,0",
-                    "name": "bb.gif"
+                    "name": "https://littleflute.github.io/cchess/play/images/br.gif"
                 },
-                "frameRange": "(50,100)",
+                "frameRange": "(1,100)",
                 "action": {
                     "trace": "y=0*x*x+0*x+600",
+                    "step": -10
+                }
+            },
+            {
+                "type": "picture",
+                "attribute": {
+                    "x1": 900,
+                    "y1": 500,
+                    "x2": 80,
+                    "y2": 80,
+                    "size": 50,
+                    "color": "255,0,250",
+                    "name": "bb.gif"
+                },
+                "frameRange": "(1,100)",
+                "action": {
+                    "trace": "y=900",
                     "step": -10
                 }
             }
