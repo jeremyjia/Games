@@ -1,6 +1,6 @@
 {
     "request": {
-        "version": "0.0.12",
+        "version": "0.0.13",
         "width": 1024,
         "height": 768,
         "music": "1.mp3",
@@ -144,11 +144,11 @@
                     "y2": -1,
                     "size": 50,
                     "color": "200,182,193",
-                    "name": "漂泊者乐园是个好地方"
+                    "name": "漂泊者乐园 test 0.11"
                 },
                 "frameRange": "(2,100)",
                 "action": {
-                    "trace": "y=0*x*x+1*x+0",
+                    "trace": "y=0*x*x+0*x+330",
                     "step": 10
                 }
             },
@@ -165,27 +165,10 @@
                 },
                 "frameRange": "(1,100)",
                 "action": {
-                    "trace": "y=0*x*x+0*x+600",
+                    "trace": "y=0*x*x+0*x+300",
                     "step": -10
                 }
-            },
-            {
-                "type": "picture",
-                "attribute": {
-                    "x1": 900,
-                    "y1": 500,
-                    "x2": 80,
-                    "y2": 80,
-                    "size": 50,
-                    "color": "255,0,250",
-                    "name": "bb.gif"
-                },
-                "frameRange": "(1,100)",
-                "action": {
-                    "trace": "y=0*x*x+0*x+900",
-                    "step": -10
-                }
-            }
+            } 
         ]
     }
 }
