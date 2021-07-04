@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.312"
+var g_ver_blClass = "CBlClass_v1.4.314"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -136,7 +136,7 @@ function CBlClass ()
     var _id = "id_div_4_blClass";
 	var _tmpDiv = null;
 	
-	var blAd = "Learning English v0.31";
+	var blAd = "Learning English v0.33";
 	var blTitle4Script = "No title";
 	var blScriptName = "noName";
 	var blRed = 0, blGreen=0, blBlue=0;
@@ -274,12 +274,33 @@ function CBlClass ()
 		a.name = "circle3";
 		so3.attribute = a;
 		var ac = {};
-		ac.trace = "y=800";
+		ac.trace = "y=0*x*x+0*x+300";
 		ac.step = 10;
 
+		var so4 = 
+		{
+			"type": "picture",
+			"attribute": {
+				"x1": 900,
+				"y1": 500,
+				"x2": 80,
+				"y2": 80,
+				"size": 50,
+				"color": "255,0,0",
+				"name": "https://littleflute.github.io/cchess/play/images/br.gif"
+			},
+			"frameRange": "(1,100)",
+			"action": {
+				"trace": "y=0*x*x+0*x+300",
+				"step": -10
+			}
+		};
+
 		so3.action = ac;
-		//_sos.push(so1);
-		//_sos.push(so3);
+		_sos.push(so1);
+		_sos.push(so2);
+		_sos.push(so3);
+		_sos.push(so4);
 
 		var _oScript = {};
 		_oScript.version = "v0.0.42";
