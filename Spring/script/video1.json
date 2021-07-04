@@ -1,6 +1,6 @@
 {
     "request": {
-        "version": "0.0.2",
+        "version": "0.0.11",
         "width": 1024,
         "height": 768,
         "music": "1.mp3",
@@ -200,7 +200,7 @@
                         "heigth":80
                     },
                     {
-                        "picture": "bb.gif",
+                        "picture": "https://gdb.voanews.com/6AD44B97-4251-4D10-B871-C134BBFB39FA_w256_r1.jpg",
                         "x": 300,
                         "y": 500,
                         "width":80,
