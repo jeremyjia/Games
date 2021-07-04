@@ -1,6 +1,6 @@
 {
     "request": {
-        "version": "0.0.11",
+        "version": "0.0.12",
         "width": 1024,
         "height": 768,
         "music": "1.mp3",
@@ -182,7 +182,7 @@
                 },
                 "frameRange": "(1,100)",
                 "action": {
-                    "trace": "y=900",
+                    "trace": "y=0*x*x+0*x+900",
                     "step": -10
                 }
             }
