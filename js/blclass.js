@@ -185,7 +185,7 @@ function CBlClass ()
 				for(var i=0; i<s1.length; i++){
 					n++;
 					line += s1[i] + " ";
-					if(n>10){							
+					if(n>8){							
 						var _o = {};
 						_o.text = line;
 						_o.x = _x;
@@ -279,7 +279,7 @@ function CBlClass ()
 
 		so3.action = ac;
 		//_sos.push(so1);
-		_sos.push(so3);
+		//_sos.push(so3);
 
 		var _oScript = {};
 		_oScript.version = "v0.0.42";
@@ -347,7 +347,7 @@ function CBlClass ()
 				ps.lastText = "";
 				for(i in _frames){
 					var f = _frames[i];
-					var s = "ps:" + f.number;
+					var s = "ps:" + f.number + "  ";
 					var find = false;
 					for(j in ps){
 						if(ps[j].t==f.number){
