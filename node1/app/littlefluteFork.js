@@ -1,5 +1,5 @@
  
 module.exports = function(){ 
-    return 'to test littlefluteForkApp: done._superObjects';
+    return 'to test littlefluteForkApp: done.';
   }
   
