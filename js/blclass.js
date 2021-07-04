@@ -136,7 +136,7 @@ function CBlClass ()
     var _id = "id_div_4_blClass";
 	var _tmpDiv = null;
 	
-	var blAd = "Learning English v0.25";
+	var blAd = "Learning English v0.31";
 	var blTitle4Script = "No title";
 	var blScriptName = "noName";
 	var blRed = 0, blGreen=0, blBlue=0;
