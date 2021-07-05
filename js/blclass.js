@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.333"
+var g_ver_blClass = "CBlClass_v1.4.335"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -191,16 +191,38 @@ function CBlClass ()
 		_blShowObj2Div(_v,_blScript);
 		
 		bl$("blrVersion").click();
+		bl$("blrWidth").click();
+		bl$("blrMakeFrames").click();
 		bl$("blrInfo").click();
 		bl$("blrFrames").click();		
 		bl$("blrTimer").click();
 	}
 
 	function CBlScript(){
-		var _v1 = 0, _v2 = 0, _v3 = 12, _w = 1920;
+		var _v1 = 0, _v2 = 0, _v3 = 42, _w = 1920;
 		this.setVersion = function(v1,v2,v3){ _v1 = v1; _v2 = v2; _v3 = v3;};
 		this.getVersion = function(){return "v"+_v1+"."+_v2+"."+_v3;}; 
 		this.getWidth = function(){return _w;};
+		this.getFrameNumber = function(){return _frames.length;};
+		this.blrAddFrames = function(){ 
+			_frames = [];
+			for(var i = 0; i < _blVideo.duration; i++){
+				var n = _frames.length;				
+				var f = new CFrame(n,"1",blRed+ ","+blGreen+","+blBlue);
+				var t1 = {
+					"text": i + ": by Littleflute", 
+					"x": 100,
+					"y": 955,
+					"size": 111,
+					"color": "80,151,255"
+				};
+				f.addObj(t1);
+				f.addTextAsObj(this.getVersion() + ": w=" + this.getWidth(),100,111,100,255,0,0);				
+				f.addTextAsObj(blTitle4Script,100,222,55,255,0,250);
+				f.addTextAsObj('"'+_ps.length+'"',500,222,55,55,220,250); 
+				_frames.push(f);
+			}
+		}
 
 		var _oScript = {};
 		_oScript.blhVersion = function(){return "xdTest..."};
@@ -224,7 +246,7 @@ function CBlClass ()
 		_oScript.blhWidth = function(){return 1920;};
 		_oScript.blrWidth = function(_thisOBlScript){
 			return function(b,d){
-				if(!d.loadVersion){d.loadVersion = true; 				b.style.color = "white"; 
+				if(!d.loadWidth){d.loadWidth = true; 				b.style.color = "white"; 
 					var tb = blo0.blDiv(d,d.id+"tb","width:",blGrey[0]);
 					var btnW= blo0.blBtn(tb,tb.id+"btnW",_thisOBlScript.getWidth(),"brown");btnW.style.color = "white";
 					var btnWPlus1 = blo0.blBtn(tb,tb.id+"btnWPlus1","+1",blGrey[1]);
@@ -242,6 +264,21 @@ function CBlClass ()
 		}(this);
 		_oScript.bll_blrWidth = "--blrWidth--";
  
+		
+		_oScript.blrMakeFrames = function(_thisOBlScript){
+			return function(b,d){
+				if(!d.loadFrames){d.loadFrames = true; 				b.style.color = "white"; 
+					var tb = blo0.blDiv(d,d.id+"tb","Frames:",blGrey[0]); 
+					var btnFrames= blo0.blBtn(tb,tb.id+"btnFrames",_thisOBlScript.getFrameNumber(),"brown");btnFrames.style.color = "white";
+					var btnFramesMakeFromMp3 = blo0.blBtn(tb,tb.id+"btnFramesMakeFromMp3","fromMP3",blGrey[1]);
+					btnFramesMakeFromMp3.onclick = function(){_thisOBlScript.blrAddFrames();	btnFrames.innerHTML = _thisOBlScript.getFrameNumber();	}
+				}
+				_on_off_div(b,d);
+				b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+			};
+		}(this);
+		_oScript.bll_blrMakeFrames = "--blrMakeFrames--";
+
 		_oScript.height = 1080;
 		_oScript.music = _blVideo.src;
 		_oScript.rate = "1";
@@ -505,27 +542,7 @@ function CBlClass ()
 			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 		};
 		this.bll2 = "-2-";
-		this.blrAddFrames = function(b,d){ 
-			_frames = [];
-			for(var i = 0; i < _blVideo.duration; i++){
-				var n = _frames.length;				
-				var f = new CFrame(n,"1",blRed+ ","+blGreen+","+blBlue);
-				var t1 = {
-					"text": i + ": by Littleflute", 
-					"x": 100,
-					"y": 955,
-					"size": 111,
-					"color": "80,151,255"
-				};
-				f.addObj(t1);
-				f.addTextAsObj("blAd...",100,111,100,255,0,0);				
-				f.addTextAsObj(blTitle4Script,100,222,55,255,0,250);
-				f.addTextAsObj('"'+_ps.length+'"',500,222,55,55,220,250); 
-				_frames.push(f);
-			}
-
-			bl$("blrFrames").click();bl$("blrFrames").click();
-		}
+		
 		this.blrTimer = function(b,d){
 			if(!d.bTimerRun){
 				d.bTimerRun = true;
