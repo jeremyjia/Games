@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.324"
+var g_ver_blClass = "CBlClass_v1.4.333"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -136,7 +136,7 @@ function CBlClass ()
     var _id = "id_div_4_blClass";
 	var _tmpDiv = null;
 	
-	var blAd = "Learning English v0.34";
+	var blAd = "Learning English v0.35";
 	var blTitle4Script = "No title";
 	var blScriptName = "noName";
 	var blRed = 0, blGreen=0, blBlue=0;
@@ -144,7 +144,7 @@ function CBlClass ()
 
 	function CTest(){
 		var _ot = {};
-		_ot.blr_test_blShowScript = function(b,d){
+		_ot.blr_test_edit_script = function(b,d){
 			if(!d.v){
 				d.v = blo0.blDiv(d,d.id+"v","v",blGrey[0]);
 				blo0.blShowScript(d.v);
@@ -152,12 +152,13 @@ function CBlClass ()
 			_on_off_div(b,d);
 			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 		}
-		_ot.bll1_blr_test_blShowScript = "-blr_test_blShowScript-";
+		_ot.bll1_blr_test_edit_script= "-blr_test_edit_script-";
 		_ot.out = "ouTest";
 		this.runAt = function(_v){
 			blo0.blParseText("abc",_ot);
 			blo0.blShowObj2Div(_v,_ot);
-			bl$("blr_test_blShowScript").click();
+			bl$("blr_test_edit_script").click();
+			bl$("blr_test_edit_script").click();
 		};
 	}
 	var _test = new CTest();
@@ -188,12 +189,64 @@ function CBlClass ()
 		now = now.toLocaleString();	 
 		_blScript.now = now;
 		_blShowObj2Div(_v,_blScript);
-		bl$("blrAbout").click();
+		
+		bl$("blrVersion").click();
+		bl$("blrInfo").click();
 		bl$("blrFrames").click();		
 		bl$("blrTimer").click();
 	}
 
 	function CBlScript(){
+		var _v1 = 0, _v2 = 0, _v3 = 12, _w = 1920;
+		this.setVersion = function(v1,v2,v3){ _v1 = v1; _v2 = v2; _v3 = v3;};
+		this.getVersion = function(){return "v"+_v1+"."+_v2+"."+_v3;}; 
+		this.getWidth = function(){return _w;};
+
+		var _oScript = {};
+		_oScript.blhVersion = function(){return "xdTest..."};
+		_oScript.blrVersion = function(_thisOBlScript){
+			return function(b,d){
+				if(!d.loadVersion){d.loadVersion = true; 				b.style.color = "white"; 
+					var tb = blo0.blDiv(d,d.id+"tb","version:",blGrey[0]);
+					var btnV = blo0.blBtn(tb,tb.id+"btnV",_thisOBlScript.getVersion(),"brown");btnV.style.color = "white";
+					var btnV3Plus1 = blo0.blBtn(tb,tb.id+"btnV3Plus1","+1",blGrey[1]);
+					btnV3Plus1.onclick = function(){	_v3++;	btnV.innerHTML = _thisOBlScript.getVersion();					}
+					var btnV3Minus1 = blo0.blBtn(tb,tb.id+"btnV3Minus1","-1",blGrey[1]);
+					btnV3Minus1.onclick = function(){	_v3--;	btnV.innerHTML = _thisOBlScript.getVersion();					}
+				}
+				_on_off_div(b,d);
+				b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+			};
+		}(this);
+		_oScript.bll_blrVersion = "--blrVersion--";
+
+		
+		_oScript.blhWidth = function(){return 1920;};
+		_oScript.blrWidth = function(_thisOBlScript){
+			return function(b,d){
+				if(!d.loadVersion){d.loadVersion = true; 				b.style.color = "white"; 
+					var tb = blo0.blDiv(d,d.id+"tb","width:",blGrey[0]);
+					var btnW= blo0.blBtn(tb,tb.id+"btnW",_thisOBlScript.getWidth(),"brown");btnW.style.color = "white";
+					var btnWPlus1 = blo0.blBtn(tb,tb.id+"btnWPlus1","+1",blGrey[1]);
+					btnWPlus1.onclick = function(){	_w++;	btnW.innerHTML = _thisOBlScript.getWidth();					}
+					var btnWMinus1 = blo0.blBtn(tb,tb.id+"btnWMinus1","-1",blGrey[1]);
+					btnWMinus1.onclick = function(){	_w--;	btnW.innerHTML = _thisOBlScript.getWidth();					}
+					var btnWPlus10 = blo0.blBtn(tb,tb.id+"btnWPlus10","+10",blGrey[1]);
+					btnWPlus10.onclick = function(){	_w+=10;	btnW.innerHTML = _thisOBlScript.getWidth();					}
+					var btnWMinus10 = blo0.blBtn(tb,tb.id+"btnWMinus10","-10",blGrey[1]);
+					btnWMinus10.onclick = function(){	_w-=10;	btnW.innerHTML = _thisOBlScript.getWidth();					}
+				}
+				_on_off_div(b,d);
+				b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+			};
+		}(this);
+		_oScript.bll_blrWidth = "--blrWidth--";
+ 
+		_oScript.height = 1080;
+		_oScript.music = _blVideo.src;
+		_oScript.rate = "1";
+
+
 		function CFrame(_number,_time,_backgroundColor){
 			this.number = _number;
 			this.time = _time;
@@ -252,9 +305,9 @@ function CBlClass ()
 		var _bl2MakeScript = function(_os,_fs,_supObjs){		 
 			var s = {};
 			var r = {};		
-			r.version = _os.version;
-			r.width = _os.width;
-			r.height = _os.height;
+			r.version 	= _os.blhVersion();
+			r.width 	= _os.blhWidth();
+			r.height 	= _os.height;
 			r.music = _os.music;
 			r.rate = _os.rate; 
 			r.frames = _fs;		
@@ -307,7 +360,7 @@ function CBlClass ()
 		a.y2 = 888;
 		a.size = 0.0;
 		a.color = "111,222,50";
-		a.name = "so3: by littleflute";
+		a.name = "so3: by littleflute " + "<!DOCTYPE html>";
 		so3.attribute = a;
 		var ac = {};
 		ac.trace = "y=0*x*x+0*x+555";
@@ -338,12 +391,6 @@ function CBlClass ()
 		_sos.push(so3);
 		_sos.push(so4);
 
-		var _oScript = {};
-		_oScript.version = "v0.0.42";
-		_oScript.width = 1920;
-		_oScript.height = 1080;
-		_oScript.music = _blVideo.src;
-		_oScript.rate = "1";
 		_oScript.blrPlay = function(b,d){
 			_blVideo.play();
 		}
@@ -374,7 +421,7 @@ function CBlClass ()
 		}
 		
 		var _frames = [];
-		this.blrAbout = function(b,d){
+		this.blrInfo = function(b,d){
 			_blShowObj2Div(d,_oScript);
 			_on_off_div(b,d);
 			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
@@ -471,7 +518,7 @@ function CBlClass ()
 					"color": "80,151,255"
 				};
 				f.addObj(t1);
-				f.addTextAsObj(blAd,100,111,100,255,0,0);				
+				f.addTextAsObj("blAd...",100,111,100,255,0,0);				
 				f.addTextAsObj(blTitle4Script,100,222,55,255,0,250);
 				f.addTextAsObj('"'+_ps.length+'"',500,222,55,55,220,250); 
 				_frames.push(f);
@@ -498,6 +545,8 @@ function CBlClass ()
 			_on_off_div(b,d);
 			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];			
 		}
+
+		return _oScript;
 	};
 	var _blScript = new CBlScript();
 
@@ -538,7 +587,7 @@ function CBlClass ()
 				"time": Math.floor(_blVideo.duration), 
 				"objects": [  					
                     {
-                        "text": blAd, 
+                        "text": "blAd 2", 
                         "x": 100,
                         "y": 50,
                         "size": 50,
@@ -926,12 +975,12 @@ function CBlClass ()
 				}(i,b,d);
 			  }
 			  if(i.charAt(0)=="b"&&i.charAt(1)=="l"&&i.charAt(2)=="l"){ 
-					b.style.display = "none";	//v1033	 xdvc6
+					b.style.display = "none";	 
 					d.id			= d.html;	 
 			  }
 			  if(i.charAt(0)=="b"&&i.charAt(1)=="l"&&i.charAt(2)=="h"){ 
-					b.style.display = "none";	//v1034	 xdvc6	
-					d.style.display = "none";	//v1034	 xdvc6	
+					b.style.display = "none";	 
+					d.style.display = "none";	 
 			  }
 		}
     }    
