@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.314"
+var g_ver_blClass = "CBlClass_v1.4.324"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -136,28 +136,63 @@ function CBlClass ()
     var _id = "id_div_4_blClass";
 	var _tmpDiv = null;
 	
-	var blAd = "Learning English v0.33";
+	var blAd = "Learning English v0.34";
 	var blTitle4Script = "No title";
 	var blScriptName = "noName";
 	var blRed = 0, blGreen=0, blBlue=0;
-	var _ps = [];
-	var _ts = [];
+	var _ps = []; 
 
-	var _tmp = {
-		in: "inTest",
-		out: "outTest"
-	};
-	this.v = g_ver_blClass;
+	function CTest(){
+		var _ot = {};
+		_ot.blr_test_blShowScript = function(b,d){
+			if(!d.v){
+				d.v = blo0.blDiv(d,d.id+"v","v",blGrey[0]);
+				blo0.blShowScript(d.v);
+			}
+			_on_off_div(b,d);
+			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+		}
+		_ot.bll1_blr_test_blShowScript = "-blr_test_blShowScript-";
+		_ot.out = "ouTest";
+		this.runAt = function(_v){
+			blo0.blParseText("abc",_ot);
+			blo0.blShowObj2Div(_v,_ot);
+			bl$("blr_test_blShowScript").click();
+		};
+	}
+	var _test = new CTest();
+	
 	var _blVideo = document.createElement("VIDEO");
 	_blVideo.id = "id_blVideo";
 	if (_blVideo.canPlayType("video/mp4")) {
-		_blVideo.setAttribute("src","https://av.voanews.com/clips/VLE/2021/05/21/7dd0e442-fb6b-4bc7-b76b-158ad803f866.mp3");
+		_blVideo.setAttribute("src","https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3");
 	}
 	_blVideo.setAttribute("width", "1");
 	_blVideo.setAttribute("height", "1"); 
 	document.body.appendChild(_blVideo);
 
-	
+	this.v = g_ver_blClass;
+	this.blrAboutMe= function(b,d){		
+		var s = ""; 
+		s += _blhMakeLink('blclass.js ','https://littleflute.github.io/Games/blclass.js','color:skyblue;','_blank');
+		s += _blhMakeLink(' blclass.js*','https://github.com/littleflute/Games/edit/master/blclass.js','color:skyblue;','_blank');
+		s += _blhMakeLink(' blog','https://github.com/littleflute/blog','color:yellow;','_blank');
+		d.innerHTML = s;
+		_on_off_div(b,d);
+		b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+	}
+	this.bllAboutMe = "--aboutMe--";
+
+	this.blShowScript = function(_v){
+		var now = new Date();
+		now = now.toLocaleString();	 
+		_blScript.now = now;
+		_blShowObj2Div(_v,_blScript);
+		bl$("blrAbout").click();
+		bl$("blrFrames").click();		
+		bl$("blrTimer").click();
+	}
+
 	function CBlScript(){
 		function CFrame(_number,_time,_backgroundColor){
 			this.number = _number;
@@ -178,7 +213,8 @@ function CBlClass ()
 				this.objects.push(_o);
 			};
 			this.add_Text_As_Obj_1 = function(_txt,_x,_y,_size,_r,_g,_b){
-				var s1 = _txt.split(" ");
+				var s0 = _txt.replace("<br>","");
+				var s1 = s0.split(" ");
 				var n = 0;
 				var line = "";
 				var lineNum = 0;
@@ -236,7 +272,7 @@ function CBlClass ()
                     "y2": -1,
                     "size": 50,
                     "color": "200,182,193",
-                    "name": "漂泊者乐园是个好地方"
+                    "name": "漂泊者乐园: 英语慢速听力！"
                 },
                 "frameRange": "(2,100)",
                 "action": {
@@ -253,7 +289,7 @@ function CBlClass ()
 				"y2": 100,
 				"size": 0.0,
 				"color": "255,250,0",
-				"name": "circle3"
+				"name": "by Littleflute"
 			},
 			"frameRange": "(2,100)",
 			"action": {
@@ -266,15 +302,15 @@ function CBlClass ()
 		so3.frameRange = "(2,100)";
 		var a = {};
 		a.x1 = 20;
-		a.y1 = 200;
+		a.y1 = 555;
 		a.x2 = 20;
-		a.y2 = 200;
+		a.y2 = 888;
 		a.size = 0.0;
-		a.color = "255,250,0";
-		a.name = "circle3";
+		a.color = "111,222,50";
+		a.name = "so3: by littleflute";
 		so3.attribute = a;
 		var ac = {};
-		ac.trace = "y=0*x*x+0*x+300";
+		ac.trace = "y=0*x*x+0*x+555";
 		ac.step = 10;
 
 		var so4 = 
@@ -287,7 +323,7 @@ function CBlClass ()
 				"y2": 80,
 				"size": 50,
 				"color": "255,0,0",
-				"name": "https://littleflute.github.io/cchess/play/images/br.gif"
+				"name": "https://gdb.voanews.com/47E37481-CAD6-4AEF-9AD4-74FC8B936E46_w256_r1.jpg"
 			},
 			"frameRange": "(1,100)",
 			"action": {
@@ -423,15 +459,16 @@ function CBlClass ()
 		};
 		this.bll2 = "-2-";
 		this.blrAddFrames = function(b,d){ 
+			_frames = [];
 			for(var i = 0; i < _blVideo.duration; i++){
 				var n = _frames.length;				
 				var f = new CFrame(n,"1",blRed+ ","+blGreen+","+blBlue);
 				var t1 = {
 					"text": i + ": by Littleflute", 
 					"x": 100,
-					"y": 555,
+					"y": 955,
 					"size": 111,
-					"color": "0,1,255"
+					"color": "80,151,255"
 				};
 				f.addObj(t1);
 				f.addTextAsObj(blAd,100,111,100,255,0,0);				
@@ -484,15 +521,7 @@ function CBlClass ()
 		var rs = _tmpDiv.getElementsByTagName(tagName);
 		return rs;
 	} 
-	this.blShowScript = function(_v){
-		var now = new Date();
-		now = now.toLocaleString();	 
-		_blScript.now = now;
-		_blShowObj2Div(_v,_blScript);
-		bl$("blrAbout").click();
-		bl$("blrFrames").click();		
-		bl$("blrTimer").click();
-	}
+	
 	this.blMakeScript = function(){		
 		var now = new Date();
 		now = now.toLocaleString();
@@ -550,10 +579,8 @@ function CBlClass ()
 				"backgroundColor": "1,100,222"
 			}
 		];
-		r.frames = fs;
-		
-		d.request = r;
-		
+		r.frames = fs;		
+		d.request = r;		
 		return d;		 
 	}
 	this.blSetPS = function(ps){		_ps = ps;	}
@@ -583,15 +610,7 @@ function CBlClass ()
 		_blVideo.play();
 	}
 
-	this.blrAboutMe= function(b,d){		
-		var s = ""; 
-		s += _blhMakeLink('blclass.js ','https://littleflute.github.io/Games/blclass.js','color:skyblue;','_blank');
-		s += _blhMakeLink(' blclass.js*','https://github.com/littleflute/Games/edit/master/blclass.js','color:skyblue;','_blank');
-		s += _blhMakeLink(' blog','https://github.com/littleflute/blog','color:yellow;','_blank');
-		d.innerHTML = s;
-		_on_off_div(b,d);
-		b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
-	}
+	
 	this.blhInitUI		= function(divUI){	
 		var divMove		= blo0.blMDiv(document.body,_id,"divShowMe_divMove_blClass",550,150,500,200,blColor[8]);
 		var dMe			= blo0.blDiv(divMove,divMove.id + "ShowMe","divShowMe",blColor[6]);
@@ -612,8 +631,9 @@ function CBlClass ()
 		}		
 	}
 	
-	this.blParseText = function(_txt,_oCfg){  
-		_oCfg.parse = "parseTest"; 
+	this.blParseText = function(_2ParseTxt,_oCfg){  
+		_oCfg.toParseTxt = _2ParseTxt; 
+		_oCfg.resTxt = "_resTxt";
 	}
 	
 	this.showMe = function(myHandle){ 
@@ -630,17 +650,18 @@ function CBlClass ()
 			var btnParseMe			= blo0.blBtn(tb,tb.id+"btnParseMe","[blo0]",blGrey[0]);
 			btnParseMe.onclick		= function(_this,_v){
 					return function(){
-						 	blo0.blShowObj2Div(_v,blo0);blon(_this,_v,"grey","green");
+						blo0.blShowObj2Div(_v,blo0);blon(_this,_v,"grey","green");
+						bl$("blrAboutMe").click();						
 					}
 			}(btnParseMe,div4Parse);
-			var btnParseTmp			= blo0.blBtn(tb,tb.id+"btnParseTmp","[tmp]",blGrey[0]);
-			btnParseTmp.onclick		= function(_this,_v){
-					return function(){ 
-						_v.innerHTML = _this.id;
-						blo0.blParseText("abc",_tmp);
-						blo0.blShowObj2Div(_v,_tmp);blon(_this,_v,"grey","green");
-					}
-			}(btnParseTmp,div4Parse);
+			var btnTest			= blo0.blBtn(tb,tb.id+"btnTest","[test]",blGrey[0]);
+			btnTest.onclick		= function(_this,_v){
+				return function(){ 
+						_v.innerHTML = _this.id;						
+						_test.runAt(_v);
+						blon(_this,_v,"grey","green");
+				}
+			}(btnTest,div4Parse);
 			
 		}
 		if(myHandle.n>1){			blon(myHandle,myHandle.m,"grey","green");		}		myHandle.n++;
