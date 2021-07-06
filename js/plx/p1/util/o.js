@@ -12,7 +12,7 @@ function CP1Util (){
     this.status = function(me){   
         var d = bl$("id_4_vStatus");
         d.innerHTML = o.getV() + " : " + blo0.blTime(0);
-        var md = blo0.blMDiv(d,d.id+"md","o._status "+me.id+":"+me.style.backgroundColor,13,555,555,100,"lightgreen"); 
+        var md = blo0.blMDiv(d,d.id+"md","o._status "+_v+":"+me.style.backgroundColor,222,11,555,100,"lightgreen"); 
         var vs = blo0.blDiv(md,md.id+"vs","",blGrey[1]);
         var v1 = blo0.blDiv(md,md.id+"v1","v1",blGrey[1]);
         var n = 0; 

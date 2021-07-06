@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.245"
+var g_ver_blClass = "CBlClass_v1.4.312"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -135,9 +135,10 @@ function CBlClass ()
     var _id = "id_div_4_blClass";
 	var _tmpDiv = null;
 	
-	var blAd = "Learning English v0.23";
+	var blAd = "Learning English v0.25";
 	var blTitle4Script = "No title";
 	var blScriptName = "noName";
+	var blRed = 0, blGreen=0, blBlue=0;
 	var _ps = [];
 	var _ts = [];
 
@@ -175,8 +176,43 @@ function CBlClass ()
 				_o.color = _r + ","+_g+","+_b;
 				this.objects.push(_o);
 			};
+			this.add_Text_As_Obj_1 = function(_txt,_x,_y,_size,_r,_g,_b){
+				var s1 = _txt.split(" ");
+				var n = 0;
+				var line = "";
+				var lineNum = 0;
+				for(var i=0; i<s1.length; i++){
+					n++;
+					line += s1[i] + " ";
+					if(n>10){							
+						var _o = {};
+						_o.text = line;
+						_o.x = _x;
+						_o.y = _y + lineNum * _size	;
+						_o.size = _size;
+						_o.color = _r + ","+_g+","+_b;
+						this.objects.push(_o);
+						n = 0;
+						line = "";						
+						lineNum ++;	
+					}
+				}
+				
+				if(n>0){							
+					var _o = {};
+					_o.text = line;
+					_o.x = _x;
+					_o.y = _y + lineNum * _size	;
+					_o.size = _size;
+					_o.color = _r + ","+_g+","+_b;
+					this.objects.push(_o);
+					n = 0;
+					line = "";						
+					lineNum ++;	
+				}
+			};
 		};
-		var _bl2MakeScript = function(_os,_fs){		 
+		var _bl2MakeScript = function(_os,_fs,_supObjs){		 
 			var s = {};
 			var r = {};		
 			r.version = _os.version;
@@ -184,11 +220,66 @@ function CBlClass ()
 			r.height = _os.height;
 			r.music = _os.music;
 			r.rate = _os.rate; 
-			r.frames = _fs;			
+			r.frames = _fs;		
+			r.superObjects = _supObjs;	
 			s.request = r;			
 			return s;		 
 		}
-		
+		var _sos = [];
+			var so1 ={
+                "type": "text",
+                "attribute": {
+                    "x1": 50,
+                    "y1": 500,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 50,
+                    "color": "200,182,193",
+                    "name": "漂泊者乐园是个好地方"
+                },
+                "frameRange": "(2,100)",
+                "action": {
+                    "trace": "y=0*x*x+1*x+0",
+                    "step": 10
+                }
+            };
+		var so2 =  {
+			"type": "circle",
+			"attribute": {
+				"x1": 20,
+				"y1": 200,
+				"x2": 100,
+				"y2": 100,
+				"size": 0.0,
+				"color": "255,250,0",
+				"name": "circle3"
+			},
+			"frameRange": "(2,100)",
+			"action": {
+				"trace": "y=0*x*x+0*x+300",
+				"step": 10
+			}
+		};
+		var so3 = {};
+		so3.type = "circle";
+		so3.frameRange = "(2,100)";
+		var a = {};
+		a.x1 = 20;
+		a.y1 = 200;
+		a.x2 = 20;
+		a.y2 = 200;
+		a.size = 0.0;
+		a.color = "255,250,0";
+		a.name = "circle3";
+		so3.attribute = a;
+		var ac = {};
+		ac.trace = "y=0*x*x+0*x+300";
+		ac.step = 10;
+
+		so3.action = ac;
+		//_sos.push(so1);
+		_sos.push(so3);
+
 		var _oScript = {};
 		_oScript.version = "v0.0.42";
 		_oScript.width = 1920;
@@ -206,16 +297,18 @@ function CBlClass ()
 			b._2do = function(txt){d.innerHTML = txt};
 			blo0.blAjx(b,url);
 		}		
-		_oScript.blrSaveScript = function(b,d){ 
+		_oScript.blrSaveScript = function(b,d){ 			
+
+			var pl = _bl2MakeScript(_oScript,_frames,_sos);
 			_oScript.music = _blVideo.src;
+
 			var url = "http://localhost:8080/json?fileName=" + blScriptName + ".json"; 
-			var pl = _bl2MakeScript(_oScript,_frames);
         	blo0.blPOST(url,pl,function(txt){
          		 d.innerHTML = txt;
         	});
 		}
 		_oScript.blrShowPlainScript = function(b,d){
-			var os = _bl2MakeScript(_oScript,_frames);
+			var os = _bl2MakeScript(_oScript,_frames,_sos);
 			var txt = JSON.stringify(os);
 			d.innerHTML = txt;
 			_on_off_div(b,d);
@@ -232,6 +325,21 @@ function CBlClass ()
 		this.blrFrames = function(b,d){
 			var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
 			var v = blo0.blDiv(d,d.id+"v","v",blGrey[1]);
+			var btnC1 = blo0.blBtn(tb,tb.id+"btnC1","btnC1","rgb(255,0,0)");
+			btnC1.onclick = function(){
+				v.style.backgroundColor = "rgb(255,0,0)";
+				blRed = 255; blGreen = 0; blBlue = 0;
+			}
+			var btnC2 = blo0.blBtn(tb,tb.id+"btnC2","btnC2","rgb(0,255,0)");
+			btnC2.onclick = function(){
+				v.style.backgroundColor = "rgb(0,255,0)";
+				blRed = 0; blGreen = 255; blBlue = 0;
+			}
+			var btnC3 = blo0.blBtn(tb,tb.id+"btnC3","btnC3","rgb(0,0,255)");
+			btnC3.onclick = function(){
+				v.style.backgroundColor = "rgb(0,0,255)";
+				blRed = 0; blGreen = 0; blBlue = 255;
+			}
 			var btnAddPS = blo0.blBtn(tb,tb.id+"btnAddPS","btnAddPS",blGrey[2]);
 			btnAddPS.onclick = function(){
 				var ps = blo0.blGetPS();
@@ -249,12 +357,12 @@ function CBlClass ()
 						}
 					}
 					if(false==find) s = ps.lastText;
-					f.addTextAsObj(s,100,333,50,255,255,1);
+					f.add_Text_As_Obj_1(s,100,333,50,255,255,1);
 				}
 			}
 			var ls = [];
 			for(i in _frames){
-				var btn = blo0.blBtn(tb,tb.id+i,i,blGrey[2]);
+				var btn = blo0.blBtn(tb,"FRAME_ID_" + i,i,blGrey[2]);
 				btn.onclick = function(_fs,_i,_ls,_btn){
 					return function(){
 						blo0.blMarkBtnInList(_btn,_ls,"green","grey");
@@ -294,9 +402,8 @@ function CBlClass ()
 		this.bll2 = "-2-";
 		this.blrAddFrames = function(b,d){ 
 			for(var i = 0; i < _blVideo.duration; i++){
-				var n = _frames.length;
-				var B = 222;//n*50%255;
-				var f = new CFrame(n,"1","111,222," + B);
+				var n = _frames.length;				
+				var f = new CFrame(n,"1",blRed+ ","+blGreen+","+blBlue);
 				var t1 = {
 					"text": i + ": by Littleflute", 
 					"x": 100,
