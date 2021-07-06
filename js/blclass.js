@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.335"
+var g_ver_blClass = "CBlClass_v1.4.342"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -142,6 +142,7 @@ function CBlClass ()
 	var blRed = 0, blGreen=0, blBlue=0;
 	var _ps = []; 
 
+
 	function CTest(){
 		var _ot = {};
 		_ot.blr_test_edit_script = function(b,d){
@@ -204,7 +205,7 @@ function CBlClass ()
 		this.getVersion = function(){return "v"+_v1+"."+_v2+"."+_v3;}; 
 		this.getWidth = function(){return _w;};
 		this.getFrameNumber = function(){return _frames.length;};
-		this.blrAddFrames = function(){ 
+		this.blrAddFrames = function(_div){ 
 			_frames = [];
 			for(var i = 0; i < _blVideo.duration; i++){
 				var n = _frames.length;				
@@ -221,6 +222,63 @@ function CBlClass ()
 				f.addTextAsObj(blTitle4Script,100,222,55,255,0,250);
 				f.addTextAsObj('"'+_ps.length+'"',500,222,55,55,220,250); 
 				_frames.push(f);
+
+ 
+			}
+			_div.innerHTML = "FrameBtns";
+			var v = blo0.blDiv(_div,_div.id+"v","v","lightgreen");
+			var ls = [];
+			for(i in _frames){
+				var btn = blo0.blBtn(_div,"FRAME_ID_" + i,i,blGrey[2]);
+				btn.onclick = function(_fs,_i,_ls,_btn){
+					return function(){
+						blo0.blMarkBtnInList(_btn,_ls,"green","grey");
+						_blVideo.currentTime = _fs[_i].number;
+
+						v.innerHTML = _fs[_i].number;
+						v.tb = blo0.blDiv(v,v.id+"tb","tb",blGrey[0]);
+						v.v = blo0.blDiv(v,v.id+"v","v",blGrey[2]);
+						var btnObjs = blo0.blBtn(v.tb,v.tb.id+"btnObjs","btnObjs",blGrey[1]);
+						btnObjs.onclick = function(){ 
+							v.v.innerHTML = "";
+							var otb = blo0.blDiv(v.v,v.v.id+"otb","otb",blGrey[0]);
+							var ov = blo0.blDiv(v.v,v.v.id+"ov","ov",blGrey[1]);
+							var fos = _fs[_i].objects;
+							var lsobtn = [];
+							for(i in fos){
+								var obtn = blo0.blBtn(otb,otb.id+i,i,blGrey[1]);
+								obtn.onclick = function(_fos,_i,_obtn){
+									return function(){
+										blo0.blMarkBtnInList(_obtn,lsobtn,"green","grey");
+										_blShowObj2Div(ov,_fos[_i]);
+									}
+								}(fos,i,obtn);
+								lsobtn.push(obtn);
+							}
+						}
+						btnObjs.click();
+					}
+				}(_frames,i,ls,btn);
+				ls.push(btn);
+			}
+		}
+		this.blrUpdateFramesTxt = function(){
+			var ps = blo0.blGetPS();
+			ps.lastText = "";
+			for(i in _frames){
+					var f = _frames[i];
+					var s = "ps:" + f.number + "  ";
+					var find = false;
+					for(j in ps){
+						if(ps[j].t==f.number){
+							s += ps[j].innerHTML;	
+							ps.lastText = s;
+							find = true;						
+							break;
+						}
+					}
+					if(false==find) s = ps.lastText;
+					f.add_Text_As_Obj_1(s,100,333,50,255,255,1);
 			}
 		}
 
@@ -269,9 +327,12 @@ function CBlClass ()
 			return function(b,d){
 				if(!d.loadFrames){d.loadFrames = true; 				b.style.color = "white"; 
 					var tb = blo0.blDiv(d,d.id+"tb","Frames:",blGrey[0]); 
+					d.v = blo0.blDiv(d,d.id+"v","v:","lightblue"); 
 					var btnFrames= blo0.blBtn(tb,tb.id+"btnFrames",_thisOBlScript.getFrameNumber(),"brown");btnFrames.style.color = "white";
 					var btnFramesMakeFromMp3 = blo0.blBtn(tb,tb.id+"btnFramesMakeFromMp3","fromMP3",blGrey[1]);
-					btnFramesMakeFromMp3.onclick = function(){_thisOBlScript.blrAddFrames();	btnFrames.innerHTML = _thisOBlScript.getFrameNumber();	}
+					btnFramesMakeFromMp3.onclick = function(){_thisOBlScript.blrAddFrames(d.v);	btnFrames.innerHTML = _thisOBlScript.getFrameNumber();	}
+					var btnFramesUpdateTxt = blo0.blBtn(tb,tb.id+"btnFramesUpdateTxt","updateTxt",blGrey[1]);
+					btnFramesUpdateTxt.onclick = function(){_thisOBlScript.blrUpdateFramesTxt();	}
 				}
 				_on_off_div(b,d);
 				b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
@@ -481,27 +542,7 @@ function CBlClass ()
 			btnC3.onclick = function(){
 				v.style.backgroundColor = "rgb(0,0,255)";
 				blRed = 0; blGreen = 0; blBlue = 255;
-			}
-			var btnAddPS = blo0.blBtn(tb,tb.id+"btnAddPS","btnAddPS",blGrey[2]);
-			btnAddPS.onclick = function(){
-				var ps = blo0.blGetPS();
-				ps.lastText = "";
-				for(i in _frames){
-					var f = _frames[i];
-					var s = "ps:" + f.number + "  ";
-					var find = false;
-					for(j in ps){
-						if(ps[j].t==f.number){
-							s += ps[j].innerHTML;	
-							ps.lastText = s;
-							find = true;						
-							break;
-						}
-					}
-					if(false==find) s = ps.lastText;
-					f.add_Text_As_Obj_1(s,100,333,50,255,255,1);
-				}
-			}
+			} 
 			var ls = [];
 			for(i in _frames){
 				var btn = blo0.blBtn(tb,"FRAME_ID_" + i,i,blGrey[2]);
@@ -1422,8 +1463,21 @@ function CBlClass ()
 				break;
 		}
 	}
-	
-	
+	this.blPOST = function(_url,_jsonData,_cb){  
+		var xhr = new XMLHttpRequest();
+		xhr.withCredentials = true;
+		xhr.addEventListener("readystatechange", function() {
+			if(this.readyState === 4 && this.status==200) {
+				_cb( this.responseText );
+			}	
+			else{
+				_cb("error: " + this.readyState + "," + this.status);
+			}
+		});
+		xhr.open("POST", _url);
+		xhr.setRequestHeader("Content-Type", "text/plain");
+		xhr.send(JSON.stringify(_jsonData));
+	}	
 }//END: function CBlClass ()
  
 var blo0 = new CBlClass;
@@ -1792,21 +1846,7 @@ blo0.blParseURL = function(_url,cb){
 		}			 
 	 } 
 }
-blo0.blPOST = function(_url,_jsonData,_cb){  
-	var xhr = new XMLHttpRequest();
-	xhr.withCredentials = true;
-	xhr.addEventListener("readystatechange", function() {
-		if(this.readyState === 4 && this.status==200) {
-			_cb( this.responseText );
-		}	
-		else{
-			_cb("error: " + this.readyState + "," + this.status);
-		}
-	});
-	xhr.open("POST", _url);
-	xhr.setRequestHeader("Content-Type", "text/plain");
-	xhr.send(JSON.stringify(_jsonData));
-}
+
 blo0.blGetGHI = function(_url,cb){  //git github issue
 	var r = "blo0.blGetGHI： "+ _url + "_" + cb + ":"+ Date();
 	var token = "f89b0eccf7"+"4c65a65513"+"60062c3e47"+"98d0df4577";//jp
