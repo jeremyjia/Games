@@ -73,8 +73,9 @@ body {
 </div>
 
 <div style="padding-left:16px">
-  <h3>index v0.0.31</h3> 
-  <p><button id="loadc1.js">Run Test: i21-c1</button></p>
+  <h3>index v0.0.33</h3> 
+  <p><button id="loadc2.js">Run Test: i21-c1</button></p>
+  <div id="div4TA"></div>
 </div>
 
 <!-- End smartphone / tablet look -->
@@ -92,8 +93,17 @@ function myFunction() {
 </script>
   
 <script src="https://littleflute.github.io/JavaScript/w3.js"></script>
-<script src="https://littleflute.github.io/JavaScript/blclass.js"></script>
+<script src="../../../js/blclass.js"></script>
 <script> 
+  var d = bl$("div4TA");
+  var ta = blo0.blTextarea(d,d.id+"ta","alert(1)","lightblue");
+  ta.style.width = "98%";
+  ta.style.height = "80px";
+  var r = blo0.blBtn(d,d.id+"r","run","green");
+  r.onclick = function(){
+    eval(ta.value);
+  }
+
   bl$("loadc2.js").onclick = function(){
     if(!this.load){
       this.load = true;
