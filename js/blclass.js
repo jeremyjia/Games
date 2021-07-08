@@ -366,6 +366,8 @@ function CBlClass ()
 			this.add_Text_As_Obj_1 = function(_txt,_x,_y,_size,_r,_g,_b){
 				var s0 = _txt.replace("<br>","");
 				s0 = s0.replace("\n","");
+				s0 = s0.replace("<strong>","");
+				s0 = s0.replace("<\strong>","");
 				var s1 = s0.split(" ");
 				var n = 0;
 				var line = "";
