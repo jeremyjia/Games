@@ -1,4 +1,12 @@
-var d = blo0.blMD("id_1aaa", s,    300,100,500,400, "lightgreen"); 
+var s = "i21c9_v0.12";
+  s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/21/c9/c9.js'"
+  s += " style='color:blue;'";		s +=">"; s += " c9.js* ";
+  s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/21/c9/c9.js'"
+  s += " style='color:green;'";		s +=">"; s += " c9.js ";
+  s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/21/c9/index.html'"
+  s += " style='color:brown;'";		s +=">"; s += " index.html";
+
+var d = blo0.blMD("id_4_MDiv_I21_C9", s,    300,100,500,400, "lightgreen"); 
 d.v = blo0.blDiv(d,d.id+"v","v",blGrey[0]);
 var ts = document.getElementsByTagName('textarea');
 
