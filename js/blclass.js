@@ -367,7 +367,7 @@ function CBlClass ()
 				var s0 = _txt.replace("<br>","");
 				s0 = s0.replace("\n","");
 				s0 = s0.replace("<strong>","");
-				s0 = s0.replace("<\strong>","");
+				s0 = s0.replace("</strong>","");
 				var s1 = s0.split(" ");
 				var n = 0;
 				var line = "";
