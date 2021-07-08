@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.324"
+var g_ver_blClass = "CBlClass_v1.4.353"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -194,6 +194,151 @@ function CBlClass ()
 	}
 
 	function CBlScript(){
+		var _v1 = 0, _v2 = 0, _v3 = 44, _w = 1920;
+		this.setVersion = function(v1,v2,v3){ _v1 = v1; _v2 = v2; _v3 = v3;};
+		this.getVersion = function(){return "v"+_v1+"."+_v2+"."+_v3;}; 
+		this.getWidth = function(){return _w;};
+		this.getFrameNumber = function(){return _frames.length;};
+		this.blrAddFrames = function(_div){ 
+			_frames = [];
+			for(var i = 0; i < _blVideo.duration; i++){
+				var n = _frames.length;				
+				var f = new CFrame(n,"1",blRed+ ","+blGreen+","+blBlue);
+				var t1 = {
+					"text": i + ": by Littleflute", 
+					"x": 100,
+					"y": 955,
+					"size": 111,
+					"color": "80,151,255"
+				};
+				f.addObj(t1);
+				f.addTextAsObj(this.getVersion() + ": w=" + this.getWidth(),100,111,100,255,0,0);				
+				f.addTextAsObj(blTitle4Script,100,222,55,255,0,250);
+				f.addTextAsObj('"'+_ps.length+'"',500,222,55,55,220,250); 
+				_frames.push(f);
+
+ 
+			}
+			_div.innerHTML = "FrameBtns";
+			var v = blo0.blDiv(_div,_div.id+"v","v","lightgreen");
+			var ls = [];
+			for(i in _frames){
+				var btn = blo0.blBtn(_div,"FRAME_ID_" + i,i,blGrey[2]);
+				btn.onclick = function(_fs,_i,_ls,_btn){
+					return function(){
+						blo0.blMarkBtnInList(_btn,_ls,"green","grey");
+						_blVideo.currentTime = _fs[_i].number;
+
+						v.innerHTML = _fs[_i].number;
+						v.tb = blo0.blDiv(v,v.id+"tb","tb",blGrey[0]);
+						v.v = blo0.blDiv(v,v.id+"v","v",blGrey[2]);
+						var btnObjs = blo0.blBtn(v.tb,v.tb.id+"btnObjs","btnObjs",blGrey[1]);
+						btnObjs.onclick = function(){ 
+							v.v.innerHTML = "";
+							var otb = blo0.blDiv(v.v,v.v.id+"otb","otb",blGrey[0]);
+							var ov = blo0.blDiv(v.v,v.v.id+"ov","ov",blGrey[1]);
+							var fos = _fs[_i].objects;
+							var lsobtn = [];
+							for(i in fos){
+								var obtn = blo0.blBtn(otb,otb.id+i,i,blGrey[1]);
+								obtn.onclick = function(_fos,_i,_obtn){
+									return function(){
+										blo0.blMarkBtnInList(_obtn,lsobtn,"green","grey");
+										_blShowObj2Div(ov,_fos[_i]);
+									}
+								}(fos,i,obtn);
+								lsobtn.push(obtn);
+							}
+						}
+						btnObjs.click();
+					}
+				}(_frames,i,ls,btn);
+				ls.push(btn);
+			}
+		}
+		this.blrUpdateFramesTxt = function(){
+			var ps = blo0.blGetPS();
+			ps.lastText = "";
+			for(i in _frames){
+					var f = _frames[i];
+					var s = "ps:" + f.number + "  ";
+					var find = false;
+					for(j in ps){
+						if(ps[j].t==f.number){
+							s += ps[j].innerHTML;	
+							ps.lastText = s;
+							find = true;						
+							break;
+						}
+					}
+					if(false==find) s = ps.lastText;
+					f.add_Text_As_Obj_1(s,100,333,50,255,255,1);
+			}
+		}
+
+		var _oScript = {};
+		_oScript.blhVersion = function(){return "xdTest..."};
+		_oScript.blrVersion = function(_thisOBlScript){
+			return function(b,d){
+				if(!d.loadVersion){d.loadVersion = true; 				b.style.color = "white"; 
+					var tb = blo0.blDiv(d,d.id+"tb","version:",blGrey[0]);
+					var btnV = blo0.blBtn(tb,tb.id+"btnV",_thisOBlScript.getVersion(),"brown");btnV.style.color = "white";
+					var btnV3Plus1 = blo0.blBtn(tb,tb.id+"btnV3Plus1","+1",blGrey[1]);
+					btnV3Plus1.onclick = function(){	_v3++;	btnV.innerHTML = _thisOBlScript.getVersion();					}
+					var btnV3Minus1 = blo0.blBtn(tb,tb.id+"btnV3Minus1","-1",blGrey[1]);
+					btnV3Minus1.onclick = function(){	_v3--;	btnV.innerHTML = _thisOBlScript.getVersion();					}
+				}
+				_on_off_div(b,d);
+				b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+			};
+		}(this);
+		_oScript.bll_blrVersion = "--blrVersion--";
+
+		
+		_oScript.blhWidth = function(){return 1920;};
+		_oScript.blrWidth = function(_thisOBlScript){
+			return function(b,d){
+				if(!d.loadWidth){d.loadWidth = true; 				b.style.color = "white"; 
+					var tb = blo0.blDiv(d,d.id+"tb","width:",blGrey[0]);
+					var btnW= blo0.blBtn(tb,tb.id+"btnW",_thisOBlScript.getWidth(),"brown");btnW.style.color = "white";
+					var btnWPlus1 = blo0.blBtn(tb,tb.id+"btnWPlus1","+1",blGrey[1]);
+					btnWPlus1.onclick = function(){	_w++;	btnW.innerHTML = _thisOBlScript.getWidth();					}
+					var btnWMinus1 = blo0.blBtn(tb,tb.id+"btnWMinus1","-1",blGrey[1]);
+					btnWMinus1.onclick = function(){	_w--;	btnW.innerHTML = _thisOBlScript.getWidth();					}
+					var btnWPlus10 = blo0.blBtn(tb,tb.id+"btnWPlus10","+10",blGrey[1]);
+					btnWPlus10.onclick = function(){	_w+=10;	btnW.innerHTML = _thisOBlScript.getWidth();					}
+					var btnWMinus10 = blo0.blBtn(tb,tb.id+"btnWMinus10","-10",blGrey[1]);
+					btnWMinus10.onclick = function(){	_w-=10;	btnW.innerHTML = _thisOBlScript.getWidth();					}
+				}
+				_on_off_div(b,d);
+				b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+			};
+		}(this);
+		_oScript.bll_blrWidth = "--blrWidth--";
+ 
+		
+		_oScript.blrMakeFrames = function(_thisOBlScript){
+			return function(b,d){
+				if(!d.loadFrames){d.loadFrames = true; 				b.style.color = "white"; 
+					var tb = blo0.blDiv(d,d.id+"tb","Frames:",blGrey[0]); 
+					d.v = blo0.blDiv(d,d.id+"v","v:","lightblue"); 
+					var btnFrames= blo0.blBtn(tb,tb.id+"btnFrames",_thisOBlScript.getFrameNumber(),"brown");btnFrames.style.color = "white";
+					var btnFramesMakeFromMp3 = blo0.blBtn(tb,tb.id+"btnFramesMakeFromMp3","fromMP3",blGrey[1]);
+					btnFramesMakeFromMp3.onclick = function(){_thisOBlScript.blrAddFrames(d.v);	btnFrames.innerHTML = _thisOBlScript.getFrameNumber();	}
+					var btnFramesUpdateTxt = blo0.blBtn(tb,tb.id+"btnFramesUpdateTxt","updateTxt",blGrey[1]);
+					btnFramesUpdateTxt.onclick = function(){_thisOBlScript.blrUpdateFramesTxt();	}
+				}
+				_on_off_div(b,d);
+				b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+			};
+		}(this);
+		_oScript.bll_blrMakeFrames = "--blrMakeFrames--";
+
+		_oScript.height = 1080;
+		_oScript.music = _blVideo.src;
+		_oScript.rate = "1";
+
+
 		function CFrame(_number,_time,_backgroundColor){
 			this.number = _number;
 			this.time = _time;
@@ -214,6 +359,7 @@ function CBlClass ()
 			};
 			this.add_Text_As_Obj_1 = function(_txt,_x,_y,_size,_r,_g,_b){
 				var s0 = _txt.replace("<br>","");
+				s0 = s0.replace("\n","");
 				var s1 = s0.split(" ");
 				var n = 0;
 				var line = "";
@@ -280,28 +426,65 @@ function CBlClass ()
                     "step": 10
                 }
         };
-		  
-
-		var so4 = 
+ 
+		var so2 = 
+		{
+			"type": "picture",
+			"attribute": {
+				"x1": 1920,
+				"y1": 800,
+				"x2": 580,
+				"y2": 55,
+				"size": 50,
+				"color": "111,255,22",
+				"name": "https://user-images.githubusercontent.com/17950965/124674375-74f6ce80-de6f-11eb-8fe4-fc919cd5a96e.png"
+			},
+			"frameRange": "(1,100)",
+			"action": {
+				"trace": "y=0*x*x+0*x+444",
+				"step": -10
+			}
+		};
+		var so3 = 
 		{
 			"type": "picture",
 			"attribute": {
 				"x1": 900,
+				"y1": 800,
+				"x2": 580,
+				"y2": 55,
+				"size": 50,
+				"color": "255,255,0",
+				"name": "https://raw.githubusercontent.com/littleflute/blog/master/img/vleLogo1.png"
+			},
+			"frameRange": "(1,100)",
+			"action": {
+				"trace": "y=0*x*x+0*x+555",
+				"step": -10
+			}
+		};
+		var so4 = 
+		{
+			"type": "picture",
+			"attribute": {
+				"x1": 1920,
 				"y1": 500,
-				"x2": 80,
-				"y2": 80,
+				"x2": 180,
+				"y2": 180,
 				"size": 50,
 				"color": "255,0,0",
 				"name": "https://gdb.voanews.com/47E37481-CAD6-4AEF-9AD4-74FC8B936E46_w256_r1.jpg"
 			},
 			"frameRange": "(1,100)",
 			"action": {
-				"trace": "y=0*x*x+0*x+300",
+				"trace": "y=0*x*x+0*x+888",
 				"step": -10
 			}
 		};
  
-		_sos.push(so1);  
+		_sos.push(so1); 
+		_sos.push(so2); 
+		_sos.push(so3); 
 		_sos.push(so4);
 
 		var _oScript = {};
