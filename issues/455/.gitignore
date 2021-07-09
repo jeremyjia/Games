@@ -1,3 +1,5 @@
+*.voa
+*.sh
 *.jpg
 *.html
 *.json
