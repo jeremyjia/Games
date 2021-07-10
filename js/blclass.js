@@ -205,6 +205,8 @@ function CBlClass ()
 		this.getVersion = function(){return "v"+_v1+"."+_v2+"."+_v3;}; 
 		this.getWidth = function(){return _w;};
 		this.getFrameNumber = function(){return _frames.length;};
+		this.setSuperObjects = function(_ls){_sos = _ls;};
+		this.getSuperObjects = function(){ return _sos;};
 		this.blrAddFrames = function(_div){ 
 			_frames = [];
 			for(var i = 0; i < _blVideo.duration; i++){
@@ -336,7 +338,7 @@ function CBlClass ()
 					var btnUI = blo0.blBtn(tb,tb.id+"btnUI","ui",blGrey[1]);
 					btnUI.onclick = function(){
 						if(!d.ui){
-							var w = 400, h = 300;
+							var w = 960, h = 540;
 							d.ui = blo0.blMDiv(d, d.id + "ui", "ui",555,10,w,h,blGrey[1]);
 							var tb4CVS = blo0.blDiv(d.ui,d.ui.id+"tb4CVS","tb4CVS",blGrey[2]);
 							var v4canvas = blo0.blDiv(d.ui,d.ui.id+"v4canvas","v4canvas",blGrey[0]);
@@ -344,6 +346,7 @@ function CBlClass ()
 							var btnPlay = blo0.blBtn(tb4CVS,tb4CVS.id+"play","play","grey"); btnPlay.isRunning = false;
 							function uiFnTimer() {  
 								fCVS.n++;
+								var ls = _thisOBlScript.getSuperObjects();
 								var ctx = fCVS.getContext("2d");
 								 
 								ctx.fillStyle = "#110000";
@@ -351,7 +354,21 @@ function CBlClass ()
  
 								ctx.font = 12 + "px Consolas";
 								ctx.fillStyle = "yellow";
-								ctx.fillText(fCVS.ms + "_ " + fCVS.n + " " + Date(), 11, 22);
+								ctx.fillText(ls.length + "_ " + fCVS.ms + "_ " + fCVS.n + " " + Date(), 11, 22);
+
+								
+								ctx.font = 22 + "px Consolas";
+								ctx.fillStyle = "rgb("+ls[0].attribute.color+")";
+								ctx.fillText(ls[0].attribute.name,ls[0].attribute.x1,ls[0].attribute.y1);
+
+								var image = new Image();
+								image.src = ls[1].attribute.name;
+
+								ctx.drawImage(image, 
+									ls[1].attribute.x1, 
+									ls[1].attribute.y1,
+									ls[1].attribute.x2, 
+									ls[1].attribute.y2);
 
 							}
 							btnPlay.onclick = function(){
@@ -367,10 +384,93 @@ function CBlClass ()
 								}
 								blon(this,null,"green","grey");
 							}
+							var btnSuperObjects = blo0.blBtn(tb4CVS,tb4CVS.id+"sos","setSOS",blGrey[1]);
+							btnSuperObjects.onclick = function(){
+								var ls = [];
+								var so1 ={
+									"type": "text",
+									"attribute": {
+										"x1": 50,
+										"y1": 222,
+										"x2": -1,
+										"y2": -1,
+										"size": 50,
+										"color": "200,182,193",
+										"name": "漂泊者乐园: 英语慢速听力！"
+									},
+									"frameRange": "(2,100)",
+									"action": {
+										"trace": "y=0*x*x+1*x+0",
+										"step": 10
+									}
+								};
+					
+								var so2 = 
+								{
+									"type": "picture",
+									"attribute": {
+										"x1": 555,
+										"y1": 555,
+										"x2": 580,
+										"y2": 55,
+										"size": 50,
+										"color": "111,255,22",
+										"name": "https://user-images.githubusercontent.com/17950965/124674375-74f6ce80-de6f-11eb-8fe4-fc919cd5a96e.png"
+									},
+									"frameRange": "(1,100)",
+									"action": {
+										"trace": "y=0*x*x+0*x+444",
+										"step": -10
+									}
+								};
+								var so3 = 
+								{
+									"type": "picture",
+									"attribute": {
+										"x1": 900,
+										"y1": 800,
+										"x2": 580,
+										"y2": 55,
+										"size": 50,
+										"color": "255,255,0",
+										"name": "https://raw.githubusercontent.com/littleflute/blog/master/img/vleLogo1.png"
+									},
+									"frameRange": "(1,100)",
+									"action": {
+										"trace": "y=0*x*x+0*x+555",
+										"step": -10
+									}
+								};
+								var so4 = 
+								{
+									"type": "picture",
+									"attribute": {
+										"x1": 1920,
+										"y1": 500,
+										"x2": 180,
+										"y2": 180,
+										"size": 50,
+										"color": "255,0,0",
+										"name": "https://gdb.voanews.com/47E37481-CAD6-4AEF-9AD4-74FC8B936E46_w256_r1.jpg"
+									},
+									"frameRange": "(1,100)",
+									"action": {
+										"trace": "y=0*x*x+0*x+888",
+										"step": -10
+									}
+								};
+						
+								ls.push(so1); 
+								ls.push(so2); 
+								ls.push(so3); 
+								ls.push(so4);
+								_thisOBlScript.setSuperObjects(ls);
+							}
 						}
 						_on_off_div(btnUI,d.ui);
 						btnUI.style.background = btnUI.style.background=="red"?blGrey[5]:blColor[4];
 					}
+					
 				}
 				_on_off_div(b,d);
 				b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
@@ -455,83 +555,7 @@ function CBlClass ()
 			return s;		 
 		}
 		var _sos = [];
-		var so1 ={
-                "type": "text",
-                "attribute": {
-                    "x1": 50,
-                    "y1": 500,
-                    "x2": -1,
-                    "y2": -1,
-                    "size": 50,
-                    "color": "200,182,193",
-                    "name": "漂泊者乐园: 英语慢速听力！"
-                },
-                "frameRange": "(2,100)",
-                "action": {
-                    "trace": "y=0*x*x+1*x+0",
-                    "step": 10
-                }
-        };
- 
-		var so2 = 
-		{
-			"type": "picture",
-			"attribute": {
-				"x1": 1920,
-				"y1": 800,
-				"x2": 580,
-				"y2": 55,
-				"size": 50,
-				"color": "111,255,22",
-				"name": "https://user-images.githubusercontent.com/17950965/124674375-74f6ce80-de6f-11eb-8fe4-fc919cd5a96e.png"
-			},
-			"frameRange": "(1,100)",
-			"action": {
-				"trace": "y=0*x*x+0*x+444",
-				"step": -10
-			}
-		};
-		var so3 = 
-		{
-			"type": "picture",
-			"attribute": {
-				"x1": 900,
-				"y1": 800,
-				"x2": 580,
-				"y2": 55,
-				"size": 50,
-				"color": "255,255,0",
-				"name": "https://raw.githubusercontent.com/littleflute/blog/master/img/vleLogo1.png"
-			},
-			"frameRange": "(1,100)",
-			"action": {
-				"trace": "y=0*x*x+0*x+555",
-				"step": -10
-			}
-		};
-		var so4 = 
-		{
-			"type": "picture",
-			"attribute": {
-				"x1": 1920,
-				"y1": 500,
-				"x2": 180,
-				"y2": 180,
-				"size": 50,
-				"color": "255,0,0",
-				"name": "https://gdb.voanews.com/47E37481-CAD6-4AEF-9AD4-74FC8B936E46_w256_r1.jpg"
-			},
-			"frameRange": "(1,100)",
-			"action": {
-				"trace": "y=0*x*x+0*x+888",
-				"step": -10
-			}
-		};
- 
-		_sos.push(so1); 
-		_sos.push(so2); 
-		_sos.push(so3); 
-		_sos.push(so4);
+		
 
 		_oScript.blrPlay = function(b,d){
 			_blVideo.play();
