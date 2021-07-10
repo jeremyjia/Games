@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.353"
+var g_ver_blClass = "CBlClass_v1.4.354"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -333,6 +333,44 @@ function CBlClass ()
 					btnFramesMakeFromMp3.onclick = function(){_thisOBlScript.blrAddFrames(d.v);	btnFrames.innerHTML = _thisOBlScript.getFrameNumber();	}
 					var btnFramesUpdateTxt = blo0.blBtn(tb,tb.id+"btnFramesUpdateTxt","updateTxt",blGrey[1]);
 					btnFramesUpdateTxt.onclick = function(){_thisOBlScript.blrUpdateFramesTxt();	}
+					var btnUI = blo0.blBtn(tb,tb.id+"btnUI","ui",blGrey[1]);
+					btnUI.onclick = function(){
+						if(!d.ui){
+							var w = 400, h = 300;
+							d.ui = blo0.blMDiv(d, d.id + "ui", "ui",555,10,w,h,blGrey[1]);
+							var tb4CVS = blo0.blDiv(d.ui,d.ui.id+"tb4CVS","tb4CVS",blGrey[2]);
+							var v4canvas = blo0.blDiv(d.ui,d.ui.id+"v4canvas","v4canvas",blGrey[0]);
+							var fCVS = blo0.blCanvas2(v4canvas,w,h); fCVS.n = 0;
+							var btnPlay = blo0.blBtn(tb4CVS,tb4CVS.id+"play","play","grey"); btnPlay.isRunning = false;
+							function uiFnTimer() {  
+								fCVS.n++;
+								var ctx = fCVS.getContext("2d");
+								 
+								ctx.fillStyle = "#110000";
+								ctx.fillRect(0,0,w,h);
+ 
+								ctx.font = 12 + "px Consolas";
+								ctx.fillStyle = "yellow";
+								ctx.fillText(fCVS.n + " " + Date(), 11, 22);
+
+							}
+							btnPlay.onclick = function(){
+								if(false ==this.isRunning){
+									this.isRunning = true;
+									this.innerHTML = "stop";
+									this.uiTimer = setInterval(uiFnTimer, 20);
+								}
+								else{
+									this.isRunning = false;
+									this.innerHTML = "play";
+									clearInterval(this.uiTimer); 
+								}
+								blon(this,null,"green","grey");
+							}
+						}
+						_on_off_div(btnUI,d.ui);
+						btnUI.style.background = btnUI.style.background=="red"?blGrey[5]:blColor[4];
+					}
 				}
 				_on_off_div(b,d);
 				b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
@@ -1783,6 +1821,15 @@ blo0.initDraw = function(cvs,_x,_y,_c){
 	for(i in blPink){blo0.blRect(cvs,_x+i*20,_y+55,10,10,blPink[i]);}
 }
 
+blo0.blCanvas2 = function(d,w,h){
+	var cvs = document.createElement("canvas");
+	cvs.width = w;
+	cvs.height = h;
+	d.appendChild(cvs);
+	cvs.style.float = "left";
+
+	return cvs;
+}
 blo0.blCanvase = function(d,w,h,color){
 	var cvs = document.createElement("canvas");
 	cvs.width = w;
