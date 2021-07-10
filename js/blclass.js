@@ -351,7 +351,7 @@ function CBlClass ()
  
 								ctx.font = 12 + "px Consolas";
 								ctx.fillStyle = "yellow";
-								ctx.fillText(fCVS.n + " " + Date(), 11, 22);
+								ctx.fillText(fCVS.ms + "_ " + fCVS.n + " " + Date(), 11, 22);
 
 							}
 							btnPlay.onclick = function(){
@@ -1825,6 +1825,18 @@ blo0.blCanvas2 = function(d,w,h){
 	var cvs = document.createElement("canvas");
 	cvs.width = w;
 	cvs.height = h;
+	cvs.ms = false;
+	cvs.addEventListener('mousedown', function (e) {
+		var x = e.offsetX;
+		var y = e.offsetY;
+		cvs.ms = true;
+	});
+	cvs.addEventListener('mouseup', function (e) {
+		var x = e.offsetX;
+		var y = e.offsetY;
+		cvs.ms = false;
+	});
+	
 	d.appendChild(cvs);
 	cvs.style.float = "left";
 
