@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.354"
+var g_ver_blClass = "CBlClass_v1.4.355"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -135,11 +135,10 @@ function CBlClass ()
 { 
     var _id = "id_div_4_blClass";
 	var _tmpDiv = null;
-	
-	var blAd = "Learning English v0.35";
+	 
 	var blTitle4Script = "No title";
 	var blScriptName = "noName";
-	var blRed = 0, blGreen=0, blBlue=0;
+	var blRed = 120, blGreen=0, blBlue=0;
 	var _ps = []; 
 
 
@@ -201,36 +200,11 @@ function CBlClass ()
 
 	function CBlScript(){
 		var _v1 = 0, _v2 = 0, _v3 = 44, _w = 1920;
-		this.setVersion = function(v1,v2,v3){ _v1 = v1; _v2 = v2; _v3 = v3;};
-		this.getVersion = function(){return "v"+_v1+"."+_v2+"."+_v3;}; 
-		this.getWidth = function(){return _w;};
-		this.getFrameNumber = function(){return _frames.length;};
-		this.setSuperObjects = function(_ls){_sos = _ls;};
-		this.getSuperObjects = function(){ return _sos;};
-		this.blrAddFrames = function(_div){ 
-			_frames = [];
-			for(var i = 0; i < _blVideo.duration; i++){
-				var n = _frames.length;				
-				var f = new CFrame(n,"1",blRed+ ","+blGreen+","+blBlue);
-				var t1 = {
-					"text": i + ": by Littleflute", 
-					"x": 100,
-					"y": 955,
-					"size": 111,
-					"color": "80,151,255"
-				};
-				f.addObj(t1);
-				f.addTextAsObj(this.getVersion() + ": w=" + this.getWidth(),100,111,100,255,0,0);				
-				f.addTextAsObj(blTitle4Script,100,222,55,255,0,250);
-				f.addTextAsObj('"'+_ps.length+'"',500,222,55,55,220,250); 
-				_frames.push(f);
-
- 
-			}
+		var _updateFrames = function(_div,_inFrames){
 			_div.innerHTML = "FrameBtns";
 			var v = blo0.blDiv(_div,_div.id+"v","v","lightgreen");
 			var ls = [];
-			for(i in _frames){
+			for(i in _inFrames){
 				var btn = blo0.blBtn(_div,"FRAME_ID_" + i,i,blGrey[2]);
 				btn.onclick = function(_fs,_i,_ls,_btn){
 					return function(){
@@ -263,6 +237,38 @@ function CBlClass ()
 				}(_frames,i,ls,btn);
 				ls.push(btn);
 			}
+		}
+		this.setVersion = function(v1,v2,v3){ _v1 = v1; _v2 = v2; _v3 = v3;};
+		this.getVersion = function(){return "v"+_v1+"."+_v2+"."+_v3;}; 
+		this.getWidth = function(){return _w;};
+		this.getFrameNumber = function(){return _frames.length;};
+		this.setSuperObjects = function(_ls){_sos = _ls;};
+		this.getSuperObjects = function(){ return _sos;};
+		this.blrAdd_1_Frame = function(_div,r,g,b){
+			var n = _frames.length;
+			var f = new CFrame(n,"1",r+ ","+g+","+b);
+			_frames.push(f);
+			_updateFrames(_div,_frames);		
+		}
+		this.blrAddFrames_by_Audio = function(_div){ 
+			_frames = [];
+			for(var i = 0; i < _blVideo.duration; i++){
+				var n = _frames.length;				
+				var f = new CFrame(n,"1",blRed+ ","+blGreen+","+blBlue);
+				var t1 = {
+					"text": i + ": by Littleflute", 
+					"x": 100,
+					"y": 955,
+					"size": 111,
+					"color": "80,151,255"
+				};
+				f.addObj(t1);
+				f.addTextAsObj(this.getVersion() + ": w=" + this.getWidth(),100,111,100,255,0,0);				
+				f.addTextAsObj(blTitle4Script,100,222,55,255,0,250);
+				f.addTextAsObj('"'+_ps.length+'"',500,222,55,55,220,250); 
+				_frames.push(f); 
+			}
+			_updateFrames(_div,_frames);			
 		}
 		this.blrUpdateFramesTxt = function(){
 			var ps = blo0.blGetPS();
@@ -332,7 +338,16 @@ function CBlClass ()
 					d.v = blo0.blDiv(d,d.id+"v","v:","lightblue"); 
 					var btnFrames= blo0.blBtn(tb,tb.id+"btnFrames",_thisOBlScript.getFrameNumber(),"brown");btnFrames.style.color = "white";
 					var btnFramesMakeFromMp3 = blo0.blBtn(tb,tb.id+"btnFramesMakeFromMp3","fromMP3",blGrey[1]);
-					btnFramesMakeFromMp3.onclick = function(){_thisOBlScript.blrAddFrames(d.v);	btnFrames.innerHTML = _thisOBlScript.getFrameNumber();	}
+					btnFramesMakeFromMp3.onclick = function(){
+						_thisOBlScript.blrAddFrames_by_Audio(d.v);	
+						btnFrames.innerHTML = _thisOBlScript.getFrameNumber();	
+					}
+					var btnAdd_1_Frame = blo0.blBtn(tb,tb.id+"btnAdd_1_Frame","+1",blGrey[1]);
+					btnAdd_1_Frame.onclick = function(){
+						_thisOBlScript.blrAdd_1_Frame(d.v,200,100,50);	
+						btnFrames.innerHTML = _thisOBlScript.getFrameNumber();	
+					}
+
 					var btnFramesUpdateTxt = blo0.blBtn(tb,tb.id+"btnFramesUpdateTxt","updateTxt",blGrey[1]);
 					btnFramesUpdateTxt.onclick = function(){_thisOBlScript.blrUpdateFramesTxt();	}
 					var btnUI = blo0.blBtn(tb,tb.id+"btnUI","ui",blGrey[1]);
@@ -344,12 +359,12 @@ function CBlClass ()
 							var v4canvas = blo0.blDiv(d.ui,d.ui.id+"v4canvas","v4canvas",blGrey[0]);
 							var fCVS = blo0.blCanvas2(v4canvas,w,h); fCVS.n = 0;
 							var btnPlay = blo0.blBtn(tb4CVS,tb4CVS.id+"play","play","grey"); btnPlay.isRunning = false;
-							function uiFnTimer() {  
+							function uiFnTimer() {   
 								fCVS.n++;
 								var ls = _thisOBlScript.getSuperObjects();
 								var ctx = fCVS.getContext("2d");
 								 
-								ctx.fillStyle = "#110000";
+								ctx.fillStyle = "#110000"; 
 								ctx.fillRect(0,0,w,h);
  
 								ctx.font = 12 + "px Consolas";
@@ -506,6 +521,8 @@ function CBlClass ()
 				s0 = s0.replace("\n","");
 				s0 = s0.replace("<strong>","");
 				s0 = s0.replace("</strong>","");
+				s0 = s0.replace("<em>","");
+				s0 = s0.replace("</em>","");
 				var s1 = s0.split(" ");
 				var n = 0;
 				var line = "";
