@@ -138,7 +138,7 @@ function CBlClass ()
 	 
 	var blTitle4Script = "No title";
 	var blScriptName = "noName";
-	var blRed = 120, blGreen=0, blBlue=0;
+	var blRed = 120, blGreen=220, blBlue=220;
 	var _ps = []; 
 
 
