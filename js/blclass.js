@@ -138,7 +138,7 @@ function CBlClass ()
 	 
 	var blTitle4Script = "No title";
 	var blScriptName = "noName";
-	var blRed = 120, blGreen=220, blBlue=220;
+	var blRed = 120, blGreen=11, blBlue=220;
 	var _ps = []; 
 
 
@@ -212,8 +212,30 @@ function CBlClass ()
 						_blVideo.currentTime = _fs[_i].number;
 
 						v.innerHTML = _fs[_i].number;
+						_fs.FrameIndex = _i;
 						v.tb = blo0.blDiv(v,v.id+"tb","tb",blGrey[0]);
 						v.v = blo0.blDiv(v,v.id+"v","v",blGrey[2]);
+						
+						var btnRed = blo0.blBtn(v.tb,v.tb.id+"btnRed","red","rgb(255,0,0)");
+						btnRed.onclick = function(_cf){ 
+							return function(){
+								_cf.backgroundColor = "255,0,0";
+							}
+						}(_fs[_i]);
+						var btnGreen= blo0.blBtn(v.tb,v.tb.id+"btnGreen","green","rgb(0,255,0)");
+						btnGreen.onclick = function(_cf){ 
+							return function(){
+								_cf.backgroundColor = "0,255,0";
+							}
+						}(_fs[_i]);
+
+						var btnBlue= blo0.blBtn(v.tb,v.tb.id+"btnBlue","blue","rgb(0,0,255)");
+						btnBlue.onclick = function(_cf){ 
+							return function(){
+								_cf.backgroundColor = "0,0,255";
+							}
+						}(_fs[_i]);
+
 						var btnObjs = blo0.blBtn(v.tb,v.tb.id+"btnObjs","btnObjs",blGrey[1]);
 						btnObjs.onclick = function(){ 
 							v.v.innerHTML = "";
@@ -244,6 +266,21 @@ function CBlClass ()
 		this.getFrameNumber = function(){return _frames.length;};
 		this.setSuperObjects = function(_ls){_sos = _ls;};
 		this.getSuperObjects = function(){ return _sos;};
+		this.drawCurFrame = function(ctx){
+			var xF = 444, yF = 111, wF = 200, hF= 200;
+			var c = "#11f1f0";
+			if(_frames.FrameIndex) c = "rgb("+_frames[_frames.FrameIndex].backgroundColor + ")";
+			ctx.fillStyle = c;
+			ctx.fillRect(xF,yF,wF,hF);		
+
+			ctx.font = 12 + "px Consolas";
+			ctx.fillStyle = "yellow";
+			ctx.fillText(_frames.FrameIndex + " c=" + c, xF, yF);
+		}
+		this.drawSuperObjects = function(ctx){
+			ctx.fillStyle = "#11f100"; 
+			ctx.fillRect(111,111,222,222);
+		}
 		this.blrAdd_1_Frame = function(_div,r,g,b){
 			var n = _frames.length;
 			var f = new CFrame(n,"1",r+ ","+g+","+b);
@@ -364,8 +401,10 @@ function CBlClass ()
 								var ls = _thisOBlScript.getSuperObjects();
 								var ctx = fCVS.getContext("2d");
 								 
-								ctx.fillStyle = "#110000"; 
+								ctx.fillStyle = "#1100f0"; 
 								ctx.fillRect(0,0,w,h);
+								_thisOBlScript.drawCurFrame(ctx);
+								_thisOBlScript.drawSuperObjects(ctx);
  
 								ctx.font = 12 + "px Consolas";
 								ctx.fillStyle = "yellow";
@@ -384,7 +423,6 @@ function CBlClass ()
 									ls[1].attribute.y1,
 									ls[1].attribute.x2, 
 									ls[1].attribute.y2);
-
 							}
 							btnPlay.onclick = function(){
 								if(false ==this.isRunning){
