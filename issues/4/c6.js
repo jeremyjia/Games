@@ -1,5 +1,5 @@
 //i4c6
-var s = "v0.0.1"; 
+var s = "v0.0.2"; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c6.js'"
 s += " style='color:blue;'";		s +=">"; s += "c6.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c6.js'"
