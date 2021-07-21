@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.355"
+var g_ver_blClass = "CBlClass_v1.4.411"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -268,14 +268,10 @@ function CBlClass ()
 		this.getSuperObjects = function(){ return _sos;};
 		this.drawCurFrame = function(ctx){
 			var xF = 444, yF = 111, wF = 200, hF= 200;
-			var c = "#11f1f0";
-			if(_frames.FrameIndex) c = "rgb("+_frames[_frames.FrameIndex].backgroundColor + ")";
+			var c = "#347B98"; 
 			ctx.fillStyle = c;
 			ctx.fillRect(xF,yF,wF,hF);		
-
-			ctx.font = 12 + "px Consolas";
-			ctx.fillStyle = "yellow";
-			ctx.fillText(_frames.FrameIndex + " c=" + c, xF, yF);
+			if(_frames.FrameIndex) { 				_frames[_frames.FrameIndex].draw_Frame(ctx,xF,yF,wF,hF);			}
 		}
 		this.drawSuperObjects = function(ctx){
 			ctx.fillStyle = "#11f100"; 
@@ -401,7 +397,7 @@ function CBlClass ()
 								var ls = _thisOBlScript.getSuperObjects();
 								var ctx = fCVS.getContext("2d");
 								 
-								ctx.fillStyle = "#1100f0"; 
+								ctx.fillStyle = "grey"; 
 								ctx.fillRect(0,0,w,h);
 								_thisOBlScript.drawCurFrame(ctx);
 								_thisOBlScript.drawSuperObjects(ctx);
@@ -538,9 +534,33 @@ function CBlClass ()
 
 		function CFrame(_number,_time,_backgroundColor){
 			this.number = _number;
-			this.time = _time;
+			var time = _time;
 			this.backgroundColor = _backgroundColor;
 			this.objects = []; 
+
+			this.draw_Frame = function(_this,_time){
+				return function(ctx,x,y,w,h){
+					var oldFillStyle = ctx.fillStyle;				
+				
+					ctx.font = 22 + "px Consolas";
+					ctx.fillStyle = "rgb(" + _this.backgroundColor + ")";
+					ctx.fillRect(x,y,w/2,h/2);		
+					
+					ctx.fillStyle = "yellow";
+					ctx.fillText("Frame.number = " + _this.number, x, y+30); 
+					ctx.fillText("Frame.time = " + _time, x+222, y+30); 
+					ctx.fillText("Frame.backgroundColor = " + _this.backgroundColor, x, y+50); 
+					ctx.fillText("objects.length = " + _this.objects.length, x, y+80); 
+					var os = _this.objects;
+					
+					for(i in os){
+						ctx.fillText("o"+i + ":" + os[i].x +","+ os[i].y, x+30, y + i*30 + 110); 
+
+					}
+					ctx.fillStyle = oldFillStyle;
+				}
+			}(this,time);
+	 
 
 			this.addObj = function(_o){
 				this.objects.push(_o);
@@ -596,6 +616,7 @@ function CBlClass ()
 				}
 			};
 		};
+
 		var _bl2MakeScript = function(_os,_fs,_supObjs){		 
 			var s = {};
 			var r = {};		
