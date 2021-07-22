@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.411"
+var g_ver_blClass = "CBlClass_v1.4.412"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -534,7 +534,7 @@ function CBlClass ()
 
 		function CFrame(_number,_time,_backgroundColor){
 			this.number = _number;
-			var time = _time;
+			this.time = _time;
 			this.backgroundColor = _backgroundColor;
 			this.objects = []; 
 
@@ -548,7 +548,7 @@ function CBlClass ()
 					
 					ctx.fillStyle = "yellow";
 					ctx.fillText("Frame.number = " + _this.number, x, y+30); 
-					ctx.fillText("Frame.time = " + _time, x+222, y+30); 
+					ctx.fillText("Frame.time = " + _this.time, x+222, y+30); 
 					ctx.fillText("Frame.backgroundColor = " + _this.backgroundColor, x, y+50); 
 					ctx.fillText("objects.length = " + _this.objects.length, x, y+80); 
 					var os = _this.objects;
@@ -559,7 +559,7 @@ function CBlClass ()
 					}
 					ctx.fillStyle = oldFillStyle;
 				}
-			}(this,time);
+			}(this);
 	 
 
 			this.addObj = function(_o){
