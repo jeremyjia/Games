@@ -11,8 +11,13 @@ const port = 3000
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors())
 
+
 app.get('/', (req, res) => {
   res.send('Hello World!')
+})
+
+app.get('/abc/', (req, res) => {
+  res.send('Hello ABC!' + process.env.abc )
 })
 
 app.get('/email/', (req, res) => {
