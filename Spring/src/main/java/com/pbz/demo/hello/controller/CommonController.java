@@ -1,6 +1,8 @@
 package com.pbz.demo.hello.controller;
 
 import java.io.File;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -9,6 +11,7 @@ import java.util.concurrent.Semaphore;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.pbz.demo.hello.util.ExecuteCommand;
 import com.pbz.demo.hello.util.FileUtil;
+import com.pbz.demo.hello.util.NetAccessUtil;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -127,6 +131,29 @@ public class CommonController {
 			status.put("Status", "Failed!");
 		}
 		return status;
+	}
+
+	@RequestMapping(value = "/comments/add", method = RequestMethod.POST)
+	@ResponseBody
+	public String addOneNewComment(@RequestParam("issueId") Long issueId, @RequestBody String jsonString)
+			throws Exception {
+
+		jsonString = URLEncoder.encode(jsonString, "UTF-8");
+		jsonString = URLDecoder.decode(jsonString, "UTF-8");
+		System.out.println("addOneNewComment:" + jsonString);
+
+		String url = "https://api.github.com/repos/jeremyjia/Games/issues/" + issueId + "/comments";
+		String jsonResponseString = NetAccessUtil.doPostOnGitHub(url, jsonString);
+		String newCommentId = "";
+		if (jsonResponseString != "") {
+			int index = jsonResponseString.indexOf(",");
+			jsonResponseString = jsonResponseString.substring(0, index - 1);
+			index = jsonResponseString.lastIndexOf("/");
+			newCommentId = jsonResponseString.substring(index + 1);
+		}
+		System.out.println("newCommentId:" + newCommentId);
+
+		return newCommentId;
 	}
 
 	@ApiOperation(value = "获取版本信息", notes = "获取应用版本、服务器等信息")
