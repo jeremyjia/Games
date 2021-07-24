@@ -175,7 +175,14 @@ public class CommonController {
 
 		String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentId;
 		String resultString = NetAccessUtil.doGetOnGitHub(url, "");
-		return resultString;
+
+		String readString = "";
+		if (!resultString.isEmpty()) {
+			resultString = resultString.substring(resultString.indexOf("body") + 7);
+			int index = resultString.lastIndexOf(",");
+			readString = resultString.substring(0, index - 1);
+		}
+		return readString;
 	}
 
 	@RequestMapping(value = "/comments/delete", method = RequestMethod.DELETE)
