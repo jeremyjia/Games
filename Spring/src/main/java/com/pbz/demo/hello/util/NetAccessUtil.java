@@ -6,16 +6,19 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
+import java.util.List;
+import java.util.Map;
 
 public class NetAccessUtil {
 
-	public static String doPostOnGitHub(String urlStr, String jsonStr) {
+	public static String doPostOnGitHub(String urlStr, String method, String jsonStr) {
 		String result = "";
 		BufferedReader reader = null;
 		try {
 			URL url = new URL(urlStr);
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-			conn.setRequestMethod("POST");
+			conn.setRequestMethod(method); // "POST"
 			conn.setDoOutput(true);
 			conn.setDoInput(true);
 			conn.setUseCaches(false);
@@ -50,6 +53,45 @@ public class NetAccessUtil {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+			}
+		}
+		return result;
+	}
+
+	public static String doGetOnGitHub(String url, String param) {
+		String result = "";
+		BufferedReader in = null;
+		try {
+			String urlString = url;
+			if (param != null && param.trim().length() != 0) {
+				urlString += "?" + param;
+			}
+			URL realUrl = new URL(urlString);
+			URLConnection connection = realUrl.openConnection();
+			connection.setRequestProperty("accept", "*/*");
+			connection.setRequestProperty("connection", "Keep-Alive");
+			connection.setRequestProperty("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
+			// connection.setRequestProperty("Authorization", "token " + getToken());
+			connection.connect();
+			Map<String, List<String>> map = connection.getHeaderFields();
+			for (String key : map.keySet()) {
+				System.out.println(key + "--->" + map.get(key));
+			}
+			in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+			String line;
+			while ((line = in.readLine()) != null) {
+				result += line;
+			}
+		} catch (Exception e) {
+			System.out.println("Error when sending GET request！" + e);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (in != null) {
+					in.close();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 		return result;
