@@ -1,4 +1,5 @@
 """The Endpoints to manage the BOOK_REQUESTS"""
+# READ ME: before run app.py, you may help yourself adjust some codes in this file, including line 22, 23, 32 and 33 line as the detailed instruction below. -wayneW
 import uuid
 import json  
 import pymysql  # need to install pymysql first -wayne W
@@ -18,8 +19,8 @@ def get_blueprint():
 
 mydb = mysql.connector.connect(
   host="127.0.0.1",
-  user="www",  # please edit the user name as local database user name  -wayneW
-  password="5566"  # change the password as you defined in your local database  -wayneW
+  user="www",  # please adjust the user name as same as the local MySQL's user name  -wayneW
+  password="5566"  # change the password as you defined in your MySQL database  -wayneW
 )
 
 mycursor = mydb.cursor()
@@ -28,7 +29,7 @@ mycursor.execute("CREATE DATABASE mydb")  # mydb is created to record the bookin
 
 mydb = mysql.connector.connect(
   host="127.0.0.1",
-  user="www",   # please edit the user name as local database user name  -wayneW
+  user="www",   # please adjust the user name as same as local database user name  -wayneW
   password="5566",  # change the password as you defined in your local database  -wayneW
   database="mydb"   
 )
