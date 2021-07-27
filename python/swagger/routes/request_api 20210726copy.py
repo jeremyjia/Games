@@ -1,10 +1,7 @@
 """The Endpoints to manage the BOOK_REQUESTS"""
-# READ ME: before run app.py, you may help yourself adjust some codes in this file, including line 22, 23, 32 and 33 line as the detailed instruction below. -wayneW
-# Some problem: after you run the app.py successfully, you may annotate line 19 to 60 as you have already created the database, or the app.py cannot run correctly. -wayneW
 import uuid
 import json  
-import pymysql  # need to install pymysql first -wayne W
-import mysql.connector 
+import pymysql  # need to install pymysql first -wayne W 
 from datetime import datetime, timedelta
 from flask import jsonify, abort, request, Blueprint
 
@@ -16,57 +13,24 @@ def get_blueprint():
     """Return the blueprint for the main app module"""
     return REQUEST_API
 
-# initializaed local database via creation a new database
-
-mydb = mysql.connector.connect(
-  host="127.0.0.1",
-  user="www",  # please adjust the user name as same as the local MySQL's user name  -wayneW
-  password="5566"  # change the password as you defined in your MySQL database  -wayneW
-)
-
-mycursor = mydb.cursor()
-
-mycursor.execute("CREATE DATABASE mydb")  # mydb is created to record the bookinfo. -wayneW
-
-mydb = mysql.connector.connect(
-  host="127.0.0.1",
-  user="www",   # please adjust the user name as same as local database user name  -wayneW
-  password="5566",  # change the password as you defined in your local database  -wayneW
-  database="mydb"   
-)
-
-mycursor = mydb.cursor()
-
-mycursor.execute("CREATE TABLE `book_info` (\
-  `uuid` varchar(45) NOT NULL,\
-  `title` varchar(45) NOT NULL,\
-  `email` varchar(40) NOT NULL,\
-  `timestamp` varchar(30) NOT NULL,\
-  PRIMARY KEY (`uuid`),\
-  UNIQUE KEY `uuid_UNIQUE` (`uuid`)\
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='for Swagger'")
-
-sql = "INSERT INTO `book_info` (`uuid`, `title`, `email`, `timestamp`)\
- VALUES ('8c36e86c-13b9-4102-a44f-646015d4d981', 'Proceedings of Artworks', 'wayneW@196.com', '1626859035.678335');"
-#  INSERT INTO `book`.`book_info` (`uuid`, `title`, `email`, `timestamp`)\
-#  VALUES ('95cfcu04-acb2-99af-d8d2-7612fab56335', 'Sound of Music', 'foxtel@siinga.com', '1526866035.977766');"
-
-mycursor.execute(sql)
-mydb.commit()
-print(mycursor.rowcount, "record inserted.")
-
-mydb.close() 
-
-
 # define the database-link parameter. -wayne W
 config = {
 "host":"127.0.0.1", # 地址
 "port":3306, # 端口
 "user":"www", # 用户名
 "password":"5566", # 密码
-"database":"mydb", # 数据库名;如果通过Python操作MySQL,要指定需要操作的数据库
+"database":"book", # 数据库名;如果通过Python操作MySQL,要指定需要操作的数据库
 "charset":"utf8"
 }
+
+
+#   oLocalDB:{
+#     host: process.env.DB_HOST ? process.env.DB_HOST : "localhost",
+#     user: process.env.DB_USER ? process.env.DB_USER : "root",
+#     password: process.env.DB_PASSWORD ? process.env.DB_PASSWORD : "group6db",
+#     database: process.env.DB_NAME ? process.env.DB_NAME : "g6DB"
+#   },
+
 
 # # get the data from local json file. -wayne W
 # # with open("./routes/data1.json", 'r', encoding='utf-8') as f:
@@ -95,6 +59,19 @@ config = {
 # #conn.close()
 #    db.close()
 
+#{   
+    # "8c36e86c-13b9-4102-a44f-646015dfd981": {
+    #    'title': u'Good Book',
+    #    'email': u'testuser1@test.com',
+    #    'timestamp': (datetime.today() - timedelta(1)).timestamp()
+    # },
+    # "04cfc704-acb2-40af-a8d3-4611fab54ada": {
+    #     'title': u'Cad Book',
+    #     'email': u'testuser2@test.com',
+    #     'timestamp': (datetime.today() - timedelta(2)).timestamp()
+    # }
+
+#}
 
 @REQUEST_API.route('/request', methods=['GET'])
 def get_records():
