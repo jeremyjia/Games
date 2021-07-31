@@ -268,7 +268,7 @@ public final class JsonSriptParser {
 		return bRunScript;
 	}
 
-	private static void combineAudios(String ffmpegPath, long secondOfAudio) throws Exception {
+	private static void combineAudios(String ffmpegPath, long secondsOfAudio) throws Exception {
 
 		int audioSize = audioList.size();
 		if (audioSize <= 0)
@@ -276,32 +276,55 @@ public final class JsonSriptParser {
 
 		String emptyMP3 = "tmpEmptyAduio.mp3";
 		String[] createEmptyAudioCmd = { ffmpegPath, "-y", "-f", "lavfi", "-i", "anullsrc=r=44100:cl=mono", "-t",
-				"0:0:0", "-t", String.valueOf(secondOfAudio), "-q:a", "9", "-acodec", "libmp3lame", emptyMP3 };
+				"0:0:0", "-t", String.valueOf(secondsOfAudio), "-q:a", "9", "-acodec", "libmp3lame", emptyMP3 };
 		ExecuteCommand.executeCommand(createEmptyAudioCmd, null, new File("."), null);
+		Thread.sleep(100);
 
 		List<String> combineCmdlist = new ArrayList<String>();
-		combineCmdlist.add(ffmpegPath);
+		if (isWindows) {
+			combineCmdlist.add(ffmpegPath);
+		}
 		combineCmdlist.add("-y");
-		String tmpMusicMP3 = "tmpMusic.mp3";
 
+		String tmpMusicMP3 = "tmpMusic.mp3";
+		String dir = System.getProperty("user.dir") + "/";
 		for (int i = 0; i < audioSize; i++) {
 			AudioParam audioObj = audioList.get(i);
 			String start = audioObj.start;
 			String aduioFilePath = audioObj.audioFile;
 			String aduioFile = FileUtil.downloadFileIfNeed(aduioFilePath);
 			String tmpAudio = "tmp_" + Integer.toString(i + 1) + ".mp3";
-			String[] insertAudioCmd = { ffmpegPath, "-y", "-i", emptyMP3, "-i", aduioFile, "-filter_complex",
-					"\"aevalsrc=0:d= " + start + " [s1];[s1][1:a]concat=n=2:v=0:a=1[aout]\"", "-c:v", "copy", "-map",
-					"0:v?", "-map", "[aout]", tmpAudio };
-			ExecuteCommand.executeCommand(insertAudioCmd, null, new File("."), null);
-			combineCmdlist.add("-i");
-			combineCmdlist.add(tmpAudio);
+
+			if (isWindows) {
+				String[] insertAudioCmd = { ffmpegPath, "-y", "-i", emptyMP3, "-i", aduioFile, "-filter_complex",
+						"\"aevalsrc=0:d= " + start + " [s1];[s1][1:a]concat=n=2:v=0:a=1[aout]\"", "-c:v", "copy",
+						"-map", "0:v?", "-map", "[aout]", tmpAudio };
+				ExecuteCommand.executeCommand(insertAudioCmd, null, new File("."), null);
+				combineCmdlist.add("-i");
+				combineCmdlist.add(tmpAudio);
+			} else {
+				String[] insertAudioCmd = { "-y", "-i", dir + emptyMP3, "-i", dir + aduioFile, "-filter_complex",
+						"aevalsrc=0:d= " + start + " [s1];[s1][1:a]concat=n=2:v=0:a=1[aout]", "-c:v", "copy", "-map",
+						"0:v?", "-map", "[aout]", dir + tmpAudio };
+				ExecuteCommand.executeCommand(ffmpegPath, insertAudioCmd);
+				combineCmdlist.add("-i");
+				combineCmdlist.add(dir + tmpAudio);
+			}
 		}
-		combineCmdlist.add("-filter_complex");
-		combineCmdlist.add("\"amix=inputs=" + audioSize + ":duration=longest:dropout_transition=0, volume=2\"");
-		combineCmdlist.add(tmpMusicMP3);
-		String[] combineCmd = combineCmdlist.toArray(new String[combineCmdlist.size()]);
-		ExecuteCommand.executeCommand(combineCmd, null, new File("."), null);
+
+		if (isWindows) {
+			combineCmdlist.add("-filter_complex");
+			combineCmdlist.add("\"amix=inputs=" + audioSize + ":duration=longest:dropout_transition=0, volume=2\"");
+			combineCmdlist.add(tmpMusicMP3);
+			String[] combineCmd = combineCmdlist.toArray(new String[combineCmdlist.size()]);
+			ExecuteCommand.executeCommand(combineCmd, null, new File("."), null);
+		} else {
+			combineCmdlist.add("-filter_complex");
+			combineCmdlist.add("amix=inputs=" + audioSize + ":duration=longest:dropout_transition=0, volume=2");
+			combineCmdlist.add(dir + tmpMusicMP3);
+			String[] combineCmd = combineCmdlist.toArray(new String[combineCmdlist.size()]);
+			ExecuteCommand.executeCommand(ffmpegPath, combineCmd);
+		}
 
 		MacroResolver.setProperty("VAR_BGAUDIO", tmpMusicMP3);
 	}
