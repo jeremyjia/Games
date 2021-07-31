@@ -289,6 +289,28 @@ public class FileUtil {
 			index++;
 		}
 
+		clearWorkSpace(System.getProperty("user.dir"));
+
+	}
+
+	public static void clearWorkSpace(String workSpace) {
+		File fileDir = new File(workSpace);
+		if (fileDir.exists()) {
+			delete_File(fileDir);
+		}
+	}
+
+	private static void delete_File(File file) {
+		if (file.isDirectory()) {
+			File[] files = file.listFiles();
+			for (int i = 0; i < files.length; i++) {
+				delete_File(files[i]);
+			}
+		}
+		String fileName = file.getName().toLowerCase();
+		if (fileName.startsWith("tmp") && fileName.endsWith("mp3")) {
+			file.delete();
+		}
 	}
 
 	public static int chmod(String args) throws Exception {
@@ -306,6 +328,8 @@ public class FileUtil {
 
 	public static void main(String[] args) {
 
+		String path = "C:\\jiaGameAll\\Games\\Spring\\target";
+		clearWorkSpace(path);
 		// 全局代理
 		// Properties prop = System.getProperties();
 		// prop.setProperty("socksProxyHost", "localhost");
