@@ -1,6 +1,7 @@
 """The Endpoints to manage the BOOK_REQUESTS"""
 import uuid
-import json
+import json  
+import pymysql  # need to install pymysql first -wayne W 
 from datetime import datetime, timedelta
 from flask import jsonify, abort, request, Blueprint
 
@@ -12,12 +13,51 @@ def get_blueprint():
     """Return the blueprint for the main app module"""
     return REQUEST_API
 
-# get the data from local json file. -wayne W
-with open("./routes/data1.json", 'r', encoding='utf-8') as f:
-  json_data = json.load(f)
-# print(json_data)
+# define the database-link parameter. -wayne W
+config = {
+"host":"127.0.0.1", # 地址
+"port":3306, # 端口
+"user":"www", # 用户名
+"password":"5566", # 密码
+"database":"book", # 数据库名;如果通过Python操作MySQL,要指定需要操作的数据库
+"charset":"utf8"
+}
 
-BOOK_REQUESTS = json_data
+
+#   oLocalDB:{
+#     host: process.env.DB_HOST ? process.env.DB_HOST : "localhost",
+#     user: process.env.DB_USER ? process.env.DB_USER : "root",
+#     password: process.env.DB_PASSWORD ? process.env.DB_PASSWORD : "group6db",
+#     database: process.env.DB_NAME ? process.env.DB_NAME : "g6DB"
+#   },
+
+
+# get the data from local json file. -wayne W
+# with open("./routes/data1.json", 'r', encoding='utf-8') as f:
+# 打开数据库连接
+db = pymysql.connect(**config)
+# 使用cursor()方法获取操作游标
+cursor = db.cursor()
+# SQL 查询语句
+sql = "SELECT * FROM book_info;"
+try:
+   # 执行SQL语句
+   cursor.execute(sql)
+   # 获取所有记录列表
+   results = cursor.fetchall()
+
+# json_data = json.load(f)
+# print(json_data)
+# BOOK_REQUESTS = json_data
+   BOOK_REQUESTS = results
+except:
+   print ("Error: unable to fetch the data")
+ 
+# 关闭数据库连接
+finally:
+#cursor.close()
+#conn.close()
+   db.close()
 
 #{   
     # "8c36e86c-13b9-4102-a44f-646015dfd981": {
@@ -29,20 +69,9 @@ BOOK_REQUESTS = json_data
     #     'title': u'Cad Book',
     #     'email': u'testuser2@test.com',
     #     'timestamp': (datetime.today() - timedelta(2)).timestamp()
-    # },
-    # "01c3e86c-13b9-4102-a44f-646015dfd966": {
-    #     'title': u'Land Book',
-    #     'email': u'testuser3@maple.com',
-    #     'timestamp': (datetime.today() - timedelta(3)).timestamp()
-    # },
-    # "56d3e86c-13b9-4102-a44f-646015dfd946": {
-    #     'title': u'Sea Book',
-    #     'email': u'testuser4@maple.com',
-    #     'timestamp': (datetime.today() - timedelta(4)).timestamp()
     # }
 
 #}
-
 
 @REQUEST_API.route('/request', methods=['GET'])
 def get_records():
@@ -50,7 +79,16 @@ def get_records():
     @return: 200: an array of all known BOOK_REQUESTS as a \
     flask/response object with application/json mimetype.
     """
-    return jsonify(BOOK_REQUESTS)
+    db = pymysql.connect(**config)
+    cursor = db.cursor()
+    sql = "SELECT * FROM book_info;"
+    try:
+       cursor.execute(sql)
+       results = cursor.fetchall()
+       BOOK_REQUESTS = results
+       db.close()
+    finally:
+       return jsonify(BOOK_REQUESTS)
 
 
 @REQUEST_API.route('/request/<string:_id>', methods=['GET'])
@@ -61,9 +99,28 @@ def get_record_by_id(_id):
     with application/json mimetype.
     @raise 404: if book request not found
     """
-    if _id not in BOOK_REQUESTS:
-        abort(404)
-    return jsonify(BOOK_REQUESTS[_id])
+    if _id == '':  # caution 如果第一次访问什么id都没输入，则程序应返回400
+        abort(400)
+    db = pymysql.connect(**config)
+    cursor = db.cursor()
+    sql = "SELECT * FROM book_info WHERE uuid = '" + _id + "';"
+
+    try:
+       cursor.execute(sql)
+       results = cursor.fetchall()
+       BOOK_REQUESTS = results
+       db.close()
+
+    except:
+       print ("Error: unable to fetch the data")
+
+    finally:
+       if _id == '{id}' or _id == '': #如果之前有过输入，则即使没有输入id，程序可返回400错误，因为系统默认输入了如下字符：{id}
+           abort(400)
+       if BOOK_REQUESTS == '[]': #caution 如果查询的返回结果为空，希望让程序返回404，但是没有成功
+           abort(404)
+       return jsonify(BOOK_REQUESTS)
+       
 
 
 @REQUEST_API.route('/request', methods=['POST'])
@@ -75,6 +132,7 @@ def create_record():
     with application/json mimetype.
     @raise 400: misunderstood request
     """
+    # INSERT INTO `book_info` (`uuid`, `title`, `email`, `timestamp`) VALUES ('95cfcu04-acb2-99af-d8d2-7612fab56336', 'Sound of Music', 'wayne@186.com', '1624575516.67565');
     if not request.get_json():
         abort(400)
     data = request.get_json(force=True)
@@ -87,20 +145,38 @@ def create_record():
         abort(400)
 
     new_uuid = str(uuid.uuid4())
-    book_request = {
-        'title': data['title'],
-        'email': data['email'],
-        'timestamp': datetime.now().timestamp()
-    }
-    BOOK_REQUESTS[new_uuid] = book_request
+    title = str(data['title'])
+    email = str(data['email'])
+    timestamp = str(datetime.now().timestamp())
+
+    # book_request = {
+    #     'title': data['title'],
+    #     'email': data['email'],
+    #     'timestamp': datetime.now().timestamp()
+    # }
+    # BOOK_REQUESTS[new_uuid] = book_request
+
+    db = pymysql.connect(**config)
+    cursor = db.cursor()
+    sql = "INSERT INTO book_info (`uuid`, `title`, `email`, `timestamp`) VALUES ('" + new_uuid + "', '" + title + "', '" + email + "', '" + timestamp + "');"
+    try:
+      cursor.execute(sql)
+      db.commit()  #Caution 这句非常重要，如果不写，就不会执行插入或更新操作。
+      db.close()
+
+    except:
+       print ("Error: unable to create the data")
+
+    finally:
+       return jsonify({"id": new_uuid}), 201
+       
+
+
     # save the new book to jason file, further jobs: need to rewrite the file under the formatal style for read it easily. -wayne W
-    # json_data = json.dumps(json_data)
-    fo = open("./routes/data1.json", "w")
-    # json.dump(str(jason_data),fo)
-    fo.write( str(json.dumps(json_data)) )
-    fo.close()
-    # HTTP 201 Created
-    return jsonify({"id": new_uuid}), 201
+    # fo = open("./routes/data1.json", "w")
+    # fo.write( str(json.dumps(json_data)) )
+    # fo.close()
+    #HTTP 201 Created    
     
 
 @REQUEST_API.route('/request/<string:_id>', methods=['PUT'])
@@ -131,7 +207,7 @@ def edit_record(_id):
         'email': data['email'],
         'timestamp': datetime.now().timestamp()
     }
-
+#  UPDATE `book`.`book_info` SET `title` = 'Pursue the Art', `email` = 'abdy@116.com', `timestamp` = '1524678397.05234' WHERE (`uuid` = '8c36e86c-13b9-4102-a44f-646015dfd982');
     BOOK_REQUESTS[_id] = book_request
     # save the new book to jason file, further jobs: need to rewrite the file under the formatal style for read it easily. -wayne W
     fo = open("./routes/data1.json", "w")
