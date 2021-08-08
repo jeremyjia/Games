@@ -23,7 +23,7 @@ def get_blueprint():
 # DB_NAME = "abc"
 DB_NAME = str(os.getenv('dbname1'))
 if DB_NAME == "None":
-    DB_NAME = "mydb1"
+    DB_NAME = "mydb"
 
 mydb = mysql.connector.connect(
   host="127.0.0.1",
