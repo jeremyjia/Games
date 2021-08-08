@@ -1,6 +1,8 @@
 package com.pbz.demo.hello.controller;
 
 import java.io.File;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -9,13 +11,16 @@ import java.util.concurrent.Semaphore;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.pbz.demo.hello.util.ExecuteCommand;
 import com.pbz.demo.hello.util.FileUtil;
+import com.pbz.demo.hello.util.NetAccessUtil;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -28,7 +33,7 @@ import springfox.documentation.annotations.ApiIgnore;
 public class CommonController {
 	private static Semaphore semaphore = new Semaphore(1);
 	private static final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
-	
+
 	@Value("${server.version}")
 	private String app_version;
 
@@ -98,29 +103,119 @@ public class CommonController {
 
 		return ret;
 	}
-	
+
+	@RequestMapping(value = "/commit2github", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> commitFiles2GitHub(@RequestParam(name = "files") String files,
+			@RequestParam(name = "comments", defaultValue = "add files") String comments) throws Exception {
+
+		Map<String, Object> status = new HashMap<String, Object>();
+
+		String gitPath = "git";
+		if (!isWindows) {
+			gitPath = "/usr/bin/git";
+		}
+
+		String[] addCmd = { gitPath, "add", files };
+		boolean bRes = ExecuteCommand.executeCommand(addCmd, null, new File("."), null);
+
+		String[] commitCmd = { gitPath, "commit", "-m", comments };
+		bRes = ExecuteCommand.executeCommand(commitCmd, null, new File("."), null);
+
+		String[] pushCmd = { gitPath, "push" };
+		bRes = ExecuteCommand.executeCommand(pushCmd, null, new File("."), null);
+
+		if (bRes) {
+			status.put("Status", "OK!");
+		} else {
+			status.put("Status", "Failed!");
+		}
+		return status;
+	}
+
+	@RequestMapping(value = "/comments/add", method = RequestMethod.POST)
+	@ResponseBody
+	public String addOneNewComment(@RequestParam("issueId") Long issueId, @RequestBody String jsonString)
+			throws Exception {
+
+		jsonString = URLEncoder.encode(jsonString, "UTF-8");
+		jsonString = URLDecoder.decode(jsonString, "UTF-8");
+		System.out.println("addOneNewComment:" + jsonString);
+
+		String url = "https://api.github.com/repos/jeremyjia/Games/issues/" + issueId + "/comments";
+		String jsonResponseString = NetAccessUtil.doPostOnGitHub(url, "POST", jsonString);
+		String newCommentId = "";
+		if (jsonResponseString != "") {
+			int index = jsonResponseString.indexOf(",");
+			jsonResponseString = jsonResponseString.substring(0, index - 1);
+			index = jsonResponseString.lastIndexOf("/");
+			newCommentId = jsonResponseString.substring(index + 1);
+		}
+		System.out.println("newCommentId:" + newCommentId);
+
+		return newCommentId;
+	}
+
+	@RequestMapping(value = "/comments/update", method = RequestMethod.POST)
+	@ResponseBody
+	public String updateOneComment(@RequestParam("commentId") Long commentId, @RequestBody String updateString)
+			throws Exception {
+		updateString = URLEncoder.encode(updateString, "UTF-8");
+		updateString = URLDecoder.decode(updateString, "UTF-8");
+		System.out.println("updateOneComment:" + updateString);
+
+		String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentId;
+		String jsonResponseString = NetAccessUtil.doPostOnGitHub(url, "POST", updateString);
+		return jsonResponseString;
+	}
+
+	@RequestMapping(value = "/comments/read", method = RequestMethod.GET)
+	@ResponseBody
+	public String readOneComment(@RequestParam("commentId") Long commentId) throws Exception {
+
+		String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentId;
+		String resultString = NetAccessUtil.doGetOnGitHub(url, "");
+
+		String readString = "";
+		if (!resultString.isEmpty()) {
+			resultString = resultString.substring(resultString.indexOf("body") + 7);
+			int index = resultString.lastIndexOf(",");
+			readString = resultString.substring(0, index - 1);
+		}
+		return readString;
+	}
+
+	@RequestMapping(value = "/comments/delete", method = RequestMethod.DELETE)
+	@ResponseBody
+	public String deleteOneComment(@RequestParam("commentId") Long commentId) throws Exception {
+
+		String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentId;
+		String resultString = NetAccessUtil.doPostOnGitHub(url, "DELETE", "");
+		return resultString;
+	}
+
 	@ApiOperation(value = "获取版本信息", notes = "获取应用版本、服务器等信息")
 	@RequestMapping(value = "/getServerInfo", method = RequestMethod.GET)
 	@ResponseBody
 	public LinkedHashMap<String, Object> getServerInfo() {
 		LinkedHashMap<String, Object> ret = new LinkedHashMap<String, Object>();
 		ret.put("Application Version", app_version);
-		
+
 		String app_path = System.getProperty("user.dir");
 		ret.put("Application Path", app_path);
-		
+
 		String os_name = System.getProperty("os.name");
 		ret.put("OS Name", os_name);
-		
+
 		String os_version = System.getProperty("os.version");
 		ret.put("OS Version", os_version);
-		
+
 		String os_arch = System.getProperty("os.arch");
 		ret.put("OS Architecture", os_arch);
-		
+
 		String java_version = System.getProperty("java.version");
 		ret.put("Java Runtime Version", java_version);
-		
+
 		return ret;
 	}
 }

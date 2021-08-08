@@ -10,6 +10,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -18,6 +21,10 @@ import java.nio.file.Paths;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSessionContext;
 
 import org.jaudiotagger.audio.mp3.MP3AudioHeader;
 import org.jaudiotagger.audio.mp3.MP3File;
@@ -156,7 +163,23 @@ public class FileUtil {
 		try {
 			url = fixUrl(url);
 			URL fileUrl = new URL(url);
-			InputStream is = fileUrl.openStream();
+			InputStream is = null;
+			// Proxy
+			boolean b = false;
+			if (b) {
+				javax.net.ssl.TrustManager[] trustAllCerts = { new TrustAllTrustManager() };
+				SSLContext sc = SSLContext.getInstance("SSL");
+				SSLSessionContext sslsc = sc.getServerSessionContext();
+				sslsc.setSessionTimeout(0);
+				sc.init(null, trustAllCerts, null);
+				HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+				HttpsURLConnection.setDefaultHostnameVerifier(new NullHostnameVerifier());
+				Proxy proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress("localhost", 4567));
+				HttpURLConnection urlc = (HttpURLConnection) fileUrl.openConnection(proxy);
+				is = urlc.getInputStream();
+			} else {
+				is = fileUrl.openStream();
+			}
 			OutputStream os = new FileOutputStream(saveFilePath);
 			byte bf[] = new byte[1024];
 			int length = 0;
@@ -166,7 +189,7 @@ public class FileUtil {
 			is.close();
 			os.close();
 		} catch (Exception e) {
-			System.out.println(e.getMessage());
+			System.out.println("Error:" + e.getMessage());
 		}
 	}
 
@@ -244,6 +267,52 @@ public class FileUtil {
 		return b.toString();
 	}
 
+	public static void removeTempFiles() {
+		int index = 1;
+		while (true) {
+			String jpgFilePath = System.getProperty("user.dir") + "/" + Integer.toString(index) + ".jpg";
+			File jpgFile = new File(jpgFilePath);
+
+			String jpegFilePath = System.getProperty("user.dir") + "/" + Integer.toString(index) + ".jpeg";
+			File jpegFile = new File(jpegFilePath);
+
+			if (!jpgFile.exists() && !jpegFile.exists()) {
+				break;
+			}
+			if (jpgFile.exists()) {
+				jpgFile.delete();
+
+			}
+			if (jpegFile.exists()) {
+				jpegFile.delete();
+			}
+			index++;
+		}
+
+		clearWorkSpace(System.getProperty("user.dir"));
+
+	}
+
+	public static void clearWorkSpace(String workSpace) {
+		File fileDir = new File(workSpace);
+		if (fileDir.exists()) {
+			delete_File(fileDir);
+		}
+	}
+
+	private static void delete_File(File file) {
+		if (file.isDirectory()) {
+			File[] files = file.listFiles();
+			for (int i = 0; i < files.length; i++) {
+				delete_File(files[i]);
+			}
+		}
+		String fileName = file.getName().toLowerCase();
+		if (fileName.startsWith("tmp") && fileName.endsWith("mp3")) {
+			file.delete();
+		}
+	}
+
 	public static int chmod(String args) throws Exception {
 		int result = -1;
 		try {
@@ -255,5 +324,43 @@ public class FileUtil {
 		}
 		return result;
 
+	}
+
+	public static void main(String[] args) {
+
+		String path = "C:\\jiaGameAll\\Games\\Spring\\target";
+		clearWorkSpace(path);
+		// 全局代理
+		// Properties prop = System.getProperties();
+		// prop.setProperty("socksProxyHost", "localhost");
+		// prop.setProperty("socksProxyPort", "4567");
+
+		// https://learningenglish.voanews.com/z/3521&filename=AsItIs.html
+		String strUrl = "https://learningenglish.voanews.com/z/3521";
+		// strUrl = "http://news.baidu.com";
+		// strUrl = "https://www.google.com";
+		// ProxySelector.getDefault();
+		// System.setProperty("java.net.preferIPv4Stack", "true");
+		// System.setProperty("jdk.tls.useExtendedMasterSecret", "false");
+		downloadFile(strUrl, "/Users/jeremy/temp/asItis.html");
+		try {
+			URL url = new URL(strUrl);
+			InetSocketAddress addr = new InetSocketAddress("localhost", 4567);
+			Proxy proxy = new Proxy(Proxy.Type.SOCKS, addr); // Socket 代理
+			URLConnection conn = url.openConnection(proxy);
+			InputStream is = conn.getInputStream();
+			OutputStream os = new FileOutputStream("/Users/jeremy/temp/download1.html");
+			byte bf[] = new byte[1024];
+			int length = 0;
+			while ((length = is.read(bf, 0, 1024)) != -1) {
+				os.write(bf, 0, length);
+			}
+			is.close();
+			os.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+		}
+		System.out.println("OK!");
 	}
 }

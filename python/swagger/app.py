@@ -47,7 +47,6 @@ APP.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
 
 APP.register_blueprint(request_api.get_blueprint())
 
-
 @APP.errorhandler(400)
 def handle_400_error(_error):
     """Return a http 400 error to client"""

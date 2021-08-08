@@ -29,6 +29,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.pbz.demo.hello.model.AOIArea;
+import com.pbz.demo.hello.model.AudioParam;
 import com.pbz.demo.hello.service.VOAService;
 import com.pbz.demo.hello.util.engine.JSGraphEngine;
 
@@ -37,6 +38,7 @@ public final class JsonSriptParser {
 	private static final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
 	private static List<Map<String, Object>> supperObjectsMapList = new ArrayList<Map<String, Object>>();
 	private static Map<Integer, AOIArea> aoiMap = new HashMap<>();
+	private static List<AudioParam> audioList = new ArrayList<>();
 	private static VOAService service = new VOAService();
 
 	private static ScriptEngineManager mgr = new ScriptEngineManager();
@@ -99,16 +101,21 @@ public final class JsonSriptParser {
 		JSONObject requestObj = getJsonObjectbyName(jsonObj, "request");
 		supperObjectsMapList.clear();
 		aoiMap.clear();
+		audioList.clear();
 		MacroResolver.setProperty(currentScript, "");
+		MacroResolver.setProperty("VAR_BGAUDIO", "");
 
 		initMap(requestObj);
 		String version = requestObj.getString("version");
 		System.out.println("剧本版本:" + version);
 		int width = requestObj.getInt("width");
 		int height = requestObj.getInt("height");
-		String audioFilePath = requestObj.getString("music");
+		String audioFilePath = requestObj.optString("music");
+		String videoFilePath = requestObj.optString("video");
 		String rate = requestObj.getString("rate");
 		int index = 0;
+
+		extractInfoFromVideo(videoFilePath, rate);
 
 		Iterator<String> keys = requestObj.keys();
 		while (keys.hasNext()) {
@@ -151,6 +158,13 @@ public final class JsonSriptParser {
 						}
 						if (bgImg != null) {
 							g.drawImage(bgImg, 0, 0, width, height, null);
+						}
+
+						String jpegFile = System.getProperty("user.dir") + "/" + Integer.toString(index + 1) + ".jpeg";
+						File file = new File(jpegFile);
+						if (file.exists()) {
+							Image videoImage = ImageIO.read(file);
+							g.drawImage(videoImage, 0, 0, width, height, null);
 						}
 
 						JSONArray objectArray = frameObj.getJSONArray("objects");
@@ -219,16 +233,22 @@ public final class JsonSriptParser {
 			}
 		}
 
-		// Download audio file
-		String audioFile = FileUtil.downloadFileIfNeed(audioFilePath);
+		double dRate = Double.parseDouble(rate);
+		long secondOfAudio = (long) ((double) index / dRate);
+		secondOfAudio += 2;
+		combineAudios(ffmpegPath, secondOfAudio);
+
+		String audioFile = MacroResolver.getProperty("VAR_BGAUDIO");
+		if (audioFile != null && audioFile.trim().length() != 0) {
+			audioFile = MacroResolver.getProperty("VAR_BGAUDIO");
+		} else {
+			audioFile = FileUtil.downloadFileIfNeed(audioFilePath);
+		}
 		// Cut the audio
 		if (!new File(audioFile).exists()) {
 			throw new Exception("The audio file " + audioFile + " doesn't exist!");
 		}
 		String tmpAudioFile = "tmpAudio.mp3";
-		double dRate = Double.parseDouble(rate);
-		long secondOfAudio = (long) ((double) index / dRate);
-		secondOfAudio += 2;
 		String endTime = milliSecondToTime(secondOfAudio * 1000);
 		String[] cutAudioCmd = { ffmpegPath, "-y", "-i", audioFile, "-ss", "0:0:0", "-to", endTime, "-c", "copy",
 				tmpAudioFile };
@@ -246,6 +266,92 @@ public final class JsonSriptParser {
 			MacroResolver.setProperty("VAR_GIF_ENABLED", "true");
 		}
 		return bRunScript;
+	}
+
+	private static void combineAudios(String ffmpegPath, long secondsOfAudio) throws Exception {
+
+		int audioSize = audioList.size();
+		if (audioSize <= 0)
+			return;
+
+		String emptyMP3 = "tmpEmptyAduio.mp3";
+		String[] createEmptyAudioCmd = { ffmpegPath, "-y", "-f", "lavfi", "-i", "anullsrc=r=44100:cl=mono", "-t",
+				"0:0:0", "-t", String.valueOf(secondsOfAudio), "-q:a", "9", "-acodec", "libmp3lame", emptyMP3 };
+		ExecuteCommand.executeCommand(createEmptyAudioCmd, null, new File("."), null);
+		Thread.sleep(100);
+
+		List<String> combineCmdlist = new ArrayList<String>();
+		if (isWindows) {
+			combineCmdlist.add(ffmpegPath);
+		}
+		combineCmdlist.add("-y");
+
+		String tmpMusicMP3 = "tmpMusic.mp3";
+		String dir = System.getProperty("user.dir") + "/";
+		for (int i = 0; i < audioSize; i++) {
+			AudioParam audioObj = audioList.get(i);
+			String start = audioObj.start;
+			String aduioFilePath = audioObj.audioFile;
+			String aduioFile = FileUtil.downloadFileIfNeed(aduioFilePath);
+			String tmpAudio = "tmp_" + Integer.toString(i + 1) + ".mp3";
+
+			if (isWindows) {
+				String[] insertAudioCmd = { ffmpegPath, "-y", "-i", emptyMP3, "-i", aduioFile, "-filter_complex",
+						"\"aevalsrc=0:d= " + start + " [s1];[s1][1:a]concat=n=2:v=0:a=1[aout]\"", "-c:v", "copy",
+						"-map", "0:v?", "-map", "[aout]", tmpAudio };
+				ExecuteCommand.executeCommand(insertAudioCmd, null, new File("."), null);
+				combineCmdlist.add("-i");
+				combineCmdlist.add(tmpAudio);
+			} else {
+				String[] insertAudioCmd = { "-y", "-i", dir + emptyMP3, "-i", dir + aduioFile, "-filter_complex",
+						"aevalsrc=0:d= " + start + " [s1];[s1][1:a]concat=n=2:v=0:a=1[aout]", "-c:v", "copy", "-map",
+						"0:v?", "-map", "[aout]", dir + tmpAudio };
+				ExecuteCommand.executeCommand(ffmpegPath, insertAudioCmd);
+				combineCmdlist.add("-i");
+				combineCmdlist.add(dir + tmpAudio);
+			}
+		}
+
+		if (isWindows) {
+			combineCmdlist.add("-filter_complex");
+			combineCmdlist.add("\"amix=inputs=" + audioSize + ":duration=longest:dropout_transition=0, volume=2\"");
+			combineCmdlist.add(tmpMusicMP3);
+			String[] combineCmd = combineCmdlist.toArray(new String[combineCmdlist.size()]);
+			ExecuteCommand.executeCommand(combineCmd, null, new File("."), null);
+		} else {
+			combineCmdlist.add("-filter_complex");
+			combineCmdlist.add("amix=inputs=" + audioSize + ":duration=longest:dropout_transition=0, volume=2");
+			combineCmdlist.add(dir + tmpMusicMP3);
+			String[] combineCmd = combineCmdlist.toArray(new String[combineCmdlist.size()]);
+			ExecuteCommand.executeCommand(ffmpegPath, combineCmd);
+		}
+
+		MacroResolver.setProperty("VAR_BGAUDIO", tmpMusicMP3);
+	}
+
+	private static void extractInfoFromVideo(String videoFilePath, String rate) throws Exception {
+		if (videoFilePath == null || videoFilePath.trim().length() == 0) {
+			return;
+		}
+		String ffmpegPath = "ffmpeg";
+		if (!isWindows) {
+			ffmpegPath = "/usr/bin/ffmpeg";
+			if (!new File(ffmpegPath).exists()) {
+				ffmpegPath = "/usr/local/bin/ffmpeg";
+			}
+		}
+
+		String videoFile = FileUtil.downloadFileIfNeed(videoFilePath);
+		if (!new File(videoFile).exists()) {
+			throw new Exception("The video file " + videoFile + " doesn't exist!");
+		}
+		String[] extractPicturesCmd = { ffmpegPath, "-y", "-i", videoFile, "-r", rate, "-f", "image2", "%d.jpeg" };
+		ExecuteCommand.executeCommand(extractPicturesCmd, null, new File("."), null);
+
+		String extractMP3 = "extractAudio.mp3";
+		String[] extractAudioCmd = { ffmpegPath, "-y", "-i", videoFile, extractMP3 };
+		ExecuteCommand.executeCommand(extractAudioCmd, null, new File("."), null);
+		MacroResolver.setProperty("VAR_BGAUDIO", extractMP3);
 	}
 
 	private static void drawOrdinaryObjects(JSONObject obj, Graphics2D g) throws IOException {
@@ -338,6 +444,18 @@ public final class JsonSriptParser {
 						AOIArea area = new AOIArea(x1, y1, x2, y2);
 						aoiMap.put(i, area);
 					}
+				}
+			} else if (key.equalsIgnoreCase("audioObjects")) {
+				JSONArray audioArray = (JSONArray) requestObj.get(key);
+				for (Object audio : audioArray) {
+					if (!(audio instanceof JSONObject)) {
+						continue;
+					}
+					JSONObject audioObj = (JSONObject) audio;
+					String startTime = audioObj.getString("start");
+					String audioFile = audioObj.getString("audioFile");
+					AudioParam audioParam = new AudioParam(startTime, audioFile);
+					audioList.add(audioParam);
 				}
 			}
 		}

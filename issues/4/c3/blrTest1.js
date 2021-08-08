@@ -1,20 +1,49 @@
 
 
 var v = bl$("id_4_div_i4_c3_blrTest1");
-v.b1 = blo0.blBtn(v,v.id+"b1","b1",blGrey[0]);
-v.b1.onclick = function(){
-    var ta = bl$("id_4_ta_blrRunJS");
-    ta.value = this.id;
+var ta = bl$("id_4_ta_blrRunJS");
+var _getCurPath = function(){
+    var _curPath= "";
+    var sss = blo0.blURL(); 
+    var pos = sss.search("issues");
+        
+    var pos = sss.search("issues");
+    if(pos!=-1){
+        _curPath = "c3/";
+    }
+    else{
+        _curPath = "issues/4/c3/"
+    }
+    return _curPath;
+}
+v.bs = [];
+v.getBtn = function(i){
+    return v.bs[i];
 }
 
-v.b2 = blo0.blBtn(v,v.id+"b2","b2",blGrey[0]);
-v.b2.onclick = function(){
-    var ta = bl$("id_4_ta_blrRunJS");
-    ta.value = this.id;
-}
+var n = 1;
+var s = blo0.blBtn(v,v.id+"s"+n,"fwTest",blGrey[0]); s.n = n; v.bs.push(s); n++;
+var s = blo0.blBtn(v,v.id+"s"+n,"voa2Video",blGrey[0]); s.n = n; v.bs.push(s); n++;
+var s = blo0.blBtn(v,v.id+"s"+n,"blsEditor",blGrey[0]); s.n = n; v.bs.push(s); n++;
+var s = blo0.blBtn(v,v.id+"s"+n,n,blGrey[0]); s.n = n; v.bs.push(s); n++;
 
-v.b3 = blo0.blBtn(v,v.id+"b3","b3",blGrey[0]);
-v.b3.onclick = function(){
-    var ta = bl$("id_4_ta_blrRunJS");
-    ta.value = "alert(3);";
-}
+for(i in v.bs){
+    v.bs[i].onclick = function(_i,_bs){
+        return function(){  	
+            var _thisBtn = _bs[_i];						  
+            for(j in _bs){                           
+                if(_bs[j].n==_bs[_i].n){
+                    _bs[j].style.backgroundColor = "yellow";
+				}
+				else{
+                    _bs[j].style.backgroundColor = "grey";
+				}
+			}
+            
+            if(!_thisBtn.load){blo0.blScript("id_4_js_i4_c3_sample" + _thisBtn.n, _getCurPath() + "sample" + _thisBtn.n + ".js");_thisBtn.load=true;} 
+            else{
+                ta.value = _thisBtn.value;
+            } 
+        }
+    }(i,v.bs);
+} 

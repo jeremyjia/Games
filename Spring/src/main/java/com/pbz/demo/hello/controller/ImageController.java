@@ -131,8 +131,12 @@ public class ImageController {
 			@RequestParam(name = "audiofile") String audioFile) throws Exception {
 		ModelAndView mv = new ModelAndView();
 		mv.setViewName("video.html");
+		FileUtil.removeTempFiles();
+
 		String strResultMsg = "将字幕文件与音频文件合成视频文件出错！";
-		String path = System.getProperty("user.dir") + "/" + subtitleFile;
+		String subtitleFileName = FileUtil.downloadFileIfNeed(subtitleFile);
+		String audioFileName = FileUtil.downloadFileIfNeed(audioFile);
+		String path = System.getProperty("user.dir") + "/" + subtitleFileName;
 		int number = subtitleImageService.saveSubtitleToImageFile(path, 800, 600);
 		if (number > 0) {
 			String suffix = isWindows ? ".bat" : ".sh";
@@ -146,10 +150,14 @@ public class ImageController {
 					ffmpegPath = "/usr/local/bin/ffmpeg";
 				}
 			}
-			String[] cmds = { ffmpegPath, "-y", "-i", subtitle_video_name, "-i", audioFile, final_video_name };
+			String[] cmds = { ffmpegPath, "-y", "-i", subtitle_video_name, "-i", audioFileName, final_video_name };
 			boolean b = ExecuteCommand.executeCommand(cmds, null, new File("."), null);
 			if (b) {
 				strResultMsg = "已为您合成视频文件，点击即可播放视频";
+				String strVideoUrl = "http://localhost:" + app_port + "/" + final_video_name;
+				String strHomePageUrl = "http://localhost:" + app_port;
+				mv.addObject("video_url", strVideoUrl);
+				mv.addObject("home_page_url", strHomePageUrl);
 			}
 		}
 		mv.addObject("message", strResultMsg);
@@ -169,16 +177,8 @@ public class ImageController {
 		ModelAndView mv = new ModelAndView();
 		mv.setViewName("video.html");
 		MacroResolver.setProperty("video_name", videoName);
-		int index = 1;
-		while (true) {
-			String jpgFile = System.getProperty("user.dir") + "/" + Integer.toString(index) + ".jpg";
-			File file = new File(jpgFile);
-			if (file.exists()) {
-				file.delete();
-			} else
-				break;
-			index++;
-		}
+		FileUtil.removeTempFiles();
+
 		String strResultMsg = "根据剧本生成视频出错啦！";
 		boolean b = false;
 		try {
@@ -203,7 +203,7 @@ public class ImageController {
 		String strVideoUrl = "http://localhost:" + app_port + "/" + videoName;
 		String strHomePageUrl = "http://localhost:" + app_port;
 		if (b) {
-			strResultMsg = "已为您合成视频文件，点击即可播放视频，视频链接：" + strVideoUrl;
+			strResultMsg = "已为您合成视频文件，点击即可播放视频，视频链接：";
 		}
 		mv.addObject("message", strResultMsg);
 		mv.addObject("video_url", strVideoUrl);

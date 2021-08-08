@@ -1,11 +1,12 @@
 //i4c3  
-var s= "v0.0. 123 "; 
+var s= "v0.0. 135 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c3.js'"
 s += " style='color:blue;'";		s +=">"; s += "c3.js* ";
-s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c3.js'"
+s += "<a target='_blank' href='issues/4/c3.js'"
 s += " style='color:green;'";		s +=">"; s += "c3.js ";
-s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c3Test.html'"
+s += "<a target='_blank' href='issues/4/c3Test.html'"
 s += " style='color:brown;'";		s +=">"; s += "c3Test.html";
+s += "</a>";
 
 // blo0 是 blclass 库中的一个全局对象
 // 调用 blo0.blDiv 接口函数，创建 DIV。 
@@ -19,9 +20,10 @@ if(!md.run){
 	style += "background-color: #f1f1f1;";
 	style += "text-align: center;";
 	style += "border: 1px solid #d3d3d3;";
-	style += "left: 400px";
-	style += "top: 40px";
-	style += "width: 540px";
+	style += "left: 11px;";
+	style += "top: 40px;";
+	style += "width: " + "555" + "px;";
+	style += "height: " + "333" + "px;";
 	md .style =style;
     // 调用 blo0.blDiv 接口函数，创建 DIV，没有传入颜色参数。 
 	var title = blo0.blDiv(md , "div_ID_4_I4C3" + "Header", "Header");
@@ -34,9 +36,7 @@ if(!md.run){
 	title.style =style;
  
     // 调用 blo0.blMakeDivMovable 接口函数，让 DIV 可拖动
-    blo0.blMakeDivMovable(md );
-	md.style.left = "400px";
-	md.style.top = "40px";
+    blo0.blMakeDivMovable(md ); 
 
 	// 调用 blo0.blDiv 接口函数，创建 DIV。 
 	md.v = blo0.blDiv(md,md.id+"v","v",blColor[0]);
@@ -46,7 +46,10 @@ if(!md.run){
     // 调用的全局接口函数 bl$,获取 id 为 “blrRunJS" 的 DOM对象（此处为按钮，点击此按钮）
     if(bl$("blrRunJS")){bl$("blrRunJS").click();} 
     // 调用的全局接口函数 bl$,获取 id 为 “blrRunJS" 的 DOM对象（此处为按钮，点击此按钮）
-    if(bl$("blrTest1")){bl$("blrTest1").click();bl$("blrTest1").click();} 
+    if(bl$("blrTest1")){
+		bl$("blrTest1").click();
+		//bl$("blrTest1").click();
+	} 
 }
 // 调用全局接口函数 _on_off_div，打开或关闭 DIV（此处为 md)
 _on_off_div(this,md);
@@ -60,19 +63,17 @@ function _myJobClass(){
 	
 	var pos = sss.search("issues");
 	if(pos!=-1){
-					lastPath = "c3/";
-				}
+		lastPath = "c3/";
+	}
 	else{
-					lastPath = "issues/4/c3/"
+		lastPath = "issues/4/c3/"
 	}
 
     this.bll0=  "<div id = 'id_div_4__myJobClass' title = 'title: _myJobClass'> [" + lastPath + "] _myJobClass: v0.0. 24</div>";
  
 	this.blrTest1 = function(b,d){
 		if(!d.v){ 
-			d.v = blo0.blDiv(d, "id_4_div_i4_c3_blrTest1","test1",blGrey[5]); 
-
-			
+			d.v = blo0.blDiv(d, "id_4_div_i4_c3_blrTest1","test1",blGrey[5]); 			
 			blo0.blScript("id_4_js_i4_c3_blrTest1",lastPath + "blrTest1.js");
 		}
 		_on_off_div(b,d);	
@@ -88,7 +89,7 @@ function _myJobClass(){
 			// 调用 jsClass 的 blo0.blTextarea 接口函数，创建 Textarea 
 			d.v.ta = blo0.blTextarea(d.v,"id_4_ta_blrRunJS","alert(1);",blGrey[3]);
 	        d.v.ta.style.width="95%"; 
-	        d.v.ta.style.height="150px"; 
+	        d.v.ta.style.height="444"+"px"; 
 
 
 			// 调用 jsClass 的 blo0.blDiv 接口函数，创建 DIV。 
@@ -102,7 +103,12 @@ function _myJobClass(){
 				var _i = 0;
 				var _s = "<a target='_balnk' href ='";
 				_s += "https://github.com/jeremyjia/Games/issues/21'";
-				_s += ">#21</a>"; 
+				_s += ">issue#21</a>"; 
+				
+				_s += "<a target='_balnk' href ='";
+				_s += "https://jeremyjia.github.io/Games/issues/21'";
+				_s += ">page#21</a>"; 
+
 				var _v = blo0.blDiv(d.v,d.v.id+"_v", _s, blGrey[1]);
 				_v.bs = [];
 				for(i in o){
