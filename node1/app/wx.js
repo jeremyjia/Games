@@ -1,5 +1,5 @@
  const tag = "wx.js";
 
 module.exports = function(){ 
-  return 'to test wx: doing.';
+  return 'to test wx: done.';
 }
