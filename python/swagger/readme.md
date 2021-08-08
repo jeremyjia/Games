@@ -2,6 +2,7 @@
 
 Aim to connect diverse databases, like MySQL, MangoDB, and .json files, to fulfill the expanding function via setting Environment Variables.
 
+Before run app.py, kindly ensure that your client has already installed the MySQL database (like mysql-installer-web-community editoin) or MangoDB properly, and you have done with the initialization process.
 
 ### MIT License
 Rememeber, No guarantees, or even fit for a particular purpose.
