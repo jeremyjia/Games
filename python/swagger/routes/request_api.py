@@ -22,7 +22,6 @@ def get_blueprint():
 
 # DB_NAME = "abc"
 DB_NAME = str(os.getenv('dbname1'))
-print (DB_NAME)
 if DB_NAME == "None":
     DB_NAME = "mydb1"
 
@@ -102,7 +101,6 @@ config = {
 # #cursor.close()
 # #conn.close()
 #    db.close()
-
 
 @REQUEST_API.route('/request', methods=['GET'])
 def get_records():
