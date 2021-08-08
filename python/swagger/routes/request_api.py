@@ -1,6 +1,8 @@
 """The Endpoints to manage the BOOK_REQUESTS"""
-# READ ME: before run app.py, you may help yourself adjust some codes in this file, including line 22, 23, 32 and 33 line as the detailed instruction below. -wayneW
-# Some problem: after you run the app.py successfully, you may annotate line 19 to 60 as you have already created the database, or the app.py cannot run correctly. -wayneW
+# READ ME: before run app.py, kindly ensure that your client has already installed the MySQL database (like mysql-installer-web-community editoin) properly, and you have done with the initialization process.\ 
+# Also, you may help yourself adjust some codes in this file, including lines 22, 23, 32 and 33 line as the detailed instruction below. -wayneW
+# Some problem: after you run the app.py successfully, you may annotate lines 19 to 60 as you have already created the database, or the app.py cannot run correctly. -wayneW
+import os
 import uuid
 import json  
 import pymysql  # need to install pymysql first -wayne W
@@ -18,6 +20,12 @@ def get_blueprint():
 
 # initializaed local database via creation a new database
 
+# DB_NAME = "abc"
+DB_NAME = str(os.getenv('dbname1'))
+print (DB_NAME)
+if DB_NAME == "None":
+    DB_NAME = "mydb1"
+
 mydb = mysql.connector.connect(
   host="127.0.0.1",
   user="www",  # please adjust the user name as same as the local MySQL's user name  -wayneW
@@ -25,14 +33,14 @@ mydb = mysql.connector.connect(
 )
 
 mycursor = mydb.cursor()
-
-mycursor.execute("CREATE DATABASE mydb")  # mydb is created to record the bookinfo. -wayneW
+# 可以加一条判断 如果数据库已经存在 则跳过此步骤
+mycursor.execute("CREATE DATABASE " + DB_NAME)  # mydb is created to record the bookinfo. -wayneW
 
 mydb = mysql.connector.connect(
   host="127.0.0.1",
   user="www",   # please adjust the user name as same as local database user name  -wayneW
   password="5566",  # change the password as you defined in your local database  -wayneW
-  database="mydb"   
+  database=DB_NAME  
 )
 
 mycursor = mydb.cursor()
@@ -102,6 +110,17 @@ def get_records():
     @return: 200: an array of all known BOOK_REQUESTS as a \
     flask/response object with application/json mimetype.
     """
+    print ("begin")
+    
+    a = os.getenv('ENV_WINDIR')
+    b = os.environ.get('WINDIR')
+    # c = os.environ('ENV_PORT')
+    d = os.getenv('windir')
+    print (a)
+    print (b)
+    # print (c)
+    print (d)
+    print ("end")
     db = pymysql.connect(**config)
     cursor = db.cursor()
     sql = "SELECT * FROM book_info;"
