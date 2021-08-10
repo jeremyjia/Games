@@ -134,6 +134,18 @@ function updateGitHubComment(commentId, jsonAll)
       });
 }
 
+function uploadFileToGitHub(message, filePath, base64FileContent)
+{
+  var url = "https://api.github.com/repos/jeremyjia/Games/contents/"+filePath+"?access_token="+getToken();
+  var data= {
+   "message":message,
+   "content": base64FileContent
+  };
+  
+  myAjaxCmd('PUT',url, data, function(res) {         
+      });
+}
+
 
 //This is a common method used for sending or receving information from Github
 function myAjaxCmd(method, url, data, callback){
@@ -153,5 +165,8 @@ function myAjaxCmd(method, url, data, callback){
   }else if(method == "GET"){
     xmlHttpReg.setRequestHeader('If-Modified-Since', '0');
     xmlHttpReg.send(null);
+  }else{
+    xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xmlHttpReg.send(JSON.stringify(data));
   }
 }

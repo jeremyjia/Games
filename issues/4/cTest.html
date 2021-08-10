@@ -8,6 +8,20 @@
 
 <script language="javascript" type="text/javascript">
 
+function getFileBase64(fileInputObj, callBackFunc){
+    var reader = new FileReader();
+    reader.readAsDataURL(fileInputObj.files[0]);
+    reader.onload = function(e){
+      var fileName = fileInputObj.files[0].name;
+      var base64 = this.result.substring(this.result.indexOf(',')+1);
+      //alert(base64);
+      uploadFileToGitHub("message", "img/"+fileName, base64);
+      if(typeof callBackFunc === "function"){
+        callBackFunc(e.target.result)
+      }
+    };
+}
+
 var userLogin;
 function notify(o){
   if(o){
@@ -62,7 +76,9 @@ function checkCookie(){
 </script>
 
 <div>
-     <h1>漂泊者乐园用户管理系统测试页面</h1> 
+     <h1>漂泊者乐园用户管理系统测试页面</h1>
+     <p><input type='file' id="upload_file_id" /></p>
+     <p><button id="uploadid">上传到GitHub</button></p>
      <p><button id="loginid">登陆</button></p>
      <p><h2 id="logusertext"></h2><button id="exitid">退出</button></p>
      <div>
@@ -89,6 +105,10 @@ function checkCookie(){
 
     bl$("onlineuserid").onclick = function(){
         getOnlineUser(notify);
+    }
+
+    bl$("uploadid").onclick = function(){
+        getFileBase64(bl$("upload_file_id"));
     }
 </script>
  
