@@ -15,6 +15,7 @@ function getFileBase64(fileInputObj, callBackFunc){
       var fileName = fileInputObj.files[0].name;
       var base64 = this.result.substring(this.result.indexOf(',')+1);
       //alert(base64);
+      txshow.src = this.result;
       uploadFileToGitHub("message", "img/"+fileName, base64);
       if(typeof callBackFunc === "function"){
         callBackFunc(e.target.result)
@@ -84,7 +85,10 @@ function checkCookie(){
      <div>
          <button id="onlineuserid">查询在线用户</button>
          <h2 id="onlineusertext"></h2>
-     </div>
+    </div>
+     <div>
+        <img id="txshow" style="width:100px;height:100px;"/>
+    </div>
    
 </div>
 
