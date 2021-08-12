@@ -98,12 +98,12 @@ function updateOnlineUser(jsonAll) {
 }
 
 function getGitHubComment(commentId, funObj) {
-  var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentId + "?access_token=" + getToken();
+  var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/"+commentId;
   myAjaxCmd('GET', url, null, usercallback);
 
   function usercallback(response) {
     if (response.readyState == 4) {
-      if (response.status == 200) {
+      if (response.status == 200 || response.status == 201) {
         var msgObj = JSON.parse(response.responseText);
         if (msgObj.body == null || msgObj.body == "") {
         } else {
@@ -111,14 +111,14 @@ function getGitHubComment(commentId, funObj) {
           funObj(jsonObj);
         }
       } else {
-        alert("网络错误，可能是GitHub稳定性太差导致，请稍后再试！");
+        alert("网络错误，可能是GitHub稳定性太差导致，请稍后再试！"+response.status);
       }
     }
   }
 }
 
 function updateGitHubComment(commentId, jsonAll) {
-  var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentId + "?access_token=" + getToken();
+  var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentId;
   var bodyData = JSON.stringify(jsonAll);
   var data = {
     "body": bodyData
@@ -129,7 +129,7 @@ function updateGitHubComment(commentId, jsonAll) {
 }
 
 function uploadFileToGitHub(message, filePath, base64FileContent) {
-  var url = "https://api.github.com/repos/jeremyjia/Games/contents/" + filePath + "?access_token=" + getToken();
+  var url = "https://api.github.com/repos/jeremyjia/Games/contents/" + filePath;
   var data = {
     "message": message,
     "content": base64FileContent
@@ -161,12 +161,15 @@ function myAjaxCmd(method, url, data, callback) {
   xmlHttpReg.open(method, url, true);
   if (method == "PATCH" || method == "POST") {
     xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());
     xmlHttpReg.send(JSON.stringify(data));
   } else if (method == "GET") {
     xmlHttpReg.setRequestHeader('If-Modified-Since', '0');
+    xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());
     xmlHttpReg.send(null);
   } else {
     xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());
     xmlHttpReg.send(JSON.stringify(data));
   }
 }
