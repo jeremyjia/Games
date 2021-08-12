@@ -128,7 +128,7 @@ function updateGitHubComment(commentId, jsonAll) {
   });
 }
 
-function uploadFileToGitHub(message, filePath, base64FileContent) {
+function uploadFileToGitHub(message, filePath, base64FileContent, callbackFun) {
   var url = "https://api.github.com/repos/jeremyjia/Games/contents/" + filePath;
   var data = {
     "message": message,
@@ -136,13 +136,7 @@ function uploadFileToGitHub(message, filePath, base64FileContent) {
   };
 
   myAjaxCmd('PUT', url, data, function (response) {
-    if (response.readyState == 4) {
-      if (response.status == 200 || response.status == 201) {
-        alert("Upload is OK!");
-      } else {
-        alert("Error, status=" + response.status);
-      }
-    }
+    callbackFun(response);
   });
 }
 
