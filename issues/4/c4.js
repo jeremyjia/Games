@@ -61,7 +61,7 @@ if(!md.run){
 
 	   clearInterval(timerId);   
 	   getOnlineUser(false);
-	   setTimeout("logOff()", 1000);
+	   setTimeout(function(){logOff();}, 1000);
 	   sleep(1000);
     }
 	
@@ -234,7 +234,7 @@ if(!md.run){
 	   timerId = setInterval(readTimer, 1000);
 	   getOnlineUser(false);
 	   sleep(1000);
-	   setTimeout("login()", 1000);
+	   setTimeout(function(){login();}, 1000);
 	}
 	//End Login
 	
