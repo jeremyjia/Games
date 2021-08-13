@@ -1,6 +1,6 @@
 //i4c4
  
-var s= "v0.0.114 "; 
+var s= "v0.0.115 "; 
  
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c4.js'"
 s += " style='color:blue;'";		s +=">"; s += "c4.js* ";
@@ -291,7 +291,7 @@ if(!md.run){
 	}
 	function SendMsg(ss)
 	{
-	    var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526806470?access_token="+getToken();	
+	    var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526806470";	
         var myMsg=allMsg;
 		if(myMsg!=""){
 			myMsg+="\n";
@@ -312,7 +312,7 @@ if(!md.run){
 		
 	function readMsg() 
 	{
-		var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526806470?access_token="+getToken();
+		var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526806470";
 		myAjaxCmd('GET',url, null, readCallBack);
 	
         function readCallBack(resp){
@@ -331,7 +331,7 @@ if(!md.run){
 	}
 	
 	function getOnlineUser(isShow){
-		var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/543738078?access_token="+getToken();
+		var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/543738078";
 		myAjaxCmd('GET',url, null, usercallback);
 	
         function usercallback(response){
@@ -352,7 +352,7 @@ if(!md.run){
 	
 	function updateOnlineUser(jsonAll)
 	{
-	    var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/543738078?access_token="+getToken();	
+	    var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/543738078";	
 		var bodyData = JSON.stringify(jsonAll);
 		var data= {
 		 "body": bodyData
@@ -429,9 +429,11 @@ if(!md.run){
 		xmlHttpReg.open(method, url, true);
 		if(method == "PATCH" || method == "POST"){
 			xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+			xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());
 			xmlHttpReg.send(JSON.stringify(data));
 		}else if(method == "GET"){
 			xmlHttpReg.setRequestHeader('If-Modified-Since', '0');
+			xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());
 			xmlHttpReg.send(null);
 		}
 	}
