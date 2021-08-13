@@ -1,97 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
 </head>
+
 <body>
 
-<script language="javascript" type="text/javascript">
+    <script language="javascript" type="text/javascript">
 
-var userLogin;
-function notify(o){
-  if(o){
-        var u=o.users;
-        var text="";
-        for(var i = 0; i < u.length; i++){
-		  if(u[i].isLogin){
-            text+=u[i].name+"\n";
-		  }
-       }
-       document.getElementById('onlineusertext').innerText = text;
-   }
-}
-      function logOff(o){
-		var userObj = o.users;
-		var newUsers = [];
-        var userName = userLogin;
-		for(var i = 0; i < userObj.length; i++)
-		{
-			if(userObj[i].name == userName){
-				newUsers.push({"name":userObj[i].name,"LastloginTime":userObj[i].LastloginTime,"isLogin":false});
-			}else{
-				newUsers.push({"name":userObj[i].name,"LastloginTime":userObj[i].LastloginTime,"isLogin":userObj[i].isLogin});
-			}
-		}
-		var jsonAll= {
-		  "users":newUsers
-		};
-        updateOnlineUser(jsonAll);
-        
-        document.cookie = "username=; expires=Thu, 01 Jan 1980 00:00:00 GMT";
-        window.location.href='cTest.html';
-     }
-     
-window.onload = function(){
-    checkCookie();
-}
-function checkCookie(){
-	var user = getCookie("username");
-    var btnlogin = document.getElementById("loginid");
-    var btnexit = document.getElementById("exitid");
-	if (user!=""){
-        userLogin = user;
-        document.getElementById('logusertext').innerText = "用户:"+user+" 已登陆";
-        btnlogin.style.display = "none"; 
-        btnexit.style.display = "block";    
-    }else{
-        btnlogin.style.display = "block"; 
-        btnexit.style.display = "none";       
-    }
-}
-</script>
+        function getFileBase64(fileInputObj, callBackFunc) {
+            var reader = new FileReader();
+            reader.readAsDataURL(fileInputObj.files[0]);
+            reader.onload = function (e) {
+                var fileName = fileInputObj.files[0].name;
+                var base64 = this.result.substring(this.result.indexOf(',') + 1);
+                imgShowid.src = this.result;
+                uploadFileToGitHub("message", "img/" + fileName, base64, usercallback);
+                function usercallback(response) {
+                    if (response.readyState == 4) {
+                        if (response.status == 200 || response.status == 201) {
+                            alert("上传成功!");
+                            var linkfile = "\"https://jeremyjia.github.io/Games/img/" + fileName + "\"";
+                            document.getElementById('filelinkid').innerHTML = "<a href=" + linkfile + "target=\"_blank\">" + fileName + "</a>";
+                        } else {
+                            alert("Error, status=" + response.status);
+                        }
+                    }
+                }
+                if (typeof callBackFunc === "function") {
+                    callBackFunc(e.target.result)
+                }
+            };
+        }
 
-<div>
-     <h1>漂泊者乐园用户管理系统测试页面</h1> 
-     <p><button id="loginid">登陆</button></p>
-     <p><h2 id="logusertext"></h2><button id="exitid">退出</button></p>
-     <div>
-         <button id="onlineuserid">查询在线用户</button>
-         <h2 id="onlineusertext"></h2>
-     </div>
-   
-</div>
+        var userLogin;
+        function notify(o) {
+            if (o) {
+                var u = o.users;
+                var text = "";
+                for (var i = 0; i < u.length; i++) {
+                    if (u[i].isLogin) {
+                        text += u[i].name + "\n";
+                    }
+                }
+                document.getElementById('onlineusertext').innerText = text;
+            }
+        }
+        function logOff(o) {
+            var userObj = o.users;
+            var newUsers = [];
+            var userName = userLogin;
+            for (var i = 0; i < userObj.length; i++) {
+                if (userObj[i].name == userName) {
+                    newUsers.push({ "name": userObj[i].name, "LastloginTime": userObj[i].LastloginTime, "isLogin": false });
+                } else {
+                    newUsers.push({ "name": userObj[i].name, "LastloginTime": userObj[i].LastloginTime, "isLogin": userObj[i].isLogin });
+                }
+            }
+            var jsonAll = {
+                "users": newUsers
+            };
+            updateOnlineUser(jsonAll);
 
-<script src="https://littleflute.github.io/JavaScript/w3.js"></script>
-<script src="https://littleflute.github.io/JavaScript/blclass.js"></script>
-<script src="server.js" charset="utf-8"></script>
+            document.cookie = "username=; expires=Thu, 01 Jan 1980 00:00:00 GMT";
+            window.location.href = 'cTest.html';
+        }
 
-        
-<script> 
-    var obj;
-    bl$("loginid").onclick = function(){
-        window.location.href='login.html';
-    }
+        window.onload = function () {
+            checkCookie();
+        }
+        function checkCookie() {
+            var user = getCookie("username");
+            var btnlogin = document.getElementById("loginid");
+            var btnexit = document.getElementById("exitid");
+            if (user != "") {
+                userLogin = user;
+                document.getElementById('logusertext').innerText = "用户:" + user + " 已登陆";
+                btnlogin.style.display = "none";
+                btnexit.style.display = "block";
+            } else {
+                btnlogin.style.display = "block";
+                btnexit.style.display = "none";
+            }
+        }
+    </script>
 
-    bl$("exitid").onclick = function(){
-        getOnlineUser(logOff);    
-    }
+    <div>
+        <h1>漂泊者乐园用户管理系统测试页面</h1>
+        <p><input type='file' id="upload_file_id" /></p>
+        <p><button id="uploadid">上传到GitHub</button></p>
+        <p><button id="loginid">登陆</button></p>
+        <p>
+        <h2 id="logusertext"></h2><button id="exitid">退出</button></p>
+        <div>
+            <button id="onlineuserid">查询在线用户</button>
+            <h2 id="onlineusertext" style="width:100px;height:60px;"></h2>
+        </div>
+        <div>
+            <img id="imgShowid" style="width:300px;height:200px;" />
+        </div>
+        <div id="filelinkid">
+        </div>
 
-    bl$("onlineuserid").onclick = function(){
-        getOnlineUser(notify);
-    }
-</script>
- 
+    </div>
+
+    <script src="https://littleflute.github.io/JavaScript/w3.js"></script>
+    <script src="https://littleflute.github.io/JavaScript/blclass.js"></script>
+    <script src="server.js" charset="utf-8"></script>
+
+
+    <script>
+        var obj;
+        bl$("loginid").onclick = function () {
+            window.location.href = 'login.html';
+        }
+
+        bl$("exitid").onclick = function () {
+            getOnlineUser(logOff);
+        }
+
+        bl$("onlineuserid").onclick = function () {
+            getOnlineUser(notify);
+        }
+
+        bl$("uploadid").onclick = function () {
+            getFileBase64(bl$("upload_file_id"));
+        }
+    </script>
+
 </body>
 
 </html>
