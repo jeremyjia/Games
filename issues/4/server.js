@@ -128,6 +128,17 @@ function updateGitHubComment(commentId, jsonAll) {
   });
 }
 
+function addNewGitHubComment(issueId, jsonAll, callbackFun) {
+  var url = "https://api.github.com/repos/jeremyjia/Games/issues/" + issueId + "/comments";
+  var data = {
+    "body": jsonAll
+  };
+
+  myAjaxCmd('POST', url, data, function (response) {
+    callbackFun(response);
+  });
+}
+
 function uploadFileToGitHub(message, filePath, base64FileContent, callbackFun) {
   var url = "https://api.github.com/repos/jeremyjia/Games/contents/" + filePath;
   var data = {
