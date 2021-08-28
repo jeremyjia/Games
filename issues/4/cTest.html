@@ -17,13 +17,28 @@
                 var fileName = fileInputObj.files[0].name;
                 var base64 = this.result.substring(this.result.indexOf(',') + 1);
                 imgShowid.src = this.result;
-                uploadFileToGitHub("message", "img/" + fileName, base64, usercallback);
+                uploadFileToGitHub("message", "img/" + fileName, base64, usercallback); //主要函数
                 function usercallback(response) {
                     if (response.readyState == 4) {
                         if (response.status == 200 || response.status == 201) {
                             alert("上传成功!");
-                            var linkfile = "\"https://jeremyjia.github.io/Games/img/" + fileName + "\"";
-                            document.getElementById('filelinkid').innerHTML = "<a href=" + linkfile + "target=\"_blank\">" + fileName + "</a>";
+                            var linkfile = "https://jeremyjia.github.io/Games/img/" + fileName;
+                            document.getElementById('filelinkid').innerHTML = "<a href=\"" + linkfile + "\" target=\"_blank\">" + fileName + "</a>";
+
+                            var _v = document.getElementById('filelinkid');
+                            var btnJS = blo0.blBtn(_v, "btnCopy2Six", "上传到6号", blGrey[2]);
+                            btnJS.onclick = function (_link) {
+                                return function () {
+                                    var index = fileName.lastIndexOf(".");
+                                    var format = fileName.substring(index).toLowerCase(); 
+                                    if(format==".mp4"|| format==".rmvb" || format==".avi" || format==".ts" || format==".mkv"){
+                                        addNewGitHubComment(442, _link, CBFunCopy2SixPage);  //添加到视频的issue
+                                    }else{
+                                        addNewGitHubComment(46, _link, CBFunCopy2SixPage);   //添加到图片的issue
+                                    }
+                                    
+                                }
+                            }(linkfile);
                         } else {
                             alert("Error, status=" + response.status);
                         }
@@ -33,6 +48,16 @@
                     callBackFunc(e.target.result)
                 }
             };
+        }
+
+        function CBFunCopy2SixPage(response) {
+            if (response.readyState == 4) {
+                if (response.status == 200 || response.status == 201) {
+                    alert("上传到6号成功!");
+                } else {
+                    alert("Errors, status=" + response.status);
+                }
+            }
         }
 
         var userLogin;
