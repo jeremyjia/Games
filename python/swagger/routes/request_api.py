@@ -13,57 +13,101 @@ import pymysql  # need to install pymysql first -wayne W
 import mysql.connector 
 from datetime import datetime, timedelta
 from flask import jsonify, abort, request, Blueprint
-
 from validate_email import validate_email
-REQUEST_API = Blueprint('request_api', __name__)
 
+REQUEST_API = Blueprint('request_api', __name__)
 
 def get_blueprint():
     """Return the blueprint for the main app module"""
     return REQUEST_API
 
-# Decide to use json or MySQL - wayneW.
-DB_TYPE = str(os.getenv('dbtype'))
-if DB_TYPE == "None":
-    DB_TYPE = "mysql"
+# Decide to use json or MySQL database - wayneW.
+with open("./routes/env_conf.json", 'r', encoding='utf-8') as ec:
+    json_data = json.load(ec)
+  # print(json_data)
+DB_TYPE = json_data['DB_TYPE']
+DB_NAME = json_data['DB_NAME']
 
-# if DB_TYPE = "mysql":  
-# else if DB_TYPE = "json":
+# print(DB_TYPE)
+#   print(DB_NAME)
+
+# # BOOK_REQUESTS = json_data
+#    BOOK_REQUESTS = results
+# except:
+#    print ("Error: unable to fetch the data")
+
+# DB_TYPE = str(os.getenv('dbtype')) # use sys env viriables to set DB_TYPE
 
 # initializaed local database via creation a new database
 # DB_NAME = "abc"
-DB_NAME = str(os.getenv('dbname'))   # qqq:system Env Variables USERNAME is SYSTEM on system ENV, but it is hasee when runing this program
-if DB_NAME == "None":
-    DB_NAME = "text_db"
+# DB_NAME = str(os.getenv('dbname'))   
+# if DB_NAME == "None":
+#     DB_NAME = "text_db"
 
-mydb = mysql.connector.connect(
-  host="127.0.0.1",
-  user="www",  # please adjust the user name as same as the local MySQL's user name  -wayneW
-  password="5566"  # change the password as you defined in your MySQL database  -wayneW
-)
+# mydb = mysql.connector.connect(
+#   host="127.0.0.1",
+#   user="www",  # please adjust the user name as same as the local MySQL's user name  -wayneW
+#   password="5566"  # change the password as you defined in your MySQL database  -wayneW
+# )
 
-mycursor = mydb.cursor()
-if DB_NAME == "text_db":  
+if DB_TYPE == 'mysql':
+  mydb = mysql.connector.connect(
+  host = str(json_data['host']),
+  port = str(json_data['port']),
+  user = str(json_data['user']), 
+  password = str(json_data['password']),
+  charset = str(json_data['charset'])
+  )
+
+  mycursor = mydb.cursor()
+  sql = "show databases;"  # get the mysql database list.
+  mycursor.execute(sql)
+  results = mycursor.fetchall()
+  db_exist = 'no'    # set a variable to save the status of whether the pre-build database exist.
+  num = len(results)
+  tmp = json.dumps(results)
+  tmp = json.loads(tmp)   # format the batabase lists.
+  # print (tmp[0], DB_NAME)  # print result is ['bl_book'] bl_book. But when add[] around DB_NAME, will see the result is ['bl_book'] ['bl_book'], so tmp[i] == [DB_NAME] go right.
+
+  # while statement to check whether the pre-build database name exist in the mysql database lists.  
+  i = 0
+  while i < num:
+    # if tmp[i] == "[" + "'" + DB_NAME + "'" + "]":
+    if tmp[i] == [DB_NAME]:  # 启示 字符串数据自带引号
+      db_exist = 'yes'
+      break
+    i = i + 1
+  # print (db_exist)
+  if db_exist == 'yes':  
     print(mycursor.rowcount, "The database exists already.") # qqq Acertain the exist of the database. -wayneW
-else:
+    
+  else:
     mycursor.execute("CREATE DATABASE " + DB_NAME)  # Database named DB_NAME is created to record the bookinfo. -wayneW
 
+    # mydb = mysql.connector.connect(
+    #  host="127.0.0.1",
+    #  user="www",   # please adjust the user name as same as local database user name  -wayneW
+    #  password="5566",  # change the password as you defined in your local database  -wayneW
+    #  database=DB_NAME  
+    # )
     mydb = mysql.connector.connect(
-     host="127.0.0.1",
-     user="www",   # please adjust the user name as same as local database user name  -wayneW
-     password="5566",  # change the password as you defined in your local database  -wayneW
-     database=DB_NAME  
+    host = str(json_data['host']),
+    port = str(json_data['port']),
+    user = str(json_data['user']), 
+    password = str(json_data['password']),
+    charset = str(json_data['charset']),
+    database = DB_NAME
     )
 
     mycursor = mydb.cursor()
 
     mycursor.execute("CREATE TABLE `book_info` (\
-      `uuid` varchar(45) NOT NULL,\
-      `title` varchar(45) NOT NULL,\
-      `email` varchar(40) NOT NULL,\
-      `timestamp` varchar(30) NOT NULL,\
-      PRIMARY KEY (`uuid`),\
-      UNIQUE KEY `uuid_UNIQUE` (`uuid`)\
+    `uuid` varchar(45) NOT NULL,\
+    `title` varchar(45) NOT NULL,\
+    `email` varchar(40) NOT NULL,\
+    `timestamp` varchar(30) NOT NULL,\
+    PRIMARY KEY (`uuid`),\
+    UNIQUE KEY `uuid_UNIQUE` (`uuid`)\
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='for Swagger'")
 
     sql = "INSERT INTO `book_info` (`uuid`, `title`, `email`, `timestamp`)\
@@ -77,19 +121,28 @@ else:
     mydb.close() 
 
 # define the database-link parameter. -wayne W
-config = {
-"host":"127.0.0.1", # 地址
-"port":3306, # 端口
-"user":"www", # 用户名
-"password":"5566", # 密码
-# "database":"mydb", # 数据库名;如果通过Python操作MySQL,要指定需要操作的数据库
-"database":DB_NAME,
-"charset":"utf8"
-}
 
-# # get the data from local json file. -wayne W
-# # with open("./routes/data1.json", 'r', encoding='utf-8') as f:
-# # 打开数据库连接
+# config = {
+# "host":"127.0.0.1", # 地址
+# "port":3306, # 端口
+# "user":"www", # 用户名
+# "password":"5566", # 密码
+# # "database":"mydb", # 如果通过Python操作MySQL,要指定需要操作的数据库
+# "database":DB_NAME,
+# "charset":"utf8"
+# }
+
+else:
+  # # get the data from local json file. -wayne W
+  with open("./routes/j_data.json", 'r', encoding='utf-8') as f:
+    json_data = json.load(f)
+    # print(json_data)
+    BOOK_REQUESTS = json_data
+    f.close
+  #except:
+  if json_data == '':
+    print ("Error: unable to fetch the data")
+
 # db = pymysql.connect(**config)
 # # 使用cursor()方法获取操作游标
 # cursor = db.cursor()
@@ -100,19 +153,12 @@ config = {
 #    cursor.execute(sql)
 #    # 获取所有记录列表
 #    results = cursor.fetchall()
-
-# # json_data = json.load(f)
-# # print(json_data)
-# # BOOK_REQUESTS = json_data
-#    BOOK_REQUESTS = results
-# except:
-#    print ("Error: unable to fetch the data")
- 
 # # 关闭数据库连接
 # finally:
 # #cursor.close()
 # #conn.close()
 #    db.close()
+
 
 @REQUEST_API.route('/request', methods=['GET'])
 def get_records():
@@ -130,18 +176,34 @@ def get_records():
     # print (c)
     # print (d)
     # print ("end")
-
-    db = pymysql.connect(**config)
-    cursor = db.cursor()
-    sql = "SELECT * FROM book_info;"
-    try:
-       cursor.execute(sql)
-       results = cursor.fetchall()
-       BOOK_REQUESTS = results
-       
-    finally:
-       return jsonify(BOOK_REQUESTS)
-       db.close()
+    if DB_TYPE == 'mysql':
+        config = {
+        "host":str(json_data['host']), 
+        "port":json_data['port'], 
+        "user":str(json_data['user']), 
+        "password":str(json_data['password']), 
+        "database":str(json_data['DB_NAME']),
+        "charset":str(json_data['charset'])
+        }
+        db = pymysql.connect(**config)
+        cursor = db.cursor()
+        sql = "SELECT * FROM book_info;"
+        try:
+          cursor.execute(sql)
+          results = cursor.fetchall()
+          BOOK_REQUESTS = results
+        
+        finally:
+          return jsonify(BOOK_REQUESTS)
+          db.close()
+    
+    else:
+        with open("./routes/j_data.json", 'r', encoding='utf-8') as f:
+          json_data = json.load(f)
+        # print(json_data)
+          BOOK_REQUESTS = json_data
+          return jsonify(BOOK_REQUESTS)
+          f.close
 
 
 @REQUEST_API.route('/request/<string:_id>', methods=['GET'])
@@ -152,34 +214,49 @@ def get_record_by_id(_id):
     with application/json mimetype.
     @raise 404: if book request not found
     """
-    # _id = '{id}'
     # if not data.get('_id'):
     #     abort(400)
     
     if _id == '{id}':
         abort(400)   # caution 如果第一次访问什么id都没输入，则程序应返回400,但是没有成功
+
+    if DB_TYPE == 'mysql':
+        config = {
+        "host":str(json_data['host']), 
+        "port":json_data['port'], 
+        "user":str(json_data['user']), 
+        "password":str(json_data['password']), 
+        "database":str(json_data['DB_NAME']),
+        "charset":str(json_data['charset'])
+        }
+        db = pymysql.connect(**config)
+        cursor = db.cursor()
+        sql = "SELECT * FROM book_info WHERE uuid = '" + _id + "';"
+
+        try:
+          cursor.execute(sql)
+          results = cursor.fetchall()
+          BOOK_REQUESTS = results
         
-    db = pymysql.connect(**config)
-    cursor = db.cursor()
-    sql = "SELECT * FROM book_info WHERE uuid = '" + _id + "';"
 
-    try:
-       cursor.execute(sql)
-       results = cursor.fetchall()
-       BOOK_REQUESTS = results
-      
+        except:
+          print ("Error: unable to fetch the data")
 
-    except:
-       print ("Error: unable to fetch the data")
-
-    finally:
-       if _id == '{id}' or _id == '': #如果之前有过输入，则即使没有输入id，程序可返回400错误，因为系统默认输入了如下字符：{id}
-           abort(400)
-       elif BOOK_REQUESTS == '[]': #caution 如果查询的返回结果为空，即没有符合要求的书，程序应返回404，但是没有成功
-           abort(404)
-       return jsonify(BOOK_REQUESTS)
-       db.close()
-       
+        finally:
+            if _id == '{id}' or _id == '': #如果之前有过输入，则即使没有输入id，程序可返回400错误，因为系统默认输入了如下字符：{id}
+                abort(400)
+            elif BOOK_REQUESTS == '[]': #caution 如果查询的返回结果为空，即没有符合要求的书，程序应返回404，但是没有成功
+                abort(404)
+            return jsonify(BOOK_REQUESTS)
+            db.close()
+    else:
+        with open("./routes/j_data.json", 'r', encoding='utf-8') as f:
+          json_data = json.load(f)
+          BOOK_REQUESTS = json_data
+          f.close
+        if _id not in BOOK_REQUESTS:
+          abort(404)
+        return jsonify(BOOK_REQUESTS[_id])   
 
 
 @REQUEST_API.route('/request', methods=['POST'])
@@ -230,7 +307,7 @@ def create_record():
        db.close()       
        
     # save the new book to jason file, further jobs: need to rewrite the file under the formatal style for read it easily. -wayne W
-    # fo = open("./routes/data1.json", "w")
+    # fo = open("./routes/j_data.json", "w")
     # fo.write( str(json.dumps(json_data)) )
     # fo.close()
     #HTTP 201 Created    
@@ -288,7 +365,7 @@ def edit_record(_id):
        db.close()    
 
     # save the new book to jason file, further jobs: need to rewrite the file under the formatal style for read it easily. -wayne W
-    # fo = open("./routes/data1.json", "w")
+    # fo = open("./routes/j_data.json", "w")
     # # json.dump(str(jason_data),fo)
     # fo.write( str(json.dumps(json_data)) )
     # fo.close()
@@ -326,7 +403,7 @@ def delete_record(_id):
        db.close()
        
     # save the new book to jason file, further jobs: need to rewrite the file under the formatal style for read it easily. -wayne W
-    # fo = open("./routes/data1.json", "w")
+    # fo = open("./routes/j_data.json", "w")
     # fo.write( str(json.dumps(json_data)) )
     # fo.close()
 
