@@ -1,11 +1,9 @@
 """The Endpoints to manage the BOOK_REQUESTS"""
-# READ ME: before run app.py, kindly ensure that your client has already installed the MySQL database (like mysql-installer-web-community editoin) properly, and you have done with the initialization process.\ 
-# Pre-setting the Environment Variables in line 27: str(os.getenv('dbname'), before you run the app.py successfully,  -wayneW
-# In CMD, tap 'set dbname = bl-book ( database's name is up to U)', or if this variable is not worked. You'd better setting system env variables.
-# When you want to set a system env viriables please goto 'windows setting'->'about'->'senior setting'->'Env Viriables', and built a new sys variables, for instance. let dbname=bl-book-
-# -Then you can check this system env variables using statement in Admin CMD like 'echo %dbname%'. If the check is OK, the program will be functionaly released.
-# If sys env variable is OK, but program yet isn't work, then try to restart VS Code, thus it should work correctly.
-# I notice that mysql database are not sensitive to case, so I set dbname = BL_book, but in fact the data name was set to bl_book.
+# READ ME: before run app.py, kindly ensure that your client has already installed the MySQL database (like mysql-installer-web-community editoin) properly,\
+# and you have done with the initialization setting, such as host, port, user, and keywords, etc. -wayneW
+# Go to check these setting in /.routes/env_conf.json. Ensure these are fit for your local setting. Please set a database name and datatpye,such as mysql (default) or json before you go.
+# I notice that mysql database are not sensitive to case, so I set dbname = BL_book, but in fact the data name was set to bl_book. -wayneW
+# 浏览器刷新问题，如果代码修改后，运行服务，启动浏览器，发现修改并没有被体现。极有可能是浏览器设置没有刷新，我把edge浏览器设置重设，即还原所有设置的方式，解决了改问题。第二天在没有进行任何设置还原的前提下，chrome浏览器能成功体现前一天的代码修改内容。 -wayneW
 import os
 import uuid
 import json  
@@ -52,7 +50,7 @@ DB_NAME = json_data['DB_NAME']
 
 if DB_TYPE == 'mysql':
   mydb = mysql.connector.connect(
-  host = str(json_data['host']),
+  host = json_data['host'],
   port = str(json_data['port']),
   user = str(json_data['user']), 
   password = str(json_data['password']),
@@ -67,7 +65,7 @@ if DB_TYPE == 'mysql':
   num = len(results)
   tmp = json.dumps(results)
   tmp = json.loads(tmp)   # format the batabase lists.
-  # print (tmp[0], DB_NAME)  # print result is ['bl_book'] bl_book. But when add[] around DB_NAME, will see the result is ['bl_book'] ['bl_book'], so tmp[i] == [DB_NAME] go right.
+  # print (tmp[0], DB_NAME) note that print result is ['bl_book'] bl_book. But when add[] around DB_NAME, will see the result is ['bl_book'] ['bl_book'], so tmp[i] == [DB_NAME] go right.
 
   # while statement to check whether the pre-build database name exist in the mysql database lists.  
   i = 0
@@ -79,20 +77,14 @@ if DB_TYPE == 'mysql':
     i = i + 1
   # print (db_exist)
   if db_exist == 'yes':  
-    print(mycursor.rowcount, "The database exists already.") # qqq Acertain the exist of the database. -wayneW
+    print(mycursor.rowcount, " # Kindly note that the database named" + " '" + DB_NAME + "' " + "exists already.") # Ensure the exist of databases. -wayneW
     
   else:
     mycursor.execute("CREATE DATABASE " + DB_NAME)  # Database named DB_NAME is created to record the bookinfo. -wayneW
 
-    # mydb = mysql.connector.connect(
-    #  host="127.0.0.1",
-    #  user="www",   # please adjust the user name as same as local database user name  -wayneW
-    #  password="5566",  # change the password as you defined in your local database  -wayneW
-    #  database=DB_NAME  
-    # )
     mydb = mysql.connector.connect(
     host = str(json_data['host']),
-    port = str(json_data['port']),
+    port = json_data['port'],
     user = str(json_data['user']), 
     password = str(json_data['password']),
     charset = str(json_data['charset']),
@@ -121,7 +113,6 @@ if DB_TYPE == 'mysql':
     mydb.close() 
 
 # define the database-link parameter. -wayne W
-
 # config = {
 # "host":"127.0.0.1", # 地址
 # "port":3306, # 端口
@@ -176,6 +167,9 @@ def get_records():
     # print (c)
     # print (d)
     # print ("end")
+    with open("./routes/env_conf.json", 'r', encoding='utf-8') as ec:
+      json_data = json.load(ec)
+
     if DB_TYPE == 'mysql':
         config = {
         "host":str(json_data['host']), 
@@ -220,6 +214,9 @@ def get_record_by_id(_id):
     if _id == '{id}':
         abort(400)   # caution 如果第一次访问什么id都没输入，则程序应返回400,但是没有成功
 
+    with open("./routes/env_conf.json", 'r', encoding='utf-8') as ec:
+      json_data = json.load(ec)
+
     if DB_TYPE == 'mysql':
         config = {
         "host":str(json_data['host']), 
@@ -247,7 +244,7 @@ def get_record_by_id(_id):
                 abort(400)
             elif BOOK_REQUESTS == '[]': #caution 如果查询的返回结果为空，即没有符合要求的书，程序应返回404，但是没有成功
                 abort(404)
-            return jsonify(BOOK_REQUESTS)
+            return 'THE BOOK INFO AS BELOW:\n' + str(BOOK_REQUESTS), 200
             db.close()
     else:
         with open("./routes/j_data.json", 'r', encoding='utf-8') as f:
@@ -272,7 +269,6 @@ def create_record():
     if not request.get_json():
         abort(400)
     data = request.get_json(force=True)
-
     if not data.get('email'):
         abort(400)
     if not validate_email(data['email']):
@@ -280,38 +276,56 @@ def create_record():
     if not data.get('title'):
         abort(400)
 
-    new_uuid = str(uuid.uuid4())
-    title = str(data['title'])
-    email = str(data['email'])
-    timestamp = str(datetime.now().timestamp())
 
-    # book_request = {
-    #     'title': data['title'],
-    #     'email': data['email'],
-    #     'timestamp': datetime.now().timestamp()
-    # }
-    # BOOK_REQUESTS[new_uuid] = book_request
+    with open("./routes/env_conf.json", 'r', encoding='utf-8') as ec:
+      json_data = json.load(ec)
 
-    db = pymysql.connect(**config)
-    cursor = db.cursor()
-    sql = "INSERT INTO book_info (`uuid`, `title`, `email`, `timestamp`) VALUES ('" + new_uuid + "', '" + title + "', '" + email + "', '" + timestamp + "');"
-    try:
-      cursor.execute(sql)
-      db.commit()  #caution 这句非常重要，如果不写，就不会执行插入或更新操作。
-      return jsonify({"id": new_uuid}), 201
+    if DB_TYPE == 'mysql':
+        config = {
+        "host":str(json_data['host']), 
+        "port":json_data['port'], 
+        "user":str(json_data['user']), 
+        "password":str(json_data['password']), 
+        "database":str(json_data['DB_NAME']),
+        "charset":str(json_data['charset'])
+        }
+                
+        new_uuid = str(uuid.uuid4())
+        title = str(data['title'])
+        email = str(data['email'])
+        timestamp = str(datetime.now().timestamp())
 
-    except:
-       print ("Error: unable to create the data")
+        db = pymysql.connect(**config)
+        cursor = db.cursor()
+        sql = "INSERT INTO book_info (`uuid`, `title`, `email`, `timestamp`) VALUES ('" + new_uuid + "', '" + title + "', '" + email + "', '" + timestamp + "');"
+        try:
+          cursor.execute(sql)
+          db.commit()  #caution 这句非常重要，如果不写，就不会执行插入或更新操作。
+          # return jsonify({"NEW BOOK INSERTED, ITS ID": new_uuid}), 201
+          return 'NEW BOOK INSERTED, ITS ID: ' + new_uuid, 201
 
-    finally:
-       db.close()       
-       
-    # save the new book to jason file, further jobs: need to rewrite the file under the formatal style for read it easily. -wayne W
-    # fo = open("./routes/j_data.json", "w")
-    # fo.write( str(json.dumps(json_data)) )
-    # fo.close()
-    #HTTP 201 Created    
-    
+        except:
+          print ("Error: unable to create the data")
+
+        finally:
+          db.close()       
+
+    else:
+         new_uuid = str(uuid.uuid4())
+
+         book_request = {
+        'title': data['title'],
+        'email': data['email'],
+        'timestamp': datetime.now().timestamp()
+    }
+         BOOK_REQUESTS[new_uuid] = book_request   
+         # save the new book to jason file, further jobs: need to rewrite the file under the formatal style for read it easily. -wayne W
+         fo = open("./routes/j_data.json", "w")
+         fo.write( str(json.dumps(BOOK_REQUESTS)) )
+         fo.close()
+         # HTTP 201 Created
+         return jsonify({"NEW BOOK INSERTED, ITS ID": new_uuid}), 201
+            
 
 @REQUEST_API.route('/request/<string:_id>', methods=['PUT'])
 def edit_record(_id):
@@ -336,40 +350,56 @@ def edit_record(_id):
     if not data.get('title'):
         abort(400)
 
+    with open("./routes/env_conf.json", 'r', encoding='utf-8') as ec:
+      json_data = json.load(ec)
 
-    title = str(data['title'])
-    email = str(data['email'])
-    timestamp = str(datetime.now().timestamp())
+    if DB_TYPE == 'mysql':
+        config = {
+        "host":str(json_data['host']), 
+        "port":json_data['port'], 
+        "user":str(json_data['user']), 
+        "password":str(json_data['password']), 
+        "database":str(json_data['DB_NAME']),
+        "charset":str(json_data['charset'])
+        }
+              
+        title = str(data['title'])
+        email = str(data['email'])
+        timestamp = str(datetime.now().timestamp())
 
-    # book_request = {
-    #     'title': data['title'],
-    #     'email': data['email'],
-    #     'timestamp': datetime.now().timestamp()
-    # }
-    #  UPDATE `book`.`book_info` SET `title` = 'Pursue the Art', `email` = 'abdy@116.com', `timestamp` = '1524678397.05234' WHERE (`uuid` = '8c36e86c-13b9-4102-a44f-646015dfd982');
-    # BOOK_REQUESTS[_id] = book_request
+        db = pymysql.connect(**config)
+        cursor = db.cursor()
+        sql = "UPDATE book_info SET `title` = '" + title + "', `email` = '" + email + "', `timestamp` = '" + timestamp + "' WHERE uuid = '" + _id + "';"
 
-    db = pymysql.connect(**config)
-    cursor = db.cursor()
-    sql = "UPDATE book_info SET `title` = '" + title + "', `email` = '" + email + "', `timestamp` = '" + timestamp + "' WHERE uuid = '" + _id + "';"
+        try:
+          cursor.execute(sql)
+          db.commit()  #caution 这句非常重要，如果不写，就不会执行插入或更新操作。
+          sql = "SELECT * FROM book_info WHERE uuid = '" + _id + "';"
+          cursor.execute(sql)
+          # return 'BOOK INFO UPDATED', 200
+          BOOK_REQUESTS = cursor.fetchall()
+          return 'BOOK INFO UPDATED BY: ' + str(BOOK_REQUESTS) + '\nNOTICE: IF SHOWN AS (), MEANS PROVIDED A FAKE ID', 200
+          # return 'UPDATED A BOOK INFO, ITS ID: ' + _id, 200
 
-    try:
-      cursor.execute(sql)
-      db.commit()  #caution 这句非常重要，如果不写，就不会执行插入或更新操作。
-      return 'UPDATED', 200
+        except:
+          print ("Error: unable to edit the data")
 
-    except:
-       print ("Error: unable to edit the data")
+        finally:
+          db.close()    
 
-    finally:
-       db.close()    
-
-    # save the new book to jason file, further jobs: need to rewrite the file under the formatal style for read it easily. -wayne W
-    # fo = open("./routes/j_data.json", "w")
-    # # json.dump(str(jason_data),fo)
-    # fo.write( str(json.dumps(json_data)) )
-    # fo.close()
-    # return jsonify(BOOK_REQUESTS[_id]), 200
+    else:
+        book_request = {
+        'title': data['title'],
+        'email': data['email'],
+        'timestamp': datetime.now().timestamp()
+        }
+        BOOK_REQUESTS[_id] = book_request
+    
+    # save the new book to jason file, further jobs: need to rewrite the file under the formatal style for read it easily. 'BOOK INFO UPDATED BY:'-wayne W
+        fo = open("./routes/j_data.json", "w")
+        fo.write( str(json.dumps(BOOK_REQUESTS)) )
+        fo.close()
+        return jsonify({'BOOK INFO UPDATED BY':BOOK_REQUESTS[_id]}), 200
 
 
 @REQUEST_API.route('/request/<string:_id>', methods=['DELETE'])
@@ -386,24 +416,40 @@ def delete_record(_id):
     if _id == "{id}":  # caution 如果第一次访问什么id都没输入，则程序应返回400,但是没有成功
         abort(400)
 
-    db = pymysql.connect(**config)
-    cursor = db.cursor()
-    sql = "DELETE FROM book_info WHERE uuid = '" + _id + "';"
-    try:
-      cursor.execute(sql)
-      db.commit()
-      # if not commit: abort(404)  #如果没有成功执行删除操作，证明没有这本书，应该返回404，现在没有实现 
-      return jsonify({"DELETED ID": _id}), 204  # 删除成功后，希望显示被删除的书号，没有成功，感觉是204这个信息的格式问题。
-      
-    except:
-       print ("Error: the data is not exist")
-       abort(404)
+    with open("./routes/env_conf.json", 'r', encoding='utf-8') as ec:
+      json_data = json.load(ec)
 
-    finally:
-       db.close()
-       
-    # save the new book to jason file, further jobs: need to rewrite the file under the formatal style for read it easily. -wayne W
-    # fo = open("./routes/j_data.json", "w")
-    # fo.write( str(json.dumps(json_data)) )
-    # fo.close()
+    if DB_TYPE == 'mysql':
+        config = {
+        "host":str(json_data['host']), 
+        "port":json_data['port'], 
+        "user":str(json_data['user']), 
+        "password":str(json_data['password']), 
+        "database":str(json_data['DB_NAME']),
+        "charset":str(json_data['charset'])
+        }
+
+        db = pymysql.connect(**config)
+        cursor = db.cursor()
+        sql = "DELETE FROM book_info WHERE uuid = '" + _id + "';"
+        try:
+          cursor.execute(sql)
+          db.commit()
+          # if not commit: abort(404)  #如果没有成功执行删除操作，证明没有这本书，应该返回404，现在没有实现 
+          # jsonify({"NEW BOOK ID": new_uuid}), 204 #原本是204  在swagger.json 文件的 line 171,原本是204，我改成200.
+          return 'ID OF THE DELETED BOOK: ' + _id, 200  # 'THIS BOOK INFO UPDATED, ITS ID: ' + _id, 删除成功后，希望显示被删除的书号，没有成功，感觉是204 在网页上没有respond body这个展示框
+          
+        except:
+          print ("Error: the data is not exist")
+          abort(404)
+
+        finally:
+          db.close()
+    else:
+        del BOOK_REQUESTS[_id]
+        fo = open("./routes/j_data.json", "w")
+        fo.write( str(json.dumps(BOOK_REQUESTS)) )
+        fo.close()
+        # return jsonify({"DELETED ID: ": _id}), 201
+        return'ID OF THE DELETED BOOK: ' + _id, 200
 
