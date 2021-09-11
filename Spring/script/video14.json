@@ -1,0 +1,110 @@
+{
+    "request": {
+        "version": "0.0.15",
+        "width": 1024,
+        "height": 768,
+        "music": "1.mp3",
+        "rate": "25",
+        "frames": [
+            {
+                "number": "1",
+                "time": "500",
+                "objects": [
+                    {
+                        "text": "${VAR_TITLE}",
+                        "x": 50,
+                        "y": 600,
+                        "size": 50,
+                        "color": "0,200,120",
+                        "layer": 2
+                    }
+                ],
+                "backgroundColor": "200,200,222"
+            }
+        ],
+        "superObjects": [
+            {
+                "type": "javascript",
+                "frameRange": "(1,500)",
+                "attribute": {
+                    "script": "myplx1.js",
+                    "function": "animateFrame",
+                    "start": 1
+                },
+                "layer": 1
+            }
+        ],
+		"audioObjects": [
+			{
+                "start": "0",
+                "audioFile": "A_Sax.wav",
+			},       
+            {
+                "start": "1",
+                "audioFile": "A_Bass.wav",
+            },
+			{
+                "start": "2",
+                "audioFile": "A_Sax.wav",
+            },
+			{
+                "start": "3",
+                "audioFile": "A_Bass.wav",
+            },
+			{
+                "start": "4",
+                "audioFile": "A_Sax.wav",
+            },
+			{
+                "start": "5",
+                "audioFile": "A_Bass.wav",
+            },
+			{
+                "start": "6",
+                "audioFile": "A_Sax.wav",
+            },
+			{
+                "start": "7",
+                "audioFile": "A_Bass.wav",
+            },
+			{
+                "start": "8",
+                "audioFile": "A_Sax.wav",
+            },
+			{
+                "start": "9",
+                "audioFile": "A_Bass.wav",
+            },
+			{
+                "start": "10",
+                "audioFile": "A_Sax.wav",
+            },
+			{
+                "start": "11",
+                "audioFile": "A_Bass.wav",
+            },
+			{
+                "start": "13",
+                "audioFile": "A_Sax.wav",
+            },
+			{
+                "start": "15",
+                "audioFile": "A_Bass.wav",
+            },
+			{
+                "start": "17",
+                "audioFile": "A_Sax.wav",
+            },
+			{
+                "start": "19",
+                "audioFile": "A_Bass.wav",
+            }
+        ],
+        "Macros": [
+            {
+                "name": "VAR_TITLE",
+                "value": "JavaScript插件动画加自定义音频演示"
+            }
+        ]
+    }
+}

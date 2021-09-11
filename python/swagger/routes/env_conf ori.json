@@ -1,0 +1,17 @@
+{
+    "DB": {
+        "DB_TYPE": "mysql", 
+        "timestamp": "1"
+    },
+    "04cfc704-acb2-40af-a8d3-4611fab54ada": {
+        "title": "Cad Book",
+        "email": "testuioadb@165.com",
+		"timestamp": "5"
+    },
+    "mysql.connector.connect": {
+        "host": "127.0.0.1",
+        "user": "www",
+		"password": "5566",
+        "database": "bl_book"
+    }
+}
