@@ -1,9 +1,10 @@
 """The Endpoints to manage the BOOK_REQUESTS"""
 # READ ME: before run app.py, kindly ensure that your client has already installed the MySQL database (like mysql-installer-web-community editoin) properly,\
 # and you have done with the initialization setting, such as host, port, user, and keywords, etc. -wayneW
+# start the mysql service when your database is mysql. To CMD and run 'net start mysql80'
 # Go to check these setting in /.routes/env_conf.json. Ensure these are fit for your local setting. Please set a database name and datatpye,such as mysql (default) or json before you go.
 # I notice that mysql database are not sensitive to case, so I set dbname = BL_book, but in fact the data name was set to bl_book. -wayneW
-# 浏览器刷新问题，如果代码修改后，运行服务，启动浏览器，发现修改并没有被体现。极有可能是浏览器设置没有刷新，我把edge浏览器设置重设，即还原所有设置的方式，解决了改问题。第二天在没有进行任何设置还原的前提下，chrome浏览器能成功体现前一天的代码修改内容。 -wayneW
+# 问题备忘，代码修改后运行程序，启动浏览器，发现修改并没有被即时体现。可能是浏览器缓存刷新，把edge浏览器设置重置，即还原所有设置，解决了此问题。第二天在没有进行任何设置还原的前提下，chrome浏览器能成功体现前一天的代码修改内容。 -wayneW
 import os
 import uuid
 import json  
@@ -15,26 +16,33 @@ from validate_email import validate_email
 
 REQUEST_API = Blueprint('request_api', __name__)
 
+
 def get_blueprint():
     """Return the blueprint for the main app module"""
     return REQUEST_API
+
+# get the Env viarables first, to set DB_TYPE via env viriables
+# DB_TYPE = str(os.getenv('dbtype')) 
+# DB_NAME = str(os.getenv('dbname')) 
 
 # Decide to use json or MySQL database - wayneW.
 with open("./routes/env_conf.json", 'r', encoding='utf-8') as ec:
     json_data = json.load(ec)
   # print(json_data)
-DB_TYPE = json_data['DB_TYPE']
-DB_NAME = json_data['DB_NAME']
+DB_TYPE = str(os.getenv('dbtype'))
+if DB_TYPE == None:
+   DB_TYPE = json_data['DB_TYPE']
+DB_NAME = str(os.getenv('dbname'))
+if DB_NAME == None:
+   DB_NAME = json_data['DB_NAME']
 
-# print(DB_TYPE)
-#   print(DB_NAME)
+print('dbtype: ', DB_TYPE)
+print('dbname: ', DB_NAME)
 
 # # BOOK_REQUESTS = json_data
 #    BOOK_REQUESTS = results
 # except:
 #    print ("Error: unable to fetch the data")
-
-# DB_TYPE = str(os.getenv('dbtype')) # use sys env viriables to set DB_TYPE
 
 # initializaed local database via creation a new database
 # DB_NAME = "abc"
@@ -71,11 +79,11 @@ if DB_TYPE == 'mysql':
   i = 0
   while i < num:
     # if tmp[i] == "[" + "'" + DB_NAME + "'" + "]":
-    if tmp[i] == [DB_NAME]:  # 启示 字符串数据自带引号
+    if tmp[i] == [DB_NAME]:  # 启示 字符串数据自带引号[DB_NAME]
       db_exist = 'yes'
       break
     i = i + 1
-  # print (db_exist)
+    # print (db_exist)
   if db_exist == 'yes':  
     print(mycursor.rowcount, " # Kindly note that the database named" + " '" + DB_NAME + "' " + "exists already.") # Ensure the exist of databases. -wayneW
     
@@ -393,7 +401,10 @@ def edit_record(_id):
         'email': data['email'],
         'timestamp': datetime.now().timestamp()
         }
-        BOOK_REQUESTS[_id] = book_request
+        with open("./routes/j_data.json", 'r', encoding='utf-8') as f: # updated on 20210917
+          json_data = json.load(f)       # updated on 20210917
+          BOOK_REQUESTS = json_data      # updated on 20210917
+          BOOK_REQUESTS[_id] = book_request
     
     # save the new book to jason file, further jobs: need to rewrite the file under the formatal style for read it easily. 'BOOK INFO UPDATED BY:'-wayne W
         fo = open("./routes/j_data.json", "w")
