@@ -2,9 +2,11 @@
 # READ ME: before run app.py, kindly ensure that your client has already installed the MySQL database (like mysql-installer-web-community editoin) properly,\
 # and you have done with the initialization setting, such as host, port, user, and keywords, etc. -wayneW
 # start the mysql service when your database is mysql. To CMD and run 'net start mysql80'
-# Go to check these setting in /.routes/env_conf.json. Ensure these are fit for your local setting. Please set a database name and datatpye,such as mysql (default) or json before you go.
+# set temp env viaralbes in CMD by 'set dbtype=mysql(or json)' and 'set dbname=bl_book'. check values of these viarables via 'set dbtype', in order to easy-doing software test. 
+# Also you can twinst these setting in /.routes/env_conf.json. Ensure these are fit for your local setting. Please set a database name and datatpye,such as mysql (default) or json.
 # I notice that mysql database are not sensitive to case, so I set dbname = BL_book, but in fact the data name was set to bl_book. -wayneW
-# 问题备忘，代码修改后运行程序，启动浏览器，发现修改并没有被即时体现。可能是浏览器缓存刷新，把edge浏览器设置重置，即还原所有设置，解决了此问题。第二天在没有进行任何设置还原的前提下，chrome浏览器能成功体现前一天的代码修改内容。 -wayneW
+# Memo: after coding revise，启动浏览器发现修改并没有被即时体现。可能是浏览器缓存刷新，so reset the setting of edge，即还原所有设置，issue solved。第二天在没有进行任何设置还原的前提下，\
+# chrome浏览器能成功体现前一天的代码修改内容。 -wayneW
 import os
 import uuid
 import json  
@@ -35,7 +37,12 @@ if DB_TYPE == None:
 DB_NAME = str(os.getenv('dbname'))
 if DB_NAME == None:
    DB_NAME = json_data['DB_NAME']
-
+else:
+   fo = open("./routes/env_conf.json", "w")
+   json_data['DB_NAME'] = DB_NAME
+   fo.write(str(json.dumps(json_data)))
+   fo.close()
+     
 print('dbtype: ', DB_TYPE)
 print('dbname: ', DB_NAME)
 
@@ -85,7 +92,7 @@ if DB_TYPE == 'mysql':
     i = i + 1
     # print (db_exist)
   if db_exist == 'yes':  
-    print(mycursor.rowcount, " # Kindly note that the database named" + " '" + DB_NAME + "' " + "exists already.") # Ensure the exist of databases. -wayneW
+    print(mycursor.rowcount, "databases exist in total. # Kindly note that the database named" + " '" + DB_NAME + "' " + "exists already.") # Ensure the exist of databases. -wayneW
     
   else:
     mycursor.execute("CREATE DATABASE " + DB_NAME)  # Database named DB_NAME is created to record the bookinfo. -wayneW

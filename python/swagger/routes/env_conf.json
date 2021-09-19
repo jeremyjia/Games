@@ -1,9 +1,1 @@
-{
-    "DB_TYPE":"mysql",
-    "DB_NAME":"bl_book",
-    "host":"127.0.0.1",
-    "port":3306, 
-    "user":"www",
-    "password":"5566", 
-    "charset":"utf8"
-}
+{"DB_TYPE": "mysql", "DB_NAME": "ballib", "host": "127.0.0.1", "port": 3306, "user": "www", "password": "5566", "charset": "utf8"}
