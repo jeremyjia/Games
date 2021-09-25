@@ -25,6 +25,7 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -230,6 +231,7 @@ public final class JsonSriptParser {
 				}
 			}
 		}
+
 		if (index == 0) {
 			createDefaultVideo(width, height, time, rate, bgColor);
 		}
@@ -259,20 +261,29 @@ public final class JsonSriptParser {
 		} else {
 			audioFile = FileUtil.downloadFileIfNeed(audioFilePath);
 		}
-		// Cut the audio
-		if (!new File(audioFile).exists()) {
-			throw new Exception("The audio file " + audioFile + " doesn't exist!");
-		}
-		String tmpAudioFile = "tmpAudio.mp3";
-		String endTime = milliSecondToTime(secondOfAudio * 1000);
-		String[] cutAudioCmd = { ffmpegPath, "-y", "-i", audioFile, "-ss", "0:0:0", "-to", endTime, "-c", "copy",
-				tmpAudioFile };
-		ExecuteCommand.executeCommand(cutAudioCmd, null, new File("."), null);
 
-		// Combine silent video and audio to a final video
+		boolean bRunScript = false;
 		String final_video_name = MacroResolver.getProperty("video_name");
-		String[] cmds = { ffmpegPath, "-y", "-i", subtitle_video_name, "-i", tmpAudioFile, final_video_name };
-		boolean bRunScript = ExecuteCommand.executeCommand(cmds, null, new File("."), null);
+		if (!new File(audioFile).exists()) {
+			if (index == 0) {
+				File srcFile = new File(System.getProperty("user.dir") + "/" + subtitle_video_name);
+				File destFile = new File(System.getProperty("user.dir") + "/" + final_video_name);
+				FileUtils.copyFile(srcFile, destFile);
+				return true;
+			}
+			throw new Exception("The audio file " + audioFile + " doesn't exist!");
+		} else {
+			String tmpAudioFile = "tmpAudio.mp3";
+			String endTime = milliSecondToTime(secondOfAudio * 1000);
+			// Cut the audio
+			String[] cutAudioCmd = { ffmpegPath, "-y", "-i", audioFile, "-ss", "0:0:0", "-to", endTime, "-c", "copy",
+					tmpAudioFile };
+			ExecuteCommand.executeCommand(cutAudioCmd, null, new File("."), null);
+
+			// Combine silent video and audio to a final video
+			String[] cmds = { ffmpegPath, "-y", "-i", subtitle_video_name, "-i", tmpAudioFile, final_video_name };
+			bRunScript = ExecuteCommand.executeCommand(cmds, null, new File("."), null);
+		}
 
 		boolean bGif = true; // TODO
 		if (bGif) {
@@ -305,7 +316,7 @@ public final class JsonSriptParser {
 				Image videoImage = ImageIO.read(file);
 				g.drawImage(videoImage, 0, 0, width, height, null);
 			}
-			g.setColor(new Color(30, 80, 200));// 帧号颜色
+			g.setColor(new Color(30, 80, 200));
 			g.setFont(new Font("黑体", Font.BOLD, 40));
 			g.drawString(Integer.toString(i + 1), width - 100, 50);// 显示帧号
 			ImageIO.write((BufferedImage) image, "JPEG", new File(destImageFile));
