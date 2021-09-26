@@ -25,6 +25,7 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -50,7 +51,10 @@ public final class JsonSriptParser {
 		String jsonString = getJsonString(scriptFilePath);
 		JSONObject jsonObj = new JSONObject(jsonString);
 		JSONObject requestObj = getJsonObjectbyName(jsonObj, "request");
-		String audioFilePath = requestObj.getString("music");
+		String audioFilePath = requestObj.optString("audio");
+		if (audioFilePath == null || audioFilePath.trim().length() == 0) {
+			audioFilePath = requestObj.optString("music");
+		}
 		// Resolve all macros
 		Iterator<String> keys = requestObj.keys();
 		while (keys.hasNext()) {
@@ -110,9 +114,15 @@ public final class JsonSriptParser {
 		System.out.println("剧本版本:" + version);
 		int width = requestObj.getInt("width");
 		int height = requestObj.getInt("height");
-		String audioFilePath = requestObj.optString("music");
+		String audioFilePath = requestObj.optString("audio");
+		if (audioFilePath == null || audioFilePath.trim().length() == 0) {
+			audioFilePath = requestObj.optString("music");
+		}
 		String videoFilePath = requestObj.optString("video");
 		String rate = requestObj.getString("rate");
+		String time = requestObj.optString("time");
+		String bgColor = requestObj.optString("backgroundColor");
+
 		int index = 0;
 
 		extractInfoFromVideo(videoFilePath, rate);
@@ -221,6 +231,10 @@ public final class JsonSriptParser {
 				}
 			}
 		}
+
+		if (index == 0) {
+			createDefaultVideo(width, height, time, rate, bgColor);
+		}
 		String suffix = isWindows ? ".bat" : ".sh";
 		String cmd = System.getProperty("user.dir") + "/" + "jpg2video" + suffix;
 		String[] args = { Integer.toString(width), Integer.toString(height), rate };
@@ -235,6 +249,9 @@ public final class JsonSriptParser {
 
 		double dRate = Double.parseDouble(rate);
 		long secondOfAudio = (long) ((double) index / dRate);
+		if (secondOfAudio == 0) {
+			secondOfAudio = Long.parseLong(time);
+		}
 		secondOfAudio += 2;
 		combineAudios(ffmpegPath, secondOfAudio);
 
@@ -244,20 +261,29 @@ public final class JsonSriptParser {
 		} else {
 			audioFile = FileUtil.downloadFileIfNeed(audioFilePath);
 		}
-		// Cut the audio
-		if (!new File(audioFile).exists()) {
-			throw new Exception("The audio file " + audioFile + " doesn't exist!");
-		}
-		String tmpAudioFile = "tmpAudio.mp3";
-		String endTime = milliSecondToTime(secondOfAudio * 1000);
-		String[] cutAudioCmd = { ffmpegPath, "-y", "-i", audioFile, "-ss", "0:0:0", "-to", endTime, "-c", "copy",
-				tmpAudioFile };
-		ExecuteCommand.executeCommand(cutAudioCmd, null, new File("."), null);
 
-		// Combine silent video and audio to a final video
+		boolean bRunScript = false;
 		String final_video_name = MacroResolver.getProperty("video_name");
-		String[] cmds = { ffmpegPath, "-y", "-i", subtitle_video_name, "-i", tmpAudioFile, final_video_name };
-		boolean bRunScript = ExecuteCommand.executeCommand(cmds, null, new File("."), null);
+		if (!new File(audioFile).exists()) {
+			if (index == 0) {
+				File srcFile = new File(System.getProperty("user.dir") + "/" + subtitle_video_name);
+				File destFile = new File(System.getProperty("user.dir") + "/" + final_video_name);
+				FileUtils.copyFile(srcFile, destFile);
+				return true;
+			}
+			throw new Exception("The audio file " + audioFile + " doesn't exist!");
+		} else {
+			String tmpAudioFile = "tmpAudio.mp3";
+			String endTime = milliSecondToTime(secondOfAudio * 1000);
+			// Cut the audio
+			String[] cutAudioCmd = { ffmpegPath, "-y", "-i", audioFile, "-ss", "0:0:0", "-to", endTime, "-c", "copy",
+					tmpAudioFile };
+			ExecuteCommand.executeCommand(cutAudioCmd, null, new File("."), null);
+
+			// Combine silent video and audio to a final video
+			String[] cmds = { ffmpegPath, "-y", "-i", subtitle_video_name, "-i", tmpAudioFile, final_video_name };
+			bRunScript = ExecuteCommand.executeCommand(cmds, null, new File("."), null);
+		}
 
 		boolean bGif = true; // TODO
 		if (bGif) {
@@ -266,6 +292,37 @@ public final class JsonSriptParser {
 			MacroResolver.setProperty("VAR_GIF_ENABLED", "true");
 		}
 		return bRunScript;
+	}
+
+	private static void createDefaultVideo(int width, int height, String time, String rate, String bgColor)
+			throws Exception {
+		int t = Integer.parseInt(time);
+		int r = Integer.parseInt(rate);
+		Color colorBackground = getColor(bgColor);
+
+		for (int i = 0; i < t * r; i++) {
+			String destImageFile = System.getProperty("user.dir") + "/" + Integer.toString(i + 1) + ".jpg";
+			BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+			Graphics2D g = image.createGraphics();
+			if (colorBackground != null) {
+				g.setColor(colorBackground);
+				g.fillRect(0, 0, width, height);
+				g.setBackground(colorBackground);
+			}
+
+			String jpegFile = System.getProperty("user.dir") + "/" + Integer.toString(i + 1) + ".jpeg";
+			File file = new File(jpegFile);
+			if (file.exists()) {
+				Image videoImage = ImageIO.read(file);
+				g.drawImage(videoImage, 0, 0, width, height, null);
+			}
+			g.setColor(new Color(30, 80, 200));
+			g.setFont(new Font("黑体", Font.BOLD, 40));
+			g.drawString(Integer.toString(i + 1), width - 100, 50);// 显示帧号
+			ImageIO.write((BufferedImage) image, "JPEG", new File(destImageFile));
+			g.dispose();
+		}
+
 	}
 
 	private static void combineAudios(String ffmpegPath, long secondsOfAudio) throws Exception {
