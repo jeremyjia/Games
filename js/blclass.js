@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.342"
+var g_ver_blClass = "CBlClass_v1.4.353"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -200,7 +200,7 @@ function CBlClass ()
 	}
 
 	function CBlScript(){
-		var _v1 = 0, _v2 = 0, _v3 = 42, _w = 1920;
+		var _v1 = 0, _v2 = 0, _v3 = 44, _w = 1920;
 		this.setVersion = function(v1,v2,v3){ _v1 = v1; _v2 = v2; _v3 = v3;};
 		this.getVersion = function(){return "v"+_v1+"."+_v2+"."+_v3;}; 
 		this.getWidth = function(){return _w;};
@@ -365,6 +365,9 @@ function CBlClass ()
 			};
 			this.add_Text_As_Obj_1 = function(_txt,_x,_y,_size,_r,_g,_b){
 				var s0 = _txt.replace("<br>","");
+				s0 = s0.replace("\n","");
+				s0 = s0.replace("<strong>","");
+				s0 = s0.replace("</strong>","");
 				var s1 = s0.split(" ");
 				var n = 0;
 				var line = "";
@@ -414,7 +417,7 @@ function CBlClass ()
 			return s;		 
 		}
 		var _sos = [];
-			var so1 ={
+		var so1 ={
                 "type": "text",
                 "attribute": {
                     "x1": 50,
@@ -430,63 +433,66 @@ function CBlClass ()
                     "trace": "y=0*x*x+1*x+0",
                     "step": 10
                 }
-            };
-		var so2 =  {
-			"type": "circle",
+        };
+ 
+		var so2 = 
+		{
+			"type": "picture",
 			"attribute": {
-				"x1": 20,
-				"y1": 200,
-				"x2": 100,
-				"y2": 100,
-				"size": 0.0,
-				"color": "255,250,0",
-				"name": "by Littleflute"
+				"x1": 1920,
+				"y1": 800,
+				"x2": 580,
+				"y2": 55,
+				"size": 50,
+				"color": "111,255,22",
+				"name": "https://user-images.githubusercontent.com/17950965/124674375-74f6ce80-de6f-11eb-8fe4-fc919cd5a96e.png"
 			},
-			"frameRange": "(2,100)",
+			"frameRange": "(1,100)",
 			"action": {
-				"trace": "y=0*x*x+0*x+300",
-				"step": 10
+				"trace": "y=0*x*x+0*x+444",
+				"step": -10
 			}
 		};
-		var so3 = {};
-		so3.type = "circle";
-		so3.frameRange = "(2,100)";
-		var a = {};
-		a.x1 = 20;
-		a.y1 = 555;
-		a.x2 = 20;
-		a.y2 = 888;
-		a.size = 0.0;
-		a.color = "111,222,50";
-		a.name = "so3: by littleflute " + "<!DOCTYPE html>";
-		so3.attribute = a;
-		var ac = {};
-		ac.trace = "y=0*x*x+0*x+555";
-		ac.step = 10;
-
-		var so4 = 
+		var so3 = 
 		{
 			"type": "picture",
 			"attribute": {
 				"x1": 900,
+				"y1": 800,
+				"x2": 580,
+				"y2": 55,
+				"size": 50,
+				"color": "255,255,0",
+				"name": "https://raw.githubusercontent.com/littleflute/blog/master/img/vleLogo1.png"
+			},
+			"frameRange": "(1,100)",
+			"action": {
+				"trace": "y=0*x*x+0*x+555",
+				"step": -10
+			}
+		};
+		var so4 = 
+		{
+			"type": "picture",
+			"attribute": {
+				"x1": 1920,
 				"y1": 500,
-				"x2": 80,
-				"y2": 80,
+				"x2": 180,
+				"y2": 180,
 				"size": 50,
 				"color": "255,0,0",
 				"name": "https://gdb.voanews.com/47E37481-CAD6-4AEF-9AD4-74FC8B936E46_w256_r1.jpg"
 			},
 			"frameRange": "(1,100)",
 			"action": {
-				"trace": "y=0*x*x+0*x+300",
+				"trace": "y=0*x*x+0*x+888",
 				"step": -10
 			}
 		};
-
-		so3.action = ac;
-		_sos.push(so1);
-		_sos.push(so2);
-		_sos.push(so3);
+ 
+		_sos.push(so1); 
+		_sos.push(so2); 
+		_sos.push(so3); 
 		_sos.push(so4);
 
 		_oScript.blrPlay = function(b,d){

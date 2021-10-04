@@ -1,8 +1,8 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "description": "sean n' way",
-    "version": "1.0.1",
+    "description": "sean n' wayneW",
+    "version": "1.5.1",
     "title": "Seans-Python3-Flask-Rest-Boilerplate",
     "license": {
       "name": "MIT",
@@ -168,7 +168,7 @@
           }
         ],
         "responses": {
-          "204": {
+          "200": {
             "description": "OK",
             "schema": {
               "$ref": "#/components/schemas/id"
