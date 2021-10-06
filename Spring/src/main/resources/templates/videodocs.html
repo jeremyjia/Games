@@ -9,14 +9,15 @@
 
 <body>
     <div class="container">
-        <div class="panel panel-default">
+        <div class="panel panel-primary">
             <div class="panel-heading text-center">
-                <h3>剧本列表 <a th:href="@{${issue_link}}" target="_blank">#</a> </h3>
+                <h3>剧本列表 <a class="btn btn-primary" th:href="@{${issue_link}}" target="_blank"
+                        th:text=${short_link}>#</a> </h3>
             </div>
             <div class="panel-body">
                 <table class="table table-hover">
                     <thead>
-                        <tr>
+                        <tr class="success">
                             <td>序号</td>
                             <td>剧本描述</td>
                             <td>剧本链接</td>
@@ -24,14 +25,14 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="video:${videoDocs}">
+                        <tr class="active" th:each="video:${videoDocs}">
                             <td th:text="${video.id}"></td>
                             <td th:text="${video.description}"></td>
                             <td>
                                 <a th:href="@{${video.video_link}}" target="_blank">查看剧本</a>
                             </td>
                             <td>
-                                <a th:href="@{${video.video_page}}" target="_blank">生成视频</a>
+                                <a class="btn btn-info" th:href="@{${video.video_page}}" target="_blank">生成视频</a>
                             </td>
                         </tr>
                     </tbody>

@@ -207,10 +207,11 @@ public class CommonController {
 		ModelAndView mv = new ModelAndView();
 		mv.setViewName("videodocs.html");
 		List<VideoDoc> videoDocs = videoDocService.findAll(issueId);
-		
-		String issueLink = "https://github.com/jeremyjia/Games/issues/"+issueId;
+
+		String issueLink = "https://github.com/jeremyjia/Games/issues/" + issueId;
 		mv.addObject("videoDocs", videoDocs);
 		mv.addObject("issue_link", issueLink);
+		mv.addObject("short_link", "#" + issueId);
 		return mv;
 	}
 
