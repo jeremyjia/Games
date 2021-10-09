@@ -1,5 +1,5 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.353"
+var g_ver_blClass = "CBlClass_v1.5.11"
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -2027,8 +2027,8 @@ function ftnPlayer( oDiv ,mySrc){
 			this.v = blo0.blDiv(v,v.id + "List","list", "lightblue");
 			var d = this.v;
 
-			d.vn = blo0.blDiv(d,d.id+"v4NewURL","v4NewURL",blPink[2]); 
-			d.vn.ta = blo0.blTA(d.vn,d.vn+"ta","test");
+			d.vn = blo0.blDiv(d,d.id+"v4NewURL","v4NewURL","blPink[2]"); 
+			//d.vn.ta = blo0.blTA(d.vn,d.vn+"ta","test");
 			
 
 			d.v = blo0.blDiv(d,d.id+"v","v",blGrey[3]); 
