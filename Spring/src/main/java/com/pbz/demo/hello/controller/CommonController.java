@@ -5,11 +5,13 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,7 +19,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
+import com.pbz.demo.hello.model.VideoDoc;
+import com.pbz.demo.hello.service.VideoDocService;
 import com.pbz.demo.hello.util.ExecuteCommand;
 import com.pbz.demo.hello.util.FileUtil;
 import com.pbz.demo.hello.util.NetAccessUtil;
@@ -36,6 +41,9 @@ public class CommonController {
 
 	@Value("${server.version}")
 	private String app_version;
+
+	@Autowired
+	private VideoDocService videoDocService;
 
 	@ApiOperation(value = "执行服务器端命令", notes = "执行服务器端命令")
 	@ApiImplicitParams({
@@ -192,6 +200,19 @@ public class CommonController {
 		String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentId;
 		String resultString = NetAccessUtil.doPostOnGitHub(url, "DELETE", "");
 		return resultString;
+	}
+
+	@RequestMapping(value = "/videodocs/findAll", method = RequestMethod.GET)
+	public ModelAndView findAllDocsOnGithub(@RequestParam(name = "issueId", defaultValue = "525") String issueId) {
+		ModelAndView mv = new ModelAndView();
+		mv.setViewName("videodocs.html");
+		List<VideoDoc> videoDocs = videoDocService.findAll(issueId);
+
+		String issueLink = "https://github.com/jeremyjia/Games/issues/" + issueId;
+		mv.addObject("videoDocs", videoDocs);
+		mv.addObject("issue_link", issueLink);
+		mv.addObject("short_link", "#" + issueId);
+		return mv;
 	}
 
 	@ApiOperation(value = "获取版本信息", notes = "获取应用版本、服务器等信息")

@@ -732,7 +732,7 @@ public final class JsonSriptParser {
 		return s;
 	}
 
-	private static JSONObject getJsonObjectbyName(JSONObject jsonObj, String name) {
+	public static JSONObject getJsonObjectbyName(JSONObject jsonObj, String name) {
 		if (jsonObj == null) {
 			return null;
 		}
