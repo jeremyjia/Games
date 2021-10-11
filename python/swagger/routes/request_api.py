@@ -31,7 +31,7 @@ def get_blueprint():
 with open("./routes/env_conf.json", 'r', encoding='utf-8') as ec:
     json_data = json.load(ec)
   # print(json_data)
-DB_TYPE = str(os.getenv('dbtype'))
+DB_TYPE = os.getenv('dbtype')
 if DB_TYPE == None:
    DB_TYPE = json_data['DB_TYPE']
 DB_NAME = str(os.getenv('dbname'))
