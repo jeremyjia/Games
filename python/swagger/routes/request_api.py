@@ -1,17 +1,17 @@
 """The Endpoints to manage the BOOK_REQUESTS"""
 # READ ME: before run app.py, kindly ensure that your client has already installed the MySQL database (like mysql-installer-web-community editoin) properly,\
-# and you have done with the initialization setting, such as host, port, user, and keywords, etc. -wayneW
-# start the mysql service when your database is mysql. To CMD and run 'net start mysql80'
-# set temp env viaralbes in CMD by 'set dbtype=mysql(or json)' and 'set dbname=bl_book'. check values of these viarables via 'set dbtype', in order to easy-doing software test. 
+# and you have done with the initialization setting, such as host, port, user(root), and keywords, etc. And in Ubuntu, need to reset password of admin user ('root'), in order to build new databases. - wayneW
+# start the mysql service when your database is mysql. To CMD and run 'net start mysql80' or 'sudo service mysql start' in Ubuntu.
+# Set temp env viaralbes in CMD by 'set dbtype=mysql(or json)'or in bash by 'export dbtype=mysql' and 'set dbname=bl_book'. check values of these viarables via 'set dbtype' or 'echo $dbtype' in bash, in order to easy-doing software test. 
 # Also you can twinst these setting in /.routes/env_conf.json. Ensure these are fit for your local setting. Please set a database name and datatpye,such as mysql (default) or json.
 # I notice that mysql database are not sensitive to case, so I set dbname = BL_book, but in fact the data name was set to bl_book. -wayneW
-# Memo: after coding revise，启动浏览器发现修改并没有被即时体现。可能是浏览器缓存刷新，so reset the setting of edge，即还原所有设置，issue solved。第二天在没有进行任何设置还原的前提下，\
+# Memo: after coding revise，启动浏览器localhost:5000, 发现修改并没有被即时体现。可能是浏览器缓存刷新，so reset the setting of edge，即还原所有设置，issue solved。第二天在没有进行任何设置还原的前提下，\
 # chrome浏览器能成功体现前一天的代码修改内容。 -wayneW
 import os
 import uuid
 import json  
-import pymysql  # need to install pymysql first -wayne W
-import mysql.connector 
+import pymysql  # need to install pymysql first by commit 'pip3 install pymysql'-wayne W
+import mysql.connector   # need to 'pip3 install mysql_connector_python' in Ubuntu
 from datetime import datetime, timedelta
 from flask import jsonify, abort, request, Blueprint
 from validate_email import validate_email
@@ -31,10 +31,12 @@ def get_blueprint():
 with open("./routes/env_conf.json", 'r', encoding='utf-8') as ec:
     json_data = json.load(ec)
   # print(json_data)
-DB_TYPE = os.getenv('dbtype')
+DB_TYPE = os.getenv('dbtype')   
 if DB_TYPE == None:
    DB_TYPE = json_data['DB_TYPE']
-DB_NAME = str(os.getenv('dbname'))
+
+DB_NAME = os.getenv('dbname')
+    
 if DB_NAME == None:
    DB_NAME = json_data['DB_NAME']
 else:

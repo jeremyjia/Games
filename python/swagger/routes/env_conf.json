@@ -1,1 +1,1 @@
-{"DB_TYPE": "mysql", "DB_NAME": "b", "host": "127.0.0.1", "port": 3306, "user": "www", "password": "5566", "charset": "utf8"}
+{"DB_TYPE": "mysql", "DB_NAME": "book", "host": "localhost", "port": 3306, "user": "root", "password": "565656", "charset": "utf8"}
