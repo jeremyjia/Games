@@ -20,6 +20,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -329,6 +330,20 @@ public class FileUtil {
 		ops.close();
 		System.out.println(jsonString);
 		return jsonString;
+	}
+
+	public static String encryptToBase64(String filePath) {
+		if (filePath == null) {
+			return null;
+		}
+		try {
+			byte[] b = Files.readAllBytes(Paths.get(filePath));
+			return Base64.getEncoder().encodeToString(b);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return null;
 	}
 
 	public static int chmod(String args) throws Exception {
