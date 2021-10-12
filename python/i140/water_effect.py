@@ -1,3 +1,4 @@
+# 为图片添加水波纹效果，通过 A B 来微调效果
 import numpy as np
 from skimage import img_as_float  # need to install first by 'pip install scikit-image'
 import matplotlib.pyplot as plt
@@ -5,7 +6,7 @@ from PIL import Image
 from skimage import io
 import numpy.matlib
 
-file_name2 = 'D:/scratch/f1.jpg'  # 实现水波特效
+file_name2 = './f1.jpg'  # 处理同目录文件
 img=io.imread(file_name2)
 
 img = img_as_float(img)
@@ -13,8 +14,8 @@ img = img_as_float(img)
 
 row, col, channel = img.shape
 img_out = img * 1.0
-A = 7.0
-B = 3.0
+A = 2.0  #值越小 越接近原图
+B = 3.0  #值越小 水波纹越宽
 
 center_x = (col-1)/2.0
 center_y = (row-1)/2.0
