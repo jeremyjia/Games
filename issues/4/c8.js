@@ -20,7 +20,7 @@ if (!md.run) {
 	style += "width: 540px";
 	md.style = style;
 
-	var title = blo0.blDiv(md, "div_ID_4_I4C6" + "Header", "Header");
+	var title = blo0.blDiv(md, "div_ID_4_I4C8" + "Header", "Header");
 	style = "padding: 10px;";
 	style += "z-index: 10;";
 	style += "cursor: move;";
@@ -36,34 +36,33 @@ if (!md.run) {
 	md.v = blo0.blDiv(md, md.id + "v101", "v101", blColor[0]);
 	// 调用 jsClass 的 blo0.blShowObj2Div 接口函数，显示一个对象到 DIV（md.v) 上 
 	blo0.blShowObj2Div(md.v, new _myTaskProcessClass);
-	if (bl$("blrRunJS")) {
-		bl$("blrRunJS").click();
+	if (bl$("blrVideoEditor")) {
+		bl$("blrVideoEditor").click();
 	}
 }
 _on_off_div(this, md);
 
 
 function _myTaskProcessClass() {
-	this.blrRunJS = function (b, d) {
+	this.blrVideoEditor = function (b, d) {
 		if (!d.v) {
 			d.parentElement.style.backgroundColor = blColor[3];
 
 			// 调用 jsClass 的 blo0.blDiv 接口函数，创建 DIV。 
 			d.v = blo0.blDiv(d, d.id + "v", "", blGrey[5]);
 			// 调用 jsClass 的 blo0.blTextarea 接口函数，创建 Textarea 
-			d.v.ta = blo0.blTextarea(d.v, "id_4_ta_blrRunJS", "alert(1);", blGrey[3]);
+			d.v.ta = blo0.blTextarea(d.v, "id_4_ta_blrVideoEditor", "{}", blGrey[3]);
 			d.v.ta.style.width = "95%";
 			d.v.ta.style.height = "300" + "px";
 			// 调用 jsClass 的 blo0.blDiv 接口函数，创建 DIV。 
 			d.v1 = blo0.blDiv(d, d.id + "v1", "", blGrey[5]);
 			// 调用 jsClass 的 blo0.blBtn 接口函数，创建 button. 
-			d.v.btnRun = blo0.blBtn(d.v1, d.v1.id + "btnRun", "ReadVideoDoc", blColor[4]);
-			d.v.btnRun.onclick = function () {
+			d.v.btnReadVideoDoc = blo0.blBtn(d.v1, d.v1.id + "btnReadVideoDoc", "ReadVideoDoc", blColor[4]);
+			d.v.btnReadVideoDoc.onclick = function () {
 				function _loadIssue451CommentOfDoc(o) {
 					d.v.ta.value = JSON.stringify(o);;
 				}
 				getGitHubComment(939612362, _loadIssue451CommentOfDoc);
-
 			}
 
 			d.v.btnServer = blo0.blBtn(d.v1, d.v1.id + "btnServer", "QueryServer", blColor[4]);
@@ -88,7 +87,7 @@ function _myTaskProcessClass() {
 				function _loadIssue451CommentOfRq(o) {
 					var rq = o.rq;
 					if (rq == 2) {
-						alert("The server is busy!");
+						alert("Server is busy!");
 						return;
 					} else {
 						var strDoc = d.v.ta.value;
@@ -102,7 +101,7 @@ function _myTaskProcessClass() {
 									var jsondata = JSON.stringify(jsonAll);
 									updateCommentOnGitHub(939645512, jsondata, function (response) {
 									});
-									alert("Done");
+									alert("Done for sending request to server!");
 								} else {
 									alert("Errors, status=" + response.status);
 								}
@@ -117,9 +116,9 @@ function _myTaskProcessClass() {
 		// 调用全局接口函数 _on_off_div，打开或关闭 DIV（此处为 md)
 		_on_off_div(b, d);
 		b.style.background = b.style.background == "red" ? blGrey[5] : blColor[4];
-	}//this.blrRunJS
+	}//this.blrVideoEditor
 
-	this.blline = "----";
+	this.blline = "----------------";
 	this.blrShowVideo = function (b, d) {
 		d.parentElement.style.backgroundColor = blColor[3];
 		if (!d.videoViewer) {
@@ -135,11 +134,11 @@ function _myTaskProcessClass() {
 			d.v2 = blo0.blDiv(d, d.id + "v2", "", blGrey[5]);
 			d.videoViewer.btnRefresh = blo0.blBtn(d.v2, d.v2.id + "btnRefresh", "Refresh", blColor[4]);
 			d.videoViewer.btnRefresh.onclick = function () {
-				function _loadIssue451Comments(o) {
+				function _loadIssue451CommentOfData(o) {
 					var based64_txt = o;
 					d.video.src = based64_txt;
 				}
-				getStringComment(939443982, _loadIssue451Comments);
+				getStringComment(939443982, _loadIssue451CommentOfData);
 			}
 
 		}
@@ -160,7 +159,7 @@ function updateCommentOnGitHub(commentId, jsonAll, userCallBack) {
 	});
 }
 
-function getStringComment(commentId, funObj) {
+function getStringComment(commentId, CBFunObj) {
 	var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentId;
 	myAjaxCmd('GET', url, null, usercallback);
 
@@ -169,7 +168,7 @@ function getStringComment(commentId, funObj) {
 			if (response.status == 200 || response.status == 201) {
 				var msgObj = JSON.parse(response.responseText);
 				if (msgObj.body != null && msgObj.body != "") {
-					funObj(msgObj.body);
+					CBFunObj(msgObj.body);
 				}
 			} else {
 				alert("Network error！" + response.status);
