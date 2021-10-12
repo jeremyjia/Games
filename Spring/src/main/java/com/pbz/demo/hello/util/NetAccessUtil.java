@@ -71,7 +71,7 @@ public class NetAccessUtil {
 			connection.setRequestProperty("accept", "*/*");
 			connection.setRequestProperty("connection", "Keep-Alive");
 			connection.setRequestProperty("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
-			// connection.setRequestProperty("Authorization", "token " + getToken());
+			connection.setRequestProperty("Authorization", "token " + getToken());
 			connection.connect();
 			Map<String, List<String>> map = connection.getHeaderFields();
 			for (String key : map.keySet()) {
