@@ -4,7 +4,7 @@ s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/is
 s += " style='color:blue;'"; s += ">"; s += "c8.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c8.js'"
 s += " style='color:green;'"; s += ">"; s += "c8.js ";
-s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c8Test.html'"
+s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c8.html'"
 s += " style='color:brown;'"; s += ">"; s += "c8Test.html";
 
 var md = blo0.blDiv(document.body, "div_ID_4_I4C8", s, blGrey[0]);
