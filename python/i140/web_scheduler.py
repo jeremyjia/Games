@@ -4,7 +4,8 @@ import requests
 
 # 输出时间
 def job():
-    url = 'http://www.jb51.net'
+    url = 'http://localhost:8080'
+    # url = 'http://www.jb51.net'
     data = requests.get(url)
     code = data.status_code
 

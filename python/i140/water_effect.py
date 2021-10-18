@@ -5,8 +5,16 @@ import matplotlib.pyplot as plt
 from PIL import Image
 from skimage import io
 import numpy.matlib
+import argparse
 
-file_name2 = './f1.jpg'  # 处理同目录文件
+parser = argparse.ArgumentParser(description='image for argparse')
+parser.add_argument('--path', '-p', help='file_path 属性，必要参数', required=True)
+parser.add_argument('--clear', '-c', help='img_clear 属性，非必要参数，但是有默认值', default=2.0)
+parser.add_argument('--width', '-w', help='mark_width 属性，非必要参数，但是有默认值', default=3.0)
+args = parser.parse_args()
+
+# file_name2 = './f1.jpg'  # 处理同目录文件
+file_name2 = args.path
 img=io.imread(file_name2)
 
 img = img_as_float(img)
@@ -14,8 +22,8 @@ img = img_as_float(img)
 
 row, col, channel = img.shape
 img_out = img * 1.0
-A = 2.0  #值越小 越接近原图
-B = 3.0  #值越小 水波纹越宽
+A = float(args.clear)  #值越小 越接近原图
+B = float(args.width)  #值越小 水波纹越宽
 
 center_x = (col-1)/2.0
 center_y = (row-1)/2.0
@@ -55,14 +63,14 @@ for ii in range(row):
         img_out[ii, jj, :] = img[new_yy, new_xx, :]
 
 
-plt.figure (1)
-plt.imshow (img)
-plt.axis('off')
+# plt.figure (1)
+# plt.imshow (img)
+# plt.axis('off')
 
 plt.figure (2)
 plt.imshow (img_out)
 plt.axis('off')
 plt.savefig('w_img.jpg')
 
-plt.show()
+# plt.show()
 
