@@ -1,0 +1,68 @@
+{
+    "request": {
+        "version": "0.0.15",
+        "width": 1024,
+        "height": 768,
+        "music": "1.mp3",
+        "rate": "1",
+        "frames": [
+            {
+                "time": 1,
+                "objects": [
+                    {
+                        "text": "This is designed by Jeremy",
+                        "x": 50,
+                        "y": 200,
+                        "size": 50,
+                        "color": "80,80,80"
+                    }
+                ],
+                "backgroundColor": "155,182,193"
+            },
+            {
+                "time": 5,
+                "objects": [
+                    {
+                        "text": "可爱的小猫咪",
+                        "x": 150,
+                        "y": 700,
+                        "size": 40,
+                        "color": "0,0,0"
+                    }
+                ],
+                "backgroundPicture": "${VAR_CAT_SRC}"
+            },
+            {
+                "time": 5,
+                "objects": [
+                    {
+                        "text": "可爱的小猫咪-水波纹",
+                        "x": 200,
+                        "y": 700,
+                        "size": 40,
+                        "color": "200,200,20"
+                    }
+                ],
+                "backgroundPicture": "${VAR_CAT1}"
+            }
+        ],
+        "Macros": [
+            {
+                "name": "VAR_CAT_SRC",
+                "value": "https://jeremyjia.github.io/Games/python/i140/f1.jpg"
+            },
+            {
+                "name": "VAR_CAT1",
+                "value": {
+                    "type": "python",
+                    "attribute": {
+                        "script": "https://jeremyjia.github.io/Games/python/i140/water_effect.py",
+                        "in": "https://jeremyjia.github.io/Games/python/i140/f1.jpg",
+                        "out": "f2.jpg",
+                        "opts": "-c 3 -w 4"
+                    }
+                }
+            }
+        ]
+    }
+}
