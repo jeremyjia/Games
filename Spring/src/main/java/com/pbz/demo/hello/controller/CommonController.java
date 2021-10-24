@@ -24,7 +24,6 @@ import org.springframework.web.servlet.ModelAndView;
 import com.pbz.demo.hello.model.VideoDoc;
 import com.pbz.demo.hello.service.VideoDocService;
 import com.pbz.demo.hello.util.ExecuteCommand;
-import com.pbz.demo.hello.util.FileUtil;
 import com.pbz.demo.hello.util.NetAccessUtil;
 
 import io.swagger.annotations.Api;
@@ -51,36 +50,7 @@ public class CommonController {
 	@RequestMapping(value = "/command", method = RequestMethod.GET)
 	@ResponseBody
 	public Map<String, Object> processCommandOnServer(String[] cmd) throws Exception {
-		Map<String, Object> status = new HashMap<String, Object>();
-		File logFile = new File("./Cmdlog.txt");
-		if (logFile.exists()) {
-			logFile.delete();
-		}
-		logFile.createNewFile();
-
-		try {
-			ExecuteCommand.executeCommand(cmd, null, new File("."), logFile.getAbsolutePath());
-		} catch (Exception e) {
-			String cmd0 = "sh";
-			String cmd1 = "-c";
-			if (isWindows) {
-				cmd0 = "cmd";
-				cmd1 = "/c";
-			}
-			String[] cmds = new String[cmd.length + 2];
-			cmds[0] = cmd0;
-			cmds[1] = cmd1;
-			for (int i = 0; i < cmd.length; i++) {
-				cmds[i + 2] = cmd[i];
-			}
-			ExecuteCommand.executeCommand(cmds, null, new File("."), logFile.getAbsolutePath());
-		}
-		Thread.sleep(100);
-		String strOut = FileUtil.readAllBytes(logFile.getAbsolutePath());
-		status.put("Status", "OK!");
-		status.put("Message", strOut);
-
-		return status;
+		return ExecuteCommand.executeCommandOnServer(cmd);
 	}
 
 	@ApiIgnore

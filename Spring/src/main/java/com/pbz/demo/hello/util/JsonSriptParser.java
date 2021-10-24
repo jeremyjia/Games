@@ -37,6 +37,7 @@ import com.pbz.demo.hello.util.engine.JSGraphEngine;
 public final class JsonSriptParser {
 	private static final String subtitle_video_name = "vSubtitle.mp4";
 	private static final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
+
 	private static List<Map<String, Object>> supperObjectsMapList = new ArrayList<Map<String, Object>>();
 	private static Map<Integer, AOIArea> aoiMap = new HashMap<>();
 	private static List<AudioParam> audioList = new ArrayList<>();
@@ -70,14 +71,7 @@ public final class JsonSriptParser {
 					String varValue = "";
 					Object obj = macroObj.get("value");
 					if (obj instanceof JSONObject) {
-						JSONObject valObj = (JSONObject) obj;
-						String href = valObj.getString("href");
-						String rule = valObj.getString("rule");
-						String number = valObj.getString("number");
-						String charset = valObj.getString("charset");
-						System.out.println("Get text from url: " + href);
-						varValue = service.getText(href, rule, charset, Integer.valueOf(number));
-						MacroResolver.setProperty(varName, varValue);
+						varValue = parseVariableValue(obj);
 					} else {
 						varValue = (String) obj;
 					}
@@ -93,6 +87,52 @@ public final class JsonSriptParser {
 		System.out.println("Audio file " + saveFile + " seconds:" + audioTime);
 		MacroResolver.setProperty("VAR_TIME", audioTime);
 
+	}
+
+	private static String parseVariableValue(Object obj) throws Exception {
+		String strValue = "";
+		JSONObject valObj = (JSONObject) obj;
+		String type = valObj.optString("type");
+
+		if ("python".equalsIgnoreCase(type)) {
+			JSONObject attrObj = valObj.getJSONObject("attribute");
+			String script = attrObj.getString("script");
+			String inputFile = attrObj.getString("input");
+			String outputFile = attrObj.getString("output");
+			String opts = attrObj.optString("opts");
+			script = FileUtil.downloadFileIfNeed(script);
+			inputFile = FileUtil.downloadFileIfNeed(inputFile);
+			List<String> cmds = new ArrayList<String>();
+			if (isWindows) {
+				cmds.add("python");
+			} else {
+				cmds.add("python3");
+			}
+			cmds.add(script);
+			cmds.add("-i");
+			cmds.add(inputFile);
+			cmds.add("-o");
+			cmds.add(outputFile);
+
+			if (opts != null && opts.trim().length() != 0) {
+				String[] parameters = opts.split("\\s+");
+				for (String opt : parameters) {
+					cmds.add(opt);
+				}
+			}
+			String[] commands = cmds.toArray(new String[] {});
+			ExecuteCommand.executeCommandOnServer(commands);
+			strValue = outputFile;
+		} else {
+			// Parse the text from web link
+			String href = valObj.getString("href");
+			String rule = valObj.getString("rule");
+			String number = valObj.getString("number");
+			String charset = valObj.getString("charset");
+			System.out.println("Get text from url: " + href);
+			strValue = service.getText(href, rule, charset, Integer.valueOf(number));
+		}
+		return strValue;
 	}
 
 	public static boolean generateVideoByScriptFile(String scriptFilePath) throws Exception {
@@ -124,7 +164,6 @@ public final class JsonSriptParser {
 		String bgColor = requestObj.optString("backgroundColor");
 
 		int index = 0;
-
 		extractInfoFromVideo(videoFilePath, rate);
 
 		Iterator<String> keys = requestObj.keys();
