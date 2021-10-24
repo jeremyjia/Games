@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -65,9 +66,13 @@ public class VideoDocServiceImpl implements VideoDocService {
 
 	private String getDescription(String jsonStr) {
 		String des = "";
-		JSONObject jsonObj = new JSONObject(jsonStr);
-		JSONObject requestObj = JsonSriptParser.getJsonObjectbyName(jsonObj, "request");
-		des = requestObj.optString("description");
+		try {
+			JSONObject jsonObj = new JSONObject(jsonStr);
+			JSONObject requestObj = JsonSriptParser.getJsonObjectbyName(jsonObj, "request");
+			des = requestObj.optString("description");
+		} catch (JSONException e) {
+			return "It's not a valid JSON";
+		}
 		return des;
 	}
 
