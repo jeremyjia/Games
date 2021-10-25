@@ -473,3 +473,79 @@ def delete_record(_id):
         # return jsonify({"DELETED ID: ": _id}), 201
         return'ID OF THE DELETED BOOK: ' + _id, 200
 
+@REQUEST_API.route('/request/<string:_id>', methods=['IMAGE'])
+def edit_image(_id):
+    """Edit a image, add several effects
+    @param email: post : the requesters email address
+    @param title: post : the title of the book requested
+    @return: 200: a booke_request as a flask/response object \
+    with application/json mimetype.
+    @raise 400: misunderstood request
+    """   
+    # if _id not in BOOK_REQUESTS:
+    #     abort(404)
+
+    if not request.get_json():
+        abort(400)
+    data = request.get_json(force=True)
+
+    if not data.get('email'):
+        abort(400)
+    if not validate_email(data['email']):
+        abort(400)
+    if not data.get('title'):
+        abort(400)
+
+    with open("./routes/env_conf.json", 'r', encoding='utf-8') as ec:
+      json_data = json.load(ec)
+
+    if DB_TYPE == 'mysql':
+        config = {
+        "host":str(json_data['host']), 
+        "port":json_data['port'], 
+        "user":str(json_data['user']), 
+        "password":str(json_data['password']), 
+        "database":str(json_data['DB_NAME']),
+        "charset":str(json_data['charset'])
+        }
+              
+        title = str(data['title'])
+        email = str(data['email'])
+        timestamp = str(datetime.now().timestamp())
+
+        db = pymysql.connect(**config)
+        cursor = db.cursor()
+        sql = "UPDATE book_info SET `title` = '" + title + "', `email` = '" + email + "', `timestamp` = '" + timestamp + "' WHERE uuid = '" + _id + "';"
+
+        try:
+          cursor.execute(sql)
+          db.commit()  #caution 这句非常重要，如果不写，就不会执行插入或更新操作。
+          sql = "SELECT * FROM book_info WHERE uuid = '" + _id + "';"
+          cursor.execute(sql)
+          # return 'BOOK INFO UPDATED', 200
+          BOOK_REQUESTS = cursor.fetchall()
+          return 'BOOK INFO UPDATED BY: ' + str(BOOK_REQUESTS) + '\nNOTICE: IF SHOWN AS (), MEANS PROVIDED A FAKE ID', 200
+          # return 'UPDATED A BOOK INFO, ITS ID: ' + _id, 200
+
+        except:
+          print ("Error: unable to edit the data")
+
+        finally:
+          db.close()    
+
+    else:
+        book_request = {
+        'title': data['title'],
+        'email': data['email'],
+        'timestamp': datetime.now().timestamp()
+        }
+        with open("./routes/j_data.json", 'r', encoding='utf-8') as f: # updated on 20210917
+          json_data = json.load(f)       # updated on 20210917
+          BOOK_REQUESTS = json_data      # updated on 20210917
+          BOOK_REQUESTS[_id] = book_request
+    
+    # save the new book to jason file, further jobs: need to rewrite the file under the formatal style for read it easily. 'BOOK INFO UPDATED BY:'-wayne W
+        fo = open("./routes/j_data.json", "w")
+        fo.write( str(json.dumps(BOOK_REQUESTS)) )
+        fo.close()
+        return jsonify({'BOOK INFO UPDATED BY':BOOK_REQUESTS[_id]}), 200
