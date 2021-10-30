@@ -1,9 +1,7 @@
 // file: blclass.js    by littleflute 
-<<<<<<< HEAD
-var g_ver_blClass = "CBlClass_v1.4.412"
-=======
+
 var g_ver_blClass = "CBlClass_v1.5.11"
->>>>>>> upstream/master
+
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
