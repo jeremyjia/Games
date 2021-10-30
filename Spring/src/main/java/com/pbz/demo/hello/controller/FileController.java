@@ -1,12 +1,8 @@
 package com.pbz.demo.hello.controller;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +21,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
+
+import com.pbz.demo.hello.util.FileUtil;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -99,19 +97,7 @@ public class FileController {
 	@ResponseBody
 	public String saveJson2File(@RequestParam("fileName") String fileName, @RequestBody String jsonString)
 			throws Exception {
-		jsonString = URLEncoder.encode(jsonString, "UTF-8");
-		jsonString = URLDecoder.decode(jsonString, "UTF-8");
-
-		String file = System.getProperty("user.dir") + "/" + fileName;
-		OutputStreamWriter ops = null;
-		ops = new OutputStreamWriter(new FileOutputStream(file));
-		if (!jsonString.startsWith("{") && !jsonString.endsWith("}")) {
-			jsonString = jsonString.substring(1, jsonString.length() - 1);
-		}
-		ops.write(jsonString);
-		ops.close();
-		System.out.println(jsonString);
-		return jsonString;
+		return FileUtil.saveJsonString2File(jsonString, fileName);
 	}
 
 	@ApiOperation(value = "下载文件", notes = "下载文件接口")

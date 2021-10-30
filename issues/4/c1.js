@@ -1,5 +1,5 @@
 //i4c1
-var s= "v0.1. 53 ";
+var s= "v0.1. 54 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c1.js'"
 s += " style='color:blue;'";		s +=">"; s += "c1.js* ";
 s += "<a target='_blank' href='issues/4/c1.js'"
@@ -77,6 +77,10 @@ function ftnPlayer( oDiv ){
 		if(!this.v){
 			this.v = blo0.blDiv(v,v.id + "List","list", "lightblue");
 			var d = this.v;
+
+			d.vn = blo0.blDiv(d,d.id+"v4NewURL","v4NewURL",blPink[2]); 
+			d.vn.ta = blo0.blTA(d.vn,d.vn+"ta","test");
+
 			d.v = blo0.blDiv(d,d.id+"v","v",blGrey[3]); 
 			d.v4List = blo0.blDiv(d,d.id+"v4List", "v4List",  blColor[4]);
 
@@ -315,7 +319,7 @@ function ftnPlayer( oDiv ){
 								var b = a.split("\n");
 								de.innerHTML = "";
 								for(i in b){
-									var l = blo0.blDiv(de,de.id+i, "l"+i + ":" + b[i],blColor[i%blColor.length]);
+									var l = blo0.blDiv(de,de.id+i, "l"+i + ":" + b[i],blGrey[i%5]);
 									l.onclick = function(_div,_i,_timeA,_txtA, _player)
 									{
 										return function(){											

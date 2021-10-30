@@ -122,10 +122,10 @@ public class ImageController {
 
 	}
 
-	@ApiOperation(value = "音频合成字幕生成视频", notes = "将音频合成字幕生成视频")
+	@ApiOperation(value = "通过音频与字幕文件生成视频", notes = "以一个音频MP3文件和一个标准字幕SRT文件为输入，输出一个视频.\n调用示例：http://localhost:8080/image/combine?subtitlefile=1.srt&audiofile=1.mp3。\n音频与字幕文件还可以是URL")
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "subtitlefile", value = "subtitle file (*.srt)", paramType = "query", required = true, dataType = "string", defaultValue = "example.srt"),
-			@ApiImplicitParam(name = "audiofile", value = "audio file (*.mp3)", paramType = "query", required = true, dataType = "string", defaultValue = "example.mp3") })
+			@ApiImplicitParam(name = "subtitlefile", value = "subtitle file (*.srt)", paramType = "query", required = true, dataType = "string", defaultValue = "1.srt"),
+			@ApiImplicitParam(name = "audiofile", value = "audio file (*.mp3)", paramType = "query", required = true, dataType = "string", defaultValue = "1.mp3") })
 	@RequestMapping(value = "/combine", method = RequestMethod.GET)
 	public ModelAndView combineSubtiteAndAudio2MP4(@RequestParam(name = "subtitlefile") String subtitleFile,
 			@RequestParam(name = "audiofile") String audioFile) throws Exception {

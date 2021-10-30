@@ -1,0 +1,445 @@
+{
+    "request": {
+        "version": "0.0.13",
+        "width": 1024,
+        "height": 768,
+        "music": "bzll.mp3",
+        "rate": "1",
+        "frames": [
+            {
+                "number": "1",
+                "time": 222,
+                "objects": [
+                    {
+                        "text": "不再流浪",
+                        "x": 240,
+                        "y": 100,
+                        "size": 90,
+                        "color": "107,142,35"
+                    },
+                    {
+                        "text": "词曲作者: Littleflute",
+                        "x": 20,
+                        "y": 180,
+                        "size": 40,
+                        "color": "95,35,135"
+                    },
+                    {
+                        "text": "吉他弹唱: Littleflute",
+                        "x": 20,
+                        "y": 230,
+                        "size": 40,
+                        "color": "95,35,135"
+                    },
+                    {
+                        "text": "视频制作: Jeremyjia",
+                        "x": 20,
+                        "y": 280,
+                        "size": 40,
+                        "color": "95,35,135"
+                    }
+                ],
+                "backgroundColor": "100,100,100"
+            }
+        ],
+        "superObjects": [
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 150,
+                    "y1": 500,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 80,
+                    "color": "199,97,20",
+                    "name": "许多许多年以前"
+                },
+                "frameRange": "(9,12)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+700",
+                    "step": 10
+                }
+            },
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 150,
+                    "y1": 500,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 80,
+                    "color": "199,97,20",
+                    "name": "我带着无奈去流浪"
+                },
+                "frameRange": "(13,16)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+700",
+                    "step": 10
+                }
+            },
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 150,
+                    "y1": 500,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 80,
+                    "color": "199,97,20",
+                    "name": "经过多少的风霜"
+                },
+                "frameRange": "(17,20)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+700",
+                    "step": 10
+                }
+            },
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 150,
+                    "y1": 500,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 80,
+                    "color": "199,97,20",
+                    "name": "我独自漂泊在他乡"
+                },
+                "frameRange": "(21,25)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+700",
+                    "step": 10
+                }
+            },
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 150,
+                    "y1": 500,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 80,
+                    "color": "199,197,20",
+                    "name": "多少次夜里"
+                },
+                "frameRange": "(26,29)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+700",
+                    "step": 10
+                }
+            },
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 150,
+                    "y1": 500,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 80,
+                    "color": "199,197,20",
+                    "name": "盼望星星，盼月亮"
+                },
+                "frameRange": "(30,34)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+700",
+                    "step": 10
+                }
+            },
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 150,
+                    "y1": 500,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 80,
+                    "color": "199,197,20",
+                    "name": "只希望能够"
+                },
+                "frameRange": "(35,38)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+700",
+                    "step": 10
+                }
+            },
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 150,
+                    "y1": 500,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 80,
+                    "color": "199,197,20",
+                    "name": "早日回到我的故乡"
+                },
+                "frameRange": "(39,41)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+700",
+                    "step": 10
+                }
+            },
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 150,
+                    "y1": 500,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 80,
+                    "color": "199,97,50",
+                    "name": "我不想再流浪"
+                },
+                "frameRange": "(45,50)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+700",
+                    "step": 10
+                }
+            },
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 150,
+                    "y1": 500,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 80,
+                    "color": "199,97,50",
+                    "name": "我只想回到故乡"
+                },
+                "frameRange": "(51,56)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+700",
+                    "step": 10
+                }
+            },
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 150,
+                    "y1": 500,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 80,
+                    "color": "199,97,50",
+                    "name": "回到童年生长的地方"
+                },
+                "frameRange": "(58,63)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+700",
+                    "step": 10
+                }
+            },
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 150,
+                    "y1": 500,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 80,
+                    "color": "100,197,150",
+                    "name": "我不想再流浪"
+                },
+                "frameRange": "(64,69)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+700",
+                    "step": 10
+                }
+            },
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 150,
+                    "y1": 500,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 80,
+                    "color": "100,197,150",
+                    "name": "我只想回到故乡"
+                },
+                "frameRange": "(70,76)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+700",
+                    "step": 10
+                }
+            },
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 150,
+                    "y1": 500,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 80,
+                    "color": "100,197,150",
+                    "name": "回到可爱的母亲身旁"
+                },
+                "frameRange": "(78,85)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+700",
+                    "step": 10
+                }
+            },
+            {
+                "type": "rect",
+                "attribute": {
+                    "x1": 100,
+                    "y1": 370,
+                    "x2": 800,
+                    "y2": 320,
+                    "size": 0.0,
+                    "color": "127,255,212",
+                    "name": ""
+                },
+                "frameRange": "(92,166)",
+                "action": {
+                    "trace": "x=100",
+                    "step": 0
+                }
+            },
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 20,
+                    "y1": 600,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 60,
+                    "color": "30,145,255",
+                    "name": "许多许多年以前\n我带着无奈去流浪\n经过多少的风霜\n我独自漂泊在他乡\n多少次夜里\n盼望星星，盼月亮\n只希望能够\n早日回到我的故乡\n我不想再流浪\n我只想回到故乡\n回到童年生长的地方\n我不想再流浪\n我只想回到故乡\n回到可爱的母亲身旁",
+                    "area": {
+                        "left": 100, 
+                        "top": 350, 
+                        "width": 800, 
+                        "height": 300
+                    }
+                },
+                "frameRange": "(92,166)",
+                "action": {
+                    "trace": "x=220",
+                    "step": -15
+                }
+            },
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 150,
+                    "y1": 500,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 80,
+                    "color": "100,197,150",
+                    "name": "我不想再流浪"
+                },
+                "frameRange": "(169,174)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+700",
+                    "step": 10
+                }
+            },
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 150,
+                    "y1": 500,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 80,
+                    "color": "100,197,150",
+                    "name": "我只想回到故乡"
+                },
+                "frameRange": "(175,181)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+700",
+                    "step": 10
+                }
+            },
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 150,
+                    "y1": 500,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 80,
+                    "color": "100,197,150",
+                    "name": "回到童年生长的地方"
+                },
+                "frameRange": "(182,188)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+700",
+                    "step": 10
+                }
+            },
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 150,
+                    "y1": 500,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 80,
+                    "color": "100,197,150",
+                    "name": "我不想再流浪"
+                },
+                "frameRange": "(189,194)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+700",
+                    "step": 10
+                }
+            },
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 150,
+                    "y1": 500,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 80,
+                    "color": "100,197,150",
+                    "name": "我只想回到故乡"
+                },
+                "frameRange": "(195,200)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+700",
+                    "step": 10
+                }
+            },
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 150,
+                    "y1": 500,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 80,
+                    "color": "100,197,150",
+                    "name": "回到可爱的母亲身旁"
+                },
+                "frameRange": "(201,208)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+700",
+                    "step": 10
+                }
+            },
+            {
+                "type": "picture",
+                "attribute": {
+                    "x1": 330,
+                    "y1": 0,
+                    "x2": 600,
+                    "y2": 400,
+                    "size": 50,
+                    "color": "255,0,0",
+                    "name": "hyl.png"
+                },
+                "frameRange": "(212,222)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+300",
+                    "step": -10
+                }
+            } 
+        ]
+    }
+}

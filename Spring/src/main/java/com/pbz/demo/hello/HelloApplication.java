@@ -7,14 +7,18 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.Environment;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.pbz.demo.hello.util.FileUtil;
+import com.pbz.demo.hello.util.NetAccessUtil;
 
 @RestController
 @EnableAutoConfiguration
+@EnableScheduling
 @SpringBootApplication
 public class HelloApplication {
 
@@ -67,6 +71,18 @@ public class HelloApplication {
 		}
 		System.out.println("I am ready!");
 
+		Environment environment = ctx.getBean(Environment.class);
+		String bConfigGitHubMonitor = environment.getProperty("github.config.active");
+		if ("true".equalsIgnoreCase(bConfigGitHubMonitor)) {
+			setServerConfig();
+		}
+
+	}
+
+	private static void setServerConfig() throws Exception {
+		String updateString = "{\\\"server\\\":\\\"true\\\"}";
+		String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/939628092";
+		NetAccessUtil.doPostOnGitHub(url, "POST", updateString);
 	}
 
 }
