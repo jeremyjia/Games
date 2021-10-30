@@ -4,6 +4,7 @@ import java.io.File;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,9 @@ public class ScheduledService {
 	@Autowired
 	private ImageController VideoOperator = null;
 
+	@Value("${github.config.active}")
+	private boolean bConfigGitHubMonitor;
+
 	/**
 	 * 定时任务
 	 * 
@@ -26,6 +30,9 @@ public class ScheduledService {
 	public void scheduledTask() throws Exception {
 		System.out.println("Processing scheduledTask");
 
+		if (!bConfigGitHubMonitor) {
+			return;
+		}
 		int rq = getRqStatus();
 		System.out.println(rq);
 		if (rq == -1) {
