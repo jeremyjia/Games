@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import argparse
 import pandas as pd
 
-parser = argparse.ArgumentParser(description='bar chart for argparse') # run by 'py .\bar_chart_excel.py -f d:/1.xlsx'
+parser = argparse.ArgumentParser(description='bar chart for argparse') # run by 'py bar_chart_excel.py -f ./1.xlsx'
 parser.add_argument('--filepath', '-f', help='filepath属性，必要参数', required=True)
 args = parser.parse_args()
 
