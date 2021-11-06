@@ -1,5 +1,5 @@
 //i4c1
-var s= "v0.1. 132 ";
+var s= "v0.1. 135 ";
 
 var myPath = window.location.pathname;
 
@@ -91,11 +91,13 @@ function ftnPlayer( oDiv ){
 	v.tb.btnLists = blo0.blBtn(v.tb, v.tb+"btnLists","lists",blGrey[0]);
 	v.tb.btnLists.onclick = function(){
 		if(!this.v){
-			this.v = blo0.blDiv(v,v.id + "List","list", "lightblue");
+			this.v = blo0.blDiv(v,v.id + "xdList","xdList", "lightblue");
 			var d = this.v;
 
-			d.vn = blo0.blDiv(d,d.id+"v4NewURL","v4NewURL",blPink[2]); 
-			d.vn.ta = blo0.blTA(d.vn,d.vn+"ta","test");
+			 
+			d.vn = blo0.blDiv(d,d.id+"v4NewURL","v4NewURLxd",blPink[2]); 
+			d.vn.ta = blo0.blTA(d.vn,d.vn+"ta","testXD");
+			 
 
 			d.v = blo0.blDiv(d,d.id+"v","v",blGrey[3]); 
 			d.v4List = blo0.blDiv(d,d.id+"v4List", "v4List",  blColor[4]);
