@@ -1,15 +1,31 @@
 //i4c1
-var s= "v0.1. 54 ";
+var s= "v0.1. 132 ";
+
+var myPath = window.location.pathname;
+
+if(myPath.search("index.html")!=-1){  
+	myPath = myPath.replace("index.html",'');
+}
+else if(myPath.search("issues/4/c1Test.html")!=-1){  
+	myPath = myPath.replace("issues/4/c1Test.html",'');
+}
+else{
+
+}
+
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c1.js'"
 s += " style='color:blue;'";		s +=">"; s += "c1.js* ";
-s += "<a target='_blank' href='issues/4/c1.js'"
-s += " style='color:green;'";		s +=">"; s += "c1.js ";
+s += "</a>";
+
 s += "<a target='_blank' href='";
-var s1 = window.location.pathname;
-if(s1.search("issues")==-1){
-	s1.replace
-}
-s += "/issues/4/c1Test.html'";
+s += myPath;
+s += "issues/4/c1.js'";
+s += " style='color:green;'";		s +=">"; s += "c1.js ";
+s += "</a>";
+
+s += "<a target='_blank' href='";
+s += myPath;
+s += "issues/4/c1Test.html'";
 s += " style='color:brown;'";		s +=">"; s += "c1Test.html";
 s += "</a>";
 
