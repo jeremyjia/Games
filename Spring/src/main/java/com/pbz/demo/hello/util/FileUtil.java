@@ -9,15 +9,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -311,6 +314,36 @@ public class FileUtil {
 		if (fileName.startsWith("tmp") && fileName.endsWith("mp3")) {
 			file.delete();
 		}
+	}
+
+	public static String saveJsonString2File(String jsonString, String fileName) throws Exception {
+		jsonString = URLEncoder.encode(jsonString, "UTF-8");
+		jsonString = URLDecoder.decode(jsonString, "UTF-8");
+
+		String file = System.getProperty("user.dir") + "/" + fileName;
+		OutputStreamWriter ops = null;
+		ops = new OutputStreamWriter(new FileOutputStream(file));
+		if (!jsonString.startsWith("{") && !jsonString.endsWith("}")) {
+			jsonString = jsonString.substring(1, jsonString.length() - 1);
+		}
+		ops.write(jsonString);
+		ops.close();
+		System.out.println(jsonString);
+		return jsonString;
+	}
+
+	public static String encryptToBase64(String filePath) {
+		if (filePath == null) {
+			return null;
+		}
+		try {
+			byte[] b = Files.readAllBytes(Paths.get(filePath));
+			return Base64.getEncoder().encodeToString(b);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return null;
 	}
 
 	public static int chmod(String args) throws Exception {
