@@ -181,9 +181,40 @@
             "description": "Failed. Book Request not found."
           }
         }
+      },
+      "IMG trans": {
+         "summary": "Example API for editing image requests",
+         "tags": [
+           "Book Request"
+         ],
+         "parameters": [
+           {
+             "in": "path",
+             "name": "effects",
+             "required": true,
+             "description": "edit a image, like adding effects",
+             "schema": {
+               "$ref": "#/components/schemas/id"
+             }
+           }
+         ],
+         "responses": {
+           "200": {
+             "description": "OK",
+             "schema": {
+               "$ref": "#/components/schemas/id"
+              }
+            },
+           "400": {
+             "description": "Failed. Misunderstood Request."
+            },
+           "404": {
+             "description": "Failed. IMG Request not found."
+            }
+          }
+        }  
       }
-    }
-  },
+    },
   "tags1": [
     {
       "name": "Image Request",
