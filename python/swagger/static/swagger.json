@@ -265,6 +265,57 @@
       }
     }
   },
+  "tags1": [
+    {
+      "name": "Image Request",
+      "description": "Example API for editing image requests"
+    }
+  ],
+  "paths1": {
+    "image": {
+      "summary": "edit a image, like adding effects",
+      "tags": [
+        "Image Request"
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "description": "image path",
+          "schema": {
+            "$ref": "#/components/schemas/id"
+          }
+        }
+      ],
+      "requestBody": {
+        "description": "Image Request Object",
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/bookRequest"
+            }
+          }
+        }
+      },
+      "produces": [
+        "application/json"
+      ],
+      "responses": {
+        "200": {
+          "description": "OK",
+          "schema": {
+            "$ref": "#/components/schemas/bookRequest"
+          }
+        },
+        "400": {
+          "description": "Failed. Bad path."
+        }
+      }
+    }
+  },
+
 
   "components": {
     "schemas": {

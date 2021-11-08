@@ -6,7 +6,7 @@ _btn.click();
 
 
 function CVoa2Video (){
-    var _v = "CVoa2Video_v0.211";
+    var _v = "CVoa2Video_v0.214";
 
     var fn = ["blrVLE","parseType","downloadPage","f4"];
     var fb = [];
@@ -166,7 +166,8 @@ function CVoa2Video (){
         var b = a.length==2? a[1].getInnerHTML() : a[0].getInnerHTML();
         var c = b.replace(',',"_"); 
         var saveFN =  c.replace(' ',"_");
-        saveFN = _type + "_"+_idx + "_" + saveFN;
+        saveFN = saveFN.replace(' ','_');
+        saveFN = _type + "_"+_idx + "_xd_" + saveFN;
 
         var blURL = "http://localhost:8080/download?url=" + url +"&filename=" + saveFN + ".html";
         var w = {};
