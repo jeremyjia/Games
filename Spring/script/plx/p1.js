@@ -1,5 +1,5 @@
 ﻿
-const p1Tag = "[plx/p1.js_v0.242]";
+const p1Tag = "[plx/p1.js_v0.243]";
 
 const btn4p1 = bl$("plx_p1_btn");
 
@@ -556,7 +556,7 @@ o.makeINF = function(obj,fileName){
                 w._2do = function(txt){
                     v.innerHTML = txt;
                 }
-                blo0.blAjx(w,"http://localhost:8080/image/video?script="+fileName);
+                blo0.blAjx(w,"http://localhost:8080/image/json2video?script="+fileName);
             }
         }
     }
