@@ -1,5 +1,5 @@
 ﻿
-const p1Tag = "[plx/p1.js_v0.255]";
+const p1Tag = "[plx/p1.js_v0.312]";
 
 const btn4p1 = bl$("plx_p1_btn");
 
@@ -228,12 +228,13 @@ function CStoryBoard(parentDiv){
                         var n=0;
                         for(i in o.listCards){
                             n++;
-                            var f = o.newFrame(n,1,i*50%250+",100,200");
-                            //*
+                            var c = o.listCards[i].inf.bgColor == "red"?"255,0,0":"125,125,125";
+                            c = o.listCards[i].inf.bgColor == "green"?"0,255,0":c;
+                            c = o.listCards[i].inf.bgColor == "blue"?"0,0,255":c;
+                            var f = o.newFrame(n,1,c); 
                             for(j in o.listCards[i].inf.objects){
                                 o.AddObj2Frame(f.objects,o.listCards[i].inf.objects[j]);
-                            }
-                            //*/
+                            } 
 
                             o.AddFrame2Script(r,f);                            
                         }
