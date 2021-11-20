@@ -1,5 +1,5 @@
 ﻿
-const p1Tag = "[plx/p1.js_v0.243]";
+const p1Tag = "[plx/p1.js_v0.255]";
 
 const btn4p1 = bl$("plx_p1_btn");
 
@@ -229,6 +229,11 @@ function CStoryBoard(parentDiv){
                         for(i in o.listCards){
                             n++;
                             var f = o.newFrame(n,1,i*50%250+",100,200");
+                            //*
+                            for(j in o.listCards[i].inf.objects){
+                                o.AddObj2Frame(f.objects,o.listCards[i].inf.objects[j]);
+                            }
+                            //*/
 
                             o.AddFrame2Script(r,f);                            
                         }
@@ -396,7 +401,21 @@ function CClient(){
     };
 }
 
-var o = {};
+function CTmp(){
+    this.newScript = function(v,w,h,m,r){ 
+        var json = {}; 
+        json.request = {}; 
+        json.request.version    = v;
+        json.request.width      = w;
+        json.request.height     = h;
+        json.request.music      = m;
+        json.request.rate       = r;  
+        json.request.frames     = [];
+        return json;
+    }
+}
+var o = new CTmp();
+
 o.music = "1.mp3";
 o.duration = 120;
 o.x = 50;
@@ -416,17 +435,7 @@ o.AddObj2Frame = function(ls,oObj){
     ls.push(oObj);
 }
 
-o.newScript = function(v,w,h,m,r){ 
-    var json = {}; 
-    json.request = {}; 
-    json.request.version    = v;
-    json.request.width      = w;
-    json.request.height     = h;
-    json.request.music      = m;
-    json.request.rate       = r;  
-    json.request.frames     = [];
-    return json;
-}
+
 o.newFrame = function(number,time,backgroundColor){
     var r = {};
     r.number = number;
@@ -618,7 +627,7 @@ o._status = function(me){
                 uiPG.inf.click = _this.innerHTML;
             }
         }(bv);
-        if(i=="text" || i=="c"){
+        if(i=="text" || i=="bgColor"){
             b.style.backgroundColor = "lightblue";
             b.onclick = function(_this,_bv,_me,_i){
                 return function(){ 
@@ -702,7 +711,7 @@ o.addCard= function(_ls){
                 }
             }
         }(b);
-        b.inf.version = "0.0.3";
+        b.inf.version = "0.0.11";
         b.inf.x = 17;
         b.inf.y = 80;
         b.inf.w = 1920;
@@ -711,7 +720,7 @@ o.addCard= function(_ls){
         b.inf.duration = o.duration;
         b.inf.rate = "1";
         b.inf.objects = [];
-        b.inf.c = "skyblue";
+        b.inf.bgColor = "skyblue";
         b.inf.text = "Card.txt"; 
       //  o.AddObj2Frame(b.inf.objects,o.newObj("circle",111,111,222,222,5,"red"));
       // o.AddObj2Frame(b.inf.objects,o.newObj("rect",111,10,100,100,5,"blue"));
@@ -757,7 +766,7 @@ o.addCard= function(_ls){
                 var y = _this.inf.y;
                 var w = _this.inf.w;
                 var h = _this.inf.h;
-                var c = _this.inf.c;
+                var c = _this.inf.bgColor;
                 var s = "o.bPlay: " + o.bPlay ;
                 s += " o.list2draw.length=" + o.list2draw.length;
                 s += ": " + o.curCard + "/" + o.listCards.length;
