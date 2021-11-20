@@ -1,5 +1,5 @@
 //i4c6
-var s = "v0.0.3 "; 
+var s = "v0.0.4 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c6.js'"
 s += " style='color:blue;'";		s +=">"; s += "c6.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c6.js'"
@@ -117,5 +117,40 @@ function _myMediaProcessClass(){
 		_on_off_div(b, d);		
 		b.style.background = b.style.background=="red"? blGrey[5]:blColor[4];                  
 	}//this.blrShowVideo
+	
+	this.blline1 = "...";
+	this.blrShowAudio = function(b,d){
+		if(!d.audioViewer){
+			d.parentElement.style.backgroundColor = blColor[3]; 
+			d.audioViewer = blo0.blDiv(d,"Show_Audio_DivID","",blGrey[5]);
+			if(!d.audio){
+			   d.audio = document.createElement("audio");
+			}	  
+			d.audio.controls="controls";
+            bl$("Show_Audio_DivID").appendChild(d.audio);
+				
+			function _loadIssue550Comments(o) {
+				var _i = 0;
+				var _s = "<a target='_balnk' href ='";
+				_s += "https://github.com/jeremyjia/Games/issues/550'";
+				_s += ">#550</a>"; 
+				var _v = blo0.blDiv(d.audioViewer,d.audioViewer.id+"_v", _s, blGrey[1]);
+				for(i in o){
+					_i++;
+					var a = o[i].body;
+					var btnJS = blo0.blBtn(_v, _v.id+"btnJS"+i,_i,blGrey[2]);
+					btnJS.onclick = function(_txt){
+			              return function(){
+							  d.audio.src=_txt;
+							  }
+				        }(a);
+				}
+			}
+			var _src = "https://api.github.com/repos/jeremyjia/Games/issues/550/comments";
+			w3.getHttpObject(_src, _loadIssue550Comments);	
+        }
+		_on_off_div(b,d);		
+		b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];                  
+	}//this.blrShowAudio
 }
  

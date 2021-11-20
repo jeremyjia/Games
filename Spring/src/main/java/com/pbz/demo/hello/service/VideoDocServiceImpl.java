@@ -38,6 +38,11 @@ public class VideoDocServiceImpl implements VideoDocService {
 				Object bodyString = jsonObj.get("body");
 				if (bodyString instanceof String) {
 					String jsonStr = ((String) bodyString).replaceAll("\t", "");// "\t|\r|\n"
+					
+					if (jsonStr.toLowerCase().startsWith("http")) {
+						String tempFile = FileUtil.downloadFile(jsonStr);
+						jsonStr = FileUtil.readAllBytes(tempFile);
+					}
 					String index = String.valueOf(i + 1);
 					String baseName = "sample_" + index;
 					String fileName = baseName + ".json";

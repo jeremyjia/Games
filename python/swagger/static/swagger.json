@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "description": "sean n' wayneW",
-    "version": "1.5.1",
-    "title": "Seans-Python3-Flask-Rest-Boilerplate",
+    "description": "Sean n' wayneW",
+    "version": "1.6.5",
+    "title": "Seans_Waynes-Python3-Flask-Rest-Boilerplate",
     "license": {
       "name": "MIT",
       "url": "https://opensource.org/licenses/MIT"
@@ -181,9 +181,142 @@
             "description": "Failed. Book Request not found."
           }
         }
+      },
+      "IMG trans": {
+         "summary": "Example API for editing image requests",
+         "tags": [
+           "Book Request"
+         ],
+         "parameters": [
+           {
+             "in": "path",
+             "name": "effects",
+             "required": true,
+             "description": "edit a image, like adding effects",
+             "schema": {
+               "$ref": "#/components/schemas/id"
+             }
+           }
+         ],
+         "responses": {
+           "200": {
+             "description": "OK",
+             "schema": {
+               "$ref": "#/components/schemas/id"
+              }
+            },
+           "400": {
+             "description": "Failed. Misunderstood Request."
+            },
+           "404": {
+             "description": "Failed. IMG Request not found."
+            }
+          }
+        }  
+      }
+    },
+  "tags1": [
+    {
+      "name": "Image Request",
+      "description": "Example API for editing image requests"
+    }
+  ],
+  "paths1": {
+    "image": {
+      "summary": "edit a image, like adding effects",
+      "tags": [
+        "Image Request"
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "description": "image path",
+          "schema": {
+            "$ref": "#/components/schemas/id"
+          }
+        }
+      ],
+      "requestBody": {
+        "description": "Image Request Object",
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/bookRequest"
+            }
+          }
+        }
+      },
+      "produces": [
+        "application/json"
+      ],
+      "responses": {
+        "200": {
+          "description": "OK",
+          "schema": {
+            "$ref": "#/components/schemas/bookRequest"
+          }
+        },
+        "400": {
+          "description": "Failed. Bad path."
+        }
       }
     }
   },
+  "tags1": [
+    {
+      "name": "Image Request",
+      "description": "Example API for editing image requests"
+    }
+  ],
+  "paths1": {
+    "image": {
+      "summary": "edit a image, like adding effects",
+      "tags": [
+        "Image Request"
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "description": "image path",
+          "schema": {
+            "$ref": "#/components/schemas/id"
+          }
+        }
+      ],
+      "requestBody": {
+        "description": "Image Request Object",
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/bookRequest"
+            }
+          }
+        }
+      },
+      "produces": [
+        "application/json"
+      ],
+      "responses": {
+        "200": {
+          "description": "OK",
+          "schema": {
+            "$ref": "#/components/schemas/bookRequest"
+          }
+        },
+        "400": {
+          "description": "Failed. Bad path."
+        }
+      }
+    }
+  },
+
+
   "components": {
     "schemas": {
       "id": {
