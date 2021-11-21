@@ -25,7 +25,7 @@ public class VOAService {
 	public String getText(String url, String rule, String charset, Integer i) {
 		try {
 			String text = parseTextFromHTML(url, rule, charset);
-			text = addLinefeeds(text, i);
+			text = FileUtil.addLinefeeds(text, i);
 			return text;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -36,7 +36,7 @@ public class VOAService {
 	public String getTitle(String url) {
 		try {
 			String title = parseTitleFromHTML(url);
-			title = addLinefeeds(title, 30);
+			title = FileUtil.addLinefeeds(title, 30);
 			return title;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -75,27 +75,5 @@ public class VOAService {
 			return buffer.toString().trim();
 		}
 		return "";
-	}
-
-	// 将文本分割为多行
-	private String addLinefeeds(String text, int number) {
-		StringBuffer buffer = new StringBuffer();
-		int index = 0;
-		for (int i = 0; i < text.length(); i++) {
-			char p = text.charAt(i);
-			if (index == number) {
-				if (p != ' ') {
-					buffer.append(p);
-					continue;
-				}
-				buffer.append("\\n");
-				buffer.append(p);
-				index = 0;
-			} else {
-				buffer.append(p);
-				index++;
-			}
-		}
-		return buffer.toString().trim();
 	}
 }
