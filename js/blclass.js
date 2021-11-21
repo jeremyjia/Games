@@ -1,6 +1,6 @@
 // file: blclass.js    by littleflute 
 
-var g_ver_blClass = "CBlClass_v1.5.11"
+var g_ver_blClass = "CBlClass_v1.5.12"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -1295,12 +1295,8 @@ function CBlClass ()
 			}
 			blo0.blAjx(w,url);		 
 		}
-		b4.onclick = function(){			
-			var a = r.value;
-			var b = a.split(".mp3");
-			var c = b[0].split("https://");
-			var d = c[c.length-1]; 
-			v2.innerHTML = "https://" + d + ".mp3";
+		b4.onclick = function(){		 			
+			v2.innerHTML = r.value;
 			var p = bl$("myVideo"); p.src = v2.innerHTML;
 		}
 		return r;
