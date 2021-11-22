@@ -1,1 +1,1 @@
-{"DB_TYPE": "mysql", "DB_NAME": "book", "host": "localhost", "port": 3306, "user": "root", "password": "as8210", "charset": "utf8"}
+{"DB_TYPE": "mysqll", "DB_NAME": "book", "host": "localhost", "port": 3306, "user": "root", "password": "as8210", "charset": "utf8"}

@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import argparse
-import pandas as pd
+import pandas as pd   # bash: pip install pandas
 
 
 parser = argparse.ArgumentParser(description='bar chart for argparse') # run by 'py bar_chart_excel.py -i ./1.xlsx'
