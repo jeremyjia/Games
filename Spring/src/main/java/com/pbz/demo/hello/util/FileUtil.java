@@ -316,6 +316,28 @@ public class FileUtil {
 		}
 	}
 
+	// 将文本分割为多行
+	public static String addLinefeeds(String text, int number) {
+		StringBuffer buffer = new StringBuffer();
+		int index = 0;
+		for (int i = 0; i < text.length(); i++) {
+			char p = text.charAt(i);
+			if (index == number) {
+				if (p != ' ') {
+					buffer.append(p);
+					continue;
+				}
+				buffer.append("\\n");
+				buffer.append(p);
+				index = 0;
+			} else {
+				buffer.append(p);
+				index++;
+			}
+		}
+		return buffer.toString().trim();
+	}
+
 	public static String saveJsonString2File(String jsonString, String fileName) throws Exception {
 		jsonString = URLEncoder.encode(jsonString, "UTF-8");
 		jsonString = URLDecoder.decode(jsonString, "UTF-8");

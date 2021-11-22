@@ -94,7 +94,7 @@ public class VideoTest {
 		 */
 		// above need enforce, need add copy result check and wait time
 
-		VideoOperator.combineSubtiteAndAudio2MP4(srtFile.getName(), mp3File.getName());
+		VideoOperator.combineSubtiteAndAudio2MP4(srtFile.getName(), mp3File.getName(), null);
 
 		File mp4File = new File(targetPath + "/" + FILENAME_MP4);
 		if (!mp4File.exists()) {
