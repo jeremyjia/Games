@@ -1,5 +1,5 @@
 ﻿
-const p1Tag = "[plx/p1.js_v0.312]";
+const p1Tag = "[plx/p1.js_v0.313]";
 
 const btn4p1 = bl$("plx_p1_btn");
 
@@ -414,6 +414,41 @@ function CTmp(){
         json.request.frames     = [];
         return json;
     }
+    this.getServerFiles = function(tb,v,ft){
+        var b = blo0.blBtn(tb,tb.id+ft,ft,blGrey[1]);
+        b.style.float = "left";
+        b.onclick = function(_v,_ft){
+            return function(){
+                _v.dbg = blo0.blDiv(_v,_v.id+"dbg","dbg","lightgreen");   
+                _v.d = blo0.blDiv(_v,_v.id+"d","d","lightblue");   
+                _v.d.style.overflow = "auto";           
+                _v.d.innerHTML = Date();
+                
+                _v.d.v = blo0.blDiv(_v.d,_v.d.id+"v","v","grey");   
+                _v.d.v.style.width = 11100 + "px";
+    
+                var w = {};
+                w._2do = function(txt){
+                    var s = 'var ro='+txt;
+                    eval(s); 
+                    for(i in ro.resource){
+                        var bf=blo0.blBtn(_v.d.v,_v.d.v.id+"_bf_"+i,ro.resource[i],blGrey[2]);
+                        bf.style.float = "left";
+                        bf.inf = {};
+                        bf.onclick = function(_this,_dbg,_me){
+                            return function(){    
+                                _dbg.innerHTML = _me ; 
+                                o.makeINF(_this,_me);
+                                o.status(_this);
+                            }
+                        }(bf,_v.dbg,ro.resource[i]);
+                    }
+                }
+                var url = 'http://localhost:8080/getResourceOnServer?filetype='+_ft;
+                blo0.blAjx(w,url);
+            }
+        }(v,ft);
+    }
 }
 var o = new CTmp();
 
@@ -499,43 +534,8 @@ o.img = function(ctx,f,x,y,w,h){
 }
 o.rendFile = function(ctx,f,x,y,w,h){
     o.img(ctx,f,x,y,w,h);
-} 
-o.getServerFiles = function(tb,v,ft){o._getServerFiles(tb,v,ft);}
-o._getServerFiles = function(tb,v,ft){
-    var b = blo0.blBtn(tb,tb.id+ft,ft,blGrey[1]);
-    b.style.float = "left";
-    b.onclick = function(_v,_ft){
-        return function(){
-            _v.dbg = blo0.blDiv(_v,_v.id+"dbg","dbg","lightgreen");   
-            _v.d = blo0.blDiv(_v,_v.id+"d","d","lightblue");   
-            _v.d.style.overflow = "auto";           
-            _v.d.innerHTML = Date();
-            
-            _v.d.v = blo0.blDiv(_v.d,_v.d.id+"v","v","grey");   
-            _v.d.v.style.width = 11100 + "px";
+}  
 
-            var w = {};
-            w._2do = function(txt){
-                var s = 'var ro='+txt;
-                eval(s); 
-                for(i in ro.resource){
-                    var bf=blo0.blBtn(_v.d.v,_v.d.v.id+"_bf_"+i,ro.resource[i],blGrey[2]);
-                    bf.style.float = "left";
-                    bf.inf = {};
-                    bf.onclick = function(_this,_dbg,_me){
-                        return function(){    
-                            _dbg.innerHTML = _me ; 
-                            o.makeINF(_this,_me);
-                            o.status(_this);
-                        }
-                    }(bf,_v.dbg,ro.resource[i]);
-                }
-            }
-            var url = 'http://localhost:8080/getResourceOnServer?filetype='+_ft;
-            blo0.blAjx(w,url);
-        }
-    }(v,ft);
-}
 o.makeINF = function(obj,fileName){
     obj.inf.file = fileName; 
     var a = fileName.split(".");
