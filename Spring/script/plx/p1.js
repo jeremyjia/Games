@@ -1,5 +1,5 @@
 ﻿
-const p1Tag = "[plx/p1.js_v0.314]";
+const p1Tag = "[plx/p1.js_v0.324]";
 
 const btn4p1 = bl$("plx_p1_btn");
 
@@ -66,12 +66,9 @@ function CServer(parentDiv){
             var tb = blo0.blDiv(ui, "id_4_tb_server","tb",blGrey[1]);
             var v = blo0.blDiv(ui, "id_4_v_server","v",blGrey[2]);
             tb.b1 = o.dbgBtn(tb,"id_btn_4_dbgServer","dbg");
-            o.getServerFiles(tb,v,"json"); 
-            o.getServerFiles(tb,v,"mp3"); 
-            o.getServerFiles(tb,v,"mp4"); 
-            o.getServerFiles(tb,v,"jpg"); 
+            var lst = ["json","mp3","mp4","jpg"];
+            for (i in lst){                 o.getServerFiles(tb,v,lst[i]);            } 
 
-            
             ui.draw = function(ctx){
                 if(tb.b1.b)  {
                     o.rect(ctx,xDbg,yDbg,wDbg,hDbg,cDbg);    
@@ -449,6 +446,76 @@ function CTmp(){
             }
         }(v,ft);
     }
+    o.makeINF = function(obj,fileName){
+        obj.inf.file = fileName; 
+        var a = fileName.split(".");
+        obj.inf.n = a.length;
+        if(a[1]=="json"){
+            obj.inf.toDo = function(v1){
+                var vta = blo0.blDiv(v1,v1.id+"vta","vta" ,"grey"); 
+                vta.innerHTML = "";
+                var tb = blo0.blDiv(vta,vta.id + "tb","tb",blGrey[0]);
+                var v = blo0.blDiv(vta,vta.id + "v","v",blGrey[0]);
+                tb.showMe = blo0.blBtn(tb,tb.id+"showMe","showMe",blGrey[1]);
+                tb.showMe.style.float="left";
+                tb.showMe.onclick = function(){
+                    var w = {};
+                    w._2do = function(txt){       
+                        v.innerHTML = "";             
+                        var ta = blo0.blTextarea(v,v.id+"ta","ta","lightgreen");
+                        ta.style.width = 100 + "%";
+                        ta.style.height = 100 + "px";
+                        ta.value = txt;
+                    }
+                    blo0.blAjx(w,"http://localhost:8080/"+fileName);
+                }
+                tb.makeMP4 = blo0.blBtn(tb,tb.id+"b1","makeMP4",blGrey[1]);
+                tb.makeMP4.style.float="left";
+                tb.makeMP4.onclick = function(){
+                    var w = {};
+                    w._2do = function(txt){
+                        v.innerHTML = txt;
+                    }
+                    blo0.blAjx(w,"http://localhost:8080/image/json2video?script="+fileName);
+                }
+            }
+        }
+        if(a[1]=="mp4" || a[1]=="mp3"){
+            obj.inf.toDo = function(v1){
+                var vta = blo0.blDiv(v1,v1.id+"vta","vta" ,"grey"); 
+                vta.innerHTML = "";
+                var tb = blo0.blDiv(vta,vta.id + "tb","tb",blGrey[0]);
+                var v = blo0.blDiv(vta,vta.id + "v","v",blGrey[0]);
+                tb.play = blo0.blBtn(tb,tb.id+"b1","play",blGrey[1]);
+                tb.play.style.float="left";
+                tb.play.onclick = function(){
+                    //*
+                    var sss = '<video id="myVideo" width="180" height="120" controls>';
+                    sss+= '<source src="'
+                    sss+= 'http://localhost:8080/';
+                    sss+= fileName;
+                    sss+= ' " type="video/mp4">';
+                    sss+='Your browser does not support HTML5 video. '
+                    sss+='</video>'; 
+                    v.v1 = blo0.blDiv(v,v.id+"v1",sss,blGrey[1]);
+                    
+                }
+                tb.getDuration = blo0.blBtn(tb,tb.id+"getDuration","getDuration",blGrey[1]);
+                tb.getDuration.style.float="left";
+                tb.getDuration.onclick = function(){
+                    var p = bl$("myVideo");
+                    if(p){
+                        o.music = fileName;
+                        o.duration = p.duration;
+                        alert(o.music);
+                    }
+                    else{
+                        alert("No myVideo");
+                    }
+                }
+            }
+        }
+    }
 }
 var o = new CTmp();
 
@@ -536,76 +603,7 @@ o.rendFile = function(ctx,f,x,y,w,h){
     o.img(ctx,f,x,y,w,h);
 }  
 
-o.makeINF = function(obj,fileName){
-    obj.inf.file = fileName; 
-    var a = fileName.split(".");
-    obj.inf.n = a.length;
-    if(a[1]=="json"){
-        obj.inf.toDo = function(v1){
-            var vta = blo0.blDiv(v1,v1.id+"vta","vta" ,"grey"); 
-            vta.innerHTML = "";
-            var tb = blo0.blDiv(vta,vta.id + "tb","tb",blGrey[0]);
-            var v = blo0.blDiv(vta,vta.id + "v","v",blGrey[0]);
-            tb.showMe = blo0.blBtn(tb,tb.id+"showMe","showMe",blGrey[1]);
-            tb.showMe.style.float="left";
-            tb.showMe.onclick = function(){
-                var w = {};
-                w._2do = function(txt){       
-                    v.innerHTML = "";             
-                    var ta = blo0.blTextarea(v,v.id+"ta","ta","lightgreen");
-                    ta.style.width = 100 + "%";
-                    ta.style.height = 100 + "px";
-                    ta.value = txt;
-                }
-                blo0.blAjx(w,"http://localhost:8080/"+fileName);
-            }
-            tb.makeMP4 = blo0.blBtn(tb,tb.id+"b1","makeMP4",blGrey[1]);
-            tb.makeMP4.style.float="left";
-            tb.makeMP4.onclick = function(){
-                var w = {};
-                w._2do = function(txt){
-                    v.innerHTML = txt;
-                }
-                blo0.blAjx(w,"http://localhost:8080/image/json2video?script="+fileName);
-            }
-        }
-    }
-    if(a[1]=="mp4" || a[1]=="mp3"){
-        obj.inf.toDo = function(v1){
-            var vta = blo0.blDiv(v1,v1.id+"vta","vta" ,"grey"); 
-            vta.innerHTML = "";
-            var tb = blo0.blDiv(vta,vta.id + "tb","tb",blGrey[0]);
-            var v = blo0.blDiv(vta,vta.id + "v","v",blGrey[0]);
-            tb.play = blo0.blBtn(tb,tb.id+"b1","play",blGrey[1]);
-            tb.play.style.float="left";
-            tb.play.onclick = function(){
-                //*
-                var sss = '<video id="myVideo" width="180" height="120" controls>';
-                sss+= '<source src="'
-                sss+= 'http://localhost:8080/';
-                sss+= fileName;
-                sss+= ' " type="video/mp4">';
-                sss+='Your browser does not support HTML5 video. '
-                sss+='</video>'; 
-                v.v1 = blo0.blDiv(v,v.id+"v1",sss,blGrey[1]);
-                
-            }
-            tb.getDuration = blo0.blBtn(tb,tb.id+"getDuration","getDuration",blGrey[1]);
-            tb.getDuration.style.float="left";
-            tb.getDuration.onclick = function(){
-                var p = bl$("myVideo");
-                if(p){
-                    o.music = fileName;
-                    o.duration = p.duration;
-                    alert(o.music);
-                }
-                else{
-                    alert("No myVideo");
-                }
-            }
-        }
-    }
-}
+
 o.status = function(me){    o._status(me);  }
 o._status = function(me){
     var d = bl$("id_4_vStatus");
