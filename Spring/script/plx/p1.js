@@ -1,5 +1,5 @@
 ﻿
-const p1Tag = "[plx/p1.js_v0.324]";
+const p1Tag = "[plx/p1.js_v0.331]";
 
 const btn4p1 = bl$("plx_p1_btn");
 
@@ -66,7 +66,7 @@ function CServer(parentDiv){
             var tb = blo0.blDiv(ui, "id_4_tb_server","tb",blGrey[1]);
             var v = blo0.blDiv(ui, "id_4_v_server","v",blGrey[2]);
             tb.b1 = o.dbgBtn(tb,"id_btn_4_dbgServer","dbg");
-            var lst = ["json","mp3","mp4","jpg"];
+            var lst = ["json","mp3","mp4","jpg","html"];
             for (i in lst){                 o.getServerFiles(tb,v,lst[i]);            } 
 
             ui.draw = function(ctx){
@@ -446,7 +446,8 @@ function CTmp(){
             }
         }(v,ft);
     }
-    o.makeINF = function(obj,fileName){
+    
+    this.makeINF = function(obj,fileName){
         obj.inf.file = fileName; 
         var a = fileName.split(".");
         obj.inf.n = a.length;
@@ -515,6 +516,69 @@ function CTmp(){
                 }
             }
         }
+    }
+    this.status = function(me){
+        var d = bl$("id_4_vStatus");
+        d.innerHTML = "";
+        var md = blo0.blMDiv(d,d.id+"md","o._status "+me.id+":"+me.style.backgroundColor,3,340,555,100,blGrey[0]); 
+        var vs = blo0.blDiv(md,md.id+"vs","",blGrey[1]);
+        var v1 = blo0.blDiv(md,md.id+"v1","v1",blGrey[1]);
+        var n = 0; 
+        for(i in me.inf){
+            n++;
+            var b = blo0.blBtn(vs,vs.id+"b" + n, i ,blGrey[1]);
+            var clr = "brown";
+            var bv = blo0.blBtn(vs,vs.id+"bv"+ n, me.inf[i] ,clr);
+            if(i=="c") bv.style.backgroundColor = me.inf[i];
+            b.style.float="left";
+            bv.style.float="left";
+            bv.onclick = function(_this){
+                return function(){
+                    var uiPG = bl$("id_mdiv_4_playground");
+                    uiPG.inf.click = _this.innerHTML;
+                }
+            }(bv);
+            if(i=="text" || i=="bgColor"){
+                b.style.backgroundColor = "lightblue";
+                b.onclick = function(_this,_bv,_me,_i){
+                    return function(){ 
+                        var vta = blo0.blDiv(v1,v1.id+"vta","vta" ,"green"); 
+                        vta.innerHTML = "";
+                       if(_this.style.backgroundColor=="lightblue"){
+                            _this.style.backgroundColor="grey";
+                             _bv.ta = blo0.blTextarea(vta,vta.id+"ta",_me.inf[_i],"grey");
+                            _bv.ta.style.width= "100%";
+                            ta.value = _bv.innerHTML;
+                       }
+                       else if(_this.style.backgroundColor=="grey"){
+                            _this.style.backgroundColor="lightblue";
+                            _bv.innerHTML = _bv.ta.value;
+                            _me.inf[_i] = _bv.ta.value; 
+                            vta.innerHTML = "";
+                            o.status(_me);
+                       }
+                    }
+                }(b,bv,me,i);
+            }
+            else if(i=="toJSON"){
+                bv.innerHTML = "fn...";
+                b.style.backgroundColor = "green";            
+                b.onclick = function(_this,_v1,_me,_i){
+                    return function(){ 
+                        _me.inf[_i](_v1);
+                    }
+                }(b,v1,me,i);
+            }
+            else if(i=="toDo"){
+                bv.innerHTML = ".";
+                b.style.backgroundColor = "green";            
+                b.onclick = function(_this,_v1,_me,_i){
+                    return function(){ 
+                        _me.inf[_i](_v1);
+                    }
+                }(b,v1,me,i);
+            }
+        } 
     }
 }
 var o = new CTmp();
@@ -602,72 +666,8 @@ o.img = function(ctx,f,x,y,w,h){
 o.rendFile = function(ctx,f,x,y,w,h){
     o.img(ctx,f,x,y,w,h);
 }  
+ 
 
-
-o.status = function(me){    o._status(me);  }
-o._status = function(me){
-    var d = bl$("id_4_vStatus");
-    d.innerHTML = "";
-    var md = blo0.blMDiv(d,d.id+"md","o._status "+me.id+":"+me.style.backgroundColor,3,340,555,100,blGrey[0]); 
-    var vs = blo0.blDiv(md,md.id+"vs","",blGrey[1]);
-    var v1 = blo0.blDiv(md,md.id+"v1","v1",blGrey[1]);
-    var n = 0; 
-    for(i in me.inf){
-        n++;
-        var b = blo0.blBtn(vs,vs.id+"b" + n, i ,blGrey[1]);
-        var clr = "brown";
-        var bv = blo0.blBtn(vs,vs.id+"bv"+ n, me.inf[i] ,clr);
-        if(i=="c") bv.style.backgroundColor = me.inf[i];
-        b.style.float="left";
-        bv.style.float="left";
-        bv.onclick = function(_this){
-            return function(){
-                var uiPG = bl$("id_mdiv_4_playground");
-                uiPG.inf.click = _this.innerHTML;
-            }
-        }(bv);
-        if(i=="text" || i=="bgColor"){
-            b.style.backgroundColor = "lightblue";
-            b.onclick = function(_this,_bv,_me,_i){
-                return function(){ 
-                    var vta = blo0.blDiv(v1,v1.id+"vta","vta" ,"green"); 
-                    vta.innerHTML = "";
-                   if(_this.style.backgroundColor=="lightblue"){
-                        _this.style.backgroundColor="grey";
-                         _bv.ta = blo0.blTextarea(vta,vta.id+"ta",_me.inf[_i],"grey");
-                        _bv.ta.style.width= "100%";
-                        ta.value = _bv.innerHTML;
-                   }
-                   else if(_this.style.backgroundColor=="grey"){
-                        _this.style.backgroundColor="lightblue";
-                        _bv.innerHTML = _bv.ta.value;
-                        _me.inf[_i] = _bv.ta.value; 
-                        vta.innerHTML = "";
-                        o.status(_me);
-                   }
-                }
-            }(b,bv,me,i);
-        }
-        else if(i=="toJSON"){
-            bv.innerHTML = "fn...";
-            b.style.backgroundColor = "green";            
-            b.onclick = function(_this,_v1,_me,_i){
-                return function(){ 
-                    _me.inf[_i](_v1);
-                }
-            }(b,v1,me,i);
-        }
-        else if(i=="toDo"){
-            bv.innerHTML = ".";
-            b.style.backgroundColor = "green";            
-            b.onclick = function(_this,_v1,_me,_i){
-                return function(){ 
-                    _me.inf[_i](_v1);
-                }
-            }(b,v1,me,i);
-        }
-    } 
-}
 o.addCard= function(_ls){
     return function(btn){
         var n = _ls.length;
