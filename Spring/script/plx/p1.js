@@ -1,5 +1,5 @@
 ﻿
-const p1Tag = "[plx/p1.js_v0.331]";
+const p1Tag = "[plx/p1.js_v0.343]";
 
 const btn4p1 = bl$("plx_p1_btn");
 
@@ -451,6 +451,8 @@ function CTmp(){
         obj.inf.file = fileName; 
         var a = fileName.split(".");
         obj.inf.n = a.length;
+        
+        if(a[1]=="html") _makeInf4HTML(obj.inf,fileName);
         if(a[1]=="json"){
             obj.inf.toDo = function(v1){
                 var vta = blo0.blDiv(v1,v1.id+"vta","vta" ,"grey"); 
@@ -515,7 +517,7 @@ function CTmp(){
                     }
                 }
             }
-        }
+        }    
     }
     this.status = function(me){
         var d = bl$("id_4_vStatus");
@@ -580,6 +582,24 @@ function CTmp(){
             }
         } 
     }
+    this.AddFrame2Script = function(oScript,oFrame){
+        oScript.request.frames.push(oFrame);
+    }
+    this.AddObj2Frame = function(ls,oObj){ 
+        ls.push(oObj);
+    }    
+
+    function _makeInf4HTML(_inf,_fileName){
+        _inf.toDo =  function(v1){
+            var vta = blo0.blDiv(v1,v1.id+"vta","vta" ,"grey"); 
+            var s = "<a target = '_blank' href='";
+            s += _fileName;
+            s += "'>";
+            s += _fileName;
+            s += "</a>"
+            vta.innerHTML = s;
+        }
+    }
 }
 var o = new CTmp();
 
@@ -595,12 +615,6 @@ o.listCards = [];
 o.curCard = 0;
 o.bPlay = false;
 
-o.AddFrame2Script = function(oScript,oFrame){
-    oScript.request.frames.push(oFrame);
-}
-o.AddObj2Frame = function(ls,oObj){ 
-    ls.push(oObj);
-}
 
 
 o.newFrame = function(number,time,backgroundColor){
