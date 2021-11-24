@@ -1,5 +1,5 @@
 ﻿
-const p1Tag = "[plx/p1.js_v0.313]";
+const p1Tag = "[plx/p1.js_v0.314]";
 
 const btn4p1 = bl$("plx_p1_btn");
 
