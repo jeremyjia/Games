@@ -1,6 +1,6 @@
 // file: blclass.js    by littleflute 
 
-var g_ver_blClass = "CBlClass_v1.5.12"
+var g_ver_blClass = "CBlClass_v1.5.13"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -1620,6 +1620,40 @@ function CBlClass ()
 		xhr.setRequestHeader("Content-Type", "text/plain");
 		xhr.send(JSON.stringify(_jsonData));
 	}	
+	
+	this.blLoadGithubIssueComments = function(tb,icURL,ta){
+		
+		function _loadIssueComments(o) { 
+			var ls = [];
+			for(i in o)
+			{
+				var n=ls.length + 1;
+				var bodyTxt = o[i].body;
+				var btn= blo0.blBtn(tb,tb.id+"btn"+n,n,blGrey[4]);
+				btn.onclick = function(_thisBtn,_n,_curTxt){
+					return function(){
+						ta.value = _curTxt;
+						blo0.blMarkBtnInList(_thisBtn,ls,"yellow","grey");
+					}
+				}(btn,n,bodyTxt);
+				ls.push(btn);
+			}
+		}
+		w3.getHttpObject(icURL + "/comments", _loadIssueComments);	
+	}
+	this.blSandBox = function(sbDiv){
+		var d1 = blo0.blDiv(sbDiv,sbDiv.id+"d1","d1",blColor[1]);
+		var ta = blo0.blTextarea(d1,"id_4_ta_blrRunJS","alert(1);",blGrey[3]);
+		ta.style.width="95%"; 
+		ta.style.height="111"+"px"; 
+
+		var tb = blo0.blDiv(d1,d1.id+"tb","",blGrey[5]);
+	    var btnRun= blo0.blBtn(tb,tb.id+"btnRun","run",blColor[4]);
+	    btnRun.onclick= function(){	  eval(ta.value);		}
+		blo0.blLoadGithubIssueComments(tb,"https://api.github.com/repos/jeremyjia/Games/issues/21",ta);
+
+		return d1;
+	}
 }//END: function CBlClass ()
  
 var blo0 = new CBlClass;
