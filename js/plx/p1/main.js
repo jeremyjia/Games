@@ -1,7 +1,8 @@
 ﻿
-const p1Tag = "[plx/p1.js_v0.331]";
+const p1Tag = "[plx/p1.js_v0.341]";
 
 const btn4p1 = bl$("plx_p1_btn");
+btn4p1.innerHTML = p1Tag;
 
 if(btn4p1){ 
     btn4p1.v = blo0.blMD(btn4p1.id+p1Tag,p1Tag,0,121,666,555,blGrey[0]);

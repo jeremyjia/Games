@@ -1,5 +1,5 @@
 function CP1Util (){
-    var _v = "CP1Util_v0.25";
+    var _v = "CP1Util_v0.32";
     var _list4Cards = [];
     
     this.listCards = function(){ return _list4Cards;}
@@ -67,9 +67,10 @@ function CP1Util (){
                 b.style.backgroundColor = "green";            
                 b.onclick = function(_this,_v1,_me,_i){
                     return function(){ 
-                        _me.inf[_i](_v1);
+                        _me.inf[_i](_v1,_this);
                     }
                 }(b,v1,me,i);
+                b.click();
             }
             else if(i=="toDraw"){
                 bv.innerHTML = ".";

@@ -1,5 +1,5 @@
 ﻿
-const p1Tag = "[plx/p1.js_v0.312]";
+const p1Tag = "[plx/p1.js_v0.343]";
 
 const btn4p1 = bl$("plx_p1_btn");
 
@@ -66,12 +66,9 @@ function CServer(parentDiv){
             var tb = blo0.blDiv(ui, "id_4_tb_server","tb",blGrey[1]);
             var v = blo0.blDiv(ui, "id_4_v_server","v",blGrey[2]);
             tb.b1 = o.dbgBtn(tb,"id_btn_4_dbgServer","dbg");
-            o.getServerFiles(tb,v,"json"); 
-            o.getServerFiles(tb,v,"mp3"); 
-            o.getServerFiles(tb,v,"mp4"); 
-            o.getServerFiles(tb,v,"jpg"); 
+            var lst = ["json","mp3","mp4","jpg","html"];
+            for (i in lst){                 o.getServerFiles(tb,v,lst[i]);            } 
 
-            
             ui.draw = function(ctx){
                 if(tb.b1.b)  {
                     o.rect(ctx,xDbg,yDbg,wDbg,hDbg,cDbg);    
@@ -414,6 +411,195 @@ function CTmp(){
         json.request.frames     = [];
         return json;
     }
+    this.getServerFiles = function(tb,v,ft){
+        var b = blo0.blBtn(tb,tb.id+ft,ft,blGrey[1]);
+        b.style.float = "left";
+        b.onclick = function(_v,_ft){
+            return function(){
+                _v.dbg = blo0.blDiv(_v,_v.id+"dbg","dbg","lightgreen");   
+                _v.d = blo0.blDiv(_v,_v.id+"d","d","lightblue");   
+                _v.d.style.overflow = "auto";           
+                _v.d.innerHTML = Date();
+                
+                _v.d.v = blo0.blDiv(_v.d,_v.d.id+"v","v","grey");   
+                _v.d.v.style.width = 11100 + "px";
+    
+                var w = {};
+                w._2do = function(txt){
+                    var s = 'var ro='+txt;
+                    eval(s); 
+                    for(i in ro.resource){
+                        var bf=blo0.blBtn(_v.d.v,_v.d.v.id+"_bf_"+i,ro.resource[i],blGrey[2]);
+                        bf.style.float = "left";
+                        bf.inf = {};
+                        bf.onclick = function(_this,_dbg,_me){
+                            return function(){    
+                                _dbg.innerHTML = _me ; 
+                                o.makeINF(_this,_me);
+                                o.status(_this);
+                            }
+                        }(bf,_v.dbg,ro.resource[i]);
+                    }
+                }
+                var url = 'http://localhost:8080/getResourceOnServer?filetype='+_ft;
+                blo0.blAjx(w,url);
+            }
+        }(v,ft);
+    }
+    
+    this.makeINF = function(obj,fileName){
+        obj.inf.file = fileName; 
+        var a = fileName.split(".");
+        obj.inf.n = a.length;
+        
+        if(a[1]=="html") _makeInf4HTML(obj.inf,fileName);
+        if(a[1]=="json"){
+            obj.inf.toDo = function(v1){
+                var vta = blo0.blDiv(v1,v1.id+"vta","vta" ,"grey"); 
+                vta.innerHTML = "";
+                var tb = blo0.blDiv(vta,vta.id + "tb","tb",blGrey[0]);
+                var v = blo0.blDiv(vta,vta.id + "v","v",blGrey[0]);
+                tb.showMe = blo0.blBtn(tb,tb.id+"showMe","showMe",blGrey[1]);
+                tb.showMe.style.float="left";
+                tb.showMe.onclick = function(){
+                    var w = {};
+                    w._2do = function(txt){       
+                        v.innerHTML = "";             
+                        var ta = blo0.blTextarea(v,v.id+"ta","ta","lightgreen");
+                        ta.style.width = 100 + "%";
+                        ta.style.height = 100 + "px";
+                        ta.value = txt;
+                    }
+                    blo0.blAjx(w,"http://localhost:8080/"+fileName);
+                }
+                tb.makeMP4 = blo0.blBtn(tb,tb.id+"b1","makeMP4",blGrey[1]);
+                tb.makeMP4.style.float="left";
+                tb.makeMP4.onclick = function(){
+                    var w = {};
+                    w._2do = function(txt){
+                        v.innerHTML = txt;
+                    }
+                    blo0.blAjx(w,"http://localhost:8080/image/json2video?script="+fileName);
+                }
+            }
+        }
+        if(a[1]=="mp4" || a[1]=="mp3"){
+            obj.inf.toDo = function(v1){
+                var vta = blo0.blDiv(v1,v1.id+"vta","vta" ,"grey"); 
+                vta.innerHTML = "";
+                var tb = blo0.blDiv(vta,vta.id + "tb","tb",blGrey[0]);
+                var v = blo0.blDiv(vta,vta.id + "v","v",blGrey[0]);
+                tb.play = blo0.blBtn(tb,tb.id+"b1","play",blGrey[1]);
+                tb.play.style.float="left";
+                tb.play.onclick = function(){
+                    //*
+                    var sss = '<video id="myVideo" width="180" height="120" controls>';
+                    sss+= '<source src="'
+                    sss+= 'http://localhost:8080/';
+                    sss+= fileName;
+                    sss+= ' " type="video/mp4">';
+                    sss+='Your browser does not support HTML5 video. '
+                    sss+='</video>'; 
+                    v.v1 = blo0.blDiv(v,v.id+"v1",sss,blGrey[1]);
+                    
+                }
+                tb.getDuration = blo0.blBtn(tb,tb.id+"getDuration","getDuration",blGrey[1]);
+                tb.getDuration.style.float="left";
+                tb.getDuration.onclick = function(){
+                    var p = bl$("myVideo");
+                    if(p){
+                        o.music = fileName;
+                        o.duration = p.duration;
+                        alert(o.music);
+                    }
+                    else{
+                        alert("No myVideo");
+                    }
+                }
+            }
+        }    
+    }
+    this.status = function(me){
+        var d = bl$("id_4_vStatus");
+        d.innerHTML = "";
+        var md = blo0.blMDiv(d,d.id+"md","o._status "+me.id+":"+me.style.backgroundColor,3,340,555,100,blGrey[0]); 
+        var vs = blo0.blDiv(md,md.id+"vs","",blGrey[1]);
+        var v1 = blo0.blDiv(md,md.id+"v1","v1",blGrey[1]);
+        var n = 0; 
+        for(i in me.inf){
+            n++;
+            var b = blo0.blBtn(vs,vs.id+"b" + n, i ,blGrey[1]);
+            var clr = "brown";
+            var bv = blo0.blBtn(vs,vs.id+"bv"+ n, me.inf[i] ,clr);
+            if(i=="c") bv.style.backgroundColor = me.inf[i];
+            b.style.float="left";
+            bv.style.float="left";
+            bv.onclick = function(_this){
+                return function(){
+                    var uiPG = bl$("id_mdiv_4_playground");
+                    uiPG.inf.click = _this.innerHTML;
+                }
+            }(bv);
+            if(i=="text" || i=="bgColor"){
+                b.style.backgroundColor = "lightblue";
+                b.onclick = function(_this,_bv,_me,_i){
+                    return function(){ 
+                        var vta = blo0.blDiv(v1,v1.id+"vta","vta" ,"green"); 
+                        vta.innerHTML = "";
+                       if(_this.style.backgroundColor=="lightblue"){
+                            _this.style.backgroundColor="grey";
+                             _bv.ta = blo0.blTextarea(vta,vta.id+"ta",_me.inf[_i],"grey");
+                            _bv.ta.style.width= "100%";
+                            ta.value = _bv.innerHTML;
+                       }
+                       else if(_this.style.backgroundColor=="grey"){
+                            _this.style.backgroundColor="lightblue";
+                            _bv.innerHTML = _bv.ta.value;
+                            _me.inf[_i] = _bv.ta.value; 
+                            vta.innerHTML = "";
+                            o.status(_me);
+                       }
+                    }
+                }(b,bv,me,i);
+            }
+            else if(i=="toJSON"){
+                bv.innerHTML = "fn...";
+                b.style.backgroundColor = "green";            
+                b.onclick = function(_this,_v1,_me,_i){
+                    return function(){ 
+                        _me.inf[_i](_v1);
+                    }
+                }(b,v1,me,i);
+            }
+            else if(i=="toDo"){
+                bv.innerHTML = ".";
+                b.style.backgroundColor = "green";            
+                b.onclick = function(_this,_v1,_me,_i){
+                    return function(){ 
+                        _me.inf[_i](_v1);
+                    }
+                }(b,v1,me,i);
+            }
+        } 
+    }
+    this.AddFrame2Script = function(oScript,oFrame){
+        oScript.request.frames.push(oFrame);
+    }
+    this.AddObj2Frame = function(ls,oObj){ 
+        ls.push(oObj);
+    }    
+
+    function _makeInf4HTML(_inf,_fileName){
+        _inf.toDo =  function(v1){
+            var vta = blo0.blDiv(v1,v1.id+"vta","vta" ,"grey"); 
+            var s = "<a target = '_blank' href='";
+            s += _fileName;
+            s += "'>";
+            s += _fileName;
+            s += "</a>"
+            vta.innerHTML = s;
+        }
+    }
 }
 var o = new CTmp();
 
@@ -429,12 +615,6 @@ o.listCards = [];
 o.curCard = 0;
 o.bPlay = false;
 
-o.AddFrame2Script = function(oScript,oFrame){
-    oScript.request.frames.push(oFrame);
-}
-o.AddObj2Frame = function(ls,oObj){ 
-    ls.push(oObj);
-}
 
 
 o.newFrame = function(number,time,backgroundColor){
@@ -499,177 +679,9 @@ o.img = function(ctx,f,x,y,w,h){
 }
 o.rendFile = function(ctx,f,x,y,w,h){
     o.img(ctx,f,x,y,w,h);
-} 
-o.getServerFiles = function(tb,v,ft){o._getServerFiles(tb,v,ft);}
-o._getServerFiles = function(tb,v,ft){
-    var b = blo0.blBtn(tb,tb.id+ft,ft,blGrey[1]);
-    b.style.float = "left";
-    b.onclick = function(_v,_ft){
-        return function(){
-            _v.dbg = blo0.blDiv(_v,_v.id+"dbg","dbg","lightgreen");   
-            _v.d = blo0.blDiv(_v,_v.id+"d","d","lightblue");   
-            _v.d.style.overflow = "auto";           
-            _v.d.innerHTML = Date();
-            
-            _v.d.v = blo0.blDiv(_v.d,_v.d.id+"v","v","grey");   
-            _v.d.v.style.width = 11100 + "px";
+}  
+ 
 
-            var w = {};
-            w._2do = function(txt){
-                var s = 'var ro='+txt;
-                eval(s); 
-                for(i in ro.resource){
-                    var bf=blo0.blBtn(_v.d.v,_v.d.v.id+"_bf_"+i,ro.resource[i],blGrey[2]);
-                    bf.style.float = "left";
-                    bf.inf = {};
-                    bf.onclick = function(_this,_dbg,_me){
-                        return function(){    
-                            _dbg.innerHTML = _me ; 
-                            o.makeINF(_this,_me);
-                            o.status(_this);
-                        }
-                    }(bf,_v.dbg,ro.resource[i]);
-                }
-            }
-            var url = 'http://localhost:8080/getResourceOnServer?filetype='+_ft;
-            blo0.blAjx(w,url);
-        }
-    }(v,ft);
-}
-o.makeINF = function(obj,fileName){
-    obj.inf.file = fileName; 
-    var a = fileName.split(".");
-    obj.inf.n = a.length;
-    if(a[1]=="json"){
-        obj.inf.toDo = function(v1){
-            var vta = blo0.blDiv(v1,v1.id+"vta","vta" ,"grey"); 
-            vta.innerHTML = "";
-            var tb = blo0.blDiv(vta,vta.id + "tb","tb",blGrey[0]);
-            var v = blo0.blDiv(vta,vta.id + "v","v",blGrey[0]);
-            tb.showMe = blo0.blBtn(tb,tb.id+"showMe","showMe",blGrey[1]);
-            tb.showMe.style.float="left";
-            tb.showMe.onclick = function(){
-                var w = {};
-                w._2do = function(txt){       
-                    v.innerHTML = "";             
-                    var ta = blo0.blTextarea(v,v.id+"ta","ta","lightgreen");
-                    ta.style.width = 100 + "%";
-                    ta.style.height = 100 + "px";
-                    ta.value = txt;
-                }
-                blo0.blAjx(w,"http://localhost:8080/"+fileName);
-            }
-            tb.makeMP4 = blo0.blBtn(tb,tb.id+"b1","makeMP4",blGrey[1]);
-            tb.makeMP4.style.float="left";
-            tb.makeMP4.onclick = function(){
-                var w = {};
-                w._2do = function(txt){
-                    v.innerHTML = txt;
-                }
-                blo0.blAjx(w,"http://localhost:8080/image/json2video?script="+fileName);
-            }
-        }
-    }
-    if(a[1]=="mp4" || a[1]=="mp3"){
-        obj.inf.toDo = function(v1){
-            var vta = blo0.blDiv(v1,v1.id+"vta","vta" ,"grey"); 
-            vta.innerHTML = "";
-            var tb = blo0.blDiv(vta,vta.id + "tb","tb",blGrey[0]);
-            var v = blo0.blDiv(vta,vta.id + "v","v",blGrey[0]);
-            tb.play = blo0.blBtn(tb,tb.id+"b1","play",blGrey[1]);
-            tb.play.style.float="left";
-            tb.play.onclick = function(){
-                //*
-                var sss = '<video id="myVideo" width="180" height="120" controls>';
-                sss+= '<source src="'
-                sss+= 'http://localhost:8080/';
-                sss+= fileName;
-                sss+= ' " type="video/mp4">';
-                sss+='Your browser does not support HTML5 video. '
-                sss+='</video>'; 
-                v.v1 = blo0.blDiv(v,v.id+"v1",sss,blGrey[1]);
-                
-            }
-            tb.getDuration = blo0.blBtn(tb,tb.id+"getDuration","getDuration",blGrey[1]);
-            tb.getDuration.style.float="left";
-            tb.getDuration.onclick = function(){
-                var p = bl$("myVideo");
-                if(p){
-                    o.music = fileName;
-                    o.duration = p.duration;
-                    alert(o.music);
-                }
-                else{
-                    alert("No myVideo");
-                }
-            }
-        }
-    }
-}
-o.status = function(me){    o._status(me);  }
-o._status = function(me){
-    var d = bl$("id_4_vStatus");
-    d.innerHTML = "";
-    var md = blo0.blMDiv(d,d.id+"md","o._status "+me.id+":"+me.style.backgroundColor,3,340,555,100,blGrey[0]); 
-    var vs = blo0.blDiv(md,md.id+"vs","",blGrey[1]);
-    var v1 = blo0.blDiv(md,md.id+"v1","v1",blGrey[1]);
-    var n = 0; 
-    for(i in me.inf){
-        n++;
-        var b = blo0.blBtn(vs,vs.id+"b" + n, i ,blGrey[1]);
-        var clr = "brown";
-        var bv = blo0.blBtn(vs,vs.id+"bv"+ n, me.inf[i] ,clr);
-        if(i=="c") bv.style.backgroundColor = me.inf[i];
-        b.style.float="left";
-        bv.style.float="left";
-        bv.onclick = function(_this){
-            return function(){
-                var uiPG = bl$("id_mdiv_4_playground");
-                uiPG.inf.click = _this.innerHTML;
-            }
-        }(bv);
-        if(i=="text" || i=="bgColor"){
-            b.style.backgroundColor = "lightblue";
-            b.onclick = function(_this,_bv,_me,_i){
-                return function(){ 
-                    var vta = blo0.blDiv(v1,v1.id+"vta","vta" ,"green"); 
-                    vta.innerHTML = "";
-                   if(_this.style.backgroundColor=="lightblue"){
-                        _this.style.backgroundColor="grey";
-                         _bv.ta = blo0.blTextarea(vta,vta.id+"ta",_me.inf[_i],"grey");
-                        _bv.ta.style.width= "100%";
-                        ta.value = _bv.innerHTML;
-                   }
-                   else if(_this.style.backgroundColor=="grey"){
-                        _this.style.backgroundColor="lightblue";
-                        _bv.innerHTML = _bv.ta.value;
-                        _me.inf[_i] = _bv.ta.value; 
-                        vta.innerHTML = "";
-                        o.status(_me);
-                   }
-                }
-            }(b,bv,me,i);
-        }
-        else if(i=="toJSON"){
-            bv.innerHTML = "fn...";
-            b.style.backgroundColor = "green";            
-            b.onclick = function(_this,_v1,_me,_i){
-                return function(){ 
-                    _me.inf[_i](_v1);
-                }
-            }(b,v1,me,i);
-        }
-        else if(i=="toDo"){
-            bv.innerHTML = ".";
-            b.style.backgroundColor = "green";            
-            b.onclick = function(_this,_v1,_me,_i){
-                return function(){ 
-                    _me.inf[_i](_v1);
-                }
-            }(b,v1,me,i);
-        }
-    } 
-}
 o.addCard= function(_ls){
     return function(btn){
         var n = _ls.length;
