@@ -137,6 +137,30 @@ public class FileController {
 		return resMap;
 	}
 
+	@ApiOperation(value = "保存为Microsoft Word文件", notes = "把一个标题和一段文本保存为一个docx文件")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "title", value = "title", paramType = "query", required = false, dataType = "string", defaultValue = "Document Title"),
+			@ApiImplicitParam(name = "text", value = "text", paramType = "query", required = true, dataType = "string", defaultValue = "Document Paragraph Text"),
+			@ApiImplicitParam(name = "fileName", value = "xxx.docx", paramType = "query", required = false, dataType = "string", defaultValue = "example1.docx") })
+	@RequestMapping(value = "/save2word", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> save2Word(@RequestParam("title") String title, @RequestParam("text") String text,
+			@RequestParam("fileName") String fileName) throws Exception {
+
+		Map<String, Object> resMap = new HashMap<String, Object>();
+		String outputFile = System.getProperty("user.dir") + "/" + fileName;
+		boolean bResult = FileUtil.createAWordDoc(title, text, outputFile);
+		if (bResult) {
+			resMap.put("code", 200);
+			resMap.put("message", "保存docx成功");
+			resMap.put("pathOnServer", outputFile);
+		} else {
+			resMap.put("code", 500);
+			resMap.put("message", "保存docx失败");
+		}
+		return resMap;
+	}
+
 	@ApiOperation(value = "获取文件资源列表", notes = "获取指定文件类型列表")
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "filetype", value = "json/mp3/...", paramType = "query", required = true, dataType = "string", defaultValue = "json") })
