@@ -15,7 +15,7 @@
 		<spring.boot.version>2.1.6.RELEASE</spring.boot.version>
 		<junit.jupiter.version>5.6.2</junit.jupiter.version>
 		<junit.platform.version>1.6.2</junit.platform.version>
-		<pbz.server.version>1.0.25</pbz.server.version>
+		<pbz.server.version>1.0.26</pbz.server.version>
 	</properties>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -112,7 +112,16 @@
 			<artifactId>jaudiotagger</artifactId>
 			<version>2.0.3</version>
 		</dependency>
-
+       <dependency>
+           <groupId>org.apache.poi</groupId>
+           <artifactId>poi-ooxml</artifactId>
+           <version>3.8</version>
+        </dependency>
+        <dependency>
+           <groupId>org.apache.poi</groupId>
+           <artifactId>poi-scratchpad</artifactId>
+           <version>3.8</version>
+        </dependency>
 		<dependency>
 			<groupId>com.baidu.aip</groupId>
 			<artifactId>java-sdk</artifactId>

@@ -29,6 +29,11 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSessionContext;
 
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.jaudiotagger.audio.mp3.MP3AudioHeader;
 import org.jaudiotagger.audio.mp3.MP3File;
 
@@ -381,6 +386,44 @@ public class FileUtil {
 
 	}
 
+	public void inputStreamToWord(InputStream is, OutputStream os) throws IOException {
+		POIFSFileSystem fs = new POIFSFileSystem();
+		// org.apache.poi.hdf.extractor.WordDocument
+		fs.createDocument(is, "WordDocument");
+		fs.writeFilesystem(os);
+		os.close();
+		is.close();
+	}
+
+	public static boolean createAWordDoc(String title, String text, String fileName) {
+		try {
+			// Create a empty document
+			XWPFDocument document = new XWPFDocument();
+			File file = new File(fileName);
+			if (file.exists()) {
+				file.delete();
+			}
+			FileOutputStream outStream = new FileOutputStream(file);
+			XWPFParagraph titleParagraph = document.createParagraph();
+			titleParagraph.setAlignment(ParagraphAlignment.CENTER);
+			XWPFRun titleParagraphRun = titleParagraph.createRun();
+			titleParagraphRun.setText(title);
+			titleParagraphRun.setColor("0000FF");
+			titleParagraphRun.setFontSize(20);
+			// Create a paragraph
+			XWPFParagraph paragraph = document.createParagraph();
+			XWPFRun run = paragraph.createRun();
+			run.setText(text);
+			document.write(outStream);
+			outStream.close();
+			System.out.println("Create a word docx " + fileName + " successfully!");
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
 	public static void main(String[] args) {
 
 		String path = "C:\\jiaGameAll\\Games\\Spring\\target";
@@ -416,6 +459,10 @@ public class FileUtil {
 			e.printStackTrace();
 			System.out.println(e.getMessage());
 		}
+
+		String title = "Document Title";
+		String strText = "生成一段文本! Create a paragraph!";
+		createAWordDoc(title, strText, "/Users/jeremy/temp/1.docx");
 		System.out.println("OK!");
 	}
 }
