@@ -410,10 +410,14 @@ public class FileUtil {
 			titleParagraphRun.setText(title);
 			titleParagraphRun.setColor("0000FF");
 			titleParagraphRun.setFontSize(20);
+
 			// Create a paragraph
-			XWPFParagraph paragraph = document.createParagraph();
-			XWPFRun run = paragraph.createRun();
-			run.setText(text);
+			for (String line : text.split("\n")) {
+				XWPFParagraph paragraph = document.createParagraph();
+				XWPFRun run = paragraph.createRun();
+				run.setText(line + "\r\n");
+			}
+
 			document.write(outStream);
 			outStream.close();
 			System.out.println("Create a word docx " + fileName + " successfully!");
