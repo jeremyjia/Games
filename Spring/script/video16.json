@@ -1,0 +1,68 @@
+{
+    "request": {
+        "version": "0.0.16",
+        "description":"LRC字幕超级对象",
+        "width": 1024,
+        "height": 768,
+        "music": "https://files.51voa.cn/202111/nasa-prepares-to-launch-asteroid-defense-test-mission.mp3",
+        "rate": "1",
+        "frames": [
+            {
+                "number": "1",
+                "time": "${VAR_TIME}",
+                "objects": [
+                    {
+                        "text": "${VAR_TITLE}",
+                        "x": 100,
+                        "y": 250,
+                        "size": 50,
+                        "color": "50,150,120",
+                        "layer": 2
+                    }
+                ],
+                "backgroundColor": "200,200,222"
+            }
+        ],
+        "superObjects": [
+            {
+                "type": "subtitle",
+                "frameRange": "(1,${VAR_TIME})",
+                "attribute": {
+                    "script": "${VAR_LRC_PATH}",
+                    "x1": 50,
+                    "y1": 670,
+                    "size": 30,
+                    "color": "20,82,190"
+                },
+                "layer": 1
+            },
+            {
+                "type": "picture",
+                "attribute": {
+                    "x1": 10,
+                    "y1": 200,
+                    "x2": 640,
+                    "y2": 480,
+                    "size": 50,
+                    "color": "255,0,0",
+                    "name": "https://img.51voa.cn/1/C501D07B-81C5-462A-89C8-E630C2DD9A1F_w268_r1.jpg"
+                },
+                "frameRange": "(1,${VAR_TIME})",
+                "action": {
+                    "trace": "y=0*x*x+0*x+300",
+                    "step": 0
+                }
+            } 
+        ],
+        "Macros": [
+            {
+                "name": "VAR_TITLE",
+                "value": "字幕超级对象-演示程序"
+            },
+            {
+                "name": "VAR_LRC_PATH",
+                "value": "https://www.51voa.com/lrc/202111/nasa-prepares-to-launch-asteroid-defense-test-mission.lrc"
+            }
+        ]
+    }
+}

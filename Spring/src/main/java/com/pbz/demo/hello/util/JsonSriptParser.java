@@ -31,6 +31,8 @@ import org.json.JSONObject;
 
 import com.pbz.demo.hello.model.AOIArea;
 import com.pbz.demo.hello.model.AudioParam;
+import com.pbz.demo.hello.model.SubtitleModel;
+import com.pbz.demo.hello.service.SubtitleImageService;
 import com.pbz.demo.hello.service.VOAService;
 import com.pbz.demo.hello.util.engine.JSGraphEngine;
 
@@ -47,6 +49,11 @@ public final class JsonSriptParser {
 	private static ScriptEngine engine = mgr.getEngineByName("JavaScript");
 	private static JSGraphEngine graphEngine = new JSGraphEngine();
 	private static final String currentScript = "VAR_CURRENT_SCRIPT";
+	private static final String current_Subtitle_Script = "VAR_CURRENT_SUBTITLE_SCRIPT";
+
+	private static SubtitleImageService subtitleImageService = new SubtitleImageService();
+	private static List<SubtitleModel> subtitleList = null;
+	private static String titleOfLRC = "";
 
 	public static void setMacros(String scriptFilePath) throws Exception {
 		String jsonString = getJsonString(scriptFilePath);
@@ -147,6 +154,7 @@ public final class JsonSriptParser {
 		aoiMap.clear();
 		audioList.clear();
 		MacroResolver.setProperty(currentScript, "");
+		MacroResolver.setProperty(current_Subtitle_Script, "");
 		MacroResolver.setProperty("VAR_BGAUDIO", "");
 
 		initMap(requestObj);
@@ -580,6 +588,9 @@ public final class JsonSriptParser {
 		if (type.equalsIgnoreCase("javascript")) {
 			drawJavaScriptObject(jObj, gp2d, number);
 			return;
+		} else if (type.equalsIgnoreCase("subtitle")) {
+			drawSubtitleObject(jObj, gp2d, number);
+			return;
 		}
 		JSONObject attributeObj = jObj.getJSONObject("attribute");
 		int x1 = attributeObj.getInt("x1");// 初始X1坐标
@@ -693,6 +704,62 @@ public final class JsonSriptParser {
 				System.out.println("WARNING: The file " + imgFile.getName() + " doesn't exist!");
 			}
 		}
+	}
+
+	private static void drawSubtitleObject(JSONObject jObj, Graphics2D gp2d, int number) throws Exception {
+		JSONObject attributeObj = jObj.getJSONObject("attribute");
+		String subtitleFile = attributeObj.getString("script");
+		boolean isReLoadScript = false;
+		if (!subtitleFile.equalsIgnoreCase(MacroResolver.getProperty(current_Subtitle_Script))) {
+			MacroResolver.setProperty(current_Subtitle_Script, subtitleFile);
+			isReLoadScript = true;
+		}
+		subtitleFile = FileUtil.downloadFileIfNeed(subtitleFile);
+		if (isReLoadScript) {
+			subtitleList = subtitleImageService.readLocalFile(subtitleFile);
+			if (subtitleList != null) {
+				subtitleList.forEach(e -> System.out.println(e.toString()));
+				if (subtitleFile.endsWith(".lrc")) {
+					titleOfLRC = subtitleImageService.getTitleFromLRCFile(subtitleFile);
+				}
+			} else {
+				throw new Exception("The subtitle file is not correct!");
+			}
+		}
+
+		String strSubtitle = getSubTitleByFrame(subtitleList, number);
+		if (titleOfLRC.trim().length() > 0) {
+			gp2d.setColor(new Color(255, 169, 0));
+			gp2d.setFont(new Font("黑体", Font.BOLD, 50));
+			int y = 120;
+			for (String line : titleOfLRC.split("\\\\n")) {
+				gp2d.drawString(line, 50, y);
+				y += gp2d.getFontMetrics().getHeight();
+			}
+		}
+		int x1 = attributeObj.getInt("x1");
+		int y1 = attributeObj.getInt("y1");
+		float fSize = attributeObj.getFloat("size");
+		if (attributeObj.has("color")) {
+			String cr = attributeObj.getString("color");
+			if (cr != null) {
+				Color color = getColor(cr);
+				gp2d.setColor(color);
+			}
+		}
+		Font font = new Font("黑体", Font.BOLD, (int) fSize);
+		gp2d.setFont(font);
+		gp2d.drawString(strSubtitle, x1, y1);
+	}
+
+	private static String getSubTitleByFrame(List<SubtitleModel> ls, int number) {
+		for (SubtitleModel info : ls) {
+			String strSubtitle = info.contextEng;
+			if (number >= info.star / 1000 && number <= info.end / 1000) {
+				return strSubtitle;
+			}
+		}
+		return "";
 	}
 
 	private static void drawJavaScriptObject(JSONObject jObj, Graphics2D gp2d, int number) throws Exception {
