@@ -156,6 +156,7 @@ public final class JsonSriptParser {
 		MacroResolver.setProperty(currentScript, "");
 		MacroResolver.setProperty(current_Subtitle_Script, "");
 		MacroResolver.setProperty("VAR_BGAUDIO", "");
+		titleOfLRC = "";
 
 		initMap(requestObj);
 		String version = requestObj.getString("version");
