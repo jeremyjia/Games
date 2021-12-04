@@ -186,7 +186,11 @@ public class FileUtil {
 				HttpURLConnection urlc = (HttpURLConnection) fileUrl.openConnection(proxy);
 				is = urlc.getInputStream();
 			} else {
-				is = fileUrl.openStream();
+				// is = fileUrl.openStream();
+				HttpURLConnection conn = (HttpURLConnection) fileUrl.openConnection();
+				conn.setConnectTimeout(2 * 60 * 1000);
+				conn.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
+				is = conn.getInputStream();
 			}
 			OutputStream os = new FileOutputStream(saveFilePath);
 			byte bf[] = new byte[1024];
@@ -197,7 +201,7 @@ public class FileUtil {
 			is.close();
 			os.close();
 		} catch (Exception e) {
-			System.out.println("Error:" + e.getMessage());
+			System.out.println("download error:" + e.getMessage());
 		}
 	}
 
@@ -410,14 +414,12 @@ public class FileUtil {
 			titleParagraphRun.setText(title);
 			titleParagraphRun.setColor("0000FF");
 			titleParagraphRun.setFontSize(20);
-
 			// Create a paragraph
 			for (String line : text.split("\n")) {
 				XWPFParagraph paragraph = document.createParagraph();
 				XWPFRun run = paragraph.createRun();
 				run.setText(line + "\r\n");
 			}
-
 			document.write(outStream);
 			outStream.close();
 			System.out.println("Create a word docx " + fileName + " successfully!");
