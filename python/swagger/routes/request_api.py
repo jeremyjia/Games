@@ -168,6 +168,56 @@ else:
 #    db.close()
 
 
+
+@REQUEST_API.route('/api1', methods=['GET'])
+def api1_get_records():
+    """Return all book requests
+    @return: 200: an array of all known BOOK_REQUESTS as a \
+    flask/response object with application/json mimetype.
+    """
+    # print ("begin")  # How to debug in a smart way.
+    # a = os.getenv('ENV_WINDIR')
+    # b = os.environ.get('WINDIR')
+    # c = os.environ('ENV_PORT')
+    # d = os.getenv('windir')
+    # print (a)
+    # print (b)
+    # print (c)
+    # print (d)
+    # print ("end")
+    with open("./routes/env_conf.json", 'r', encoding='utf-8') as ec:
+      json_data = json.load(ec)
+
+    if DB_TYPE == 'mysql':
+        config = {
+        "host":str(json_data['host']), 
+        "port":json_data['port'], 
+        "user":str(json_data['user']), 
+        "password":str(json_data['password']), 
+        "database":str(json_data['DB_NAME']),
+        "charset":str(json_data['charset'])
+        }
+        db = pymysql.connect(**config)
+        cursor = db.cursor()
+        sql = "SELECT * FROM book_info;"
+        try:
+          cursor.execute(sql)
+          results = cursor.fetchall()
+          BOOK_REQUESTS = results
+        
+        finally:
+          return jsonify(BOOK_REQUESTS)
+          db.close()
+    
+    else:
+        with open("./routes/j_data.json", 'r', encoding='utf-8') as f:
+          json_data = json.load(f)
+        # print(json_data)
+          BOOK_REQUESTS = json_data
+          return jsonify(BOOK_REQUESTS)
+          f.close
+
+
 @REQUEST_API.route('/request', methods=['GET'])
 def get_records():
     """Return all book requests
