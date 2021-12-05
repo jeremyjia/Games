@@ -390,6 +390,18 @@ public class FileUtil {
 
 	}
 
+	public static String ReplaceString(String inputString, String regex, String replaceString) {
+		Pattern r = Pattern.compile(regex);
+		Matcher m = r.matcher(inputString);
+		m.reset();
+		StringBuffer sb = new StringBuffer();
+		while (m.find()) {
+			m.appendReplacement(sb, replaceString);
+		}
+		m.appendTail(sb);
+		return sb.toString();
+	}
+
 	public void inputStreamToWord(InputStream is, OutputStream os) throws IOException {
 		POIFSFileSystem fs = new POIFSFileSystem();
 		// org.apache.poi.hdf.extractor.WordDocument
