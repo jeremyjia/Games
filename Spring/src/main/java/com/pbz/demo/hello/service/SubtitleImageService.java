@@ -101,7 +101,7 @@ public class SubtitleImageService {
 		return index;
 	}
 
-	private List<SubtitleModel> readLocalFile(String subtitleFile) {
+	public List<SubtitleModel> readLocalFile(String subtitleFile) {
 		if (subtitleFile.toLowerCase().endsWith(".srt")) {
 			return readSRTFile(subtitleFile);
 		} else if (subtitleFile.toLowerCase().endsWith(".lrc")) {
@@ -191,7 +191,7 @@ public class SubtitleImageService {
 		return subtitleList;
 	}
 
-	private String getTitleFromLRCFile(String filePath) {
+	public String getTitleFromLRCFile(String filePath) {
 		String lrc = FileUtil.readAllBytes(filePath);
 		String text = getCenterText("[ti:", "]", lrc);
 		text = FileUtil.addLinefeeds(text, 25);
