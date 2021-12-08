@@ -729,6 +729,16 @@ public final class JsonSriptParser {
 		}
 
 		String strSubtitle = getSubTitleByFrame(subtitleList, number);
+		if (attributeObj.has("replace")) {
+			JSONArray objectArray = attributeObj.getJSONArray("replace");
+			for (Object object : objectArray) {
+				JSONObject replaceObj = (JSONObject) object;
+				String regex = replaceObj.getString("regex");
+				String target = replaceObj.getString("target");
+				strSubtitle = FileUtil.ReplaceString(strSubtitle, regex, target);
+			}
+		}
+
 		if (titleOfLRC.trim().length() > 0) {
 			gp2d.setColor(new Color(255, 169, 0));
 			gp2d.setFont(new Font("黑体", Font.BOLD, 50));
