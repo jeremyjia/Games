@@ -8,20 +8,19 @@ import argparse
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_eye.xml")
 
-parser = argparse.ArgumentParser(description='statistics for argparse')  # examplify running by py stats_norm.py -i f1.jpg -m 2 -g 3 -s -6 -e 3 -xt TOY -yt SHOP
-parser.add_argument('--filepath', '-i', help='filepath属性，必要参数', required=True)  # 必须是文件名 图片或文档
+parser = argparse.ArgumentParser(description='statistics for argparse')  # examplify running by ‘face_with_glasses.py -i 16.jpg -x 2.5 -y 1.1 -w 3.5’
+parser.add_argument('--filepath', '-i', help='filepath属性，必要参数', required=True)  # 必须是文件名 有眼镜的生物图片
 parser.add_argument('--output', '-o',  help='file_out 输出文件属性，非必要参数', default='glassed_img.jpg') #必须图片名
-parser.add_argument('--x_position', '-x', help='x_position属性，非必要参数', default=3.9)  # 暂时认为是眼镜的X轴坐标
-parser.add_argument('--y_position', '-y',  help='y_postion属性，非必要参数', default=1.9)  # 暂时认为是眼镜的Y轴坐标
-parser.add_argument('--glass_width_co', '-w',  help='glass_width_co属性，非必要参数', default=3.1)  # 眼镜的宽度
+parser.add_argument('--x_position', '-x', help='x_position属性，非必要参数', default=2.5)  # 暂时认为是眼镜的X轴坐标 一定不能运行时出错
+parser.add_argument('--y_position', '-y',  help='y_postion属性，非必要参数', default=1.1)  # 暂时认为是眼镜的Y轴坐标
+parser.add_argument('--glass_width_co', '-w',  help='glass_width_co属性，非必要参数', default=3.5)  # 眼镜的宽度
 args = parser.parse_args()
 
-x_po = int(args.x_position)  
-y_po = int(args.y_position) 
-width_co = int(args.glass_width_co) 
+x_po = args.x_position  
+y_po = args.y_position 
+width_co = args.glass_width_co 
 file_path = args.filepath
 output = args.output
-
 
 # read both the images of the face and the glasses
 image = cv2.imread(file_path)
