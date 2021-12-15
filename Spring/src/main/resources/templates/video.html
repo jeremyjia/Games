@@ -2,17 +2,45 @@
   <head>
     <title>video</title>
     <script type="text/javascript">
+      var tl = [1.1,2.0,3.0,4.0,5.0,6.0];
       function play() {
-        var video = document.getElementById("video");
+        var video = document.getElementById("id_4_video");
         video.play();
       }  
+      function createBtn(dtl,ddbg,id,video) {  
+          var btn = document.createElement("button");
+          btn.id = id;
+    	    btn.innerHTML = id;  
+          btn.onclick = function(){ 
+              ddbg.innerHTML = this.id; 
+              video.currentTime = this.id;
+          } 
+    	    dtl.appendChild(btn);
+          return btn;
+      }
+      function createToolbar() { 
+        var video = document.getElementById("id_4_video");
+        var dtl = document.getElementById("id4toolbar");
+        var ddbg = document.getElementById("id4Debug");
+        if(!dtl.done){
+          dtl.done = true;
+          for(i in tl){
+            createBtn(dtl,ddbg,tl[i],video);     
+          }     
+        }
+      } 
     </script>
   </head>
   <body>
-   <p>Hello, <span th:text="${message}"></span>
+   <p>v0.15. Hello, <span th:text="${message}"></span>
+    <div id="id4toolbar">tb</div>
+    <div id="id4Debug">debug</div>
+
     <a th:href="@{${video_url}}" target="_blank">View the video</a>
+    <button id="btnPlay" onclick = "play();">play</button>
+    <button id="btn2createToolbar" onclick = "createToolbar();">createToolbar</button>
   </p>
-  <video controls="controls" width="50%">
+  <video id="id_4_video" controls="controls" width="50%">
 	   <source th:src="@{${video_url}}" type="video/mp4">
 	     Your browser does not support the video tag.
 	</video>
