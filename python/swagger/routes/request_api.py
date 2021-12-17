@@ -142,7 +142,7 @@ if DB_TYPE == 'mysql':
 
 else:
   # # get the data from local json file. -wayne W
-  with open("./routes/j_data.json", 'r', encoding='utf-8') as f:
+  with open("./data/j_data.json", 'r', encoding='utf-8') as f:
     json_data = json.load(f)
     # print(json_data)
     BOOK_REQUESTS = json_data
@@ -210,7 +210,7 @@ def api1_get_records():
           db.close()
     
     else:
-        with open("./routes/j_data.json", 'r', encoding='utf-8') as f:
+        with open("./data/j_data.json", 'r', encoding='utf-8') as f:
           json_data = json.load(f)
         # print(json_data)
           BOOK_REQUESTS = json_data
@@ -259,7 +259,7 @@ def get_records():
           db.close()
     
     else:
-        with open("./routes/j_data.json", 'r', encoding='utf-8') as f:
+        with open("./data/j_data.json", 'r', encoding='utf-8') as f:
           json_data = json.load(f)
         # print(json_data)
           BOOK_REQUESTS = json_data
@@ -314,7 +314,7 @@ def get_record_by_id(_id):
             return 'THE BOOK INFO AS BELOW:\n' + str(BOOK_REQUESTS), 200
             db.close()
     else:
-        with open("./routes/j_data.json", 'r', encoding='utf-8') as f:
+        with open("./data/j_data.json", 'r', encoding='utf-8') as f:
           json_data = json.load(f)
           BOOK_REQUESTS = json_data
           f.close
@@ -387,7 +387,7 @@ def create_record():
     }
          BOOK_REQUESTS[new_uuid] = book_request   
          # save the new book to jason file, further jobs: need to rewrite the file under the formatal style for read it easily. -wayne W
-         fo = open("./routes/j_data.json", "w")
+         fo = open("./data/j_data.json", "w")
          fo.write( str(json.dumps(BOOK_REQUESTS)) )
          fo.close()
          # HTTP 201 Created
@@ -460,13 +460,13 @@ def edit_record(_id):
         'email': data['email'],
         'timestamp': datetime.now().timestamp()
         }
-        with open("./routes/j_data.json", 'r', encoding='utf-8') as f: # updated on 20210917
+        with open("./data/j_data.json", 'r', encoding='utf-8') as f: # updated on 20210917
           json_data = json.load(f)       # updated on 20210917
           BOOK_REQUESTS = json_data      # updated on 20210917
           BOOK_REQUESTS[_id] = book_request
     
     # save the new book to jason file, further jobs: need to rewrite the file under the formatal style for read it easily. 'BOOK INFO UPDATED BY:'-wayne W
-        fo = open("./routes/j_data.json", "w")
+        fo = open("./data/j_data.json", "w")
         fo.write( str(json.dumps(BOOK_REQUESTS)) )
         fo.close()
         return jsonify({'BOOK INFO UPDATED BY':BOOK_REQUESTS[_id]}), 200
@@ -517,7 +517,7 @@ def delete_record(_id):
           db.close()
     else:
         del BOOK_REQUESTS[_id]
-        fo = open("./routes/j_data.json", "w")
+        fo = open("./data/j_data.json", "w")
         fo.write( str(json.dumps(BOOK_REQUESTS)) )
         fo.close()
         # return jsonify({"DELETED ID: ": _id}), 201
@@ -589,13 +589,13 @@ def edit_image(_id):
         'email': data['email'],
         'timestamp': datetime.now().timestamp()
         }
-        with open("./routes/j_data.json", 'r', encoding='utf-8') as f: # updated on 20210917
+        with open("./data/j_data.json", 'r', encoding='utf-8') as f: # updated on 20210917
           json_data = json.load(f)       # updated on 20210917
           BOOK_REQUESTS = json_data      # updated on 20210917
           BOOK_REQUESTS[_id] = book_request
     
     # save the new book to jason file, further jobs: need to rewrite the file under the formatal style for read it easily. 'BOOK INFO UPDATED BY:'-wayne W
-        fo = open("./routes/j_data.json", "w")
+        fo = open("./data/j_data.json", "w")
         fo.write( str(json.dumps(BOOK_REQUESTS)) )
         fo.close()
         return jsonify({'BOOK INFO UPDATED BY':BOOK_REQUESTS[_id]}), 200

@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "description": "blSwagger using Python",
-    "version": "1.2.15",
+    "version": "1.2.21",
     "title": "Seans_Waynes-Python3-Flask-Rest-Boilerplate",
     "license": {
       "name": "MIT",
@@ -12,25 +12,24 @@
   "servers": [
     {
       "url": "/"
+      
     }
   ],
   "tags": [
     {
-      "name-1": "Book Request",
+      "name": "Book Request",
       "description-1": "Example API for name-1 ...",
-      "name-2": "IMG Trans",
-      "description-2": "Example API for name-2 ...",
-      "name-3": "API Monitor",
-      "description-3": "Example API for monitoring the server"
+      "names": "IMG Trans",
+      "description-2": "Example API for name-2 ..."
     }
   ],
   "paths": {
-    "/api1": {
+    "/trans": {
       "get": {
         "tags": [
           "IMG Trans"
         ],
-        "summary": "Returns all books.",
+        "summary": "Example API for editing image requests.",
         "responses": {
           "200": {
             "description": "OK",
@@ -44,9 +43,9 @@
         "tags": [
           "IMG Trans"
         ],
-        "summary": "Create a new book request system",
+        "summary": "Edit a image, like adding effects",
         "requestBody": {
-          "description": "Book Request Post Object",
+          "description": "IMG Request Post Object",
           "required": true,
           "content": {
             "application/json": {
@@ -232,40 +231,9 @@
             "description": "Failed. Book Request not found."
           }
         }
-      },
-      "/IMG trans": {
-        "post": {
-         "summary": "Example API for editing image requests",
-         "tags": [
-           "Book Request"
-         ],
-         "parameters": [
-           {
-             "in": "path",
-             "name": "effects",
-             "required": true,
-             "description": "Edit a image, like adding effects",
-             "schema": {
-               "$ref": "#/components/schemas/id"
-             }
-           }
-         ],
-         "responses": {
-           "200": {
-             "description": "OK",
-             "schema": {
-               "$ref": "#/components/schemas/id"
-              }
-            },
-           "400": {
-             "description": "Failed. Misunderstood Request."
-            },
-           "404": {
-             "description": "Failed. IMG Request not found."
-            }
-          }
-        }  
-      }}
+      }
+    
+      }
     },
   
   "components": {

@@ -11,16 +11,17 @@ eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_eye.xml
 parser = argparse.ArgumentParser(description='statistics for argparse')  # examplify running by ‘face_with_glasses.py -i 16.jpg -x 2.5 -y 1.1 -w 3.5’
 parser.add_argument('--filepath', '-i', help='filepath属性，必要参数', required=True)  # 必须是文件名 有眼镜的生物图片
 parser.add_argument('--output', '-o',  help='file_out 输出文件属性，非必要参数', default='glassed_img.jpg') #必须图片名
-parser.add_argument('--x_position', '-x', help='x_position属性，非必要参数', default=2.5)  # 暂时认为是眼镜的X轴坐标 一定不能运行时出错
-parser.add_argument('--y_position', '-y',  help='y_postion属性，非必要参数', default=1.1)  # 暂时认为是眼镜的Y轴坐标
-parser.add_argument('--glass_width_co', '-w',  help='glass_width_co属性，非必要参数', default=3.5)  # 眼镜的宽度
+parser.add_argument('--x_position', '-x', help='x_position属性，非必要参数', default=2.5)  #眼镜的X轴坐标 range of x [2.16, 3.16] for 16.jpg; x [-1, 1.2] for 51.jpg
+parser.add_argument('--y_position', '-y',  help='y_postion属性，非必要参数', default=1.1)  #眼镜的Y轴坐标 when x=2.66, range of y [-1.25,4.55] for 16.jpg, when x 0.1, y [-30.5,20.3] for 51.jpg
+parser.add_argument('--glass_width_co', '-w',  help='glass_width_co属性，非必要参数', default=3.5)  #眼镜的宽度 when x=2.66, y=1.9, range of w [0.1, 4.1] for 16.jpg,如果这个程序不容易修改，可能尝试再找一个更好的项目
 args = parser.parse_args()
 
-x_po = args.x_position  
-y_po = args.y_position 
-width_co = args.glass_width_co 
+x_po = float(args.x_position)  
+y_po = float(args.y_position) 
+width_co = float(args.glass_width_co) 
 file_path = args.filepath
 output = args.output
+print (x_po,y_po,width_co)
 
 # read both the images of the face and the glasses
 image = cv2.imread(file_path)
