@@ -1,12 +1,5 @@
 """The Endpoints to manage the BOOK_REQUESTS"""
-# READ ME: before run app.py, kindly ensure that your client has already installed the MySQL database (like mysql-installer-web-community editoin) properly,\
-# and you have done with the initialization setting, such as host, port, user(root), and keywords, etc. And in Ubuntu, need to reset password of admin user ('root'), in order to build new databases. - wayneW
-# start the mysql service when your database is mysql. To CMD and run 'net start mysql80' or 'sudo service mysql start' in Ubuntu.
-# Set temp env viaralbes in CMD by 'set dbtype=mysql(or json)'or in bash by 'export dbtype=mysql' and 'set dbname=bl_book'. check values of these viarables via 'set dbtype' or 'echo $dbtype' in bash, in order to easy-doing software test. 
-# Also you can twinst these setting in /.routes/env_conf.json. Ensure these are fit for your local setting. Please set a database name and datatpye,such as mysql (default) or json.
-# I notice that mysql database are not sensitive to case, so I set dbname = BL_book, but in fact the data name was set to bl_book. -wayneW
-# Memo: after coding revise，启动浏览器localhost:5000, 发现修改并没有被即时体现。可能是浏览器缓存刷新，so reset the setting of edge，即还原所有设置，issue solved。第二天在没有进行任何设置还原的前提下，\
-# chrome浏览器能成功体现前一天的代码修改内容。 -wayneW
+
 import os
 import uuid
 import json  
@@ -23,11 +16,7 @@ def get_blueprint():
     """Return the blueprint for the main app module"""
     return REQUEST_API
 
-# get the Env viarables first, to set DB_TYPE via env viriables
-# DB_TYPE = str(os.getenv('dbtype')) 
-# DB_NAME = str(os.getenv('dbname')) 
-
-# Decide to use json or MySQL database - wayneW.
+ 
 with open("./routes/env_conf.json", 'r', encoding='utf-8') as ec:
     json_data = json.load(ec)
   # print(json_data)
@@ -47,23 +36,7 @@ else:
      
 print('dbtype: ', DB_TYPE)
 print('dbname: ', DB_NAME)
-
-# # BOOK_REQUESTS = json_data
-#    BOOK_REQUESTS = results
-# except:
-#    print ("Error: unable to fetch the data")
-
-# initializaed local database via creation a new database
-# DB_NAME = "abc"
-# DB_NAME = str(os.getenv('dbname'))   
-# if DB_NAME == "None":
-#     DB_NAME = "text_db"
-
-# mydb = mysql.connector.connect(
-#   host="127.0.0.1",
-#   user="www",  # please adjust the user name as same as the local MySQL's user name  -wayneW
-#   password="5566"  # change the password as you defined in your MySQL database  -wayneW
-# )
+ 
 
 if DB_TYPE == 'mysql':
   mydb = mysql.connector.connect(
@@ -129,16 +102,7 @@ if DB_TYPE == 'mysql':
     print(mycursor.rowcount, "record inserted.")
     mydb.close() 
 
-# define the database-link parameter. -wayne W
-# config = {
-# "host":"127.0.0.1", # 地址
-# "port":3306, # 端口
-# "user":"www", # 用户名
-# "password":"5566", # 密码
-# # "database":"mydb", # 如果通过Python操作MySQL,要指定需要操作的数据库
-# "database":DB_NAME,
-# "charset":"utf8"
-# }
+ 
 
 else:
   # # get the data from local json file. -wayne W
@@ -150,72 +114,20 @@ else:
   #except:
   if json_data == '':
     print ("Error: unable to fetch the data")
+ 
 
-# db = pymysql.connect(**config)
-# # 使用cursor()方法获取操作游标
-# cursor = db.cursor()
-# # SQL 查询语句
-# sql = "SELECT * FROM book_info;"
-# try:
-#    # 执行SQL语句
-#    cursor.execute(sql)
-#    # 获取所有记录列表
-#    results = cursor.fetchall()
-# # 关闭数据库连接
-# finally:
-# #cursor.close()
-# #conn.close()
-#    db.close()
-
+def make_cake():  
+  return jsonify({
+     "cakeType": "strawberry",
+     "x": "1.2",
+     "y": "5",
+     "made_time": "2021.12.19 10:00am"
+   })
 
 
 @REQUEST_API.route('/api1', methods=['GET'])
-def api1_get_records():
-    """Return all book requests
-    @return: 200: an array of all known BOOK_REQUESTS as a \
-    flask/response object with application/json mimetype.
-    """
-    # print ("begin")  # How to debug in a smart way.
-    # a = os.getenv('ENV_WINDIR')
-    # b = os.environ.get('WINDIR')
-    # c = os.environ('ENV_PORT')
-    # d = os.getenv('windir')
-    # print (a)
-    # print (b)
-    # print (c)
-    # print (d)
-    # print ("end")
-    with open("./routes/env_conf.json", 'r', encoding='utf-8') as ec:
-      json_data = json.load(ec)
-
-    if DB_TYPE == 'mysql':
-        config = {
-        "host":str(json_data['host']), 
-        "port":json_data['port'], 
-        "user":str(json_data['user']), 
-        "password":str(json_data['password']), 
-        "database":str(json_data['DB_NAME']),
-        "charset":str(json_data['charset'])
-        }
-        db = pymysql.connect(**config)
-        cursor = db.cursor()
-        sql = "SELECT * FROM book_info;"
-        try:
-          cursor.execute(sql)
-          results = cursor.fetchall()
-          BOOK_REQUESTS = results
-        
-        finally:
-          return jsonify(BOOK_REQUESTS)
-          db.close()
-    
-    else:
-        with open("./routes/j_data.json", 'r', encoding='utf-8') as f:
-          json_data = json.load(f)
-        # print(json_data)
-          BOOK_REQUESTS = json_data
-          return jsonify(BOOK_REQUESTS)
-          f.close
+def redo_new_python_endpoint(): 
+   return make_cake()
 
 
 @REQUEST_API.route('/request', methods=['GET'])
