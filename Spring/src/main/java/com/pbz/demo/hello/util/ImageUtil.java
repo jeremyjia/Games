@@ -1,5 +1,6 @@
 package com.pbz.demo.hello.util;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -39,6 +40,40 @@ public class ImageUtil {
 		g.drawImage(image, 0, 0, null);
 		g.dispose();
 		return tag;
+	}
+
+	public static Color applayColor(String fillStyle) {
+		if (fillStyle != null && fillStyle.trim().length() > 0) {
+			if (fillStyle.startsWith("#")) {
+				int color = Integer.parseInt(fillStyle.substring(1), 16);
+				return new Color(color);
+			}
+
+			String[] colors = fillStyle.split(",");
+			if (colors.length == 3) {
+				int red = Integer.parseInt(colors[0]);
+				int green = Integer.parseInt(colors[1]);
+				int blue = Integer.parseInt(colors[2]);
+				return new Color(red, green, blue);
+			}
+
+			if ("blue".equalsIgnoreCase(fillStyle)) {
+				return new Color(0, 0, 255);
+			} else if ("red".equalsIgnoreCase(fillStyle)) {
+				return new Color(255, 0, 0);
+			} else if ("yellow".equalsIgnoreCase(fillStyle)) {
+				return new Color(255, 255, 0);
+			} else if ("green".equalsIgnoreCase(fillStyle)) {
+				return new Color(0, 255, 0);
+			} else if ("white".equalsIgnoreCase(fillStyle)) {
+				return new Color(255, 255, 255);
+			} else if ("black".equalsIgnoreCase(fillStyle)) {
+				return new Color(0, 0, 0);
+			} else if ("lightblue".equalsIgnoreCase(fillStyle)) {
+				return new Color(193, 210, 240);
+			}
+		}
+		return new Color(200, 200, 200);
 	}
 
 }

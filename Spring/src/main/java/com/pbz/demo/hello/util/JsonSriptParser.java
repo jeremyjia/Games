@@ -831,11 +831,7 @@ public final class JsonSriptParser {
 	}
 
 	private static Color getColor(String color) {
-		String[] colors = color.split(",");
-		int red = Integer.parseInt(colors[0]);
-		int green = Integer.parseInt(colors[1]);
-		int blue = Integer.parseInt(colors[2]);
-		return new Color(red, green, blue);
+		return ImageUtil.applayColor(color);
 	}
 
 	private static String milliSecondToTime(long millSecond) {
