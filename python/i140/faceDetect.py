@@ -25,7 +25,7 @@ def faceDetect(filename, out_file_name, cascade_file = "haarcascade_frontalface_
         cv2.rectangle(image, (x, y), (x + w, y + h), (B, G, R), W)
         face_image = gray[y:y+h, x:w+x]
         eyesDetet(image, face_image, x, y)
-        #temp = image[y:y+h,x:x+w,:]
+        #glasses(image, face_image, x, y)
         #cv2.imwrite('%s_%d.jpg'%(os.path.basename(filename).split('.')[0],i),temp)
     if b_show_image:
         cv2.imshow("AnimeFaceDetect", image)
@@ -37,6 +37,27 @@ def eyesDetet(image, face_image, x, y):
     eyes = eye_cascade.detectMultiScale(face_image, scaleFactor = 1.1, minNeighbors = 4, minSize = (30,30))
     for ex, ey, ew, eh in eyes:
         cv2.circle(image, (x+ex+ew//2, y+ey+eh//2), W*3, (0,G,0), -1)
+        
+def glasses(image,face_image, x, y):
+    eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_eye.xml")
+    eyes = eye_cascade.detectMultiScale(face_image, scaleFactor = 1.1, minNeighbors = 4, minSize = (30,30))
+    index=0
+    for ex, ey, ew, eh in eyes:
+        index+=1
+        if index == 1:
+            x1 = x+ex
+            y1 = y+ey
+            glass_image = cv2.imread('h.png')
+            glass_image = cv2.resize(glass_image,(W*10,W*10),interpolation=cv2.INTER_AREA)
+            rows,cols,channels = glass_image.shape
+            roi = image[0:rows, 0:cols ]
+            img2gray = cv2.cvtColor(glass_image,cv2.COLOR_BGR2GRAY)
+            ret, mask = cv2.threshold(img2gray, 255, 255, cv2.THRESH_BINARY)
+            mask_inv = cv2.bitwise_not(mask)
+            img1_bg = cv2.bitwise_and(roi,roi,mask = mask)
+            img2_fg = cv2.bitwise_and(glass_image,glass_image,mask = mask_inv)
+            dst = cv2.add(img1_bg,img2_fg)
+            image[y1:rows+y1, x1:cols+x1 ] = dst
 
 
 parser = argparse.ArgumentParser(description='image for argparse')
