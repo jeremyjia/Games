@@ -1,6 +1,6 @@
 // file: blclass.js    by littleflute 
 
-var g_ver_blClass = "CBlClass_v1.5.13"
+var g_ver_blClass = "CBlClass_v1.5.21"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -1653,6 +1653,12 @@ function CBlClass ()
 		blo0.blLoadGithubIssueComments(tb,"https://api.github.com/repos/jeremyjia/Games/issues/21",ta);
 
 		return d1;
+	}
+	this.blNewFun = function(o){
+		var video = document.getElementById("id_4_video");
+	   var ddbg = document.getElementById("id4Debug");
+       video.currentTime = o.id;
+	   ddbg.innerHTML = o.id; 
 	}
 }//END: function CBlClass ()
  
