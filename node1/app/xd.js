@@ -1,5 +1,5 @@
  
 module.exports = function(){  
-  return 'to test xdApp: done.';
+  return 'to test xdApp: done.xxx';
  
 }
