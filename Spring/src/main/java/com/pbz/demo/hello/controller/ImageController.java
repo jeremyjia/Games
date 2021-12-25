@@ -216,6 +216,10 @@ public class ImageController {
 			mv.addObject("gif_url", strHomePageUrl + "/vFinal.gif");
 			mv.addObject("gif_enabled", true);
 		}
+		if (!"".equalsIgnoreCase(MacroResolver.getProperty(JsonSriptParser.current_Subtitle_Script))) {
+			MacroResolver.setProperty(JsonSriptParser.current_Subtitle_Script, "");
+			mv.addObject("subtitles", JsonSriptParser.subtitleList);
+		}
 
 		return mv;
 	}
