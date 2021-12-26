@@ -59,8 +59,7 @@ function getTimeDiff(startTime, endTime, diffType) {
 }
 
 function getToken() {
-  return "dcf9dc260a" + "1f2f9a7e9c" + "05198d95f0" + "b143f1a7bd"; //Jeremyjia
-
+	return "ghp_Od6GW3"+"J2NiP01Zsz"+"g9JQV0amzn"+"UxhF33iBES"; //Jeremyjia
 }
 
 //Web functions ------
