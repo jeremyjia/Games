@@ -49,10 +49,10 @@ public final class JsonSriptParser {
 	private static ScriptEngine engine = mgr.getEngineByName("JavaScript");
 	private static JSGraphEngine graphEngine = new JSGraphEngine();
 	private static final String currentScript = "VAR_CURRENT_SCRIPT";
-	private static final String current_Subtitle_Script = "VAR_CURRENT_SUBTITLE_SCRIPT";
+	public static final String current_Subtitle_Script = "VAR_CURRENT_SUBTITLE_SCRIPT";
 
 	private static SubtitleImageService subtitleImageService = new SubtitleImageService();
-	private static List<SubtitleModel> subtitleList = null;
+	public static List<SubtitleModel> subtitleList = null;
 	private static String titleOfLRC = "";
 
 	public static void setMacros(String scriptFilePath) throws Exception {
@@ -831,11 +831,7 @@ public final class JsonSriptParser {
 	}
 
 	private static Color getColor(String color) {
-		String[] colors = color.split(",");
-		int red = Integer.parseInt(colors[0]);
-		int green = Integer.parseInt(colors[1]);
-		int blue = Integer.parseInt(colors[2]);
-		return new Color(red, green, blue);
+		return ImageUtil.applayColor(color);
 	}
 
 	private static String milliSecondToTime(long millSecond) {
