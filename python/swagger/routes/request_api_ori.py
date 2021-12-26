@@ -471,6 +471,7 @@ def edit_record(_id):
         fo.close()
         return jsonify({'BOOK INFO UPDATED BY':BOOK_REQUESTS[_id]}), 200
 
+
 @REQUEST_API.route('/request/<string:_id>', methods=['DELETE'])
 def delete_record(_id):
     """Delete a book request record
@@ -522,7 +523,8 @@ def delete_record(_id):
         # return jsonify({"DELETED ID: ": _id}), 201
         return'ID OF THE DELETED BOOK: ' + _id, 200
 
-
+@REQUEST_API.route('/request/<string:_id>', methods=['IMAGE'])
+def edit_image(_id):
     """Edit a image, add several effects
     @param email: post : the requesters email address
     @param title: post : the title of the book requested
