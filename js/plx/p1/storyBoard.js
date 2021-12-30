@@ -1,4 +1,4 @@
-var tag = "storyBoard.js_v0.15";
+var tag_storyBoard = "storyBoard.js_v0.21";
 var tb = bl$("id_p1_tb"); 
 
 tb.btnStoryBoard = blo0.blBtn(tb,"btnStoryBoard","storyBoard",blGrey[2]);
@@ -40,7 +40,7 @@ function CStoryBoard(parentDiv){
                 var d = new Date();
                 _this.inf.D = d;
                 _this.inf.n = 0; 
-                _this.inf.v = "0.0.3";
+                _this.inf.v = tag_storyBoard;
                 _this.inf.w = 1920;
                 _this.inf.h = 1080;
                 _this.inf.music = "1.mp3";
