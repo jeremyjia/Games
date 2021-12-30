@@ -9,15 +9,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,6 +29,11 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSessionContext;
 
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.jaudiotagger.audio.mp3.MP3AudioHeader;
 import org.jaudiotagger.audio.mp3.MP3File;
 
@@ -178,7 +186,11 @@ public class FileUtil {
 				HttpURLConnection urlc = (HttpURLConnection) fileUrl.openConnection(proxy);
 				is = urlc.getInputStream();
 			} else {
-				is = fileUrl.openStream();
+				// is = fileUrl.openStream();
+				HttpURLConnection conn = (HttpURLConnection) fileUrl.openConnection();
+				conn.setConnectTimeout(2 * 60 * 1000);
+				conn.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
+				is = conn.getInputStream();
 			}
 			OutputStream os = new FileOutputStream(saveFilePath);
 			byte bf[] = new byte[1024];
@@ -189,7 +201,7 @@ public class FileUtil {
 			is.close();
 			os.close();
 		} catch (Exception e) {
-			System.out.println("Error:" + e.getMessage());
+			System.out.println("download error:" + e.getMessage());
 		}
 	}
 
@@ -289,6 +301,80 @@ public class FileUtil {
 			index++;
 		}
 
+		clearWorkSpace(System.getProperty("user.dir"));
+
+	}
+
+	public static void clearWorkSpace(String workSpace) {
+		File fileDir = new File(workSpace);
+		if (fileDir.exists()) {
+			delete_File(fileDir);
+		}
+	}
+
+	private static void delete_File(File file) {
+		if (file.isDirectory()) {
+			File[] files = file.listFiles();
+			for (int i = 0; i < files.length; i++) {
+				delete_File(files[i]);
+			}
+		}
+		String fileName = file.getName().toLowerCase();
+		if (fileName.startsWith("tmp") && fileName.endsWith("mp3")) {
+			file.delete();
+		}
+	}
+
+	// 将文本分割为多行
+	public static String addLinefeeds(String text, int number) {
+		StringBuffer buffer = new StringBuffer();
+		int index = 0;
+		for (int i = 0; i < text.length(); i++) {
+			char p = text.charAt(i);
+			if (index == number) {
+				if (p != ' ') {
+					buffer.append(p);
+					continue;
+				}
+				buffer.append("\\n");
+				buffer.append(p);
+				index = 0;
+			} else {
+				buffer.append(p);
+				index++;
+			}
+		}
+		return buffer.toString().trim();
+	}
+
+	public static String saveJsonString2File(String jsonString, String fileName) throws Exception {
+		jsonString = URLEncoder.encode(jsonString, "UTF-8");
+		jsonString = URLDecoder.decode(jsonString, "UTF-8");
+
+		String file = System.getProperty("user.dir") + "/" + fileName;
+		OutputStreamWriter ops = null;
+		ops = new OutputStreamWriter(new FileOutputStream(file));
+		if (!jsonString.startsWith("{") && !jsonString.endsWith("}")) {
+			jsonString = jsonString.substring(1, jsonString.length() - 1);
+		}
+		ops.write(jsonString);
+		ops.close();
+		System.out.println(jsonString);
+		return jsonString;
+	}
+
+	public static String encryptToBase64(String filePath) {
+		if (filePath == null) {
+			return null;
+		}
+		try {
+			byte[] b = Files.readAllBytes(Paths.get(filePath));
+			return Base64.getEncoder().encodeToString(b);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return null;
 	}
 
 	public static int chmod(String args) throws Exception {
@@ -304,8 +390,62 @@ public class FileUtil {
 
 	}
 
+	public static String ReplaceString(String inputString, String regex, String replaceString) {
+		Pattern r = Pattern.compile(regex);
+		Matcher m = r.matcher(inputString);
+		m.reset();
+		StringBuffer sb = new StringBuffer();
+		while (m.find()) {
+			m.appendReplacement(sb, replaceString);
+		}
+		m.appendTail(sb);
+		return sb.toString();
+	}
+
+	public void inputStreamToWord(InputStream is, OutputStream os) throws IOException {
+		POIFSFileSystem fs = new POIFSFileSystem();
+		// org.apache.poi.hdf.extractor.WordDocument
+		fs.createDocument(is, "WordDocument");
+		fs.writeFilesystem(os);
+		os.close();
+		is.close();
+	}
+
+	public static boolean createAWordDoc(String title, String text, String fileName) {
+		try {
+			// Create a empty document
+			XWPFDocument document = new XWPFDocument();
+			File file = new File(fileName);
+			if (file.exists()) {
+				file.delete();
+			}
+			FileOutputStream outStream = new FileOutputStream(file);
+			XWPFParagraph titleParagraph = document.createParagraph();
+			titleParagraph.setAlignment(ParagraphAlignment.CENTER);
+			XWPFRun titleParagraphRun = titleParagraph.createRun();
+			titleParagraphRun.setText(title);
+			titleParagraphRun.setColor("0000FF");
+			titleParagraphRun.setFontSize(20);
+			// Create a paragraph
+			for (String line : text.split("\n")) {
+				XWPFParagraph paragraph = document.createParagraph();
+				XWPFRun run = paragraph.createRun();
+				run.setText(line + "\r\n");
+			}
+			document.write(outStream);
+			outStream.close();
+			System.out.println("Create a word docx " + fileName + " successfully!");
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
 	public static void main(String[] args) {
 
+		String path = "C:\\jiaGameAll\\Games\\Spring\\target";
+		clearWorkSpace(path);
 		// 全局代理
 		// Properties prop = System.getProperties();
 		// prop.setProperty("socksProxyHost", "localhost");
@@ -337,6 +477,10 @@ public class FileUtil {
 			e.printStackTrace();
 			System.out.println(e.getMessage());
 		}
+
+		String title = "Document Title";
+		String strText = "生成一段文本! Create a paragraph!";
+		createAWordDoc(title, strText, "/Users/jeremy/temp/1.docx");
 		System.out.println("OK!");
 	}
 }

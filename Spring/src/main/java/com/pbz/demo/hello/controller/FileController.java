@@ -1,12 +1,8 @@
 package com.pbz.demo.hello.controller;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +21,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
+
+import com.pbz.demo.hello.util.FileUtil;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -99,19 +97,7 @@ public class FileController {
 	@ResponseBody
 	public String saveJson2File(@RequestParam("fileName") String fileName, @RequestBody String jsonString)
 			throws Exception {
-		jsonString = URLEncoder.encode(jsonString, "UTF-8");
-		jsonString = URLDecoder.decode(jsonString, "UTF-8");
-
-		String file = System.getProperty("user.dir") + "/" + fileName;
-		OutputStreamWriter ops = null;
-		ops = new OutputStreamWriter(new FileOutputStream(file));
-		if (!jsonString.startsWith("{") && !jsonString.endsWith("}")) {
-			jsonString = jsonString.substring(1, jsonString.length() - 1);
-		}
-		ops.write(jsonString);
-		ops.close();
-		System.out.println(jsonString);
-		return jsonString;
+		return FileUtil.saveJsonString2File(jsonString, fileName);
 	}
 
 	@ApiOperation(value = "下载文件", notes = "下载文件接口")
@@ -148,6 +134,30 @@ public class FileController {
 		resMap.put("filename", outputFileName);
 		resMap.put("pathOnServer", downloadFilePath);
 
+		return resMap;
+	}
+
+	@ApiOperation(value = "保存为Microsoft Word文件", notes = "把一个标题和一段文本保存为一个docx文件")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "title", value = "title", paramType = "query", required = false, dataType = "string", defaultValue = "Document Title"),
+			@ApiImplicitParam(name = "text", value = "text", paramType = "query", required = true, dataType = "string", defaultValue = "Document Paragraph Text"),
+			@ApiImplicitParam(name = "fileName", value = "xxx.docx", paramType = "query", required = false, dataType = "string", defaultValue = "example1.docx") })
+	@RequestMapping(value = "/save2word", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> save2Word(@RequestParam("title") String title, @RequestParam("text") String text,
+			@RequestParam("fileName") String fileName) throws Exception {
+
+		Map<String, Object> resMap = new HashMap<String, Object>();
+		String outputFile = System.getProperty("user.dir") + "/" + fileName;
+		boolean bResult = FileUtil.createAWordDoc(title, text, outputFile);
+		if (bResult) {
+			resMap.put("code", 200);
+			resMap.put("message", "保存docx成功");
+			resMap.put("pathOnServer", outputFile);
+		} else {
+			resMap.put("code", 500);
+			resMap.put("message", "保存docx失败");
+		}
 		return resMap;
 	}
 

@@ -1,0 +1,14 @@
+{
+    "request": {
+        "version": "0.0.17", 
+        "width": 1024, 
+        "height": 768, 
+        "audio": "1.mp3", 
+        "video": "https://littleflute.github.io/blog/mp4/漂泊者乐园_20180321_131927.mp4", 
+        "time": "20",
+        "rate": "10",
+        "backgroundColor": "150,200,190",
+        "frames": [
+        ]
+    }
+}

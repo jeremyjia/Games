@@ -1,4 +1,4 @@
-var s = "id_mdiv_4_i4c5: v0.0.3 - ";
+var s = "id_mdiv_4_i4c5: v0.0.4 - ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c5.js'"
 s += " style='color:blue;'";	s +=">"; s += "c5.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c5.js'"
@@ -13,9 +13,9 @@ if(!d.v1){
 	style += "background-color: #f1f1f1;";
 	style += "text-align: center;";
 	style += "border: 1px solid #d3d3d3;";
-	style += "left: 400px";
-	style += "top: 40px";
-	style += "width: 540px";
+	style += "left: 200px;";
+	style += "top: 40px;";
+	style += "width: 500px;";
 	d.style =style;
 	
 	var userName = generateUserName(10);
@@ -34,7 +34,7 @@ if(!d.v1){
     d.v1.style.width = "500px";
     d.v1.style.height = "400px";
 
-    var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526778839?access_token="+getToken();
+    var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526778839";
     var nCell = 20;
     var canv = bl$("canvas2");
 	var ctx = canv.getContext("2d");
@@ -279,7 +279,8 @@ if(!d.v1){
 				
 				var xmlHttpReg = getHTTPRequest();
 				if (xmlHttpReg != null) {
-					xmlHttpReg.open("PATCH", url, true);    
+					xmlHttpReg.open("PATCH", url, true);
+					xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());    
 					xmlHttpReg.send(JSON.stringify(data));
 					xmlHttpReg.onreadystatechange = SendCallBack;
 				}else{
@@ -303,6 +304,7 @@ if(!d.v1){
 				if (xmlHttpReg != null) {
 					xmlHttpReg.open("GET", url, true);
 					xmlHttpReg.setRequestHeader('If-Modified-Since', '0');
+					xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());
 					xmlHttpReg.send(null);
 					xmlHttpReg.onreadystatechange = readCallBack; 
 				}else{
@@ -331,7 +333,7 @@ if(!d.v1){
 			}
 			
 			function getToken(){		        
-		       return "dcf9dc260a"+"1f2f9a7e9c"+"05198d95f0"+"b143f1a7bd";
+		       return "ghp_Od6GW3"+"J2NiP01Zsz"+"g9JQV0amzn"+"UxhF33iBES";
 	        }
 			
 			function generateUserName(n){

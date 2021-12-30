@@ -1,0 +1,48 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>剧本列表</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <div class="panel panel-primary">
+            <div class="panel-heading text-center">
+                <h3>剧本列表 <a class="btn btn-primary" th:href="@{${issue_link}}" target="_blank"
+                        th:text=${short_link}>#</a> </h3>
+            </div>
+            <div class="panel-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr class="success">
+                            <td>序号</td>
+                            <td>剧本描述</td>
+                            <td>剧本链接</td>
+                            <td>视频页面</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="active" th:each="video:${videoDocs}">
+                            <td th:text="${video.id}"></td>
+                            <td th:text="${video.description}"></td>
+                            <td>
+                                <a th:href="@{${video.video_link}}" target="_blank">查看剧本</a>
+                            </td>
+                            <td>
+                                <a class="btn btn-info" th:href="@{${video.video_page}}" target="_blank">生成视频</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+</html>

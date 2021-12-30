@@ -1,5 +1,7 @@
 // file: blclass.js    by littleflute 
-var g_ver_blClass = "CBlClass_v1.4.353"
+
+var g_ver_blClass = "CBlClass_v1.5.13"
+
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
@@ -135,16 +137,16 @@ function CBlClass ()
 { 
     var _id = "id_div_4_blClass";
 	var _tmpDiv = null;
-	
-	var blAd = "Learning English v0.34";
+	 
 	var blTitle4Script = "No title";
 	var blScriptName = "noName";
-	var blRed = 0, blGreen=0, blBlue=0;
+	var blRed = 120, blGreen=11, blBlue=220;
 	var _ps = []; 
+
 
 	function CTest(){
 		var _ot = {};
-		_ot.blr_test_blShowScript = function(b,d){
+		_ot.blr_test_edit_script = function(b,d){
 			if(!d.v){
 				d.v = blo0.blDiv(d,d.id+"v","v",blGrey[0]);
 				blo0.blShowScript(d.v);
@@ -152,12 +154,13 @@ function CBlClass ()
 			_on_off_div(b,d);
 			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 		}
-		_ot.bll1_blr_test_blShowScript = "-blr_test_blShowScript-";
+		_ot.bll1_blr_test_edit_script= "-blr_test_edit_script-";
 		_ot.out = "ouTest";
 		this.runAt = function(_v){
 			blo0.blParseText("abc",_ot);
 			blo0.blShowObj2Div(_v,_ot);
-			bl$("blr_test_blShowScript").click();
+			bl$("blr_test_edit_script").click();
+			bl$("blr_test_edit_script").click();
 		};
 	}
 	var _test = new CTest();
@@ -188,41 +191,22 @@ function CBlClass ()
 		now = now.toLocaleString();	 
 		_blScript.now = now;
 		_blShowObj2Div(_v,_blScript);
-		bl$("blrAbout").click();
+		
+		bl$("blrVersion").click();
+		bl$("blrWidth").click();
+		bl$("blrMakeFrames").click();
+		bl$("blrInfo").click();
 		bl$("blrFrames").click();		
 		bl$("blrTimer").click();
 	}
 
 	function CBlScript(){
 		var _v1 = 0, _v2 = 0, _v3 = 44, _w = 1920;
-		this.setVersion = function(v1,v2,v3){ _v1 = v1; _v2 = v2; _v3 = v3;};
-		this.getVersion = function(){return "v"+_v1+"."+_v2+"."+_v3;}; 
-		this.getWidth = function(){return _w;};
-		this.getFrameNumber = function(){return _frames.length;};
-		this.blrAddFrames = function(_div){ 
-			_frames = [];
-			for(var i = 0; i < _blVideo.duration; i++){
-				var n = _frames.length;				
-				var f = new CFrame(n,"1",blRed+ ","+blGreen+","+blBlue);
-				var t1 = {
-					"text": i + ": by Littleflute", 
-					"x": 100,
-					"y": 955,
-					"size": 111,
-					"color": "80,151,255"
-				};
-				f.addObj(t1);
-				f.addTextAsObj(this.getVersion() + ": w=" + this.getWidth(),100,111,100,255,0,0);				
-				f.addTextAsObj(blTitle4Script,100,222,55,255,0,250);
-				f.addTextAsObj('"'+_ps.length+'"',500,222,55,55,220,250); 
-				_frames.push(f);
-
- 
-			}
+		var _updateFrames = function(_div,_inFrames){
 			_div.innerHTML = "FrameBtns";
 			var v = blo0.blDiv(_div,_div.id+"v","v","lightgreen");
 			var ls = [];
-			for(i in _frames){
+			for(i in _inFrames){
 				var btn = blo0.blBtn(_div,"FRAME_ID_" + i,i,blGrey[2]);
 				btn.onclick = function(_fs,_i,_ls,_btn){
 					return function(){
@@ -230,8 +214,30 @@ function CBlClass ()
 						_blVideo.currentTime = _fs[_i].number;
 
 						v.innerHTML = _fs[_i].number;
+						_fs.FrameIndex = _i;
 						v.tb = blo0.blDiv(v,v.id+"tb","tb",blGrey[0]);
 						v.v = blo0.blDiv(v,v.id+"v","v",blGrey[2]);
+						
+						var btnRed = blo0.blBtn(v.tb,v.tb.id+"btnRed","red","rgb(255,0,0)");
+						btnRed.onclick = function(_cf){ 
+							return function(){
+								_cf.backgroundColor = "255,0,0";
+							}
+						}(_fs[_i]);
+						var btnGreen= blo0.blBtn(v.tb,v.tb.id+"btnGreen","green","rgb(0,255,0)");
+						btnGreen.onclick = function(_cf){ 
+							return function(){
+								_cf.backgroundColor = "0,255,0";
+							}
+						}(_fs[_i]);
+
+						var btnBlue= blo0.blBtn(v.tb,v.tb.id+"btnBlue","blue","rgb(0,0,255)");
+						btnBlue.onclick = function(_cf){ 
+							return function(){
+								_cf.backgroundColor = "0,0,255";
+							}
+						}(_fs[_i]);
+
 						var btnObjs = blo0.blBtn(v.tb,v.tb.id+"btnObjs","btnObjs",blGrey[1]);
 						btnObjs.onclick = function(){ 
 							v.v.innerHTML = "";
@@ -255,6 +261,49 @@ function CBlClass ()
 				}(_frames,i,ls,btn);
 				ls.push(btn);
 			}
+		}
+		this.setVersion = function(v1,v2,v3){ _v1 = v1; _v2 = v2; _v3 = v3;};
+		this.getVersion = function(){return "v"+_v1+"."+_v2+"."+_v3;}; 
+		this.getWidth = function(){return _w;};
+		this.getFrameNumber = function(){return _frames.length;};
+		this.setSuperObjects = function(_ls){_sos = _ls;};
+		this.getSuperObjects = function(){ return _sos;};
+		this.drawCurFrame = function(ctx){
+			var xF = 444, yF = 111, wF = 200, hF= 200;
+			var c = "#347B98"; 
+			ctx.fillStyle = c;
+			ctx.fillRect(xF,yF,wF,hF);		
+			if(_frames.FrameIndex) { 				_frames[_frames.FrameIndex].draw_Frame(ctx,xF,yF,wF,hF);			}
+		}
+		this.drawSuperObjects = function(ctx){
+			ctx.fillStyle = "#11f100"; 
+			ctx.fillRect(111,111,222,222);
+		}
+		this.blrAdd_1_Frame = function(_div,r,g,b){
+			var n = _frames.length;
+			var f = new CFrame(n,"1",r+ ","+g+","+b);
+			_frames.push(f);
+			_updateFrames(_div,_frames);		
+		}
+		this.blrAddFrames_by_Audio = function(_div){ 
+			_frames = [];
+			for(var i = 0; i < _blVideo.duration; i++){
+				var n = _frames.length;				
+				var f = new CFrame(n,"1",blRed+ ","+blGreen+","+blBlue);
+				var t1 = {
+					"text": i + ": by Littleflute", 
+					"x": 100,
+					"y": 955,
+					"size": 111,
+					"color": "80,151,255"
+				};
+				f.addObj(t1);
+				f.addTextAsObj(this.getVersion() + ": w=" + this.getWidth(),100,111,100,255,0,0);				
+				f.addTextAsObj(blTitle4Script,100,222,55,255,0,250);
+				f.addTextAsObj('"'+_ps.length+'"',500,222,55,55,220,250); 
+				_frames.push(f); 
+			}
+			_updateFrames(_div,_frames);			
 		}
 		this.blrUpdateFramesTxt = function(){
 			var ps = blo0.blGetPS();
@@ -324,9 +373,155 @@ function CBlClass ()
 					d.v = blo0.blDiv(d,d.id+"v","v:","lightblue"); 
 					var btnFrames= blo0.blBtn(tb,tb.id+"btnFrames",_thisOBlScript.getFrameNumber(),"brown");btnFrames.style.color = "white";
 					var btnFramesMakeFromMp3 = blo0.blBtn(tb,tb.id+"btnFramesMakeFromMp3","fromMP3",blGrey[1]);
-					btnFramesMakeFromMp3.onclick = function(){_thisOBlScript.blrAddFrames(d.v);	btnFrames.innerHTML = _thisOBlScript.getFrameNumber();	}
+					btnFramesMakeFromMp3.onclick = function(){
+						_thisOBlScript.blrAddFrames_by_Audio(d.v);	
+						btnFrames.innerHTML = _thisOBlScript.getFrameNumber();	
+					}
+					var btnAdd_1_Frame = blo0.blBtn(tb,tb.id+"btnAdd_1_Frame","+1",blGrey[1]);
+					btnAdd_1_Frame.onclick = function(){
+						_thisOBlScript.blrAdd_1_Frame(d.v,200,100,50);	
+						btnFrames.innerHTML = _thisOBlScript.getFrameNumber();	
+					}
+
 					var btnFramesUpdateTxt = blo0.blBtn(tb,tb.id+"btnFramesUpdateTxt","updateTxt",blGrey[1]);
 					btnFramesUpdateTxt.onclick = function(){_thisOBlScript.blrUpdateFramesTxt();	}
+					var btnUI = blo0.blBtn(tb,tb.id+"btnUI","ui",blGrey[1]);
+					btnUI.onclick = function(){
+						if(!d.ui){
+							var w = 960, h = 540;
+							d.ui = blo0.blMDiv(d, d.id + "ui", "ui",555,10,w,h,blGrey[1]);
+							var tb4CVS = blo0.blDiv(d.ui,d.ui.id+"tb4CVS","tb4CVS",blGrey[2]);
+							var v4canvas = blo0.blDiv(d.ui,d.ui.id+"v4canvas","v4canvas",blGrey[0]);
+							var fCVS = blo0.blCanvas2(v4canvas,w,h); fCVS.n = 0;
+							var btnPlay = blo0.blBtn(tb4CVS,tb4CVS.id+"play","play","grey"); btnPlay.isRunning = false;
+							function uiFnTimer() {   
+								fCVS.n++;
+								var ls = _thisOBlScript.getSuperObjects();
+								var ctx = fCVS.getContext("2d");
+								 
+								ctx.fillStyle = "grey"; 
+								ctx.fillRect(0,0,w,h);
+								_thisOBlScript.drawCurFrame(ctx);
+								_thisOBlScript.drawSuperObjects(ctx);
+ 
+								ctx.font = 12 + "px Consolas";
+								ctx.fillStyle = "yellow";
+								ctx.fillText(ls.length + "_ " + fCVS.ms + "_ " + fCVS.n + " " + Date(), 11, 22);
+
+								
+								ctx.font = 22 + "px Consolas";
+								ctx.fillStyle = "rgb("+ls[0].attribute.color+")";
+								ctx.fillText(ls[0].attribute.name,ls[0].attribute.x1,ls[0].attribute.y1);
+
+								var image = new Image();
+								image.src = ls[1].attribute.name;
+
+								ctx.drawImage(image, 
+									ls[1].attribute.x1, 
+									ls[1].attribute.y1,
+									ls[1].attribute.x2, 
+									ls[1].attribute.y2);
+							}
+							btnPlay.onclick = function(){
+								if(false ==this.isRunning){
+									this.isRunning = true;
+									this.innerHTML = "stop";
+									this.uiTimer = setInterval(uiFnTimer, 20);
+								}
+								else{
+									this.isRunning = false;
+									this.innerHTML = "play";
+									clearInterval(this.uiTimer); 
+								}
+								blon(this,null,"green","grey");
+							}
+							var btnSuperObjects = blo0.blBtn(tb4CVS,tb4CVS.id+"sos","setSOS",blGrey[1]);
+							btnSuperObjects.onclick = function(){
+								var ls = [];
+								var so1 ={
+									"type": "text",
+									"attribute": {
+										"x1": 50,
+										"y1": 222,
+										"x2": -1,
+										"y2": -1,
+										"size": 50,
+										"color": "200,182,193",
+										"name": "漂泊者乐园: 英语慢速听力！"
+									},
+									"frameRange": "(2,100)",
+									"action": {
+										"trace": "y=0*x*x+1*x+0",
+										"step": 10
+									}
+								};
+					
+								var so2 = 
+								{
+									"type": "picture",
+									"attribute": {
+										"x1": 555,
+										"y1": 555,
+										"x2": 580,
+										"y2": 55,
+										"size": 50,
+										"color": "111,255,22",
+										"name": "https://user-images.githubusercontent.com/17950965/124674375-74f6ce80-de6f-11eb-8fe4-fc919cd5a96e.png"
+									},
+									"frameRange": "(1,100)",
+									"action": {
+										"trace": "y=0*x*x+0*x+444",
+										"step": -10
+									}
+								};
+								var so3 = 
+								{
+									"type": "picture",
+									"attribute": {
+										"x1": 900,
+										"y1": 800,
+										"x2": 580,
+										"y2": 55,
+										"size": 50,
+										"color": "255,255,0",
+										"name": "https://raw.githubusercontent.com/littleflute/blog/master/img/vleLogo1.png"
+									},
+									"frameRange": "(1,100)",
+									"action": {
+										"trace": "y=0*x*x+0*x+555",
+										"step": -10
+									}
+								};
+								var so4 = 
+								{
+									"type": "picture",
+									"attribute": {
+										"x1": 1920,
+										"y1": 500,
+										"x2": 180,
+										"y2": 180,
+										"size": 50,
+										"color": "255,0,0",
+										"name": "https://gdb.voanews.com/47E37481-CAD6-4AEF-9AD4-74FC8B936E46_w256_r1.jpg"
+									},
+									"frameRange": "(1,100)",
+									"action": {
+										"trace": "y=0*x*x+0*x+888",
+										"step": -10
+									}
+								};
+						
+								ls.push(so1); 
+								ls.push(so2); 
+								ls.push(so3); 
+								ls.push(so4);
+								_thisOBlScript.setSuperObjects(ls);
+							}
+						}
+						_on_off_div(btnUI,d.ui);
+						btnUI.style.background = btnUI.style.background=="red"?blGrey[5]:blColor[4];
+					}
+					
 				}
 				_on_off_div(b,d);
 				b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
@@ -345,6 +540,30 @@ function CBlClass ()
 			this.backgroundColor = _backgroundColor;
 			this.objects = []; 
 
+			this.draw_Frame = function(_this,_time){
+				return function(ctx,x,y,w,h){
+					var oldFillStyle = ctx.fillStyle;				
+				
+					ctx.font = 22 + "px Consolas";
+					ctx.fillStyle = "rgb(" + _this.backgroundColor + ")";
+					ctx.fillRect(x,y,w/2,h/2);		
+					
+					ctx.fillStyle = "yellow";
+					ctx.fillText("Frame.number = " + _this.number, x, y+30); 
+					ctx.fillText("Frame.time = " + _this.time, x+222, y+30); 
+					ctx.fillText("Frame.backgroundColor = " + _this.backgroundColor, x, y+50); 
+					ctx.fillText("objects.length = " + _this.objects.length, x, y+80); 
+					var os = _this.objects;
+					
+					for(i in os){
+						ctx.fillText("o"+i + ":" + os[i].x +","+ os[i].y, x+30, y + i*30 + 110); 
+
+					}
+					ctx.fillStyle = oldFillStyle;
+				}
+			}(this);
+	 
+
 			this.addObj = function(_o){
 				this.objects.push(_o);
 			};
@@ -360,6 +579,10 @@ function CBlClass ()
 			this.add_Text_As_Obj_1 = function(_txt,_x,_y,_size,_r,_g,_b){
 				var s0 = _txt.replace("<br>","");
 				s0 = s0.replace("\n","");
+				s0 = s0.replace("<strong>","");
+				s0 = s0.replace("</strong>","");
+				s0 = s0.replace("<em>","");
+				s0 = s0.replace("</em>","");
 				var s1 = s0.split(" ");
 				var n = 0;
 				var line = "";
@@ -395,12 +618,13 @@ function CBlClass ()
 				}
 			};
 		};
+
 		var _bl2MakeScript = function(_os,_fs,_supObjs){		 
 			var s = {};
 			var r = {};		
-			r.version = _os.version;
-			r.width = _os.width;
-			r.height = _os.height;
+			r.version 	= _os.blhVersion();
+			r.width 	= _os.blhWidth();
+			r.height 	= _os.height;
 			r.music = _os.music;
 			r.rate = _os.rate; 
 			r.frames = _fs;		
@@ -409,90 +633,8 @@ function CBlClass ()
 			return s;		 
 		}
 		var _sos = [];
-		var so1 ={
-                "type": "text",
-                "attribute": {
-                    "x1": 50,
-                    "y1": 500,
-                    "x2": -1,
-                    "y2": -1,
-                    "size": 50,
-                    "color": "200,182,193",
-                    "name": "漂泊者乐园: 英语慢速听力！"
-                },
-                "frameRange": "(2,100)",
-                "action": {
-                    "trace": "y=0*x*x+1*x+0",
-                    "step": 10
-                }
-        };
- 
-		var so2 = 
-		{
-			"type": "picture",
-			"attribute": {
-				"x1": 1920,
-				"y1": 800,
-				"x2": 580,
-				"y2": 55,
-				"size": 50,
-				"color": "111,255,22",
-				"name": "https://user-images.githubusercontent.com/17950965/124674375-74f6ce80-de6f-11eb-8fe4-fc919cd5a96e.png"
-			},
-			"frameRange": "(1,100)",
-			"action": {
-				"trace": "y=0*x*x+0*x+444",
-				"step": -10
-			}
-		};
-		var so3 = 
-		{
-			"type": "picture",
-			"attribute": {
-				"x1": 900,
-				"y1": 800,
-				"x2": 580,
-				"y2": 55,
-				"size": 50,
-				"color": "255,255,0",
-				"name": "https://raw.githubusercontent.com/littleflute/blog/master/img/vleLogo1.png"
-			},
-			"frameRange": "(1,100)",
-			"action": {
-				"trace": "y=0*x*x+0*x+555",
-				"step": -10
-			}
-		};
-		var so4 = 
-		{
-			"type": "picture",
-			"attribute": {
-				"x1": 1920,
-				"y1": 500,
-				"x2": 180,
-				"y2": 180,
-				"size": 50,
-				"color": "255,0,0",
-				"name": "https://gdb.voanews.com/47E37481-CAD6-4AEF-9AD4-74FC8B936E46_w256_r1.jpg"
-			},
-			"frameRange": "(1,100)",
-			"action": {
-				"trace": "y=0*x*x+0*x+888",
-				"step": -10
-			}
-		};
- 
-		_sos.push(so1); 
-		_sos.push(so2); 
-		_sos.push(so3); 
-		_sos.push(so4);
+		
 
-		var _oScript = {};
-		_oScript.version = "v0.0.42";
-		_oScript.width = 1920;
-		_oScript.height = 1080;
-		_oScript.music = _blVideo.src;
-		_oScript.rate = "1";
 		_oScript.blrPlay = function(b,d){
 			_blVideo.play();
 		}
@@ -523,7 +665,7 @@ function CBlClass ()
 		}
 		
 		var _frames = [];
-		this.blrAbout = function(b,d){
+		this.blrInfo = function(b,d){
 			_blShowObj2Div(d,_oScript);
 			_on_off_div(b,d);
 			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
@@ -546,27 +688,7 @@ function CBlClass ()
 			btnC3.onclick = function(){
 				v.style.backgroundColor = "rgb(0,0,255)";
 				blRed = 0; blGreen = 0; blBlue = 255;
-			}
-			var btnAddPS = blo0.blBtn(tb,tb.id+"btnAddPS","btnAddPS",blGrey[2]);
-			btnAddPS.onclick = function(){
-				var ps = blo0.blGetPS();
-				ps.lastText = "";
-				for(i in _frames){
-					var f = _frames[i];
-					var s = "ps:" + f.number + "  ";
-					var find = false;
-					for(j in ps){
-						if(ps[j].t==f.number){
-							s += ps[j].innerHTML;	
-							ps.lastText = s;
-							find = true;						
-							break;
-						}
-					}
-					if(false==find) s = ps.lastText;
-					f.add_Text_As_Obj_1(s,100,333,50,255,255,1);
-				}
-			}
+			} 
 			var ls = [];
 			for(i in _frames){
 				var btn = blo0.blBtn(tb,"FRAME_ID_" + i,i,blGrey[2]);
@@ -607,27 +729,7 @@ function CBlClass ()
 			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 		};
 		this.bll2 = "-2-";
-		this.blrAddFrames = function(b,d){ 
-			_frames = [];
-			for(var i = 0; i < _blVideo.duration; i++){
-				var n = _frames.length;				
-				var f = new CFrame(n,"1",blRed+ ","+blGreen+","+blBlue);
-				var t1 = {
-					"text": i + ": by Littleflute", 
-					"x": 100,
-					"y": 955,
-					"size": 111,
-					"color": "80,151,255"
-				};
-				f.addObj(t1);
-				f.addTextAsObj(blAd,100,111,100,255,0,0);				
-				f.addTextAsObj(blTitle4Script,100,222,55,255,0,250);
-				f.addTextAsObj('"'+_ps.length+'"',500,222,55,55,220,250); 
-				_frames.push(f);
-			}
-
-			bl$("blrFrames").click();bl$("blrFrames").click();
-		}
+		
 		this.blrTimer = function(b,d){
 			if(!d.bTimerRun){
 				d.bTimerRun = true;
@@ -647,6 +749,8 @@ function CBlClass ()
 			_on_off_div(b,d);
 			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];			
 		}
+
+		return _oScript;
 	};
 	var _blScript = new CBlScript();
 
@@ -687,7 +791,7 @@ function CBlClass ()
 				"time": Math.floor(_blVideo.duration), 
 				"objects": [  					
                     {
-                        "text": blAd, 
+                        "text": "blAd 2", 
                         "x": 100,
                         "y": 50,
                         "size": 50,
@@ -1075,12 +1179,12 @@ function CBlClass ()
 				}(i,b,d);
 			  }
 			  if(i.charAt(0)=="b"&&i.charAt(1)=="l"&&i.charAt(2)=="l"){ 
-					b.style.display = "none";	//v1033	 xdvc6
+					b.style.display = "none";	 
 					d.id			= d.html;	 
 			  }
 			  if(i.charAt(0)=="b"&&i.charAt(1)=="l"&&i.charAt(2)=="h"){ 
-					b.style.display = "none";	//v1034	 xdvc6	
-					d.style.display = "none";	//v1034	 xdvc6	
+					b.style.display = "none";	 
+					d.style.display = "none";	 
 			  }
 		}
     }    
@@ -1191,12 +1295,8 @@ function CBlClass ()
 			}
 			blo0.blAjx(w,url);		 
 		}
-		b4.onclick = function(){			
-			var a = r.value;
-			var b = a.split(".mp3");
-			var c = b[0].split("https://");
-			var d = c[c.length-1]; 
-			v2.innerHTML = "https://" + d + ".mp3";
+		b4.onclick = function(){		 			
+			v2.innerHTML = r.value;
 			var p = bl$("myVideo"); p.src = v2.innerHTML;
 		}
 		return r;
@@ -1505,8 +1605,55 @@ function CBlClass ()
 				break;
 		}
 	}
+	this.blPOST = function(_url,_jsonData,_cb){  
+		var xhr = new XMLHttpRequest();
+		xhr.withCredentials = true;
+		xhr.addEventListener("readystatechange", function() {
+			if(this.readyState === 4 && this.status==200) {
+				_cb( this.responseText );
+			}	
+			else{
+				_cb("error: " + this.readyState + "," + this.status);
+			}
+		});
+		xhr.open("POST", _url);
+		xhr.setRequestHeader("Content-Type", "text/plain");
+		xhr.send(JSON.stringify(_jsonData));
+	}	
 	
-	
+	this.blLoadGithubIssueComments = function(tb,icURL,ta){
+		
+		function _loadIssueComments(o) { 
+			var ls = [];
+			for(i in o)
+			{
+				var n=ls.length + 1;
+				var bodyTxt = o[i].body;
+				var btn= blo0.blBtn(tb,tb.id+"btn"+n,n,blGrey[4]);
+				btn.onclick = function(_thisBtn,_n,_curTxt){
+					return function(){
+						ta.value = _curTxt;
+						blo0.blMarkBtnInList(_thisBtn,ls,"yellow","grey");
+					}
+				}(btn,n,bodyTxt);
+				ls.push(btn);
+			}
+		}
+		w3.getHttpObject(icURL + "/comments", _loadIssueComments);	
+	}
+	this.blSandBox = function(sbDiv){
+		var d1 = blo0.blDiv(sbDiv,sbDiv.id+"d1","d1",blColor[1]);
+		var ta = blo0.blTextarea(d1,"id_4_ta_blrRunJS","alert(1);",blGrey[3]);
+		ta.style.width="95%"; 
+		ta.style.height="111"+"px"; 
+
+		var tb = blo0.blDiv(d1,d1.id+"tb","",blGrey[5]);
+	    var btnRun= blo0.blBtn(tb,tb.id+"btnRun","run",blColor[4]);
+	    btnRun.onclick= function(){	  eval(ta.value);		}
+		blo0.blLoadGithubIssueComments(tb,"https://api.github.com/repos/jeremyjia/Games/issues/21",ta);
+
+		return d1;
+	}
 }//END: function CBlClass ()
  
 var blo0 = new CBlClass;
@@ -1806,6 +1953,27 @@ blo0.initDraw = function(cvs,_x,_y,_c){
 	for(i in blPink){blo0.blRect(cvs,_x+i*20,_y+55,10,10,blPink[i]);}
 }
 
+blo0.blCanvas2 = function(d,w,h){
+	var cvs = document.createElement("canvas");
+	cvs.width = w;
+	cvs.height = h;
+	cvs.ms = false;
+	cvs.addEventListener('mousedown', function (e) {
+		var x = e.offsetX;
+		var y = e.offsetY;
+		cvs.ms = true;
+	});
+	cvs.addEventListener('mouseup', function (e) {
+		var x = e.offsetX;
+		var y = e.offsetY;
+		cvs.ms = false;
+	});
+	
+	d.appendChild(cvs);
+	cvs.style.float = "left";
+
+	return cvs;
+}
 blo0.blCanvase = function(d,w,h,color){
 	var cvs = document.createElement("canvas");
 	cvs.width = w;
@@ -1875,21 +2043,7 @@ blo0.blParseURL = function(_url,cb){
 		}			 
 	 } 
 }
-blo0.blPOST = function(_url,_jsonData,_cb){  
-	var xhr = new XMLHttpRequest();
-	xhr.withCredentials = true;
-	xhr.addEventListener("readystatechange", function() {
-		if(this.readyState === 4 && this.status==200) {
-			_cb( this.responseText );
-		}	
-		else{
-			_cb("error: " + this.readyState + "," + this.status);
-		}
-	});
-	xhr.open("POST", _url);
-	xhr.setRequestHeader("Content-Type", "text/plain");
-	xhr.send(JSON.stringify(_jsonData));
-}
+
 blo0.blGetGHI = function(_url,cb){  //git github issue
 	var r = "blo0.blGetGHI： "+ _url + "_" + cb + ":"+ Date();
 	var token = "f89b0eccf7"+"4c65a65513"+"60062c3e47"+"98d0df4577";//jp
@@ -2064,8 +2218,8 @@ function ftnPlayer( oDiv ,mySrc){
 			this.v = blo0.blDiv(v,v.id + "List","list", "lightblue");
 			var d = this.v;
 
-			d.vn = blo0.blDiv(d,d.id+"v4NewURL","v4NewURL",blPink[2]); 
-			d.vn.ta = blo0.blTA(d.vn,d.vn+"ta","test");
+			d.vn = blo0.blDiv(d,d.id+"v4NewURL","v4NewURL","blPink[2]"); 
+			//d.vn.ta = blo0.blTA(d.vn,d.vn+"ta","test");
 			
 
 			d.v = blo0.blDiv(d,d.id+"v","v",blGrey[3]); 

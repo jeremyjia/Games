@@ -1,22 +1,30 @@
 package com.pbz.demo.hello.controller;
 
 import java.io.File;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
+import com.pbz.demo.hello.model.VideoDoc;
+import com.pbz.demo.hello.service.VideoDocService;
 import com.pbz.demo.hello.util.ExecuteCommand;
-import com.pbz.demo.hello.util.FileUtil;
+import com.pbz.demo.hello.util.NetAccessUtil;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -33,42 +41,16 @@ public class CommonController {
 	@Value("${server.version}")
 	private String app_version;
 
+	@Autowired
+	private VideoDocService videoDocService;
+
 	@ApiOperation(value = "执行服务器端命令", notes = "执行服务器端命令")
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "cmd", value = "Dos/Shell Command. More format refer java Runtime.getRuntime().exec usage but need use comma instead of space. Example: sh,-c,ls%20*.jpg  mkdir,dir1", paramType = "query", required = true, dataType = "string", defaultValue = "cmd,/c,dir") })
 	@RequestMapping(value = "/command", method = RequestMethod.GET)
 	@ResponseBody
 	public Map<String, Object> processCommandOnServer(String[] cmd) throws Exception {
-		Map<String, Object> status = new HashMap<String, Object>();
-		File logFile = new File("./Cmdlog.txt");
-		if (logFile.exists()) {
-			logFile.delete();
-		}
-		logFile.createNewFile();
-
-		try {
-			ExecuteCommand.executeCommand(cmd, null, new File("."), logFile.getAbsolutePath());
-		} catch (Exception e) {
-			String cmd0 = "sh";
-			String cmd1 = "-c";
-			if (isWindows) {
-				cmd0 = "cmd";
-				cmd1 = "/c";
-			}
-			String[] cmds = new String[cmd.length + 2];
-			cmds[0] = cmd0;
-			cmds[1] = cmd1;
-			for (int i = 0; i < cmd.length; i++) {
-				cmds[i + 2] = cmd[i];
-			}
-			ExecuteCommand.executeCommand(cmds, null, new File("."), logFile.getAbsolutePath());
-		}
-		Thread.sleep(100);
-		String strOut = FileUtil.readAllBytes(logFile.getAbsolutePath());
-		status.put("Status", "OK!");
-		status.put("Message", strOut);
-
-		return status;
+		return ExecuteCommand.executeCommandOnServer(cmd);
 	}
 
 	@ApiIgnore
@@ -127,6 +109,80 @@ public class CommonController {
 			status.put("Status", "Failed!");
 		}
 		return status;
+	}
+
+	@RequestMapping(value = "/comments/add", method = RequestMethod.POST)
+	@ResponseBody
+	public String addOneNewComment(@RequestParam("issueId") Long issueId, @RequestBody String jsonString)
+			throws Exception {
+
+		jsonString = URLEncoder.encode(jsonString, "UTF-8");
+		jsonString = URLDecoder.decode(jsonString, "UTF-8");
+		System.out.println("addOneNewComment:" + jsonString);
+
+		String url = "https://api.github.com/repos/jeremyjia/Games/issues/" + issueId + "/comments";
+		String jsonResponseString = NetAccessUtil.doPostOnGitHub(url, "POST", jsonString);
+		String newCommentId = "";
+		if (jsonResponseString != "") {
+			int index = jsonResponseString.indexOf(",");
+			jsonResponseString = jsonResponseString.substring(0, index - 1);
+			index = jsonResponseString.lastIndexOf("/");
+			newCommentId = jsonResponseString.substring(index + 1);
+		}
+		System.out.println("newCommentId:" + newCommentId);
+
+		return newCommentId;
+	}
+
+	@RequestMapping(value = "/comments/update", method = RequestMethod.POST)
+	@ResponseBody
+	public String updateOneComment(@RequestParam("commentId") Long commentId, @RequestBody String updateString)
+			throws Exception {
+		updateString = URLEncoder.encode(updateString, "UTF-8");
+		updateString = URLDecoder.decode(updateString, "UTF-8");
+		System.out.println("updateOneComment:" + updateString);
+
+		String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentId;
+		String jsonResponseString = NetAccessUtil.doPostOnGitHub(url, "POST", updateString);
+		return jsonResponseString;
+	}
+
+	@RequestMapping(value = "/comments/read", method = RequestMethod.GET)
+	@ResponseBody
+	public String readOneComment(@RequestParam("commentId") Long commentId) throws Exception {
+
+		String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentId;
+		String resultString = NetAccessUtil.doGetOnGitHub(url, "");
+
+		String readString = "";
+		if (!resultString.isEmpty()) {
+			resultString = resultString.substring(resultString.indexOf("body") + 7);
+			int index = resultString.lastIndexOf(",");
+			readString = resultString.substring(0, index - 1);
+		}
+		return readString;
+	}
+
+	@RequestMapping(value = "/comments/delete", method = RequestMethod.DELETE)
+	@ResponseBody
+	public String deleteOneComment(@RequestParam("commentId") Long commentId) throws Exception {
+
+		String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentId;
+		String resultString = NetAccessUtil.doPostOnGitHub(url, "DELETE", "");
+		return resultString;
+	}
+
+	@RequestMapping(value = "/videodocs/findAll", method = RequestMethod.GET)
+	public ModelAndView findAllDocsOnGithub(@RequestParam(name = "issueId", defaultValue = "525") String issueId) {
+		ModelAndView mv = new ModelAndView();
+		mv.setViewName("videodocs.html");
+		List<VideoDoc> videoDocs = videoDocService.findAll(issueId);
+
+		String issueLink = "https://github.com/jeremyjia/Games/issues/" + issueId;
+		mv.addObject("videoDocs", videoDocs);
+		mv.addObject("issue_link", issueLink);
+		mv.addObject("short_link", "#" + issueId);
+		return mv;
 	}
 
 	@ApiOperation(value = "获取版本信息", notes = "获取应用版本、服务器等信息")

@@ -1,15 +1,31 @@
 //i4c1
-var s= "v0.1. 53 ";
+var s= "v0.1. 135 ";
+
+var myPath = window.location.pathname;
+
+if(myPath.search("index.html")!=-1){  
+	myPath = myPath.replace("index.html",'');
+}
+else if(myPath.search("issues/4/c1Test.html")!=-1){  
+	myPath = myPath.replace("issues/4/c1Test.html",'');
+}
+else{
+
+}
+
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c1.js'"
 s += " style='color:blue;'";		s +=">"; s += "c1.js* ";
-s += "<a target='_blank' href='issues/4/c1.js'"
-s += " style='color:green;'";		s +=">"; s += "c1.js ";
+s += "</a>";
+
 s += "<a target='_blank' href='";
-var s1 = window.location.pathname;
-if(s1.search("issues")==-1){
-	s1.replace
-}
-s += "/issues/4/c1Test.html'";
+s += myPath;
+s += "issues/4/c1.js'";
+s += " style='color:green;'";		s +=">"; s += "c1.js ";
+s += "</a>";
+
+s += "<a target='_blank' href='";
+s += myPath;
+s += "issues/4/c1Test.html'";
 s += " style='color:brown;'";		s +=">"; s += "c1Test.html";
 s += "</a>";
 
@@ -75,8 +91,14 @@ function ftnPlayer( oDiv ){
 	v.tb.btnLists = blo0.blBtn(v.tb, v.tb+"btnLists","lists",blGrey[0]);
 	v.tb.btnLists.onclick = function(){
 		if(!this.v){
-			this.v = blo0.blDiv(v,v.id + "List","list", "lightblue");
+			this.v = blo0.blDiv(v,v.id + "xdList","xdList", "lightblue");
 			var d = this.v;
+
+			 
+			d.vn = blo0.blDiv(d,d.id+"v4NewURL","v4NewURLxd",blPink[2]); 
+			d.vn.ta = blo0.blTA(d.vn,d.vn+"ta","testXD");
+			 
+
 			d.v = blo0.blDiv(d,d.id+"v","v",blGrey[3]); 
 			d.v4List = blo0.blDiv(d,d.id+"v4List", "v4List",  blColor[4]);
 
@@ -315,7 +337,7 @@ function ftnPlayer( oDiv ){
 								var b = a.split("\n");
 								de.innerHTML = "";
 								for(i in b){
-									var l = blo0.blDiv(de,de.id+i, "l"+i + ":" + b[i],blColor[i%blColor.length]);
+									var l = blo0.blDiv(de,de.id+i, "l"+i + ":" + b[i],blGrey[i%5]);
 									l.onclick = function(_div,_i,_timeA,_txtA, _player)
 									{
 										return function(){											

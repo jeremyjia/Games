@@ -1,0 +1,86 @@
+{
+    "request": {
+        "version": "0.0.16",
+        "description":"LRC字幕超级对象",
+        "width": 1024,
+        "height": 768,
+        "music": "${VAR_MUSIC}",
+        "rate": "1",
+        "frames": [
+            {
+                "number": "1",
+                "time": "${VAR_TIME}",
+                "objects": [
+                    {
+                        "text": "${VAR_TITLE}",
+                        "x": 80,
+                        "y": 320,
+                        "size": 60,
+                        "color": "160,32,240",
+                        "layer": 2
+                    }
+                ],
+                "backgroundColor": "100,149,237"
+            }
+        ],
+        "superObjects": [
+            {
+                "type": "subtitle",
+                "frameRange": "(1,${VAR_TIME})",
+                "attribute": {
+                    "script": "${VAR_LRC_PATH}",
+                    "x1": 20,
+                    "y1": 670,
+                    "size": 30,
+                    "color": "255,255,0",
+					"replace":[
+					     {
+						   "regex":"American",
+					       "target":"美国"
+					     },
+						 {
+						   "regex":"更多听力请访问51VOA.COM",
+					       "target":"漂泊者乐园团队制作"
+						 }
+					]
+                },
+                "layer": 1
+            },
+            {
+                "type": "picture",
+                "attribute": {
+                    "x1": 220,
+                    "y1": 200,
+                    "x2": 510,
+                    "y2": 380,
+                    "size": -1,
+                    "color": "255,0,0",
+                    "name": "${VAR_IMG_PATH}"
+                },
+                "frameRange": "(1,${VAR_TIME})",
+                "action": {
+                    "trace": "y=0*x*x+0*x+200",
+                    "step": 0
+                }
+            } 
+        ],
+        "Macros": [
+            {
+                "name": "VAR_TITLE",
+                "value": "LRC字幕超级对象-演示程序"
+            },
+            {
+                "name": "VAR_MUSIC",
+                "value": "https://files.51voa.cn/202111/nasa-prepares-to-launch-asteroid-defense-test-mission.mp3"
+            },
+            {
+                "name": "VAR_LRC_PATH",
+                "value": "https://www.51voa.com/lrc/202111/nasa-prepares-to-launch-asteroid-defense-test-mission.lrc"
+            },
+		    {
+                "name": "VAR_IMG_PATH",
+                "value": "https://img.51voa.cn/1/C501D07B-81C5-462A-89C8-E630C2DD9A1F_w268_r1.jpg"
+            }
+        ]
+    }
+}
