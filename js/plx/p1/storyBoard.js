@@ -11,7 +11,7 @@ tb.btnStoryBoard.onclick = function(){
 
 function CStoryBoard(parentDiv){
 
-    var v = "CStoryBoard v0.13";
+    var v = "CStoryBoard v0.14";
     var ui = null;
     var p = parentDiv; 
        
@@ -40,7 +40,7 @@ function CStoryBoard(parentDiv){
                 var d = new Date();
                 _this.inf.D = d;
                 _this.inf.n = 0; 
-                _this.inf.v = "0.0.3";
+                _this.inf.v = v;
                 _this.inf.w = 1920;
                 _this.inf.h = 1080;
                 _this.inf.music = "1.mp3";
