@@ -1,5 +1,5 @@
 function CP1Util (){
-    var _v = "CP1Util_v0.32";
+    var _v = "CP1Util_v0.33";
     var _list4Cards = [];
     
     this.listCards = function(){ return _list4Cards;}
@@ -149,7 +149,7 @@ function CP1Util (){
             b.inf.c = "skyblue";
             b.inf.text = "Card.txt"; 
           
-            o.AddObj2Frame(b.inf.objects,o.newObj("circle",111,111,222,222,5,"red"));
+          //  o.AddObj2Frame(b.inf.objects,o.newObj("circle",111,111,222,222,5,"red"));
           // o.AddObj2Frame(b.inf.objects,o.newObj("rect",111,10,100,100,5,"blue"));
            // o.AddObj2Frame(b.inf.objects,o.newTextObj("test",10,10,60,"0,255,255"));
             o.AddObj2Frame(b.inf.objects,o.newObj("text",15,110,333,222,5,"255,255,1"));

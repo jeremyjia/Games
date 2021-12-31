@@ -1,4 +1,4 @@
-var tag_storyBoard = "storyBoard.js_v0.32";
+var tag_storyBoard = "storyBoard.js_v0.52";
 var tb = bl$("id_p1_tb"); 
 
 tb.btnStoryBoard = blo0.blBtn(tb,"btnStoryBoard","storyBoard",blGrey[2]);
@@ -40,7 +40,7 @@ function CStoryBoard(parentDiv){
                 var d = new Date();
                 _this.inf.D = d;
                 _this.inf.n = 0; 
-                _this.inf.v = tag_storyBoard;
+                _this.inf.v = "v0.12";
                 _this.inf.w = 1920;
                 _this.inf.h = 1080;
                 _this.inf.music = "1.mp3";
@@ -55,13 +55,18 @@ function CStoryBoard(parentDiv){
                                 _btn.inf.h,
                                 _btn.inf.music,
                                 _btn.inf.rate);
+                        //*
                         var n=0;
                         for(i in listCards){                                                    
                             n++;
-                            var f = o.newFrame(n,1,i*50%250+",100,200");
-
+                            
+                            var f = o.newFrame(listCards[i].inf.index,listCards[i].inf.duration,
+                                "1,222,125"//listCards[i].inf.backgroundColor
+                                );
+                            f.objects = listCards[i].inf.objects;
                             o.AddFrame2Script(r,f);                            
                         }
+                        //*/
                         
                         var s = JSON.stringify(r); 
                         return s;
