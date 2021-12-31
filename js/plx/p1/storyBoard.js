@@ -1,4 +1,4 @@
-var tag_storyBoard = "storyBoard.js_v0.52";
+var tag_storyBoard = "storyBoard.js_v0.54";
 var tb = bl$("id_p1_tb"); 
 
 tb.btnStoryBoard = blo0.blBtn(tb,"btnStoryBoard","storyBoard",blGrey[2]);
@@ -61,7 +61,7 @@ function CStoryBoard(parentDiv){
                             n++;
                             
                             var f = o.newFrame(listCards[i].inf.index,listCards[i].inf.duration,
-                                "1,222,125"//listCards[i].inf.backgroundColor
+                                listCards[i].inf.c
                                 );
                             f.objects = listCards[i].inf.objects;
                             o.AddFrame2Script(r,f);                            
