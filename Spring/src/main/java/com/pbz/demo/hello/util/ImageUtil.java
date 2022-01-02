@@ -71,6 +71,8 @@ public class ImageUtil {
 				return new Color(0, 0, 0);
 			} else if ("lightblue".equalsIgnoreCase(fillStyle)) {
 				return new Color(193, 210, 240);
+			} else if ("skyblue".equalsIgnoreCase(fillStyle)) {
+				return new Color(135,206,235);
 			}
 		}
 		return new Color(200, 200, 200);
