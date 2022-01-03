@@ -818,13 +818,31 @@ public final class JsonSriptParser {
 			gp2d.setColor(color);
 			gp2d.drawLine(left, top, right, bottom);
 		} else if ("circle".equalsIgnoreCase(graphicType)) {
-			int width = attrObj.getInt("width");
-			int height = attrObj.getInt("height");
+			int width = 10;
+			int height = 10;
+			if (attrObj.has("width") && attrObj.has("height")) {
+				width = attrObj.getInt("width");
+				height = attrObj.getInt("height");
+			} else {
+				int right = attrObj.getInt("right");
+				int bottom = attrObj.getInt("bottom");
+				width = right - left;
+				height = bottom - top;
+			}
 			gp2d.setColor(color);
 			gp2d.fillOval(left, top, width, height);
 		} else if ("rect".equalsIgnoreCase(graphicType)) {
-			int width = attrObj.getInt("width");
-			int height = attrObj.getInt("height");
+			int width = 10;
+			int height = 10;
+			if (attrObj.has("width") && attrObj.has("height")) {
+				width = attrObj.getInt("width");
+				height = attrObj.getInt("height");
+			} else {
+				int right = attrObj.getInt("right");
+				int bottom = attrObj.getInt("bottom");
+				width = right - left;
+				height = bottom - top;
+			}
 			gp2d.setColor(color);
 			gp2d.fill3DRect(left, top, width, height, false);
 		}
