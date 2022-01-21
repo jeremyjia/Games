@@ -3,6 +3,6 @@ const app = require('../app/xd.js');
 
 describe('xdApp', function(){ 
   it('xd dev', function(){ 
-    assert.equal(app(),'to test xdApp: done.*: add objects to a scene.');
+    assert.equal(app(),'to test xdApp: done.');
   });
 });
