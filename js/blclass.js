@@ -1,6 +1,6 @@
 // file: blclass.js    by littleflute 
 
-var g_ver_blClass = "CBlClass_v1.5.13"
+var g_ver_blClass = "CBlClass_v1.5.15"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -1653,6 +1653,17 @@ function CBlClass ()
 		blo0.blLoadGithubIssueComments(tb,"https://api.github.com/repos/jeremyjia/Games/issues/21",ta);
 
 		return d1;
+	}
+	this.blDate = function(){
+		const d = new Date();
+		var year = d.getFullYear();
+		var month = d.getMonth()+1;
+		var date = d.getDate();
+		var hours = d.getHours();
+		var minutes = d.getMinutes();
+		var seconds = d.getSeconds();
+		var s = year + "_" +month+"_"+date+"-"+hours+"_"+minutes+"_"+seconds;
+		return s;
 	}
 }//END: function CBlClass ()
  

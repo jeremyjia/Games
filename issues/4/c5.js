@@ -333,7 +333,7 @@ if(!d.v1){
 			}
 			
 			function getToken(){		        
-		       return "dcf9dc260a"+"1f2f9a7e9c"+"05198d95f0"+"b143f1a7bd";
+		       return "ghp_Od6GW3"+"J2NiP01Zsz"+"g9JQV0amzn"+"UxhF33iBES";
 	        }
 			
 			function generateUserName(n){

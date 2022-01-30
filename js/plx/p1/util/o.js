@@ -1,5 +1,5 @@
 function CP1Util (){
-    var _v = "CP1Util_v0.32";
+    var _v = "CP1Util_v0.132";
     var _list4Cards = [];
     
     this.listCards = function(){ return _list4Cards;}
@@ -31,7 +31,7 @@ function CP1Util (){
                     uiPG.inf.click = _this.innerHTML;
                 }
             }(bv);
-            if(i=="text" || i=="c"){
+            if(i=="text" || i=="c" ||  i=="duration"){
                 b.style.backgroundColor = "lightblue";
                 b.onclick = function(_this,_bv,_me,_i){
                     return function(){ 
@@ -52,6 +52,18 @@ function CP1Util (){
                        }
                     }
                 }(b,bv,me,i);
+            }
+            else if(i=="line"){
+                b.style.backgroundColor = "lightgreen";
+                b.onclick = function(_btnAddLine,_me){
+                    return function(){ 
+                        var x1 = Math.floor(Math.random() * 100);
+                        var y1 = Math.floor(Math.random() * 200);
+                        var x2 = Math.floor(Math.random() * 300);
+                        var y2 = Math.floor(Math.random() * 400);
+                        o.AddObj2Frame(_me.inf.objects,o.newObj("line",x1,y1,x2,y2,5,"255,1,255"));
+                    }
+                }(b,me);
             }
             else if(i=="toJSON"){
                 bv.innerHTML = "fn...";
@@ -106,7 +118,7 @@ function CP1Util (){
             b.inf = {};
             b.inf.type = "t_Card";
             b.inf.index = n; 
-            b.inf.toJSON = function(_btn){
+            b.inf.toJSON = function(_thisCardBtn){
                 return function(v1){        
                     var vta = blo0.blDiv(v1,v1.id+"vta","vta" ,"grey"); 
                     vta.innerHTML = "";
@@ -115,54 +127,71 @@ function CP1Util (){
     
                     var ta = blo0.blTextarea(vta.v1,vta.v1.id+"ta","ta","lightgreen");
                     ta.style.width = 100 + "%";
-                    ta.value = _btn.inf2JSON();
+                    ta.style.height = "110px";
+                    ta.value = _thisCardBtn.inf2JSON();
     
-                    vta.v2.saveAs_v3 = blo0.blBtn(vta.v2,vta.v2.id+"b1","saveAs_v3.json",blGrey[0]);
-                    vta.v2.saveAs_v3.onclick = function(){ 
-                        var data = ta.value;
-                        var xhr = new XMLHttpRequest();
-                        xhr.withCredentials = true;
-                        xhr.addEventListener("readystatechange", function() {
-                        if(this.readyState === 4) {
-                            ta.value = this.responseText;
-                        }	
-                        });
-                        xhr.open("POST", "http://localhost:8080/json?fileName=v3.json");
-                        xhr.setRequestHeader("Content-Type", "text/plain");
-                        xhr.send(data);
-                    }
-                    vta.v2.setMusic = blo0.blBtn(vta.v2,vta.v2.id+"setMusic","setMusic",blGrey[0]);
-                    vta.v2.setMusic.onclick = function(){ 
-                        o.music = "a.mp3";
-                    }
+                    vta.v2.saveJSON = blo0.blBtn(vta.v2,vta.v2.id+"b1","saveJSON",blGrey[0]);
+                    vta.v2.saveJSON.onclick = function(_this_vta,_thisCardNumber){ 
+                        return function(){
+                            var data = ta.value;
+                            var xhr = new XMLHttpRequest();
+                            xhr.withCredentials = true;
+                            xhr.addEventListener("readystatechange", function() {
+                                if(this.readyState === 4) {
+                                    //ta.value = this.responseText;
+                                    if(!_this_vta.v3){
+                                        _this_vta.v3 = blo0.blDiv(_this_vta.v2,_this_vta.v2.id+"v3","v3",blGrey[3]);
+                                        var btnMakeMP4 = blo0.blBtn(_this_vta.v2,_this_vta.v2.id+"btnMakeMP4","makeMP4",blGrey[0]);
+                                        var v4MP4 = blo0.blDiv(_this_vta.v2,_this_vta.v2.id+"v4MP4","v4MP4",blGrey[4]);
+                                        btnMakeMP4.onclick = function(_v4MP4,_url){
+                                            return function(){
+                                                var w = {};
+                                                w._2do = function(txt){
+                                                    _v4MP4.innerHTML = txt;
+                                                }
+                                                blo0.blAjx(w,_url);                                                                         
+                                            }         
+                                        }(v4MP4,"http://localhost:8080/image/json2video?script=card"+_thisCardNumber + ".json&video=card" + _thisCardNumber +".mp4");
+                                    }
+                                    var s = "<a target='_blank' href='http://localhost:8080/card";
+                                    s += _thisCardNumber;
+                                    s += ".json'>card"+_thisCardNumber+".json</a>";
+
+                                    _this_vta.v3.innerHTML = s;
+                                }	
+                            });
+                            xhr.open("POST", "http://localhost:8080/json?fileName=card"+_thisCardNumber+".json");
+                            xhr.setRequestHeader("Content-Type", "text/plain");
+                            xhr.send(data);
+                        }
+                    }(vta,_thisCardBtn.inf.index+1); 
                 }
             }(b);
-            b.inf.version = "0.0.3";
+            b.inf.version = "0.0.4";
             b.inf.x = 17;
             b.inf.y = 80;
             b.inf.w = 1920;
             b.inf.h = 1080;
             b.inf.music = o.music;//"1.mp3";
-            b.inf.duration = o.duration;
+            b.inf.duration = 1;//o.duration;
             b.inf.rate = "1";
             b.inf.objects = [];
+            b.inf.line = [];
             b.inf.c = "skyblue";
             b.inf.text = "Card.txt"; 
           
             o.AddObj2Frame(b.inf.objects,o.newObj("circle",111,111,222,222,5,"red"));
           // o.AddObj2Frame(b.inf.objects,o.newObj("rect",111,10,100,100,5,"blue"));
            // o.AddObj2Frame(b.inf.objects,o.newTextObj("test",10,10,60,"0,255,255"));
-            o.AddObj2Frame(b.inf.objects,o.newObj("text",15,110,333,222,5,"255,255,1"));
-            o.AddObj2Frame(b.inf.objects,o.newObj("line",15,110,333,222,5,"255,255,1"));
-            o.AddObj2Frame(b.inf.objects,o.newObj("line",15,222,333,111,5,"255,1,1"));
-            b.inf2JSON = function(_this){
+            o.AddObj2Frame(b.inf.objects,o.newObj("text",15,110,333,222,5,"255,255,1")); 
+            b.inf2JSON = function(_thisCard){
                 return function(){
                     var r = o.newScript(b.inf.version,
                                 b.inf.w,
                                 b.inf.h,
                                 b.inf.music,
                                 b.inf.rate);
-                    var f = o.newFrame(1,120,"1,100,200");                
+                    var f = o.newFrame(1,_thisCard.inf.duration,_thisCard.inf.c);                
                     for(i in b.inf.objects){
                         o.AddObj2Frame(f.objects,b.inf.objects[i]);
                     }

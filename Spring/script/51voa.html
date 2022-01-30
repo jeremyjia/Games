@@ -40,11 +40,13 @@ body {
 
 <div class="topnav">
   <a class="active" href="http://localhost:8080/">Home</a>
-  <a href="#">[51voa.html_v0.0.24]</a> 
+  <a href="#">[51voa.html_v0.0.31]</a> 
 </div>
 <div>
 	<button id="id_4_btn_blx_51voa">+</button>
+	<button id="id_4_btn_test">test</button>
 </div>
+<div id="id_4_dbg"></div>
 
 <script src="https://littleflute.github.io/JavaScript/w3.js" ></script>
 <script src="../../js/blclass.js" ></script>
@@ -56,6 +58,12 @@ body {
       blo0.blScript("blx_51voa.js","blx_51voa.js"); 
       blo0.load= 1;
     }
+  }
+  var btnTest = bl$("id_4_btn_test");
+  btnTest.onclick = function(){
+    var v = bl$("id_4_dbg");
+    v.innerHTML = blo0.blDate();
+    //blo0.blSandBox(v);
   }
 </script>
 </body>
