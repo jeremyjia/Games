@@ -1,5 +1,5 @@
 function CP1Util (){
-    var _v = "CP1Util_v0.125";
+    var _v = "CP1Util_v0.132";
     var _list4Cards = [];
     
     this.listCards = function(){ return _list4Cards;}
@@ -52,6 +52,18 @@ function CP1Util (){
                        }
                     }
                 }(b,bv,me,i);
+            }
+            else if(i=="line"){
+                b.style.backgroundColor = "lightgreen";
+                b.onclick = function(_btnAddLine,_me){
+                    return function(){ 
+                        var x1 = Math.floor(Math.random() * 100);
+                        var y1 = Math.floor(Math.random() * 200);
+                        var x2 = Math.floor(Math.random() * 300);
+                        var y2 = Math.floor(Math.random() * 400);
+                        o.AddObj2Frame(_me.inf.objects,o.newObj("line",x1,y1,x2,y2,5,"255,1,255"));
+                    }
+                }(b,me);
             }
             else if(i=="toJSON"){
                 bv.innerHTML = "fn...";
@@ -155,7 +167,7 @@ function CP1Util (){
                     }(vta,_thisCardBtn.inf.index+1); 
                 }
             }(b);
-            b.inf.version = "0.0.3";
+            b.inf.version = "0.0.4";
             b.inf.x = 17;
             b.inf.y = 80;
             b.inf.w = 1920;
@@ -164,15 +176,14 @@ function CP1Util (){
             b.inf.duration = 1;//o.duration;
             b.inf.rate = "1";
             b.inf.objects = [];
+            b.inf.line = [];
             b.inf.c = "skyblue";
             b.inf.text = "Card.txt"; 
           
-           // o.AddObj2Frame(b.inf.objects,o.newObj("circle",111,111,222,222,5,"red"));
+            o.AddObj2Frame(b.inf.objects,o.newObj("circle",111,111,222,222,5,"red"));
           // o.AddObj2Frame(b.inf.objects,o.newObj("rect",111,10,100,100,5,"blue"));
            // o.AddObj2Frame(b.inf.objects,o.newTextObj("test",10,10,60,"0,255,255"));
-            o.AddObj2Frame(b.inf.objects,o.newObj("text",15,110,333,222,5,"255,255,1"));
-            o.AddObj2Frame(b.inf.objects,o.newObj("line",15,110,333,222,5,"255,255,1"));
-            o.AddObj2Frame(b.inf.objects,o.newObj("line",15,222,333,111,5,"255,1,255"));
+            o.AddObj2Frame(b.inf.objects,o.newObj("text",15,110,333,222,5,"255,255,1")); 
             b.inf2JSON = function(_thisCard){
                 return function(){
                     var r = o.newScript(b.inf.version,
