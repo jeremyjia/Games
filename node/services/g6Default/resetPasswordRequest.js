@@ -1,4 +1,4 @@
-const tag = "[g6Default/resetPasswordRequest.js_v0.41]";  
+const tag = "[g6Default/resetPasswordRequest.js_v0.42]";  
 
 const db = require("../../sequelize/models");
 const g6u = db.Group6Users;
@@ -30,7 +30,10 @@ async function _sqlzF(emailAddress,resolve,Service){
       } else {
           r.code = 1;
           r.inDB = "YES";   
-          sgMail.sendMail_4_reset_password(emailAddress,u1.UserName,u1.VerifyCode);     
+          var now = new Date(); 
+          var code_time = u1.VerifyCode + "_" + now.getTime();
+
+          sgMail.sendMail_4_reset_password(emailAddress, u1.UserName, code_time);   
       }
     }
 

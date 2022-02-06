@@ -6,7 +6,7 @@ const config = {
   VERIFY_REDIRECT_URL: process.env.VERIFY_REDIRECT_URL ? process.env.VERIFY_REDIRECT_URL : "http://localhost:3000/",
   RESET_PASSWORD_PAGE_URL: process.env.RESET_PASSWORD_PAGE_URL ? process.env.RESET_PASSWORD_PAGE_URL : "http://localhost:3000/reset_password",
   
-  HOST_PORT: process.env.HOST_PORT ? process.env.HOST_PORT : 3000,
+  HOST_PORT: process.env.HOST_PORT ? process.env.HOST_PORT : 8080,
   PUBLIC_URL: process.env.PUBLIC_URL ? process.env.PUBLIC_URL : 'http://localhost:8080',
   WEB_SOCKET_PORT: 9090,
   BASE_VERSION: 'v2',
@@ -18,7 +18,7 @@ const config = {
   oLocalDB:{
     host: process.env.DB_HOST ? process.env.DB_HOST : "localhost",
     user: process.env.DB_USER ? process.env.DB_USER : "root",
-    password: process.env.DB_PASSWORD ? process.env.DB_PASSWORD : "group6db",
+    password: process.env.DB_PASSWORD ? process.env.DB_PASSWORD : "password",
     database: process.env.DB_NAME ? process.env.DB_NAME : "g6DB"
   },
 
