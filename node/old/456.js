@@ -5,7 +5,7 @@ var myHost = "localhost";//"mysql";
 var con = mysql.createConnection({
   host: myHost,
   user: "root",
-  password: "group6db"
+  password: "password"
 
 });
 
