@@ -6,7 +6,7 @@
   "scripts": {
     "prestart": "npm install",
     "start": "node index.js",
-    "test": "mocha --exit"
+    "test": "mocha"
   },
   "keywords": [
     "openapi-generator",
@@ -64,7 +64,7 @@
     "test": "./test"
   },
   "devDependencies": {
-    "mocha": "^6.2.3",
+    "mocha": "^7.1.1",
     "supertest": "^4.0.2"
   }
 }
