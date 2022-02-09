@@ -1,4 +1,4 @@
-var tag_storyBoard = "storyBoard.js_v0.54";
+var tag_storyBoard = "storyBoard.js_v0.111";
 var tb = bl$("id_p1_tb"); 
 
 tb.btnStoryBoard = blo0.blBtn(tb,"btnStoryBoard","storyBoard",blGrey[2]);
@@ -72,7 +72,7 @@ function CStoryBoard(parentDiv){
                         return s;
                     }
                 }(_this);
-                _this.inf.toJSON = function(_btn){
+                _this.inf.makeBLS = function(_btn){
                     return function(v1){        
                         var vta = blo0.blDiv(v1,v1.id+"vta","vta" ,"grey"); 
                         vta.innerHTML = "";
@@ -84,17 +84,35 @@ function CStoryBoard(parentDiv){
                         ta.style.height = "130px";
                         ta.value = _btn.inf2JSON();
         
-                        vta.v2.saveAs_v3 = blo0.blBtn(vta.v2,vta.v2.id+"b1","saveAs_v3.json",blGrey[0]);
-                        vta.v2.saveAs_v3.onclick = function(){ 
+                        vta.v2.saveAsBLS = blo0.blBtn(vta.v2,vta.v2.id+"b1","saveAsBLS",blGrey[0]);
+                        vta.v2.saveAsBLS.onclick = function(){ 
                             var data = ta.value;
                             var xhr = new XMLHttpRequest();
                             xhr.withCredentials = true;
                             xhr.addEventListener("readystatechange", function() {
-                            if(this.readyState === 4) {
-                                ta.value = this.responseText;
-                            }	
+                                if(this.readyState === 4) {
+                                    var _this_vta = vta;
+                                    if(!_this_vta.v3){
+                                        _this_vta.v3 = blo0.blDiv(_this_vta.v2,_this_vta.v2.id+"v3","v3",blGrey[3]);
+                                        var btnMakeMP4 = blo0.blBtn(_this_vta.v2,_this_vta.v2.id+"btnMakeMP4","makeMP4",blGrey[0]);
+                                        var v4MP4 = blo0.blDiv(_this_vta.v2,_this_vta.v2.id+"v4MP4","v4MP4",blGrey[4]);
+                                        btnMakeMP4.onclick = function(_v4MP4,_url){
+                                            return function(){
+                                                var w = {};
+                                                w._2do = function(txt){
+                                                    _v4MP4.innerHTML = txt;
+                                                }
+                                                blo0.blAjx(w,_url);                                                                         
+                                            }         
+                                        }(v4MP4,"http://localhost:8080/image/json2video?script=wholeStory" + ".json&video=wholeStory" +".mp4");
+                                    }
+                                    var s = "<a target='_blank' href='http://localhost:8080/wholeStory";
+                                    s += ".json'>wholeStory"+".json</a>";
+
+                                    _this_vta.v3.innerHTML = s;
+                                }	
                             });
-                            xhr.open("POST", "http://localhost:8080/json?fileName=v3.json");
+                            xhr.open("POST", "http://localhost:8080/json?fileName=wholeStory.json");
                             xhr.setRequestHeader("Content-Type", "text/plain");
                             xhr.send(data);
                         }

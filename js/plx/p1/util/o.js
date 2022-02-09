@@ -1,5 +1,5 @@
 function CP1Util (){
-    var _v = "CP1Util_v0.132";
+    var _v = "CP1Util_v0.135";
     var _list4Cards = [];
     
     this.listCards = function(){ return _list4Cards;}
@@ -31,7 +31,7 @@ function CP1Util (){
                     uiPG.inf.click = _this.innerHTML;
                 }
             }(bv);
-            if(i=="text" || i=="c" ||  i=="duration"){
+            if(i=="text" || i=="c" ||  i=="duration" || i=="rate"){
                 b.style.backgroundColor = "lightblue";
                 b.onclick = function(_this,_bv,_me,_i){
                     return function(){ 
@@ -52,7 +52,7 @@ function CP1Util (){
                        }
                     }
                 }(b,bv,me,i);
-            }
+            } 
             else if(i=="line"){
                 b.style.backgroundColor = "lightgreen";
                 b.onclick = function(_btnAddLine,_me){
@@ -65,7 +65,7 @@ function CP1Util (){
                     }
                 }(b,me);
             }
-            else if(i=="toJSON"){
+            else if(i=="makeBLS"){
                 bv.innerHTML = "fn...";
                 b.style.backgroundColor = "green";            
                 b.onclick = function(_this,_v1,_me,_i){
@@ -118,7 +118,7 @@ function CP1Util (){
             b.inf = {};
             b.inf.type = "t_Card";
             b.inf.index = n; 
-            b.inf.toJSON = function(_thisCardBtn){
+            b.inf.makeBLS = function(_thisCardBtn){
                 return function(v1){        
                     var vta = blo0.blDiv(v1,v1.id+"vta","vta" ,"grey"); 
                     vta.innerHTML = "";
