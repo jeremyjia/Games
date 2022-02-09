@@ -1,6 +1,6 @@
 // file: blclass.js    by littleflute 
 
-var g_ver_blClass = "CBlClass_v1.5.15"
+var g_ver_blClass = "CBlClass_v1.5.21"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -1665,6 +1665,20 @@ function CBlClass ()
 		var s = year + "_" +month+"_"+date+"-"+hours+"_"+minutes+"_"+seconds;
 		return s;
 	}
+	this.blShowHTMLFile = function(urlFileName,b2,d2){ 
+        if(!d2.v){
+            b2.v = this.blMDiv(d2, d2.id + "mv", "mv4Lyrics",444,10,1111,200,blGrey[1]);
+            var v1 = this.blDiv(b2.v,b2.v.id+"v1","v1",blGrey[2]);
+            var w = {};
+            w._2do = function(txt){   
+                v1.innerHTML = txt;
+            } 
+            this.blAjx(w,urlFileName);
+        } 
+
+        _on_off_div(b2,d2);
+        b2.style.background = b2.style.background=="red"?blGrey[5]:blColor[4];            
+    };
 }//END: function CBlClass ()
  
 var blo0 = new CBlClass;

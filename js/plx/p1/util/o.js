@@ -1,5 +1,5 @@
 function CP1Util (){
-    var _v = "CP1Util_v0.135";
+    var _v = "CP1Util_v0.142";
     var _list4Cards = [];
     
     this.listCards = function(){ return _list4Cards;}
@@ -94,7 +94,8 @@ function CP1Util (){
                 }(b,v1,me,i);
             }
         } 
-    }
+    };
+
     this.newObj = function(type,left,top,right,bottom,size,color){
         var r = {};
         r.graphic = type; 
@@ -106,7 +107,8 @@ function CP1Util (){
         r.attribute.size = size;
         r.attribute.color = color;  
         return r;
-    }
+    };
+
     this.addCard= function(_ls){
         return function(btn){
             var n = _ls.length;
@@ -241,6 +243,27 @@ function CP1Util (){
             _ls.push(b);
         }
     }(_list4Cards);
+    
+    
+    this.newScript = function(v,w,h,m,r){ 
+        var json = {}; 
+        json.request = {}; 
+        json.request.version    = v;
+        json.request.width      = w;
+        json.request.height     = h;
+        json.request.music      = m;
+        json.request.rate       = r;  
+        json.request.frames     = [];
+        json.request.superObjects     = [];
+        return json;
+    };
+
+    this.AddFrame2Script = function(oScript,oFrame){
+        oScript.request.frames.push(oFrame);
+    }
+    this.addSuperObj2Script = function(oScript,oSuperObj){ 
+        oScript.request.superObjects.push(oSuperObj);
+    };
 }
  
 var o = new CP1Util();
@@ -258,24 +281,11 @@ o.listMousemove = [];
 o.curCard = 0;
 o.bPlay = false;
 
-o.AddFrame2Script = function(oScript,oFrame){
-    oScript.request.frames.push(oFrame);
-}
+
 o.AddObj2Frame = function(ls,oObj){ 
     ls.push(oObj);
 }
 
-o.newScript = function(v,w,h,m,r){ 
-    var json = {}; 
-    json.request = {}; 
-    json.request.version    = v;
-    json.request.width      = w;
-    json.request.height     = h;
-    json.request.music      = m;
-    json.request.rate       = r;  
-    json.request.frames     = [];
-    return json;
-}
 o.newFrame = function(number,time,backgroundColor){
     var r = {};
     r.number = number;
