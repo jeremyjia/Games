@@ -30,7 +30,7 @@ function zhenbi(url,msg){
 		}
 	}
 	document.getElementById('up').disabled=true;
-	MyWebSend = url + "id="+encodeURIComponent(document.all.id.value)+"&zhenbi=20191123";
+	MyWebSend = "id="+encodeURIComponent(document.all.id.value)+"&zhenbi=20191123";
 	for(var i=1;i<50;i++){
 		if(document.getElementById("id"+i)!=undefined){
 			MyWebSend+= "&id"+i+"="+encodeURIComponent(document.getElementById("id"+i).value);
