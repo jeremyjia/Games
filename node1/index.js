@@ -3,6 +3,7 @@ const app = express()
 var cors = require('cors')
 const path = require('path');
 var request = require('request');
+var cheerio = require('cheerio');
 
 const sgTest = require('./app/sendGrid.js');
 
@@ -13,6 +14,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
+})
+
+app.get('/spider', (req, res) => {
+  request('http://www.jikexueyuan.com/',function(error,response,body){
+      if(!error && response.statusCode ==200){
+        $ = cheerio.load(body);
+        res.json({
+          'Classnum':$('.slide-submeu').length
+        });
+      }
+  }); 
 })
 
 app.get('/email/', (req, res) => {
