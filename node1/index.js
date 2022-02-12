@@ -2,9 +2,8 @@ const express = require('express')
 const app = express()
 var cors = require('cors')
 const path = require('path');
-var request = require('request');
-var cheerio = require('cheerio');
 
+const spider = require('./app/spider/index.js');
 const sgTest = require('./app/sendGrid.js');
 
 const port = 3000 
@@ -17,14 +16,7 @@ app.get('/', (req, res) => {
 })
 
 app.get('/spider', (req, res) => {
-  request('http://www.jikexueyuan.com/',function(error,response,body){
-      if(!error && response.statusCode ==200){
-        $ = cheerio.load(body);
-        res.json({
-          'Classnum':$('.slide-submeu').length
-        });
-      }
-  }); 
+  spider.spider(req,res);
 })
 
 app.get('/email/', (req, res) => {
