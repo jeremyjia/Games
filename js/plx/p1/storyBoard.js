@@ -1,4 +1,4 @@
-var tag_storyBoard = "storyBoard.js_v0.111";
+var tag_storyBoard = "storyBoard.js_v0.114";
 var tb = bl$("id_p1_tb"); 
 
 tb.btnStoryBoard = blo0.blBtn(tb,"btnStoryBoard","storyBoard",blGrey[2]);
@@ -64,7 +64,20 @@ function CStoryBoard(parentDiv){
                                 listCards[i].inf.c
                                 );
                             f.objects = listCards[i].inf.objects;
-                            o.AddFrame2Script(r,f);                            
+                            o.AddFrame2Script(r,f);     
+                            
+                            var so = {
+                                "type": "javascript",
+                                "frameRange": "(1,1250)",
+                                "attribute": {
+                                    "script": "firework.js",
+                                    "function": "animateFrame",
+                                    "start": 1
+                                },
+                                "layer": 1
+                            };
+
+                            o.addSuperObj2Script(r,so);
                         }
                         //*/
                         
