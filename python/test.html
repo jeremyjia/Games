@@ -1,0 +1,26 @@
+<script type='text/javascript'> 
+    function myClick(url) {  
+       var s2 = "<img  ";
+       
+        var s = document.getElementById("divDbug").innerHTML;
+        if(s!="1"){
+            document.getElementById("divDbug").innerHTML = s2;
+        }
+        else{
+            document.getElementById("divDbug").innerHTML = "0";
+        }
+
+    }
+</script>
+ <body> 
+    <button onclick='myClick("http://www.baidu.com");'>
+        <h3>click me</h3>
+    </button>
+
+    <div id="divDbug">divDbug</div>
+    <div id="divDbug">divDbug</div>
+    <div id="divDbug">divDbug</div>
+    <div id="divDbug">divDbug</div>
+    <div id="divDbug">divDbug</div>
+    <div id="divDbug">divDbug</div>
+</body>
