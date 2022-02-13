@@ -1,4 +1,4 @@
-tag = "[old/index.js_v0.0.111]";
+tag = "[old/index.js_v0.0.113]";
 var http = require('http');
 var url = require('url');
 var fs = require('fs');
@@ -24,6 +24,7 @@ exports.fOld = function(req,res,next){
 			  res.writeHead(404, {'Content-Type': 'text/html'});
 			  res.write(tag + "404 Not Found: " +filename);
 			  res.write("<br> Try: <a href='/old/index.html'>old/index.html</a>");
+			  res.write("<br> Try: <a href='/old/i630.html'>old/i630.html</a>");
 			  res.write("<br> Try: <a href='/old/run'>old/run</a>");
 			  return res.end();
 			} 

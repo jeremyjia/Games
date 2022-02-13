@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+  margin: 0;
+  font-family: "Lato", sans-serif;
+}
+
+.sidebar {
+  margin: 0;
+  padding: 0;
+  width: 200px;
+  background-color: #f1f1f1;
+  position: fixed;
+  height: 100%;
+  overflow: auto;
+}
+
+.sidebar a {
+  display: block;
+  color: black;
+  padding: 16px;
+  text-decoration: none;
+}
+ 
+.sidebar a.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.sidebar a:hover:not(.active) {
+  background-color: #555;
+  color: white;
+}
+
+div.content {
+  margin-left: 200px;
+  padding: 1px 16px;
+  height: 1000px;
+}
+
+@media screen and (max-width: 700px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+  .sidebar a {float: left;}
+  div.content {margin-left: 0;}
+}
+
+@media screen and (max-width: 400px) {
+  .sidebar a {
+    text-align: center;
+    float: none;
+  }
+}
+
+table {
+  border-spacing: 0;
+  width: 100%;
+  border: 1px solid #ddd;
+}
+
+th, td {
+  text-align: left;
+  padding: 16px;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2
+}
+
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <a class="active" href="#home">i630: v0.11</a>
+
+  <a href=".." id="parent">[..]</a>
+  <a href="." id="root">[.]</a> 
+ 
+  <button id="id_btn_4_bl2">b2</button> 
+</div>
+
+<div class="content" id = "content">
+  <h2>bl</h2>
+  <p>i630</p> 
+  <h3>02/13/2022</h3>
+</div>
+<script src="w3.js" ></script>
+<script src="blclass.js" ></script>  
+<script> 
+	var n = bl$("show"); 
+  var b2 = bl$("id_btn_4_bl2");
+  b2.onclick = function(){        
+    var s = "i630:v0.23";
+    var d = blo0.blMD("id_MDIV_4_i630", s, 300,100,500,400, blGrey[5]);
+    if(!d.ejson){
+      d.efjon = blo0.blScript("id_js_i630","plx/i630.js");
+    } 
+    _on_off_div(this,d);
+    this.style.background = this.style.background=="red"?blGrey[5]:blColor[4]; 
+  }
+
+</script>
+</script>
+</body>
+</html>

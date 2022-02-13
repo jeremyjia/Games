@@ -1,4 +1,4 @@
-const tag = "[i.js: v0.25] ";
+const tag = "[i.js: v0.31] ";
 console.log(tag);
 
 var http = require('http');
@@ -79,6 +79,7 @@ http.createServer(function (req, res) {
       res.writeHead(200, {'Content-Type': 'text/html'});
       res.write(tag + Date() + "<br> Try: <a href='" + xdURL + "?dbName=g6DB'>" + xdURL + "?dbName=g6DB</a>");
       res.write("<br> Try: <a href='index.html'>index.html</a>");
+      res.write("<br> Try: <a href='i630.html'>i630.html</a>");
       res.end();
     }
     else{
