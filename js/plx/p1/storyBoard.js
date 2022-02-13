@@ -1,4 +1,4 @@
-var tag = "storyBoard.js_v0.15";
+var tag_storyBoard = "storyBoard.js_v0.54";
 var tb = bl$("id_p1_tb"); 
 
 tb.btnStoryBoard = blo0.blBtn(tb,"btnStoryBoard","storyBoard",blGrey[2]);
@@ -40,7 +40,7 @@ function CStoryBoard(parentDiv){
                 var d = new Date();
                 _this.inf.D = d;
                 _this.inf.n = 0; 
-                _this.inf.v = "0.0.3";
+                _this.inf.v = "v0.12";
                 _this.inf.w = 1920;
                 _this.inf.h = 1080;
                 _this.inf.music = "1.mp3";
@@ -48,19 +48,26 @@ function CStoryBoard(parentDiv){
                 
                 _this.inf2JSON = function(_btn){
                     return function(){
-                        _btn.inf.n = o.listCards.length;
+                        var listCards = o.listCards();
+                        _btn.inf.n = listCards.length;
                         var r = o.newScript(_btn.inf.v,
                                 _btn.inf.w,
                                 _btn.inf.h,
                                 _btn.inf.music,
                                 _btn.inf.rate);
+                        //*
                         var n=0;
-                        for(i in o.listCards){
+                        for(i in listCards){                                                    
                             n++;
-                            var f = o.newFrame(n,1,i*50%250+",100,200");
-
+                            
+                            var f = o.newFrame(listCards[i].inf.index,listCards[i].inf.duration,
+                                listCards[i].inf.c
+                                );
+                            f.objects = listCards[i].inf.objects;
                             o.AddFrame2Script(r,f);                            
                         }
+                        //*/
+                        
                         var s = JSON.stringify(r); 
                         return s;
                     }
@@ -74,6 +81,7 @@ function CStoryBoard(parentDiv){
         
                         var ta = blo0.blTextarea(vta.v1,vta.v1.id+"ta","ta","lightgreen");
                         ta.style.width = 100 + "%";
+                        ta.style.height = "130px";
                         ta.value = _btn.inf2JSON();
         
                         vta.v2.saveAs_v3 = blo0.blBtn(vta.v2,vta.v2.id+"b1","saveAs_v3.json",blGrey[0]);

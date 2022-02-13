@@ -49,10 +49,10 @@ public final class JsonSriptParser {
 	private static ScriptEngine engine = mgr.getEngineByName("JavaScript");
 	private static JSGraphEngine graphEngine = new JSGraphEngine();
 	private static final String currentScript = "VAR_CURRENT_SCRIPT";
-	private static final String current_Subtitle_Script = "VAR_CURRENT_SUBTITLE_SCRIPT";
+	public static final String current_Subtitle_Script = "VAR_CURRENT_SUBTITLE_SCRIPT";
 
 	private static SubtitleImageService subtitleImageService = new SubtitleImageService();
-	private static List<SubtitleModel> subtitleList = null;
+	public static List<SubtitleModel> subtitleList = null;
 	private static String titleOfLRC = "";
 
 	public static void setMacros(String scriptFilePath) throws Exception {
@@ -729,6 +729,16 @@ public final class JsonSriptParser {
 		}
 
 		String strSubtitle = getSubTitleByFrame(subtitleList, number);
+		if (attributeObj.has("replace")) {
+			JSONArray objectArray = attributeObj.getJSONArray("replace");
+			for (Object object : objectArray) {
+				JSONObject replaceObj = (JSONObject) object;
+				String regex = replaceObj.getString("regex");
+				String target = replaceObj.getString("target");
+				strSubtitle = FileUtil.ReplaceString(strSubtitle, regex, target);
+			}
+		}
+
 		if (titleOfLRC.trim().length() > 0) {
 			gp2d.setColor(new Color(255, 169, 0));
 			gp2d.setFont(new Font("黑体", Font.BOLD, 50));
@@ -808,24 +818,38 @@ public final class JsonSriptParser {
 			gp2d.setColor(color);
 			gp2d.drawLine(left, top, right, bottom);
 		} else if ("circle".equalsIgnoreCase(graphicType)) {
-			int width = attrObj.getInt("width");
-			int height = attrObj.getInt("height");
+			int width = 10;
+			int height = 10;
+			if (attrObj.has("width") && attrObj.has("height")) {
+				width = attrObj.getInt("width");
+				height = attrObj.getInt("height");
+			} else {
+				int right = attrObj.getInt("right");
+				int bottom = attrObj.getInt("bottom");
+				width = right - left;
+				height = bottom - top;
+			}
 			gp2d.setColor(color);
 			gp2d.fillOval(left, top, width, height);
 		} else if ("rect".equalsIgnoreCase(graphicType)) {
-			int width = attrObj.getInt("width");
-			int height = attrObj.getInt("height");
+			int width = 10;
+			int height = 10;
+			if (attrObj.has("width") && attrObj.has("height")) {
+				width = attrObj.getInt("width");
+				height = attrObj.getInt("height");
+			} else {
+				int right = attrObj.getInt("right");
+				int bottom = attrObj.getInt("bottom");
+				width = right - left;
+				height = bottom - top;
+			}
 			gp2d.setColor(color);
 			gp2d.fill3DRect(left, top, width, height, false);
 		}
 	}
 
 	private static Color getColor(String color) {
-		String[] colors = color.split(",");
-		int red = Integer.parseInt(colors[0]);
-		int green = Integer.parseInt(colors[1]);
-		int blue = Integer.parseInt(colors[2]);
-		return new Color(red, green, blue);
+		return ImageUtil.applayColor(color);
 	}
 
 	private static String milliSecondToTime(long millSecond) {
