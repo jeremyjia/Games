@@ -8,7 +8,7 @@ info:
     name: AllRightsReserved
     url: https://www.battlecasters.io/
   title: Group 6 Studios API
-  version: 1.0.431
+  version: 1.1.111
 
 servers:
 - url: http://localhost:8080/api
@@ -77,7 +77,7 @@ paths:
       x-openapi-router-service: DefaultService
 
   /checkUserName:
-    get:
+    post:
       description: check User Name
       operationId: checkUserName
       parameters:

@@ -21,6 +21,17 @@ try {
         }
     }
 }
+
+function xdtest(url,msg){
+	var myData = "UserName=aaa"; 
+	xmlHttp.open("POST",url,true);
+	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	xmlHttp.onreadystatechange=function(){
+		xd_POST_done( "div4XDTest"); 		 
+	};
+	xmlHttp.send(myData);
+	document.getElementById("div4XDTest").innerHTML="很努力地加载中..." + url;
+}
 function zhenbi(url,msg){
 	if (msg>0 && document.getElementById("id").value==""){
 		if(document.getElementById("upfor")!=undefined){
@@ -39,7 +50,7 @@ function zhenbi(url,msg){
 	
 	xmlHttp.open("POST",url,true);
 	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-	xmlHttp.onreadystatechange=function(){zhenbi_com(msg)};
+	xmlHttp.onreadystatechange=function(){zhenbi_com(msg,"div4XDTest")};
 	xmlHttp.send(MyWebSend);
 	document.getElementById("out").innerHTML="很努力地加载中..."
 }
@@ -107,6 +118,18 @@ function template(obj){
 	}
 	return out;
 }
+function xd_POST_done(_outShow) { 
+    if (xmlHttp.readyState == 4) {
+		document.getElementById(_outShow).innerHTML = "done: " + Date();
+		if (xmlHttp.status == 200) {
+            document.getElementById(_outShow).innerHTML = "200: " + Date();
+		}
+		else{
+            document.getElementById(_outShow).innerHTML = "抱歉，服务器繁忙，请刷新后再尝试吧！<br>";
+		}
+	}
+}
+
 function zhenbi_com(msg) {
     if (xmlHttp.readyState == 4) {
         document.getElementById("out").innerHTML = "&nbsp;";
