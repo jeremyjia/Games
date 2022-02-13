@@ -78,7 +78,7 @@ tr:nth-child(even) {
 <body>
 
 <div class="sidebar">
-  <a class="active" href="#home">i630: v0.11</a>
+  <a class="active" href="#home">i630: v0.12</a>
 
   <a href=".." id="parent">[..]</a>
   <a href="." id="root">[.]</a> 
@@ -91,13 +91,15 @@ tr:nth-child(even) {
   <p>i630</p> 
   <h3>02/13/2022</h3>
 </div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="w3.js" ></script>
 <script src="blclass.js" ></script>  
 <script> 
 	var n = bl$("show"); 
   var b2 = bl$("id_btn_4_bl2");
   b2.onclick = function(){        
-    var s = "i630:v0.23";
+    var s = "i630:v0.24";
     var d = blo0.blMD("id_MDIV_4_i630", s, 300,100,500,400, blGrey[5]);
     if(!d.ejson){
       d.efjon = blo0.blScript("id_js_i630","plx/i630.js");
