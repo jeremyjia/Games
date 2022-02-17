@@ -1,5 +1,5 @@
 function CP1Util (){
-    var _v = "CP1Util_v0.32";
+    var _v = "CP1Util_v0.35";
     var _list4Cards = [];
     
     this.listCards = function(){ return _list4Cards;}
@@ -143,13 +143,13 @@ function CP1Util (){
             b.inf.w = 1920;
             b.inf.h = 1080;
             b.inf.music = o.music;//"1.mp3";
-            b.inf.duration = o.duration;
+            b.inf.duration = 1;//o.duration;
             b.inf.rate = "1";
             b.inf.objects = [];
             b.inf.c = "skyblue";
             b.inf.text = "Card.txt"; 
           
-            o.AddObj2Frame(b.inf.objects,o.newObj("circle",111,111,222,222,5,"red"));
+          //  o.AddObj2Frame(b.inf.objects,o.newObj("circle",111,111,222,222,5,"red"));
           // o.AddObj2Frame(b.inf.objects,o.newObj("rect",111,10,100,100,5,"blue"));
            // o.AddObj2Frame(b.inf.objects,o.newTextObj("test",10,10,60,"0,255,255"));
             o.AddObj2Frame(b.inf.objects,o.newObj("text",15,110,333,222,5,"255,255,1"));
@@ -162,7 +162,7 @@ function CP1Util (){
                                 b.inf.h,
                                 b.inf.music,
                                 b.inf.rate);
-                    var f = o.newFrame(1,120,"1,100,200");                
+                    var f = o.newFrame(1,1,"1,100,200");                
                     for(i in b.inf.objects){
                         o.AddObj2Frame(f.objects,b.inf.objects[i]);
                     }
