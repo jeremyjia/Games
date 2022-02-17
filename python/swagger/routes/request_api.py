@@ -9,6 +9,7 @@
 # chrome浏览器能成功体现前一天的代码修改内容。 -wayneW
 import os
 import uuid
+from PIL import Image
 import json  
 import pymysql  # need to install pymysql first by commit 'pip3 install pymysql'-wayne W
 import mysql.connector   # need to 'pip3 install mysql_connector_python' in Ubuntu
@@ -169,53 +170,37 @@ else:
 
 
 
-@REQUEST_API.route('/api1', methods=['GET'])
-def api1_get_records():
+@REQUEST_API.route('/trans', methods=['GET'])
+def trans_pics(): # 这是新加的参数
     """Return all book requests
     @return: 200: an array of all known BOOK_REQUESTS as a \
     flask/response object with application/json mimetype.
     """
-    # print ("begin")  # How to debug in a smart way.
-    # a = os.getenv('ENV_WINDIR')
-    # b = os.environ.get('WINDIR')
-    # c = os.environ('ENV_PORT')
-    # d = os.getenv('windir')
-    # print (a)
-    # print (b)
-    # print (c)
-    # print (d)
-    # print ("end")
-    with open("./routes/env_conf.json", 'r', encoding='utf-8') as ec:
-      json_data = json.load(ec)
-
-    if DB_TYPE == 'mysql':
-        config = {
-        "host":str(json_data['host']), 
-        "port":json_data['port'], 
-        "user":str(json_data['user']), 
-        "password":str(json_data['password']), 
-        "database":str(json_data['DB_NAME']),
-        "charset":str(json_data['charset'])
-        }
-        db = pymysql.connect(**config)
-        cursor = db.cursor()
-        sql = "SELECT * FROM book_info;"
-        try:
-          cursor.execute(sql)
-          results = cursor.fetchall()
-          BOOK_REQUESTS = results
-        
-        finally:
-          return jsonify(BOOK_REQUESTS)
-          db.close()
+    img = Image.open('skin.png')
+    rgba = img.convert("RGBA")
+    datas = rgba.getdata()
+      
+    newData = []
+    for item in datas:
+        if item[0] == 0 and item[1] == 0 and item[2] == 0:  # finding black colour by its RGB value
+            # storing a transparent value when we find a black colour
+            newData.append((255, 255, 255, 0))
+        else:
+            newData.append(item)  # other colours remain unchanged
+      
+    rgba.putdata(newData)
+    # reference: https://www.w3schools.com/jsref/event_onclick.asp
+    rgba.save("./static/transparent_image.png", "PNG")  
     
-    else:
-        with open("./data/j_data.json", 'r', encoding='utf-8') as f:
-          json_data = json.load(f)
-        # print(json_data)
-          BOOK_REQUESTS = json_data
-          return jsonify(BOOK_REQUESTS)
-          f.close
+    return "<script type='text/javascript'> \
+    function show_image(src, alt) { var img = document.createElement('img'); img.src = src; img.alt = alt;}</script>\
+    <body><div <p><h2>&nbsp; Press the Button</h2></p></div> &emsp; &nbsp;\
+    document.body.appendChild(img)<button onclick='show_image('http://localhost:5000/static/transparent_image.png','Finished Fig');'><h3>show picture(s)</h3></button></body>"
+    #<button onclick='myFunction()'>Show Picture(s)</button> <element onclick='http://localhost:5000/static/transparent_image.png'>"
+    # s="<a href='https://www.123.com/'>pictureast!</a>"  
+    # s+= "<img src='http://localhost:5000/static/transparent_image.png'> </imng>"  #加按钮 按一下 就显示图片 再按一下图片消失
+    # return s #下一步工作：只需要在网上查如何用JavaScript onclick命令显示图片链接即可 -20220211
+    #"<img src='http://localhost:5000/static/transparent_image.png'> </imng> <a href='https://www.123.com/'>123123!</a>"  
 
 
 @REQUEST_API.route('/request', methods=['GET'])
@@ -471,6 +456,7 @@ def edit_record(_id):
         fo.close()
         return jsonify({'BOOK INFO UPDATED BY':BOOK_REQUESTS[_id]}), 200
 
+
 @REQUEST_API.route('/request/<string:_id>', methods=['DELETE'])
 def delete_record(_id):
     """Delete a book request record
@@ -522,7 +508,8 @@ def delete_record(_id):
         # return jsonify({"DELETED ID: ": _id}), 201
         return'ID OF THE DELETED BOOK: ' + _id, 200
 
-
+@REQUEST_API.route('/request/<string:_id>', methods=['get'])
+def edit_image(_id):  # 这是新加的参数
     """Edit a image, add several effects
     @param email: post : the requesters email address
     @param title: post : the title of the book requested

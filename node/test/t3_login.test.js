@@ -21,8 +21,8 @@ describe(ts, function() {
             .expect(200)
             .then(response => {
                   console.log(tag + "****************** respoinse.body=", response.body);
-                  var s = "response.body.UserName = " + response.body.UserName;
-                  assert(response.body.UserName == u2Test.UserName, s );
+                  var s = "response.body.userName = " + response.body.userName;
+                  assert(response.body.userName == u2Test.UserName, s );
                   assert(response.body.code == 1, s );                  
           })
     }); 

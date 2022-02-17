@@ -1,4 +1,4 @@
-const tag = "[g6Default/sqlzSignup.js_v0.34]"; 
+const tag = "[g6Default/sqlzSignup.js_v0.43]"; 
 const hash = require('../../utils/hash');
 const ULID = require('ulid');
 const db = require("../../sequelize/models");
@@ -18,12 +18,13 @@ exports.signup = async function(u,resolve,Service){
     if (u1 === null) {
         const u2 = await g6u.findOne({ where: { EmailAddress: u.EmailAddress } });
         if(u2 === null){
+            u.VerifyCode = ULID.ulid();
             await _sequelize_create(u);
             r.code = 1;
             r.info = "created a new user.";
-            r.tag = tag;
+            r.tag = tag; 
             r.SENDGRID_API_KEY = process.env.SENDGRID_API_KEY?process.env.SENDGRID_API_KEY:"no sendgrid api key";
-            sgMail.sendMail_4_verify_code(u.EmailAddress,u.UserName ,"test code.");
+            sgMail.sendMail_4_verify_code(u.EmailAddress,u.UserName , u.VerifyCode);
         }
         else{
             r.code = -2;
@@ -41,13 +42,13 @@ function  _sequelize_create(user) {
     const u = {
       UserID: ULID.ulid(),
       UserName: user.UserName,
-      Password: hash.toHash(user.Password),
+      Password:  hash.toHash(user.Password),
       FirstName: user.FirstName,
       LastName: user.LastName,
       EmailAddress: user.EmailAddress,
       Location: user.Location,
       PhoneNumber: user.PhoneNumber,
-      VerifyCode: ULID.ulid(),
+      VerifyCode: user.VerifyCode,
       DateOfBirth: user.DateOfBirth,
       AgreeTerms: user.AgreeTerms
     };

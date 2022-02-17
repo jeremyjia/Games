@@ -8,7 +8,7 @@ const db = require("./sequelize/models");
 
 const launchServer = async () => {
   try {
-    sql.initMySQL();
+    //sql.initMySQL();
     db.sequelize.sync({alter:true});
     
     this.expressServer = new ExpressServer(config.HOST_PORT, config.OPENAPI_YAML);
