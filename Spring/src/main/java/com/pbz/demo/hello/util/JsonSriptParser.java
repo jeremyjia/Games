@@ -213,8 +213,8 @@ public final class JsonSriptParser {
 							System.out.println("WARNING: The file " + img.getName() + " doesn't exist!");
 						}
 					}
-					double dr = Double.parseDouble(rate);
-					for (int j = 0; j < times * dr; j++) {
+					
+					for (int j = 0; j < times ; j++) {
 						String destImageFile = System.getProperty("user.dir") + "/" + Integer.toString(index + 1)
 								+ ".jpg";
 						BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -280,7 +280,7 @@ public final class JsonSriptParser {
 						} else {
 							g.setColor(new Color(0, 0, 255));// 帧号颜色
 							g.setFont(new Font("黑体", Font.BOLD, 40));
-							g.drawString("blTest_0.13:" +Integer.toString(index + 1), width - 355, 50);// 显示帧号
+							g.drawString("blTest_0.14:" +Integer.toString(index + 1), width - 355, 50);// 显示帧号
 							ImageIO.write((BufferedImage) image, "JPEG", new File(destImageFile));
 						}
 						g.dispose();
