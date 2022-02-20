@@ -279,7 +279,7 @@ public final class JsonSriptParser {
 						} else {
 							g.setColor(new Color(0, 0, 255));// 帧号颜色
 							g.setFont(new Font("黑体", Font.BOLD, 40));
-							g.drawString("blTest_0.11:" +Integer.toString(index + 1), width - 100, 50);// 显示帧号
+							g.drawString("blTest_0.11:" +Integer.toString(index + 1), width - 200, 50);// 显示帧号
 							ImageIO.write((BufferedImage) image, "JPEG", new File(destImageFile));
 						}
 						g.dispose();
