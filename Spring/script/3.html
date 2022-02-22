@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!-- saved from url=(0046)http://www.baron.com.cn/javascript/bm/you8.htm -->
-<HTML><HEAD><TITLE>模拟跳舞游戏</TITLE>
+<HTML><HEAD><TITLE>模拟游戏</TITLE>
  
 <META http-equiv=Content-Type content="text/html; charset=gb2312">
 <META content="MSHTML 6.00.2900.2873" name=GENERATOR></HEAD>
@@ -22,146 +22,148 @@
                   <TABLE >
                     <TBODY>
                       <TR> 
-                        <TD align=middle> <SCRIPT language=JavaScript>
-<!-- Begin
-var agt=navigator.userAgent.toLowerCase();
-if (agt.indexOf("mac") != -1)
-var a="\r"; 
-else
-var a="\n";
+                        <TD align=middle> 
+                          <SCRIPT language=JavaScript>
+<!-- Begin 
+
+const a="\n";
 var max=0;
 function tlist() {
-max=tlist.arguments.length;
-for (i=0; i<max; i++)
-this[i]=tlist.arguments[i];
+    max=tlist.arguments.length;
+    for (i=0; i<max; i++){
+      this[i]=tlist.arguments[i];
+    }    
 }
-tl = new tlist(
-"   o"+a+
+function init(){
+  return new tlist(
+    "   o"+a+
 "  /|\\"+a+
-" */ \\*        跳舞"+a,
+" */ \\*        "+a,
 
 "   o_"+a+
 "  \<| *"+a+
-"  *\>\\         跳舞"+a,
+"  *\>\\         "+a,
 
 "  _o/*"+a+
 " * |"+a+
-"  / \\         跳舞"+a,
+"  / \\         "+a,
 
 " *\o_"+a+
 "  /  *"+a+
-" \<\\           跳舞"+a,
+" \<\\           "+a,
 
 "  _o/*"+a+
 " * |"+a+
-"  / \\         跳舞"+a,
+"  / \\         "+a,
 
 " *\\c/*"+a+
 "   )"+a+
-"  / \>         跳舞"+a,
+"  / \>         "+a,
 
 "     *"+a+
 "  \\__/c"+a+
-"   \> \\*       跳舞"+a,
+"   \> \\*       "+a,
 
 "   __/"+a+
 "    (o_*"+a+
-"     \\*       跳舞"+a,
+"     \\*       "+a,
 
 "      \\ /"+a+
 "       |"+a+
-"     */o\\*    跳舞"+a,
+"     */o\\*    "+a,
 
 "       \\_"+a+
 "       ("+a+
-"     */o\\*    跳舞"+a,
+"     */o\\*    "+a,
 
 "        \<_"+a+
 "      __("+a+
-"     * o|*    跳舞"+a,
+"     * o|*    "+a,
 
 "         /_"+a+
 "      __("+a+
-"     * o|*   跳舞"+a,
+"     * o|*   "+a,
 
 "         ___"+a+
 "      *\/ \>"+a+
-"       o|*    跳舞"+a,
+"       o|*    "+a,
 
 "        *"+a+
 "       o|_/"+a+
-"      */  \\   跳舞"+a,
+"      */  \\   "+a,
 
 "        *"+a+
 "      _o|_"+a+
-"     *   \>\\   跳舞"+a,
+"     *   \>\\   "+a,
 
 "       _o/*"+a+
 "      * |"+a+
-"       / \\    跳舞"+a,
+"       / \\    "+a,
 
 "      *\\o/*"+a+
 "        |"+a+
-"       / \\    跳舞"+a,
+"       / \\    "+a,
 
 "      c/*"+a+
 "      \<\\"+a+
-"      */\\     跳舞"+a,
+"      */\\     "+a,
 
 "      c__"+a+
 "      \<\ *"+a+
-"      */\\     跳舞"+a,
+"      */\\     "+a,
 
 "      c__"+a+
 "      /\ *"+a+
-"     * /\>     跳舞"+a,
+"     * /\>     "+a,
 
 "      c/*"+a+
 "     /(__"+a+
-"    * /       跳舞"+a,
+"    * /       "+a,
 
 "    __o/*"+a+
 "    * (__"+a+
-"      \<       跳舞"+a,
+"      \<       "+a,
 
 "      __o_"+a+
 "     * /  *"+a+
-"      \<\\      跳舞"+a,
+"      \<\\      "+a,
 
 "     *_o_"+a+
 "       | *"+a+
-"      \< \\     跳舞"+a,
+"      \< \\     "+a,
 
 "     *_c_*"+a+
 "       |"+a+
-"       \>\\     跳舞"+a,
+"       \>\\     "+a,
 
 "     *_c_*"+a+
 "       |__"+a+
-"       \>      跳舞"+a,
+"       \>      "+a,
 
 "     *_c_*"+a+
 "     __|__"+a+
-"              跳舞"+a,
+"              "+a,
 
 " "+a+
 "     *_c_*"+a+
-"     __)__    跳舞"+a,
+"     __)__    "+a,
 
 " "+a+
 "     *\\c/*"+a+
-"     __)__    跳舞"+a
+"     __)__    "+a
+  );
+}
+tl0 = init();
+ 
 
-);
 var x=0;
 function tick() {
-document.animation.cheerleader.value = " " + a +
-tl[x];
-x++;
-if (x != max)
-setTimeout("tick()", 200);
-else
-x = 0;
+    document.animation.cheerleader.value = " " + a + tl0[x];
+    x++;
+    if (x != max)
+      setTimeout("tick()", 200);
+    else
+      x = 0;
 }
 //  End -->
 </SCRIPT> 
