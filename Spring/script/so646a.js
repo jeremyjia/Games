@@ -1,4 +1,4 @@
-var tagSO646 = "[so646.js]_v0.41";
+var tagSO646 = "[so646.js]_v0.42";
 
 var a="\n";
 var max=0;
@@ -145,7 +145,7 @@ function animateFrame(time) {
     var ctx = canvas.getContext('2d');  
 	
 	ctx.fillStyle = 'lightblue';
-	ctx.fillRect(0, 0, w, h);
+	ctx.fillRect(0, 0, 1920, 1080);
 
     ctx.fillStyle = 'purple';
     ctx.font = "30px Verdana";
