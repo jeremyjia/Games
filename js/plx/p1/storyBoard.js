@@ -1,4 +1,4 @@
-var tag_storyBoard = "storyBoard.js_v0.114";
+var tag_storyBoard = "storyBoard.js_v0.115";
 var tb = bl$("id_p1_tb"); 
 
 tb.btnStoryBoard = blo0.blBtn(tb,"btnStoryBoard","storyBoard",blGrey[2]);
@@ -70,7 +70,7 @@ function CStoryBoard(parentDiv){
                                 "type": "javascript",
                                 "frameRange": "(1,1250)",
                                 "attribute": {
-                                    "script": "firework.js",
+                                    "script": "so646a.js",
                                     "function": "animateFrame",
                                     "start": 1
                                 },
