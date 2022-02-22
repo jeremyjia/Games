@@ -1,6 +1,6 @@
-var tagSO646 = "[so646.js]_v0.25";
+var tagSO646 = "[so646.js]_v0.32";
 
-const a="\n";
+var a="\n";
 var max=0;
 function tlist() {
     max=tlist.arguments.length;
@@ -147,7 +147,7 @@ function animateFrame(time) {
 	ctx.fillStyle = 'lightblue';
 	ctx.fillRect(0, 0, w, h);
 
-    ctx.fillStyle = 'yellow';
+    ctx.fillStyle = 'purple';
     ctx.font = "30px Verdana";
     ctx.fillText( tagSO646 + " _sn=" + _sn + " time=" + time, 110, 144);
 	 
