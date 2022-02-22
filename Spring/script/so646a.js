@@ -1,4 +1,4 @@
-var tagSO646 = "[so646.js]_v0.32";
+var tagSO646 = "[so646.js]_v0.33";
 
 var a="\n";
 var max=0;
@@ -140,7 +140,7 @@ function tick(t) {
 
    
 function animateFrame(time) {     
-	const _sn = sn;
+	const _sn = "sn";
     var canvas = document.getElementById('myCanvas');
     var ctx = canvas.getContext('2d');  
 	
