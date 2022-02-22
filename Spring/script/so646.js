@@ -1,10 +1,10 @@
-var tagSO646 = "[so646.js]_v0.25";
+var tagSO646 = "[so646.js]_v0.31";
 
-const a="\n";
-var max=0;
+var a="\n";
+var max0=0;
 function tlist() {
-    max=tlist.arguments.length;
-    for (i=0; i<max; i++){
+    max0=tlist.arguments.length;
+    for (i=0; i<max0; i++){
       this[i]=tlist.arguments[i];
     }    
 }
@@ -129,12 +129,12 @@ function init(){
 }
 tl0 = init();
 
-var x=0;
+var x0=0;
 function tick(t) {
-    var r1 = tl0[x];
+    var r1 = tl0[x0];
 	var r2 = r1.split(a);
-	if(t%12==0)    x++;
-    if (x >= max)     x = 0;
+	if(t%12==0)    x0++;
+    if (x0 >= max0)     x0 = 0;
 	return r2;
 }
 
