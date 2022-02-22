@@ -1,4 +1,4 @@
-var tagSO646 = "[so646.js]_v0.42";
+const tagSO646a = "[so646a.js]_v0.44";
 
 var a="\n";
 var max=0;
@@ -149,7 +149,7 @@ function animateFrame(time) {
 
     ctx.fillStyle = 'purple';
     ctx.font = "30px Verdana";
-    ctx.fillText( tagSO646 + " _sn=" + _sn + " time=" + time, 110, 144);
+    ctx.fillText( tagSO646a + " _sn=" + _sn + " time=" + time, 110, 144);
 	 
 	var l = tick(time);
 	for(i in l){
