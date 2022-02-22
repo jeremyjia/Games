@@ -1,5 +1,5 @@
 var tagHTML = "51voa";
-var vHTML = "51voa: v0.41";
+var vHTML = "51voa: v0.45";
 
 var tb = bl$("id_4_tb_server");
 var v = bl$("id_4_v_server");
@@ -158,8 +158,10 @@ function C51VOA(_tb,_v){
             o.lrcURL = b.lrcURL;
             var oMP3 = document.getElementById("mp3");
             o.mp3URL  = oMP3.href;
-            var imgs = document.getElementsByTagName("img");
-            o.imgURL = imgs[3].src;
+            var divImg = document.getElementsByClassName("contentImage");
+            var imgs = divImg[0].getElementsByTagName("img");
+            o.imgURL = imgs[0].src; 
+
 
             o.blrCreateMP4 = function(b4,d4){ _createMP4(b4,d4,o.lrcURL,o.mp3URL,o.imgURL);};
             o.blrCreateBLS = function(b5,d5){ _createBLS(b5,d5,o.lrcURL,o.mp3URL,o.imgURL,bgColor);};
