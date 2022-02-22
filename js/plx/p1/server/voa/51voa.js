@@ -159,7 +159,7 @@ function C51VOA(_tb,_v){
             var oMP3 = document.getElementById("mp3");
             o.mp3URL  = oMP3.href;
             var imgs = document.getElementsByTagName("img");
-            o.imgURL = imgs[2].src;
+            o.imgURL = imgs[3].src;
 
             o.blrCreateMP4 = function(b4,d4){ _createMP4(b4,d4,o.lrcURL,o.mp3URL,o.imgURL);};
             o.blrCreateBLS = function(b5,d5){ _createBLS(b5,d5,o.lrcURL,o.mp3URL,o.imgURL,bgColor);};
