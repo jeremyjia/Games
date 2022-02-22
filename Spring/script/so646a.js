@@ -1,9 +1,9 @@
-var tagSO646 = "[so646.js]_v0.34";
+var tagSO646 = "[so646.js]_v0.35";
 
 var a="\n";
 var max=0;
-function tlist() {
-    max=tlist.arguments.length;
+function tlist(s) {
+    max=s.length;
     for (i=0; i<max; i++){
       this[i]=tlist.arguments[i];
     }    
