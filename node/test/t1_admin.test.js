@@ -1,4 +1,4 @@
-const tag = "[t1_admin.test.js_v0.31]";
+const tag = "[t1_admin.test.js_v0.41]";
 const config = require('../config'); 
 const ExpressServer = require('../expressServer');
 const ES = new ExpressServer(config.HOST_PORT, config.OPENAPI_YAML);
@@ -32,15 +32,15 @@ describe(tag + ' : admin login & reset', function() {
                 assert(s.length > 11 , "token = " + token);
         })
   }); 
- 
-  var data2Test1 = [
+    
+  it('Test 1.2: [/api/reset] ', function() {
+    var data2Test1 = [
       {
         "ID": 1,
-        "sql": "Drop table group6User"
+        "sql": "Empty table group6User"
       }
-  ];
-  it('Test 1.2: [/api/reset] ', function() {
-        return request(ES.app) 
+    ];
+    return request(ES.app) 
           .post('/api/reset') 
           .send(data2Test1) 
           .set('accept', ac)
@@ -55,17 +55,18 @@ describe(tag + ' : admin login & reset', function() {
                 assert(response.body.code == 1, s); 
                 assert(response.body.n == 4, s + " ..."); 
                 assert(response.body.ID == 1, "response.body.ID =" + response.body.ID);                 
-          })
+    })
   });    
 
-  var data2Test2 = [
+ 
+  it('Test 1.3: [/api/reset] ', function() {
+    var data2Test2 = [
       {
         "ID": 2,
-        "sql": "Drop table group6User"
+        "sql": "Empty table PendingFriends"
       }
-  ];
-  it('Test 1.3: [/api/reset] ', function() {
-        return request(ES.app) 
+    ];
+    return request(ES.app) 
           .post('/api/reset') 
           .send(data2Test2) 
           .set('accept', ac)
@@ -80,7 +81,58 @@ describe(tag + ' : admin login & reset', function() {
                 assert(response.body.code == 1, s); 
                 assert(response.body.n == 4, s + " ..."); 
                 assert(response.body.ID == 2, "response.body.ID =" + response.body.ID);                 
-          })
+    })
+  });    
+
+  
+  it('Test 1.4: [/api/reset] ', function() {
+    var data2Test3 = [
+      {
+        "ID": 3,
+        "sql": "Empty table PendingFriends"
+      }
+    ];
+    return request(ES.app) 
+          .post('/api/reset') 
+          .send(data2Test3) 
+          .set('accept', ac)
+          .set('Authorization', 'Bearer ' + token)
+          .set('Content-Type', 'application/json') 
+          .expect(200)
+          .expect('Content-Type', /json/)
+          .then(response => {
+                console.log(tag + " respoinse.body=", response.body);
+                var s = "";
+                s += 'response.body.code = ' + response.body.code; 
+                assert(response.body.code == 1, s); 
+                assert(response.body.n == 4, s + " ..."); 
+                assert(response.body.ID == 3, "response.body.ID =" + response.body.ID);                 
+    })
+  });    
+
+  it('Test 1.5: [/api/reset] Items', function() {
+    var data2Test = [
+      {
+        "ID": 4,
+        "sql": "Empty table Items"
+      }
+    ];
+    return request(ES.app) 
+          .post('/api/reset') 
+          .send(data2Test) 
+          .set('accept', ac)
+          .set('Authorization', 'Bearer ' + token)
+          .set('Content-Type', 'application/json') 
+          .expect(200)
+          .expect('Content-Type', /json/)
+          .then(response => {
+                console.log(tag + " respoinse.body=", response.body);
+                var s = "";
+                s += 'response.body.code = ' + response.body.code; 
+                assert(response.body.code == 1, s); 
+                assert(response.body.n == 4, s + " ..."); 
+                assert(response.body.ID == 4, "response.body.ID =" + response.body.ID);                 
+    })
   });    
 
 });

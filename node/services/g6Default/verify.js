@@ -1,4 +1,4 @@
-const tag = "[g6Default/verify.js_v0.34]"; 
+const tag = "[g6Default/verify.js_v0.41]"; 
 
 const db = require("../../sequelize/models");
 const g6u = db.Group6Users;
@@ -31,9 +31,13 @@ async function _sqlz_2_verify(req,resolve,Service){
     .then(num => {
           if (num == 1) {
               r.message = "Group6User was updated successfully.";
+              var url = config.VERIFY_REDIRECT_URL;    
+              l.tag("redirect:" + url);
+              resolve(Service.redirectResponse(url));	 
           } else {
             r.message = `num=${num} : Cannot update database with code=${code}`;
             r.codeInDB = "NO"; 
+            resolve(Service.successResponse(r)); 
           }
     })
     .catch(err => {
@@ -42,8 +46,6 @@ async function _sqlz_2_verify(req,resolve,Service){
             resolve(Service.successResponse(r)); 
     });
    
-    var url = config.VERIFY_REDIRECT_URL;    
-    resolve(Service.redirectResponse(url));	 
 }
  
 

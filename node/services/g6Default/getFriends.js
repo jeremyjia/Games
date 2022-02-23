@@ -1,6 +1,6 @@
-const tag = "[g6Default/getFriends.js_v0.12]";
-var mysql = require('mysql');
-const config = require('../../config'); 
+const tag = "[g6Default/getFriends.js_v0.15]"; 
+const db = require("../../sequelize/models");
+const g6F = db.Friends;
 const l = require('../../logger');
 
  l.tag(tag);
@@ -10,37 +10,20 @@ exports.getFriends = function(resolve,Service){
 } 
 
 function _sqlzUtil (resolve,Service){ 
-  var r = {};
-  r.code = 1;
-  r.n = 0;
-  r.str = [];
-  resolve(Service.successResponse(r));    
-}
-function _oldUtil (resolve,Service){ 
-  var sR = tag+ " [getFriends]--------- " + Date();
-  l.tag1(tag,sR);
-
-  var _sql = "SELECT * FROM Friends";
-
-  var con = mysql.createConnection(config.oLocalDB);
-  con.connect();
-  con.query(_sql, function (err, result, fields) {
-    if (err)   {
-      console.log(err);  
-      console.log(err.sqlMessage);  
-      sR = err.sqlMessage;
-      resolve(Service.successResponse(sR));    
-    } 
-    else{ 
-        var r = JSON.stringify(result); 
-        sR = r;
-        var o = {};
-        o.code = 1;
-        o.n = result.length;
-        o.str = r;
-        resolve(Service.successResponse(o));    
-    }         
+  var r = {}; 
+  
+  var condition =  null;    
+  g6F.findAll({ where: condition })
+  .then(data => {
+      r.code = 1;   
+      r.str = data;
+      r.message = "getFriends: OK.";
+      resolve(Service.successResponse(r));  
+  })
+  .catch(err => {
+      r.code = -1;
+      r.message = err.message;
+      resolve(Service.successResponse(r));  
   }); 
-con.end();
-  return sR;
 } 
+ 

@@ -22,8 +22,8 @@ describe(tag, function() {
                   .expect(200)
                   .then(response => {
                         console.log(tag + "****************** respoinse.body=", response.body);
-                        var s = "response.body.UserName = " + response.body.UserName;
-                        assert(response.body.UserName == u2Test.UserName, s );
+                        var s = "response.body.userName = " + response.body.userName;
+                        assert(response.body.userName == u2Test.UserName, s );
                         assert(response.body.code == 1, s );   
                         token = response.body.token;               
             })
@@ -88,8 +88,7 @@ describe(tag, function() {
           assert(response.body.str.length == 0,"Should be empty.")
       })
     });
-
-    //*
+ 
     n++;
     it(tag + n + ': getFriends.', function() {
       return request(ES.app)
@@ -101,8 +100,7 @@ describe(tag, function() {
           assert(response.body.code == 1, "response.body.code=" + response.body.code); 
           assert(response.body.str.length == 0,"Should be empty.")
       })
-    });
-    //*/
+    }); 
 
     n++;    
     it(tag + n + ': RequestToMakeFriend.', function() {
@@ -120,6 +118,7 @@ describe(tag, function() {
             .then(response => {
                   console.log(tag + "****************** respoinse.body=", response.body);
                   assert(response.body.code == 1,"response.body.code=" + response.body.code);
+                  assert(response.body.data != null,"data="+ JSON.stringify(response.body.data));
 
           })
     });
@@ -138,11 +137,53 @@ describe(tag, function() {
           assert(response.body.code == 1, "allPendingFriends.RequestID = " + allPendingFriends.RequestID);
           assert(resAllPlayers[0].UserID == allPendingFriends[0].FromID, "allPendingFriends[0].FromID = " + allPendingFriends[0].FromID);
           assert(resAllPlayers[1].UserID == allPendingFriends[0].ToID, "allPendingFriends[0].FromID = " + allPendingFriends[0].FromID);
+          assert(null != allPendingFriends[0].RequestID, "allPendingFriends[0].ReqID = " + allPendingFriends[0].RequestID);
           assert("Unknown" == allPendingFriends[0].status, "allPendingFriends[0].status = " + allPendingFriends[0].status);
+          
+          assert(1 == response.body.str.length,"l=" + response.body.str.length);   
 
       })
     });
 
+    n++;    
+    it(tag + n + ': ReponseToMakeFriend.', function() {
+          var o = {};
+          o.ReqID  = allPendingFriends[0].RequestID;
+          o.FromID  = allPendingFriends[0].FromID;
+          o.ToID    = allPendingFriends[0].ToID;
+          o.status  = "Yes";
+          return request(ES.app)
+            .post('/api/ReponseToMakeFriend')
+            .send(o)
+            .set('accept', 'application/json')
+            .set('Content-Type','application/json')
+            .set('Authorization','Bearer ' + token)
+            .expect(200)
+            .then(response => {                  
+                  assert(response.body.code == 1,"response.body.code=" + response.body.code + ":message=" + + response.body.message);
+                  assert(response.body.ReqID == o.ReqID,"ReqID=="+response.body.ReqID);
+                  assert(response.body.FromID == o.FromID,"FromID=="+response.body.FromID);
+                  assert(response.body.ToID == o.ToID,"ToID=="+response.body.ToID);
+                  
+            })
+    });
+
+    n++;
+    it(tag + n + ': getFriends.', function() {
+      return request(ES.app)
+        .get('/api/getFriends') 
+        .set('accept', 'application/json')
+        .set('Authorization','Bearer ' + token)
+        .expect(200)
+        .then(response => { 
+          assert(response.body.code == 1, "response.body.code=" + response.body.code); 
+          assert(response.body.str.length == 1,"response.body.str.length =" + response.body.str.length);
+          assert(response.body.str[0].FromID == allPendingFriends[0].FromID,"FromID=="+response.body.str[0].FromID);
+          assert(response.body.str[0].ToID == allPendingFriends[0].ToID,"ToID=="+response.body.str[0].ToID);
+          assert(response.body.str[0].status == "Yes","status=="+response.body.str[0].status);
+          assert(response.body.str[0].RequestID == allPendingFriends[0].RequestID,"RequestID=="+response.body.str[0].RequestID);
+      })
+    }); 
 
 
 

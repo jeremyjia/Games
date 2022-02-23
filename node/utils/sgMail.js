@@ -1,4 +1,4 @@
-const tag = "[utils/sgMail.js_v0.31]"; 
+const tag = "[utils/sgMail.js_v0.32]"; 
 const config = require('../config'); 
 const l = require('../logger');
 l.tag(tag);
@@ -63,7 +63,7 @@ e.sendMail_4_reset_password = function(toEmail,userName,code){
            ],
            "dynamic_template_data":{ 
               "yourLink": config.RESET_PASSWORD_PAGE_URL + "?code=" + code,
-              "userName": userName + ": code = " + code
+              "userName": userName
            }
         }
            

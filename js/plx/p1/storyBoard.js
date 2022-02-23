@@ -1,4 +1,4 @@
-var tag = "storyBoard.js_v0.15";
+var tag_storyBoard = "storyBoard.js_v0.114";
 var tb = bl$("id_p1_tb"); 
 
 tb.btnStoryBoard = blo0.blBtn(tb,"btnStoryBoard","storyBoard",blGrey[2]);
@@ -40,7 +40,7 @@ function CStoryBoard(parentDiv){
                 var d = new Date();
                 _this.inf.D = d;
                 _this.inf.n = 0; 
-                _this.inf.v = "0.0.3";
+                _this.inf.v = "v0.12";
                 _this.inf.w = 1920;
                 _this.inf.h = 1080;
                 _this.inf.music = "1.mp3";
@@ -48,24 +48,44 @@ function CStoryBoard(parentDiv){
                 
                 _this.inf2JSON = function(_btn){
                     return function(){
-                        _btn.inf.n = o.listCards.length;
+                        var listCards = o.listCards();
+                        _btn.inf.n = listCards.length;
                         var r = o.newScript(_btn.inf.v,
                                 _btn.inf.w,
                                 _btn.inf.h,
                                 _btn.inf.music,
                                 _btn.inf.rate);
+                        //*
                         var n=0;
-                        for(i in o.listCards){
+                        for(i in listCards){                                                    
                             n++;
-                            var f = o.newFrame(n,1,i*50%250+",100,200");
+                            
+                            var f = o.newFrame(listCards[i].inf.index,listCards[i].inf.duration,
+                                listCards[i].inf.c
+                                );
+                            f.objects = listCards[i].inf.objects;
+                            o.AddFrame2Script(r,f);     
+                            
+                            var so = {
+                                "type": "javascript",
+                                "frameRange": "(1,1250)",
+                                "attribute": {
+                                    "script": "firework.js",
+                                    "function": "animateFrame",
+                                    "start": 1
+                                },
+                                "layer": 1
+                            };
 
-                            o.AddFrame2Script(r,f);                            
+                            o.addSuperObj2Script(r,so);
                         }
+                        //*/
+                        
                         var s = JSON.stringify(r); 
                         return s;
                     }
                 }(_this);
-                _this.inf.toJSON = function(_btn){
+                _this.inf.makeBLS = function(_btn){
                     return function(v1){        
                         var vta = blo0.blDiv(v1,v1.id+"vta","vta" ,"grey"); 
                         vta.innerHTML = "";
@@ -74,19 +94,38 @@ function CStoryBoard(parentDiv){
         
                         var ta = blo0.blTextarea(vta.v1,vta.v1.id+"ta","ta","lightgreen");
                         ta.style.width = 100 + "%";
+                        ta.style.height = "130px";
                         ta.value = _btn.inf2JSON();
         
-                        vta.v2.saveAs_v3 = blo0.blBtn(vta.v2,vta.v2.id+"b1","saveAs_v3.json",blGrey[0]);
-                        vta.v2.saveAs_v3.onclick = function(){ 
+                        vta.v2.saveAsBLS = blo0.blBtn(vta.v2,vta.v2.id+"b1","saveAsBLS",blGrey[0]);
+                        vta.v2.saveAsBLS.onclick = function(){ 
                             var data = ta.value;
                             var xhr = new XMLHttpRequest();
                             xhr.withCredentials = true;
                             xhr.addEventListener("readystatechange", function() {
-                            if(this.readyState === 4) {
-                                ta.value = this.responseText;
-                            }	
+                                if(this.readyState === 4) {
+                                    var _this_vta = vta;
+                                    if(!_this_vta.v3){
+                                        _this_vta.v3 = blo0.blDiv(_this_vta.v2,_this_vta.v2.id+"v3","v3",blGrey[3]);
+                                        var btnMakeMP4 = blo0.blBtn(_this_vta.v2,_this_vta.v2.id+"btnMakeMP4","makeMP4",blGrey[0]);
+                                        var v4MP4 = blo0.blDiv(_this_vta.v2,_this_vta.v2.id+"v4MP4","v4MP4",blGrey[4]);
+                                        btnMakeMP4.onclick = function(_v4MP4,_url){
+                                            return function(){
+                                                var w = {};
+                                                w._2do = function(txt){
+                                                    _v4MP4.innerHTML = txt;
+                                                }
+                                                blo0.blAjx(w,_url);                                                                         
+                                            }         
+                                        }(v4MP4,"http://localhost:8080/image/json2video?script=wholeStory" + ".json&video=wholeStory" +".mp4");
+                                    }
+                                    var s = "<a target='_blank' href='http://localhost:8080/wholeStory";
+                                    s += ".json'>wholeStory"+".json</a>";
+
+                                    _this_vta.v3.innerHTML = s;
+                                }	
                             });
-                            xhr.open("POST", "http://localhost:8080/json?fileName=v3.json");
+                            xhr.open("POST", "http://localhost:8080/json?fileName=wholeStory.json");
                             xhr.setRequestHeader("Content-Type", "text/plain");
                             xhr.send(data);
                         }

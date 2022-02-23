@@ -106,8 +106,7 @@ function _setSvr(wsurl,_btnDbg){
             cs.onclick = function(){  
                 var v = bl$("id_2ID_4_Chat");   
                 v.innerHTML = "all";            }
-        }
-    
+        }    
     
         //update
         if (response.method === "update"){

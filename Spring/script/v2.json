@@ -1,41 +1,23 @@
 ﻿{
-    "request": {
-        "version": "0.2.3",
-        "width": 760,
-        "height": 480,
-        "music": "1.mp3",
-        "rate": "1",
-        "frames": [
+    "request":
+    {
+        "version":"0.0.32",
+        "width":1920,
+        "height":1080,
+        "music":"1.mp3",
+        "rate":"1",
+        "frames":[
             {
-                "number": "1", 
-                "time": 120, 
-                "objects": [
-                    {
-                        "text": "Lesson 1 A Private Conversation", 
-                        "x": 50,
-                        "y": 700,
-                        "size": 40,
-                        "color": "0,20,255"
-                    },
-                    {
-                        "text": "Hello,this is designed by Jeremy", 
-                        "x": 50,
-                        "y": 200,
-                        "size": 50,
-                        "color": "50,87,30"
-
-                    },
-                    {
-                        "text": "test by littleflute", 
-                        "x": 10,
-                        "y": 200,
-                        "size": 50,
-                        "color": "250,1,30"
-
-                    }
+                "number":"1",
+                "time":120,
+                "objects": [        
+                    
+                    {"graphic":"circle","attribute":{"left":111,"top":111,"right":222,"bottom":222,"size":5,"color":"red"}},
+                    {"graphic":"text","attribute":{"left":15,"top":110,"right":333,"bottom":222,"size":5,"color":"255,255,1"}},            
+                    {"graphic":"line","attribute":{"left":15,"top":110,"right":333,"bottom":222,"size":5,"color":"255,255,1"}},
+                    {"graphic":"line","attribute":{"left":15,"top":222,"right":333,"bottom":111,"size":5,"color":"255,1,1"}}
                 ],
-                "backgroundColor": "128,1,128"
-            },  
+                "backgroundColor":"1,100,200"}
         ]
     }
 }
