@@ -115,15 +115,18 @@ public class FileController {
 			sourceFileName = url.substring(index + 1);
 		}
 		if (sourceFileName.trim().length() == 0 || sourceFileName.indexOf(".") == -1) {
-//			resMap.put("error", "The url " + url + " is not correct!");
-//			return resMap;
+			// resMap.put("error", "The url " + url + " is not correct!");
+			// return resMap;
 		}
 		if (outputFileName.indexOf(".") == -1) {
 			resMap.put("error", "The output file name " + outputFileName + " is not correct!");
 			return resMap;
 		}
 
-		String downloadFilePath = System.getProperty("user.dir") + "/" + outputFileName;
+		String downloadFilePath = outputFileName;
+		if (!outputFileName.matches("([a-zA-Z]:)?(\\\\[a-zA-Z0-9_.-]+)+\\\\?")) {
+			downloadFilePath = System.getProperty("user.dir") + "/" + outputFileName;
+		}
 		long s = System.currentTimeMillis();
 		url = url.replaceAll(" ", "%20");
 		URL httpUrl = new URL(url);
