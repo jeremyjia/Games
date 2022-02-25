@@ -17,6 +17,7 @@
     "mysql2": "^2.2.5",
     "request": "^2.88.2",
     "supertest": "^6.2.2",
+    "swagger-ui-express": "^4.3.0",
     "winston": "^3.6.0"
   },
   "devDependencies": {
