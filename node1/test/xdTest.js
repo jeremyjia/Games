@@ -1,3 +1,4 @@
+const tag4xdTest = "xdTest.js_v0.11";
 const assert = require('chai').assert;
 const ExpressServer = require('../expressServer');
 const ES = new ExpressServer(config.HOST_PORT, config.OPENAPI_YAML);
@@ -5,7 +6,9 @@ const request = require('supertest');
 const app = require('../app/xd.js');
 const spiderTest = require('./spider/index.js');
 
-describe('xdApp', function(){ 
+const config = require('../config');
+
+describe(tag4xdTest, function(){ 
   
   it('spiderTest: test1', function(){     
     spiderTest.test1(assert);   
