@@ -1,7 +1,6 @@
 const tag = "[expressServer.js_v0.41]"; 
-const path = require('path');
-const swaggerUI = require('swagger-ui-express');
-const yamljs = require('yamljs');
+const l = require('./logger');
+const path = require('path'); 
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
@@ -10,6 +9,7 @@ const { OpenApiValidator } = require('express-openapi-validator');
 const config = require('./config');
  
 
+l.tag1(tag,"-----------------------xd23------")
 console.log(tag);     
   
 
@@ -18,8 +18,7 @@ class ExpressServer {
   constructor(port, openApiYaml) {
     this.port = port;
     this.app = express();
-    this.openApiPath = openApiYaml;
-    this.schema = yamljs.load(openApiYaml);
+    
     this.setupMiddleware();
   }
 
@@ -49,41 +48,22 @@ class ExpressServer {
         res.sendFile('index.html' , { root : __dirname});        
       }); 
       this.app.use('/old',blOld.fOld);
-      this.app.use('/spec', express.static(path.join(__dirname, 'api')));
-      this.app.get('/hello', (req, res) => res.send('Hello World. path: '+this.openApiPath));
-      this.app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(this.schema));
+      this.app.use('/spec', express.static(path.join(__dirname, 'api'))); 
        
 	  }
   }
-
-  addErrorHandler() {
-    this.app.use('*', (req, res) => {
-      res.status(404);
-      res.send(JSON.stringify({ error: `path ${req.baseUrl} doesn't exist` }));
-    });
-    /**
-     * suppressed eslint rule: The next variable is required here, even though it's not used.
-     *
-     ** */
-    // eslint-disable-next-line no-unused-vars
-    this.app.use((error, req, res, next) => {
-      const errorResponse = error.error || error.errors || error.message || 'Unknown error';
-      res.status(error.status || 500);
-      res.type('json');
-      res.json({ error: errorResponse });
-    });
-  }
-
+ 
   async launch() {
+    l.tag1(tag,"xd21------")
     return new Promise(
       async (resolve, reject) => {
-        try {
-          this.addErrorHandler();
+        try { 
           this.server = await this.app.listen(this.port, () => {
             console.log(`server running on port ${this.port}`);
             resolve(this.server);
           });
         } catch (error) {
+          console.log("xddbg...");     
           reject(error);
         }
       },
