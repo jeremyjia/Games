@@ -8,11 +8,10 @@ info:
     name: AllRightsReserved
     url: https://www.battlecasters.io/
   title: Group 6 Studios API
-  version: 1.0.281
+  version: 1.0.431
 
 servers:
 - url: http://localhost:8080/api
-- url: http://localhost:3000/api
 
 security:
 - bearerAuth: []
@@ -417,6 +416,32 @@ paths:
       x-openapi-router-controller: DefaultController
       x-openapi-router-service: DefaultService
 
+  /lookupItem:
+    get:
+      operationId: lookupItem
+      parameters:
+      - description: query id.
+        explode: true
+        in: query
+        name: id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: '#/components/schemas/Group6Game'
+                type: array
+          description: search results matching criteria
+        "400":
+          content: {}
+          description: bad input parameter
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
 
   /coinAndgem:
     get:
@@ -516,6 +541,22 @@ paths:
                 items:
                   $ref: '#/components/schemas/Group6Game'
                 type: array
+          description: search results matching criteria
+        "400":
+          content: {}
+          description: bad input parameter
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+
+  /listItems:
+    get:
+      operationId: listItems 
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListWrapper'
           description: search results matching criteria
         "400":
           content: {}
@@ -664,8 +705,256 @@ paths:
       x-openapi-router-controller: AdminsController
       x-openapi-router-service: AdminsService
 
+  /innerMigrateData:
+    post:
+      description: admin innerMigrateData.
+      operationId: innerMigrateData
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/reqInf4InnerMigrateData' 
+        description: admin innerMigrateData
+        required: false
+
+      responses:
+        "201":
+          content: {}
+          description: admin innerMigrateData
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: error!
+      summary: api/innerMigrateData
+      tags:
+      - admins
+      x-openapi-router-controller: AdminsController
+      x-openapi-router-service: AdminsService
+
+
+  /addItem:
+    post:
+      description: admin addItem.
+      operationId: addItem
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/reqInf4AddItem' 
+        description: admin addItem
+        required: false
+
+      responses:
+        "201":
+          content: {}
+          description: admin addItem
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: error!
+      summary: api/addItem
+      tags:
+      - admins
+      x-openapi-router-controller: AdminsController
+      x-openapi-router-service: AdminsService
+
+  /removeItem:
+    delete:
+      operationId: removeItem
+      parameters:
+      - description: query id.
+        explode: true
+        in: query
+        name: id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: '#/components/schemas/reqInf4AddItem'
+                type: array
+          description: search results matching criteria
+        "400":
+          content: {}
+          description: bad input parameter
+      summary: api/removeItem
+      tags:
+      - admins
+      x-openapi-router-controller: AdminsController
+      x-openapi-router-service: AdminsService
+
+  /addUserItem:
+    post:
+      description: admin addUserItem.
+      operationId: addUserItem
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/reqInf4AddUserItem' 
+        description: admin addUserItem
+        required: false
+
+      responses:
+        "201":
+          content: {}
+          description: admin addUserItem
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: error!
+      summary: api/addUserItem
+      tags:
+      - admins
+      x-openapi-router-controller: AdminsController
+      x-openapi-router-service: AdminsService
+
+  /removeUserItem:
+    delete:
+      operationId: removeUserItem
+      parameters:
+      - description: removeUserItem
+        explode: true
+        in: query
+        name: id
+        required: true
+        schema:
+          type: string
+        style: form
+        
+      - description: removeUserItem
+        explode: true
+        in: query
+        name: ItemID
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: '#/components/schemas/reqInf4AddItem'
+                type: array
+          description: search results matching criteria
+        "400":
+          content: {}
+          description: bad input parameter
+      summary: api/removeUserItem
+      tags:
+      - admins
+      x-openapi-router-controller: AdminsController
+      x-openapi-router-service: AdminsService
+
 components:
-  schemas:
+  schemas: 
+
+    reqInf4AddUserItem:
+      example:
+        User_ID: 01FS23NC520C557X7KD1284HJA
+        Item_ID: 1
+        Item_Quantity : 1
+        
+
+      properties:
+        User_ID:
+          example: 01FS23NC520C557X7KD1284HJA
+          type: string
+        Item_ID:
+          example: 1
+          type: integer
+        Item_Quantity:
+          example: 1
+          type: integer 
+
+      required:
+      - User_ID
+      - Item_ID
+      - Item_Quantity 
+      type: object
+
+    reqInf4AddItem:
+      example:
+        Item_ID: 1
+        Item_Name: item1
+        Item_Description : Description for item1
+        Item_Thumbnail_ID: 1
+        Item_Metadata : "{'price': 1000,    'currency': 'coins',    'type': 'skin',    'character': 'vesta'  }"
+
+
+      properties:
+        Item_ID:
+          example: 1
+          type: integer
+        Item_Name:
+          example: item1
+          type: string
+        Item_Description:
+          example: Description for item1
+          type: string
+        Item_Thumbnail_ID:
+          example: 1
+          type: integer
+        Item_Metadata:
+          example: "{  'cardId': 45,  'variant': 1,  'foil': false } "
+          type: string
+          
+      required:
+      - Item_ID
+      - Item_Name
+      - Item_Description
+      - Item_Thumbnail_ID
+      - Item_Metadata
+      type: object
+
+    reqInf4InnerMigrateData:
+      example:
+        DB_HOST: localhost
+        DB_USER: root
+        DB_PASSWORD: group6db
+        DB_NAME: g6DB
+        DB_TABLE_NAME: Group6Users
+
+      properties:
+        DB_HOST:
+          example: localhost
+          type: string
+        DB_USER:
+          example: root
+          type: string
+        DB_PASSWORD:
+          example: group6db
+          type: string
+        DB_PASSWORD:
+          example: group6db
+          type: string
+        DB_NAME:
+          example: g6DB
+          type: string
+        DB_TABLE_NAME:
+          example: Group6Users
+          type: string
+      required:
+      - DB_HOST
+      - DB_USER
+      - DB_PASSWORD
+      - DB_NAME
+      - DB_TABLE_NAME
+      type: object
+
     reqInf4Reset:
       example:
         ID: 1

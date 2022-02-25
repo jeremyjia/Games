@@ -1654,12 +1654,40 @@ function CBlClass ()
 
 		return d1;
 	}
+<<<<<<< HEAD
 	this.blNewFun = function(o){
 		var video = document.getElementById("id_4_video");
 	   var ddbg = document.getElementById("id4Debug");
        video.currentTime = o.id;
 	   ddbg.innerHTML = o.id; 
 	}
+=======
+	this.blDate = function(){
+		const d = new Date();
+		var year = d.getFullYear();
+		var month = d.getMonth()+1;
+		var date = d.getDate();
+		var hours = d.getHours();
+		var minutes = d.getMinutes();
+		var seconds = d.getSeconds();
+		var s = year + "_" +month+"_"+date+"-"+hours+"_"+minutes+"_"+seconds;
+		return s;
+	}
+	this.blShowHTMLFile = function(urlFileName,b2,d2){ 
+        if(!d2.v){
+            b2.v = this.blMDiv(d2, d2.id + "mv", "mv4Lyrics",444,10,1111,200,blGrey[1]);
+            var v1 = this.blDiv(b2.v,b2.v.id+"v1","v1",blGrey[2]);
+            var w = {};
+            w._2do = function(txt){   
+                v1.innerHTML = txt;
+            } 
+            this.blAjx(w,urlFileName);
+        } 
+
+        _on_off_div(b2,d2);
+        b2.style.background = b2.style.background=="red"?blGrey[5]:blColor[4];            
+    };
+>>>>>>> w1
 }//END: function CBlClass ()
  
 var blo0 = new CBlClass;

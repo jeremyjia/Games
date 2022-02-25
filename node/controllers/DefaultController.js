@@ -1,4 +1,4 @@
-const tag = "[controllers/DefaultController.js_v0.114]";
+const tag = "[controllers/DefaultController.js_v0.122]";
 const Controller = require('./Controller');
 const sqlzCtrler = require("../sequelize/controllers/Group6User.controller.js");
 
@@ -88,6 +88,16 @@ class DefaultController {
 
   async deletePlayerGET(request, response) {
     await Controller.handleRequest(request, response, this.service.deletePlayerGET);
+  }
+  
+  async lookupItem(request, response) {
+    await Controller.handleRequest(request, response, this.service.lookupItem);
+  }
+  
+  async listItems(request, response) {
+    l.tag1(tag,"listItems ...   curUserName=" + request.curUserName);
+    l.tag1(tag,"listItems ...   curUserID=" + request.curUserID);
+    await Controller.handleRequest(request, response, this.service.listItems);
   }
   
 }
