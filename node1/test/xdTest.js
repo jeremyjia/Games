@@ -1,12 +1,12 @@
-const tag4xdTest = "xdTest.js_v0.11";
+const tag4xdTest = "xdTest.js_v0.12";
 const assert = require('chai').assert;
+const config = require('../config');
 const ExpressServer = require('../expressServer');
 const ES = new ExpressServer(config.HOST_PORT, config.OPENAPI_YAML);
 const request = require('supertest');
 const app = require('../app/xd.js');
 const spiderTest = require('./spider/index.js');
 
-const config = require('../config');
 
 describe(tag4xdTest, function(){ 
   
@@ -22,8 +22,8 @@ describe(tag4xdTest, function(){
       .set('accept', 'application/json') 
       .expect(200) 
       .then(response => {   
-        var testMe = response.body.Classnum; 
-        assert(0==testMe,"testMe=" + testMe);
+        var testMe = response.body.api; 
+        assert("spider"==testMe,"testMe=" + testMe);
     }) 
   });    
 
