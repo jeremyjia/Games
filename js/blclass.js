@@ -1654,14 +1654,12 @@ function CBlClass ()
 
 		return d1;
 	}
-<<<<<<< HEAD
 	this.blNewFun = function(o){
 		var video = document.getElementById("id_4_video");
 	   var ddbg = document.getElementById("id4Debug");
        video.currentTime = o.id;
 	   ddbg.innerHTML = o.id; 
 	}
-=======
 	this.blDate = function(){
 		const d = new Date();
 		var year = d.getFullYear();
@@ -1687,7 +1685,6 @@ function CBlClass ()
         _on_off_div(b2,d2);
         b2.style.background = b2.style.background=="red"?blGrey[5]:blColor[4];            
     };
->>>>>>> w1
 }//END: function CBlClass ()
  
 var blo0 = new CBlClass;
