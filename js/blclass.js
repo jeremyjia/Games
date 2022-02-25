@@ -1654,12 +1654,6 @@ function CBlClass ()
 
 		return d1;
 	}
-	this.blNewFun = function(o){
-		var video = document.getElementById("id_4_video");
-	   var ddbg = document.getElementById("id4Debug");
-       video.currentTime = o.id;
-	   ddbg.innerHTML = o.id; 
-	}
 	this.blDate = function(){
 		const d = new Date();
 		var year = d.getFullYear();
