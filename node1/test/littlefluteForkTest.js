@@ -3,6 +3,6 @@ const app = require('../app/littlefluteFork.js');
 
 describe('littlefluteFork', function(){
   it('littlefluteFork', function(){
-    assert.equal(app(),'to test littlefluteForkApp: done.');
+    assert.equal(app(),'to test littlefluteForkApp: never finished.');
   });
 });
