@@ -1,26 +1,22 @@
+const config = require('./config');
+const logger = require('./logger');
+const ExpressServer = require('./expressServer'); 
+ 
 
-const express = require("express");
-const path = require('path');
+const launchServer = async () => {
+  try {  
+    
+    this.expressServer = new ExpressServer(config.HOST_PORT, config.OPENAPI_YAML);
+    await this.expressServer.launch(); 
+      
+    logger.tag1("::",'process.env.DB_NAME = ' + process.env.DB_NAME + ', SENDGRID_API_KEY = ' + process.env.SENDGRID_API_KEY);
+ 
+ 
 
-const app = express();
-const port = process.env.SERVER_PORT || 8000;
+  } catch (error) {
+    logger.error(error);
+    await this.close();
+  }
+};
 
-
-// Add Access Control Allow Origin headers
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  next();
-});
-
-
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.get("/api", (req, res) => {
-  res.json("index2: /api");
-});
-
-app.listen(port, () => console.log(`Listening on port ${port}`));
+launchServer().catch(e => logger.error(e));
