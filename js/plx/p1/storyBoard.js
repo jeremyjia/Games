@@ -40,11 +40,7 @@ function CStoryBoard(parentDiv){
                 var d = new Date();
                 _this.inf.D = d;
                 _this.inf.n = 0; 
-<<<<<<< HEAD
-                _this.inf.v = v;
-=======
                 _this.inf.v = "v0.12";
->>>>>>> w1
                 _this.inf.w = 1920;
                 _this.inf.h = 1080;
                 _this.inf.music = "1.mp3";
