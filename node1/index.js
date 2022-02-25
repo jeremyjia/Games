@@ -6,7 +6,7 @@ const path = require('path');
 const spider = require('./app/spider/index.js');
 const sgTest = require('./app/sendGrid.js');
 
-const port = 3000 
+const port = 3001 
 
 app.use(cors())
 app.use(express.static(path.join(__dirname, 'public')));
