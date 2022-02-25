@@ -8,6 +8,7 @@ const bodyParser = require('body-parser');
 const { OpenApiValidator } = require('express-openapi-validator'); 
 const config = require('./config');
  
+const spider = require('./app/spider/index.js');
 
 l.tag1(tag,"-----------------------xd23------")
 console.log(tag);     
@@ -26,13 +27,16 @@ class ExpressServer {
       res.end('Hello index2.js.' + this.openApiYaml);
     });
     this.app.get('/spider', (req, res) => {      
+      spider.spider(req,res);
       //res.end('spider.' + this.openApiYaml);
+      /*
       res.status(200);
       var r = {};
       r.api = "spider";
       r.yaml = this.openApiYaml;
       r.query = req.query;
       res.json(r);
+      */
     });
   }
 

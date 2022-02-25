@@ -24,6 +24,9 @@ describe(tag4xdTest, function(){
       .then(response => {   
         var testMe = response.body.api; 
         assert("spider"==testMe,"testMe=" + testMe);
+        var Classnum = response.body.Classnum; 
+        assert(1==Classnum,"Classnum=" + Classnum);
+
     }) 
   });    
 
