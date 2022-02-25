@@ -11,7 +11,7 @@ const launchServer = async () => {
     l.tag1(tagIndex,"xd2-------");
     
     this.expressServer = new ExpressServer(config.HOST_PORT, config.OPENAPI_YAML);
-    //await this.expressServer.launch(); 
+    await this.expressServer.launch(); 
 
     l.tag1(tagIndex,"xd3-------");   
  

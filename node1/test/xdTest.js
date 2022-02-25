@@ -1,6 +1,6 @@
 const assert = require('chai').assert;
-const express = require('express')
-const ESv = express()
+const ExpressServer = require('../expressServer');
+const ES = new ExpressServer(config.HOST_PORT, config.OPENAPI_YAML);
 const request = require('supertest');
 const app = require('../app/xd.js');
 const spiderTest = require('./spider/index.js');
@@ -13,7 +13,7 @@ describe('xdApp', function(){
 
   
   it('endpoint test.', function() {    
-    return request(ESv)
+    return request(ES.app)
       .get('/spider')
       .send()
       .set('accept', 'application/json') 
