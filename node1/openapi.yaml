@@ -1,0 +1,1269 @@
+openapi: 3.0.1
+
+info:
+  contact:
+    email: social@group6.io
+  description: Group 6 Studios API
+  license:
+    name: AllRightsReserved
+    url: https://www.battlecasters.io/
+  title: Group 6 Studios API
+  version: 1.0.431
+
+servers:
+- url: http://localhost:8080/api
+
+security:
+- bearerAuth: []
+
+paths:
+  /NewPlayer:
+    post:
+      description: Adds a player to the system
+      operationId: addPlayer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupReqInf'
+        description: Inventory item to add
+        required: false
+      security: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResInf'
+          description: item created
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: an existing item already exists
+      summary: api/addPlayer
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+
+  /verify:
+    get:
+      description: verify code
+      operationId: verify
+      parameters:
+      - description: query code.
+        explode: true
+        in: query
+        name: code
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResInf'
+          description: item created
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: an existing item already exists
+      summary: api/verify
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+
+  /checkUserName:
+    get:
+      description: check User Name
+      operationId: checkUserName
+      parameters:
+      - description: query user name.
+        explode: true
+        in: query
+        name: UserName
+        required: true
+        schema:
+          type: string
+        style: form
+      security: []    
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResInf'
+          description: item created
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: an existing item already exists
+      summary: api/checkUserName
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+
+  /checkEmailAddress:
+    get:
+      description: check email address
+      operationId: checkEmailAddress
+      parameters:
+      - description: query email address
+        explode: true
+        in: query
+        name: EmailAddress
+        required: true
+        schema:
+          type: string
+        style: form
+      security: []    
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResInf'
+          description: item created
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: an existing item already exists
+      summary: api/checkEmailAddress
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+
+  /login:
+    post:
+      description: login to the system
+      operationId: loginTest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginInf'
+        description: login test
+        required: false
+      security: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResInf'
+          description: return a token to the client.
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: description=409
+      summary: api/login
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+
+  /logout:
+    post:
+      description: logout 
+      operationId: logout
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginInf'
+        description: logout  
+        required: false 
+      responses:
+        "200":
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResInf'
+          description: logout.
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: description=409
+      summary: api/logout
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+
+  /resetPasswordRequest:
+    get:
+      description: request to reset password  
+      operationId: resetPasswordRequest
+      parameters:
+      - description: query emailAddress.
+        explode: true
+        in: query
+        name: emailAddress
+        required: true
+        schema:
+          type: string
+        style: form
+      security: []      
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResInf'
+          description: item created
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: an existing item already exists
+      summary: api/resetPasswordRequest
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+  
+  /toResetPassword:
+    get:
+      description: to reset password  
+      operationId: toResetPassword
+      parameters:
+      - description: query code.
+        explode: true
+        in: query
+        name: code
+        required: true 
+        schema:
+          type: string
+        style: form 
+      - description: query newPW.
+        explode: true
+        in: query
+        name: newPW
+        required: true 
+        schema:
+          type: string
+        style: form 
+      security: []      
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResInf'
+          description: item created
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: an existing item already exists
+      summary: api/toResetPassword
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+      
+  /getAllPlayers:
+    get:
+      operationId: getAllPlayers
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListWrapper'
+          description: search results matching criteria
+        "400":
+          content: {}
+          description: bad input parameter
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+
+  /getPlayer:
+    get:
+      operationId: getPlayer
+      parameters:
+      - description: query id.
+        explode: true
+        in: query
+        name: id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: '#/components/schemas/Group6User'
+                type: array
+          description: search results matching criteria
+        "400":
+          content: {}
+          description: bad input parameter
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+
+  /getPendingFriends:
+    get:
+      operationId: getPendingFriends
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListWrapper'
+          description: search results matching criteria
+        "400":
+          content: {}
+          description: bad input parameter
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+
+  /getFriends:
+    get:
+      operationId: getFriends
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: '#/components/schemas/Group6User'
+                type: array
+          description: search results matching criteria
+        "400":
+          content: {}
+          description: bad input parameter
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+
+  /setIcon:
+    post:
+      operationId: setIcon
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/setIconReqInf'
+        description: to set Icon.
+        required: false
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/setIconResponse'
+          description: Successfully set icon
+            
+        "400":
+          content: {}
+          description: bad input parameter
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+
+  /RequestToMakeFriend:
+    post:
+      operationId: RequestToMakeFriend
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ToMakeFriendReqInf'
+        description: to make friend.
+        required: false
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: '#/components/schemas/ToMakeFriendReqInf'
+                type: array
+          description: search results matching criteria
+        "400":
+          content: {}
+          description: bad input parameter
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+
+  /ReponseToMakeFriend:
+    post:
+      operationId: ReponseToMakeFriend
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReponseToMakeFriendInf'
+        description: to make friend.
+        required: false
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: '#/components/schemas/ReponseToMakeFriendInf'
+                type: array
+          description: search results matching criteria
+        "400":
+          content: {}
+          description: bad input parameter
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+
+  /lookupItem:
+    get:
+      operationId: lookupItem
+      parameters:
+      - description: query id.
+        explode: true
+        in: query
+        name: id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: '#/components/schemas/Group6Game'
+                type: array
+          description: search results matching criteria
+        "400":
+          content: {}
+          description: bad input parameter
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+
+  /coinAndgem:
+    get:
+      operationId: coinAndgem
+      parameters:
+      - description: query id.
+        explode: true
+        in: query
+        name: id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: '#/components/schemas/Group6User'
+                type: array
+          description: search results matching criteria
+        "400":
+          content: {}
+          description: bad input parameter
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+  /deletePlayer:
+    get:
+      operationId: deletePlayerGET
+      parameters:
+      - description: query id.
+        explode: true
+        in: query
+        name: id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: '#/components/schemas/Group6User'
+                type: array
+          description: search results matching criteria
+        "400":
+          content: {}
+          description: bad input parameter
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+  /getGame:
+    get:
+      operationId: getGameInfo
+      parameters:
+      - description: query id.
+        explode: true
+        in: query
+        name: id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: '#/components/schemas/Group6Game'
+                type: array
+          description: search results matching criteria
+        "400":
+          content: {}
+          description: bad input parameter
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+  /getGamebyUser:
+    get:
+      operationId: getGamebyUser
+      parameters:
+      - description: query id.
+        explode: true
+        in: query
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: '#/components/schemas/Group6Game'
+                type: array
+          description: search results matching criteria
+        "400":
+          content: {}
+          description: bad input parameter
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+
+  /listItems:
+    get:
+      operationId: listItems 
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListWrapper'
+          description: search results matching criteria
+        "400":
+          content: {}
+          description: bad input parameter
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+
+  /GameStarted:
+    post:
+      description: Adds a new game to the system
+      operationId: newGame
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Group6Game'
+        description: Description of started game
+        required: false
+      responses:
+        "201":
+          content: {}
+          description: item created
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: an existing item already exists
+      summary: api/newGame
+      tags:
+      - admins
+      x-openapi-router-controller: AdminsController
+      x-openapi-router-service: AdminsService
+  /GameEnded:
+    post:
+      description: ended a game
+      operationId: endGame
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Group6Game'
+        description: Inventory item to add
+        required: false
+      responses:
+        "201":
+          content: {}
+          description: item created
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: an existing item already exists
+      summary: api/endGame
+      tags:
+      - admins
+      x-openapi-router-controller: AdminsController
+      x-openapi-router-service: AdminsService
+
+  /adminSignIn:
+    post:
+      description: admin sign in
+      operationId: adminSignIn
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/adminSignInInfo'
+        description: admin sign in
+        required: false
+      security: []
+      responses:
+        "201":
+          content: {}
+          description: admin sign in
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: error!
+      summary: api/adminSignIn
+      tags:
+      - admins
+      x-openapi-router-controller: AdminsController
+      x-openapi-router-service: AdminsService
+
+  /reset:
+    post:
+      description: admin reset database.
+      operationId: reset
+      requestBody:
+        content:
+          application/json:
+            schema:
+                items:
+                  $ref: '#/components/schemas/reqInf4Reset'
+                type: array
+        description: admin reset database
+        required: false
+
+      responses:
+        "201":
+          content: {}
+          description: admin reset database.
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: error!
+      summary: api/reset
+      tags:
+      - admins
+      x-openapi-router-controller: AdminsController
+      x-openapi-router-service: AdminsService
+
+  /innerCheck:
+    post:
+      description: admin innerCheck.
+      operationId: innerCheck
+      requestBody:
+        content:
+          application/json:
+            schema:
+                items:
+                  $ref: '#/components/schemas/reqInf4Reset'
+                type: array
+        description: admin innerCheck
+        required: false
+
+      responses:
+        "201":
+          content: {}
+          description: admin innerCheck
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: error!
+      summary: api/innerCheck
+      tags:
+      - admins
+      x-openapi-router-controller: AdminsController
+      x-openapi-router-service: AdminsService
+
+  /innerMigrateData:
+    post:
+      description: admin innerMigrateData.
+      operationId: innerMigrateData
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/reqInf4InnerMigrateData' 
+        description: admin innerMigrateData
+        required: false
+
+      responses:
+        "201":
+          content: {}
+          description: admin innerMigrateData
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: error!
+      summary: api/innerMigrateData
+      tags:
+      - admins
+      x-openapi-router-controller: AdminsController
+      x-openapi-router-service: AdminsService
+
+
+  /addItem:
+    post:
+      description: admin addItem.
+      operationId: addItem
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/reqInf4AddItem' 
+        description: admin addItem
+        required: false
+
+      responses:
+        "201":
+          content: {}
+          description: admin addItem
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: error!
+      summary: api/addItem
+      tags:
+      - admins
+      x-openapi-router-controller: AdminsController
+      x-openapi-router-service: AdminsService
+
+  /removeItem:
+    delete:
+      operationId: removeItem
+      parameters:
+      - description: query id.
+        explode: true
+        in: query
+        name: id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: '#/components/schemas/reqInf4AddItem'
+                type: array
+          description: search results matching criteria
+        "400":
+          content: {}
+          description: bad input parameter
+      summary: api/removeItem
+      tags:
+      - admins
+      x-openapi-router-controller: AdminsController
+      x-openapi-router-service: AdminsService
+
+  /addUserItem:
+    post:
+      description: admin addUserItem.
+      operationId: addUserItem
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/reqInf4AddUserItem' 
+        description: admin addUserItem
+        required: false
+
+      responses:
+        "201":
+          content: {}
+          description: admin addUserItem
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: error!
+      summary: api/addUserItem
+      tags:
+      - admins
+      x-openapi-router-controller: AdminsController
+      x-openapi-router-service: AdminsService
+
+  /removeUserItem:
+    delete:
+      operationId: removeUserItem
+      parameters:
+      - description: removeUserItem
+        explode: true
+        in: query
+        name: id
+        required: true
+        schema:
+          type: string
+        style: form
+        
+      - description: removeUserItem
+        explode: true
+        in: query
+        name: ItemID
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: '#/components/schemas/reqInf4AddItem'
+                type: array
+          description: search results matching criteria
+        "400":
+          content: {}
+          description: bad input parameter
+      summary: api/removeUserItem
+      tags:
+      - admins
+      x-openapi-router-controller: AdminsController
+      x-openapi-router-service: AdminsService
+
+components:
+  schemas: 
+
+    reqInf4AddUserItem:
+      example:
+        User_ID: 01FS23NC520C557X7KD1284HJA
+        Item_ID: 1
+        Item_Quantity : 1
+        
+
+      properties:
+        User_ID:
+          example: 01FS23NC520C557X7KD1284HJA
+          type: string
+        Item_ID:
+          example: 1
+          type: integer
+        Item_Quantity:
+          example: 1
+          type: integer 
+
+      required:
+      - User_ID
+      - Item_ID
+      - Item_Quantity 
+      type: object
+
+    reqInf4AddItem:
+      example:
+        Item_ID: 1
+        Item_Name: item1
+        Item_Description : Description for item1
+        Item_Thumbnail_ID: 1
+        Item_Metadata : "{'price': 1000,    'currency': 'coins',    'type': 'skin',    'character': 'vesta'  }"
+
+
+      properties:
+        Item_ID:
+          example: 1
+          type: integer
+        Item_Name:
+          example: item1
+          type: string
+        Item_Description:
+          example: Description for item1
+          type: string
+        Item_Thumbnail_ID:
+          example: 1
+          type: integer
+        Item_Metadata:
+          example: "{  'cardId': 45,  'variant': 1,  'foil': false } "
+          type: string
+          
+      required:
+      - Item_ID
+      - Item_Name
+      - Item_Description
+      - Item_Thumbnail_ID
+      - Item_Metadata
+      type: object
+
+    reqInf4InnerMigrateData:
+      example:
+        DB_HOST: localhost
+        DB_USER: root
+        DB_PASSWORD: group6db
+        DB_NAME: g6DB
+        DB_TABLE_NAME: Group6Users
+
+      properties:
+        DB_HOST:
+          example: localhost
+          type: string
+        DB_USER:
+          example: root
+          type: string
+        DB_PASSWORD:
+          example: group6db
+          type: string
+        DB_PASSWORD:
+          example: group6db
+          type: string
+        DB_NAME:
+          example: g6DB
+          type: string
+        DB_TABLE_NAME:
+          example: Group6Users
+          type: string
+      required:
+      - DB_HOST
+      - DB_USER
+      - DB_PASSWORD
+      - DB_NAME
+      - DB_TABLE_NAME
+      type: object
+
+    reqInf4Reset:
+      example:
+        ID: 1
+        sql: Drop table group6User
+      properties:
+        ID:
+          example: 1
+          type: integer
+        sql:
+          example: Drop table group6User
+          type: string
+      required:
+      - ID
+      - sql
+      type: object
+
+    adminSignInInfo:
+      example:
+        AdminName: admin
+        Password: admin
+      properties:
+        AdminName:
+          example: admin
+          type: string
+        Password:
+          example: admin
+          type: string
+      required:
+      - AdminName
+      - Password
+      type: object
+    LoginInf:
+      example:
+        UserName: u1
+        Password: u1
+      properties:
+        UserName:
+          example: user
+          type: string
+        Password:
+          example: pwtest
+          type: string
+      required:
+      - UserName
+      - Password
+      type: object
+    LoginResInf:
+      example:
+        code: 1
+        token: ...
+        userName: myName
+        userID: 01EGY5C6GJZ91W3K9BWD12D5QV
+      properties:
+        code:
+          example: 1
+          type: string
+        token:
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InYiOiJbc3FsL2xvZ2luLmpzIC0-IGc2TG9naW4gdjAuMTU1XSAiLCJpZCI6IjAxRUNSNzgySEJRWjEzWVI3MEVGUFAyQ0tYIiwidXNlcm5hbWUiOiJhYWExIiwicGFzc3dvcmQiOiJhYWExIn0sImlhdCI6MTU5NzUyMjIwOCwiZXhwIjoxNTk3NTI1ODA4fQ.ug_jKW9ezEFEv3ebPoNko4tnH9-JLDDe1gxAzS6dCRo
+          type: string
+        userName:
+          example: myName
+          type: string
+        userID:
+          example: 01EGY5C6GJZ91W3K9BWD12D5QV
+          type: string
+      required:
+      - code
+      type: object
+
+    setIconReqInf:
+      example:
+        IconID: 1
+      properties:
+        IconID:
+          example: 1
+          type: integer
+    setIconResponse:
+      example:
+        IconID: 1
+        code: 1
+      properties:
+        IconID:
+          example: 1
+          type: integer
+        code:
+          example: 1
+          type: integer
+
+    ToMakeFriendReqInf:
+      example:
+        FromID: 01EGY5C6GJZ91W3K9BWD12D5QV
+        ToID: 01EH0VQC16YT7P88QJ2Q7N3791
+        status: Unkown
+      properties:
+        FromID:
+          example: 01EGY5C6GJZ91W3K9BWD12D5QV
+          type: string
+        ToID:
+          example: 01EH0VQC16YT7P88QJ2Q7N3791
+          type: string
+        status:
+          example: Unkown
+          type: string
+      required:
+      - FromID
+      - ToID
+      type: object
+    ReponseToMakeFriendInf:
+      example:
+        ReqID: 01EH0VQC16YT7P88QJ2Q7N3791
+        FromID: 01EH0VQC16YT7P88QJ2Q7N3791
+        ToID: 01EH0VQC16YT7P88QJ2Q7N3791
+        status: Yes
+      properties:
+        ReqID:
+          example: 01EH0VQC16YT7P88QJ2Q7N3791
+          type: string
+        FromID:
+          example: 01EH0VQC16YT7P88QJ2Q7N3791
+          type: string
+        ToID:
+          example: 01EH0VQC16YT7P88QJ2Q7N3791
+          type: string
+        status:
+          example: Yes
+          type: string
+    SignupReqInf:
+      example:
+        UserName: user
+        Password: password
+        DateOfBirth: 01/05/1998
+        EmailAddress: yongling.huang@group6.io
+        AgreeTerms: Yes
+        ReceiveNews: Yes
+
+      properties:
+        UserName:
+          example: user
+          type: string
+        Password:
+          example: pwtest
+          type: string
+        DateOfBirth:
+          example: 01/05/1998
+          type: string
+        EmailAddress:
+          example: yongling.huang@group6.io
+          type: string
+        AgreeTerms:
+          example: Yes
+          type: string
+        ReceiveNews:
+          example: Yes
+          type: string
+      required:
+      - UserName
+      - Password
+      - DateOfBirth
+      - EmailAddress
+      - AgreeTerms 
+      - ReceiveNews 
+      type: object
+
+    ListWrapper:
+      properties:
+        code:
+          example: 1
+          type: number
+        n:
+          example: 0
+          type: number
+        str:
+          items:
+            $ref: '#/components/schemas/ResUserInfo'
+          type: array
+
+    SignupResInf:
+      example:
+        code: 1
+        info: sign up a new account
+      properties:
+        code:
+          example: 1
+          type: string
+        info:
+          example: sign up a new account
+          type: string
+      required:
+      - code
+      type: object
+    Group6User:
+      example:
+        UserID: d290f1ee-6c54-4b01-90e6-d701748f0851
+        VerifyCode: d290f1ee-6c54-4b01-90e6-d701748f0851
+        IsVerified: no
+        UserName: Nes Cohen
+        Icon: 0
+        coin: 0
+        gem: 0
+        FirstName: Nes
+        LastName: Cohen
+        EmailAddress: 123abc@group6.com
+        DateOfBirth: 01/05/1998
+        Location: wids132 at 3ewed
+        Coins: 100
+        gems: 10
+      properties:
+        UserID:
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+          type: string
+        VerifyCode:
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+          type: string   
+        IsVerified:
+          example: no
+          type: string          
+        UserName:
+          example: Nes Cohen
+          type: string
+        Icon:
+          example: 0
+          type: integer
+        coin:
+          example: 0
+          type: number
+        gem:
+          example: 0
+          type: number
+        FirstName:
+          example: Nes
+          type: string
+        LastName:
+          example: Cohen
+          type: string
+        EmailAddress:
+          example: 123abc@group6.com
+          type: string
+        DateOfBirth:
+          example: 01/05/1998
+          type: string
+        Location:
+          example: wids132 at 3ewed
+          type: string
+        Coins:
+          example: 100
+          type: string
+        Gems:
+          example: 10
+          type: string
+      required:
+      - EmailAddress
+      - FirstName
+      - LastName
+      - coin
+      - gem
+      - Location
+      - UserID
+      - UserName
+      type: object
+    ResUserInfo:
+      example:
+        UserID: d290f1ee-6c54-4b01-90e6-d701748f0851
+        UserName: Group6User
+        Version: 0.0.1
+      properties:
+        UserID:
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+          type: string
+        UserName:
+          example: Nes Cohen
+          type: string
+        Version:
+          example: 0.0.1
+          type: string
+      required:
+      - UserID
+      - UserName
+      - Version
+      type: object
+    Group6Game:
+      example:
+        id: d290f1ee-6c54-4b01-90e6-d701748f0851
+        competitor_1: -1507897597
+        competitor_2: -1507897598
+        start_time: 2020-01-01 00:00:01
+        end_time: 2020-01-01 00:05:01
+        winner: -1507897598
+      properties:
+        GameID:
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+          format: uuid
+          type: string
+        competitor_1:
+          example: -1507897597
+          type: integer
+        competitor_2:
+          example: -1507897598
+          type: integer
+        winner:
+          example: -1507897598
+          type: integer
+      required:
+      - competitor_1
+      - competitor_2
+      - id
+      - winner
+      type: object
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT    # optional, arbitrary value for documentation purposes

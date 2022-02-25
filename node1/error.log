@@ -1,0 +1,2 @@
+{"code":"ENOENT","errno":-4058,"level":"error","path":"C:\\Users\\13699\\xd\\gh\\littleflute\\Games\\node1\\api\\openapi.yaml","service":"user-service","syscall":"open"}
+{"level":"error","service":"user-service"}
