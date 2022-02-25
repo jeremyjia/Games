@@ -1,4 +1,4 @@
-const tag4xdTest = "xdTest.js_v0.12";
+const tag4xdTest = "xdTest.js_v0.13";
 const assert = require('chai').assert;
 const config = require('../config');
 const ExpressServer = require('../expressServer');
@@ -15,7 +15,7 @@ describe(tag4xdTest, function(){
   });
 
   
-  it('endpoint test.', function() {    
+  it('endpointTest: [/spider]', function() {    
     return request(ES.app)
       .get('/spider')
       .send()
