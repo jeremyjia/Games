@@ -1,4 +1,4 @@
-var tagServer = "server.js_v0.35";
+var tagServer = "server.js_v0.41";
 var tb = bl$("id_p1_tb"); 
     
 tb.btnServer = blo0.blBtn(tb,"btnServer","Server",blGrey[2]);
@@ -55,6 +55,7 @@ function CServer(parentDiv){
             blo0.blScript("id_js_load_server-voa","js/plx/p1/server/voa/voa.js");
             blo0.blScript("id_js_load_server-bat","js/plx/p1/server/bat.js");
             blo0.blScript("id_js_load_server-bat","js/plx/p1/server/test/index.js");
+            blo0.blScript("id_js_load_server-51voa","js/plx/p1/server/voa/51voa.js");
 
             
             ui.draw = function(ctx){
