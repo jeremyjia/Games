@@ -1,0 +1,1 @@
+ffmpeg -f lavfi -i color=green@0.0:s=1280x720:rate=60,format=rgba -ss 00:00:00 -t 00:00:30 -vf "drawtext=fontfile=/Windows/Fonts/msyhbd.ttc:fontsize=60:fontcolor=blue:x=(w-text_w)/2+20:y=h-40*t:line_spacing=80:text='测试names.txt'" r2.mp4

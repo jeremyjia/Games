@@ -1,0 +1,1 @@
+ffmpeg  -i 1.mp3  -f lavfi -i color=black@0.0:s=1920x1080:rate=30,format=rgba -ss 00:00:00 -t 00:01:19 -vf "drawtext=fontfile=/Windows/Fonts/msyhbd.ttc:fontsize=40:fontcolor=white:x=(w-w+text_w-text_w)/2+20:y=h-35*t:line_spacing=40:textfile='mv1.txt'" mv1.mp4
