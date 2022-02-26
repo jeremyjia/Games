@@ -1,0 +1,187 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0046)http://www.baron.com.cn/javascript/bm/you8.htm -->
+<HTML><HEAD><TITLE>模拟游戏</TITLE>
+ 
+<META http-equiv=Content-Type content="text/html; charset=gb2312">
+<META content="MSHTML 6.00.2900.2873" name=GENERATOR></HEAD>
+<BODY onload=tick()>
+<CENTER>
+  <table width="282" border="0" align="center" cellpadding="0" cellspacing="0"> 
+   
+    <tr>  
+      <td colspan="4" valign="top"> <div align="center"> 
+          <table width="100%" border="0" cellpadding="5" cellspacing="5">
+            <tr> 
+              <td bgcolor="#FFE495"> <div align="center">dance game</div></td>
+            </tr>
+            <tr> 
+              <td bgcolor="#FFFFDD"> <div align="center"><strong>demo</strong></div></td>
+            </tr>
+            <tr> 
+              <td><div align="center">
+                  <TABLE >
+                    <TBODY>
+                      <TR> 
+                        <TD align=middle> 
+                          <SCRIPT language=JavaScript>
+<!-- Begin 
+
+const a="\n";
+var max=0;
+function tlist() {
+    max=tlist.arguments.length;
+    for (i=0; i<max; i++){
+      this[i]=tlist.arguments[i];
+    }    
+}
+function init(){
+  return new tlist(
+    "   o"+a+
+"  /|\\"+a+
+" */ \\*        "+a,
+
+"   o_"+a+
+"  \<| *"+a+
+"  *\>\\         "+a,
+
+"  _o/*"+a+
+" * |"+a+
+"  / \\         "+a,
+
+" *\o_"+a+
+"  /  *"+a+
+" \<\\           "+a,
+
+"  _o/*"+a+
+" * |"+a+
+"  / \\         "+a,
+
+" *\\c/*"+a+
+"   )"+a+
+"  / \>         "+a,
+
+"     *"+a+
+"  \\__/c"+a+
+"   \> \\*       "+a,
+
+"   __/"+a+
+"    (o_*"+a+
+"     \\*       "+a,
+
+"      \\ /"+a+
+"       |"+a+
+"     */o\\*    "+a,
+
+"       \\_"+a+
+"       ("+a+
+"     */o\\*    "+a,
+
+"        \<_"+a+
+"      __("+a+
+"     * o|*    "+a,
+
+"         /_"+a+
+"      __("+a+
+"     * o|*   "+a,
+
+"         ___"+a+
+"      *\/ \>"+a+
+"       o|*    "+a,
+
+"        *"+a+
+"       o|_/"+a+
+"      */  \\   "+a,
+
+"        *"+a+
+"      _o|_"+a+
+"     *   \>\\   "+a,
+
+"       _o/*"+a+
+"      * |"+a+
+"       / \\    "+a,
+
+"      *\\o/*"+a+
+"        |"+a+
+"       / \\    "+a,
+
+"      c/*"+a+
+"      \<\\"+a+
+"      */\\     "+a,
+
+"      c__"+a+
+"      \<\ *"+a+
+"      */\\     "+a,
+
+"      c__"+a+
+"      /\ *"+a+
+"     * /\>     "+a,
+
+"      c/*"+a+
+"     /(__"+a+
+"    * /       "+a,
+
+"    __o/*"+a+
+"    * (__"+a+
+"      \<       "+a,
+
+"      __o_"+a+
+"     * /  *"+a+
+"      \<\\      "+a,
+
+"     *_o_"+a+
+"       | *"+a+
+"      \< \\     "+a,
+
+"     *_c_*"+a+
+"       |"+a+
+"       \>\\     "+a,
+
+"     *_c_*"+a+
+"       |__"+a+
+"       \>      "+a,
+
+"     *_c_*"+a+
+"     __|__"+a+
+"              "+a,
+
+" "+a+
+"     *_c_*"+a+
+"     __)__    "+a,
+
+" "+a+
+"     *\\c/*"+a+
+"     __)__    "+a
+  );
+}
+tl0 = init();
+ 
+
+var x=0;
+function tick() {
+    document.animation.cheerleader.value = " " + a + tl0[x];
+    x++;
+    if (x != max)
+      setTimeout("tick()", 200);
+    else
+      x = 0;
+}
+//  End -->
+</SCRIPT> 
+<FORM name=animation>
+                            <TEXTAREA name=cheerleader rows=5></TEXTAREA>
+                            <BR>
+                            <INPUT name="button" type=button onclick=javascript:tick() value="try again">
+</FORM>
+                        </TD>
+                      </TR>
+                    </TBODY>
+                  </TABLE>
+                </div></td>
+            </tr> 
+          </table>
+        </div></td> 
+    </tr>
+     
+  </table>
+  
+</BODY></HTML>
