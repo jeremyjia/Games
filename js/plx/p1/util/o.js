@@ -1,5 +1,5 @@
 function CP1Util (){
-    var _v = "CP1Util_v0.142";
+    var _v = "CP1Util_v0.143";
     var _list4Cards = [];
     
     this.listCards = function(){ return _list4Cards;}
@@ -344,6 +344,7 @@ o._getServerFiles = function(tb,v,ft,fCallBack){
     b.style.float = "left";
     b.onclick = function(_v,_ft){
         return function(){
+            _v.innerHTML = "";
             _v.dbg = blo0.blDiv(_v,_v.id+"dbg","dbg","lightgreen");   
             _v.d = blo0.blDiv(_v,_v.id+"d","d","lightblue");   
             _v.d.style.overflow = "auto";           
