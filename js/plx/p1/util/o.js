@@ -1,5 +1,5 @@
 function CP1Util (){
-    var _v = "CP1Util_v0.143";
+    var _v = "CP1Util_v0.144";
     var _list4Cards = [];
     
     this.listCards = function(){ return _list4Cards;}
@@ -338,8 +338,7 @@ o.img = function(ctx,f,x,y,w,h){
 o.rendFile = function(ctx,f,x,y,w,h){
     o.img(ctx,f,x,y,w,h);
 } 
-o.getServerFiles = function(tb,v,ft,fCallBack){o._getServerFiles(tb,v,ft,fCallBack);}
-o._getServerFiles = function(tb,v,ft,fCallBack){
+o.getServerFiles = function(tb,v,ft,fCallBack){ 
     var b = blo0.blBtn(tb,tb.id+ft,ft,blGrey[1]);
     b.style.float = "left";
     b.onclick = function(_v,_ft){
