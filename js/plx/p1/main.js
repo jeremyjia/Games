@@ -1,5 +1,5 @@
 ﻿
-const p1Tag = "[plx/p1.js_v0.341]";
+const p1Tag = "[plx/p1.js_v0.342]";
 
 const btn4p1 = bl$("plx_p1_btn");
 btn4p1.innerHTML = p1Tag;
@@ -23,6 +23,10 @@ if(btn4p1){
     if(!tb.loadStoryBoard){
         blo0.blScript("id_js_loadStoryBoard","js/plx/p1/storyBoard.js");
         tb.loadStoryBoard = true;
+    }
+    if(!tb.loadPlayerBoard){
+        blo0.blScript("id_js_loadPlayerBoard","js/plx/p1/player/index.js");
+        tb.loadPlayerBoard = true;
     }
 
 

@@ -1,6 +1,6 @@
 // file: blclass.js    by littleflute 
 
-var g_ver_blClass = "CBlClass_v1.5.21"
+var g_ver_blClass = "CBlClass_v1.5.22"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -1301,6 +1301,11 @@ function CBlClass ()
 		}
 		return r;
 	}
+	this.blPlayer = function(_id, _title,_src,_x,_y,_w,_h,_c){
+		var d = blo0.blMD(_id, _title,_x,_y,_w,_h,_c);
+		ftnPlayer(d,_src);
+		return d;
+	}
 
     this.blBtn = function (oBoss,id,html,bkClr){
         var r = document.getElementById(id);
@@ -2094,11 +2099,7 @@ blo0.blGetGHI = function(_url,cb){  //git github issue
 	return r;
 }
 
-blo0.blPlayer = function(_id, _title,_src,_x,_y,_w,_h,_c){
-	var d = blo0.blMD(_id, _title,_x,_y,_w,_h,_c);
-	ftnPlayer(d,_src);
-	return d;
-}
+
 
 
 blo0.blText = function(cvs,txt,x,y,size,color){
