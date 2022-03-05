@@ -2621,12 +2621,10 @@ function CCVSRect(_x,_y,_w,_h,_clr){
 				if(fClick) fClick(this,_x,_y);
 			} 
 	} 
-}
+} 
 
 
 
-<<<<<<< HEAD
-=======
 											_on_off_div(_this,_this.v);
 										}
 									}(bShowLrc);
@@ -2770,4 +2768,3 @@ function CCVSRect(_x,_y,_w,_h,_clr){
 		_p.currentTime = 0;
 	}
 }
->>>>>>> upstream/master
