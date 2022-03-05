@@ -140,7 +140,7 @@ public class FileController {
 		return resMap;
 	}
 
-	@ApiOperation(value = "保存为Microsoft Word文件", notes = "把一个标题和一段文本保存为一个docx文件")
+	@ApiOperation(value = "将json文件保存为Microsoft Word文件", notes = "将json文件保存为Microsoft Word文件")
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "title", value = "title", paramType = "query", required = false, dataType = "string", defaultValue = "Document Title"),
 			@ApiImplicitParam(name = "text", value = "text", paramType = "query", required = true, dataType = "string", defaultValue = "Document Paragraph Text"),
