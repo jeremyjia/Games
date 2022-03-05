@@ -1,5 +1,5 @@
 var tagHTML = "51voa";
-var vHTML = "51voa: v0.45";
+var vHTML = "51voa: v0.52";
 
 var tb = bl$("id_4_tb_server");
 var v = bl$("id_4_v_server");
@@ -35,14 +35,17 @@ function C51VOA(_tb,_v){
       fStep3(b,d,_ctx);
   }
 
+  if(!_tb.ls) _tb.ls = [];
   var b = blo0.blBtn(_tb,_tb.id+"_4_51voa","xd51voa",blGrey[1]);
   b.style.float = "left";
-  b.onclick =function(oC51VOA){
+  b.onclick =function(oC51VOA,_ls,_thisBtn){
     return function(){
-      _v.innerHTML = "51voa";
-      blo0.blShowObj2Div(_v,oC51VOA);
+        blo0.blMarkBtnInList(_thisBtn,_ls,"green","grey");
+        _v.innerHTML = "51voa";
+        blo0.blShowObj2Div(_v,oC51VOA);
     }
-  }(this);
+  }(this,_tb.ls,b);
+  _tb.ls.push(b);
 
   
   var fStep2 = function(b,d,c){
