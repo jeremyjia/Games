@@ -1,5 +1,5 @@
 function CP1Util (){
-    var _v = "CP1Util_v0.143";
+    var _v = "CP1Util_v0.151";
     var _list4Cards = [];
     
     this.listCards = function(){ return _list4Cards;}
@@ -338,12 +338,13 @@ o.img = function(ctx,f,x,y,w,h){
 o.rendFile = function(ctx,f,x,y,w,h){
     o.img(ctx,f,x,y,w,h);
 } 
-o.getServerFiles = function(tb,v,ft,fCallBack){o._getServerFiles(tb,v,ft,fCallBack);}
-o._getServerFiles = function(tb,v,ft,fCallBack){
+o.getServerFiles = function(tb,v,ft,fCallBack){ 
+    if(!tb.ls) tb.ls = [];
     var b = blo0.blBtn(tb,tb.id+ft,ft,blGrey[1]);
     b.style.float = "left";
-    b.onclick = function(_v,_ft){
+    b.onclick = function(_v,_ft,_thisList,_thisBtn){
         return function(){
+            blo0.blMarkBtnInList(_thisBtn,_thisList,"brown","grey");
             _v.innerHTML = "";
             _v.dbg = blo0.blDiv(_v,_v.id+"dbg","dbg","lightgreen");   
             _v.d = blo0.blDiv(_v,_v.id+"d","d","lightblue");   
@@ -373,7 +374,8 @@ o._getServerFiles = function(tb,v,ft,fCallBack){
             var url = 'http://localhost:8080/getResourceOnServer?filetype='+_ft;
             blo0.blAjx(w,url);
         }
-    }(v,ft);
+    }(v,ft,tb.ls,b);
+    tb.ls.push(b);
 }
 o.makeINF = function(obj,fileName,fCallBack){
     if(fCallBack){
