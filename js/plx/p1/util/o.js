@@ -1,5 +1,5 @@
 function CP1Util (){
-    var _v = "CP1Util_v0.211";
+    var _v = "CP1Util_v0.213";
     var _list4Cards = [];
     
     this.listCards = function(){ return _list4Cards;}
@@ -7,6 +7,11 @@ function CP1Util (){
     this.text = function(ctx,txt,x,y){ 
         ctx.font= 12 + "px Comic Sans MS";
         ctx.fillStyle = "white";
+        ctx.fillText(txt, x,y); 
+    };
+    this.drawText = function(ctx,txt,x,y,c){ 
+        ctx.font= 12 + "px Comic Sans MS";
+        ctx.fillStyle = c;
         ctx.fillText(txt, x,y); 
     };
     this.status = function(me){   
@@ -96,7 +101,7 @@ function CP1Util (){
         } 
     };
 
-    this.newObj = function(type,left,top,right,bottom,size,color){
+    this.newObj = function(type,left,top,right,bottom,size,color,txt){
         var r = {};
         r.graphic = type; 
         r.attribute = {};
@@ -106,6 +111,7 @@ function CP1Util (){
         r.attribute.bottom = bottom;
         r.attribute.size = size;
         r.attribute.color = color;  
+        r.attribute.txt = txt;  
         return r;
     };
 
@@ -182,19 +188,19 @@ function CP1Util (){
             b.inf.text = "Card.txt"; 
           
             o.AddObj2Frame(b.inf.objects,o.newObj("circle",111,111,222,222,5,"red"));
-          // o.AddObj2Frame(b.inf.objects,o.newObj("rect",111,10,100,100,5,"blue"));
+            o.AddObj2Frame(b.inf.objects,o.newObj("rect",111,10,100,100,5,"blue"));
            // o.AddObj2Frame(b.inf.objects,o.newTextObj("test",10,10,60,"0,255,255"));
             var top = 100;
             var left = 55 + n*50;
             var dTop = 50;
-            o.AddObj2Frame(b.inf.objects,o.newObj("Text1-"+n,left,top,333,222,5,"255,255,1")); 
+            o.AddObj2Frame(b.inf.objects,o.newObj("text",left,top,333,222,5,"brown","text1")); 
             top += dTop;
-            o.AddObj2Frame(b.inf.objects,o.newObj("Text2-"+n,left,top,333,222,5,"255,255,1")); 
+            o.AddObj2Frame(b.inf.objects,o.newObj("text",left,top,333,222,5,"green","text2")); 
             top += dTop;
             if(_inBtn.lsTxt){
                 var l = _inBtn.lsTxt;
                 for(j in l){
-                    o.AddObj2Frame(b.inf.objects,o.newObj(l[j],left,top,333,222,5,"255,1,1")); 
+                    o.AddObj2Frame(b.inf.objects,o.newObj("text",left,top,333,222,5,"yellow",l[j])); 
                     top += dTop;
                 }
             }
@@ -249,8 +255,7 @@ function CP1Util (){
                     for(i in _this.inf.objects){
                         var a = _this.inf.objects[i]; 
                         o.drawObj(ctx,a);                    
-                    } 
-    
+                    }     
                 }
             }(b);
             _ls.push(b);
@@ -344,7 +349,7 @@ o.drawObj = function(ctx,obj){
         ctx.strokeRect(obj.attribute.left, obj.attribute.top, obj.attribute.right, obj.attribute.bottom);
     }
     else if(obj.graphic=="text"){
-        o.text(ctx,"TEXT",obj.attribute.left, obj.attribute.top);
+        o.drawText(ctx,obj.attribute.txt,obj.attribute.left, obj.attribute.top,"red");
     }
 }
 o.img = function(ctx,f,x,y,w,h){
