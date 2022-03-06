@@ -1,0 +1,1 @@
+java -Dserver.port=%1 -jar %2
