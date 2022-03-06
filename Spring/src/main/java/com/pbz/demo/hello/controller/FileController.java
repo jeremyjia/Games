@@ -142,17 +142,17 @@ public class FileController {
 
 	@ApiOperation(value = "将json文件保存为Microsoft Word文件", notes = "将json文件保存为Microsoft Word文件")
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "title", value = "title", paramType = "query", required = false, dataType = "string", defaultValue = "Document Title"),
-			@ApiImplicitParam(name = "text", value = "text", paramType = "query", required = true, dataType = "string", defaultValue = "Document Paragraph Text"),
-			@ApiImplicitParam(name = "fileName", value = "xxx.docx", paramType = "query", required = false, dataType = "string", defaultValue = "example1.docx") })
+			@ApiImplicitParam(name = "url", value = "url", paramType = "query", required = false, dataType = "string", defaultValue = "video1.json"),
+			@ApiImplicitParam(name = "text", value = "text", paramType = "query", required = true, dataType = "string", defaultValue = "optional"),
+			@ApiImplicitParam(name = "fileName", value = "xxx.docx", paramType = "query", required = false, dataType = "string", defaultValue = "d1.docx") })
 	@RequestMapping(value = "/json2word", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<String, Object> json2word(@RequestParam("title") String title, @RequestParam("text") String text,
+	public Map<String, Object> json2word(@RequestParam("url") String url, @RequestParam("text") String text,
 			@RequestParam("fileName") String fileName) throws Exception {
 
 		Map<String, Object> resMap = new HashMap<String, Object>();
 		String outputFile = System.getProperty("user.dir") + "/" + fileName;
-		boolean bResult = FileUtil.createAWordDoc(title, text, outputFile);
+		boolean bResult = FileUtil.createAWordDoc(url, text, outputFile);
 		if (bResult) {
 			resMap.put("code", 200);
 			resMap.put("message", "保存docx成功");
