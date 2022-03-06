@@ -157,7 +157,7 @@ public final class JsonSriptParser {
 	}
 
 	private static boolean generateVideo(String jsonString) throws Exception {
-		JSONObject jsonObj = new JSONObject(jsonString);
+		JSONObject jsonObj = new JSONObject(jsonString);		
 		JSONObject requestObj = getJsonObjectbyName(jsonObj, "request");
 		supperObjectsMapList.clear();
 		aoiMap.clear();
@@ -509,7 +509,7 @@ public final class JsonSriptParser {
 		}
 	}
 
-	private static String getJsonString(String scriptFilePath) throws IOException {
+	public static String getJsonString(String scriptFilePath) throws IOException {
 		String jsonString = new String(Files.readAllBytes(new File(scriptFilePath).toPath()));
 		// Fix input JSON string
 		int s = jsonString.indexOf("{");
