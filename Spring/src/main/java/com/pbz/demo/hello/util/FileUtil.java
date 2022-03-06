@@ -458,7 +458,7 @@ public class FileUtil {
 			titleParagraphRun.setColor("0000FF");
 			titleParagraphRun.setFontSize(20);
 			// Create a paragraph
-			for (String line : text.split("\n")) {
+			for (String line : optional.split("\n")) {
 				XWPFParagraph paragraph = document.createParagraph();
 				XWPFRun run = paragraph.createRun();
 				run.setText(line + "\r\n");
