@@ -160,14 +160,13 @@ public class FileController {
 		}
 		String txtFromURL = JsonSriptParser.getJsonString(url);
 		JSONObject jsonObj = new JSONObject(txtFromURL);
-		JSONObject requestObj = JsonSriptParser.getJsonObjectbyName(jsonObj, "request");		
-		JSONObject framesObj = JsonSriptParser.getJsonObjectbyName(requestObj, "frames");
+		JSONObject requestObj = JsonSriptParser.getJsonObjectbyName(jsonObj, "request");	 
 		 
-		String s = framesObj.toString();
+		String s = requestObj.toString();
 		s += "\n";
 		s += "保存ok";
 		s += "\n";
-		s += "v0.11";
+		s += "v0.12";
 
 
 		boolean bResult = FileUtil.json2word(url,s,outputFile);
