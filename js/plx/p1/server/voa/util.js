@@ -155,8 +155,10 @@ function CUtilVOA(){
     blo0.setPlayerURL(originalMp3URL); 
 
     blo0.blPlayer(d,"f0Test",originalMp3URL,100,100,400,300,"lightgreen");
-    d.v = blo0.blDiv(d,"vvvvvv",originalMp3URL,"red"); 
-    var btnDownloadMp3 = blo0.blBtn(d.v,d.v.id+"btnDownloadMp3","btnDownloadMp3","grey");
+
+    d.tb = blo0.blDiv(d,d.id+"tb","tb","lightblue"); 
+    var dv = blo0.blDiv(d,d.id+"dv","dv","grey"); 
+    var btnDownloadMp3 = blo0.blBtn(d.tb,d.tb.id+"btnDownloadMp3","btnDownloadMp3","grey");
     btnDownloadMp3.onclick = function(){
       var w = {};
       w._2do = function(txt){
@@ -167,6 +169,19 @@ function CUtilVOA(){
       var sFN = a[0] + ".mp3"; 
       blo0.blAjx(w,"http://localhost:8080/download?url="+originalMp3URL +"&filename=" + sFN);
     }
+    
+    var btnMakeVoaScript = blo0.blBtn(d.tb,d.tb.id+"btnMakeVoaScript","btnMakeVoaScript","grey");
+    btnMakeVoaScript.onclick = function(){
+      //this.script = blo0.blMakeScript();   
+      var d = bl$("id_4_vStatusmdv1vtavpageVvv0dv");
+      d.innerHTML = Date()         
+    }
+    var btnSaveScript = blo0.blBtn(d.tb,d.tb.id+"btnSaveScript","btnSaveScript","grey");
+    btnSaveScript.onclick = function(){
+      var d = bl$("id_4_vStatusmdv1vtavpageVvv0dv");
+      d.innerHTML = Date()         
+    }
+
   }
 
   var f1 = function(d,txt){
