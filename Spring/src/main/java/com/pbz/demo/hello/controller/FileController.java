@@ -160,8 +160,10 @@ public class FileController {
 		}
 		String txtFromURL = JsonSriptParser.getJsonString(url);
 		JSONObject jsonObj = new JSONObject(txtFromURL);
-		JSONObject requestObj = JsonSriptParser.getJsonObjectbyName(jsonObj, "request");
-		String s = requestObj.toString();
+		JSONObject requestObj = JsonSriptParser.getJsonObjectbyName(jsonObj, "request");		
+		JSONObject framesObj = JsonSriptParser.getJsonObjectbyName(requestObj, "frames");
+		 
+		String s = framesObj.toString();
 		s += "\n";
 		s += "保存ok";
 		s += "\n";
