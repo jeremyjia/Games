@@ -1,4 +1,4 @@
-var tagWord = "word_v0.131"; 
+var tagWord = "word_v0.132"; 
 
 var tb = bl$("id_4_tb_server");
 var v = bl$("id_4_v_server");
@@ -90,7 +90,7 @@ function CWord(_tb,_v){
         var myName = fileName;
         var url = "http://localhost:"+_port+"/json2word?url=";
         url += _url;
-        url +="&text=optional&fileName="+myName+".docx";
+        url +="&optional=optional&fileName="+myName+".docx";
         blo0.blAjx(w,url);
     }
     var _save2word = function(title,contend,d){
