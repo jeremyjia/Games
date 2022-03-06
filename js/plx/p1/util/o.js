@@ -1,5 +1,5 @@
 function CP1Util (){
-    var _v = "CP1Util_v0.151";
+    var _v = "CP1Util_v0.152";
     var _list4Cards = [];
     
     this.listCards = function(){ return _list4Cards;}
@@ -362,10 +362,10 @@ o.getServerFiles = function(tb,v,ft,fCallBack){
                     var bf=blo0.blBtn(_v.d.v,_v.d.v.id+"_bf_"+i,ro.resource[i],blGrey[2]);
                     bf.style.float = "left";
                     bf.inf = {};
-                    bf.onclick = function(_this,_dbg,_me,_fCallBack){
+                    bf.onclick = function(_this,_dbg,_me,_thisCallBack){
                         return function(){    
                             _dbg.innerHTML = _me + " : " + blo0.blTime(0) ; 
-                            o.makeINF(_this,_me,_fCallBack);
+                            o.makeINF(_this,_me,_thisCallBack);
                             o.status(_this);
                         }
                     }(bf,_v.dbg,ro.resource[i],fCallBack);
@@ -377,9 +377,9 @@ o.getServerFiles = function(tb,v,ft,fCallBack){
     }(v,ft,tb.ls,b);
     tb.ls.push(b);
 }
-o.makeINF = function(obj,fileName,fCallBack){
-    if(fCallBack){
-        fCallBack(obj,fileName);
+o.makeINF = function(obj,fileName,cb2createInf){
+    if(cb2createInf){
+        cb2createInf(obj,fileName);
     }
     obj.inf.file = fileName; 
     var a = fileName.split(".");
