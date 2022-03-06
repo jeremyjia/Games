@@ -157,7 +157,7 @@ public final class JsonSriptParser {
 	}
 
 	private static boolean generateVideo(String jsonString) throws Exception {
-		JSONObject jsonObj = new JSONObject(jsonString);
+		JSONObject jsonObj = new JSONObject(jsonString);		
 		JSONObject requestObj = getJsonObjectbyName(jsonObj, "request");
 		supperObjectsMapList.clear();
 		aoiMap.clear();

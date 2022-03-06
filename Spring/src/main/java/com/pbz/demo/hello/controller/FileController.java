@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -157,7 +158,10 @@ public class FileController {
 		if (url.toLowerCase().startsWith("http")) {
 			url = FileUtil.downloadFile(url);
 		}
-		String strContent = JsonSriptParser.getJsonString(url);// FileUtil.readAllBytes(url);
+		String txtFromURL = JsonSriptParser.getJsonString(url);
+		JSONObject jsonObj = new JSONObject(txtFromURL);
+		JSONObject requestObj = JsonSriptParser.getJsonObjectbyName(jsonObj, "request");
+		String strContent = requestObj.toString();
 
 		boolean bResult = FileUtil.json2word(url,strContent,outputFile);
 		if (bResult) {
