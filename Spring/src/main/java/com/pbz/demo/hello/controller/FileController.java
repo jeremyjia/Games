@@ -161,9 +161,14 @@ public class FileController {
 		String txtFromURL = JsonSriptParser.getJsonString(url);
 		JSONObject jsonObj = new JSONObject(txtFromURL);
 		JSONObject requestObj = JsonSriptParser.getJsonObjectbyName(jsonObj, "request");
-		String strContent = requestObj.toString();
+		String s = requestObj.toString();
+		s += "\n";
+		s += "保存ok";
+		s += "\n";
+		s += "v0.11";
 
-		boolean bResult = FileUtil.json2word(url,strContent,outputFile);
+
+		boolean bResult = FileUtil.json2word(url,s,outputFile);
 		if (bResult) {
 			resMap.put("code", 200);
 			resMap.put("message", "保存docx成功");
