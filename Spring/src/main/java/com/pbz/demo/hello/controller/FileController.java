@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.pbz.demo.hello.util.FileUtil;
+import com.pbz.demo.hello.util.JsonSriptParser;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -156,7 +157,7 @@ public class FileController {
 		if (url.toLowerCase().startsWith("http")) {
 			url = FileUtil.downloadFile(url);
 		}
-		String strContent = FileUtil.readAllBytes(url);
+		String strContent = JsonSriptParser.getJsonString(url);// FileUtil.readAllBytes(url);
 
 		boolean bResult = FileUtil.json2word(url,strContent,outputFile);
 		if (bResult) {

@@ -509,7 +509,7 @@ public final class JsonSriptParser {
 		}
 	}
 
-	private static String getJsonString(String scriptFilePath) throws IOException {
+	public static String getJsonString(String scriptFilePath) throws IOException {
 		String jsonString = new String(Files.readAllBytes(new File(scriptFilePath).toPath()));
 		// Fix input JSON string
 		int s = jsonString.indexOf("{");
