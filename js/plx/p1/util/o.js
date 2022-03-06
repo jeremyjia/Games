@@ -1,5 +1,5 @@
 function CP1Util (){
-    var _v = "CP1Util_v0.152";
+    var _v = "CP1Util_v0.211";
     var _list4Cards = [];
     
     this.listCards = function(){ return _list4Cards;}
@@ -112,8 +112,7 @@ function CP1Util (){
     this.addCard= function(_ls){
         return function(btn){
             var n = _ls.length;
-            var v=bl$("id_4_cardV");
-            s = btn.id + ":" + n;
+            var v=bl$("id_4_cardV"); 
             var b = blo0.blBtn(v,v.id+"_"+n,n+1,"grey");
             b.style.float="left";
             b.No = n+1;
@@ -244,7 +243,11 @@ function CP1Util (){
         }
     }(_list4Cards);
     
-    
+    this.clearAllCards = function(){
+            var v=bl$("id_4_cardV");
+            v.innerHTML = "";
+            _list4Cards = [];     
+    };
     this.newScript = function(v,w,h,m,r){ 
         var json = {}; 
         json.request = {}; 
@@ -264,6 +267,7 @@ function CP1Util (){
     this.addSuperObj2Script = function(oScript,oSuperObj){ 
         oScript.request.superObjects.push(oSuperObj);
     };
+
 }
  
 var o = new CP1Util();
