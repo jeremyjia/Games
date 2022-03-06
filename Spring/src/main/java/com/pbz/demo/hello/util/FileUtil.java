@@ -442,6 +442,37 @@ public class FileUtil {
 		return true;
 	}
 
+	public static boolean json2word(String title, String optional, String fileName) {
+		try {
+			// Create a empty document
+			XWPFDocument document = new XWPFDocument();
+			File file = new File(fileName);
+			if (file.exists()) {
+				file.delete();
+			}
+			FileOutputStream outStream = new FileOutputStream(file);
+			XWPFParagraph titleParagraph = document.createParagraph();
+			titleParagraph.setAlignment(ParagraphAlignment.CENTER);
+			XWPFRun titleParagraphRun = titleParagraph.createRun();
+			titleParagraphRun.setText(title);
+			titleParagraphRun.setColor("0000FF");
+			titleParagraphRun.setFontSize(20);
+			// Create a paragraph
+			for (String line : text.split("\n")) {
+				XWPFParagraph paragraph = document.createParagraph();
+				XWPFRun run = paragraph.createRun();
+				run.setText(line + "\r\n");
+			}
+			document.write(outStream);
+			outStream.close();
+			System.out.println("Create a word docx " + fileName + " successfully!");
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
 	public static void main(String[] args) {
 
 		String path = "C:\\jiaGameAll\\Games\\Spring\\target";
