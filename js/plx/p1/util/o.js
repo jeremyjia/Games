@@ -12,7 +12,7 @@ function CP1Util (){
     this.status = function(me){   
         var d = bl$("id_4_vStatus");
         d.innerHTML = o.getV() + " : " + blo0.blTime(0);
-        var md = blo0.blMDiv(d,d.id+"md","o._status "+_v+":"+me.style.backgroundColor,222,11,555,100,"lightgreen"); 
+        var md = blo0.blMDiv(d,d.id+"md","o._status "+_v+":"+me.style.backgroundColor,111,11,555,100,"lightgreen"); 
         var vs = blo0.blDiv(md,md.id+"vs","",blGrey[1]);
         var v1 = blo0.blDiv(md,md.id+"v1","v1",blGrey[1]);
         var n = 0; 
@@ -110,7 +110,7 @@ function CP1Util (){
     };
 
     this.addCard= function(_ls){
-        return function(btn){
+        return function(_inBtn){
             var n = _ls.length;
             var v=bl$("id_4_cardV"); 
             var b = blo0.blBtn(v,v.id+"_"+n,n+1,"grey");
@@ -184,7 +184,19 @@ function CP1Util (){
             o.AddObj2Frame(b.inf.objects,o.newObj("circle",111,111,222,222,5,"red"));
           // o.AddObj2Frame(b.inf.objects,o.newObj("rect",111,10,100,100,5,"blue"));
            // o.AddObj2Frame(b.inf.objects,o.newTextObj("test",10,10,60,"0,255,255"));
-            o.AddObj2Frame(b.inf.objects,o.newObj("text",15,110,333,222,5,"255,255,1")); 
+            var top = 100;
+            var left = 55;
+            var dTop = 50;
+            o.AddObj2Frame(b.inf.objects,o.newObj("text",left,top,333,222,5,"255,255,1")); 
+            top += dTop;
+            if(_inBtn.lsTxt){
+                var l = _inBtn.lsTxt;
+                for(j in l){
+                    o.AddObj2Frame(b.inf.objects,o.newObj(l[j],left,top,333,222,5,"255,1,1")); 
+                    top += dTop;
+                }
+            }
+
             b.inf2JSON = function(_thisCard){
                 return function(){
                     var r = o.newScript(b.inf.version,
