@@ -152,7 +152,13 @@ public class FileController {
 
 		Map<String, Object> resMap = new HashMap<String, Object>();
 		String outputFile = System.getProperty("user.dir") + "/" + fileName;
-		boolean bResult = FileUtil.json2word(url,optional,outputFile);//createAWordDoc(url, optional, outputFile);
+		
+		if (url.toLowerCase().startsWith("http")) {
+			url = FileUtil.downloadFile(url);
+		}
+		String strContent = FileUtil.readAllBytes(url);
+
+		boolean bResult = FileUtil.json2word(url,strContent,outputFile);
 		if (bResult) {
 			resMap.put("code", 200);
 			resMap.put("message", "保存docx成功");
