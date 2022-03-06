@@ -231,7 +231,10 @@ function CUtilVOA(){
             var ta = bl$("id_ta_Page_Txt");
             ta.value = _b[_i]; 
             voaUtil.setCurP(_b[_i]);
-
+            
+            _this.lsTxt = ["aaaaaaaa","bbbbbb","ccccccc"];
+            var tbStoryBoard = bl$("tb4StoryBoard");
+            tbStoryBoard.blAddCard(_this);
           }
         }(btn4P,i,b);
         ps.push(btn4P);

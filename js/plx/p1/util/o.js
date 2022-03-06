@@ -185,9 +185,11 @@ function CP1Util (){
           // o.AddObj2Frame(b.inf.objects,o.newObj("rect",111,10,100,100,5,"blue"));
            // o.AddObj2Frame(b.inf.objects,o.newTextObj("test",10,10,60,"0,255,255"));
             var top = 100;
-            var left = 55;
+            var left = 55 + n*50;
             var dTop = 50;
-            o.AddObj2Frame(b.inf.objects,o.newObj("text",left,top,333,222,5,"255,255,1")); 
+            o.AddObj2Frame(b.inf.objects,o.newObj("Text1-"+n,left,top,333,222,5,"255,255,1")); 
+            top += dTop;
+            o.AddObj2Frame(b.inf.objects,o.newObj("Text2-"+n,left,top,333,222,5,"255,255,1")); 
             top += dTop;
             if(_inBtn.lsTxt){
                 var l = _inBtn.lsTxt;
