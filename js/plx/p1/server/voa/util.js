@@ -1,4 +1,4 @@
-var voaV = "v0.231";
+var voaV = "v0.233";
 
 var bbbb = true;
 var nObjDrawVOA = 0;
@@ -215,7 +215,7 @@ function CUtilVOA(){
       var a = txt.split('<div id="comments" class="comments-parent">'); 
       var b = a[0].split('<p>');
       voaUtil.setCurPs(b,"P",50,30,10);
-
+      
       for(i in b){
         var btn4P = blo0.blBtn(mainTxtToolBar,mainTxtToolBar.id+i,i,blGrey[3]); 
         btn4P.onclick = function(_this,_i,_b){
@@ -238,6 +238,7 @@ function CUtilVOA(){
         ps.push(btn4P);
       }
       //*/
+      bl$("id_btnPlayerBoard").p.setTxts(b);
     }
   }
 
