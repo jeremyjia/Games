@@ -1,6 +1,6 @@
 // file: blclass.js    by littleflute 
 
-var g_ver_blClass = "CBlClass_v1.5.21"
+var g_ver_blClass = "CBlClass_v1.5.22"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -2096,7 +2096,7 @@ blo0.blGetGHI = function(_url,cb){  //git github issue
 
 blo0.blPlayer = function(_id, _title,_src,_x,_y,_w,_h,_c){
 	var d = blo0.blMD(_id, _title,_x,_y,_w,_h,_c);
-	ftnPlayer(d,_src);
+	d.p = ftnPlayer(d,_id+"_video",_src);
 	return d;
 }
 
@@ -2207,15 +2207,15 @@ function CCVSRect(_x,_y,_w,_h,_clr){
 }
 
 
-function ftnPlayer( oDiv ,mySrc){
+function ftnPlayer( oDiv ,_id4video,mySrc){
 	var v = blo0.blDiv(oDiv, oDiv.id + "Player", "Player",blGrey[0]);
-	var str4V = '<video id="myVideo" width="320" height="240" controls> ';				
+	var str4V = '<video id=' + _id4video + ' width="320" height="240" controls> ';				
 	str4V += '<source src=';
 	str4V += mySrc;// 'https://littleflute.github.io/ted1/docs/61/v0.mp4';
 	str4V +=' type="video/mp4">Your browser does not support HTML5 video.'; 	
 	str4V += '</video>';  										
 	var vPlayer = blo0.blDiv( v ,"id_div_4_myVideo" , str4V , 300,100,500,400,blColor[1]); 	
-	var _p = bl$("myVideo");  
+	var _p = bl$(_id4video);  
 	_p.timeFun = function(player){
 		player.mListeners = [];
 		player.addListener = function(o){
@@ -2286,7 +2286,7 @@ function ftnPlayer( oDiv ,mySrc){
 				 }
 			 
 				 for(i in a.songs){
-					   var p = bl$("myVideo");
+					   var p = bl$(_id4video);
 					   var id4Song = i/2+3;
 					   var dSong = blo0.blDiv(d,d.id+"_mp3_"+i, a.songs[i].mp3,blGrey[id4Song]);
 					   dSong.id = id4Song;
@@ -2622,4 +2622,5 @@ function ftnPlayer( oDiv ,mySrc){
 	v.tb.b3.onclick = function(){
 		_p.currentTime = 0;
 	}
+	return _p;
 }

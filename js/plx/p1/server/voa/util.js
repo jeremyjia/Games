@@ -1,4 +1,4 @@
-var voaV = "v0.225";
+var voaV = "v0.231";
 
 var bbbb = true;
 var nObjDrawVOA = 0;
@@ -153,8 +153,8 @@ function CUtilVOA(){
     originalMp3URL = b[0];
     d.innerHTML = originalMp3URL;
     blo0.setPlayerURL(originalMp3URL); 
-
-    blo0.blPlayer(d,"f0Test",originalMp3URL,100,100,400,300,"lightgreen");
+ 
+     bl$("id_btnPlayerBoard").p.setSrc(originalMp3URL);  
 
     d.tb = blo0.blDiv(d,d.id+"tb","tb","lightblue"); 
     var dv = blo0.blDiv(d,d.id+"dv","dv","grey"); 
@@ -172,9 +172,7 @@ function CUtilVOA(){
     
     var btnMakeVoaScript = blo0.blBtn(d.tb,d.tb.id+"btnMakeVoaScript","btnMakeVoaScript","grey");
     btnMakeVoaScript.onclick = function(){
-      //this.script = blo0.blMakeScript();   
-      var d = bl$("id_4_vStatusmdv1vtavpageVvv0dv");
-      d.innerHTML = Date()         
+      alert(bl$("id_btnPlayerBoard").p.src); 
     }
     var btnSaveScript = blo0.blBtn(d.tb,d.tb.id+"btnSaveScript","btnSaveScript","grey");
     btnSaveScript.onclick = function(){
