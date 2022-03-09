@@ -1,4 +1,4 @@
-var version = "i21c1_v0. 225";
+var version = "i21c1_v0. 234";
 var s = version;
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/21/c1/c1.js'"
 s += " style='color:blue;'";		s +=">"; s += " c1.js* ";
@@ -30,19 +30,9 @@ function CC1(){
   this.blr_test_json_endpoint = function(b,d){
     if(!d.bRun){
         var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
-        var v = blo0.blDiv(d,d.id+"v","v",blGrey[3]);
-        var testScript = blo0.blBtn(tb,tb.id+"testScript ","testScript ",blGrey[1]);
-        testScript .onclick = function(){
-          var url = "http://localhost:8080/json?fileName=a1.json";
-          var pl = {};
-          pl.v = "v0.11";
-          pl.n = 1;
-          pl.date = Date();
-          blo0.blPOST(url,pl,function(txt){
-            v.innerHTML = txt;
-          });
-        }
-        var makeScript = blo0.blBtn(tb,tb.id+"makeScript ","makeScript ",blGrey[1]);
+        var v = blo0.blDiv(d,d.id+"v","v",blGrey[3]); 
+
+        var makeScript = blo0.blBtn(tb,tb.id+"makeScript ","blo0.blMakeScript: a1.json ",blGrey[1]);
         makeScript .onclick = function(){
           var url = "http://localhost:8080/json?fileName=a1.json";
           var pl =  blo0.blMakeScript();
@@ -50,7 +40,7 @@ function CC1(){
             v.innerHTML = txt;
           });
         }
-        var a1_json= blo0.blBtn(tb,tb.id+"a1_json","a1_json",blGrey[1]);
+        var a1_json= blo0.blBtn(tb,tb.id+"a1_json","show:a1.json as DOM",blGrey[1]);
         a1_json.onclick = function(){
           var url = "http://localhost:8080/a1.json"; 
           this._2do = function(txt){       
@@ -120,15 +110,18 @@ function CC1(){
           };
           blo0.blAjx(this,url);
         }
-        var showPlainBls= blo0.blBtn(tb,tb.id+"showPlainBls","showPlainBls",blGrey[1]);
+        var showPlainBls= blo0.blBtn(tb,tb.id+"showPlainBls","show: a1.json",blGrey[1]);
         showPlainBls.onclick = function(){
           var url = "http://localhost:8080/a1.json"; 
-          this._2do = function(txt){       
-            v.innerHTML = txt;
+          this._2do = function(txt){        
+            var ta = blo0.blTextarea(v, v.id+"showPlainBls","ta","lightgreen");
+            ta.style.width = 100 + "%";
+            ta.style.height = 100 + "px";
+            ta.value = txt;        
           };
           blo0.blAjx(this,url);
         }
-        var makeMp4= blo0.blBtn(tb,tb.id+"makeMp4","makeMp4",blGrey[1]);
+        var makeMp4= blo0.blBtn(tb,tb.id+"makeMp4","a1.json->makeMp4",blGrey[1]);
         makeMp4.onclick = function(){
           var url = "http://localhost:8080/image/json2video?script=a1.json&video=a1.mp4"; 
           this._2do = function(txt){v.innerHTML = txt};
@@ -151,9 +144,22 @@ function CC1(){
   };
   this.bll2 = "-2-";
   this.blrVOA = function(b,d){
-     var a = bl$("id_btnPlayerBoard");
-     d.innerHTML = a.p.ls;
-      
+     var a = bl$("id_btnPlayerBoard"); 
+     var ps = a.p.getBtnList();
+     var tb = blo0.blDiv(d,d.id+"_tb","_tb",blGrey[0]);
+     tb.ls = [];
+     var v = blo0.blDiv(d,d.id+"_v","_v",blGrey[5]); 
+     //*
+     for(i in ps){
+        var b1 = blo0.blBtn(tb,tb.id+"b"+i,i,blGrey[1]);
+        b1.onclick = function(_thisBtn,_i,_ps){
+           return function(){
+              v.innerHTML = _ps[_i].txt;
+           }
+        }(b1,i,ps);
+        tb.ls.push(b1);
+      }
+     // */
       _on_off_div(b,d);
       b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
   }

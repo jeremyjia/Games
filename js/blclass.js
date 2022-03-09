@@ -1,6 +1,6 @@
 // file: blclass.js   
 
-var g_ver_blClass = "CBlClass_v1.5.34"
+var g_ver_blClass = "CBlClass_v1.5.44"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -194,6 +194,7 @@ function CBlClass ()
 		
 		bl$("blrVersion").click();
 		bl$("blrWidth").click();
+		bl$("blrMusic").click();
 		bl$("blrMakeFrames").click();
 		bl$("blrInfo").click();
 		bl$("blrFrames").click();		
@@ -262,9 +263,11 @@ function CBlClass ()
 				ls.push(btn);
 			}
 		}
+		this.v3_Plus_1 = function(){_v3++;};
 		this.setVersion = function(v1,v2,v3){ _v1 = v1; _v2 = v2; _v3 = v3;};
 		this.getVersion = function(){return "v"+_v1+"."+_v2+"."+_v3;}; 
 		this.getWidth = function(){return _w;};
+		this.getMusic = function(){return _blVideo.src;};
 		this.getFrameNumber = function(){return _frames.length;};
 		this.setSuperObjects = function(_ls){_sos = _ls;};
 		this.getSuperObjects = function(){ return _sos;};
@@ -333,40 +336,75 @@ function CBlClass ()
 						var tb = blo0.blDiv(d,d.id+"tb","version:",blGrey[0]);
 						var btnV = blo0.blBtn(tb,tb.id+"btnV",_thisOBlScript.getVersion(),"brown");btnV.style.color = "white";
 						var btnV3Plus1 = blo0.blBtn(tb,tb.id+"btnV3Plus1","+1",blGrey[1]);
-						btnV3Plus1.onclick = function(){	_v3++;	btnV.innerHTML = _thisOBlScript.getVersion();					}
+						btnV3Plus1.onclick = function(){	
+							_thisOBlScript.v3_Plus_1();//_v3++;	
+							btnV.innerHTML = _thisOBlScript.getVersion();	 
+						}
 						var btnV3Minus1 = blo0.blBtn(tb,tb.id+"btnV3Minus1","-1",blGrey[1]);
-						btnV3Minus1.onclick = function(){	_v3--;	btnV.innerHTML = _thisOBlScript.getVersion();					}
+						btnV3Minus1.onclick = function(){	
+							_v3--;	
+							btnV.innerHTML = _thisOBlScript.getVersion();		
+							_thisOBlScript.setVersion(_v1,_v2,_v3);			
+						}
 					}
 					_on_off_div(b,d);
 					b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 				};
 			}(_boss);
-			this.bll_blrVersion = "--blrVersion--";			
-		}
-		var _oScript = new _CScript(this);
-		
-		
-		_oScript.blhWidth = function(){return 1920;};
-		_oScript.blrWidth = function(_thisOBlScript){
-			return function(b,d){
-				if(!d.loadWidth){d.loadWidth = true; 				b.style.color = "white"; 
-					var tb = blo0.blDiv(d,d.id+"tb","width:",blGrey[0]);
-					var btnW= blo0.blBtn(tb,tb.id+"btnW",_thisOBlScript.getWidth(),"brown");btnW.style.color = "white";
-					var btnWPlus1 = blo0.blBtn(tb,tb.id+"btnWPlus1","+1",blGrey[1]);
-					btnWPlus1.onclick = function(){	_w++;	btnW.innerHTML = _thisOBlScript.getWidth();					}
-					var btnWMinus1 = blo0.blBtn(tb,tb.id+"btnWMinus1","-1",blGrey[1]);
-					btnWMinus1.onclick = function(){	_w--;	btnW.innerHTML = _thisOBlScript.getWidth();					}
-					var btnWPlus10 = blo0.blBtn(tb,tb.id+"btnWPlus10","+10",blGrey[1]);
-					btnWPlus10.onclick = function(){	_w+=10;	btnW.innerHTML = _thisOBlScript.getWidth();					}
-					var btnWMinus10 = blo0.blBtn(tb,tb.id+"btnWMinus10","-10",blGrey[1]);
-					btnWMinus10.onclick = function(){	_w-=10;	btnW.innerHTML = _thisOBlScript.getWidth();					}
+			this.bll_blrVersion = "--blrVersion--";	
+			
+			this.blhWidth = function(){return _boss.getWidth();};
+			this.blrWidth = function(_thisOBlScript){
+				return function(b,d){
+					if(!d.loadWidth){d.loadWidth = true; 				b.style.color = "white"; 
+						var tb = blo0.blDiv(d,d.id+"tb","width:",blGrey[0]);
+						var btnW= blo0.blBtn(tb,tb.id+"btnW",_thisOBlScript.getWidth(),"brown");btnW.style.color = "white";
+						var btnWPlus1 = blo0.blBtn(tb,tb.id+"btnWPlus1","+1",blGrey[1]);
+						btnWPlus1.onclick = function(){	_w++;	btnW.innerHTML = _thisOBlScript.getWidth();					}
+						var btnWMinus1 = blo0.blBtn(tb,tb.id+"btnWMinus1","-1",blGrey[1]);
+						btnWMinus1.onclick = function(){	_w--;	btnW.innerHTML = _thisOBlScript.getWidth();					}
+						var btnWPlus10 = blo0.blBtn(tb,tb.id+"btnWPlus10","+10",blGrey[1]);
+						btnWPlus10.onclick = function(){	_w+=10;	btnW.innerHTML = _thisOBlScript.getWidth();					}
+						var btnWMinus10 = blo0.blBtn(tb,tb.id+"btnWMinus10","-10",blGrey[1]);
+						btnWMinus10.onclick = function(){	_w-=10;	btnW.innerHTML = _thisOBlScript.getWidth();					}
+					}
+					_on_off_div(b,d);
+					b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+				};
+			}(_boss);
+			this.bll_blrWidth = "--blrWidth--";		
+
+			this.blhMusic = function(){return _boss.getMusic();};
+			this.blrMusic = function(_thisOBlScript){
+				return function(b,d){
+					if(!d.loadWidth){d.loadWidth = true; 				b.style.color = "white"; 
+						var tb = blo0.blDiv(d,d.id+"tb","width:",blGrey[0]);
+						var btnW= blo0.blBtn(tb,tb.id+"btnW",_blVideo.src,"brown");btnW.style.color = "white";
+
+						var btnMusic1 = blo0.blBtn(tb,tb.id+"btnMusic1","1",blGrey[1]);
+						btnMusic1.onclick = function(){	
+							_blVideo.src  = "https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3";
+							btnW.innerHTML = _blVideo.src;
+						}
+						
+						var btnMusic2 = blo0.blBtn(tb,tb.id+"btnMusic2","2",blGrey[1]);
+						btnMusic2.onclick = function(){	
+							_blVideo.src  = "https://littleflute.github.io/english/NewConceptEnglish/Book2/2.mp3";
+							btnW.innerHTML = _blVideo.src;
+						}
+						var btnMusic3 = blo0.blBtn(tb,tb.id+"btnMusic3","3",blGrey[1]);
+						btnMusic3.onclick = function(){	
+							_blVideo.src  = "https://littleflute.github.io/english/NewConceptEnglish/Book2/3.mp3";
+							btnW.innerHTML = _blVideo.src;
+						}
+					}
+					_on_off_div(b,d);
+					b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 				}
-				_on_off_div(b,d);
-				b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
-			};
-		}(this);
-		_oScript.bll_blrWidth = "--blrWidth--";
- 
+			}(_boss);
+			this.bll_blrMusic = "--blrMusic--";
+		}
+		var _oScript = new _CScript(this);  
 		
 		_oScript.blrMakeFrames = function(_thisOBlScript){
 			return function(b,d){
@@ -531,8 +569,7 @@ function CBlClass ()
 		}(this);
 		_oScript.bll_blrMakeFrames = "--blrMakeFrames--";
 
-		_oScript.height = 1080;
-		_oScript.music = _blVideo.src;
+		_oScript.height = 1080; 
 		_oScript.rate = "1";
 
 
@@ -627,7 +664,7 @@ function CBlClass ()
 			r.version 	= _os.blhVersion();
 			r.width 	= _os.blhWidth();
 			r.height 	= _os.height;
-			r.music = _os.music;
+			r.music 	= _os.blhMusic();
 			r.rate = _os.rate; 
 			r.frames = _fs;		
 			r.superObjects = _supObjs;	
@@ -659,12 +696,19 @@ function CBlClass ()
         	});
 		}
 		_oScript.blrShowPlainScript = function(b,d){
-			var os = _bl2MakeScript(_oScript,_frames,_sos);
-			var txt = JSON.stringify(os); 
-			var ta	= blo0.blTextarea(d,d.id+"ta",txt,"grey");
-			ta.style.width="95%"; 
-			ta.style.height="30px"; 
-
+			if(!d.tb){
+				d.tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
+				var v = blo0.blDiv(d,d.id+"v","v",blGrey[4]);
+				var btnMakeScript = blo0.blBtn(d.tb,d.tb.id+"make","makeScript",blGrey[1]);
+				btnMakeScript.onclick = function(){
+					var os = _bl2MakeScript(_oScript,_frames,_sos);
+					var txt = JSON.stringify(os); 
+					var ta	= blo0.blTextarea(v,v.id+"ta","ta...","grey");
+					ta.style.width="95%"; 
+					ta.style.height="130px"; 
+					ta.value = txt;
+				}
+			}
 			_on_off_div(b,d);
 			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 		}
