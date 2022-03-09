@@ -73,8 +73,9 @@ body {
 </div>
 
 <div style="padding-left:16px">
-  <h3>index v0.0.33</h3> 
+  <h3>index v0.0.42</h3> 
   <p><button id="loadc1.js">Run Test: i21-c1</button></p>
+  <div id="id_btnPlayerBoard">id_btnPlayerBoard</div>
 </div>
 
 <!-- End smartphone / tablet look -->
@@ -106,6 +107,17 @@ function myFunction() {
        b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
     }
   }
+  var tb = bl$("id_btnPlayerBoard");  
+  tb.p = {};
+  tb.p.ls = [];
+  for(var i = 0; i<10;i ++){
+    var btn = blo0.blBtn(tb,tb.id+i,i+1,blGrey[0]); 
+    tb.p.ls.push(btn);
+  }
+  tp.p.getBtnList = function(){
+    return tb.p.ls;
+  }
+
   </script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 // file: blclass.js    by littleflute 
 
-var g_ver_blClass = "CBlClass_v1.5.23"
+var g_ver_blClass = "CBlClass_v1.5.25"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -325,8 +325,11 @@ function CBlClass ()
 			}
 		}
 
-		var _oScript = {};
-		_oScript.blhVersion = function(){return "xdTest..."};
+		var _CScript = function(){
+			this.blhVersion = function(){return "_CScript: v0.11"};
+			
+		}
+		var _oScript = new _CScript();
 		_oScript.blrVersion = function(_thisOBlScript){
 			return function(b,d){
 				if(!d.loadVersion){d.loadVersion = true; 				b.style.color = "white"; 
@@ -658,8 +661,11 @@ function CBlClass ()
 		}
 		_oScript.blrShowPlainScript = function(b,d){
 			var os = _bl2MakeScript(_oScript,_frames,_sos);
-			var txt = JSON.stringify(os);
-			d.innerHTML = txt;
+			var txt = JSON.stringify(os); 
+			var ta	= blo0.blTextarea(d,d.id+"ta",txt,"grey");
+			ta.style.width="95%"; 
+			ta.style.height="30px"; 
+
 			_on_off_div(b,d);
 			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 		}
