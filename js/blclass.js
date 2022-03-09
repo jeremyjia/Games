@@ -1,6 +1,6 @@
-// file: blclass.js    by littleflute 
+// file: blclass.js   
 
-var g_ver_blClass = "CBlClass_v1.5.25"
+var g_ver_blClass = "CBlClass_v1.5.34"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -163,7 +163,7 @@ function CBlClass ()
 			bl$("blr_test_edit_script").click();
 		};
 	}
-	var _test = new CTest();
+	var _oTest = new CTest();
 	
 	var _blVideo = document.createElement("VIDEO");
 	_blVideo.id = "id_blVideo";
@@ -325,27 +325,26 @@ function CBlClass ()
 			}
 		}
 
-		var _CScript = function(){
-			this.blhVersion = function(){return "_CScript: v0.11"};
-			
+		var _CScript = function(_boss){
+			this.blhVersion = function(){return _boss.getVersion();};
+			this.blrVersion = function(_thisOBlScript){
+				return function(b,d){
+					if(!d.loadVersion){d.loadVersion = true; 				b.style.color = "white"; 
+						var tb = blo0.blDiv(d,d.id+"tb","version:",blGrey[0]);
+						var btnV = blo0.blBtn(tb,tb.id+"btnV",_thisOBlScript.getVersion(),"brown");btnV.style.color = "white";
+						var btnV3Plus1 = blo0.blBtn(tb,tb.id+"btnV3Plus1","+1",blGrey[1]);
+						btnV3Plus1.onclick = function(){	_v3++;	btnV.innerHTML = _thisOBlScript.getVersion();					}
+						var btnV3Minus1 = blo0.blBtn(tb,tb.id+"btnV3Minus1","-1",blGrey[1]);
+						btnV3Minus1.onclick = function(){	_v3--;	btnV.innerHTML = _thisOBlScript.getVersion();					}
+					}
+					_on_off_div(b,d);
+					b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+				};
+			}(_boss);
+			this.bll_blrVersion = "--blrVersion--";			
 		}
-		var _oScript = new _CScript();
-		_oScript.blrVersion = function(_thisOBlScript){
-			return function(b,d){
-				if(!d.loadVersion){d.loadVersion = true; 				b.style.color = "white"; 
-					var tb = blo0.blDiv(d,d.id+"tb","version:",blGrey[0]);
-					var btnV = blo0.blBtn(tb,tb.id+"btnV",_thisOBlScript.getVersion(),"brown");btnV.style.color = "white";
-					var btnV3Plus1 = blo0.blBtn(tb,tb.id+"btnV3Plus1","+1",blGrey[1]);
-					btnV3Plus1.onclick = function(){	_v3++;	btnV.innerHTML = _thisOBlScript.getVersion();					}
-					var btnV3Minus1 = blo0.blBtn(tb,tb.id+"btnV3Minus1","-1",blGrey[1]);
-					btnV3Minus1.onclick = function(){	_v3--;	btnV.innerHTML = _thisOBlScript.getVersion();					}
-				}
-				_on_off_div(b,d);
-				b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
-			};
-		}(this);
-		_oScript.bll_blrVersion = "--blrVersion--";
-
+		var _oScript = new _CScript(this);
+		
 		
 		_oScript.blhWidth = function(){return 1920;};
 		_oScript.blrWidth = function(_thisOBlScript){
@@ -917,7 +916,7 @@ function CBlClass ()
 			btnTest.onclick		= function(_this,_v){
 				return function(){ 
 						_v.innerHTML = _this.id;						
-						_test.runAt(_v);
+						_oTest.runAt(_v);
 						blon(_this,_v,"grey","green");
 				}
 			}(btnTest,div4Parse);
