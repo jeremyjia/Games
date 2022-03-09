@@ -1,4 +1,4 @@
-var version = "i21c1_v0. 121";
+var version = "i21c1_v0. 211";
 var s = version;
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/21/c1/c1.js'"
 s += " style='color:blue;'";		s +=">"; s += " c1.js* ";
@@ -58,13 +58,11 @@ ui.blrSaveJSON = function(b,d){
             v.v1.innerHTML = "";
             var ftb = blo0.blDiv(v.v1,v.v1.id+"vftb","ftb",blGrey[2]);
             var fv = blo0.blDiv(v.v1,v.v1.id+"fv","fv",blGrey[3]);
-            var fs = bls.request.frames;   
-            var _ls = [];         
+            var fs = bls.request.frames;            
             for(i in fs){
               var btnFrame = blo0.blBtn(ftb,ftb.id+i,i,blGrey[4]);
-              btnFrame.onclick = function(_fs,_i,_btnFrame){
+              btnFrame.onclick = function(_fs,_i){
                 return function(){ 
-                  blo0.blMarkBtnInList(_btnFrame,_ls,"yellow","grey");
                   fv.innerHTML = "";
                   var curFTb = blo0.blDiv(fv,fv.id+"curFTb","curFTb",blGrey[2]);
                   var curFv = blo0.blDiv(fv,fv.id+"curFv","curFv",blGrey[3]);
@@ -92,8 +90,7 @@ ui.blrSaveJSON = function(b,d){
                     }
                   }(_fs[_i]); 
                 }
-              }(fs,i,btnFrame);
-              _ls.push(btnFrame);
+              }(fs,i);
             } 
           }
 
@@ -146,7 +143,10 @@ ui.blrShowScript = function(b,d){
   _on_off_div(b,d);
   b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 };
-
+ui.blrVOA = function(b,d){
+   var a = bl$("id_btnPlayerBoard");
+   d.innerHTML = a.p.getBtnList();
+}
 blo0.blShowObj2Div(d.v,ui);
 bl$("blrSaveJSON").click();
 bl$("blrShowScript").click();

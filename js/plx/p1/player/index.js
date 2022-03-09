@@ -1,4 +1,4 @@
-var tag_playerBoard = "index.js_v0.32";
+var tag_playerBoard = "index.js_v0.33";
 var tb = bl$("id_p1_tb"); 
 
 tb.btnPlayerBoard = blo0.blBtn(tb,"id_btnPlayerBoard","btnPlayerBoard",blGrey[2]);
@@ -11,6 +11,9 @@ tb.btnPlayerBoard.onclick = function(){
 function CPlayer(){  
     var _dPlayer = null;
     var _tb = null;
+    this.getBtnList = function(){
+        return _dPlayer.btnTxtList;
+    }
     this.show = function(b){
         if(!_dPlayer){  
             var src = "https://littleflute.github.io/blcd2/cd1/Babyface%20%20%20If.mp3";
@@ -42,22 +45,32 @@ function CPlayer(){
     }
     this.setTxts = function(ps){        
         var vt = blo0.blDiv(_dPlayer,_dPlayer.id+"_vt","_vt",blGrey[0]);
-        var vtb = blo0.blDiv(vt,vt.id+"tb","tb",blGrey[0]);
+        var vtb = blo0.blDiv(vt,vt.id+"vtb","vtb",blGrey[0]);
         var vtv = blo0.blDiv(vt,vt.id+"v","v",blGrey[0]);
+         
+
         vtb.ls = [];
+        _dPlayer.btnTxtList = vtb.ls;
         for (i in ps){
             var n = vtb.ls.length;
-            var btn = blo0.blBtn(vtb,vtb.id+"btn"+n,n,blGrey[1]);
+            var btn = blo0.blBtn(vtb,vtb.id+"btn"+n,n,blGrey[1]); 
+            btn.reflash = function(v){
+                v.innerHTML = this.curTime;
+            }
             btn.onclick = function(_thisTxtBtn,_thisBtnList,_i,_ps){
                 return function(){
                     vtv.innerHTML = "";
                     blo0.blMarkBtnInList(_thisTxtBtn,_thisBtnList,"yellow","grey");
                     _thisTxtBtn.txt = _ps[_i];
                     
-                    if(!_thisTxtBtn.curTime) _thisTxtBtn.curTime = _dPlayer.p.currentTime;
-                    else _dPlayer.p.currentTime = _thisTxtBtn.curTime;
+                    if(!_thisTxtBtn.curTime) {
+                        _thisTxtBtn.curTime = _dPlayer.p.currentTime; 
+                    }
+                    else{
+                        _dPlayer.p.currentTime = _thisTxtBtn.curTime; 
+                    }
 
-                    var tb = blo0.blDiv(vtv,vtv.id+"tb","tb",blGrey[0]);
+                    var tb = blo0.blDiv(vtv,vtv.id+"tb","tb","lightblue");
 
                     var v = blo0.blDiv(vtv,vtv.id+"v","v",blGrey[1]);
                     var ta = blo0.blTextarea(v, "id_4_ta_voaTXT","ta","lightgreen");
@@ -65,18 +78,33 @@ function CPlayer(){
                     ta.style.height = 100 + "px";
                     ta.value = _thisTxtBtn.txt;
 
-                    tb.b1 = blo0.blBtn(tb,tb.id+"b1","b1",blGrey[3]);
-                    tb.b2 = blo0.blBtn(tb,tb.id+"b2","-1",blGrey[3]);
-                    tb.b3 = blo0.blBtn(tb,tb.id+"b3","+1",blGrey[3]);
-                    tb.b1.onclick = function(){
-                        ta.value = this.id;
-                    }
-                    tb.b2.onclick = function(){
+                    tb.btnCur = blo0.blBtn(tb,tb.id+"cur","cur",blGrey[3]);
+                    tb.btnMinus1 = blo0.blBtn(tb,tb.id+"btnMinus1","-1",blGrey[3]);
+                    tb.btnAdd1 = blo0.blBtn(tb,tb.id+"btnAdd1","+1",blGrey[3]);
+                    tb.btnMinus10 = blo0.blBtn(tb,tb.id+"btnMinus10","-10",blGrey[3]);
+                    tb.btnAdd10 = blo0.blBtn(tb,tb.id+"btnAdd10","+10",blGrey[3]);
+                    tb.btnNow = blo0.blBtn(tb,tb.id+"now","now",blGrey[3]);
+                    tb.btnCur.onclick = function(){
+                        _thisTxtBtn.curTime = _dPlayer.p.currentTime;
+                        _thisTxtBtn.reflash(tb.btnNow);
+                    } 
+                    tb.btnMinus1.onclick = function(){
                         _thisTxtBtn.curTime -= 1;
+                        _thisTxtBtn.reflash(tb.btnNow);
                     }
-                    tb.b3.onclick = function(){
+                    tb.btnAdd1.onclick = function(){
                         _thisTxtBtn.curTime += 1;
+                        _thisTxtBtn.reflash(tb.btnNow);
                     }
+                    tb.btnMinus10.onclick = function(){
+                        _thisTxtBtn.curTime -= 10;
+                        _thisTxtBtn.reflash(tb.btnNow);
+                    }
+                    tb.btnAdd10.onclick = function(){
+                        _thisTxtBtn.curTime += 10;
+                        _thisTxtBtn.reflash(tb.btnNow);
+                    }
+                    _thisTxtBtn.reflash(tb.btnNow);
                 }
             }(btn,vtb.ls,i,ps);
             vtb.ls.push(btn);
