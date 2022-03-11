@@ -1,4 +1,4 @@
-var tag_playerBoard = "index.js_v0.52";
+var tag_playerBoard = "index.js_v0.53";
 var tb = bl$("id_p1_tb"); 
 
 tb.btnPlayerBoard = blo0.blBtn(tb,"id_btnPlayerBoard","btnPlayerBoard",blGrey[2]);
@@ -69,6 +69,7 @@ function CPlayer(){
                     var a = _ps[_i];
                     var b = a.split('</p>');
                     _thisTxtBtn.txt = b[0];
+                    _thisTxtBtn.duration = 2;
                     
                     if(!_thisTxtBtn.curTime) {
                         _thisTxtBtn.curTime = _dPlayer.p.currentTime; 
@@ -107,7 +108,7 @@ function CPlayer(){
 
                                         }
                                     }(fls[i]);
-                                    var f = blo0.blMakeFrame(i,1,os(),"red");
+                                    var f = blo0.blMakeFrame(i,fls[i].duration,os(),"black");
                                     l.push(f);
                                 }
                                 return l;
