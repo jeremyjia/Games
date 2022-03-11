@@ -1,6 +1,6 @@
 // file: blclass.js   
 
-var g_ver_blClass = "CBlClass_v1.5.52"
+var g_ver_blClass = "CBlClass_v1.5.115"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -185,12 +185,8 @@ function CBlClass ()
 	}
 	this.bllAboutMe = "--aboutMe--";
 
-	this.blShowScript = function(_v){
-		var now = new Date();
-		now = now.toLocaleString();	 
-		_blScript.now = now;
-		_blShowObj2Div(_v,_blScript);
-		
+	this.blShowScript = function(_v){		
+		_blShowObj2Div(_v,_blScript);		
 		bl$("blrVersion").click();
 		bl$("blrWidth").click();
 		bl$("blrMusic").click();
@@ -261,8 +257,7 @@ function CBlClass ()
 				}(_frames,i,ls,btn);
 				ls.push(btn);
 			}
-		}
-		this.v3_Plus_1 = function(){_v3++;};
+		} 
 		this.setVersion = function(v1,v2,v3){ _v1 = v1; _v2 = v2; _v3 = v3;};
 		this.getVersion = function(){return "v"+_v1+"."+_v2+"."+_v3;}; 
 		this.getWidth = function(){return _w;};
@@ -334,17 +329,17 @@ function CBlClass ()
 					if(!d.loadVersion){d.loadVersion = true; 				b.style.color = "white"; 
 						var tb = blo0.blDiv(d,d.id+"tb","version:",blGrey[0]);
 						var btnV = blo0.blBtn(tb,tb.id+"btnV",_thisOBlScript.getVersion(),"brown");btnV.style.color = "white";
-						var btnV3Plus1 = blo0.blBtn(tb,tb.id+"btnV3Plus1","+1",blGrey[1]);
-						btnV3Plus1.onclick = function(){	
-							_thisOBlScript.v3_Plus_1();//_v3++;	
-							btnV.innerHTML = _thisOBlScript.getVersion();	 
-						}
-						var btnV3Minus1 = blo0.blBtn(tb,tb.id+"btnV3Minus1","-1",blGrey[1]);
-						btnV3Minus1.onclick = function(){	
-							_v3--;	
-							btnV.innerHTML = _thisOBlScript.getVersion();		
-							_thisOBlScript.setVersion(_v1,_v2,_v3);			
-						}
+
+						const vls = [1,-1,2,-2,5,-5,10,-10];
+						for(i in vls){
+							var btn = blo0.blBtn(tb,tb.id+"vls"+i,vls[i]>0?"+"+vls[i]:vls[i],blGrey[1]);
+							btn.onclick = function(_step){
+								return function(){
+									_v3 += _step;
+									btnV.innerHTML = _thisOBlScript.getVersion();	
+								}
+							}(vls[i]);
+						} 
 					}
 					_on_off_div(b,d);
 					b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
@@ -372,15 +367,21 @@ function CBlClass ()
 				};
 			}(_boss);
 			this.bll_blrWidth = "--blrWidth--";		
-
-			this.blhMusic = function(){return _boss.getMusic();};
+ 
 			this.blrMusic = function(_thisOBlScript){
 				return function(b,d){
 					if(!d.loadWidth){d.loadWidth = true; 				b.style.color = "white"; 
 						var tb = blo0.blDiv(d,d.id+"tb","width:",blGrey[0]);
 						var btnW= blo0.blBtn(tb,tb.id+"btnW",_blVideo.src,"brown");btnW.style.color = "white";
-
+						var btn4Play= blo0.blBtn(tb,tb.id+"btn4Play","play","green");btn4Play.style.color = "white";
+						btn4Play.b = false;
 						var btnMusic1 = blo0.blBtn(tb,tb.id+"btnMusic1","1",blGrey[1]);
+
+						btn4Play.onclick = function(){
+							if(!this.b){_blVideo.play();this.b=true;this.innerHTML="stop";}
+							else{_blVideo.pause();this.b=false;this.innerHTML="play";}
+							
+						}
 						btnMusic1.onclick = function(){	
 							_blVideo.src  = "https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3";
 							btnW.innerHTML = _blVideo.src;
@@ -663,7 +664,7 @@ function CBlClass ()
 			r.version 	= _os.blhVersion();
 			r.width 	= _os.blhWidth();
 			r.height 	= _os.height;
-			r.music 	= _os.blhMusic();
+			r.music 	= _blVideo.src;
 			r.rate = _os.rate; 
 			r.frames = _fs;		
 			r.superObjects = _supObjs;	
@@ -671,37 +672,34 @@ function CBlClass ()
 			return s;		 
 		}
 		var _sos = [];
-		
-
-		_oScript.blrPlay = function(b,d){
-			_blVideo.play();
-		}
-		_oScript.blrPause = function(b,d){
-			_blVideo.pause();
-		}	
-		_oScript.blrScript2Mp4 = function(b,d){ 			
-			var url = "http://localhost:8080/image/json2video?script=" + blScriptName + ".json&video=" + blScriptName + ".mp4"; 
-			b._2do = function(txt){d.innerHTML = txt};
-			blo0.blAjx(b,url);
-		}		 
+ 
 		_oScript.blrLoacalScript = function(b,d){
 			if(!d.tb){
 				d.tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
 				var v = blo0.blDiv(d,d.id+"v","v",blGrey[4]);
 				var btnMakeScript = blo0.blBtn(d.tb,d.tb.id+"btnMakeScript","makeScript",blGrey[1]);				
 				var btnSaveScript = blo0.blBtn(d.tb,d.tb.id+"btnSaveScript","saveScript",blGrey[1]);
+				var btnMakeMp4 = blo0.blBtn(d.tb,d.tb.id+"btnMakeMp4","MakeMp4",blGrey[1]);
 				
+						
+				btnMakeMp4.onclick = function(b,d){ 			
+					var url = "http://localhost:8080/image/json2video?script=" + blScriptName + ".json&video=" + blScriptName + ".mp4"; 
+					b._2do = function(txt){v.innerHTML = txt};
+					blo0.blAjx(b,url);
+				}		 
 				btnSaveScript.onclick = function(){
-					var pl = _bl2MakeScript(_oScript,_frames,_sos);
-					_oScript.music = _blVideo.src;
+				 
+					var pl = _bl2MakeScript(_oScript,_frames,_sos); 
 					var url = "http://localhost:8080/json?fileName=" + blScriptName + ".json"; 
+   
 					blo0.blPOST(url,pl,function(txt){
-						v.innerHTML = txt;
-					});
+						v.innerHTML = "<a href ='http://localhost:8080/"+blScriptName+".json' target='_blank'>"+blScriptName+".json</a>";
+					}); 
 				}
 				btnMakeScript.onclick = function(){
 					var os = _bl2MakeScript(_oScript,_frames,_sos);
 					var txt = JSON.stringify(os); 
+					v.innerHTML = "";
 					var ta	= blo0.blTextarea(v,v.id+"ta","ta...","grey");
 					ta.style.width="95%"; 
 					ta.style.height="130px"; 
@@ -1684,15 +1682,15 @@ function CBlClass ()
 				break;
 		}
 	}
-	this.blPOST = function(_url,_jsonData,_cb1,_cb2){  
+	this.blPOST = function(_url,_jsonData,_cb){  
 		var xhr = new XMLHttpRequest();
 		xhr.withCredentials = true;
 		xhr.addEventListener("readystatechange", function() {
 			if(this.readyState === 4 && this.status==200) {
-				_cb1( this.responseText );
+				_cb( this.responseText );
 			}	
 			else{
-				_cb2("error: " + this.readyState + "," + this.status);
+				_cb("error: " + this.readyState + "," + this.status);
 			}
 		});
 		xhr.open("POST", _url);
@@ -2153,7 +2151,7 @@ blo0.blGetGHI = function(_url,cb){  //git github issue
 	var token = "f89b0eccf7"+"4c65a65513"+"60062c3e47"+"98d0df4577";//jp
 	var xdToken = "023b4e4f"+"a78cff90"+"8afa75bf"+"072567053"+"3bacc60";
 	var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526806470?access_token="+xdToken;
-	//*
+	 
 	myAjaxCmd('GET',url, null, readCallBack);
 
 	function readCallBack(resp){
@@ -2168,8 +2166,7 @@ blo0.blGetGHI = function(_url,cb){  //git github issue
 			alert("The status code:"+resp.status); 
 		  }
 		}			 
-	 }
-	 //*/
+	 } 
 	return r;
 }
 
@@ -2419,8 +2416,7 @@ blo0.blPlayer = function(_id, _title,_src,_x,_y,_w,_h,_c){
 												_s += lArr[i];
 												_s += "\n";
 	
-											}
-											//*/
+											} 
 											v.v1.ta.value = _s;
 	
 											_on_off_div(this,blo0.plxSrt);
@@ -2701,5 +2697,3 @@ function CCVSRect(_x,_y,_w,_h,_clr){
 			} 
 	} 
 }
-
-
