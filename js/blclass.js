@@ -823,7 +823,7 @@ function CBlClass ()
 		var rs = _tmpDiv.getElementsByTagName(tagName);
 		return rs;
 	} 
-	
+	 
 	this.blMakeScript = function(){		
 		var now = new Date();
 		now = now.toLocaleString();
