@@ -1,4 +1,4 @@
-var tag_playerBoard = "index.js_v0.43";
+var tag_playerBoard = "index.js_v0.52";
 var tb = bl$("id_p1_tb"); 
 
 tb.btnPlayerBoard = blo0.blBtn(tb,"id_btnPlayerBoard","btnPlayerBoard",blGrey[2]);
@@ -94,10 +94,28 @@ function CPlayer(){
                     tb.btnMakeBLS = blo0.blBtn(tb,tb.id+"btnMakeBLS","btnMakeBLS",blGrey[3]);
                     tb.btnMakeBLS.onclick = function(){
                         var _src = blo0.getPlayerSrc();
-                        var fs = [];
+                        var fs = function(fls){
+                            return function(){
+                                var l = [];
+                                for(i in fls){
+                                    var os = function(txtBtn){
+                                        return function(){
+                                            var ol = [];
+                                            var o = blo0.blMakeTextObj(txtBtn.txt,10,333,30,"blue");
+                                            ol.push(o);
+                                            return ol;
+
+                                        }
+                                    }(fls[i]);
+                                    var f = blo0.blMakeFrame(i,1,os(),"red");
+                                    l.push(f);
+                                }
+                                return l;
+                            }
+                        }(_thisBtnList);
                         var sos = [];
                         var ms = [];
-                        var s = blo0.blMakeScript1("v0.11",1920,1080,_src,"1",fs,sos,ms);
+                        var s = blo0.blMakeScript1("v0.11",1920,1080,_src,"1",fs(),sos,ms);
                         ta.value = JSON.stringify(s);
                     }
                     tb.btnCur.onclick = function(){
