@@ -1,6 +1,6 @@
 // file: blclass.js   
 
-var g_ver_blClass = "CBlClass_v1.5.45"
+var g_ver_blClass = "CBlClass_v1.5.52"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -154,10 +154,9 @@ function CBlClass ()
 			_on_off_div(b,d);
 			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 		}
-		_ot.bll1_blr_test_edit_script= "-blr_test_edit_script-";
-		_ot.out = "ouTest";
-		this.runAt = function(_v){
-			blo0.blParseText("abc",_ot);
+		_ot.bll1_blr_test_edit_script= "-blr_test_edit_script-"; 
+
+		this.runAt = function(_v){ 
 			blo0.blShowObj2Div(_v,_ot);
 			bl$("blr_test_edit_script").click();
 			bl$("blr_test_edit_script").click();
@@ -684,22 +683,22 @@ function CBlClass ()
 			var url = "http://localhost:8080/image/json2video?script=" + blScriptName + ".json&video=" + blScriptName + ".mp4"; 
 			b._2do = function(txt){d.innerHTML = txt};
 			blo0.blAjx(b,url);
-		}		
-		_oScript.blrSaveScript = function(b,d){ 			
-
-			var pl = _bl2MakeScript(_oScript,_frames,_sos);
-			_oScript.music = _blVideo.src;
-
-			var url = "http://localhost:8080/json?fileName=" + blScriptName + ".json"; 
-        	blo0.blPOST(url,pl,function(txt){
-         		 d.innerHTML = txt;
-        	});
-		}
-		_oScript.blrShowPlainScript = function(b,d){
+		}		 
+		_oScript.blrLoacalScript = function(b,d){
 			if(!d.tb){
 				d.tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
 				var v = blo0.blDiv(d,d.id+"v","v",blGrey[4]);
-				var btnMakeScript = blo0.blBtn(d.tb,d.tb.id+"make","makeScript",blGrey[1]);
+				var btnMakeScript = blo0.blBtn(d.tb,d.tb.id+"btnMakeScript","makeScript",blGrey[1]);				
+				var btnSaveScript = blo0.blBtn(d.tb,d.tb.id+"btnSaveScript","saveScript",blGrey[1]);
+				
+				btnSaveScript.onclick = function(){
+					var pl = _bl2MakeScript(_oScript,_frames,_sos);
+					_oScript.music = _blVideo.src;
+					var url = "http://localhost:8080/json?fileName=" + blScriptName + ".json"; 
+					blo0.blPOST(url,pl,function(txt){
+						v.innerHTML = txt;
+					});
+				}
 				btnMakeScript.onclick = function(){
 					var os = _bl2MakeScript(_oScript,_frames,_sos);
 					var txt = JSON.stringify(os); 
@@ -1685,15 +1684,15 @@ function CBlClass ()
 				break;
 		}
 	}
-	this.blPOST = function(_url,_jsonData,_cb){  
+	this.blPOST = function(_url,_jsonData,_cb1,_cb2){  
 		var xhr = new XMLHttpRequest();
 		xhr.withCredentials = true;
 		xhr.addEventListener("readystatechange", function() {
 			if(this.readyState === 4 && this.status==200) {
-				_cb( this.responseText );
+				_cb1( this.responseText );
 			}	
 			else{
-				_cb("error: " + this.readyState + "," + this.status);
+				_cb2("error: " + this.readyState + "," + this.status);
 			}
 		});
 		xhr.open("POST", _url);
