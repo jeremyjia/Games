@@ -1,4 +1,4 @@
-var tag_playerBoard = "index.js_v0.33";
+var tag_playerBoard = "index.js_v0.43";
 var tb = bl$("id_p1_tb"); 
 
 tb.btnPlayerBoard = blo0.blBtn(tb,"id_btnPlayerBoard","btnPlayerBoard",blGrey[2]);
@@ -53,6 +53,11 @@ function CPlayer(){
         _dPlayer.btnTxtList = vtb.ls;
         for (i in ps){
             var n = vtb.ls.length;
+            if(i==0) continue;
+            var a = ps[i];
+            var b = a.split('<em>');
+            if(b.length>1) break;
+
             var btn = blo0.blBtn(vtb,vtb.id+"btn"+n,n,blGrey[1]); 
             btn.reflash = function(v){
                 v.innerHTML = this.curTime;
@@ -61,7 +66,9 @@ function CPlayer(){
                 return function(){
                     vtv.innerHTML = "";
                     blo0.blMarkBtnInList(_thisTxtBtn,_thisBtnList,"yellow","grey");
-                    _thisTxtBtn.txt = _ps[_i];
+                    var a = _ps[_i];
+                    var b = a.split('</p>');
+                    _thisTxtBtn.txt = b[0];
                     
                     if(!_thisTxtBtn.curTime) {
                         _thisTxtBtn.curTime = _dPlayer.p.currentTime; 
@@ -84,6 +91,15 @@ function CPlayer(){
                     tb.btnMinus10 = blo0.blBtn(tb,tb.id+"btnMinus10","-10",blGrey[3]);
                     tb.btnAdd10 = blo0.blBtn(tb,tb.id+"btnAdd10","+10",blGrey[3]);
                     tb.btnNow = blo0.blBtn(tb,tb.id+"now","now",blGrey[3]);
+                    tb.btnMakeBLS = blo0.blBtn(tb,tb.id+"btnMakeBLS","btnMakeBLS",blGrey[3]);
+                    tb.btnMakeBLS.onclick = function(){
+                        var _src = blo0.getPlayerSrc();
+                        var fs = [];
+                        var sos = [];
+                        var ms = [];
+                        var s = blo0.blMakeScript1("v0.11",1920,1080,_src,"1",fs,sos,ms);
+                        ta.value = JSON.stringify(s);
+                    }
                     tb.btnCur.onclick = function(){
                         _thisTxtBtn.curTime = _dPlayer.p.currentTime;
                         _thisTxtBtn.reflash(tb.btnNow);

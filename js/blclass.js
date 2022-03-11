@@ -1,6 +1,6 @@
 // file: blclass.js   
 
-var g_ver_blClass = "CBlClass_v1.5.44"
+var g_ver_blClass = "CBlClass_v1.5.45"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -884,6 +884,37 @@ function CBlClass ()
 		r.frames = fs;		
 		d.request = r;		
 		return d;		 
+	}
+	this.blMakeScript1 = function(version,width,height,music,rate,listFrames,listSuperOjects,listMacros){
+		var s = {};
+		var r = {};
+		r.version = version;
+		r.width = width;
+		r.height = height;
+		r.music = music;
+		r.rate = rate;
+		r.frames = listFrames;
+		r.superObjects = listSuperOjects;
+		r.Macros = listMacros;
+		s.request = r;
+		return s;		
+	}
+	this.blMakeFrame = function(number,time,listOjects,backgroundColor){
+		var f = {}; 
+		f.number 			= number;
+		f.time 				= time;
+		f.objects 			= listOjects;
+		f.backgroundColor 	= backgroundColor;
+		return f;		
+	}
+	this.blMakeTextObj = function(text,x,y,size,color){
+		var t = {}; 
+		t.text 	= text;
+		t.x  	= x;
+		t.y 	= y;
+		t.size 	= size;
+		t.color = color;
+		return t;		
 	}
 	this.blSetPS = function(ps){		_ps = ps;	}
 	this.setScriptName = function(_scriptName){
