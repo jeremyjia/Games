@@ -54,6 +54,9 @@ public final class JsonSriptParser {
 	private static SubtitleImageService subtitleImageService = new SubtitleImageService();
 	public static List<SubtitleModel> subtitleList = null;
 	private static String titleOfLRC = "";
+	private static String VAR_TIME = "VAR_TIME";// s
+	private static String VAR_FRAMES = "VAR_FRAMES";
+	private static String VAR_RATE = "VAR_RATE";
 
 	public static void setMacros(String scriptFilePath) throws Exception {
 		String jsonString = getJsonString(scriptFilePath);
@@ -63,6 +66,7 @@ public final class JsonSriptParser {
 		if (audioFilePath == null || audioFilePath.trim().length() == 0) {
 			audioFilePath = requestObj.optString("music");
 		}
+		String rate = requestObj.getString("rate");
 		// Resolve all macros
 		Iterator<String> keys = requestObj.keys();
 		while (keys.hasNext()) {
@@ -92,7 +96,12 @@ public final class JsonSriptParser {
 		String saveFile = System.getProperty("user.dir") + "/" + audioFile;
 		String audioTime = FileUtil.getAudioDuration(saveFile);
 		System.out.println("Audio file " + saveFile + " seconds:" + audioTime);
-		MacroResolver.setProperty("VAR_TIME", audioTime);
+		MacroResolver.setProperty(VAR_TIME, audioTime);
+		MacroResolver.setProperty(VAR_RATE, rate);
+		int s = Integer.parseInt(audioTime);
+		int r = Integer.parseInt(rate);
+		int frames = s * r;
+		MacroResolver.setProperty(VAR_FRAMES, String.valueOf(frames));
 
 	}
 
@@ -148,7 +157,7 @@ public final class JsonSriptParser {
 	}
 
 	private static boolean generateVideo(String jsonString) throws Exception {
-		JSONObject jsonObj = new JSONObject(jsonString);
+		JSONObject jsonObj = new JSONObject(jsonString);		
 		JSONObject requestObj = getJsonObjectbyName(jsonObj, "request");
 		supperObjectsMapList.clear();
 		aoiMap.clear();
@@ -500,7 +509,7 @@ public final class JsonSriptParser {
 		}
 	}
 
-	private static String getJsonString(String scriptFilePath) throws IOException {
+	public static String getJsonString(String scriptFilePath) throws IOException {
 		String jsonString = new String(Files.readAllBytes(new File(scriptFilePath).toPath()));
 		// Fix input JSON string
 		int s = jsonString.indexOf("{");
@@ -764,9 +773,13 @@ public final class JsonSriptParser {
 	}
 
 	private static String getSubTitleByFrame(List<SubtitleModel> ls, int number) {
+		String rate = MacroResolver.getProperty(VAR_RATE);
+		int r = Integer.parseInt(rate);
+		int s = number / r;
+
 		for (SubtitleModel info : ls) {
 			String strSubtitle = info.contextEng;
-			if (number >= info.star / 1000 && number <= info.end / 1000) {
+			if (s >= info.star / 1000 && s <= info.end / 1000) {
 				return strSubtitle;
 			}
 		}

@@ -1,5 +1,5 @@
 //i4c3  
-var s= "v0.0. 135 "; 
+var s= "v0.0. 143 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c3.js'"
 s += " style='color:blue;'";		s +=">"; s += "c3.js* ";
 s += "<a target='_blank' href='issues/4/c3.js'"
@@ -23,7 +23,7 @@ if(!md.run){
 	style += "left: 11px;";
 	style += "top: 40px;";
 	style += "width: " + "555" + "px;";
-	style += "height: " + "333" + "px;";
+	style += "height: " + "55" + "px;";
 	md .style =style;
     // 调用 blo0.blDiv 接口函数，创建 DIV，没有传入颜色参数。 
 	var title = blo0.blDiv(md , "div_ID_4_I4C3" + "Header", "Header");
@@ -89,7 +89,7 @@ function _myJobClass(){
 			// 调用 jsClass 的 blo0.blTextarea 接口函数，创建 Textarea 
 			d.v.ta = blo0.blTextarea(d.v,"id_4_ta_blrRunJS","alert(1);",blGrey[3]);
 	        d.v.ta.style.width="95%"; 
-	        d.v.ta.style.height="444"+"px"; 
+	        d.v.ta.style.height="111"+"px"; 
 
 
 			// 调用 jsClass 的 blo0.blDiv 接口函数，创建 DIV。 

@@ -218,7 +218,7 @@ public class ImageController {
 		}
 		if (!"".equalsIgnoreCase(MacroResolver.getProperty(JsonSriptParser.current_Subtitle_Script))) {
 			MacroResolver.setProperty(JsonSriptParser.current_Subtitle_Script, "");
-			mv.addObject("subtitles", JsonSriptParser.subtitleList);
+			mv.addObject("subtitles",JsonSriptParser.subtitleList);
 		}
 
 		return mv;

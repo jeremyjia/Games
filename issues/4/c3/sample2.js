@@ -6,7 +6,7 @@ _btn.click();
 
 
 function CVoa2Video (){
-    var _v = "CVoa2Video_v0.214";
+    var _v = "CVoa2Video_v0.215";
 
     var fn = ["blrVLE","parseType","downloadPage","f4"];
     var fb = [];

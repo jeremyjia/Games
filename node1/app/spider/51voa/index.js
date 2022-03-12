@@ -8,6 +8,7 @@ module.exports = e;
 e.index = function(req,res){
     request('https://www.51voa.com/',function(error,response,body){
       if(!error && response.statusCode ==200){
+<<<<<<< HEAD
         $ = cheerio.load(body);
 
         s = "<a  href='http://www.baidu.com'>baidu</a><br>";
@@ -18,6 +19,17 @@ e.index = function(req,res){
           'asdf':$('.list').length
         });
         */
+=======
+        $ = cheerio.load(body); 
+        
+        res.status(200);
+        var r = {};
+        r.api = "spider";
+        r.yaml = this.openApiYaml;
+        r.query = req.query;
+        r.Classnum = $('.list').length;
+        res.json(r);
+>>>>>>> upstream/master
       }
   }); 
 }

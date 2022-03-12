@@ -1,5 +1,5 @@
 function CP1Util (){
-    var _v = "CP1Util_v0.142";
+    var _v = "CP1Util_v0.152";
     var _list4Cards = [];
     
     this.listCards = function(){ return _list4Cards;}
@@ -338,12 +338,14 @@ o.img = function(ctx,f,x,y,w,h){
 o.rendFile = function(ctx,f,x,y,w,h){
     o.img(ctx,f,x,y,w,h);
 } 
-o.getServerFiles = function(tb,v,ft,fCallBack){o._getServerFiles(tb,v,ft,fCallBack);}
-o._getServerFiles = function(tb,v,ft,fCallBack){
+o.getServerFiles = function(tb,v,ft,fCallBack){ 
+    if(!tb.ls) tb.ls = [];
     var b = blo0.blBtn(tb,tb.id+ft,ft,blGrey[1]);
     b.style.float = "left";
-    b.onclick = function(_v,_ft){
+    b.onclick = function(_v,_ft,_thisList,_thisBtn){
         return function(){
+            blo0.blMarkBtnInList(_thisBtn,_thisList,"brown","grey");
+            _v.innerHTML = "";
             _v.dbg = blo0.blDiv(_v,_v.id+"dbg","dbg","lightgreen");   
             _v.d = blo0.blDiv(_v,_v.id+"d","d","lightblue");   
             _v.d.style.overflow = "auto";           
@@ -360,10 +362,10 @@ o._getServerFiles = function(tb,v,ft,fCallBack){
                     var bf=blo0.blBtn(_v.d.v,_v.d.v.id+"_bf_"+i,ro.resource[i],blGrey[2]);
                     bf.style.float = "left";
                     bf.inf = {};
-                    bf.onclick = function(_this,_dbg,_me,_fCallBack){
+                    bf.onclick = function(_this,_dbg,_me,_thisCallBack){
                         return function(){    
                             _dbg.innerHTML = _me + " : " + blo0.blTime(0) ; 
-                            o.makeINF(_this,_me,_fCallBack);
+                            o.makeINF(_this,_me,_thisCallBack);
                             o.status(_this);
                         }
                     }(bf,_v.dbg,ro.resource[i],fCallBack);
@@ -372,11 +374,12 @@ o._getServerFiles = function(tb,v,ft,fCallBack){
             var url = 'http://localhost:8080/getResourceOnServer?filetype='+_ft;
             blo0.blAjx(w,url);
         }
-    }(v,ft);
+    }(v,ft,tb.ls,b);
+    tb.ls.push(b);
 }
-o.makeINF = function(obj,fileName,fCallBack){
-    if(fCallBack){
-        fCallBack(obj,fileName);
+o.makeINF = function(obj,fileName,cb2createInf){
+    if(cb2createInf){
+        cb2createInf(obj,fileName);
     }
     obj.inf.file = fileName; 
     var a = fileName.split(".");

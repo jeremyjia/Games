@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "description": "blSwagger using Python",
-    "version": "1.2.23",
+    "version": "1.2.25",
     "title": "Seans_Waynes-Python3-Flask-Rest-Boilerplate",
     "license": {
       "name": "MIT",

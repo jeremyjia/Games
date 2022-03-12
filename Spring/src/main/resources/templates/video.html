@@ -1,6 +1,32 @@
 <html>
   <head>
     <title>video</title>
+  </head>
+  <body>
+    <script src="../tmp.js"></script> 
+    <p>v0.31. Hello, <span th:text="${message}"></span>
+    <div id="id4toolbar">tb</div>
+    <div id="id4Debug">debug</div>
+
+    <a th:href="@{${video_url}}" target="_blank">View the video</a>
+    <button id="btnPlay" onclick = "play();">play</button>
+    <button id="btn2createToolbar" onclick = "createToolbar();">createToolbar</button>
+	<td th:if="true" th:each="subtitle:${subtitles}">
+	  <button th:id="${subtitle.star/1000}" th:text="${subtitle.num}" th:onclick="blo0.blNewFun(this)">btn</button>
+	</td>
+    </p>
+    <video id="id_4_video" controls="controls" width="50%">
+	   <source th:src="@{${video_url}}" type="video/mp4">
+	     Your browser does not support the video tag.
+    </video>
+    <hr/>
+    <p th:style="${gif_enabled!=null}?'':'display:none'">已经生成GIF：
+    <a th:href="@{${gif_url}}" target="_blank">View the GIF</a>
+    </p>
+    <hr/>
+	<img src="../images/back.jpg" width="20" height="20" />
+    <a th:href="@{${home_page_url}}">Back to HomePage</a><br />
+
     <script type="text/javascript">
       var tl = [1.0,2.0,3.0,4.0,5.0,6.0];
       function play() {
@@ -28,37 +54,7 @@
             createBtn(dtl,ddbg,tl[i],video);     
           }     
         }
-      }
-     function JumptoSpecTime(me) {
-	   var video = document.getElementById("id_4_video");
-	   var ddbg = document.getElementById("id4Debug");
-       video.currentTime = me.id;
-	   ddbg.innerHTML = me.id;
-     }	  
+      } 
     </script>
-  </head>
-  <body>
-    <p>v0.16. Hello, <span th:text="${message}"></span>
-    <div id="id4toolbar">tb</div>
-    <div id="id4Debug">debug</div>
-
-    <a th:href="@{${video_url}}" target="_blank">View the video</a>
-    <button id="btnPlay" onclick = "play();">play</button>
-    <button id="btn2createToolbar" onclick = "createToolbar();">createToolbar</button>
-	<td th:if="true" th:each="subtitle:${subtitles}">
-	  <button th:id="${subtitle.star/1000}" th:text="${subtitle.num}" th:onclick="JumptoSpecTime(this)">btn</button>
-	</td>
-    </p>
-    <video id="id_4_video" controls="controls" width="50%">
-	   <source th:src="@{${video_url}}" type="video/mp4">
-	     Your browser does not support the video tag.
-    </video>
-    <hr/>
-    <p th:style="${gif_enabled!=null}?'':'display:none'">已经生成GIF：
-    <a th:href="@{${gif_url}}" target="_blank">View the GIF</a>
-    </p>
-    <hr/>
-	<img src="../images/back.jpg" width="20" height="20" />
-    <a th:href="@{${home_page_url}}">Back to HomePage</a><br />
   </body>
 </html>
