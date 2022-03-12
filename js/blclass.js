@@ -1,6 +1,6 @@
 // file: blclass.js   
 
-var g_ver_blClass = "CBlClass_v1.5.124"
+var g_ver_blClass = "CBlClass_v1.5.125"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
