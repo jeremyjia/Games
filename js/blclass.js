@@ -1,6 +1,6 @@
 // file: blclass.js   
 
-var g_ver_blClass = "CBlClass_v1.5.122"
+var g_ver_blClass = "CBlClass_v1.5.124"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -261,8 +261,7 @@ function CBlClass ()
 		} 
 		this.setVersion = function(v1,v2,v3){ _v1 = v1; _v2 = v2; _v3 = v3;};
 		this.getVersion = function(){return "v"+_v1+"."+_v2+"."+_v3;}; 
-		this.getWidth = function(){return _w;};
-		this.getHeight = function(){return _h;};
+		this.getWidth = function(){return _w;}; 
 		this.getMusic = function(){return _blVideo.src;};
 		this.getFrameNumber = function(){return _frames.length;};
 		this.setSuperObjects = function(_ls){_sos = _ls;};
@@ -354,15 +353,15 @@ function CBlClass ()
 				return function(b,d){
 					if(!d.loadWidth){d.loadWidth = true; 				b.style.color = "white"; 
 						var tb = blo0.blDiv(d,d.id+"tb","width:",blGrey[0]);
-						var btnW= blo0.blBtn(tb,tb.id+"btnW",_thisOBlScript.getWidth(),"brown");btnW.style.color = "white";
+						var btnW= blo0.blBtn(tb,tb.id+"btnW",_w,"brown");btnW.style.color = "white";
 						var btnWPlus1 = blo0.blBtn(tb,tb.id+"btnWPlus1","+1",blGrey[1]);
-						btnWPlus1.onclick = function(){	_w++;	btnW.innerHTML = _thisOBlScript.getWidth();					}
+						btnWPlus1.onclick = function(){	_w++;	btnW.innerHTML = _w;					}
 						var btnWMinus1 = blo0.blBtn(tb,tb.id+"btnWMinus1","-1",blGrey[1]);
-						btnWMinus1.onclick = function(){	_w--;	btnW.innerHTML = _thisOBlScript.getWidth();					}
+						btnWMinus1.onclick = function(){	_w--;	btnW.innerHTML = _w;					}
 						var btnWPlus10 = blo0.blBtn(tb,tb.id+"btnWPlus10","+10",blGrey[1]);
-						btnWPlus10.onclick = function(){	_w+=10;	btnW.innerHTML = _thisOBlScript.getWidth();					}
+						btnWPlus10.onclick = function(){	_w+=10;	btnW.innerHTML = _w;					}
 						var btnWMinus10 = blo0.blBtn(tb,tb.id+"btnWMinus10","-10",blGrey[1]);
-						btnWMinus10.onclick = function(){	_w-=10;	btnW.innerHTML = _thisOBlScript.getWidth();					}
+						btnWMinus10.onclick = function(){	_w-=10;	btnW.innerHTML = _w;					}
 					}
 					_on_off_div(b,d);
 					b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
@@ -373,15 +372,15 @@ function CBlClass ()
 				return function(b,d){
 					if(!d.loadWidth){d.loadWidth = true; 				b.style.color = "white"; 
 						var tb = blo0.blDiv(d,d.id+"tb","height:",blGrey[0]);
-						var btnH= blo0.blBtn(tb,tb.id+"btnH",_thisOBlScript.getHeight(),"brown");btnH.style.color = "white";
+						var btnH= blo0.blBtn(tb,tb.id+"btnH",_h,"brown");btnH.style.color = "white";
 						var btnHPlus1= blo0.blBtn(tb,tb.id+"btnHPlus1","+1",blGrey[1]);
-						btnHPlus1.onclick = function(){	_h++;	btnH.innerHTML = _thisOBlScript.getHeight();					}
+						btnHPlus1.onclick = function(){	_h++;	btnH.innerHTML = _h;					}
 						var btnHMinus1 = blo0.blBtn(tb,tb.id+"btnHMinus1","-1",blGrey[1]);
-						btnHMinus1.onclick = function(){	_h--;	btnH.innerHTML = _thisOBlScript.getHeight();					}
+						btnHMinus1.onclick = function(){	_h--;	btnH.innerHTML = _h;					}
 						var btnHPlus10 = blo0.blBtn(tb,tb.id+"btnHPlus10","+10",blGrey[1]);
-						btnHPlus10.onclick = function(){	_h+=10;	btnH.innerHTML = _thisOBlScript.getHeight();					}
+						btnHPlus10.onclick = function(){	_h+=10;	btnH.innerHTML = _h;					}
 						var btnHMinus10 = blo0.blBtn(tb,tb.id+"btnHMinus10","-10",blGrey[1]);
-						btnHMinus10.onclick = function(){	_h-=10;	btnH.innerHTML = _thisOBlScript.getHeight();					}
+						btnHMinus10.onclick = function(){	_h-=10;	btnH.innerHTML = _h;					}
 					}
 					_on_off_div(b,d);
 					b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
