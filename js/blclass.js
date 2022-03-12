@@ -198,7 +198,7 @@ function CBlClass ()
 	}
 
 	function CBlScript(){
-		var _v1 = 0, _v2 = 0, _v3 = 44, _w = 1920, _h = 1024;
+		var _v1 = 0, _v2 = 0, _v3 = 44, _w = 1920, _h = 1080;
 		var _updateFrames = function(_div,_inFrames){
 			_div.innerHTML = "FrameBtns";
 			var v = blo0.blDiv(_div,_div.id+"v","v","lightgreen");
@@ -373,7 +373,7 @@ function CBlClass ()
 				return function(b,d){
 					if(!d.loadWidth){d.loadWidth = true; 				b.style.color = "white"; 
 						var tb = blo0.blDiv(d,d.id+"tb","height:",blGrey[0]);
-						var btnH= blo0.blBtn(tb,tb.id+"btnH",_thisOBlScript.getHeight(),"brown");btnW.style.color = "white";
+						var btnH= blo0.blBtn(tb,tb.id+"btnH",_thisOBlScript.getHeight(),"brown");btnH.style.color = "white";
 						var btnHPlus1= blo0.blBtn(tb,tb.id+"btnHPlus1","+1",blGrey[1]);
 						btnHPlus1.onclick = function(){	_h++;	btnH.innerHTML = _thisOBlScript.getHeight();					}
 						var btnHMinus1 = blo0.blBtn(tb,tb.id+"btnHMinus1","-1",blGrey[1]);
