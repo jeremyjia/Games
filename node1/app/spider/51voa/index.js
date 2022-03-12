@@ -8,18 +8,6 @@ module.exports = e;
 e.index = function(req,res){
     request('https://www.51voa.com/',function(error,response,body){
       if(!error && response.statusCode ==200){
-<<<<<<< HEAD
-        $ = cheerio.load(body);
-
-        s = "<a  href='http://www.baidu.com'>baidu</a><br>";
-        s +="<a href='http://www.sohu.com'>sohu</a>";//as
-        res.send(s);
-        /*
-        res.json({
-          'asdf':$('.list').length
-        });
-        */
-=======
         $ = cheerio.load(body); 
         
         res.status(200);
@@ -29,7 +17,6 @@ e.index = function(req,res){
         r.query = req.query;
         r.Classnum = $('.list').length;
         res.json(r);
->>>>>>> upstream/master
       }
   }); 
 }
