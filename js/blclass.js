@@ -1,6 +1,6 @@
 // file: blclass.js   
 
-var g_ver_blClass = "CBlClass_v1.5.125"
+var g_ver_blClass = "CBlClass_v1.5.133"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -143,6 +143,18 @@ function CBlClass ()
 	var blRed = 120, blGreen=11, blBlue=220;
 	var _ps = []; 
 
+	
+	this.blDate = function(){
+		const d = new Date();
+		var year = d.getFullYear();
+		var month = d.getMonth()+1;
+		var date = d.getDate();
+		var hours = d.getHours();
+		var minutes = d.getMinutes();
+		var seconds = d.getSeconds();
+		var s = year + "_" +month+"_"+date+"-"+hours+"_"+minutes+"_"+seconds;
+		return s;
+	}
 
 	function CTest(){
 		var _ot = {};
@@ -165,7 +177,7 @@ function CBlClass ()
 	var _oTest = new CTest();
 	
 	var _blVideo = document.createElement("VIDEO");
-	_blVideo.id = "id_blVideo";
+	_blVideo.id = "id_blVideo_"+this.blDate();
 	if (_blVideo.canPlayType("video/mp4")) {
 		_blVideo.setAttribute("src","https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3");
 	}
@@ -184,7 +196,8 @@ function CBlClass ()
 		b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 	}
 	this.bllAboutMe = "--aboutMe--";
-
+ 
+	this.getPlayerID = function(){return _blVideo.id;};
 	this.blShowScript = function(_v){		
 		_blShowObj2Div(_v,_blScript);		
 		bl$("blrVersion").click();
@@ -947,16 +960,15 @@ function CBlClass ()
 		_blVideo.src = url;
 		_blVideo.load();
 	}
-	this.getPlayerSrc = function(url){
+	this.getPlayerSrc = function(){
 		return _blVideo.src;
 	}
 
 	this.getDuration = function(){ 
 		return _blVideo.duration;
 	}
-	this.toPlay = function(){ 
-		_blVideo.play();
-	}
+	this.toPlay = function(){ 		_blVideo.play();	}
+	this.toStop = function(){ 		_blVideo.pause();	}
 
 	
 	this.blhInitUI		= function(divUI){	
@@ -1748,17 +1760,6 @@ function CBlClass ()
 		blo0.blLoadGithubIssueComments(tb,"https://api.github.com/repos/jeremyjia/Games/issues/21",ta);
 
 		return d1;
-	}
-	this.blDate = function(){
-		const d = new Date();
-		var year = d.getFullYear();
-		var month = d.getMonth()+1;
-		var date = d.getDate();
-		var hours = d.getHours();
-		var minutes = d.getMinutes();
-		var seconds = d.getSeconds();
-		var s = year + "_" +month+"_"+date+"-"+hours+"_"+minutes+"_"+seconds;
-		return s;
 	}
 	this.blShowHTMLFile = function(urlFileName,b2,d2){ 
         if(!d2.v){
