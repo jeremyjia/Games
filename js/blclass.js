@@ -387,7 +387,7 @@ function CBlClass ()
 					b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 				};
 			}(_boss);
-			this.bll_blrWidth = "--blrHeight--";	
+			this.bll_blrHeight = "--blrHeight--";	
 			this.blrMusic = function(_thisOBlScript){
 				return function(b,d){
 					if(!d.loadWidth){d.loadWidth = true; 				b.style.color = "white"; 
