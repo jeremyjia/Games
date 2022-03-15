@@ -1,4 +1,4 @@
-var tag_storyBoard = "storyBoard.js_v0.123";
+var tag_storyBoard = "storyBoard.js_v0.125";
 var tb = bl$("id_p1_tb"); 
 
 tb.btnStoryBoard = blo0.blBtn(tb,"btnStoryBoard","storyBoard",blGrey[2]);
@@ -158,9 +158,11 @@ function CStoryBoard(parentDiv){
             tb.btnAdd100Cards.style.float="left";
             tb.btnAdd100Cards.onclick = function(){
                 for(var i = 0; i < 100; i++ ){o.addCard(this);}
+            } 
+            
+            tb.blAddCard = function (_inBtn){
+                o.addCard(_inBtn);
             }
-            
-            
 
             o.addClass(ui,"w3-row");  
             o.addClass(ui,"w3-red");

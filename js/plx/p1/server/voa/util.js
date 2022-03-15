@@ -1,4 +1,4 @@
-var voaV = "v0.225";
+var voaV = "v0.233";
 
 var bbbb = true;
 var nObjDrawVOA = 0;
@@ -153,10 +153,12 @@ function CUtilVOA(){
     originalMp3URL = b[0];
     d.innerHTML = originalMp3URL;
     blo0.setPlayerURL(originalMp3URL); 
+ 
+     bl$("id_btnPlayerBoard").p.setSrc(originalMp3URL);  
 
-    blo0.blPlayer(d,"f0Test",originalMp3URL,100,100,400,300,"lightgreen");
-    d.v = blo0.blDiv(d,"vvvvvv",originalMp3URL,"red"); 
-    var btnDownloadMp3 = blo0.blBtn(d.v,d.v.id+"btnDownloadMp3","btnDownloadMp3","grey");
+    d.tb = blo0.blDiv(d,d.id+"tb","tb","lightblue"); 
+    var dv = blo0.blDiv(d,d.id+"dv","dv","grey"); 
+    var btnDownloadMp3 = blo0.blBtn(d.tb,d.tb.id+"btnDownloadMp3","btnDownloadMp3","grey");
     btnDownloadMp3.onclick = function(){
       var w = {};
       w._2do = function(txt){
@@ -167,6 +169,17 @@ function CUtilVOA(){
       var sFN = a[0] + ".mp3"; 
       blo0.blAjx(w,"http://localhost:8080/download?url="+originalMp3URL +"&filename=" + sFN);
     }
+    
+    var btnMakeVoaScript = blo0.blBtn(d.tb,d.tb.id+"btnMakeVoaScript","btnMakeVoaScript","grey");
+    btnMakeVoaScript.onclick = function(){
+      alert(bl$("id_btnPlayerBoard").p.src); 
+    }
+    var btnSaveScript = blo0.blBtn(d.tb,d.tb.id+"btnSaveScript","btnSaveScript","grey");
+    btnSaveScript.onclick = function(){
+      var d = bl$("id_4_vStatusmdv1vtavpageVvv0dv");
+      d.innerHTML = Date()         
+    }
+
   }
 
   var f1 = function(d,txt){
@@ -202,7 +215,7 @@ function CUtilVOA(){
       var a = txt.split('<div id="comments" class="comments-parent">'); 
       var b = a[0].split('<p>');
       voaUtil.setCurPs(b,"P",50,30,10);
-
+      
       for(i in b){
         var btn4P = blo0.blBtn(mainTxtToolBar,mainTxtToolBar.id+i,i,blGrey[3]); 
         btn4P.onclick = function(_this,_i,_b){
@@ -216,12 +229,16 @@ function CUtilVOA(){
             var ta = bl$("id_ta_Page_Txt");
             ta.value = _b[_i]; 
             voaUtil.setCurP(_b[_i]);
-
+            
+            _this.lsTxt = ["aaaaaaaa","bbbbbb","ccccccc"];
+            var tbStoryBoard = bl$("tb4StoryBoard");
+            tbStoryBoard.blAddCard(_this);
           }
         }(btn4P,i,b);
         ps.push(btn4P);
       }
       //*/
+      bl$("id_btnPlayerBoard").p.setTxts(b);
     }
   }
 
