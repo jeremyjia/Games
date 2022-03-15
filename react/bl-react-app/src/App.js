@@ -1,39 +1,55 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { MemoryRouter, Switch, Route } from 'react-router-dom';
 
-import Toast from 'react-bootstrap/Toast';
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
+import ButtonToolbar from 'react-bootstrap/ButtonToolbar';
+import { LinkContainer } from 'react-router-bootstrap';
 
 import './App.css';
 
-const ExampleToast = ({ children }) => {
-  const [show, toggleShow] = useState(true);
+const Home = () => <span>Home</span>;
 
-  return (
-    <>
-      {!show && <Button onClick={() => toggleShow(true)}>Show Toast</Button>}
-      <Toast show={show} onClose={() => toggleShow(false)}>
-        <Toast.Header>
-          <strong className="mr-auto">React-Bootstrap</strong>
-        </Toast.Header>
-        <Toast.Body>{children}</Toast.Body>
-      </Toast>
-    </>
-  );
-};
+const About = () => <span>About</span>;
+
+const Users = () => <span>Users</span>;
 
 const App = () => (
-  <Container className="p-3">
-    <Container className="p-5 mb-4 bg-light rounded-3">
-      <h1 className="header">Welcome To React-Bootstrap</h1>
-      <ExampleToast>
-        We now have Toasts
-        <span role="img" aria-label="tada">
-          🎉
-        </span>
-      </ExampleToast>
+  <MemoryRouter>
+    <Container className="p-3">
+      <Container className="p-5 mb-4 bg-light rounded-3">
+        <h1 className="header">Welcome To React-Bootstrap</h1>
+        <h2>
+          Current Page is{' '}
+          <Switch>
+            <Route path="/about">
+              <About />
+            </Route>
+            <Route path="/users">
+              <Users />
+            </Route>
+            <Route path="/">
+              <Home />
+            </Route>
+          </Switch>
+        </h2>
+        <h2>
+          Navigate to{' '}
+          <ButtonToolbar className="custom-btn-toolbar">
+            <LinkContainer to="/">
+              <Button>Home</Button>
+            </LinkContainer>
+            <LinkContainer to="/about">
+              <Button>About</Button>
+            </LinkContainer>
+            <LinkContainer to="/users">
+              <Button>Users</Button>
+            </LinkContainer>
+          </ButtonToolbar>
+        </h2>
+      </Container>
     </Container>
-  </Container>
+  </MemoryRouter>
 );
 
 export default App;
