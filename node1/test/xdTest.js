@@ -31,6 +31,6 @@ describe(tag4xdTest, function(){
   });    
 
   it('xd dev', function(){ 
-    assert.equal(app(),'to test xdApp: done.');
+    assert.equal(app(),'to test xdApp: done.react');
   });
 });
