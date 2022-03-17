@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "jzz": "^1.4.9"
+    "jzz": "^1.4.9",
+    "jzz-midi-smf": "^1.6.7"
   }
 }
