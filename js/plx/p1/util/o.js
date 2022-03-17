@@ -1,5 +1,5 @@
 function CP1Util (){
-    var _v = "CP1Util_v0.151";
+    var _v = "CP1Util_v0.213";
     var _list4Cards = [];
     
     this.listCards = function(){ return _list4Cards;}
@@ -9,10 +9,15 @@ function CP1Util (){
         ctx.fillStyle = "white";
         ctx.fillText(txt, x,y); 
     };
+    this.drawText = function(ctx,txt,x,y,c){ 
+        ctx.font= 12 + "px Comic Sans MS";
+        ctx.fillStyle = c;
+        ctx.fillText(txt, x,y); 
+    };
     this.status = function(me){   
         var d = bl$("id_4_vStatus");
         d.innerHTML = o.getV() + " : " + blo0.blTime(0);
-        var md = blo0.blMDiv(d,d.id+"md","o._status "+_v+":"+me.style.backgroundColor,222,11,555,100,"lightgreen"); 
+        var md = blo0.blMDiv(d,d.id+"md","o._status "+_v+":"+me.style.backgroundColor,111,11,555,100,"lightgreen"); 
         var vs = blo0.blDiv(md,md.id+"vs","",blGrey[1]);
         var v1 = blo0.blDiv(md,md.id+"v1","v1",blGrey[1]);
         var n = 0; 
@@ -96,7 +101,7 @@ function CP1Util (){
         } 
     };
 
-    this.newObj = function(type,left,top,right,bottom,size,color){
+    this.newObj = function(type,left,top,right,bottom,size,color,txt){
         var r = {};
         r.graphic = type; 
         r.attribute = {};
@@ -106,14 +111,14 @@ function CP1Util (){
         r.attribute.bottom = bottom;
         r.attribute.size = size;
         r.attribute.color = color;  
+        r.attribute.txt = txt;  
         return r;
     };
 
     this.addCard= function(_ls){
-        return function(btn){
+        return function(_inBtn){
             var n = _ls.length;
-            var v=bl$("id_4_cardV");
-            s = btn.id + ":" + n;
+            var v=bl$("id_4_cardV"); 
             var b = blo0.blBtn(v,v.id+"_"+n,n+1,"grey");
             b.style.float="left";
             b.No = n+1;
@@ -183,9 +188,23 @@ function CP1Util (){
             b.inf.text = "Card.txt"; 
           
             o.AddObj2Frame(b.inf.objects,o.newObj("circle",111,111,222,222,5,"red"));
-          // o.AddObj2Frame(b.inf.objects,o.newObj("rect",111,10,100,100,5,"blue"));
+            o.AddObj2Frame(b.inf.objects,o.newObj("rect",111,10,100,100,5,"blue"));
            // o.AddObj2Frame(b.inf.objects,o.newTextObj("test",10,10,60,"0,255,255"));
-            o.AddObj2Frame(b.inf.objects,o.newObj("text",15,110,333,222,5,"255,255,1")); 
+            var top = 100;
+            var left = 55 + n*50;
+            var dTop = 50;
+            o.AddObj2Frame(b.inf.objects,o.newObj("text",left,top,333,222,5,"brown","text1")); 
+            top += dTop;
+            o.AddObj2Frame(b.inf.objects,o.newObj("text",left,top,333,222,5,"green","text2")); 
+            top += dTop;
+            if(_inBtn.lsTxt){
+                var l = _inBtn.lsTxt;
+                for(j in l){
+                    o.AddObj2Frame(b.inf.objects,o.newObj("text",left,top,333,222,5,"yellow",l[j])); 
+                    top += dTop;
+                }
+            }
+
             b.inf2JSON = function(_thisCard){
                 return function(){
                     var r = o.newScript(b.inf.version,
@@ -236,15 +255,18 @@ function CP1Util (){
                     for(i in _this.inf.objects){
                         var a = _this.inf.objects[i]; 
                         o.drawObj(ctx,a);                    
-                    } 
-    
+                    }     
                 }
             }(b);
             _ls.push(b);
         }
     }(_list4Cards);
     
-    
+    this.clearAllCards = function(){
+            var v=bl$("id_4_cardV");
+            v.innerHTML = "";
+            _list4Cards = [];     
+    };
     this.newScript = function(v,w,h,m,r){ 
         var json = {}; 
         json.request = {}; 
@@ -264,6 +286,7 @@ function CP1Util (){
     this.addSuperObj2Script = function(oScript,oSuperObj){ 
         oScript.request.superObjects.push(oSuperObj);
     };
+
 }
  
 var o = new CP1Util();
@@ -326,7 +349,7 @@ o.drawObj = function(ctx,obj){
         ctx.strokeRect(obj.attribute.left, obj.attribute.top, obj.attribute.right, obj.attribute.bottom);
     }
     else if(obj.graphic=="text"){
-        o.text(ctx,"TEXT",obj.attribute.left, obj.attribute.top);
+        o.drawText(ctx,obj.attribute.txt,obj.attribute.left, obj.attribute.top,"red");
     }
 }
 o.img = function(ctx,f,x,y,w,h){
@@ -362,10 +385,10 @@ o.getServerFiles = function(tb,v,ft,fCallBack){
                     var bf=blo0.blBtn(_v.d.v,_v.d.v.id+"_bf_"+i,ro.resource[i],blGrey[2]);
                     bf.style.float = "left";
                     bf.inf = {};
-                    bf.onclick = function(_this,_dbg,_me,_fCallBack){
+                    bf.onclick = function(_this,_dbg,_me,_thisCallBack){
                         return function(){    
                             _dbg.innerHTML = _me + " : " + blo0.blTime(0) ; 
-                            o.makeINF(_this,_me,_fCallBack);
+                            o.makeINF(_this,_me,_thisCallBack);
                             o.status(_this);
                         }
                     }(bf,_v.dbg,ro.resource[i],fCallBack);
@@ -377,9 +400,9 @@ o.getServerFiles = function(tb,v,ft,fCallBack){
     }(v,ft,tb.ls,b);
     tb.ls.push(b);
 }
-o.makeINF = function(obj,fileName,fCallBack){
-    if(fCallBack){
-        fCallBack(obj,fileName);
+o.makeINF = function(obj,fileName,cb2createInf){
+    if(cb2createInf){
+        cb2createInf(obj,fileName);
     }
     obj.inf.file = fileName; 
     var a = fileName.split(".");

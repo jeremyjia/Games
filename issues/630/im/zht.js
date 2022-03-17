@@ -37,11 +37,14 @@ function zhenbi(url,msg){
 		}
 	}
 	
+	/*
 	xmlHttp.open("POST",url,true);
 	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 	xmlHttp.onreadystatechange=function(){zhenbi_com(msg)};
 	xmlHttp.send(MyWebSend);
-	document.getElementById("out").innerHTML="很努力地加载中..."
+	*/
+	document.getElementById("out").innerHTML = "很努力地加载中..."
+	document.getElementById("xddbg").innerHTML = MyWebSend;//"很努力地加载中..."
 }
 function template(obj){
 	var out = "";

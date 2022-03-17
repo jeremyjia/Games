@@ -1,0 +1,273 @@
+
+<!DOCTYPE html>
+<html lang=en>
+<head>
+<title>Simple Piano</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="keywords" content="MIDI, plugin, Javascript" />
+<meta name="description" content="how to send MIDI messages via Javascript" />
+<meta http-equiv="X-UA-Compatible" content="requiresActiveX=true"/>
+<script src="https://cdn.jsdelivr.net/npm/jzz"></script>
+<script src="https://cdn.jsdelivr.net/npm/jzz-synth-tiny"></script>
+<script src="https://cdn.jsdelivr.net/npm/jzz-input-kbd"></script>
+<link rel="stylesheet" type="text/css" href="../style.css" />
+
+<style type="text/css">
+div.piano {
+ font-size: 1.2em;
+ overflow: hidden;
+ display: block;
+ width: 42em;
+ padding: 0px;
+ margin: 0px;
+ border: 0px;
+ margin-left: 0.5em;
+}
+.piano span {
+ color: #808080;
+ background-color: #f0f0f0;
+ padding: 0.4em;
+ margin: 0.1em;
+ border: 0.3em double;
+ display: inline-block;
+ width: 2em;
+ height: 2em;
+ vertical-align: top;
+}
+.piano span.blank {
+ color: #f0f0f0;
+ background-color: #fff;
+}
+.piano span.on {
+ background-color: #000;
+}
+object.hidden {
+ visibility: hidden;
+ width: 0px;
+ height: 0px;
+ margin: 0px;
+ padding: 0px;
+ border-style: none;
+ border-width: 0px;
+ max-width: 0px;
+ max-height: 0px;
+}
+</style>
+<script src="/js/jquery-3.4.1.min.js"></script>
+<script src="/js/ads-prebid.js" onerror="abc()"></script>
+<script src="/js/prebid.js" onerror="abc()"></script>
+</head>
+
+<body>
+<div class=header>
+<div id=JazzLogo><div class=ebony>
+<span id=61_></span><span id=63_></span><span class=break></span><span id=66_></span><span id=68_></span><span id=70_></span>
+</div><div class=ivory>
+<span id=60_></span><span id=62_></span><span id=64_></span><span id=65_></span><span id=67_></span><span id=69_></span><span id=71_></span>
+</div>
+</div>
+<a href=https://github.com/sponsors/jazz-soft target=_blank><img id=donate src=/img/gheart.png alt=sponsor></a>
+<div id="title">Jazz-Soft.net</div>
+<div id="motto">We make it sound!</div>
+</div>
+<div class=links>
+<a href=https://jazz-soft.net> Jazz-Soft </a>
+<a href=https://jazz-soft.net/download> Download </a>
+<a href=https://jazz-soft.net/doc> Documentation </a>
+<a href=https://www.facebook.com/midi.javascript target=_blank> Community </a>
+<a class=right href=https://jazz-soft.net/sema> about the developer... </a>
+</div>
+<div class="adv"><div class="ads" id="panel">
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1270703683405367" crossorigin="anonymous" onerror="abc()"></script>
+<ins class="adsbygoogle ggg"
+  data-ad-client="ca-pub-1270703683405367"
+  data-ad-slot="4952279820"></ins>
+<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div></div>
+
+<div class=path>
+<a href=..>Home</a> &raquo;
+<a href=.>Examples</a> &raquo;
+Simple Piano
+</div>
+
+<h1>Simple Piano</h1>
+
+<script><!--
+JZZ.synth.Tiny.register('Synth');
+var port = JZZ().openMidiOut().or(function(){alert('Cannot open MIDI port!');});
+
+var midi={65:58,90:59,88:60,68:61,67:62,70:63,86:64,66:65,72:66,78:67,74:68,77:69,75:70,188:71,190:72,186:73,59:73,191:74,222:75};
+document.onkeydown=function(e){
+ var e=window.event || e;
+ var m=midi[e.keyCode];
+ if(m){
+  var k=document.getElementById(m);
+  if(k && k.className!="on"){
+   port.send([0x90,m,0x7f]);
+   k.className="on";
+  }
+  return false;
+ }
+}
+document.onkeyup=function(e){
+ var e=window.event || e;
+ var m=midi[e.keyCode];
+ if(m){
+  var k=document.getElementById(m);
+  if(k && k.className!=""){
+   port.send([0x80,m,0]);
+   k.className="";
+  }
+  return false;
+ }
+}
+--></script>
+
+<div class="piano">
+<span id=58>A</span><span class=blank>S</span><span id=61>D</span><span id=63>F</span><span class=blank>G</span><span id=66>H</span><span id=68>J</span><span id=70>K</span><span class=blank>L</span><span id=73>:<br>;</span><span id=75>"<br>'</span>
+</div>
+<div class="piano" style="margin-left: 2.3em;">
+<span id=59>Z</span><span id=60>X</span><span id=62>C</span><span id=64>V</span><span id=65>B</span><span id=67>N</span><span id=69>M</span><span id=71>&lt;<br>,</span><span id=72>&gt;<br>.</span><span id=74>?<br>/</span>
+</div>
+
+<h2>How it works</h2>
+<p>
+Turn your keyboard into MIDI piano...
+</p><p>
+<em>NOTE:</em> There is a <a href=../doc/JZZ/inputASCII.html>better way</a> to map the keys to MIDI notes.
+</p>
+
+<h2>Page source</h2>
+<pre class=code>
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Simple Piano&lt;/title&gt;
+
+&lt;meta http-equiv="X-UA-Compatible" content="requiresActiveX=true"/&gt;
+
+&lt;style type="text/css"&gt;
+div.piano {
+ font-size: 1.2em;
+ overflow: hidden;
+ display: block;
+ width: 42em;
+ padding: 0px;
+ margin: 0px;
+ border: 0px;
+ margin-left: 0.5em;
+}
+.piano span {
+ color: #808080;
+ background-color: #f0f0f0;
+ padding: 0.4em;
+ margin: 0.1em;
+ border: 0.3em double;
+ display: inline-block;
+ width: 2em;
+ height: 2em;
+ vertical-align: top;
+}
+.piano span.blank {
+ color: #f0f0f0;
+ background-color: #fff;
+}
+.piano span.on {
+ background-color: #000;
+}
+&lt;/style&gt;
+&lt;script src="<a href=../doc/JZZ>JZZ.js</a>"&gt;&lt;/script&gt;
+&lt;script src="<a href=../doc/JZZ/synthTiny.html>JZZ.synth.Tiny.js</a>"&gt;&lt;/script&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+
+&lt;h1&gt;Simple Piano&lt;/h1&gt;
+
+&lt;script&gt;&lt;!--
+<a href=../doc/JZZ/synthTiny.html>JZZ.synth.Tiny.register</a>('Synth');
+var port = <a href=../doc/JZZ/jzz.html>JZZ</a>().<a href=../doc/JZZ/midiout.html>openMidiOut</a>().<a href=../doc/JZZ/common.html#or>or</a>(function(){alert('Cannot open MIDI port!');});
+
+var midi={65:58,90:59,88:60,68:61,67:62,70:63,86:64,66:65,72:66,78:67,74:68,77:69,75:70,188:71,190:72,186:73,59:73,191:74,222:75};
+document.onkeydown=function(e){
+ var e=window.event || e;
+ var m=midi[e.keyCode];
+ if(m){
+  var k=document.getElementById(m);
+  if(k &amp;&amp; k.className!="on"){
+   port.<a href=../doc/JZZ/midiout.html#send>send</a>([0x90,m,0x7f]);
+   k.className="on";
+  }
+  return false;
+ }
+}
+document.onkeyup=function(e){
+ var e=window.event || e;
+ var m=midi[e.keyCode];
+ if(m){
+  var k=document.getElementById(m);
+  if(k &amp;&amp; k.className!=""){
+   port.<a href=../doc/JZZ/midiout.html#send>send</a>([0x80,m,0]);
+   k.className="";
+  }
+  return false;
+ }
+}
+--&gt;&lt;/script&gt;
+
+&lt;div class="piano"&gt;
+&lt;span id=58&gt;A&lt;/span&gt;&lt;span class=blank&gt;S&lt;/span&gt;&lt;span id=61&gt;D&lt;/span&gt;&lt;span id=63&gt;F&lt;/span&gt;&lt;span class=blank&gt;G&lt;/span&gt;&lt;span id=66&gt;H&lt;/span&gt;&lt;span id=68&gt;J&lt;/span&gt;&lt;span id=70&gt;K&lt;/span&gt;&lt;span class=blank&gt;L&lt;/span&gt;&lt;span id=73&gt;:&lt;br&gt;;&lt;/span&gt;&lt;span id=75&gt;"&lt;br&gt;'&lt;/span&gt;
+&lt;/div&gt;
+&lt;div class="piano" style="margin-left: 2.3em;"&gt;
+&lt;span id=59&gt;Z&lt;/span&gt;&lt;span id=60&gt;X&lt;/span&gt;&lt;span id=62&gt;C&lt;/span&gt;&lt;span id=64&gt;V&lt;/span&gt;&lt;span id=65&gt;B&lt;/span&gt;&lt;span id=67&gt;N&lt;/span&gt;&lt;span id=69&gt;M&lt;/span&gt;&lt;span id=71&gt;&lt;&lt;br&gt;,&lt;/span&gt;&lt;span id=72&gt;&gt;&lt;br&gt;.&lt;/span&gt;&lt;span id=74&gt;?&lt;br&gt;/&lt;/span&gt;
+&lt;/div&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+
+<h2>See also</h2>
+<ul>
+<li><a href=../doc/JZZ>JZZ.js</a></li>
+</ul>
+
+<div class=footer>
+(C) 2011-21 Jazz-Soft
+</div>
+<script>
+function onLogo() {
+ if (JZZ().info().engine == 'none') {
+  var allcookies=document.cookie;
+  var cookies=allcookies.split(';');
+  var cookie=null;
+  var show = 1;
+  if (typeof navigator === 'undefined' || (navigator.userAgent.indexOf('Windows')==-1 && navigator.userAgent.indexOf('Linux')==-1 && navigator.userAgent.indexOf('Macintosh')==-1)) {
+   show = 0;
+  }
+  else {
+   for(var i=0;i<cookies.length;i++){
+    cookie=cookies[i];
+    if(cookie.charAt(0)==" ") cookie=cookie.substring(1);
+    if(cookie.substring(0,11)=="jazz_alert=") show=0;
+   }
+  }
+  if(show){
+   var logo=document.getElementById('JazzLogo');
+   var msg=document.createElement('span');
+   msg.className='msg';
+   msg.innerHTML='This piano could play better<br>if you enable <a href=/download/Jazz-Plugin/index.html>Jazz-Plugin</a> ...';
+   logo.appendChild(msg);
+   setTimeout(function(){logo.removeChild(msg);}, 6000);
+   document.cookie="jazz_alert=1;path=/";
+  }
+ }
+ onLogo=function(){};
+}
+JZZ.synth.Tiny.register('Web Audio');
+var logo=JZZ.input.Kbd({chan:15,keys:[['60_',60],['61_',61],['62_',62],['63_',63],['64_',64],['65_',65],['66_',66],['67_',67],['68_',68],['69_',69],['70_',70],['71_',71]],onCreate:function(){
+ this.getWhiteKeys().setStyle({backgroundColor:'#ffe'},{backgroundColor:'#aaa'}); this.getBlackKeys().setStyle({backgroundColor:'#111'},{backgroundColor:'#aaa'});
+}}).connect(JZZ().openMidiOut(/^((?!Midi Through).)*$/i)).connect(function(msg){onLogo();});
+</script>
+</body>
+</html>
