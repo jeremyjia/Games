@@ -10,46 +10,10 @@
 <script src="https://cdn.jsdelivr.net/npm/jzz"></script>
 <script src="https://cdn.jsdelivr.net/npm/jzz-synth-tiny"></script>
 <script src="https://cdn.jsdelivr.net/npm/jzz-input-kbd"></script>
-<link rel="stylesheet" type="text/css" href="../style.css" />
-<script src="/js/jquery-3.4.1.min.js"></script>
-<script src="/js/ads-prebid.js" onerror="abc()"></script>
-<script src="/js/prebid.js" onerror="abc()"></script>
 </head>
 
-<body>
-<div class=header>
-<div id=JazzLogo><div class=ebony>
-<span id=61_></span><span id=63_></span><span class=break></span><span id=66_></span><span id=68_></span><span id=70_></span>
-</div><div class=ivory>
-<span id=60_></span><span id=62_></span><span id=64_></span><span id=65_></span><span id=67_></span><span id=69_></span><span id=71_></span>
-</div>
-</div>
-<a href=https://github.com/sponsors/jazz-soft target=_blank><img id=donate src=/img/gheart.png alt=sponsor></a>
-<div id="title">Jazz-Soft.net</div>
-<div id="motto">We make it sound!</div>
-</div>
-<div class=links>
-<a href=https://jazz-soft.net> Jazz-Soft </a>
-<a href=https://jazz-soft.net/download> Download </a>
-<a href=https://jazz-soft.net/doc> Documentation </a>
-<a href=https://www.facebook.com/midi.javascript target=_blank> Community </a>
-<a class=right href=https://jazz-soft.net/sema> about the developer... </a>
-</div>
-<div class="adv"><div class="ads" id="panel">
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1270703683405367" crossorigin="anonymous" onerror="abc()"></script>
-<ins class="adsbygoogle ggg"
-  data-ad-client="ca-pub-1270703683405367"
-  data-ad-slot="4952279820"></ins>
-<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-</div></div>
-
-<div class=path>
-<a href=..>Home</a> &raquo;
-<a href=.>Examples</a> &raquo;
-Virtual Piano
-</div>
-
-<h1>Virtual Piano</h1>
+<body>  
+<h1>虚拟钢琴 v0.15</h1>
 <p><div id=piano></div></p>
 
 <script><!--
@@ -59,66 +23,7 @@ JZZ.input.ASCII({
   H:'D#5', N:'E5', M:'F5', K:'F#5', '<':'G5', L:'G#5', '>':'A5', ':':'Bb5'
 }).connect(JZZ.input.Kbd({at:'piano'}).connect(JZZ().openMidiOut()));
 --></script>
-
-<h2>How it works</h2>
-<p>
-Use the mouse or touch screen and/or keyboard to play the piano.
-</p>
-
-<h2>Page source</h2>
-<pre class=code>
-&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-&lt;head&gt;
-&lt;title&gt;Virtual Piano&lt;/title&gt;
-&lt;script src="<a href=../doc/JZZ>JZZ.js</a>"&gt;&lt;/script&gt;
-&lt;script src="<a href=../doc/JZZ/synthTiny.html>JZZ.synth.Tiny.js</a>"&gt;&lt;/script&gt;
-&lt;script src="<a href=../doc/JZZ/inputKbd.html>JZZ.input.Kbd.js</a>"&gt;&lt;/script&gt;
-&lt;/head&gt;
-
-&lt;body&gt;
-&lt;h1&gt;Virtual Piano&lt;/h1&gt;
-
-&lt;div id=piano&gt;&lt;/div&gt;
-
-&lt;script&gt;&lt;!--
-<a href=../doc/JZZ/synthTiny.html>JZZ.synth.Tiny.register</a>();
-
-<a href=../doc/JZZ/inputASCII.html>JZZ.input.ASCII</a>({
-  A:'F#4', Z:'G4', S:'G#4', X:'A4', D:'Bb4', C:'B4', V:'C5', G:'C#5', B:'D5',
-  H:'D#5', N:'E5', M:'F5', K:'F#5', '&lt;':'G5', L:'G#5', '&gt;':'A5', ':':'Bb5'
-}).<a href=../doc/JZZ/midiin.html#connect>connect</a>(<a href=../doc/JZZ/inputKbd.html>JZZ.input.Kbd</a>({at:'piano'}).<a href=../doc/JZZ/midiin.html#connect>connect</a>(<a href=../doc/JZZ/jzz.html>JZZ</a>().<a href=../doc/JZZ/midiout.html>openMidiOut</a>()));
-
---&gt;&lt;/script&gt;
-
-&lt;/body&gt;
-&lt;/html&gt;
-</pre>
-
-<h2>See also</h2>
-<ul>
-<li>
-<a href=PianoStyle.html>Piano Style</a>
-</li><li>
-<a href=Responsive.html>Responsive Design</a>
-</li><li>
-<a href=Knobs.html>Knobs</a>
-</li><li>
-<a href=Autoplay.html>Autoplay</a>
-</li><li>
-<a href=../doc/JZZ>JZZ.js</a>
-</li><li>
-<a href=../doc/JZZ/inputKbd.html>JZZ.input.Kbd</a>
-</li><li>
-<a href=../doc/JZZ/inputASCII.html>JZZ.input.ASCII</a>
-</li><li>
-<a href=https://github.com/jazz-soft/JZZ-input-Kbd>JZZ-input-Kbd at GitHub</a>
-</li>
-</ul>
-
-<div class=footer>
-(C) 2011-21 Jazz-Soft
-</div>
+    
 <script>
 function onLogo() {
  if (JZZ().info().engine == 'none') {
