@@ -1,0 +1,192 @@
+
+<html>
+	<head>  
+	<title>blclassTest</title>
+<script src="https://www.w3schools.com/lib/w3.js"></script>
+<script src="https://littleflute.github.io/JavaScript/blclass.js" ></script>
+	
+  <script src="../releases/vextab-div.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.2.1/lodash.js"></script>
+  <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>  
+  <script src="SongEditClass.js"></script>
+</head>
+<body>
+  <div style="float:left;display:none;">
+    <!-- ----ta0---- -->
+    <textarea id="ta0">options scale=1.0 space=20 tab-stems=true stave-distance=40 tab-stem-direction=down
+tabstave notation=true key=A time=4/4
+notes :q =|: (5/2.5/3.7/4) :8 7-5h6/3 ^3^ 5h6-7/5 ^3^ :q 7V/4 |
+notes :8 t12p7/4 s5s3/4 :8 3s:16:5-7/5 :h p5/4
+text :w, |#segno, ,|, :hd, , #tr  ,xd v0.0.1
+
+options space=65
+tabstave notation=true
+notes :q (5/4.5/5) (7/4.7/5)s(5/4.5/5) ^3^
+notes :8 7-5/4 $.a./b.$ (5/4.5/5)h(7/5) =:|
+notes :8 (12/5.12/4)ds(5/5.5/4)u 3b4/5
+notes :h (5V/6.5/4.6/3.7/2) $.italic.let ring$ =|=
+text :h, ,.font=Times-12-italic, D.S. al coda, |#coda
+text :h, ,.-1, .font=Arial-14-bold,A13
+text ++, .30, #f
+
+options space=70</textarea><!-- ====ta0==== -->
+
+<!-- ----ta1---- -->
+<textarea id="ta1">
+    
+options space=20
+tabstave notation=true tablature=false  
+key=A time=4/4
+notes :8 B/4 :q C/5 :8 B/4 :q C/5 B/4 |  :8 B/4 :q C/5 :8 B/4 :qd C/5 :8 E/4 |  F-A-A-A/4 B-G-E/4-C/5 | :h bC/5 :qd bC/5 :8 E/5|
+text :w, .1, A, A,|
+text :h, .1, D, E,| 
+text :w, .1, F#m
+
+options space=20
+tabstave notation=true tablature=false
+
+key=A time=4/4
+notes :8 F-E/5 :q F/5 :8 D-C/5-B-A/4 |:h bA/4 E/4 |:q A/4 :8 C/5 B/4 bB/4 E-F-E/4 |:q A/4
+text :h, .1, D, E,| 
+text :w, .1, A
+text :w, .1, A  
+
+options space=25
+
+</textarea> <!-- ====ta1==== -->
+
+<!-- ----s1---- -->
+<textarea id="s1">
+
+options scale=1.1 space=20 tab-stems=true stave-distance=40 tab-stem-direction=down
+tabstave notation=true key=C time=4/4  
+
+</textarea> <!-- ====s1==== -->
+</div>
+
+<script>
+function blDrawClass()
+{
+	this.show = function(){
+		var c = bl$("boo");  
+		var	ctx = c.getContext("2d");
+		var _fn = bl$("id_btn_Load_Plx").plxFn;
+		if(_fn) {_fn(ctx);}
+		else {
+			ctx.moveTo(0,0);
+			ctx.lineTo(200,100);
+			ctx.font="20px Georgia";
+			ctx.fillText("no plx: v0.0.1",10,50);
+			ctx.stroke(); 
+		}
+	}
+}
+function _blChordToolBar (_o,_d){
+	var d	= _d;
+	var ta 	= d.dt.dta.ta;
+	var o	= _o;
+	var r = blo0.blDiv(o,o.id+"chord","",blGrey[1]);
+	var de = null;
+ 
+  	r.e = blo0.blBtn(o,o.id + "e","e",blGrey[3]);
+  	r.e.onclick = function(){
+		if(!de){de=blo0.blDiv(o,o.id+ "_div_e","e:",blGrey[4]);de.o = new _blSongEditClass(d,ta);blo0.blShowObj2Div(de,de.o);}
+		_on_off_div(this,de);
+  	}
+	return r;
+}
+function _blUIClass (v){
+	v += ".133";
+  var blDraw = new blDrawClass;
+  this.blRender = function(){alert(v);};
+
+  var s0 = '<div id="id_div_toolbar">';
+  s0 += '<a target="_blank" href="http://littleflute.github.io/vextab/tests/blclassTest.html">' + v + '</a>-';
+  s0 += '<a target="_blank" href="https://github.com/littleflute/vextab/edit/master/tests/blclassTest.html">' + v + '*</a>';
+  s0 += '</div>';
+  var d = blo0.blMDiv(document.body,"id_blClassDiv_4_wrap1",s0,210,10,500,200, blGrey[5] );
+  d.tb = bl$("id_div_toolbar");
+  d.showVextab = function(_this){	return function(){_this.blRender();blDraw.show();};  }(this);
+  d.tb.b0 = blo0.blBtn(d.tb, "id_btn_4_blApp", "+blApp", blGrey[0]);
+  d.tb.b1 = blo0.blBtn(d.tb,d.tb.id + "b1","+editor",blGrey[0]);
+  d.tb.b1.onclick = function(){	_on_off_div(this,d.dt);  
+			        var b = this;
+			        b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+			      }
+  d.tb.b2 = blo0.blBtn(d.tb,d.tb.id + "b2","+Handle",blGrey[0]);
+  d.tb.b2.onclick = function(){	_on_off_div(this,d.handle);	_on_off_div(this,d.main); 
+			        var b = this;
+			        b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+			      } 
+	
+  d.tb.b3 = blo0.blBtn(d.tb, "id_btn_Load_Plx" ,"+plx",blGrey[3]);
+  d.tb.b3.onclick = function(){ 
+	function _loadIssue16 (o) {                      eval(o.body);	             }
+            var url = "https://api.github.com/repos/littleflute/JavaScript/issues/16";
+             w3.getHttpObject(url, _loadIssue16 );	
+  } 
+	
+  var div4Plx = blo0.blDiv(d,"id_div_4_Plx","", blGrey[4]);
+  var s = '<canvas id="boo"></canvas>';  
+  var d1 = blo0.blDiv(d,"id_div_4_vextab",s, blGrey[3]);
+
+  var s1 = '<div id="id_div_toolbar0_4_ta"></div>';
+  d.dt = blo0.blMDiv(document.body,"id_blClassDiv_4_wrap2",s1,800,10,500,200,"gray");
+  d.dt.tb0 = blo0.blDiv(bl$("id_div_toolbar0_4_ta"),bl$("id_div_toolbar0_4_ta").id+"tb0","tb0::",blGrey[0]);
+  d.dt.tb0.b1 = blo0.blBtn(d.dt.tb0,d.dt.tb0.id + "b1","b1",blGrey[0]);
+  d.dt.tb0.b1.onclick = function(){	_on_off_div(this,d.dt.handle);	_on_off_div(this,d.dt.main);
+			        var b = this;
+			        b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+			}
+
+
+  d.dt.dta = blo0.blDiv(d.dt,"id_div_4_ta","","blue");
+  d.dt.de = blo0.blDiv(d.dt,"error","de","red");  
+
+  d.dt.dta.ta = blo0.blTextarea(d.dt.dta,"blah","",blColor[4]);d.dt.dta.ta.style.width="100%",d.dt.dta.ta.style.height="200px";
+
+  d.dt.ctb = _blChordToolBar(bl$("id_div_toolbar0_4_ta"),d); 
+ 
+  d.tb.b1.click();
+  d.tb.b2.click();   
+  d.dt.tb0.b1.click();
+  d.dt.ctb.e.click();
+}
+
+</script>
+<script>        
+  // Load VexTab module.    
+  vextab = VexTabDiv;
+    $(function() {
+	var blco = new _blUIClass ("v0.2") ;
+      VexTab = vextab.VexTab;
+      Artist = vextab.Artist;
+      Renderer = Vex.Flow.Renderer;
+      Artist.DEBUG = true;
+      VexTab.DEBUG = false;
+      // Create VexFlow Renderer from canvas element with id #boo
+      renderer = new Renderer($('#boo')[0], Renderer.Backends.CANVAS);
+      // Initialize VexTab artist and parser.
+      artist = new Artist(10, 10, 600, {scale: 0.8});
+      vextab = new VexTab(artist);
+      function render() {
+        try {
+          vextab.reset();
+          artist.reset();
+          vextab.parse($("#blah").val());
+          artist.render(renderer);
+          $("#error").text("");
+        } catch (e) {
+          console.log(e);
+          $("#error").html(e.message.replace(/[\n]/g, '<br/>'));
+        }
+      }
+      $("#blah").keyup(_.throttle(render, 250));
+      blco.blRender = render;
+      blco.blRender();
+    });
+  
+</script>
+	
+<script src="https://littleflute.github.io/JavaScript/blApp.js"></script>
+</body></html>
