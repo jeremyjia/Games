@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.json.JSONObject;
+import org.json.JSONArray;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -161,8 +162,8 @@ public class FileController {
 		String txtFromURL = JsonSriptParser.getJsonString(url);
 		JSONObject jsonObj = new JSONObject(txtFromURL);
 		JSONObject requestObj = JsonSriptParser.getJsonObjectbyName(jsonObj, "request");	 
-		 
-		String s = requestObj.toString();
+		JSONArray frameArray = (JSONArray) requestObj.get("frames");
+		String s = frameArray.toString(); 
 		s += "\n";
 		s += "保存ok";
 		s += "\n";
