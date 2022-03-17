@@ -11,7 +11,7 @@ tb.btnStoryBoard.onclick = function(){
 
 function CStoryBoard(parentDiv){
 
-    var v = "CStoryBoard v0.13";
+    var v = "CStoryBoard v0.14";
     var ui = null;
     var p = parentDiv; 
        

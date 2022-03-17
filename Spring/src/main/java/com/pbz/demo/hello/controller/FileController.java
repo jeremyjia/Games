@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.pbz.demo.hello.util.FileUtil;
+import com.pbz.demo.hello.util.JsonSriptParser;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -140,6 +142,45 @@ public class FileController {
 		return resMap;
 	}
 
+	@ApiOperation(value = "将json文件保存为Microsoft Word文件", notes = "将json文件保存为Microsoft Word文件")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "url", value = "url", paramType = "query", required = false, dataType = "string", defaultValue = "video1.json"),
+			@ApiImplicitParam(name = "optional", value = "optional", paramType = "query", required = true, dataType = "string", defaultValue = "optional"),
+			@ApiImplicitParam(name = "fileName", value = "xxx.docx", paramType = "query", required = false, dataType = "string", defaultValue = "d1.docx") })
+	@RequestMapping(value = "/json2word", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> json2word(@RequestParam("url") String url, @RequestParam("optional") String optional,
+			@RequestParam("fileName") String fileName) throws Exception {
+
+		Map<String, Object> resMap = new HashMap<String, Object>();
+		String outputFile = System.getProperty("user.dir") + "/" + fileName;
+		
+		if (url.toLowerCase().startsWith("http")) {
+			url = FileUtil.downloadFile(url);
+		}
+		String txtFromURL = JsonSriptParser.getJsonString(url);
+		JSONObject jsonObj = new JSONObject(txtFromURL);
+		JSONObject requestObj = JsonSriptParser.getJsonObjectbyName(jsonObj, "request");	 
+		 
+		String s = requestObj.toString();
+		s += "\n";
+		s += "保存ok";
+		s += "\n";
+		s += "v0.12";
+
+
+		boolean bResult = FileUtil.json2word(url,s,outputFile);
+		if (bResult) {
+			resMap.put("code", 200);
+			resMap.put("message", "保存docx成功");
+			resMap.put("pathOnServer", outputFile);
+		} else {
+			resMap.put("code", 500);
+			resMap.put("message", "保存docx失败");
+		}
+		return resMap;
+	}
+
 	@ApiOperation(value = "保存为Microsoft Word文件", notes = "把一个标题和一段文本保存为一个docx文件")
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "title", value = "title", paramType = "query", required = false, dataType = "string", defaultValue = "Document Title"),
@@ -163,6 +204,8 @@ public class FileController {
 		}
 		return resMap;
 	}
+
+
 
 	@ApiOperation(value = "获取文件资源列表", notes = "获取指定文件类型列表")
 	@ApiImplicitParams({

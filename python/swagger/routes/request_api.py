@@ -190,18 +190,38 @@ def trans_pics(): # 这是新加的参数
       
     rgba.putdata(newData)
     # reference: https://www.w3schools.com/jsref/event_onclick.asp
-    rgba.save("./static/transparent_image.png", "PNG")  
+    rgba.save("./static/transparent_image.png", "PNG")
+    s="<script src='static/showpic.js' ></script> "
+    s+= "<body>  <button onclick = myClick('static/transparent_image.png');> <h3>click me</h3>  </button> <div id='divDbug'>divDbug1</div>      </body>"
+    return s
     
-    return "<script type='text/javascript'> \
-    function show_image(src, alt) { var img = document.createElement('img'); img.src = src; img.alt = alt;}</script>\
-    <body><div <p><h2>&nbsp; Press the Button</h2></p></div> &emsp; &nbsp;\
-    document.body.appendChild(img)<button onclick='show_image('http://localhost:5000/static/transparent_image.png','Finished Fig');'><h3>show picture(s)</h3></button></body>"
-    #<button onclick='myFunction()'>Show Picture(s)</button> <element onclick='http://localhost:5000/static/transparent_image.png'>"
-    # s="<a href='https://www.123.com/'>pictureast!</a>"  
-    # s+= "<img src='http://localhost:5000/static/transparent_image.png'> </imng>"  #加按钮 按一下 就显示图片 再按一下图片消失
-    # return s #下一步工作：只需要在网上查如何用JavaScript onclick命令显示图片链接即可 -20220211
     #"<img src='http://localhost:5000/static/transparent_image.png'> </imng> <a href='https://www.123.com/'>123123!</a>"  
+# <script type='text/javascript'> 
+#     function myClick(url) {  
+#        var s2 = "<img  ";
+       
+#         var s = document.getElementById("divDbug").innerHTML;
+#         if(s!="1"){
+#             document.getElementById("divDbug").innerHTML = s2;
+#         }
+#         else{
+#             document.getElementById("divDbug").innerHTML = "0";
+#         }
 
+#     }
+# </script>
+#  <body> 
+#     <button onclick='myClick("http://www.baidu.com");'>
+#         <h3>click me</h3>
+#     </button>
+
+#     <div id="divDbug">divDbug</div>
+#     <div id="divDbug">divDbug</div>
+#     <div id="divDbug">divDbug</div>
+#     <div id="divDbug">divDbug</div>
+#     <div id="divDbug">divDbug</div>
+#     <div id="divDbug">divDbug</div>
+# </body>
 
 @REQUEST_API.route('/request', methods=['GET'])
 def get_records():
