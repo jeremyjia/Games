@@ -73,10 +73,10 @@ function blDrawClass()
 		var _fn = bl$("id_btn_Load_Plx").plxFn;
 		if(_fn) {_fn(ctx);}
 		else {
-			ctx.moveTo(0,0);
-			ctx.lineTo(200,100);
+			ctx.moveTo(10,10);
+			ctx.lineTo(10,100);
 			ctx.font="20px Georgia";
-			ctx.fillText("no plx: v0.0.1",10,50);
+			ctx.fillText("no plx: v0.0.12",10,11);
 			ctx.stroke(); 
 		}
 	}
@@ -96,7 +96,7 @@ function _blChordToolBar (_o,_d){
 	return r;
 }
 function _blUIClass (v){
-	v += ".133";
+	v += ".213";
   var blDraw = new blDrawClass;
   this.blRender = function(){alert(v);};
 
@@ -104,7 +104,7 @@ function _blUIClass (v){
   s0 += '<a target="_blank" href="http://littleflute.github.io/vextab/tests/blclassTest.html">' + v + '</a>-';
   s0 += '<a target="_blank" href="https://github.com/littleflute/vextab/edit/master/tests/blclassTest.html">' + v + '*</a>';
   s0 += '</div>';
-  var d = blo0.blMDiv(document.body,"id_blClassDiv_4_wrap1",s0,210,10,500,200, blGrey[5] );
+  var d = blo0.blMDiv(document.body,"id_blClassDiv_4_wrap1",s0,11,10,888,200, "white");
   d.tb = bl$("id_div_toolbar");
   d.showVextab = function(_this){	return function(){_this.blRender();blDraw.show();};  }(this);
   d.tb.b0 = blo0.blBtn(d.tb, "id_btn_4_blApp", "+blApp", blGrey[0]);
@@ -147,18 +147,23 @@ function _blUIClass (v){
 
   d.dt.ctb = _blChordToolBar(bl$("id_div_toolbar0_4_ta"),d); 
  
+   
   d.tb.b1.click();
   d.tb.b2.click();   
   d.dt.tb0.b1.click();
   d.dt.ctb.e.click();
 }
-
 </script>
+
+<script src="">
+  //https://littleflute.github.io/JavaScript/blApp.js
+</script>
+
 <script>        
   // Load VexTab module.    
   vextab = VexTabDiv;
     $(function() {
-	var blco = new _blUIClass ("v0.2") ;
+	    var blco = new _blUIClass ("v0.2") ;
       VexTab = vextab.VexTab;
       Artist = vextab.Artist;
       Renderer = Vex.Flow.Renderer;
@@ -186,7 +191,8 @@ function _blUIClass (v){
       blco.blRender();
     });
   
+  bl$("id_btn_4_blApp").click();
 </script>
 	
-<script src="https://littleflute.github.io/JavaScript/blApp.js"></script>
+
 </body></html>
