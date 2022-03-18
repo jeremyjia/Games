@@ -31005,7 +31005,7 @@ Vex.Flow.StaveNote = (function() {
       this.elem = this.context.openGroup("stavenote", this.id);
       this.context.openGroup("note", null, {pointerBBox: true});
         if (render_stem) this.drawStem();
-        //this.drawNoteHeads();//xddbg1
+        this.drawNoteHeads();//xddbg1
         this.drawFlag();
       this.context.closeGroup();
       this.drawModifiers();
@@ -39101,7 +39101,7 @@ Vex.Flow.BarNote = (function() {
 /**
  * @constructor
  */
-Vex.Flow.Tremolo = (function() {
+Vex.Flow.Tremolo = (function() {//xdr1
   function Tremolo(num) {
     if (arguments.length > 0) this.init(num);
   }
@@ -39146,7 +39146,7 @@ Vex.Flow.Tremolo = (function() {
 
       x += this.shift_right;
       for (var i = 0; i < this.num; ++i) {
-        Vex.Flow.renderGlyph(this.context, x, y,
+        Vex.Flow.renderGlyph(this.context, x, y,//xddbg2
                              this.render_options.font_scale, this.code);
         y += this.y_spacing;
       }
@@ -39223,7 +39223,7 @@ Vex.Flow.Tuplet = (function() {
      * Set whether or not the bracket is drawn.
      */
     setBracketed: function(bracketed) {
-      this.bracketed = bracketed ? true : false;
+      this.bracketed = bracketed ? true : false; //bracketed;//xddbg3?
       return this;
     },
 
