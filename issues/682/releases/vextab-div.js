@@ -31005,7 +31005,7 @@ Vex.Flow.StaveNote = (function() {
       this.elem = this.context.openGroup("stavenote", this.id);
       this.context.openGroup("note", null, {pointerBBox: true});
         if (render_stem) this.drawStem();
-        this.drawNoteHeads();
+        //this.drawNoteHeads();//xddbg1
         this.drawFlag();
       this.context.closeGroup();
       this.drawModifiers();

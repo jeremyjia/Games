@@ -14,4 +14,4 @@ smf[0].add(0, JZZ.MIDI.smfBPM(120)) // tempo 120 bpm
       .add(192, JZZ.MIDI.noteOff(0, 'G6'))
       .add(288, JZZ.MIDI.smfEndOfTrack());
 
-require('fs').writeFileSync('out.mid', smf.dump(), 'binary');
+require('fs').writeFileSync('x1.mid', smf.dump(), 'binary');
