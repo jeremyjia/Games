@@ -30950,13 +30950,13 @@ Vex.Flow.StaveNote = (function() {
         this.context.closeGroup();
       }
     },
-
+ 
     // Draw the NoteHeads
     drawNoteHeads: function(){
       var that = this;
       this.note_heads.forEach(function(note_head) {
         that.context.openGroup("notehead", null, {pointerBBox: true});
-        note_head.setContext(that.context).draw();
+        note_head.setContext(that.context).draw();		
         that.context.closeGroup();
       }, this);
     },
@@ -31006,6 +31006,7 @@ Vex.Flow.StaveNote = (function() {
       this.context.openGroup("note", null, {pointerBBox: true});
         if (render_stem) this.drawStem();
         this.drawNoteHeads();//xddbg1
+		//blDraw(this);
         this.drawFlag();
       this.context.closeGroup();
       this.drawModifiers();
@@ -31015,7 +31016,10 @@ Vex.Flow.StaveNote = (function() {
 
   return StaveNote;
 }());
-
+function blDraw(_this){ //xddbg 4
+	var d1 = document.getElementById("blDbg");
+	blo0.blShowObj2Div(d1,_this);//_this.getGlyph()
+}
 // [VexFlow](http://vexflow.com) - Copyright (c) Mohit Muthanna 2010.
 //
 // ## Description
