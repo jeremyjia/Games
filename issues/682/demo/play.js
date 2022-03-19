@@ -2,7 +2,7 @@
 var JZZ = require('jzz');
 require('jzz-midi-smf')(JZZ);
 
-var data = require('fs').readFileSync('sugarplum.mid', 'binary');
+var data = require('fs').readFileSync('out.mid', 'binary');
 var smf = new JZZ.MIDI.SMF(data);
 
 var player = smf.player();
