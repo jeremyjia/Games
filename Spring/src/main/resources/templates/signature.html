@@ -29,7 +29,7 @@
 <div style="margin: 12px;">
      <form>
         <div class="form-group">
-            <label class="col-sm-3 control-label">签名</label>
+            <label class="col-sm-3 control-label">签名v1.0.1</label>
             <div class="col-sm-8">
                 <div id="box">
                 </div>
@@ -40,7 +40,7 @@
         </div>
         <div class="form-group">
             <div class="col-sm-8 col-sm-offset-3">
-                <a id="save" class="btn btn-primary" οnclick="javascript:save()">提交</a>
+                <span class="abspan" id="save">提交</span>
 			</div>
         </div>
     </form>
@@ -54,10 +54,6 @@
     $(function() {
         $("#box").jSignature();//初始化签名面板
     });
- 
-	function save() {
-	   alert("Not implement yet!");
-    }
     document.getElementById("su").onclick = function(){
         var datapair = $("#box").jSignature("getData", "image");
         //base64转码
@@ -68,6 +64,13 @@
     document.getElementById("re").onclick = function(){
         $("#box").jSignature("reset");
         $("#image").attr('src','');
+    }
+	
+	document.getElementById("save").onclick = function(){
+        save();
+    }
+	function save() {
+	   alert("Not implement yet!");
     }
 </script>
 </body>
