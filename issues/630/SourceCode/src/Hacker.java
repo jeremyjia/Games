@@ -30,7 +30,7 @@ public class Hacker {
 			// default values
 			text = "Jeremy";
 			color = "#0E6608";
-			font = "1。黑体";
+			font = "1.黑体";
 			imgName = "signature.jpg";
 		}
 
@@ -41,6 +41,9 @@ public class Hacker {
 	}
 
 	public static void savePictureBySelenium(String imgName, String Name, String Color, String Font) throws Exception {
+		
+		System.setProperty("webdriver.chrome.driver", "../bin/chromedriver.exe");
+		
 		ChromeOptions options = new ChromeOptions();
 		options.addArguments("-headless");// silent execution
 		WebDriver driver = new ChromeDriver(options);
