@@ -223,6 +223,18 @@ def trans_pics(): # 这是新加的参数
 #     <div id="divDbug">divDbug</div>
 # </body>
 
+
+@REQUEST_API.route('/crawl', methods=['GET'])
+def crawl_data(): # 这是新加的参数
+    """Return crawl data requests
+    @return: 200: an array of all known BOOK_REQUESTS as a \
+    flask/response object with application/json mimetype.
+    """
+    //act 58HouseInfo.py <input> <output> python 运行另外脚本
+    s="<script src='static/showpic.js' ></script> "
+    return s
+    
+
 @REQUEST_API.route('/request', methods=['GET'])
 def get_records():
     """Return all book requests
