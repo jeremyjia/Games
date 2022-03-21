@@ -7,6 +7,7 @@ import ButtonToolbar from 'react-bootstrap/ButtonToolbar';
 import { LinkContainer } from 'react-router-bootstrap';
 
 import './App.css';
+import MainApp from './Main/MainApp.js';
 
 const Home = () => <span>Home</span>;
 
@@ -18,7 +19,7 @@ const App = () => (
   <MemoryRouter>
     <Container className="p-3">
       <Container className="p-5 mb-4 bg-light rounded-3">
-        <h1 className="header">Welcome To React-Bootstrap</h1>
+        <h1 className="header">Welcome To React-Bootstrap v0.21</h1>
         <h2>
           Current Page is{' '}
           <Switch>
@@ -48,7 +49,14 @@ const App = () => (
           </ButtonToolbar>
         </h2>
       </Container>
+
+      <Container>
+      <div className="App">
+        <MainApp />
+      </div>
+      </Container>
     </Container>
+    
   </MemoryRouter>
 );
 
