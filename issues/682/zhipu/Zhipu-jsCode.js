@@ -155,12 +155,54 @@ function newJP(){
     opernFileId=0;
 }
 
-function toClose(){hideMenu();setTimeout(function(){if(confirm('您确定关闭本软件吗？\n提示：当前未保存的内容可能会丢失。')){window.opener=null;window.open('','_self');window.close();}},200);}
-function toPng(){return false;hideMenu();winTip("导出PNG图片","PNG图片生成中，请稍等...");if(window.canvg){setTimeout(function(){createPng();},300);}else{$.getScript('/Public/js/canvg/rgbcolor.js',function(){$.getScript('/Public/js/canvg/canvg.js',function(){setTimeout(function(){createPng();},300);});});}}
+function toClose(){
+    hideMenu();
+    setTimeout(function(){
+        if(confirm('您确定关闭本软件吗？\n提示：当前未保存的内容可能会丢失。')){
+            window.opener=null;
+            window.open('','_self');
+            window.close();
+        }
+    },200);
+}
+function toPng(){
+    return false;
+    hideMenu();
+    winTip("导出PNG图片","PNG图片生成中，请稍等...");
+    if(window.canvg){
+        setTimeout(function(){createPng();},300);
+    }else{
+        $.getScript('/Public/js/canvg/rgbcolor.js',function(){
+            $.getScript('/Public/js/canvg/canvg.js',
+            function(){
+                setTimeout(function(){
+                    createPng();
+                },300);
+            });
+        });
+    }
+}
 var pngHtml;
 function createPng(){
-    pngHtml='';$(".page").each(function(index,element){var svgHtml=$(element).html();
-    var can=document.createElement("canvas");canvg(can,svgHtml,{renderCallback:function(){var datauri=can.toDataURL('image/png');pngHtml+='<img style="border:1px #ccc solid; width:800px; height:1132px; " src="'+datauri+'">';}});});pngHtml='<div style="text-align:center;"><div style="padding:10px 0 20px 0;">以下为PNG格式的图片，您可以在图片上按鼠标右键，然后选择“图片另存为...”将图片保存到您的电脑中。</div>'+pngHtml+'</div>';var pForm=$("#postForm")[0];pForm.action='/zhipu-toPng';pForm.method='POST';pForm.target="_blank";$("#postContent").val(pngHtml);pForm.submit();winClose();}
+    pngHtml='';
+    $(".page").each(function(index,element){
+        var svgHtml=$(element).html();
+        var can=document.createElement("canvas");
+        canvg(can,svgHtml,{
+            renderCallback:function(){
+                var datauri=can.toDataURL('image/png');
+                pngHtml+='<img style="border:1px #ccc solid; width:800px; height:1132px; " src="'+datauri+'">';
+            }
+        });
+    });
+    pngHtml='<div style="text-align:center;"><div style="padding:10px 0 20px 0;">以下为PNG格式的图片，您可以在图片上按鼠标右键，然后选择“图片另存为...”将图片保存到您的电脑中。</div>'+pngHtml+'</div>';
+    var pForm=$("#postForm")[0];
+    pForm.action='/zhipu-toPng';
+    pForm.method='POST';
+    pForm.target="_blank";
+    $("#postContent").val(pngHtml);
+    pForm.submit();winClose();
+}
 function toSvg(){showWin('导出SVG格式图片','zhipu-toSvg-num-'+$(".page").length);}
 function downSvg(num){var svgHtml=$(".page").eq(num).html();var pForm=$("#postForm")[0];pForm.action='/zhipu-toSvg';pForm.method='POST';pForm.target="postwin";$("#postContent").val(svgHtml);pForm.submit();}
 function updateUserInfo(){$.post('/Zhipu-userInfo',null,function(re){winClose();$(".userInfo").html(re);});}
