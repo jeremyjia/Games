@@ -8,7 +8,7 @@
 }
 @font-face {
   font-family: 'MusiSync';
-  src: url('http://www.fontsaddict.com/fontface/musisync.ttf');
+  src: url('MusiSync.ttf');
 }
 
 div {
@@ -16,6 +16,7 @@ div {
 }
 p {
   font-family: MusiSync;
+  font-size: 115px;
 }
 </style>
 </head>
@@ -23,8 +24,24 @@ p {
 
 <h1>The @font-face Rule</h1>
 
-<div>With CSS, websites can finally use fonts other than the pre selected "web-safe" fonts.</div>
-<p>abc
-</p>
+<canvas id="myCanvas" width="200" height="100"
+style="border:1px solid #d3d3d3;">
+Your browser does not support the canvas element.
+</canvas>
+
+<div>With CSS, websites can finally use fonts other than the pre selected "web-safe" fonts.
+    <a target = "_blank" href="http://www.fontsaddict.com/font/musisync.html">musisync.html</a>
+</div>
+<p>ABCDEFGHIJKLMNOPQRSTUVWXYZ</p><br>
+<p>1234567890</p><br>
+<p>!@#$%^&*()</p><br>
+<script>
+var canvas = document.getElementById("myCanvas");
+var ctx = canvas.getContext("2d");
+ctx.font = "30px MusiSync";
+ctx.strokeText("G Hello World",10,50);
+  
+</script>
+
 </body>
 </html>
