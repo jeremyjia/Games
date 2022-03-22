@@ -1,26 +1,46 @@
+var upType=3;
+$(document).ready(function(){
+    var viewType_=localStorage.getItem('viewType');
+    if(viewType_){upType=viewType_;}
+    var customCode_=localStorage.getItem('customCode');
+    if(customCode_){$("textarea[name=customCode]").text(customCode_);}
+    var pageConfig_=localStorage.getItem('pageConfig');
+    if(pageConfig_){$("textarea[name=pageConfig]").text(pageConfig_);}
+    setView(upType);
+    if(upType==2){upType=3;}
+    var autoJpFormat_=localStorage.getItem('autoJpFormat');
+    if(!autoJpFormat_){autoJpFormat_="y";}
+    if(autoJpFormat_=="y"){$('#jpFormat').prop("checked",true);}
+});
 
-var upType=3;$(document).ready(function(){var viewType_=localStorage.getItem('viewType');if(viewType_){upType=viewType_;}
-var customCode_=localStorage.getItem('customCode');if(customCode_){$("textarea[name=customCode]").text(customCode_);}
-var pageConfig_=localStorage.getItem('pageConfig');if(pageConfig_){$("textarea[name=pageConfig]").text(pageConfig_);}
-setView(upType);if(upType==2){upType=3;}
-var autoJpFormat_=localStorage.getItem('autoJpFormat');if(!autoJpFormat_){autoJpFormat_="y";}
-if(autoJpFormat_=="y"){$('#jpFormat').prop("checked",true);}});window.onresize=function(){autoSize();autoWinSize();}
+window.onresize=function(){autoSize();autoWinSize();}
 document.onkeydown=function(){return setShortcuts(event);}
-document.onmousedown=hideMenu;function setShortcuts(ev){if(ev.keyCode==9&&!$(".win").is(':visible')){if(winType!=2){upType=winType;setView(2);}else{setView(upType);}
-autoSize();return false;}
-if(ev.keyCode==27){hideMenu();winClose();return false;}
-if(ev.altKey&&ev.keyCode==70){$("#menuFile").click();return false;}
-if(ev.altKey&&ev.keyCode==85){$("#menuUser").click();return false;}
-if(ev.altKey&&ev.keyCode==72){$("#menuHelp").click();return false;}
-if(ev.ctrlKey&&ev.shiftKey&&ev.keyCode==83){$("#menuSaveAs").click();return false;}
-if(ev.ctrlKey&&ev.keyCode==83){$("#menuSave").click();return false;}
-if(ev.ctrlKey&&ev.keyCode==78){$("#menuNewFile").click();return false;}
-if(ev.ctrlKey&&ev.keyCode==79){$("#menuOpenFile").click();return false;}
-if(ev.ctrlKey&&ev.keyCode==81){$("#menuPlayer").click();return false;}
-if(ev.ctrlKey&&ev.keyCode==72){$("#menuTutorial").click();return false;}
-if(ev.ctrlKey&&ev.keyCode==192){$("#menuSymbol").click();return false;}
-if(ev.ctrlKey&&ev.keyCode==69){$("#menuAddLastSymbol").click();return false;}
-if(ev.keyCode==37||ev.keyCode==38||ev.keyCode==39||ev.keyCode==40||ev.keyCode==46){return customShortcuts(ev.keyCode);}
+document.onmousedown=hideMenu;
+function setShortcuts(ev){
+        if(ev.keyCode==9&&!$(".win").is(':visible')){
+            if(winType!=2){
+                upType=winType;setView(2);
+            }else{
+                setView(upType);
+            }
+            autoSize();
+            return false;
+        }
+        if(ev.keyCode==27){hideMenu();winClose();
+            return false;
+        }
+        if(ev.altKey&&ev.keyCode==70){$("#menuFile").click();return false;}
+        if(ev.altKey&&ev.keyCode==85){$("#menuUser").click();return false;}
+        if(ev.altKey&&ev.keyCode==72){$("#menuHelp").click();return false;}
+        if(ev.ctrlKey&&ev.shiftKey&&ev.keyCode==83){$("#menuSaveAs").click();return false;}
+        if(ev.ctrlKey&&ev.keyCode==83){$("#menuSave").click();return false;}
+        if(ev.ctrlKey&&ev.keyCode==78){$("#menuNewFile").click();return false;}
+        if(ev.ctrlKey&&ev.keyCode==79){$("#menuOpenFile").click();return false;}
+        if(ev.ctrlKey&&ev.keyCode==81){$("#menuPlayer").click();return false;}
+        if(ev.ctrlKey&&ev.keyCode==72){$("#menuTutorial").click();return false;}
+        if(ev.ctrlKey&&ev.keyCode==192){$("#menuSymbol").click();return false;}
+        if(ev.ctrlKey&&ev.keyCode==69){$("#menuAddLastSymbol").click();return false;}
+        if(ev.keyCode==37||ev.keyCode==38||ev.keyCode==39||ev.keyCode==40||ev.keyCode==46){return customShortcuts(ev.keyCode);}
 }
 
 function redraw(pNum,redrawSource){
