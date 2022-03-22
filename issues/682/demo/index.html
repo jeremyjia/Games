@@ -8,7 +8,7 @@
   <script src="../releases/vextab-div.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.2.1/lodash.js"></script>
   <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>  
-  <script src="SongEditClass.js"></script>
+  <script src="js/SongEditClass.js"></script>
 </head>
 <body>
   <div id = "blDbg">dddd</div>
@@ -93,13 +93,15 @@ function _blChordToolBar (_o,_d){
  
   	r.e = blo0.blBtn(o,o.id + "e","e",blGrey[3]);
   	r.e.onclick = function(){
-		if(!de){de=blo0.blDiv(o,o.id+ "_div_e","e:",blGrey[4]);de.o = new _blSongEditClass(d,ta);blo0.blShowObj2Div(de,de.o);}
-		_on_off_div(this,de);
+      if(!de){de=blo0.blDiv(o,o.id+ "_div_e","e:",blGrey[4]);
+      de.o = new _blSongEditClass(d,ta);
+      blo0.blShowObj2Div(de,de.o);}
+      _on_off_div(this,de);
   	}
 	return r;
 }
 function _blUIClass (v){
-	v += ".213";
+	v += ".222";
   var blDraw = new blDrawClass;
   this.blRender = function(){alert(v);};
 
@@ -115,18 +117,18 @@ function _blUIClass (v){
   d.tb.b1.onclick = function(){	_on_off_div(this,d.dt);  
 			        var b = this;
 			        b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
-			      }
+	}
   d.tb.b2 = blo0.blBtn(d.tb,d.tb.id + "b2","+Handle",blGrey[0]);
   d.tb.b2.onclick = function(){	_on_off_div(this,d.handle);	_on_off_div(this,d.main); 
 			        var b = this;
 			        b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
-			      } 
+	} 
 	
-  d.tb.b3 = blo0.blBtn(d.tb, "id_btn_Load_Plx" ,"+plx",blGrey[3]);
-  d.tb.b3.onclick = function(){ 
-	function _loadIssue16 (o) {                      eval(o.body);	             }
-            var url = "https://api.github.com/repos/littleflute/JavaScript/issues/16";
-             w3.getHttpObject(url, _loadIssue16 );	
+  d.tb.jsc16 = blo0.blBtn(d.tb, "id_btn_Load_Plx" ,"+jsC16",blGrey[3]);
+  d.tb.jsc16.onclick = function(){ 
+    function _loadIssue16 (o) {        eval(o.body);	     }
+    var url = "https://api.github.com/repos/littleflute/JavaScript/issues/16";
+    w3.getHttpObject(url, _loadIssue16 );	
   } 
 	
   var div4Plx = blo0.blDiv(d,"id_div_4_Plx","", blGrey[4]);
@@ -136,17 +138,18 @@ function _blUIClass (v){
   var s1 = '<div id="id_div_toolbar0_4_ta"></div>';
   d.dt = blo0.blMDiv(document.body,"id_blClassDiv_4_wrap2",s1,800,10,500,200,"gray");
   d.dt.tb0 = blo0.blDiv(bl$("id_div_toolbar0_4_ta"),bl$("id_div_toolbar0_4_ta").id+"tb0","tb0::",blGrey[0]);
-  d.dt.tb0.b1 = blo0.blBtn(d.dt.tb0,d.dt.tb0.id + "b1","b1",blGrey[0]);
+  d.dt.tb0.b1 = blo0.blBtn(d.dt.tb0,d.dt.tb0.id + "b1","+Handle",blGrey[0]);
   d.dt.tb0.b1.onclick = function(){	_on_off_div(this,d.dt.handle);	_on_off_div(this,d.dt.main);
 			        var b = this;
 			        b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
-			}
+	}
 
 
   d.dt.dta = blo0.blDiv(d.dt,"id_div_4_ta","","blue");
   d.dt.de = blo0.blDiv(d.dt,"error","de","red");  
 
-  d.dt.dta.ta = blo0.blTextarea(d.dt.dta,"blah","",blColor[4]);d.dt.dta.ta.style.width="100%",d.dt.dta.ta.style.height="200px";
+  d.dt.dta.ta = blo0.blTextarea(d.dt.dta,"blah","",blColor[4]);
+  d.dt.dta.ta.style.width="100%",d.dt.dta.ta.style.height="200px";
 
   d.dt.ctb = _blChordToolBar(bl$("id_div_toolbar0_4_ta"),d); 
  

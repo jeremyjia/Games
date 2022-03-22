@@ -1,10 +1,13 @@
 
 //file: SongEditClass.js  
 function _blSongEditClass (_d,_t){
-	this.v = "v0.0.74";
+	this.v = "v0.0.111";
 	var _v = null;
 	var d = _d;
 	var ta = _t;
+	this.blr_Debug = function(b,d){
+		d.innerHTML = Date();
+	}
 	this.blr_Edit = function(btn,div){
 		if(!_v){_v=blo0.blDiv(div,div.id+"_v","v::",blGrey[0]);_v.majorChord = new _blEditClass(_v,d,ta);}
 		_on_off_div(btn,div);	
@@ -54,7 +57,7 @@ function _blSongEditClass (_d,_t){
 		s += blo0.blhMakeLink ("SongEditClass.js*","https://github.com/littleflute/vextab/edit/master/tests/SongEditClass.js","color:red","_blank");
 		div.innerHTML = s;
 		_on_off_div(btn,div);	
-	}; 
+	};  
 }
 function _blEditClass (_o,_d,_t){
 	this.v = "v0.0.34";
