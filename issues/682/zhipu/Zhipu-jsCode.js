@@ -72,19 +72,69 @@ function redraw(pNum,redrawSource){
         }
     );
 }
-var winType;function autoSize(){if(winType==1){$(".preview").hide();$(".editor").show();$(".editor .line").hide();$(".editor").height($(window).height()-65);$(".editor .body").height($(".editor").height());}else if(winType==2){$(".editor").hide();$(".preview").show();$(".preview").height($(window).height()-65);}else{$(".preview").show();$(".editor .line").show();$(".editor").show();var bodyHeight=$(window).height()-65;$(".preview").height((bodyHeight/3)*2);$(".editor").height(bodyHeight/3);$(".editor .body").height($(".editor").height()-5);}
-$(".mask").width($(window).width());$(".mask").height($(window).height());$("#filename").css('left',($(window).width()-$("#filename").width())/2+80);}
+var winType;
+function autoSize(){
+    if(winType==1){
+        $(".preview").hide();
+        $(".editor").show();
+        $(".editor .line").hide();
+        $(".editor").height($(window).height()-65);
+        $(".editor .body").height($(".editor").height());
+    }
+    else if(winType==2){
+        $(".editor").hide();
+        $(".preview").show();
+        $(".preview").height($(window).height()-65);
+    }else{
+        $(".preview").show();
+        $(".editor .line").show();
+        $(".editor").show();
+        var bodyHeight=$(window).height()-65;
+        $(".preview").height((bodyHeight/3)*2);
+        $(".editor").height(bodyHeight/3);
+        $(".editor .body").height($(".editor").height()-5);
+    }
+    $(".mask").width($(window).width());$(".mask").height($(window).height());
+    $("#filename").css('left',($(window).width()-$("#filename").width())/2+80);
+}
+
 function setView(type){$(".viewBut li").removeClass('current');$(".viewBut"+type).addClass('current');winType=type;autoSize();$("#menuSetView1").html('编码');$("#menuSetView3").html('拆分');$("#menuSetView2").html('<i>Tab</i>预览');$("#menuSetView"+type).append(' ●');hideMenu();localStorage.setItem('viewType',type);}
 function showMenu(obj){hideMenu();$(obj).addClass('current');$(obj).parent().find("ul").fadeIn(200);}
 function hideMenu(){$(".menu li ul").fadeOut(200);$(".fileBrowsMenu").fadeOut(200);$(".menu li span").removeClass('current');}
 function noHideMenu(){oEvent=window.event;if(document.all){oEvent.cancelBubble=true;}else{oEvent.stopPropagation();}}
-function newJP(){if($("#biaoti").val()==''){alert("【错误提示】简谱的主标题必须要填写。");return false;}
-var tempStr="#============================以下为描述头定义==========================\n";tempStr+="V: 1.0\n";tempStr+='B: '+$("#biaoti").val()+"\n";if($("#fubiaoti").val()!=''){tempStr+='B: '+$("#fubiaoti").val()+"\n";}
-if($("#zuoci").val()!=''){tempStr+='Z: '+$("#zuoci").val()+" 词\n";}
-if($("#zuoqu").val()!=''){tempStr+='Z: '+$("#zuoqu").val()+" 曲\n";}
-if($("#qitazuozhe").val()!=''){tempStr+='Z: '+$("#qitazuozhe").val()+"\n";}
-tempStr+='D: '+$("#diaoshi2").val()+$("#diaoshi1").val()+"\n";tempStr+='P: '+$("#paihao1").val()+"/"+$("#paihao2").val()+"\n";if($("#jiepai").val()!=''){tempStr+='J: '+$("#jiepai").val()+"\n";}
-tempStr+="#============================以下开始简谱主体==========================\n";tempStr+="Q: 1 2 3 4 | \n";tempStr+="C: 这是歌词 \n";$("textarea[name=customCode]").text('');initPageConfig();localStorage.setItem('customCode','');editorSetVal(tempStr);redraw(-1,'newFile');winClose();setFileName('未保存');opernFileId=0;}
+function newJP(){
+    if($("#biaoti").val()==''){
+        alert("【错误提示】简谱的主标题必须要填写。");return false;
+    }
+    var tempStr="#============================以下为描述头定义==========================\n";
+    tempStr+="V: 1.0\n";
+    tempStr+='B: '+$("#biaoti").val()+"\n";
+    if($("#fubiaoti").val()!=''){
+        tempStr+='B: '+$("#fubiaoti").val()+"\n";
+    }
+    if($("#zuoci").val()!=''){
+        tempStr+='Z: '+$("#zuoci").val()+" 词\n";
+    }
+    if($("#zuoqu").val()!=''){
+        tempStr+='Z: '+$("#zuoqu").val()+" 曲\n";
+    }
+    if($("#qitazuozhe").val()!=''){
+        tempStr+='Z: '+$("#qitazuozhe").val()+"\n";
+    }
+    tempStr+='D: '+$("#diaoshi2").val()+$("#diaoshi1").val()+"\n";
+    tempStr+='P: '+$("#paihao1").val()+"/"+$("#paihao2").val()+"\n";
+    if($("#jiepai").val()!=''){
+        tempStr+='J: '+$("#jiepai").val()+"\n";
+    }
+    tempStr+="#============================以下开始简谱主体==========================\n";
+    tempStr+="Q: 1 2 3 4 | \n";
+    tempStr+="C: 这是歌词 \n";$("textarea[name=customCode]").text('');initPageConfig();
+    localStorage.setItem('customCode','');
+    editorSetVal(tempStr);
+    redraw(-1,'newFile');winClose();setFileName('未保存');
+    opernFileId=0;
+}
+
 function toClose(){hideMenu();setTimeout(function(){if(confirm('您确定关闭本软件吗？\n提示：当前未保存的内容可能会丢失。')){window.opener=null;window.open('','_self');window.close();}},200);}
 function toPng(){return false;hideMenu();winTip("导出PNG图片","PNG图片生成中，请稍等...");if(window.canvg){setTimeout(function(){createPng();},300);}else{$.getScript('/Public/js/canvg/rgbcolor.js',function(){$.getScript('/Public/js/canvg/canvg.js',function(){setTimeout(function(){createPng();},300);});});}}
 var pngHtml;
