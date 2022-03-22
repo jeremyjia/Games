@@ -1,60 +1,30 @@
+<!DOCTYPE html>
 <html>
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script
-    type="text/javascript"
-    src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"
-  ></script>
-</head><!--from w  w w.  d em o 2s .c o  m-->
+<style> 
+@font-face {
+  font-family: myFirstFont;
+  src: url(sansation_light.woff);
+}
+@font-face {
+  font-family: 'MusiSync';
+  src: url('http://www.fontsaddict.com/fontface/musisync.ttf');
+}
+
+div {
+  font-family: myFirstFont;
+}
+p {
+  font-family: MusiSync;
+}
+</style>
+</head>
 <body>
-    <canvas id="canvas1" width="500" height="500"></canvas>
-    <script type='text/javascript'>
-var can = document.getElementById('canvas1');
-var ctx = can.getContext('2d');
-can.addEventListener('mousemove', function(e) {
-    var mouse = getMouse(e, can);
-    redraw(mouse);
-}, false);
-function redraw(mouse) {
-    console.log('a');
-    can.width = can.width;
-    ctx.drawImage(img, 0, 0);
-    ctx.beginPath();
-    ctx.rect(0,0,500,500);
-    ctx.arc(mouse.x, mouse.y, 70, 0, Math.PI*2, true)
-    ctx.clip();
-    ctx.fillRect(0,0,500,500);
-}
-var img = new Image();
-img.onload = function() {
-    redraw({x: -500, y: -500})
-}
-        img.src = 'http://placekitten.com/500/500';
-// Creates an object with x and y defined,
-// set to the mouse position relative to the state's canvas
-// If you wanna be super-correct this can be tricky,
-// we have to worry about padding and borders
-// takes an event and a reference to the canvas
-function getMouse(e, canvas) {
-    var element = canvas,
-        offsetX = 0,
-        offsetY = 0,
-        mx, my;
-    // Compute the total offset. It's possible to cache this if you want
-    if (element.offsetParent !== undefined) {
-        do {
-            offsetX += element.offsetLeft;
-            offsetY += element.offsetTop;
-        } while ((element = element.offsetParent));
-    }
-    mx = e.pageX - offsetX;
-    my = e.pageY - offsetY;
-    // We return a simple javascript object with x and y defined
-    return {
-        x: mx,
-        y: my
-    };
-}
-  </script>
+
+<h1>The @font-face Rule</h1>
+
+<div>With CSS, websites can finally use fonts other than the pre selected "web-safe" fonts.</div>
+<p>abc
+</p>
 </body>
 </html>
