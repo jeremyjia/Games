@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "description": "blSwagger using Python",
-    "version": "1.2.25",
+    "version": "1.2.26",
     "title": "Seans_Waynes-Python3-Flask-Rest-Boilerplate",
     "license": {
       "name": "MIT",
@@ -217,13 +217,13 @@
         "tags": [
           "IMG Trans"
         ],
-        "summary": "Get book request with given ID",
+        "summary": "Crawl data saved as *.xls files with given webpage",
         "parameters": [
           {
             "in": "path",
             "name": "id",
             "required": true,
-            "description": "Book Request id",
+            "description": "Crawl Request Webpage",
             "schema": {
               "$ref": "#/components/schemas/id"
             }

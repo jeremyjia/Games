@@ -1,13 +1,38 @@
 
 //file: SongEditClass.js  
-function _blSongEditClass (_d,_t){
-	this.v = "v0.0.74";
+function _blSongEditClass (_d,_t){ 
 	var _v = null;
 	var d = _d;
-	var ta = _t;
-	this.blr_Edit = function(btn,div){
-		if(!_v){_v=blo0.blDiv(div,div.id+"_v","v::",blGrey[0]);_v.majorChord = new _blEditClass(_v,d,ta);}
-		_on_off_div(btn,div);	
+	var ta = _t; 
+	this.blhInit = function(){
+		bl$("blr_Debug").click();
+		bl$("blr_Edit").click();
+	}
+	this.blr_Debug = function(b,d){
+		var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[5]);
+		var btnArtist = blo0.blBtn(tb,tb.id+"btnArtist","btnArtist",blGrey[0]);
+		btnArtist.onclick = function(){			
+			var md = blo0.blMDiv(d,d.id+"btnArtist","btnArtist",55,10,888,200, "white");
+			md.v = blo0.blDiv(md,md.id+"v","v",blGrey[1]);
+			blo0.blShowObj2Div(md.v,vextab.getArtist());
+			_on_off_div(this,md);	
+			this.style.background = this.style.background=="red"?blGrey[5]:blColor[4];
+		}
+		var btnVextab = blo0.blBtn(tb,tb.id+"btnVextab","btnVextab",blGrey[0]);
+		btnVextab.onclick = function(){			
+			var md = blo0.blMDiv(d,d.id+"btnVextab","btnVextab",55,10,888,200, "white");
+			md.v = blo0.blDiv(md,md.id+"v","v",blGrey[1]);
+			blo0.blShowObj2Div(md.v,VexTab);
+			_on_off_div(this,md);	
+			this.style.background = this.style.background=="red"?blGrey[5]:blColor[4];
+		}
+		_on_off_div(b,d);	
+		b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+	};this.bllv= "--v0.21--";
+	this.blr_Edit = function(b,d){
+		if(!_v){_v=blo0.blDiv(d,d.id+"_v","v::",blGrey[0]);_v.majorChord = new _blEditClass(_v,d,ta);}
+		_on_off_div(b,d);	
+		b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 	};	this.bll1= "--1--";
 	this.blr_Songs = function(btn,div){
 		if(!div.v){
@@ -54,7 +79,7 @@ function _blSongEditClass (_d,_t){
 		s += blo0.blhMakeLink ("SongEditClass.js*","https://github.com/littleflute/vextab/edit/master/tests/SongEditClass.js","color:red","_blank");
 		div.innerHTML = s;
 		_on_off_div(btn,div);	
-	}; 
+	};  
 }
 function _blEditClass (_o,_d,_t){
 	this.v = "v0.0.34";
