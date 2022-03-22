@@ -72,10 +72,46 @@ hideMenu();tip("文件保存成功！");}
 function setFileName(names){$("#filename").html(names+'.jps');$("#filename").css('left',($(window).width()-$("#filename").width())/2);}
 var exampleFileId=0;function openExampleFile(){if(exampleFileId==0){alert('您没有选择任何文件');return false;}
 winClose();editorSetVal('');winTip("载入文件","文件正在载入中，请稍等...");$.getJSON("/zhipu-getExampleFile?id="+exampleFileId,function(data){opernFileId=0;$("textarea[name=customCode]").text(data.custom_code);localStorage.setItem('customCode',data.custom_code);$("textarea[name=pageConfig]").text(data.page_config);localStorage.setItem('pageConfig',data.page_config);$('#lockCustom').prop("checked",true);setFileName(data.name);editorSetVal(data.code);winClose();});}
-var win_drag_state=0;function show_drag(){var showTable=$(".win");var handle=$(".win .titleBar");handle.find("span").css("cursor","move");handle.bind("mousedown",function(event){win_drag_state=1;var showTop=parseInt(showTable.css('top'));var showLeft=parseInt(showTable.css('left'));var mouse_x=event.pageX;var mouse_y=event.pageY;$(document).bind("mousemove",function(ev){if(win_drag_state==1){var _x=ev.pageX-mouse_x;var _y=ev.pageY-mouse_y;var nowLeft=(showLeft+_x)+"px";var nowTop=(showTop+_y)+"px";showTable.css({top:nowTop,left:nowLeft});}});});$(document).bind("mouseup",function(){win_drag_state=0;});}
-function showWin(title,url,width,height){if($("#playBut").length>0){stopPlay();}
-hideMenu();$(".win .titleBar span").html(title);$(".win .body").html("<div class=\"winLoad\">加载中，请稍等...");autoWinSize();$(".mask").fadeIn(300);$(".win").fadeIn(300);$.get(url,null,function(data){if(width){data='<div style="width:'+width+'px; height:'+height+'px; overflow:auto; margin-right:1px;">'+data+'</div>'}
-$(".win .body").html(data);autoWinSize();});}
+var win_drag_state=0;
+function show_drag(){
+    var showTable=$(".win");
+    var handle=$(".win .titleBar");
+    handle.find("span").css("cursor","move");
+    handle.bind("mousedown",function(event){
+        win_drag_state=1;
+        var showTop=parseInt(showTable.css('top'));
+        var showLeft=parseInt(showTable.css('left'));
+        var mouse_x=event.pageX;
+        var mouse_y=event.pageY;
+        $(document).bind("mousemove",function(ev){
+            if(win_drag_state==1){
+                var _x=ev.pageX-mouse_x;
+                var _y=ev.pageY-mouse_y;
+                var nowLeft=(showLeft+_x)+"px";
+                var nowTop=(showTop+_y)+"px";
+                showTable.css({top:nowTop,left:nowLeft});
+            }
+        });
+    });
+    $(document).bind("mouseup",function(){win_drag_state=0;});
+}
+function showWin(title,url,width,height){
+    if($("#playBut").length>0){
+        stopPlay();
+    }
+    hideMenu();
+    $(".win .titleBar span").html(title);
+    $(".win .body").html("<div class=\"winLoad\">加载中，请稍等...");
+    autoWinSize();
+    $(".mask").fadeIn(300);
+    $(".win").fadeIn(300);
+    $.get(url,null,function(data){
+        if(width){
+            data='<div style="width:'+width+'px; height:'+height+'px; overflow:auto; margin-right:1px;">'+data+'</div>'    
+        }
+        $(".win .body").html(data);autoWinSize();
+    });
+}
 function autoWinSize(){var left=($(window).width()-$(".win").width())/2;var Top=($(window).height()-$(".win").height())/2;$(".win").css({'left':left,'top':Top});}
 function winClose(){if($("#playBut").length>0){stopPlay();}
 $(".win").fadeOut(300);$(".mask").fadeOut(300);}
