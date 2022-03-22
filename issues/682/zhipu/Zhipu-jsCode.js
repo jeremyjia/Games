@@ -43,16 +43,19 @@ function setShortcuts(ev){
         if(ev.keyCode==37||ev.keyCode==38||ev.keyCode==39||ev.keyCode==40||ev.keyCode==46){return customShortcuts(ev.keyCode);}
 }
 
-function redraw(pNum,redrawSource){
+function redraw(pNum,redrawSource){  
+    /*
     var jpcode=window.frames["editFrame"].document.getElementById("editor_text").value;
     var customCode=$("textarea[name=customCode]").text();
     var pageConfig=$("textarea[name=pageConfig]").text();
     jpcode=jpcode.replace(/\n/g,"&hh&");
     customCode=customCode.replace(/\n/g,"&hh&");
-    $.post('http://zhipu.lezhi99.com/Zhipu-draw',// '/Zhipu-draw',
-       {code:jpcode,customCode:customCode,pageConfig:pageConfig,pageNum:pNum},
+    */ 
+    $.get('http://localhost:3001/1.html',//'http://zhipu.lezhi99.com/Zhipu-draw',// '/Zhipu-draw',
+       null,//{code:jpcode,customCode:customCode,pageConfig:pageConfig,pageNum:pNum},
        function(re){
            var arr=re.split('[fenye]');
+           alert(arr);
            var arrLen=arr.length;
            var pageNum=-1;
            for(var i=0;i<arrLen;i++){
