@@ -101,7 +101,7 @@ function showWin(title,url,width,height){
     }
     hideMenu();
     $(".win .titleBar span").html(title);
-    $(".win .body").html("<div class=\"winLoad\">加载中，请稍等...");
+    $(".win .body").html("<div class=\"winLoad\">xd加载中，请稍等...");
     autoWinSize();
     $(".mask").fadeIn(300);
     $(".win").fadeIn(300);
