@@ -27847,7 +27847,7 @@ Vex.Flow.Glyph = (function() {
   };
 
   return Glyph;
-}());
+}());//xdGlyph
 
 // Vex Flow
 // Mohit Muthanna <mohit@muthanna.com>
@@ -29391,7 +29391,7 @@ Vex.Flow.Note = (function() {
   });
 
   return Note;
-}());
+}()); //xdNote
 // [VexFlow](http://vexflow.com) - Copyright (c) Mohit Muthanna 2010.
 //
 // ## Description
@@ -30046,7 +30046,7 @@ Vex.Flow.StemmableNote = (function(){
 // and a "key" refers to a specific pitch/notehead within a note.*
 //
 // See `tests/stavenote_tests.js` for usage examples.
-Vex.Flow.StaveNote = (function() {
+Vex.Flow.StaveNote = (function() { //xdStaveNote 1
   var StaveNote = function(note_struct) {
     if (arguments.length > 0) this.init(note_struct);
   };
@@ -31004,10 +31004,10 @@ Vex.Flow.StaveNote = (function() {
 
       this.elem = this.context.openGroup("stavenote", this.id);
       this.context.openGroup("note", null, {pointerBBox: true});
-        if (render_stem) this.drawStem();
-        this.drawNoteHeads();//xddbg1
+      if (render_stem) this.drawStem();
+      this.drawNoteHeads();//xddbg1
 		//blDraw(this);
-        this.drawFlag();
+      this.drawFlag();
       this.context.closeGroup();
       this.drawModifiers();
       this.context.closeGroup();
@@ -31015,7 +31015,7 @@ Vex.Flow.StaveNote = (function() {
   });
 
   return StaveNote;
-}());
+}()); //xdStaveNote 2
 function blDraw(_this){ //xddbg 4
 	var d1 = document.getElementById("blDbg");
 	blo0.blShowObj2Div(d1,_this);//_this.getGlyph()
