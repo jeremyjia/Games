@@ -20,12 +20,58 @@ if(ev.ctrlKey&&ev.keyCode==81){$("#menuPlayer").click();return false;}
 if(ev.ctrlKey&&ev.keyCode==72){$("#menuTutorial").click();return false;}
 if(ev.ctrlKey&&ev.keyCode==192){$("#menuSymbol").click();return false;}
 if(ev.ctrlKey&&ev.keyCode==69){$("#menuAddLastSymbol").click();return false;}
-if(ev.keyCode==37||ev.keyCode==38||ev.keyCode==39||ev.keyCode==40||ev.keyCode==46){return customShortcuts(ev.keyCode);}}
-function redraw(pNum,redrawSource){var jpcode=window.frames["editFrame"].document.getElementById("editor_text").value;var customCode=$("textarea[name=customCode]").text();var pageConfig=$("textarea[name=pageConfig]").text();jpcode=jpcode.replace(/\n/g,"&hh&");customCode=customCode.replace(/\n/g,"&hh&");$.post('/Zhipu-draw',{code:jpcode,customCode:customCode,pageConfig:pageConfig,pageNum:pNum},function(re){var arr=re.split('[fenye]');var arrLen=arr.length;var pageNum=-1;for(var i=0;i<arrLen;i++){var pageObj=$("#page_"+i);if(arr[i]!=''){if(pageObj.length==0){$(".preview .svgList").append('<div class="page" id="page_'+i+'">'+arr[i]+'</div>');}else{if(arr[i]!='noRedraw'){pageObj.html(arr[i]);}}
-pageNum++;}}
-$(".page").each(function(index,element){if(index>pageNum){$(element).remove();}});if(pageNum==-1){$(".preview .svgList").append('<div class="page" id="page_0"></div>');}
-var svgWidth=$("#page_0 svg").attr('width');var svgHeight=$("#page_0 svg").attr('height');$(".svgList").css({'width':svgWidth,'height':svgHeight});$(".page").css({'width':svgWidth,'height':svgHeight});$('use[notepos]').click(function(e){window.frames["editFrame"].setPos($(this).attr('notepos'));});if(redrawSource=='editor'){window.frames["editFrame"].getGbInfo();}
-setLockCustom();});}
+if(ev.keyCode==37||ev.keyCode==38||ev.keyCode==39||ev.keyCode==40||ev.keyCode==46){return customShortcuts(ev.keyCode);}
+}
+
+function redraw(pNum,redrawSource){
+    var jpcode=window.frames["editFrame"].document.getElementById("editor_text").value;
+    var customCode=$("textarea[name=customCode]").text();
+    var pageConfig=$("textarea[name=pageConfig]").text();
+    jpcode=jpcode.replace(/\n/g,"&hh&");
+    customCode=customCode.replace(/\n/g,"&hh&");
+    $.post('http://zhipu.lezhi99.com/Zhipu-draw',// '/Zhipu-draw',
+       {code:jpcode,customCode:customCode,pageConfig:pageConfig,pageNum:pNum},
+       function(re){
+           var arr=re.split('[fenye]');
+           var arrLen=arr.length;
+           var pageNum=-1;
+           for(var i=0;i<arrLen;i++){
+               var pageObj=$("#page_"+i);
+               if(arr[i]!=''){
+                   if(pageObj.length==0){
+                       $(".preview .svgList").append('<div class="page" id="page_'+i+'">'+arr[i]+'</div>');
+                    }
+                    else{
+                        if(arr[i]!='noRedraw'){
+                           pageObj.html(arr[i]);
+                        }
+                    }
+
+                    pageNum++;
+                }
+            }
+            $(".page").each(function(index,element){
+                if(index>pageNum){
+                    $(element).remove();
+                }
+            });
+            if(pageNum==-1){
+                $(".preview .svgList").append('<div class="page" id="page_0"></div>');
+            }
+            var svgWidth=$("#page_0 svg").attr('width');
+            var svgHeight=$("#page_0 svg").attr('height');
+            $(".svgList").css({'width':svgWidth,'height':svgHeight});
+            $(".page").css({'width':svgWidth,'height':svgHeight});
+            $('use[notepos]').click(function(e){
+                window.frames["editFrame"].setPos($(this).attr('notepos'));        
+            });
+            if(redrawSource=='editor'){
+                window.frames["editFrame"].getGbInfo();
+            }
+            setLockCustom();
+        }
+    );
+}
 var winType;function autoSize(){if(winType==1){$(".preview").hide();$(".editor").show();$(".editor .line").hide();$(".editor").height($(window).height()-65);$(".editor .body").height($(".editor").height());}else if(winType==2){$(".editor").hide();$(".preview").show();$(".preview").height($(window).height()-65);}else{$(".preview").show();$(".editor .line").show();$(".editor").show();var bodyHeight=$(window).height()-65;$(".preview").height((bodyHeight/3)*2);$(".editor").height(bodyHeight/3);$(".editor .body").height($(".editor").height()-5);}
 $(".mask").width($(window).width());$(".mask").height($(window).height());$("#filename").css('left',($(window).width()-$("#filename").width())/2+80);}
 function setView(type){$(".viewBut li").removeClass('current');$(".viewBut"+type).addClass('current');winType=type;autoSize();$("#menuSetView1").html('编码');$("#menuSetView3").html('拆分');$("#menuSetView2").html('<i>Tab</i>预览');$("#menuSetView"+type).append(' ●');hideMenu();localStorage.setItem('viewType',type);}
@@ -41,7 +87,10 @@ tempStr+='D: '+$("#diaoshi2").val()+$("#diaoshi1").val()+"\n";tempStr+='P: '+$("
 tempStr+="#============================以下开始简谱主体==========================\n";tempStr+="Q: 1 2 3 4 | \n";tempStr+="C: 这是歌词 \n";$("textarea[name=customCode]").text('');initPageConfig();localStorage.setItem('customCode','');editorSetVal(tempStr);redraw(-1,'newFile');winClose();setFileName('未保存');opernFileId=0;}
 function toClose(){hideMenu();setTimeout(function(){if(confirm('您确定关闭本软件吗？\n提示：当前未保存的内容可能会丢失。')){window.opener=null;window.open('','_self');window.close();}},200);}
 function toPng(){return false;hideMenu();winTip("导出PNG图片","PNG图片生成中，请稍等...");if(window.canvg){setTimeout(function(){createPng();},300);}else{$.getScript('/Public/js/canvg/rgbcolor.js',function(){$.getScript('/Public/js/canvg/canvg.js',function(){setTimeout(function(){createPng();},300);});});}}
-var pngHtml;function createPng(){pngHtml='';$(".page").each(function(index,element){var svgHtml=$(element).html();var can=document.createElement("canvas");canvg(can,svgHtml,{renderCallback:function(){var datauri=can.toDataURL('image/png');pngHtml+='<img style="border:1px #ccc solid; width:800px; height:1132px; " src="'+datauri+'">';}});});pngHtml='<div style="text-align:center;"><div style="padding:10px 0 20px 0;">以下为PNG格式的图片，您可以在图片上按鼠标右键，然后选择“图片另存为...”将图片保存到您的电脑中。</div>'+pngHtml+'</div>';var pForm=$("#postForm")[0];pForm.action='/zhipu-toPng';pForm.method='POST';pForm.target="_blank";$("#postContent").val(pngHtml);pForm.submit();winClose();}
+var pngHtml;
+function createPng(){
+    pngHtml='';$(".page").each(function(index,element){var svgHtml=$(element).html();
+    var can=document.createElement("canvas");canvg(can,svgHtml,{renderCallback:function(){var datauri=can.toDataURL('image/png');pngHtml+='<img style="border:1px #ccc solid; width:800px; height:1132px; " src="'+datauri+'">';}});});pngHtml='<div style="text-align:center;"><div style="padding:10px 0 20px 0;">以下为PNG格式的图片，您可以在图片上按鼠标右键，然后选择“图片另存为...”将图片保存到您的电脑中。</div>'+pngHtml+'</div>';var pForm=$("#postForm")[0];pForm.action='/zhipu-toPng';pForm.method='POST';pForm.target="_blank";$("#postContent").val(pngHtml);pForm.submit();winClose();}
 function toSvg(){showWin('导出SVG格式图片','zhipu-toSvg-num-'+$(".page").length);}
 function downSvg(num){var svgHtml=$(".page").eq(num).html();var pForm=$("#postForm")[0];pForm.action='/zhipu-toSvg';pForm.method='POST';pForm.target="postwin";$("#postContent").val(svgHtml);pForm.submit();}
 function updateUserInfo(){$.post('/Zhipu-userInfo',null,function(re){winClose();$(".userInfo").html(re);});}
