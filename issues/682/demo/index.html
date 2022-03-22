@@ -93,15 +93,18 @@ function _blChordToolBar (_o,_d){
  
   	r.e = blo0.blBtn(o,o.id + "e","e",blGrey[3]);
   	r.e.onclick = function(){
-      if(!de){de=blo0.blDiv(o,o.id+ "_div_e","e:",blGrey[4]);
-      de.o = new _blSongEditClass(d,ta);
-      blo0.blShowObj2Div(de,de.o);}
+      if(!de){
+          de=blo0.blDiv(o,o.id+ "_div_e","e:",blGrey[4]);
+          de.o = new _blSongEditClass(d,ta);
+          blo0.blShowObj2Div(de,de.o);
+          if(de.o.blhInit) de.o.blhInit();
+      }
       _on_off_div(this,de);
   	}
 	return r;
 }
 function _blUIClass (v){
-	v += ".222";
+	v += ".224";
   var blDraw = new blDrawClass;
   this.blRender = function(){alert(v);};
 
