@@ -6,6 +6,12 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch ThreadClassDemo",
+            "request": "launch",
+            "mainClass": "ThreadClassDemo"
+        },
+        {
+            "type": "java",
             "name": "Launch TestThread",
             "request": "launch",
             "mainClass": "TestThread"
