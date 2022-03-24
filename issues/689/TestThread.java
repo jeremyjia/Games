@@ -21,7 +21,10 @@ class ThreadDemo extends Thread {
    }
    
    public void run() {
-      PD.printCount();
+      synchronized(PD) 
+      {
+         PD.printCount();
+      }
       System.out.println("Thread " +  threadName + " exiting.");
    }
 
