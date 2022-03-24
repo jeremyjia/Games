@@ -1,0 +1,3083 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<script type="text/javascript">
+//文件服务器地址
+var file_server_url = "";
+//五线谱的宽度
+var pagewidth = 20;
+//五线谱图片大小
+var scale = 1.4;
+//最后一次停的位置
+var laststop = -1;
+//是否显示谱音同步动画
+var animation = true;
+var isCtrl = false;
+var isShift = false;
+var broserOk = false;
+var errorcheck = false;
+//是否有接midi设备
+var hasmidi = false;
+if (window.AudioContext || window.webkitAudioContext || navigator.requestMIDIAccess || window.msAudioContext || window.mozAudioContext) {
+	broserOk = true;
+}
+
+//移调数(C大调转到D大调为2)
+var trans = 0;
+
+var nodedata = "";
+
+var riseOrDown = "rise";
+
+//谱子宽度（默认为手机的500，如果是电脑，改为800）
+var staffwidth = 500;
+var mobilPageWidth = 501;
+var computerPageWidth = 1500;
+//缩放比例默认为1，如果是电脑，1.5
+var staffscale = 1;
+//
+var staffData;
+
+var abcPlayWay = "1"; // 播放abc的方式 0： 钢琴播放 1：系统播放
+
+//是否在点击谱子空白处时显示光标
+var showNotePosition = true;
+
+var notes_pattern = /(\[[\^\_\=A-Ya-y\/1-9,']*\])|(\^){0,1}(\_){0,1}(\=){0,1}[^\[\s\]]{1}[\,\'\/|1-9]*/g;
+window.onerror = function(errorMessage, scriptURI, lineNumber,columnNumber,errorObj) { 
+	  // TODO 
+	  console.log("全局捕获了")
+	}
+</script>	
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <!-- 让部分国产浏览器默认采用高速模式渲染页面，兼容模式（即 IE 内核）和高速模式（即 webkit 内核） -->
+    <meta name="renderer" content="webkit"> 
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" >
+	<meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+	<link rel="stylesheet" href="v2/css/abc.css?v=20211008">
+	<link rel="stylesheet" href="v2/css/abc_ug.css?v=20211008">
+	
+	<link rel="stylesheet" type="text/css" href="nf/css/piano.css?v=20211008">
+	<link rel="stylesheet" type="text/css" href="compont/sweetalert/sweetalert.css?v=20211008">
+	<link href="js/edit-1.css" rel="stylesheet" type="text/css" />
+	
+	<script src="js/jquery.min.js"></script>
+	<script src="xml2abc/xml2abc.js"></script>
+	<script src="js/drag.js?v=20211008"></script>
+	<script src="js/main.js?v=20211008"></script>
+	<script src="js/xml2abcutil.js?v=20211008"></script>
+	<style type="text/css">
+		html, body{height: 100%;}
+		
+		.modal-dialog {
+		    max-width: 100%; 
+		}
+		
+		.modal-dialog{
+			margin:0 auto !important;
+		}
+		
+		.center-modal .modal-content {
+		   left: 15%;
+		}
+		
+		.sweet-alert{
+			max-height: 80%;
+			overflow: auto;
+		}
+		.body-left-content{
+			top: 0;
+		}
+		.drag-note-img{
+			position: fixed;
+			transform: translate(-100%, -100%);
+			z-index: 100;
+		}
+		.editor-div{
+		border-style:solid; 
+		border-width:1px; 
+		border-color:#000;
+		padding-left: 5px;
+		padding-right:5px;
+		}
+		.pianoKeyboard .keyRow.white .key{
+			background: url('images/keyboard/keyboard_white.png') !important;
+			background-size: 100% 100% !important;
+		}
+		#scoreEditorPianoKeyboard{
+			background-color: #000 !important;
+		}
+		.pianoKeyboard .keyRow.white .key.selected{
+			background: url('images/keyboard/keyboard_white_press.png') !important;
+		}
+		.pianoKeyboard .keyRow.black .key{
+			background: url('images/keyboard/keyboard_black.png') !important;
+			background-size: 100% 100% !important;
+			border: none;
+			height: 100px;
+		}
+		.pianoKeyboard .keyRow.black .key:hover{
+			height: 100px;
+			border: none !important;
+			box-shadow: none;
+		}
+		.pianoKeyboard .keyRow.black .key.chord, .pianoKeyboard .keyRow.black .key.selected{
+			width: 45px;
+			height: 100px;
+			background: url('images/keyboard/keyboard_black_press.png') !important;
+			background-size: 100% 100% !important;
+			box-shadow: none;
+		}
+		.pgt{
+			margin-left: 2px;
+			margin-right: -6px;
+		}
+    ul.ztree {width:250px;overflow-y:auto;overflow-x:auto;margin-top:5px;margin-left: 2px;}
+	</style>
+	<title>创编制谱系统</title>
+</head>
+<body>
+<input type="text" id="tmpText" style="position: absolute; display: none;z-index: 2;">
+<input type="text" id="tmpComposerText" style="position: absolute; display: none;z-index: 2;">
+<iframe id="target_iframe" name="target_iframe" style="display:none;width: 0px;height: 0px;"></iframe>
+<!-- <div id="content" :class="{'content-style-2': headerInBottom}" :style="!headerInBottom && keyboardShow && 'padding-bottom: 200px;'" v-cloak> -->
+<div id="content" v-cloak>
+
+<!-- 导出pdf -->
+<div class="modal fade" id="PDF_div" tabindex="-1" role="dialog" aria-labelledby="PDF_div" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="width:95%;height:800px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="PDF_divLabel">导出选项</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      	<div>
+      	上边距：<input id="pdftopmargin" style="width:60px;" value="2.54" onblur="setMargin()">cm 下边距：<input id="pdfbotmargin" style="width:60px;" value="2.54" onblur="setMargin()">cm 
+      	<div style="position: absolute;left:350px;top:5px;"><iframe id="pdfPreview" src="pdf_preview.html?time=20111110" style="width:1200px;height:600px;"></iframe></div><br>
+      	左边距：<input  id="pdfleftmargin" style="width:60px;margin-top: 10px;" value="3.18" onblur="setMargin()">cm 右边距：<input id="pdfrightmargin" style="width:60px;" value="3.18" onblur="setMargin()">cm<br>
+      	页&nbsp;&nbsp;&nbsp;&nbsp;眉：<input id="pdfheader" style="width: 208px;margin-top: 10px;" onblur="addPdfHeadFoot(this.value,'')"><br >
+      	页&nbsp;&nbsp;&nbsp;&nbsp;脚：<input id="pdffooter" style="width: 208px;margin-top: 10px;" onblur="addPdfHeadFoot('',this.value)"><br>
+      	行间距：<input type="number" step="1" min="1" max="200" style="width: 208px;margin-top: 10px;" value="46" onchange="changePdfStaffSep(this.value)"><br>
+      	清析度：<select id="pdfrate" style="margin-top: 10px;" onchange="changePdfRate(this.value)">
+      		<option value="2.0">标清</option>
+      		<option value="2.5">高清</option>
+      		<option value="3.0">超清</option>
+      	</select>
+      	<br>
+      	缩放比例：<input id="pdfScale" type="number" step="0.1" min="1.0" max="3.0" value="1.4" style="margin-top: 10px;" onchange="changePdfScale(this.value)">
+      	</div>
+      <!-- 这里是内容 start -->
+      	<div id="voicelist"  style="float: left;width: 200px;margin-left: 20px;">
+      	<div v-for="(item, index) in voicePart.partList" :id="'partLi' +index" @click.stop="voicePart.partClick(item)"
+							:class="[item.selected ? 'active' : '', 'select-item click abc-change']" style="cursor: pointer;">
+			<input type="checkbox" name="voiceitem" :value="item.index" @click.stop="voicePart.partClick(item);" :checked="item.selected">{{item.name}}
+		</div>
+      	</div>
+      </div>
+      <!-- 这里是内容 end -->
+	  	  <div class="modal-footer">
+	        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="exportAbc2Pdf('source')">确定</button>
+	      </div>
+    </div>
+  </div>
+</div>
+<!-- 导出图片预览 -->
+<div class="modal fade" id="IMG_div" tabindex="-1" role="dialog" aria-labelledby="IMG_div" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="width:95%;height:800px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="IMG_divLabel">导出选项</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      	<div>
+      	上边距：<input id="imgtopmargin" style="width:60px;" value="2.54" onblur="setImgMargin()">cm 下边距：<input id="imgbotmargin" style="width:60px;" value="2.54" onblur="setImgMargin()">cm 
+      	<div style="position: absolute;left:350px;top:5px;"><iframe id="imgPreviewIframe" src="img_preview.html" style="width:1200px;height:600px;"></iframe></div><br>
+      	左边距：<input  id="imgleftmargin" style="width:60px;margin-top: 10px;" value="3.18" onblur="setImgMargin()">cm 右边距：<input id="imgrightmargin" style="width:60px;" value="3.18" onblur="setImgMargin()">cm<br>
+      	清析度：<select id="imgrate" style="margin-top: 10px;" onchange="changeImgRate(this.value)">
+      		<option value="2.0">标清</option>
+      		<option value="2.5">高清</option>
+      		<option value="3.0">超清</option>
+      	</select>
+      	<br>
+      	缩放比例：<input id="imgScale" type="number" step="0.1" min="1.0" max="3.0" value="1.4" style="margin-top: 10px;" onchange="changeImgScale(this.value)">
+      	</div>
+      <!-- 这里是内容 start -->
+      	<div id="voicelist"  style="float: left;width: 200px;margin-left: 20px;">
+      	<div v-for="(item, index) in voicePart.partList" :id="'partLi' +index" @click.stop="voicePart.partClick(item)"
+							:class="[item.selected ? 'active' : '', 'select-item click abc-change']" style="cursor: pointer;">
+			<input type="checkbox" name="voiceitem" :value="item.index" @click.stop="voicePart.partClick(item);" :checked="item.selected">{{item.name}}
+		</div>
+      	</div>
+      </div>
+      <!-- 这里是内容 end -->
+	  	  <div class="modal-footer">
+	        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="exportAbc2Img()">确定</button>
+	      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- 保存历史记录 -->
+<div class="modal fade" id="SERVER_HIS_div" tabindex="-1" role="dialog" aria-labelledby="SERVER_HIS_div" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="width:400px;height:250px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="SERVER_HIS_divLabel">存到历史记录</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      	<div>
+      	备注：<input id="hisbackup" style="width:360px;" value="">
+      	</div>
+	  </div>
+      <!-- 这里是内容 end -->
+	  	  <div class="modal-footer">
+	        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="saveServerHistory()">确定</button>
+	      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 分声部导出 -->
+<div class="modal fade" id="VOICEPART_div" tabindex="-1" role="dialog" aria-labelledby="VOICEPART_div" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="width:400px;height:350px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="VOICEPART_divLabel">分声部导出</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      	
+      <!-- 这里是内容 start -->
+      	<div id="voicelist"  style="float: left;width: 200px;margin-left: 20px;">
+      	<div v-for="(item, index) in voicePart.partList" :id="'partLi' +index" @click.stop="voicePart.partClick(item)"
+							:class="[item.selected ? 'active' : '', 'select-item click abc-change']" style="cursor: pointer;">
+			<input type="checkbox" name="voiceitem" :value="item.index" @click.stop="voicePart.partClick(item);" :checked="item.selected">{{item.name}}
+		</div>
+      	</div>
+		<div style="float:left;">
+			<input type="checkbox" name="standstaff" checked="checked"><span style="cursor: pointer;" onclick="$('input[name=standstaff]').prop('checked',!$('input[name=standstaff]').prop('checked'))">五线谱（图片）</span><br>
+			<input type="checkbox" name="simpletaff" checked="checked"><span style="cursor: pointer;" onclick="$('input[name=simpletaff]').prop('checked',!$('input[name=simpletaff]').prop('checked'))">简谱（图片）</span><br>
+			<input type="checkbox" name="mixtaff" checked="checked"><span style="cursor: pointer;" onclick="$('input[name=mixtaff]').prop('checked',!$('input[name=mixtaff]').prop('checked'))">简线混排（图片）</span><br>
+			<input v-if="!isExe" type="checkbox" name="mp3" checked="checked"><span style="cursor: pointer;" onclick="$('input[name=mp3]').prop('checked',!$('input[name=mp3]').prop('checked'))">mp3</span><br>
+			<input v-if="!isExe" type="checkbox" name="midi" checked="checked"><span style="cursor: pointer;" onclick="$('input[name=midi]').prop('checked',!$('input[name=midi]').prop('checked'))">midi</span><br>
+		</div>
+      </div>
+      <!-- 这里是内容 end -->
+	  	  <div class="modal-footer">
+	        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="exportVoice()">确定</button>
+	      </div>
+    </div>
+  </div>
+</div>
+<!-- 一键导出所有声部 -->
+<div id="exportAllVoiceDiv" style="display: none;">
+	<form action="" name="exportAllVoiceForm" id="exportAllVoiceForm">
+	</form>
+</div>
+
+<!-- 音量设置 -->
+<div class="modal fade" id="VOL_SETTING_div" tabindex="-1" role="dialog" aria-labelledby="VOL_SETTING_div" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="width:400px;height:350px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="VOL_SETTING_divLabel">音量设置</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      	
+      <!-- 这里是内容 start -->
+      	<div id="voicevollist"  style="float: left;width: 300px;margin-left: 20px;">
+      	<div v-for="(item, index) in voicePart.partList" v-if="index<voicePart.partList.length-1" :id="'voicepart' +index" 
+							:class="[item.selected ? 'active' : '', 'select-item click abc-change']" >
+			{{item.name}}：&nbsp;
+			<input type="range" name="voicevol" style="width:180px;float:right;" v-bind:index="index" min="0" max="10" value="10" onchange="setVoiceVol(this,this.value / 10)" />
+			<span name="voicevolspan" v-bind:index="index" style="float:right;margin-right: 15px;">1</span>
+		</div>
+      	</div>
+      </div>
+      <!-- 这里是内容 end -->
+	  	  <div class="modal-footer">
+	        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="">确定</button>
+	      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 分声部do位置设置 -->
+<div class="modal fade" id="DO_CHN_div" tabindex="-1" role="dialog" aria-labelledby="DO_CHN_div" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="width:400px;height:350px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="DO_CHN_divLabel">do位置设置</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      	
+      <!-- 这里是内容 start -->
+      	<div style="float: left;width: 450px;margin-left: 20px;">
+      	<select id="voice_v" class="form-control" style="width:120px;float: left;">
+      		<option v-for="(item, index) in voicePart.partList" v-if="index<voicePart.partList.length-1" v-bind:value="index">{{item.name}}</option>
+      	</select>
+      	<br><br>
+      	<select id="voice_key" class="form-control" style="width:80px;float: left;">
+			<option value="C">C</option>
+			<option value="G">G</option>
+			<option value="D">D</option>
+			<option value="A">A</option>
+			<option value="E">E</option>
+			<option value="B">B</option>
+			<option value="F#">#F</option>
+			<option value="C#">#C</option>
+			<option value="F">F</option>
+			<option value="Bb">bB</option>
+			<option value="Eb">bE</option>
+			<option value="Ab">bA</option>
+			<option value="Db">bD</option>
+			<option value="Gb">bG</option>
+			<option value="Cb">bC</option>
+		</select>
+      	<div style="float: left;margin-top: 8px;margin-left: 10px;">
+	      	简谱do所在区域:
+			<input type="radio" style="width:20px;margin-right：1px;" name="voiceDoPos" value="lower"  onclick="changeVoiceDo(this.value)">小字组
+			<input style="width:20px;margin-right：1px;" type="radio" name="voiceDoPos" value="higher" onclick="changeVoiceDo(this.value)">小字一组
+      	</div>
+      	</div>
+      </div>
+      <!-- 这里是内容 end -->
+	  	  <div class="modal-footer">
+	        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="">确定</button>
+	      </div>
+    </div>
+  </div>
+</div>
+	<!-- ------------------------------顶部导航菜单------------------------------ -->
+	<div class="music-header">
+		<div class="music-sys-name">创编制谱系统</div>
+		<ul>
+			<!-- 顶级菜单  -->
+			<li v-for="( menu, m) in menuList" :class="[ menuActive == menu.menuCode ? 'active' : '']" :data-code="menu.menuCode" @click.stop="navClick( menu.menuCode)">{{ menu.menuName }}
+				<div class="menu-box" style="z-index:9999" v-if="menu.subMenuList.length">
+					<!-- 一级菜单  -->
+					<template v-if="menu.menuCode == 'view'"><!-- 复选和点击事件是同一个，无需加入到常用栏中 -->
+						<div :class="['menu-li', subMenu.classCss, subMenu.checkbox && 'm-checkbox', subMenu.isChecked && 'checked']" :id="subMenu.id"
+						v-for="(subMenu, n) in menu.subMenuList" @click.stop="navItemClick( m, n)"><i></i><span>{{ subMenu.name }}</span>
+						</div>
+					</template>
+					<template v-else><!-- 复选和点击事件存在不同的用处-->
+						<div :class="['menu-li', subMenu.classCss, subMenu.checkbox && 'm-checkbox', subMenu.isChecked && 'checked', (subMenu.subMenuList && subMenu.subMenuList.length) && 'expand']" :id="subMenu.id"
+						v-for="(subMenu, n) in menu.subMenuList"><i @click.stop="navItemClick( m, n, menu.code)"></i><span>{{ subMenu.name }}</span>
+						<!-- 二级菜单  -->
+							<div class="menu-sub-box scroll" v-if="subMenu.subMenuList && subMenu.subMenuList.length">
+								<template v-if="subMenu.code == 'pytb'"><!-- 谱音同步  -->
+									<div class="menu-li" v-for="(item, i) in subMenu.subMenuList" :class="['pytb-li', pytbOption == i ? 'active': '']" @click.stop="pytbChoose(i)"><img src="v2/images/ic_tick.png"/>{{ item.name }}</div>
+								</template>
+								<template v-else>
+									<div class="menu-li menu-li-item" :class="item.classCss" v-for="(item, i) in subMenu.subMenuList" :id="item.id" :value="item.value" :level="item.level" :chord="item.chord" :position="item.position" 
+									:type="item.type" :dur="item.dur"><img :src="item.url"/>{{ item.name }}</div>
+								</template>
+							</div>
+						</div>
+					</template>
+				</div>
+			</li>
+		</ul>
+		<!-- 连接状态 -->
+		<div class="connect-status">
+			<span id="midi_label">未连接midi设备</span>
+		</div>
+	</div>
+	
+	<!-- 第一行工具栏 -->
+	<div class="tools-box">
+	
+		<template v-for="(func, i) in usuallyFuncList" v-if="func.menuCode != 'view'">
+			<template v-for="(subFunc, j) in func.subMenuList" >
+				<div :class="['tools-li',  subFunc.classCss]" :title="subFunc.name" :id="subFunc.id">
+					<img :src="subFunc.url" />
+				</div>
+			</template>
+			<div class="sep" v-if="func.subMenuList && func.subMenuList.length"></div>
+		</template>
+		<!-- 谱例属性 -->
+		<!-- <div id="plsx" title="谱例属性" style="display: none;" class="tools-li plsx"  @click="plsxClick">
+			<img src="v2/images/attr.png">
+		</div> -->
+		<!-- 语法编辑框 -->
+		<div id="editor" title="语法编辑框(CTRL+E)"  @click="editorClick" class="tools-li">
+			<img src="v2/images/editor.png">
+		</div>
+		<div id="metronomesetting" title="节拍器"  @click="switchMetro()" class="tools-li">
+			<img src="images/jpq.png">
+		</div>
+		<div class="sep"></div>
+		<div title="五线谱" onclick="changeStaffType(this,0)"  class="tools-li compute-mode">
+			<img src="v2/images/icon_wxp.png">
+		</div>
+		<div title="简谱" onclick="changeStaffType(this,2);restoreEditor();" class="tools-li compute-mode">
+			<img src="v2/images/icon_jp.png">
+		</div>
+		<div title="简线混排" onclick="changeStaffType(this,1)" class="tools-li compute-mode">
+			<img src="v2/images/icon_jx.png">
+		</div>
+		<div class="sep"></div>
+		<div :title="abcSel.isOpen ? '完成绘制' : '绘制曲式'" @click="startDrawMF" class="tools-li compute-mode">
+			<img src="images/draw-mf.png">
+		</div>
+		<div :title="showMusicForm ? '隐藏曲式' : '展示曲式'" @click="showMF"  class="tools-li compute-mode">
+			<img src="images/toggle-mf.png">
+		</div>
+		<div @click="isShowHelp =!isShowHelp" title="曲式分析使用说明"  class="tools-li compute-mode">
+			<img src="images/icon_wh.png">
+		</div>
+		
+		<div class="sep"></div>
+		<div title="放大"  onclick="changeScale(0.2)" class="tools-li compute-mode">
+			<img src="v2/images/fd.png">
+		</div>
+		<div title="缩小" onclick="changeScale(-0.2)" class="tools-li compute-mode">
+			<img src="v2/images/sx.png">
+		</div>
+		<!-- <div class="tools-li page-view">
+			<select class="form-control">
+				<option>页面视图</option>
+			</select>
+		</div> -->
+		<div class="sep"></div>
+		<div title="显示小节序号" class="tools-li compute-mode">
+			<img src="v2/images/nodeseq.png" style="width:30px;height:30px;" class="shownodeseq cmenu" draggable="false">
+		</div>
+		<div title="显示每行首个小节序号" class="tools-li compute-mode">
+			<img src="v2/images/firstnodeseq.png" style="width:30px;height:30px;" value="" class="showfirstnodeseq cmenu" draggable="false">
+		</div>
+		<div title="每5小节显示" class="tools-li compute-mode">
+			<img src="v2/images/nodeseq5.png" style="width:30px;height:30px;" value="" class="shownodeseq5 cmenu" draggable="false">
+		</div>
+		<div title="简谱do位置" class="tools-li compute-mode">
+			<img src="images/do_chn.png" style="width:30px;height:30px;" id="do_chn" value="DO" data-toggle="modal" data-target="#DO_CHN_div" class="cmenu" draggable="false">
+		</div>
+		<!-- <div title="声部下移" class="tools-li compute-mode">
+			<img src="images/direct/staffdown.png" style="width:30px;height:30px;" value="[I:staff +1]" position="before" class="cmenu" draggable="false">
+		</div>
+		<div title="声部上移" class="tools-li compute-mode">
+			<img src="images/direct/staffup.png" style="width:30px;height:30px;" value="[I:staff -1]" position="before" class="cmenu" draggable="false">
+		</div> -->
+		<div title="小节背景色" class="tools-li compute-mode" style="display:none;">
+			<img src="images/beijingse2.png" style="width:30px;height:30px;" id="nodecolorli" style="width:30px;height:30px;" value="&quot;-mb-&quot;" position="before" type="nodebg" class="operator cmenu nodecolorli" draggable="false">
+		</div>
+		<!-- <div title="音符背景色" class="tools-li compute-mode">
+			<img src="images/beijingse.png" style="width:30px;height:30px;" id="notecolorli" value="&quot;-nb-&quot;" position="before" type="notebg" class="operator cmenu notecolorli" draggable="false">
+		</div> -->
+		<div class="sep"></div>
+		<div title="升一个音" class="tools-li compute-mode">
+			<img src="v2/images/shengjiang1.png" style="width:30px;height:30px;" id="up" value="up" class="up cmenu" draggable="false">
+		</div>
+		<div title="降一个音" class="tools-li compute-mode">
+			<img src="v2/images/shengjiang2.png" style="width:30px;height:30px;" id="down" value="down" class="down cmenu" draggable="false">
+		</div>
+		<!-- <div title="上升一个八度" class="tools-li compute-mode">
+			<img src="v2/images/up8.png" id="up8" style="width:30px;height:30px;" value="up8" class="up8 cmenu" draggable="false">
+		</div>
+		<div title="下降一个八度" class="tools-li compute-mode">
+			<img src="v2/images/down8.png" style="width:30px;height:30px;" id="down8" value="down8" class="down8 cmenu" draggable="false">
+		</div> -->
+		<div class="sep"></div>
+		<div id="instrument" class="menu-list" title="更换乐器" @click.stop="menuClick('instrument')" style="height:30px;">
+			<img src="v2/images/instrument.png"/>
+			<!-- <span>乐器</span> -->
+			<div class="menu-pulldown-box" :class="{'menu-pulldown-box-2-style-2': headerInBottom}">
+				<input placeholder="请输入搜索关键字" v-model="instrumentKey" />
+				<ul>
+					<li v-show="!instrumentKey || instrumentOption == model.code || model.name.indexOf(instrumentKey) > -1" v-for="(model, index) in instrumentList" @click.stop="instrumentChoose(model.code)" :class="instrumentOption == model.code && 'menu-choose'"><img src="v2/images/ic_tick.png" /><span>{{model.name}}</span></li>
+				</ul>
+			</div>
+		</div>
+		<div class="sep"></div>
+		<div title="显示唱名" class="tools-li compute-mode">
+			<img src="images/doremi.png" style="width:30px;height:30px;" value="showcm" class="showcm cmenu" draggable="false">
+		</div>
+		<div title="显示竖笛谱" class="tools-li compute-mode">
+			<img src="images/sd.png" style="width:30px;height:30px;" value="showsd" class="showsd cmenu" draggable="false">
+		</div>
+		<div title="小节等间距" class="tools-li compute-mode">
+			<img src="images/equalbars.png" style="width:30px;height:30px;" value="equalbars" class="equalbars cmenu" draggable="false">
+		</div>
+		<div title="复制歌词" class="tools-li compute-mode">
+			<img src="images/cplyric.png" style="width:30px;height:30px;" class="cplyric cmenu" draggable="false">
+		</div>
+		<div class="sep"></div>
+		<div v-if="isExe" onclick="typeof (parent.closePop) == 'function' && parent != window  ? parent.closePop() : history.back()" class="back-btn" >
+			<img src="images/back_arrow.png" />
+			<span style="white-space: nowrap;">返回</span>
+		</div>
+		<div v-show="!isJxbz" class="play-btn" onclick="musicFormEdit()">
+			<div class="play-img qs">
+				<img src="v2/images/qs.png"/>
+			</div>
+			<span style="white-space: nowrap;">曲式</span>
+		</div>
+		<div class="play-btn" onclick="myplay()">
+			<div class="play-img">
+				<img src="v2/images/play.png" id="playimg"/>
+			</div>
+			<span id="playspan" style="white-space: nowrap;">播放</span>
+		</div>
+		<div class="play-btn" onclick="mystop()">
+			<div class="play-img">
+				<img style="padding: 2.5px" src="v2/images/stop.png" />
+			</div>
+			<span id="stopspan">停止</span>
+		</div>
+		<div v-show="!isJxbz" class="play-btn save-server save_to_server" style="border:1px solid #FF9000" id="save_to_server">
+			<div class="play-img">
+				<img style="padding: 2.5px" src="v2/images/save_to_cloud.png" />
+			</div>
+			<span id="save_to_server_span" style="color:#FF9000">存到谱例库</span>
+		</div>
+		<div v-show="!isJxbz" class="play-btn save-server save_to_history" style="border:1px solid #FF9000" id="save_to_history">
+			<div class="play-img">
+				<img style="padding: 2.5px" src="v2/images/save_to_cloud.png" />
+			</div>
+			<span id="save_to_history_span" style="color:#FF9000">存到历史记录</span>
+		</div>
+		<div v-show="isJxbz" class="play-btn save-server " style="border:1px solid #FF9000">
+			<div class="play-img">
+				<img style="padding: 2.5px" src="v2/images/save_to_cloud.png" />
+			</div>
+			<span style="color:#FF9000" @click="saveJxbzAbc">保存</span>
+		</div>
+		<div  class="play-btn save-server gen_image" style="border:1px solid #FF9000">
+			<div class="play-img">
+				<img style="padding: 2.5px" src="v2/images/save_to_cloud.png" />
+			</div>
+			<span style="color:#FF9000" @click="startsyn">生成图片</span>
+		</div>
+	</div>
+	<!-- 第二行工具栏 -->
+	<div class="tools-box">
+		<!-- 编辑 -->
+		<div id="graphEditorMenuInsert" title="插入模式" class="tools-li" onclick="switchPrachEditor(this);">
+			<img src="images/bianji.png" style="width:30px;height:30px;"/>
+		</div>
+		<div id="graphEditorMenuUpdate" title="修改模式" class="tools-li menu-pressed" onclick="switchPrachEditor(this);">
+			<img src="images/editor.png" style="width:30px;height:30px;"/>
+		</div>
+		<div id="selectedStatus" title="选择（CTRL+Q）" class="tools-li" onclick="enabledEditor(this);">
+			<img src="images/selected.png" style="width:30px;height:30px;"/>
+		</div>
+		<div id="insertWord" title="文字" class="tools-li" onclick="enabledInsertWord(this);">
+			<span style="font-size: 18px;padding-top: 3px;"><strong>A</strong></span>
+		</div>
+		<div class="sep"></div>
+		<img  class="tools-li" v-for="(tImg, idx) in toolsLengthList.imgList" :class="tImg.class" :key="'ti' + idx" :src="tImg.url" :title="tImg.title" @click="toolItemClick(toolsLengthList.code, tImg.id, tImg.value)" 
+		:id="tImg.id" :value="tImg.value" :level="tImg.level" :chord="tImg.chord" :position="tImg.position" 
+		:type="tImg.type" :dur="tImg.dur" :data-toggle="tImg.datatoggle" :data-target="tImg.datatarget"/>
+		<div class="tools-li"><img id="length_swtich" title="切换" src="v2/images/switch.png" style="width:18px;height:18px" class="switch"></div>
+		<div class="sep"></div>
+		<div title="休止符" target>
+			<img  src="images/rest.png" style="width:30px;height:30px;" class="reststatus tools-li"/>
+		</div>
+		<div title="符点" target>
+			<img src="images/dot3.png" style="width:30px;height:30px;" value="3/" class="dotstatus tools-li"/>
+		</div>
+		<div title="符点" target>
+			<img src="images/dot4.png" style="width:30px;height:30px;" value="7//" class="dotstatus tools-li"/>
+		</div>
+		<div class="sep"></div>
+		<div title="升" target>
+			<img src="v2/images/yingao1.png" style="width:30px;height:30px;" value="^" class="pitchbtn tools-li"/>
+		</div>
+		<div title="重升" target>
+			<img src="v2/images/cs.png" style="width:30px;height:30px;" value="^^" class="pitchbtn tools-li"/>
+		</div>
+		<div title="降" target>
+			<img src="v2/images/yingao2.png" style="width:30px;height:30px;" value="_" class="pitchbtn tools-li"/>
+		</div>
+		<div title="重降" target>
+			<img src="v2/images/cj.png" style="width:30px;height:30px;" value="__" class="pitchbtn tools-li"/>
+		</div>
+		<div title="还原" target>
+			<img src="v2/images/yingao3.png" style="width:30px;height:30px;" value="=" class="pitchbtn tools-li"/>
+		</div>
+		<div class="sep"></div>
+		<div class="tools-li page-view choir-sel" style="display: none;">
+			<select id="chordKeyType" class="form-control">
+				<option value="">自然大调</option>
+				<option value="hsdd">和声大调</option>
+				<option value="zrxd">自然小调</option>
+				<option value="hsxd">和声小调</option>
+			</select>
+		</div>
+		<div class="tools-li page-view choir-sel" style="display: none;">
+			<select id="chordCategory" class="form-control">
+				<option value="3" class="category">三和弦</option>
+				<option value="7" class="category">七和弦</option>
+				<option value="f3" class="category">副属三和弦</option>
+			</select>
+		</div>
+		<div class="tools-li page-view choir-sel" style="display: none;">
+			<select id="chordLevel" class="form-control" style="width:70px;">
+				<option type="Ⅰ" level="1" class="level">Ⅰ</option>
+				<option type="Ⅱ" level="2" class="level">Ⅱ</option>
+				<option type="Ⅲ" level="3" class="level">Ⅲ</option>
+				<option type="Ⅳ" level="4" class="level">Ⅳ</option>
+				<option type="Ⅴ" level="5" class="level">Ⅴ</option>
+				<option type="Ⅵ" level="6" class="level">Ⅵ</option>
+				<option type="Ⅶ" level="7" class="level">Ⅶ</option>
+			</select>
+		</div>
+		<div  class="tools-li page-view choir-sel" style="display: none;">
+			<select id="markType" class="form-control">
+				<option value="">罗马数字</option>
+				<option value="shuzi">数字和弦</option>
+				<option value="zimu">字母标记</option>
+			</select>
+		</div>
+		<div id="chordType" class="marktype" style="margin-left: 5px;font-size:0;display: none;">
+			<span class="chord tools-li" value="yuanwei" type3="" type7="">原位<span class="hxspan hx3">Ⅰ</span></span>
+			<span class="chord tools-li" value="zhuangwei1" type3="6" type7="56">第一转位<span class="hxspan hx3-6">Ⅰ</span></span>
+			<span class="chord tools-li" value="zhuangwei2" type3="46" type7="34">第二转位<span class="hxspan hx3-46">Ⅰ</span></span>
+			<span class="chord tools-li" value="zhuangwei3" type3="" type7="2" style="display: none;">第三转位<span class="hxspan hx7-2">Ⅴ</span></span>
+		</div>
+		<!-- 数字和弦 -->
+		<div id="chordType_shuzi" class="marktype" style="margin-left: 5px;font-size:0;display: none;">
+			<span class="chord_shuzi tools-li" value="yuanwei" type3="" type7="7">原位<span class="hxspan_shuzi_yuanwei">1</span></span>
+			<span class="chord_shuzi tools-li" value="zhuangwei1" type3="6" type7="56">第一转位<span class="hxspan_shuzi_zhuangwei1" >1/3</span></span>
+			<span class="chord_shuzi tools-li" value="zhuangwei2" type3="46" type7="34">第二转位<span class="hxspan_shuzi_zhuangwei2">1/5</span></span>
+			<span class="chord_shuzi tools-li" value="zhuangwei3" type3="" type7="2" style="display: none;">第三转位<span class="hxspan_shuzi_zhuangwei3">Ⅴ</span></span>
+		</div>
+		<!-- 字母和弦 -->
+		<div id="chordType_zimu" class="marktype" style="margin-left: 5px;font-size:0;display: none;">
+			<span class="chord_zimu tools-li" value="yuanwei" type3="" type7="">原位<span class="hxspan_zimu hx3">C</span></span>
+			<span class="chord_zimu tools-li" value="zhuangwei1" type3="6" type7="56">第一转位<span class="hxspan_zimu hx3-6">C</span></span>
+			<span class="chord_zimu tools-li" value="zhuangwei2" type3="46" type7="34">第二转位<span class="hxspan_zimu hx3-46">C</span></span>
+			<span class="chord_zimu tools-li" value="zhuangwei3" type3="" type7="2" style="display: none;">第三转位<span class="hxspan_zimu hx7-2">Ⅴ</span></span>
+		</div>
+		<!-- 副属三和弦 -->
+		<div id="chordType_f3" class="marktype" style="margin-left: 5px;font-size:0;display: none;">
+			<span class="chord_f3 luoma tools-li" value="yuanwei" type3="" type7="">原位Ⅴ/<span class="hxspan_f3 hx3">Ⅰ</span></span>
+			<span class="chord_f3 shuzi tools-li" value="yuanwei" type3="" type7="" style="display: none;"><span class="hxspan_f3_shuzi hx3"></span></span>
+			<span class="chord_f3 zimu tools-li" value="yuanwei" type3="" type7="" style="display: none;"><span class="hxspan_f3_zimu hx3"></span></span>
+			
+		</div>
+		<div title="播放唱名" id="playNoteChangMing" onclick="switchPlayNoteChangMing()"class="tools-li">
+			<img src="images/changming.png" style="width: 30px; height: 30px;">
+		</div>
+		<div class="sep"></div>
+		<div class="play_option">
+		<label>播放速度：</label>
+		<input type="number" id="changePlaySpeedBtn" onchange="changePlaySpeed(this.value)" step="0.1" min="0.1" max="10" value="1" class="form-control" style="width: 80px; height:30px; text-align: center;display: inline;">
+		</div>
+		<div></div>
+		<div class="sep"></div>
+		<div id="editorvDiv" style="margin-left: 5px;font-size:0;">
+			<span class="editorv tools-li" value="1" >1</span>
+			<span class="editorv tools-li" value="2" >2</span>
+			<span class="editorv tools-li" value="3" >3</span>
+			<span class="editorv tools-li" value="4" >4</span>
+		</div>
+		<div class="sep"></div>
+		<div></div>
+		<div class="play_option" style="display: none;">
+			<label>播放选项：</label>
+			<!-- 临时变换调 -->
+			<select id="playingKey" style="width:80px;display: inline;line-height: 30px;" onchange="changePlayingKey(this.value)">
+				<option value="">移调</option>
+				<option value="C">C</option>
+				<option value="G">G</option>
+				<option value="D">D</option>
+				<option value="A">A</option>
+				<option value="E">E</option>
+				<option value="B">B</option>
+				<option value="F#">#F</option>
+				<option value="C#">#C</option>
+				<option value="F">F</option>
+				<option value="Bb">bB</option>
+				<option value="Eb">bE</option>
+				<option value="Ab">bA</option>
+				<option value="Db">bD</option>
+				<option value="Gb">bG</option>
+				<option value="Cb">bC</option>
+			</select>
+			
+			<div id="playInstrument" class="menu-list" title="更换乐器" @click.stop="menuClick('playInstrument')" style="height:30px;width:75px;padding-top: 3px;">
+			<label id="instruSpan">更换乐器</label>
+			<!-- <span>乐器</span> -->
+			<div class="menu-pulldown-box" :class="{'menu-pulldown-box-2-style-2': headerInBottom}">
+				<input placeholder="请输入搜索关键字" v-model="instrumentKey" />
+				<ul>
+					<li v-show="!instrumentKey || playingInstrumentOption == model.code || model.name.indexOf(instrumentKey) > -1" v-for="(model, index) in instrumentList" @click.stop="playingInstrumentChange(model.code,model.name)" :class="playingInstrumentOption == model.code && 'menu-choose'"><img src="v2/images/ic_tick.png" /><span>{{model.name}}</span></li>
+				</ul>
+			</div>
+		</div>
+		</div>
+		
+	</div>
+	<div class="tools-box spl-input" style="display: none;">
+		<div  class="tools-li cmenu" src="images/jianpu/1.png" level="0" num="1" value="C" type="spl" style="position:relative;margin-right:0px;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;">1</div>
+		<div  class="tools-li cmenu" src="images/jianpu/2.png" level="0" num="2" value="D" type="spl" style="position:relative;margin-right:0px;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;">2</div>
+		<div  class="tools-li cmenu" src="images/jianpu/3.png" level="0" num="3" value="E" type="spl" style="position:relative;margin-right:0px;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;">3</div>
+		<div  class="tools-li cmenu" src="images/jianpu/4.png" level="0" num="4" value="F" type="spl" style="position:relative;margin-right:0px;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;">4</div>
+		<div  class="tools-li cmenu" src="images/jianpu/5.png" level="0" num="5" value="G" type="spl" style="position:relative;margin-right:0px;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;">5</div>
+		<div  class="tools-li cmenu" src="images/jianpu/6.png" level="0" num="6" value="A" type="spl" style="position:relative;margin-right:0px;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;">6</div>
+		<div  class="tools-li cmenu" src="images/jianpu/7.png" level="0" num="7" value="B" type="spl" style="position:relative;margin-right:0px;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;">7</div>
+		<div  class="tools-li cmenu" onclick="jianPuOperatorUp8(1)"><img src="images/jianpu/s8.png"></div>
+		<div  class="tools-li cmenu" onclick="jianPuOperatorUp8(-1)"><img src="images/jianpu/j8.png"></div>
+		<div  class="tools-li cmenu" id="jphxButton"><img src="images/jianpu/jphx.png"></div>
+		</div>
+	<!-- ------------------------------顶部导航菜单------------------------------ -->
+	
+	<!-- 底部琴键 -->
+	<div class="bottom-box" :class="{'bottom-box-hide': !keyboardShow, 'bottom-box-style-2': headerInBottom}">
+		<!-- 音程尺 -->
+		<div class="tone-ruler ruler">
+			<div class="ruler-border"></div>
+			<div class="ruler-title">音程尺</div>
+			<li class="li-expand">一<br/>度</li>
+			<li>小<br/>二<br/>度</li>
+			<li>大<br/>二<br/>度</li>
+			<li>小<br/>三<br/>度</li>
+			<li>大<br/>三<br/>度</li>
+			<li>纯<br/>四<br/>度</li>
+			<li>增减<br/>四五<br/>度度</li>
+			<li>纯<br/>五<br/>度</li>
+			<li>小<br/>六<br/>度</li>
+			<li>大<br/>六<br/>度</li>
+			<li>小<br/>七<br/>度</li>
+			<li>大<br/>七<br/>度</li>
+			<li class="li-expand">八<br/>度</li>
+		</div>
+		<!-- 大三和弦 -->
+		<div class="dshx-ruler ruler">
+			<li>
+				<div>大三度</div>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+			</li>
+			<li>
+				<div>小三度</div>
+				<span></span>
+				<span></span>
+				<span></span>
+			</li>
+			<div class="hx-ruler-title">大三和弦</div>
+		</div>
+		<!-- 小三和弦 -->
+		<div class="xshx-ruler ruler">
+			<li>
+				<div>小三度</div>
+				<span></span>
+				<span></span>
+				<span></span>
+			</li>
+			<li>
+				<div>大三度</div>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+			</li>
+			<div class="hx-ruler-title">小三和弦</div>
+		</div>
+		<input type="text" id="numstaffinput" name="numstaffinput" onkeyup="numstaffpress()" style="position: absolute;top:-35px;left:0px;width:60px;height:30px;font-size: 14px;display:none;">
+		<div class="keyboard-box keyboard-up">
+		<div class="keyboard-bar">
+			<span class="keyboard-lbl">钢琴键盘</span>
+			<span class="close piano-close" title="关闭"></span>
+			<span class="minimize" title="最小化"></span>
+			<span class="restore hide" title="还原"></span>
+		</div>
+		<div id="scoreEditorPianoKeyboardContainer" data-bind="visible: showPianoKeyboard, style: {height: pianoKeyboardHeight, right: rightPanelWidth }"
+			style="height: 200px; right: 0px;">
+		<div id="scoreEditorPianoKeyboard"
+			data-bind="template: {name: 'score/html5EditorControls', data: html5Editor()}">
+			<div id="noteInput" class="pianoKeyboard" style="left: -868px;">
+				<div id="pianoKeysWhite" class="keyRow white">
+					<div group="C0">
+						<div class="key" style="left: 0px;">大二</div>
+						<div class="key" style="left: 62px;"></div>
+						<div class="key" style="left: 124px;"></div>
+						<div class="key" style="left: 186px;"></div>
+						<div class="key" style="left: 248px;"></div>
+						<div class="key" style="left: 310px;"></div>
+						<div class="key" style="left: 372px;"></div>
+					</div>
+					<div group="C1">
+						<div class="key" style="left: 434px;">大一</div>
+						<div class="key" style="left: 496px;"></div>
+						<div class="key" style="left: 558px;"></div>
+						<div class="key" style="left: 620px;"></div>
+						<div class="key" style="left: 682px;"></div>
+						<div class="key" style="left: 744px;"></div>
+						<div class="key" style="left: 806px;"></div>
+					</div>
+					<div group="C2">
+						<div class="key" style="left: 868px;">大字</div>
+						<div class="key" style="left: 930px;"></div>
+						<div class="key" style="left: 992px;"></div>
+						<div class="key" style="left: 1054px;"></div>
+						<div class="key" style="left: 1116px;"></div>
+						<div class="key" style="left: 1178px;"></div>
+						<div class="key" style="left: 1240px;"></div>
+					</div>
+					<div group="C3">
+						<div class="key" style="left: 1302px;">小字</div>
+						<div class="key" style="left: 1364px;"></div>
+						<div class="key" style="left: 1426px;"></div>
+						<div class="key" style="left: 1488px;">
+							<div class="keyIcon2"></div>
+						</div>
+						<div class="key" style="left: 1550px;"></div>
+						<div class="key" style="left: 1612px;"></div>
+						<div class="key" style="left: 1674px;"></div>
+					</div>
+					<div group="C4" class="group-active">
+						<div class="key" style="left: 1736px;">中央C</div>
+						<div class="key" style="left: 1798px;"></div>
+						<div class="key" style="left: 1860px;"></div>
+						<div class="key" style="left: 1922px;"></div>
+						<div class="key" style="left: 1984px;">
+							<div class="keyIcon2"></div>
+						</div>
+						<div class="key" style="left: 2046px;"></div>
+						<div class="key" style="left: 2108px;"></div>
+					</div>
+					<div group="C5">
+						<div class="key" style="left: 2170px;">小二</div>
+						<div class="key" style="left: 2232px;"></div>
+						<div class="key" style="left: 2294px;"></div>
+						<div class="key" style="left: 2356px;"></div>
+						<div class="key" style="left: 2418px;"></div>
+						<div class="key" style="left: 2480px;"></div>
+						<div class="key" style="left: 2542px;"></div>
+					</div>
+					<div group="C6">
+						<div class="key" style="left: 2604px;">小三</div>
+						<div class="key" style="left: 2666px;"></div>
+						<div class="key" style="left: 2728px;"></div>
+						<div class="key" style="left: 2790px;"></div>
+						<div class="key" style="left: 2852px;"></div>
+						<div class="key" style="left: 2914px;"></div>
+						<div class="key" style="left: 2976px;"></div>
+					</div>
+					<div group="C7">
+						<div class="key" style="left: 3038px;">小四</div>
+						<div class="key" style="left: 3100px;"></div>
+						<div class="key" style="left: 3162px;"></div>
+						<div class="key" style="left: 3224px;"></div>
+						<div class="key" style="left: 3286px;"></div>
+						<div class="key" style="left: 3348px;"></div>
+						<div class="key" style="left: 3410px;"></div>
+					</div>
+					<div group="C8">
+						<div class="key" style="left: 3472px;">小五</div>
+						<div class="key" style="left: 3534px;"></div>
+						<div class="key" style="left: 3596px;"></div>
+						<div class="key" style="left: 3658px;"></div>
+						<div class="key" style="left: 3720px;"></div>
+						<div class="key" style="left: 3782px;"></div>
+						<div class="key" style="left: 3844px;"></div>
+					</div>
+				</div>
+				<div id="pianoKeysBlack" class="keyRow black">
+					<div group="B0">
+						<div class="key" style="left: 31px;"></div>
+						<div class="key" style="left: 93px;"></div>
+						<div class="key" style="left: 217px;"></div>
+						<div class="key" style="left: 279px;"></div>
+						<div class="key" style="left: 341px;"></div>
+					</div>
+					<div group="B1">
+						<div class="key" style="left: 465px;"></div>
+						<div class="key" style="left: 527px;"></div>
+						<div class="key" style="left: 651px;"></div>
+						<div class="key" style="left: 713px;"></div>
+						<div class="key" style="left: 775px;"></div>
+					</div>
+					<div group="B2">
+						<div class="key" style="left: 899px;"></div>
+						<div class="key" style="left: 961px;"></div>
+						<div class="key" style="left: 1085px;"></div>
+						<div class="key" style="left: 1147px;"></div>
+						<div class="key" style="left: 1209px;"></div>
+					</div>
+					<div group="B3">
+						<div class="key" style="left: 1333px;"></div>
+						<div class="key" style="left: 1395px;"></div>
+						<div class="key" style="left: 1519px;"></div>
+						<div class="key" style="left: 1581px;"></div>
+						<div class="key" style="left: 1643px;"></div>
+					</div>
+					<div group="B4">
+						<div class="key" style="left: 1767px;"></div>
+						<div class="key" style="left: 1829px;"></div>
+						<div class="key" style="left: 1953px;"></div>
+						<div class="key" style="left: 2015px;"></div>
+						<div class="key" style="left: 2077px;"></div>
+					</div>
+					<div group="B5">
+						<div class="key" style="left: 2201px;"></div>
+						<div class="key" style="left: 2263px;"></div>
+						<div class="key" style="left: 2387px;"></div>
+						<div class="key" style="left: 2449px;"></div>
+						<div class="key" style="left: 2511px;"></div>
+					</div>
+					<div group="B6">
+						<div class="key" style="left: 2635px;"></div>
+						<div class="key" style="left: 2697px;"></div>
+						<div class="key" style="left: 2821px;"></div>
+						<div class="key" style="left: 2883px;"></div>
+						<div class="key" style="left: 2945px;"></div>
+					</div>
+					<div group="B7">
+						<div class="key" style="left: 3069px;"></div>
+						<div class="key" style="left: 3131px;"></div>
+						<div class="key" style="left: 3255px;"></div>
+						<div class="key" style="left: 3317px;"></div>
+						<div class="key" style="left: 3379px;"></div>
+					</div>
+					<div group="B8">
+						<div class="key" style="left: 3503px;"></div>
+						<div class="key" style="left: 3565px;"></div>
+						<div class="key" style="left: 3689px;"></div>
+						<div class="key" style="left: 3751px;"></div>
+						<div class="key" style="left: 3813px;"></div>
+					</div>
+				</div>
+			</div>
+			<div class="pianoKeyboardSlider right" id="scrollRight"></div>
+			<div class="pianoKeyboardSlider left" id="scrollLeft"></div>
+		</div>
+	</div>
+	</div>
+	</div>
+	<!-- 中间主要内容 -->
+	<div class="body-box">
+		<!-- 左边列表 -->
+		<div class="body-left">
+			<div class="body-left-content scroll">
+			<!--abcString 相关  -->
+			<input id="s0" type="button" style="display: none; background-color: #80ff80" value="(noname)" />
+			<input id="s1" type="button" style="display: none; background-color: #ffd0d0" value="" /> 
+			<input type="file" id="abcfile" accept=".xzds" style="display: none" onchange="loadxzdsfile()" /> 
+			<input type="file" id="midifile" accept=".mid,.midi" style="display: none" onchange="postmidifile()" /> 
+			<input type="file" id="xmlfile" accept=".xml,.musicxml" style="display: none" /> 
+				<div class="panel-name">符号面板<img src="v2/images/close.png" title="关闭" class="plsx-close panel-close"></div>
+				<ul>
+					<li v-for="(model, index) in toolList" :class="model.code" v-if="model.code != 'length'" :key="model.code" @click="model.isExpand = !model.isExpand">
+						<img src="v2/images/arrow.png" class="arrow" :class="{'arrow-down': model.isExpand}" />
+						<span :class="{'left-hide-content-show': model.isExpand}">{{model.name}}</span>
+						<img class="switch" :id="model.code + '_swtich'" title="切换" @click.stop="model.isExpand = true" v-if="model.canSwitch" src="v2/images/switch.png" >
+						<div class="left-hide-content" :class="{'left-hide-content-show': model.isExpand}">
+							<div v-if="model.code == 'note'" class="note-box">
+								<select class="form-control select" id="notegroup">
+									<option value="C0">大字二组</option>
+									<option value="C1">大字一组</option>
+									<option value="C2">大字组</option>
+									<option value="C3">小字组</option>
+									<option value="C4" selected="selected">小字一组</option>
+									<option value="C5">小字二组</option>
+									<option value="C6">小字三组</option>
+									<option value="C7">小字四组</option>
+									<option value="C7">小字四组</option>
+									<option value="C8">小字五组</option>
+								</select>
+							</div>
+							<ul v-if="model.code == 'note'" class="yinfu-ul">
+								<li value="C" class="notes" @click="toolItemClick('note', 'C')">C</li>
+								<li value="D" class="notes" @click="toolItemClick('note', 'D')">D</li>
+								<li value="E" class="notes" @click="toolItemClick('note', 'E')">E</li>
+								<li value="F" class="notes" @click="toolItemClick('note', 'F')">F</li>
+								<li value="G" class="notes" @click="toolItemClick('note', 'G')">G</li>
+								<li value="A" class="notes" @click="toolItemClick('note', 'A')">A</li>
+								<li value="B" class="notes" @click="toolItemClick('note', 'B')">B</li>
+								<li value="z" class="notes" @click="toolItemClick('note', 'z')"id="znotes">z</li>
+							</ul>
+							<img v-for="(tImg, idx) in model.imgList" :key="'ti' + idx" :src="tImg.url" :title="tImg.title" @click="toolItemClick(model.code, tImg.id, tImg.value)" :id="tImg.id" :value="tImg.value" :value2="tImg.value2" :level="tImg.level" :chord="tImg.chord" :class="tImg.class" :position="tImg.position" :type="tImg.type" :dur="tImg.dur" :data-toggle="tImg.datatoggle" :data-target="tImg.datatarget"></img>
+						</div>
+					</li>
+					<!-- <li>
+						<img src="v2/images/arrow.png" class="arrow" />
+						<span>和弦</span>
+						<div class="left-hide-content " style="padding-left: 20px;padding-bottom: 10px;">
+							<div style="height:5px;"></div>
+							<span value="3" class="category selected">三和弦</span>
+							<span value="7" class="category">七和弦</span>
+							<div style="height:5px;"></div>
+							<span type="Ⅰ" level="1" class="level selected">Ⅰ</span>
+							<span type="Ⅱ" level="2" class="level">Ⅱ</span>
+							<span type="Ⅲ" level="3" class="level">Ⅲ</span>
+							<span type="Ⅳ" level="4" class="level">Ⅳ</span>
+							<span type="Ⅴ" level="5" class="level">Ⅴ</span>
+							<span type="Ⅵ" level="6" class="level">Ⅵ</span>
+							<span type="Ⅶ" level="7" class="level">Ⅶ</span>
+							<div style="height:5px;"></div>
+							<span class="chord" value="yuanwei" type3="" type7="7">原位</span>
+							<span class="chord" value="zhuangwei1" type3="6" type7="56">第一转位</span>
+							<span class="chord" value="zhuangwei2" type3="46" type7="34">第二转位</span>
+							<span class="chord" value="zhuangwei3" type3="" type7="2" style="display: none;">第三转位</span>
+							<img src="images/I.png" category="3" title="原位" level="1" chord="yuanwei" type="Ⅰ" class="chord_ins cmenu">
+							<img src="images/I6.png" category="3" title="第一转位" level="1" chord="zhuangwei1" type="Ⅰ6" class="chord_ins cmenu">
+							<img src="images/I46.png" category="3" title="第二转位" level="1" chord="zhuangwei2" type="Ⅰ46" class="chord_ins cmenu">
+							<img src="images/IV.png" category="3" title="原位" level="4" chord="yuanwei" type="Ⅳ" class="chord_ins cmenu">
+							<img src="images/IV6.png" category="3" title="第一转位" level="4" chord="zhuangwei1" type="Ⅳ6" class="chord_ins cmenu">
+							<img src="images/IV46.png" category="3" title="第二转位" level="4" chord="zhuangwei2" type="Ⅳ46" class="chord_ins cmenu">
+							<img src="images/V.png" category="3" title="原位" level="5" chord="yuanwei" type="Ⅴ" class="chord_ins cmenu">
+							<img src="images/V6.png" category="3" title="第一转位" level="5" chord="zhuangwei1" type="Ⅴ6" class="chord_ins cmenu">
+							<img src="images/V46.png" category="3" title="第二转位" level="5" chord="zhuangwei2" type="Ⅴ46" class="chord_ins cmenu">
+						</div>
+					</li> -->
+					<!-- <li>
+						<img src="v2/images/arrow.png" class="arrow" />
+						<span>连音线</span>
+						<div class="left-hide-content">
+
+						</div>
+					</li> -->
+					<!-- <li>
+						<img src="v2/images/arrow.png" class="arrow" />
+						<span>附点</span>
+						<div class="left-hide-content">
+							<img src="images/dot1.png" class="cmenu" value=">" position="after" title="节奏附点:当前音符时值*1.5，下一个音符时值减半"/>
+							<img src="images/dot2.png" class="cmenu" value="<" position="before" title="节奏附点:当前音符时值*1.5，前一个音符时值减半"/>
+							<img src="images/dot3.png" class="cmenu" value="3/" position="after" title="节奏附点"/>
+							<img src="images/dot4.png" class="cmenu" value="7//" position="after" title="节奏附点"/>
+						</div>
+					</li> -->
+<!-- 					<li>
+						<img src="v2/images/arrow.png" class="arrow" />
+						<span>倚音</span>
+						<div class="left-hide-content">
+							<img src="images/yy1.png" class="cmenu" value="{/}" position="before"/>
+							<img src="images/yy2.png" class="cmenu" value="{}" position="before"/>
+							<img src="images/yy6.png" class="cmenu" value="{}" position="after"/>
+							<img src="images/yy11.png" class="cmenu" value="{}" position="before" type="syy"/>
+							<img src="images/yy22.png" class="cmenu" value="{}" position="after" type="syy"/>
+						</div>
+					</li> -->
+					<!-- <li>
+						<img src="v2/images/arrow.png" class="arrow" />
+						<span>琶音与滑音</span>
+						<div class="left-hide-content">
+							<img src="images/pa.png" class="cmenu" value="!arpeggio!" position="before" title="琶音"/>
+							<img src="images/arp_link.png" class="cmenu" title="琶音" onclick="setArpLink('source')"/>
+							<img src="images/paup.png" class="cmenu" value="!arpeggioup!" position="before" title="琶音"/>
+							<img src="images/padown.png" class="cmenu" value="!arpeggiodown!" position="before" title="琶音"/>
+							<img src="images/gliss.png" class="cmenu" value="!~(!note!~)!" type="gliss" title="滑音"/>
+							<img src="images/fall.png" class="cmenu" value="!slidelu!" position="before" title=""/>
+							<img src="images/doit.png" class="cmenu" value="!slide!" position="before" title=""/>
+							<img src="images/plop.png" class="cmenu" value="!sliderd!" position="before" title=""/>
+							<img src="images/scoop.png" class="cmenu" value="!slideru!" position="before" title=""/>
+							
+							<img src="images/h1.png" class="cmenu" value="!glsru!" position="before" title=""/>
+							<img src="images/h2.png" class="cmenu" value="!glsrd!" position="before" title=""/>
+						</div>
+					</li> -->
+					<!-- <li>
+						<img src="v2/images/arrow.png" class="arrow" />
+						<span>谱号</span>
+						<div class="left-hide-content">
+							<img src="images/ph_gy.png" title="高音谱号" class="node_puhao" value="1 treble"/>
+							<img src="images/ph_dy.png" title="低音谱号" class="node_puhao"  value="1 bass"/>
+							<img src="images/ph_zy.png" title="中音谱号" class="node_puhao" value="1 alto"/>
+							<img src="images/ph_czy.png" title="次中音谱号" class="node_puhao" value="1 tenor"/>
+						</div>
+					</li> -->
+					<li>
+						<img src="v2/images/arrow.png" class="arrow" />
+						<span>力度记号</span>
+						<div class="left-hide-content">
+							<img src="images/pppp.png" value="!pppp!" class="cmenu" position="before"/>
+							<img src="images/other11.png" value="!ppp!" class="cmenu" position="before"/>
+							<img src="images/other10.png" value="!pp!" class="cmenu" position="before"/>
+							<img src="images/other9.png" value="!p!" class="cmenu" position="before"/>
+							<img src="images/other15.png" value="!mp!" class="cmenu" position="before"/>
+							<img src="images/other16.png" value="!mf!" class="cmenu" position="before"/>
+							<img src="images/other12.png" value="!f!" class="cmenu" position="before"/>
+							<img src="images/other13.png" value="!ff!" class="cmenu" position="before"/>
+							<img src="images/other14.png" value="!fff!" class="cmenu" position="before"/>
+							<img src="images/ffff.png" value="!ffff!" class="cmenu" position="before"/>
+							<img src="images/sf.png" value="!sf!" class="cmenu" position="before"/>
+							<img src="images/other17.png" value="!sfz!" class="cmenu" position="before"/>
+							<img src="images/sff.png" value="!sff!" class="cmenu" position="before"/>
+							<img src="images/sfp.png" value="!sfp!" class="cmenu" position="before"/>
+							<img src="images/fp.png" value="!fp!" class="cmenu" position="before"/>
+							<img src="images/fz.png" value="!fz!" class="cmenu" position="before"/>
+							<!-- 强弱 -->
+							<img src="images/strong.png" value="!strong!" title="强" class="cmenu" position="before"/>
+							<img src="images/sec_strong.png" value="!sec_strong!" title="次强" class="cmenu" position="before"/>
+							<img src="images/weak.png" value="!weak!" class="cmenu" title="弱" position="before"/>
+						</div>
+					</li>
+					<li>
+						<img src="v2/images/arrow.png" class="arrow" />
+						<span>柯尔文手势</span>
+						<div class="left-hide-content">
+							<img src="images/kew1.png" title="Do" class="kew cmenu" value="!kew1!" position="before"/>
+							<img src="images/kew2.png" title="Re" class="kew cmenu" value="!kew2!" position="before"/>
+							<img src="images/kew3.png" title="Mi" class="kew cmenu" value="!kew3!" position="before"/>
+							<img src="images/kew4.png" title="Fa" class="kew cmenu" value="!kew4!" position="before"/>
+							<img src="images/kew5.png" title="So" class="kew cmenu" value="!kew5!" position="before"/>
+							<img src="images/kew6.png" title="La" class="kew cmenu" value="!kew6!" position="before"/>
+							<img src="images/kew7.png" title="Si" class="kew cmenu" value="!kew7!" position="before"/>
+							<img src="images/kew8.png" title="Do" class="kew cmenu" value="!kew8!" position="before"/>
+						</div>
+					</li>
+					<li>
+						<img src="v2/images/arrow.png" class="arrow" />
+						<span>音色</span>
+						<div class="left-hide-content">
+							<img src="images/lingu.png" title="铃鼓" class="kew cmenu" value="!inst_lingu!" position="before"/>
+							<img src="images/pengl.png" title="碰铃" class="kew cmenu" value="!inst_pengl!" position="before"/>
+							<img src="images/shac.png" title="沙锤" class="kew cmenu" value="!inst_shac!" position="before"/>
+							<img src="images/shanjt.png" title="三角铁" class="kew cmenu" value="!inst_shanjt!" position="before"/>
+							<img src="images/shoul.png" title="手铃" class="kew cmenu" value="!inst_shoul!" position="before"/>
+							<img src="images/shuanxt.png" title="双响筒" class="kew cmenu" value="!inst_shuanxt!" position="before"/>
+							<img src="images/xiangb.png" title="响板" class="kew cmenu" value="!inst_xiangb!" position="before"/>
+							<img src="images/xiaojg.png" title="小军鼓" class="kew cmenu" value="!inst_xiaojg!" position="before"/>
+							<img src="images/feizg.png" title="非洲鼓" class="kew cmenu" value="!inst_feizg!" position="before"/>
+						</div>
+					</li>
+					<li>
+						<img src="v2/images/arrow.png" class="arrow" />
+						<span>方向控制</span>
+						<div class="left-hide-content">
+							<img src="images/direct/posstemdown.png" title="符干方向朝下" class="cmenu" value="[I:pos stem down]" position="before"/>
+							<img src="images/direct/posstemup.png" title="符干方向朝上" class="cmenu" value="[I:pos stem up]" position="before"/>
+							<img src="images/direct/1down.png" title="显示在下方" class="cmenu" value="[I:pos orn down]" position="before"/>
+							<img src="images/direct/1up.png" title="显示在上方" class="cmenu" value="[I:pos orn up]" position="before"/>
+							<img src="images/direct/jqbelow.png" title="显示在下方" class="cmenu" value="[I:pos dyn below]" position="before"/>
+							<img src="images/direct/jqabove.png" title="显示在上方" class="cmenu" value="[I:pos dyn above]" position="before"/>
+							<img src="images/direct/fpdown.png" title="显示在下方" class="cmenu" value="[I:pos volume below]" position="before"/>
+							<img src="images/direct/fpup.png" title="显示在上方" class="cmenu" value="[I:pos volume above]" position="before"/>
+							<img src="v2/images/contact.png" title="连音线在上方" class="cmenu" value="'" position="before"/>
+							<img src="v2/images/contact2.png" title="连音线在下方" class="cmenu" value="," position="before"/>
+							<img src="images/dot_down.png" title="显示在下方" class="cmenu" value='".down"' position="before"/>
+							<img src="images/other4.png" title="显示在上方" class="cmenu" value='".up"' position="before"/>
+							<img src="images/graceup.png" title="倚音开口朝上" class="cmenu" value='"graceup"' position="before"/>
+							<img src="images/gracedown.png" title="倚音开口朝下" class="cmenu" value='"gracedown"' position="before"/>
+						</div>
+					</li>
+					<li>
+						<img src="v2/images/arrow.png" class="arrow" />
+						<span>重复与跳转</span>
+						<div class="left-hide-content">
+							<img src="images/other18.png" value="!coda!" class="cmenu" position="preInsert" type="nodeline"/>
+							<img src="images/other19.png" value="!segno!" title="segno记号" class="cmenu" position="preInsert" type="nodeline"/>
+							<img src="images/other20.png" value="!D.C.!" title="从头反复" class="cmenu" position="afterInsert" type="nodeline"/>
+							<img src="images/dcalfine.png" value="!D.C.alfine!" title="从头反复到fine终止" class="cmenu" position="afterInsert" type="nodeline"/>
+							<img src="images/other21.png" value="!D.S.!" title="跳转到segno记号" class="cmenu" position="afterInsert" type="nodeline"/>
+							<img src="images/dsalfine.png" value="!D.S.alfine!" title="跳转到segno记号到fine终止" class="cmenu" position="afterInsert" type="nodeline"/>
+							<img src="images/other22.png" value="!fine!" class="cmenu" position="afterInsert" type="nodeline"/>
+							<img src="v2/images/other24.png" title="反复开始" value="|:" position="preReplace" type="nodeline" class="cmenu" draggable="false">
+							<img src="v2/images/other25.png" title="反复结束" value=":|" position="afterReplace" type="nodeline" class="cmenu" draggable="false">
+							<img src="v2/images/other26.png" title="反复结束-反复开始" value=":||:" position="afterReplace" type="nodeline" class="cmenu" draggable="false">
+						</div>
+					</li>
+					<li>
+						<img src="v2/images/arrow.png" class="arrow" />
+						<span>品格图</span>
+						<div class="left-hide-content">
+						<div class="left-hide-content" mkey="C" style="display: none;">
+							<img src="images/jita/C.png" value='"C"' title="C" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/Dm.png" value='"Dm"' title="Dm" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/Em.png" value='"Em"' title="Em" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/F.png" value='"F"' title="F" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/G.png" value='"G"' title="G" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/Am.png" value='"Am"' title="Am" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/G7.png" value='"G7"' title="G7" type="pgt" class="cmenu pgt" position="before"/>
+						</div>
+						<div class="left-hide-content" mkey="D" style="display: none;">
+							<img src="images/jita/D.png" value='"D"' title="D" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/Em.png" value='"Em"' title="Em" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/%23Fm.png" value='"#Fm"' title="#Fm" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/G.png" value='"G"' title="G" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/A.png" value='"A"' title="A" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/Bm.png" value='"Bm"' title="Bm" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/A7.png" value='"A7"' title="A7" type="pgt" class="cmenu pgt" position="before"/>
+						</div>
+						<div class="left-hide-content" mkey="E" style="display: none;">
+							<img src="images/jita/E.png" value='"E"' title="E" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/%23Fm.png" value='"#Fm"' title="#Fm" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/%23Gm.png" value='"#Gm"' title="#Gm" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/A.png" value='"A"' title="A" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/B.png" value='"B"' title="B" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/%23Cm.png" value='"#Cm"' title="#Cm" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/B7.png" value='"B7"' title="B7" type="pgt" class="cmenu pgt" position="before"/>
+						</div>
+						<div class="left-hide-content" mkey="F" style="display: none;">
+							<img src="images/jita/F.png" value='"F"' title="F" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/Gm.png" value='"Gm"' title="Gm" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/Am.png" value='"Am"' title="Am" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/bB.png" value='"bB"' title="bB" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/C.png" value='"C"' title="C" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/Dm.png" value='"Dm"' title="Dm" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/C7.png" value='"C7"' title="C7" type="pgt" class="cmenu pgt" position="before"/>
+						</div>
+						<div class="left-hide-content" mkey="G" style="display: none;">
+							<img src="images/jita/G.png" value='"G"' title="G" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/Am.png" value='"Am"' title="Am" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/Bm.png" value='"Bm"' title="Bm" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/C.png" value='"C"' title="C" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/D.png" value='"D"' title="D" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/Em.png" value='"Em"' title="Em" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/D7.png" value='"D7"' title="D7" type="pgt" class="cmenu pgt" position="before"/>
+						</div>
+						<div class="left-hide-content" mkey="A" style="display: none;">
+							<img src="images/jita/A.png" value='"A"' title="A" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/Bm.png" value='"Bm"' title="Bm" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/%23Cm.png" value='"#Cm"' title="#Cm" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/D.png" value='"D"' title="D" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/E.png" value='"E"' title="E" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/%23Fm.png" value='"#Fm"' title="#Fm" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/E7.png" value='"E7"' title="E7" type="pgt" class="cmenu pgt" position="before"/>
+						</div>
+						<div class="left-hide-content" mkey="B" style="display: none;">
+							<img src="images/jita/B.png" value='"B"' title="B" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/%23Cm.png" value='"#Cm"' title="#Cm" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/%23Dm.png" value='"#Dm"' title="#Dm" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/E.png" value='"E"' title="E" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/%23F.png" value='"#F"' title="#F" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/%23Gm.png" value='"#Gm"' title="#Gm" type="pgt" class="cmenu pgt" position="before"/>
+							<img src="images/jita/%23F7.png" value='"#F7"' title="#F7" type="pgt" class="cmenu pgt" position="before"/>
+						</div>
+						</div>
+					</li>
+					<li>
+						<img src="v2/images/arrow.png" class="arrow" />
+						<span>功能标记</span>
+						<div class="left-hide-content" chord="d3"><!-- 大三 -->
+							<img src="images/gongneng/3/T.png" value='T' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/3/SII.png" value='SⅡ' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/3/DTIII.png" value='DTⅢ' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/3/S.png" value='S' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/3/D.png" value='D' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/3/TSVI.png" value='TSⅥ' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/3/DVII.png" value='DⅦ' type="lyric" class="cmenu lyric"/>
+						</div>
+						<div class="left-hide-content" chord="x3"><!-- 小三 -->
+							<img src="images/gongneng/3/t_xd.png" value='t' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/3/sII_xd.png" value='sⅡ' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/3/dtIII_xd.png" value='dtⅢ' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/3/s_xd.png" value='s' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/3/d_xd.png" value='d' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/3/tsVI_xd.png" value='tsⅥ' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/3/dVII_xd.png" value='dⅦ' type="lyric" class="cmenu lyric"/>
+						</div>
+						<div class="left-hide-content" chord="d7"><!-- 大7 -->
+							<img src="images/gongneng/7/T.png" value='T7' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/7/SII.png" value='SⅡ7' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/7/DTIII.png" value='DTⅢ7' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/7/S.png" value='S7' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/7/D.png" value='D7' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/7/TSVI.png" value='TSⅥ7' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/7/DVII.png" value='DⅦ7' type="lyric" class="cmenu lyric"/>
+						</div>
+						<div class="left-hide-content" chord="x7"><!-- 小7 -->
+							<img src="images/gongneng/7/t_xd.png" value='t7' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/7/sII_xd.png" value='sⅡ7' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/7/dtIII_xd.png" value='dtⅢ7' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/7/s_xd.png" value='s7' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/7/d_xd.png" value='d7' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/7/tsVI_xd.png" value='tsⅥ7' type="lyric" class="cmenu lyric"/>
+							<img src="images/gongneng/7/dVII_xd.png" value='dⅦ7' type="lyric" class="cmenu lyric"/>
+						</div>
+					</li>
+					<li>
+						<img src="v2/images/arrow.png" class="arrow" />
+						<span>其它符号</span>
+						<div class="left-hide-content">
+								<img src="images/k1.png" value="!lb!" class="cmenu" position="before"/>
+								<img src="images/k2l.png" value="!rbl!" class="cmenu" type="all" position="before" />
+								<img src="images/k2r.png" value="!rbr!" class="cmenu" type="all" position="before" />
+								<img src="images/other1.png" value="!dnb!" class="cmenu" position="before"/>
+								<img src="images/other2.png" value="!upb!" class="cmenu" position="before" type="all"/>
+								<img src="images/marcato.png" value="!^!" class="cmenu" position="before" />
+								<img src="images/sanjiao.png" value="!wedge!" class="cmenu" position="before" />
+								<img src="images/other3.png" value="!>!" class="cmenu" position="before"/>
+								<img src="images/other4.png" value="." class="cmenu" position="before"/>
+								<img src="images/other5.png" value="!tenuto!" class="cmenu" position="before"/>
+								<img src="images/other6.png" value="!open!" class="cmenu" position="before"/>
+								<img src="images/other7.png" value="!plus!" class="cmenu" position="before"/>
+								<img src="images/other8.png" value="!snap!" class="cmenu" position="before"/>
+								<img src="images/b1.png" value="!trill!" class="cmenu" position="before"/>
+								<img src="images/b2.png" value="!umrd!" class="cmenu" position="before"/>
+								<img src="images/b3.png" value="!mordent!" class="cmenu" position="before"/>
+								<img src="images/b4.png" value="!roll!" class="cmenu" position="before"/>
+								
+								
+								<img src="images/rit.png" value="!rit!" title="渐慢" class="cmenu" position="before"/>
+								<img src="images/accel.png" value="!accel!" title="渐快" class="cmenu" position="before"/>
+								
+								<img src="images/b12.png" value="!turn!" title="顺回音" class="cmenu" position="before"/>
+								<!-- <img src="images/b13.png" value="!turnx!" class="cmenu" position="before"/> -->
+								<img src="images/b14.png" value="!invertedturn!" title="逆回音" class="cmenu" position="before"/>
+								<!-- <img src="images/b15.png" value="!invertedturnx!" class="cmenu" position="before"/> -->
+								<img src="images/b16.png" value="!breath!" class="cmenu" position="before"/>
+								<img src="images/b17.png" value="!shortphrase!" class="cmenu" position="before"/>
+								
+								<img src="images/ped.png" value="!ped!" title="踩下" class="cmenu" position="before"/>
+								<img src="images/ped-up.png" value="!ped-up!" title="放松" class="cmenu" position="before"/>
+								<img src="images/pedall.png" value="!pedall!" title="踩下后放松" class="cmenu" position="before"/>
+								<img src="images/pedall2.png" value="!pedall2!" title="踩下后放松" class="cmenu" position="before"/>
+								
+								<img src="images/bc.png" value="!bc!" class="cmenu" title="占位符" position="before"/>
+								<img src="images/bc.png" value="!bcb!" class="cmenu" title="占位符" position="before"/>
+						</div>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<!-- 右边琴谱 --> 
+		<div class="body-right" :style="keyboardShow ? 'padding-bottom: 200px;' : ''">
+			<!--左侧符号面板区域  -->
+			<img class="left-show-img pointer hide" :style="keyboardShow ? 'margin-top: -208px;' : ''" src="v2/images/left.png" />
+			<!-- 谱子区域 -->
+			<div class="right-top">
+				<div class="right-top-content scroll" onmousedown="rightTopContentMouseDown(event)" onmousemove="rightTopContentmoving(event)" onmouseup="rightTopContentMouseUp(event)" onmouseleave="rightTopContentMouseLeave(event)">
+					<div class="abc-content">
+					<div id="nodeMenu" style="display: none;">
+						<button id="btnAddBr" class="btn btn-success" onclick="addBr()">换行</button>
+						<!-- <button id="btnSplitVoice" class="btn btn-success" onclick="splitVoice()">分声部</button> -->
+						<button id="delStaff" class="btn btn-danger" onclick="delVoice()">删除声部</button>
+						<button id="changeInstrBtn" class="btn btn-info" onclick="showInstruSelector(event)">换音色</button>
+						<button id="" class="btn btn-warning" onclick="splitNode(event)">上下声部</button>
+						<!-- <button id="btnChangeSpeed" class="btn btn-info" onclick="showSpeedDiv()">变速</button> -->
+						<!-- <button id="btnChangeKey" class="btn btn-warning" onclick="showKeyDiv()">变调</button> -->
+						<!-- <button id="btnChangeMeter" class="btn btn-danger" onclick="showMeterDiv()">变拍号</button> -->
+						
+						<!-- <button id="btnChangeNodeBgColor" class="btn btn-warning" onclick="showNodeBgColorPicker()">添加背景色</button>
+						<button id="btnClearNodeBgColor" class="btn btn-warning" onclick="clearNodeBgColor()">清除背景色</button> -->
+						
+						<!-- <button id="btnDelNode" onclick="addBr()">删除</button>
+						<button id="btnInsertNode" onclick="addBr()">插入</button> -->
+						
+					</div>
+						<!-- <input type="button" style="position: absolute;right:10px;top:10px;width: 30px;" value="+" onclick="changeScale(0.2)">
+						<input type="button" style="position: absolute;right:10px;top:40px;width: 30px;" value="-" onclick="changeScale(-0.2)"> -->
+						<!-- <div class="tbjpsz tbjpsz-other noselect" @click="tbjpszClick">
+							<div class="check-box">
+								<img :class="!isTbjpsz && 'hide'" src="v2/images/tick.png" />
+							</div>
+							<span>同步钢琴键盘时值</span>
+						</div> -->
+						<div id="target" >
+							<svg xmlns="http://www.w3.org/2000/svg"
+								xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"
+								width="18.3in" height="2in" viewBox="0 0 595 144" id="svg_pic"> 
+								<text x="250" y="100" font-family="serif" font-size="12"></text> 
+							</svg>
+						</div>
+						<div id="paper" style="width: 250px;"></div>
+						<div id="paper-speed" style="width: 250px;"></div>
+						<div id="midi-download" style="display: none;"></div>
+						<div id="midi-download-speed" style="display: none;"></div>
+					</div>
+				</div>
+				<div class="right-down-box">
+				<div id="savetip" class="alert alert-danger alert-dismissible fade show" role="alert" style="height:40px;display:none;text-align: center;position: absolute;z-index: 999;width: 600px;right:100px;">
+				  <strong>友情提醒:</strong> 您已经有3分钟未保存数据,请及时保存.
+				</div>
+					<!-- <div class="mode-change compute-mobile-change play-way-box">
+						<div class="play-way piano active" title="钢琴播放" onclick="setAbcPlayWay(0)"><img src="v2/images/piano_play.png" /></div>
+						<div class="play-way system" title="系统播放" onclick="setAbcPlayWay(1)"><img src="v2/images/system_play.png" /></div>
+					</div>
+					<span class="play-vol">按键声音：<a href="javascript: setNoteOnVol()" style="text-decoration: underline;">关</a></span> -->
+				</div>
+			</div>
+			<!-- 编辑器 -->
+			<div class="right-bottom">
+				<label id="er" onclick="popshow('errlist', true)" style="display: none; background: #ff8080;cursor: pointer;position: absolute;left: 0;top: 0px;font-size: 14px;">语法有错</label>
+				<form action="abcservlet" id="abcform" target="target_iframe" method="post" style="height: 100%;">
+					<input type="hidden" id="personid" name="personid">
+					<input type="hidden" id="personname" name="personname">
+					<input type="hidden" id="groupid" name="groupid">
+					<input type="hidden" id="stafftypeid" name="stafftypeid">
+					<input type="hidden" id="createbuttontype" name="createbuttontype">
+					<input type="hidden" id="appid" name="appid">
+					<input type="hidden" id="title" name="title">
+					<input type="hidden" id="dir_str" name="dir_str">
+					<input type="hidden" id="png_attachid" name="png_attachid">
+					<input type="hidden" id="pic_url" name="pic_url">
+					<input type="hidden" id="mp3_attachid" name="mp3_attachid">
+					<input type="hidden" id="abc_attachid" name="abc_attachid">
+					<input type="hidden" id="txt_attachid" name="txt_attachid">
+					<input type="hidden" id="appid" name="appid">
+					<input type="hidden" id="nodelinedata" name="nodelinedata">
+					
+					<input type="hidden" id="wxp_barlinecoor" name="wxp_barlinecoor"><!-- 五线谱小节线数据 -->
+					<input type="hidden" id="jp_barlinecoor" name="jp_barlinecoor"><!-- 简谱小节线数据 -->
+					<input type="hidden" id="jxhp_barlinecoor" name="jxhp_barlinecoor"><!-- 简线混排小节线数据 -->
+					<input type="hidden" id="weakbar" name="weakbar">
+					<input type="hidden" id="iecdata" name="iecdata" >
+					<input type="hidden" id="exporttype" name="exporttype">
+					<input type="hidden" id="transpose" name="transpose" value="0"><!-- 移调后导出midi有点问题 -->
+					<input type="hidden" id="picdata" name="picdata"><!-- 五线谱图片base64数据 -->
+					<input type="hidden" id="jxhp_picdata" name="jxhp_picdata"><!-- 简线混排图片base64数据 -->
+					<input type="hidden" id="jp_picdata" name="jp_picdata"><!-- 简谱图片base64数据 -->
+					<input type="hidden" id="picdata-speed" name="picdata-speed">
+					<input type="hidden" id="overwritemp3" name="overwritemp3" value="1">
+					<input type="hidden" id="mp3desc" name="mp3desc">
+					<input type="hidden" id="speed" name="speed">
+					<input type="hidden" id="mustype" name="mustype"><!-- 谱子类型：0:五线谱；1：间线混排；2：简谱 -->
+					<input type="hidden" id="pictype" name="pictype"><!-- 图片类型：compute/mobile --> 
+					
+					<textarea id="source" name="source" rows="14" cols="73" wrap="off"
+						style="font: 20px monospace;height: 100%;padding-bottom: 10px;" ondrop="dropped(event)"
+						ondragenter="drag_over(event)" ondragover="drag_over(event)"
+						oninput="abc_change()" onclick="source_click()" onmouseup="source_mouseup()"></textarea>
+					<textarea id="src1" rows="40" cols="73" wrap="off" style="font: 14px monospace;display: none;" oninput="abc_change()"></textarea>
+					<textarea id="source-speed" name="source-speed" style="display: none;" rows="" cols=""></textarea>
+					<textarea id="source-gen-midi" name="source-gen-midi" style="display: none;" rows="" cols=""></textarea>
+					<div id="errlist" class="popup" style="width: 600px">
+						<div class="close" onclick="popshow('errlist')">x</div>
+						<div id="diverr" style="font-size: 14px;"></div>
+					</div>
+				</form>	
+			</div>
+			
+					<!--  曲式分析编辑框 beg -->
+		<div class="modal fade" id="MUSIC_FORM_div" tabindex="-1" role="dialog" aria-labelledby="MUSIC_FORM_divLabel">
+		  <div class="modal-dialog" role="document">
+		 <!--  style="width:400px;height:380px;left:50%;margin-left:-200px;" -->
+		    <div class="modal-content" style="width:740px;height:auto;left:50%;margin-left:-200px;">
+		      <div class="modal-header">
+		        <h5 class="modal-title" id="MIDI_SETTING_divLabel">绘制曲式</h5>
+		        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		          <span aria-hidden="true">&times;</span>
+		        </button>
+		      </div>
+		      <div class="modal-body" style="padding-bottom: 50px">
+		      	<form id="mfForm">
+					<div class="comm-row comm-row-2">
+						<div class="comm-row-2-item">
+							<div class="comm-title">编号</div>
+							<input v-if="!inpdisable" id="number" name="fieldno" v-model="musicForm.fieldno" class="comm-input comm-input-2" ></input>
+							<span v-else="inpdisable" class="disable" v-html="musicForm.fieldno" title="双击可编辑" @dblclick="inpEdit"></span>
+							<div class="set-sub" @click="setStyle('sub')"></div>
+							<div class="set-sup" @click="setStyle('sup')"></div>
+							<div class="set-restore" @click="setStyle('restore')"><i></i></div>
+						</div>
+						<div class="comm-row-2-item">
+							<div class="comm-title">颜色</div>
+							<div class="comm-input comm-input-2 js-color">
+								<input id="bgcolor" v-model="musicForm.bgcolor" class="color" ></input>
+							</div>
+						</div>
+					</div>
+					<div class="comm-row">
+						<div class="comm-title">段落名称</div>
+						<input class="comm-input" v-model="musicForm.fieldname" name="fieldname" id="fieldname"></input>
+					</div>
+					<div class="comm-row comm-row-2">
+						<div class="comm-row-2-item">
+							<div class="comm-title">音符起始位置</div>
+							<input class="comm-input comm-input-2" v-model="musicForm.startNodeIndex" id="startNodeIndex"></input>
+						</div>
+						<div class="comm-row-2-item">
+							<div class="comm-title">音符终止位置</div>
+							<input class="comm-input comm-input-2" v-model="musicForm.endNodeIndex" id="startNodeIndex">
+						</div>
+					</div> 
+					<div class="comm-row">
+						<div class="comm-title">段落内容</div>
+						<textarea class="comm-textarea" v-model="musicForm.fielddesc" name="fielddesc" id="fielddesc"></textarea>
+					</div>
+					
+					<div class="comm-row">
+						<div class="comm-title">上传图片</div>
+						<ul class="file-ul comm-textarea" style="height: auto;">
+							<li v-for="( file,index) in fileUpload.showFiles" @click="filePreview.init(fileUpload.showFiles, index)" class="uploadnum"><span v-html='setFileHtml(file)'></span>
+								<div class="remove" @click.stop.prevent="removeFile(file, index)"><i class="ti ti-close"></i></div>
+						    </li>
+						    <li class="upload-add">
+						    	<file-upload ref="upload" v-show="fileUpload.showFiles.length ==0" v-model="fileUpload.files" :multiple="true" :drop="true" @input-file="inputFile" :post-action="fileUpload.fileUrl" :data="fileUpload.fileData">
+									<div class="image-plus" style="position: relative;">      
+										<div class="image-plus-horizontal"></div>
+					     				<div class="image-plus-vertical"></div>
+				      				</div>
+			      				</file-upload>
+							</li>
+						</ul>
+					</div>
+					<div class="pop-btn-box">
+						<div class="pop-btn save" @click="submit()">确定</div>
+						<div class="pop-btn delete" data-dismiss="modal" aria-label="Close">取消</div>
+					</div>	
+				</form>	
+		      </div>
+		      
+		      </div>
+		    </div>
+		  </div>
+  <!--  曲式分析编辑框 end -->
+			<!-- 钢琴键盘展开、收起按钮  -->
+			<!-- <img class="keyboard-show-img pointer" :style="keyboardShow ? 'bottom: 200px;' : ''" :src="keyboardShow ? 'v2/images/bottom.png' : 'v2/images/top.png'" @click="keyboardClick" /> -->
+		</div>
+		<!-- 属性面板 -->
+		<div class="body-attr scroll" :style="{width: attrPanelShow ? '220px': '0px'}">
+			<div class="panel-name">
+				<span id="panelName" :class="{'panel-name-item js-click': true, 'active': attrPanelIndex == 0}" @click="attrPanelIndex = 0">谱例属性</span>
+				<span id="layoutPanel" :class="{'panel-name-item layout js-click': true, 'active': attrPanelIndex == 1}" @click="attrPanelIndex = 1" id="">排版</span>
+				<img src="v2/images/close.png" title="关闭" class="panel-close attr-close">
+			</div>
+			<div class="panel-body staff"  v-show="attrPanelIndex == 0">
+				
+				<div class="panel-control">
+					<label>谱表类型:</label>
+					<select id="staffType" class="form-control">
+						<option value="treble">高音谱表</option>
+						<option value="bass">低音谱表</option>
+						<option value="piano">大谱表（钢琴）</option>
+						<option value="satb">合唱谱表</option>
+						<option value="satb_piano">合唱+钢琴</option>
+						<option value="fourstaff">四部和声谱表</option>
+					</select>
+				</div>
+				<div class="panel-control">
+					<label>谱表数:</label>
+					<input class="form-control" id="STAFFNUM" onchange="handleStaffChange()" type="number" step="1" min="1" max="99" value="1" style="width:80px;text-align: center;">
+				</div>
+				<!-- <div class="panel-control">
+					<label>四部和声:</label>
+					<input type="checkbox" id="fourstaff" style="width: 20px;margin-left: 0px;margin-right: 0px;">
+				</div> -->
+				<div class="panel-control">
+					<label>声部属性:</label>
+					<input type="button" id="staffPropBtn" value="设置" onclick="showStaffProp()">
+				</div>
+				<div class="panel-control" style="">
+					<label>小节数:</label>
+					<input id="nodecount" onchange="handleBarNum()" class="form-control" type="number" step="1" min="1" max="99999" value="8" style="width:165px;margin-left:8px;margin-right: 0px;text-align: center;">
+				</div>
+				<div class="panel-control">
+					<label>每行小节数:</label><input class="form-control" type="number" id="barsperstaff" onchange="setBarsPerstaff('source',this.value)" step="1" min="0" max="99" value="" style="width:80px;text-align: center;">
+				</div>
+				<div class="panel-control">
+					<label>弱起小节:</label><input type="checkbox" id="isR"  style="width:20px;margin-left: 0px;margin-right: 0px;">
+				</div>
+				<div class="panel-control">
+					<label>弱起小节:</label>
+					<input id="weakBarTop" disabled="disabled" type="number" class="form-control input-number" onchange="handleWeakBar()" step="1" min="1" max="10" value="1"/>/
+					<input id="weakBarBot" disabled="disabled" type="number" class="form-control input-number" onchange="handleWeakBar()" step="1" min="1" max="128" value="4" />
+				</div>
+				
+				<!-- <div class="panel-control">
+					<label>小节数:</label><input class="form-control" style="width: 80px;"/>
+				</div> -->
+				<div class="panel-control">
+					<label>节拍:</label>
+					<input id="M_mol" type="number" class="form-control input-number" onchange="setMValue();changeMValue()"  step="1" min="1" max="100" value="2" />
+					/
+					<!-- <input id="M_den" type="number" class="form-control input-number" onchange="setMValue();changeMValue()" step="2" min="2" max="100" value="4"/> -->
+					<select id="M_den" onchange="setMValue();changeMValue()" class="form-control">
+						<option value="2">2</option>
+						<option value="4">4</option>
+						<option value="8">8</option>
+					</select>
+					<input type="hidden" class="form-control" style="width:20px;"id="M">
+					<input id="M_type" value="1" type="hidden"><!-- 标记节拍的类型，1为普通的节拍类型，其他的为C或C|类型 -->
+				</div>
+				<div class="panel-control">
+					<label>散板:</label>
+					<input type="checkbox" id="nometer" style="width: 20px;margin-left: 0px;margin-right: 0px;">
+				</div>
+				<div class="panel-control">
+					<label>速度文本:</label><input id="Q_DESC" class="form-control" style="width: 80px;"/>
+				</div>
+				<div class="panel-control">
+					<label>速度:</label>
+					<input type="radio" name="speedsh" value="show" id="speedshow" onchange="switchSpeedShow('show')"><label for="restshow" style="width: 30px;">显示</label>
+					<input type="radio" name="speedsh" value="hide" id="speedhide" onchange="switchSpeedShow('hide')"><label for="resthide" style="width: 30px;">隐藏</label>
+					
+				</div>
+				<div class="panel-control" id="speeddiv">
+					<label>速度:</label>
+					<div class="dropdown" style="width: 40px;margin-left: 0px;margin-right: 0px;">
+						<input class="form-control" id="Q" style="display: none;"/>
+					  <input class="form-control" id="NOTE_Q" style="display: none;"/>
+					  <div id="dropdownMenuButton" style="width:40px;padding: 0px;background-color: white;" class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						<div>
+							<img id="selectSpeedImg" src="images/note_1.png" />
+						</div>
+					  </div>
+					  <div id="Q_DIV" style="width:80px;" class="dropdown-menu" aria-labelledby="dropdownMenuButton" >
+						<a  class="dropdown-item" href="javascript:void(0);" onclick="selectSpeed(1,'1/1')" val="1/1"><img src="images/note_1.png" /></a>
+						<a class="dropdown-item" href="javascript:void(0);" onclick="selectSpeed(2,'1/2')" val="1/2"><img src="images/note_2.png" /></a>
+						<a class="dropdown-item" href="javascript:void(0);" onclick="selectSpeed(3,'1/4')" val="1/4"><img src="images/note_3.png" /></a>
+						<a class="dropdown-item" href="javascript:void(0);" onclick="selectSpeed(4,'1/8')" val="1/8"><img src="images/note_4.png" /></a>
+						<a class="dropdown-item" href="javascript:void(0);" onclick="selectSpeed(5,'1/16')" val="1/16"><img src="images/note_5.png" /></a>
+						<a class="dropdown-item" href="javascript:void(0);" onclick="selectSpeed(6,'1/32')" val="1/32"><img src="images/note_6.png" /></a>
+						<a class="dropdown-item" href="javascript:void(0);" onclick="selectSpeed(7,'1/64')" val="1/64"><img src="images/note_7.png" /></a>
+					  </div>
+					</div>
+					<span style="min-width: auto;">=</span>
+					<input id="Q_V" style="width:40px;display: inline;padding-bottom: 11px;margin-left: 0px;padding-left: 0px;padding-right: 0px;text-align: center;" class="form-control"/>
+				</div>
+				<div class="panel-control">
+					<label>速度:</label>
+					<select id="plsxspeedtype" class="form-control" onchange="setSpeedValue(this,'Q_V')" style="width:97px;display: inline;height:40px;padding-top: 6px;">
+						<option value="40">庄板(极慢板)</option>
+						<option value="46">广板</option>
+						<option value="52">慢板</option>
+						<option value="56">柔板</option>
+						<option value="66">行板</option>
+						<option value="69">小行板</option>
+						<option value="88" selected="selected">中板</option>
+						<option value="108">小快板</option>
+						<option value="132">快板</option>
+						<option value="158">活板</option>
+						<option value="184">急板</option>
+						<option value="208">最急板</option>
+					</select>					
+				</div>
+				<div class="panel-control">
+					<label>调号:</label>
+					<select id="K" class="form-control" style="width:80px;">
+						<option value="C">C</option>
+							<option style="display: none;" value="C">Am</option>
+							<option style="display: none;" value="C">CMAJOR</option>
+							<option style="display: none;" value="C">Cmaj</option>
+							<option style="display: none;" value="C">Cmajor</option>
+							<option style="display: none;" value="C">C Ionian</option>
+						<option value="G">G</option>
+							<option style="display: none;" value="G">Em</option>
+							<option style="display: none;" value="G">GMAJOR</option>
+							<option style="display: none;" value="G">Gmaj</option>
+							<option style="display: none;" value="G">Gmajor</option>
+							<option style="display: none;" value="G">G Ionian</option>
+						<option value="D">D</option>
+							<option style="display: none;" value="D">Bm</option>
+							<option style="display: none;" value="D">DMAJOR</option>
+							<option style="display: none;" value="D">Dmaj</option>
+							<option style="display: none;" value="D">Dmajor</option>
+							<option style="display: none;" value="D">D Ionian</option>
+						<option value="A">A</option>
+							<option style="display: none;" value="A">F#m</option>
+							<option style="display: none;" value="A">AMAJOR</option>
+							<option style="display: none;" value="A">Amaj</option>
+							<option style="display: none;" value="A">Amajor</option>
+							<option style="display: none;" value="A">A Ionian</option>
+						<option value="E">E</option>
+							<option style="display: none;" value="E">C#m</option>
+							<option style="display: none;" value="E">EMAJOR</option>
+							<option style="display: none;" value="E">Emaj</option>
+							<option style="display: none;" value="E">Emajor</option>
+							<option style="display: none;" value="E">E Ionian</option>
+						<option value="B">B</option>
+							<option style="display: none;" value="B">G#m</option>
+							<option style="display: none;" value="B">BMAJOR</option>
+							<option style="display: none;" value="B">Bmaj</option>
+							<option style="display: none;" value="B">Bmajor</option>
+							<option style="display: none;" value="B">B Ionian</option>
+						<option value="F#">#F</option>
+							<option style="display: none;" value="F#">D#m</option>
+							<option style="display: none;" value="F#">F#MAJOR</option>
+							<option style="display: none;" value="F#">F#maj</option>
+							<option style="display: none;" value="F#">F#major</option>
+							<option style="display: none;" value="F#">F# Ionian</option>
+						<option value="C#">#C</option>
+							<option style="display: none;" value="C#">A#m</option>
+							<option style="display: none;" value="C#">C#MAJOR</option>
+							<option style="display: none;" value="C#">C#maj</option>
+							<option style="display: none;" value="C#">C#major</option>
+							<option style="display: none;" value="C#">C# Ionian</option>
+						<option value="F">F</option>
+							<option style="display: none;" value="C#">Dm</option>
+							<option style="display: none;" value="C#">C#MAJOR</option>
+							<option style="display: none;" value="C#">C#maj</option>
+							<option style="display: none;" value="C#">C#major</option>
+							<option style="display: none;" value="C#">C# Ionian</option>
+						<option value="Bb">bB</option>
+							<option style="display: none;" value="Bb">Gm</option>
+							<option style="display: none;" value="Bb">BbMAJOR</option>
+							<option style="display: none;" value="Bb">Bbmaj</option>
+							<option style="display: none;" value="Bb">Bbmajor</option>
+							<option style="display: none;" value="Bb">Bb Ionian</option>
+						<option value="Eb">bE</option>
+							<option style="display: none;" value="Eb">Cm</option>
+							<option style="display: none;" value="Eb">EbMAJOR</option>
+							<option style="display: none;" value="Eb">Ebmaj</option>
+							<option style="display: none;" value="Eb">Ebmajor</option>
+							<option style="display: none;" value="Eb">Eb Ionian</option>
+						<option value="Ab">bA</option>
+							<option style="display: none;" value="Ab">Fm</option>
+							<option style="display: none;" value="Ab">AbMAJOR</option>
+							<option style="display: none;" value="Ab">Abmaj</option>
+							<option style="display: none;" value="Ab">Abmajor</option>
+							<option style="display: none;" value="Ab">Ab Ionian</option>
+						<option value="Db">bD</option>
+							<option style="display: none;" value="Db">Bbm</option>
+							<option style="display: none;" value="Db">DbMAJOR</option>
+							<option style="display: none;" value="Db">Dbmaj</option>
+							<option style="display: none;" value="Db">Dbmajor</option>
+							<option style="display: none;" value="Db">Db Ionian</option>
+						<option value="Gb">bG</option>
+							<option style="display: none;" value="Gb">Ebm</option>
+							<option style="display: none;" value="Gb">GbMAJOR</option>
+							<option style="display: none;" value="Gb">Gbmaj</option>
+							<option style="display: none;" value="Gb">Gbmajor</option>
+							<option style="display: none;" value="Gb">Gb Ionian</option>
+						<option value="Cb">bC</option>
+							<option style="display: none;" value="Cb">Abm</option>
+							<option style="display: none;" value="Cb">CbMAJOR</option>
+							<option style="display: none;" value="Cb">Cbmaj</option>
+							<option style="display: none;" value="Cb">Cbmajor</option>
+							<option style="display: none;" value="Cb">Cb Ionian</option>
+					</select>
+				</div>
+				<div id="dopos_m" class="panel-control" >
+					<label>简谱do所在区域:</label>
+					<div>
+						<input type="radio" style="width:20px;margin-right：1px;" name="doPos" value="lower"  onclick="changeYG($('#K').val())">小字组<br>
+						<input style="width:20px;margin-right：1px;" type="radio" name="doPos" value="higher" onclick="changeYG($('#K').val())">小字一组
+					</div>
+				</div>
+				
+				
+			</div>
+			<!-- 属性面板=>排版 -->
+			<div class="panel-body layout" v-show="attrPanelIndex == 1">
+				<div class="panel-control">
+					<label>标题字体:</label>
+					<input id="titleFontSize" class="form-control" type="number" onchange="setTitleFontSize()" step="1" min="1" max="50" value="28" style="width:80px;">
+				</div>
+				<div class="panel-control">
+					<label>标题颜色:</label>
+					<input id="titleColor"  class="form-control color" type="text" value="000000" onchange="setTitleFontColor()" style="width:75px;">
+				</div>
+				<div class="panel-control">
+					<label>歌词字体:</label>
+					<input id="lyricFontSize" class="form-control" type="number" onchange="setLyricFontSize()" step="1" min="1" max="50" value="14" style="width:80px;">
+				</div>
+				<div class="panel-control">
+					<label>歌词颜色:</label>
+					<input id="lyricColor" class="form-control color" id="lyricColor" type="text" value="000000" onchange="setLyricFontColor()" style="width:75px;">
+				</div>
+				<div class="panel-control">
+					<label>标注字体:</label>
+					<input id="bracketGchFontSize" class="form-control" type="number" onchange="setBracketGchSize()" step="1" min="1" max="50" value="14" style="width:80px;">
+				</div>
+				<div class="panel-control">
+					<label>谱表与标题间距:</label><input style="width:80px;" type="number" step="1" min="0" max="200" value="0" onchange="changeMusicSpace(this.value)" class="form-control line_height">
+				</div>
+				<div class="panel-control">
+					<label>标题与作曲间距:</label><input style="width:80px;" type="number" step="1" min="0" max="200" value="0" onchange="changeComposerSpace(this.value)" class="form-control line_height">
+				</div>
+				<div class="panel-control">
+					<label>左边距:</label><input style="width:80px;" type="number" step="1" min="1" max="200" value="20" onchange="changeStaffMargin(this.value,'')" class="form-control line_height">
+				</div>
+				<div class="panel-control">
+					<label>右边距:</label><input style="width:80px;" type="number" step="1" min="1" max="200" value="10" onchange="changeStaffMargin('',this.value)" class="form-control line_height">
+				</div>
+				<div class="panel-control">
+					<label>底边距:</label><input style="width:80px;" type="number" step="1" min="1" max="200" value="0" onchange="changeStaffBotMargin(this.value)" class="form-control line_height">
+				</div>
+				<div class="panel-control">
+					<label>行间距:</label><input style="width:80px;" type="number" step="1" min="1" max="200" value="46" onchange="changeStaffSep(this.value)" class="form-control line_height">
+				</div>
+				<div class="panel-control">
+					<label>小节间距:</label>
+					<div>
+						<input type="radio" name="equalbarsradio" value="0" id="equalbars0" onchange="setEqualBars(0)"><label for="equalbars0" style="width: 90px;">不等间距</label><br>
+						<input type="radio" name="equalbarsradio" value="1" id="equalbars1" onchange="setEqualBars(1)"><label for="equalbars1" style="width: 90px;">等间距</label>
+					</div>
+				</div>
+				<input id="nodecolorselecter" onchange="setNodeBgColor()" class="form-control"  type="color" value="000000"  style="width:75px;display: none;">
+				<input id="notecolorselecter" onchange="setNoteColor()" class="form-control"  type="color" value="000000"  style="width:75px;display: none;">
+			</div>
+			<!-- 属性面板=>排版 -->
+			<div class="panel-body slur" style="display:none;">
+				<div class="panel-control" >
+					<label>弧度:</label><input style="width:80px;" type="number" step="0.1" min="1.0" max="10.0" value="1.0" onchange="changeSlurHeight(this.value)" class="slurheightVal">
+				</div>
+				<div class="panel-control" >
+					<label>位置:</label>
+						<input type="radio" name="slurdirect" value="up" id="slurdirup" onchange="setSlurDirect('up')"><label for="slurdirup" style="width: 15px;">上</label>
+						<input type="radio" name="slurdirect" value="down" id="slurdirdown" onchange="setSlurDirect('down')"><label for="slurdirdown" style="width: 15px;">下</label>
+						<input type="radio" name="slurdirect" value="auto" id="slurdirauto" onchange="setSlurDirect('auto')"><label for="slurdirauto" style="width: 28px;">自动</label><br>
+				</div>
+			</div>
+			<div class="panel-body note" style="display:none;">
+				
+				<div class="panel-control">
+					<label>定位:</label>
+					<div>
+						<a style="cursor: pointer;" href="javascript:localtosource()">定位到语法框</a>
+					</div>
+				</div>
+				<div class="panel-control stemdir">
+					<label>符干方向:</label>
+					<div>
+					<input type="radio" name="stemdirect" value="up" id="stemdirup" onchange="setNoteStemDirect('up')"><label for="stemdirup">上</label><br>
+					<input type="radio" name="stemdirect" value="down" id="stemdirdown" onchange="setNoteStemDirect('down')"><label for="stemdirdown">下</label><br>
+					<input type="radio" name="stemdirect" value="auto" id="stemdirauto" onchange="setNoteStemDirect('auto')"><label for="stemdirauto">自动</label><br>
+					</div>
+				</div>
+				<div class="panel-control">
+					<label>音高:</label>
+					<div>
+					<input type="radio" name="notepitch" value="1" id="uppitch1" onclick="upDownKeyWord(1)"><label for="uppitch1" style="cursor: pointer;">升高1度</label><br>
+					<input type="radio" name="notepitch" value="-1" id="downpitch1" onclick="upDownKeyWord(-1)"><label for="downpitch1" style="cursor: pointer;">降低1度</label><br>
+					<input type="radio" name="notepitch" value="12" id="uppitch8" onclick="upDownKeyWord(12)"><label for="uppitch8" style="cursor: pointer;">升高8度</label><br>
+					<input type="radio" name="notepitch" value="-12" id="downpitch8" onclick="upDownKeyWord(-12)"><label for="downpitch8" style="cursor: pointer;">降低8度</label><br>
+					</div>
+				</div>
+				<div class="panel-control notemove">
+					<label>左右移动:</label>
+					<div>
+					<a style="cursor: pointer;" href="javascript:mNoteLeft()">&larr;</a>
+					<a style="cursor: pointer;" href="javascript:mNoteRight()">&rarr;</a>
+					
+					
+					</div>
+				</div>
+				<div class="panel-control notedurmove">
+					<label>时值:</label>
+					<div>
+					<a style="cursor: pointer;" href="javascript:noteDurMove(-1)">&larr;</a>
+					<a style="cursor: pointer;" href="javascript:noteDurMove(1)">&rarr;</a>
+					</div>
+				</div>
+				<div class="panel-control notedurmove">
+					<label title="仅渲染选中音符">背景色1:</label>
+					<div>
+						<input id="noteBgColorInput" type="text" value="000000" onchange="setNoteBgColor(1)" class="form-control color" style="width: 58px;padding:0px; background-image: none; background-color: rgb(0, 0, 0); color: rgb(255, 255, 255);" autocomplete="off">
+						<input value="清除" onclick="clearNoteBgColor(1)" type="button">
+					</div>
+				</div>
+				<div class="panel-control notedurmove">
+					<label title="">背景色2:</label>
+					<div>
+						<input id="noteBgColorInput2" type="text" value="000000" onchange="setNoteBgColor(2)" class="form-control color" style="width: 58px;padding:0px; background-image: none; background-color: rgb(0, 0, 0); color: rgb(255, 255, 255);" autocomplete="off">
+						<input value="清除" onclick="clearNoteBgColor(2)" type="button">
+					</div>
+				</div>
+				<div class="panel-control" >
+					
+						<form name=theform style="display:none;">
+							<input type="radio" name="myradio" value="local_name"/> 上传文件名字保持本地文件名字
+							<input type="radio" name="myradio" value="random_name"  checked="true"/> 上传文件名字是随机文件名
+							<br/>
+							上传到指定目录:<input type="text" id='dirname' placeholder="如果不填，默认是上传到根目录" value="files/abcimg" size=50>
+							
+							<div id="container">
+								<input id="selectfiles" type="file" style="display: none;">
+								<a id="postfiles" href="javascript:void(0);" class='btn'>开始上传</a>
+							</div>
+						</form>
+		
+						<label>图片:</label>
+						<div style="display: block;width:100px;">
+							<input value="选择文件" type="button" onclick="$('#selectfiles').click()">
+							<input value="上传" type="button" onclick="uploadNotePic()">
+							<pre id="console"></pre>
+							<div id="ossfile" >你的浏览器不支持flash,Silverlight或者HTML5！</div>
+						</div>
+				</div>
+			</div>
+			<div class="panel-body deco" style="display:none;">
+				<div class="panel-control">
+				<label>显示位置:</label>
+					<div>
+						<input type="radio" name="decodirect" value="up" id="decodirup" onchange="setDecoStemDirect('up')"><label for="decodirup" style="width: 15px;">上</label>
+						<input type="radio" name="decodirect" value="down" id="decodirdown" onchange="setDecoStemDirect('down')"><label for="decodirdown" style="width: 15px;">下</label>
+						<input type="radio" name="decodirect" value="auto" id="decodirauto" onchange="setDecoStemDirect('auto')"><label for="decodirauto" style="width: 28px;">自动</label><br>
+					</div>
+				</div>
+				
+			</div>
+			<div class="panel-body rest" style="display:none;">
+				<div class="panel-control">
+				<label>显示:</label>
+					<div>
+						<input type="radio" name="restsh" value="show" id="restshow" onchange="switchRestShow('show')"><label for="restshow" style="width: 30px;">显示</label>
+						<input type="radio" name="restsh" value="hide" id="resthide" onchange="switchRestShow('hide')"><label for="resthide" style="width: 30px;">隐藏</label>
+					</div>
+				</div>
+			</div>
+			<div class="panel-body bar" style="display:none;">
+				<div class="panel-control">
+					<label>换行:</label>
+					<div><input type="checkbox" id="notebr" onclick="switchNoteBr()">
+					</div>
+				</div>
+				<div class="panel-control" id="splcenter">
+					<label>简谱居中显示:</label>
+					<div>
+						<input type="radio" name="splcenterop" value="center" id="splnotecenter" onchange="switchSplNoteCenter('center')"><label for="barrestshow" style="width: 30px;">居中</label>
+						<input type="radio" name="splcenterop" value="auto" id="splnoteauto" onchange="switchSplNoteCenter('auto')"><label for="barresthide" style="width: 30px;">自动</label>
+					</div>
+				</div>
+				<div class="panel-control">
+					<label>变速:</label>
+					<div><input value="变速" type="button" onclick="showSpeedDiv()">
+					</div>
+				</div>
+				<div class="panel-control">
+					<label>变调:</label>
+					<div><input value="变调" type="button" onclick="showKeyDiv()">
+					</div>
+				</div>
+				<div class="panel-control">
+					<label>背景色:</label>
+					<div>
+						<input id="barBgColorInput" type="text" value="000000" onchange="setBarBgColor()" class="form-control color" style="width: 40px; background-image: none; background-color: rgb(0, 0, 0); color: rgb(255, 255, 255);" autocomplete="off">
+						<input value="清除" onclick="clearNodeBgColor()" type="button">
+					</div>
+				</div>
+				<div class="panel-control">
+					<label>休止符:</label>
+					<div>
+						<input type="radio" name="barrestsh" value="show" id="barrestshow" onchange="switchBarRestShow('show')"><label for="barrestshow" style="width: 30px;">显示</label>
+						<input type="radio" name="barrestsh" value="hide" id="barresthide" onchange="switchBarRestShow('hide')"><label for="barresthide" style="width: 30px;">隐藏</label>
+					</div>
+				</div>
+				
+			</div>
+			<div class="panel-body gch" style="display:none;">
+				<div class="panel-control">
+					<label>文本:</label>
+					<div><input type="text" id="gchText" class="form-control" onblur="changeSGch()">
+					</div>
+				</div>
+				<div class="panel-control">
+					<label>显示位置:</label>
+					<div>
+						<input type="radio" name="gchdirect" value="^" id="gchdirup" onchange="changeSGch()"><label for="gchdirup" style="width: 15px;">上</label>
+						<input type="radio" name="gchdirect" value="_" id="gchdirdown" onchange="changeSGch()"><label for="gchdirdown" style="width: 15px;">下</label>
+					</div>
+				</div>
+				<div class="panel-control">
+					<label>字体大小:</label>
+					<div>
+						<input type="number" step="1" min="10" max="100" value="14" class="comm comm-short comm-center" style="width:80px;" id="gchfontsize" onchange="changeSGch()">
+					</div>
+				</div>
+				<div class="panel-control">
+					<label>字体类型:</label>
+					<div>
+						<input type="radio" name="gchfonttype" id="gchfonttype1" value="" checked="checked" onchange="changeSGch()"><label for="gchfonttype1">普通字体</label><br>
+      	 		  		<input type="radio" name="gchfonttype" id="gchfonttype2" value="∆" onchange="changeSGch()"><label for="gchfonttype2">美术字体</label>     
+					</div>
+				</div>
+				<!-- <div class="panel-control">
+					<label>位置调整:</label>
+					<div>
+						<a style="cursor: pointer;" href="javascript:setGchPos('down')">&#8595;</a>&nbsp;
+						<a style="cursor: pointer;" href="javascript:setGchPos('up')">&#8593;</a>&nbsp;
+						<a style="cursor: pointer;" href="javascript:setGchPos('left')">&larr;</a>&nbsp;
+						<a style="cursor: pointer;" href="javascript:setGchPos('right')">&rarr;</a>&nbsp;
+					</div>
+				</div> -->
+			</div>
+			<!-- 歌词 -->
+			<div class="panel-body lyricpropertyes" style="display:none;">
+				<div class="panel-control">
+					<label>文本:</label>
+					<div>
+					<input type="text" id="lyricText" class="form-control" onblur="changeSlyric()">
+					<input type="hidden" id="lyricBgColor">
+					<input type="hidden" id="editorLyricIstart">
+					<input type="hidden" id="editorLyricIend">
+					</div>
+				</div>
+				<div class="panel-control">
+					<label>上标:</label>
+					<div><input type="text" id="lyricTextUp" class="form-control" onblur="changeSlyric()">
+					</div>
+				</div>
+				<div class="panel-control">
+					<label>下标:</label>
+					<div><input type="text" id="lyricTextDown" class="form-control" onblur="changeSlyric()">
+					</div>
+				</div>
+				<div class="panel-control">
+					<label>对齐:</label>
+					<div>
+						<!-- <input type="radio" name="lyricAlign" value="left" id="lyricAlignLeft" onchange="switchLyricAlign('left')"><label for="lyricAlignLeft" style="width: 50px;">左对齐</label><br> -->
+						<input type="radio" name="lyricAlign" value="right" id="lyricAlignRight" onchange="switchLyricAlign('right')"><label for="lyricAlignRight" style="width: 50px;">右对齐</label><br>
+						<input type="radio" name="lyricAlign" value="center" id="lyricAlignCenter" onchange="switchLyricAlign('center')"><label for="lyricAlignCenter" style="width: 65px;">居中对齐</label>
+					</div>
+				</div>
+				<div class="panel-control">
+					<label >背景色:</label>
+					<div>
+						<input id="lyricBgColorInput" type="text" value="000000" onchange="setLyricBgColor()" class="form-control color" style="width: 58px;padding:0px; background-image: none; background-color: rgb(0, 0, 0); color: rgb(255, 255, 255);" autocomplete="off">
+						<input value="清除" onclick="clearLyricBgColor()" type="button">
+					</div>
+				</div>
+			</div>
+			<!-- 速度 -->
+			<div class="panel-body speed" style="display:none;">
+				<div class="panel-control">
+					<label>速度:</label>
+					<div>
+						<input type="radio" name="barrestsh" value="show" id="speedshow" onchange="switchSpeedShow('show')"><label for="speedshow" style="width: 30px;">显示</label>
+						<input type="radio" name="barrestsh" value="hide" id="speedhide" onchange="switchSpeedShow('hide')"><label for="speedhide" style="width: 30px;">隐藏</label>
+					</div>
+				</div>
+			</div>
+			<!-- 小节线 -->
+			<div class="panel-body nodeline" style="display:none;">
+				<div class="panel-control">
+					<label>类型:</label>
+					<div>
+						<select id="nodelineType" onchange="changeNodeLineType(this)">
+							<option value="|">普通小节线</option>
+							<option value=".|">虚线小节线</option>
+							<option value="||">双小节线</option>
+							<option value="|]">终止小节线</option>
+							<option value="|:">开始反复</option>
+							<option value=":|">结束反复</option>
+							<option value=":||:">结束-开始 反复</option>
+						</select>
+					</div>
+				</div>
+			</div>
+			<!-- 文本 -->
+			<div class="panel-body text" style="display:none;">
+				<div class="panel-control">
+					<label>字体大小:</label>
+					<div>
+						<input type="number" step="1" min="10" max="100" value="14" class="comm comm-short comm-center" style="width:80px;" id="textfontsize" onchange="changeIWord()">
+					</div>
+				</div>
+				<div class="panel-control">
+					<label>字体类型:</label>
+					<div>
+						<input type="radio" name="gchfonttype" id="gchfonttype1" value="" checked="checked" onchange="changeIword()"><label for="gchfonttype1">普通字体</label><br>
+      	 		  		<input type="radio" name="gchfonttype" id="gchfonttype2" value="∆" onchange="changeIword()"><label for="gchfonttype2">美术字体</label>     
+					</div>
+				</div>
+				<div class="panel-control">
+					<label>字体颜色:</label>
+					<div>
+						<input id="iwordColorInput" type="text" value="000000" onchange="setIwordColor()" class="form-control color" style="width: 40px; background-image: none; background-color: rgb(0, 0, 0); color: rgb(255, 255, 255);" autocomplete="off">
+					</div>
+				</div>
+			</div>
+		</div>		
+	</div>
+	
+	<!-- 谱例属性 -->
+	<div class="plsx-box hide" id="plsx-box">
+		<div class="plsx-title">乐谱属性</div>
+		<img class="plsx-close" @click="plsxClick" src="v2/images/close.png" title="关闭" />
+		<div class="comm comm-short">
+			<span>编&nbsp;&nbsp;&nbsp;&nbsp;号:</span>
+			<input class="form-control" id="X" type="number"  style="width:60px;"/>
+			<!-- <span style="margin-left: 30px;">行高：</span><input id="staffsepheight" style="width:80px;margin-left: 9px;" type="number" step="1" min="45" max="200" value="46" onchange="changeStaffSep(this.value)" class="form-control"> -->
+			<!-- <span style="margin-left: 16px;">小节数：</span>
+			<input id="nodecount" class="form-control" type="number" step="1" min="1" max="99999" value="32" style="width:165px;margin-left:8px;margin-right: 0px;text-align: center;">  -->
+		</div>
+		<div class="comm">
+			<span>标&nbsp;&nbsp;&nbsp;&nbsp;题:</span>
+			<input class="form-control" id="T" type="text" style="width:522px;" onmousemove="window.event? window.event.cancelBubble = true : e.stopPropagation();"/>
+		</div>
+		<div class="comm">
+			<span>副标题:</span>
+			<input class="form-control" id="T_S" type="text" style="width:522px;" onmousemove="window.event? window.event.cancelBubble = true : e.stopPropagation();"/>
+		</div>
+		<div class="comm">
+			<span style="vertical-align: middle;">作&nbsp;&nbsp;&nbsp;&nbsp;者:</span>
+			<!-- <input class="form-control" id="C" type="text" style="width:200px;"  onmousemove="window.event? window.event.cancelBubble = true : e.stopPropagation();"/> -->
+			<textarea id="C" rows="" cols="" class="form-control" style="width:522px;height:80px;display: inline;margin-left: 16px;vertical-align: middle;" onmousemove="window.event? window.event.cancelBubble = true : e.stopPropagation();"></textarea>
+		</div>
+		<div class="comm comm-short">
+			<!-- <span>节&nbsp;&nbsp;&nbsp;&nbsp;拍:</span>
+			<input type="number" class="form-control" onchange="setMValue()" id="M_mol" step="1" min="1" max="100" value="2" style="width:60px;margin-right: 0px;text-align: center;"/>/<input class="form-control" onchange="setMValue()" id="M_den" type="number" step="1" min="1" max="100" value="4" style="width:60px;margin-left: 0px;margin-right: 0px;text-align: center;"/>
+			<input type="checkbox" id="nometer" style="width: 20px;margin-left: 0px;margin-right: 0px;"><span style="margin-right: 32px;">散板</span>
+			<input type="hidden" class="form-control" style="width:20px;"id="M"> -->
+			<span>默认音符单位:</span>
+			<select class="form-control" id="L" style="width: 184px;">
+				<option value="1/1">1/1</option>
+				<option value="1/2">1/2</option>
+				<option value="1/4">1/4</option>
+				<option value="1/8">1/8</option>
+				<option value="1/16">1/16</option>
+				<option value="1/32">1/32</option>
+				<option value="1/64">1/64</option>
+			</select>
+		</div>
+		<br><br>
+		<div style="float: right;padding-right: 80px;">
+			<button type="button" style="width:80px;" onclick="showStaffProp()">确定</button>
+		</div>
+	</div>
+	
+	
+	
+	
+		<div class="pop-window-box help-pop" v-show="isShowHelp">
+		<div class="pop-window-cover"></div>
+		<div class="pop-window-container">
+			<div class="pop-window-header">
+				<span>使用说明</span>
+				<img title="" @click.stop="isShowHelp=false" src="images/close.png" />
+			</div>
+			<div class="pop-window-body">
+				<ul>
+					<li><p><strong style="color: #44D2B6;">a：&nbsp;</strong><strong>新增片段：</strong>&nbsp;点击“绘制曲式”按钮，按住shift，鼠标点击某一个音符为片段的开始位置，再点击某一个音符为片段的结束位置，弹出编辑框，填写信息即可；</p></li>
+					<li><p><strong style="color: #44D2B6;">b：&nbsp;</strong><strong>新增下级：</strong>&nbsp;先选择某一片段，开始位置定位在当前片段区间，根据第a点操作即可添加；</p></li>
+					<li><p><strong style="color: #44D2B6;">c：&nbsp;</strong><strong>删、改片段：</strong>&nbsp;点击曲式片段，弹出操作框，可编辑、删除、全部删除；</p></li>
+					<li><p><strong style="color: #44D2B6;">d：&nbsp;</strong><strong>完成绘制：</strong>&nbsp;设置完成后，请记得点击"完成绘制"按钮，曲式的配置才会保存下来。<strong style="color: red;">（如果没有点击"完成绘制"按钮，那都白做了，很重要哦！）。</strong></p></li>
+				</ul>
+			</div>
+		</div>
+	</div>	
+</div>
+
+	<ul id="commonCtxMenu" class="dropdown-menu">
+		<li><a class="dropdown-item" href="#" id="add2commonitem" onclick="add2CommonMenu()">添加到常用</a></li>
+		<li><a class="dropdown-item" href="#" id="delcommonitem" onclick="delCommonMenu()">从常用删除</a></li>
+	</ul>
+	<ul id="ctxMenu" class="dropdown-menu">
+	  <li class="dropdown-submenu">
+	  	<a class="dropdown-item">小节</a>
+	  	<ul class="dropdown-menu">
+	  		<li><a class="dropdown-item" href="javascript:appendNodes(1);hiddenMenu();">追加一小节</a></li>
+	  		<li><a class="dropdown-item" href="javascript:popAppendNode();hiddenMenu();" >追加多个小节</a></li>
+	  		<li><a class="dropdown-item" href="javascript:delSelectedNode();hiddenMenu();" >删除小节</a></li>
+	  		<li><a class="dropdown-item" href="javascript:insertNodes();hiddenMenu();" >插入小节</a></li>
+	  	</ul>
+	  </li>
+	  <!-- <li><a class="dropdown-item" href="javascript:$('#plsx').click();hiddenMenu()">谱例属性</a></li> -->
+	 <!--  <li><a class="dropdown-item" href="javascript:popStaffProp();hiddenMenu()">谱表属性</a></li> -->
+	  <li class="noterelli"><a class="dropdown-item" href="javascript:editorCurrNoteAnnot();">添加文字</a></li>
+	  <li class="noterelli"><a class="dropdown-item" href="javascript:editCurrNoteLyric();">编辑歌词</a></li>
+	  <li class="noterelli"><a class="dropdown-item" href="javascript:copyNote();">复制音符</a></li>
+	  <li class="noterelli"><a class="dropdown-item" href="javascript:pasteNote();">粘贴音符</a></li>
+	  <li class="noterelli"><a class="dropdown-item" href="javascript:localtosource();hiddenMenu()">定位语法框</a></li>
+	  <li class="noterelli"><a class="dropdown-item" href="javascript:mergeNote();hiddenMenu();">连接符尾</a></li>
+	</ul>
+
+							<!-- Modal -->
+<div class="modal fade"  id="QC_div" tabindex="-1" role="dialog" aria-labelledby="Q_divLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="min-width: 500px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="Q_divLabel">改变速度</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      <!-- 这里是内容 start -->
+       <div class="comm comm-short comm-center" >
+			<span>速度:</span>
+			<div class="dropdown" style="width:80px;">
+			  <!-- <input class="form-control" id="NOTE_Q" style="display: none;"/> -->
+			  <div style="width:80px;" class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<div>
+						<img id="selectSpeedImg2" src="images/note_1.png" />
+					</div>
+			  </div>
+			  <div style="width:80px;" class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+				<a class="dropdown-item" href="javascript:void(0);" onclick="selectSpeed2(1,'1/1')" val="1/1"><img src="images/note_1.png" /></a>
+				<a class="dropdown-item" href="javascript:void(0);" onclick="selectSpeed2(2,'1/2')" val="1/2"><img src="images/note_2.png" /></a>
+				<a class="dropdown-item" href="javascript:void(0);" onclick="selectSpeed2(3,'1/4')" val="1/4"><img src="images/note_3.png" /></a>
+				<a class="dropdown-item" href="javascript:void(0);" onclick="selectSpeed2(4,'1/8')" val="1/8"><img src="images/note_4.png" /></a>
+				<a class="dropdown-item" href="javascript:void(0);" onclick="selectSpeed2(5,'1/16')" val="1/16"><img src="images/note_5.png" /></a>
+				<a class="dropdown-item" href="javascript:void(0);" onclick="selectSpeed2(6,'1/32')" val="1/32"><img src="images/note_6.png" /></a>
+				<a class="dropdown-item" href="javascript:void(0);" onclick="selectSpeed2(7,'1/64')" val="1/64"><img src="images/note_7.png" /></a>
+			  </div>
+			</div>
+			<span style="min-width: auto;">=</span>
+			<input style="width:80px;display: inline;padding-bottom: 11px;margin-left: 16px;" class="form-control" id="NOTE_Q_V"/>
+			<select id="speedtypeselect" class="form-control" onchange="setSpeedValue(this,'NOTE_Q_V')" style="width:120px;display: inline;height:40px;padding-top: 6px;">
+				<option value="">--</option>
+				<option value="40">庄板(极慢板)</option>
+				<option value="46">广板</option>
+				<option value="52">慢板</option>
+				<option value="56">柔板</option>
+				<option value="66">行板</option>
+				<option value="69">小行板</option>
+				<option value="88">中板</option>
+				<option value="108">小快板</option>
+				<option value="132">快板</option>
+				<option value="158">活板</option>
+				<option value="184">急板</option>
+				<option value="208">最急板</option>
+			</select>
+			<input type="hidden" id="speedtype" value="node">
+			
+		</div>
+		<!-- 这里是内容 end -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="addNodeSpeed()">确定</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+							<!-- Modal -->
+<div class="modal fade" id="M_div" tabindex="-1" role="dialog" aria-labelledby="M_divLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="M_divLabel">改变拍号</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="comm comm-short" >
+			<span>节拍:</span>
+			<input type="hidden" id="node_M" position="before">
+			<input type="number" class="form-control" id="node_M_mol" step="1" min="1" max="100" value="2" style="width:60px;margin-right: 0px;text-align: center;display: inline-block;"/>/
+			<input class="form-control" id="node_M_den" type="number" step="1" min="1" max="100" value="4" style="width:60px;margin-left: 0px;margin-right: 0px;text-align: center;display: inline-block;"/>
+			<input type="checkbox" id="nometernode" style="width: 20px;margin-left: 0px;margin-right: 0px;display: none;"><span style="margin-right: 32px;display: none;">散板</span>
+			<!-- <select class="form-control" id="node_M" position="before">
+				<option value="[M:2/4]">2/4</option>
+				<option value="[M:3/4]">3/4</option>
+				<option value="[M:4/4]">4/4</option>
+				<option value="[M:5/4]">5/4</option>
+				<option value="[M:6/4]">6/4</option>
+				<option value="[M:3/8]">3/8</option>
+				<option value="[M:6/8]">6/8</option>
+				<option value="[M:9/8]">9/8</option>
+				<option value="[M:12/8]">12/8</option>
+			</select> -->
+		</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="changeNodeMeter()">确定</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+							<!-- Modal -->
+<div class="modal fade" id="K_div" tabindex="-1" role="dialog" aria-labelledby="K_divLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="width:600px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="K_divLabel">改变调号</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      <!-- 这里是内容 start -->
+       	<div class="keySignatureOptions">
+		<div class="keySignatures sharp">
+			<div class="keyChoice" style="margin-left: 30px; width: 25px;" value="[K:C]">C</div>
+			<div class="keyChoice" style="width: 28px;" value="[K:G]">G</div>
+			<div class="keyChoice" style="width: 34px;" value="[K:D]">D</div>
+			<div class="keyChoice" style="width: 44px;" value="[K:A]">A</div>
+			<div class="keyChoice" style="width: 54px;" value="[K:E]">E</div>
+			<div class="keyChoice" style="width: 65px;" value="[K:B]">B</div>
+			<div class="keyChoice" style="width: 74px;" value="[K:F#]">F#</div>
+			<div class="keyChoice" style="width: 85px;" value="[K:C#]">C#</div>
+		</div>
+		<div class="keySignatures flat">
+			<div class="keyChoice" style="margin-left: 30px; width: 25px;" value="[K:]">--</div>
+			<div class="keyChoice" style="width: 28px;"  value="[K:F]">F</div>
+			<div class="keyChoice" style="width: 34px;"  value="[K:Bb]">bB</div>
+			<div class="keyChoice" style="width: 44px;"  value="[K:Ab]">bE</div>
+			<div class="keyChoice" style="width: 54px;"  value="[K:Ab]">bA</div>
+			<div class="keyChoice" style="width: 65px;"  value="[K:Db]">bD</div>
+			<div class="keyChoice" style="width: 74px;"  value="[K:Gb]">bG</div>
+			<div class="keyChoice" style="width: 85px;"  value="[K:Cb]">bC</div>
+		</div>
+	</div>
+	<div id="dopos_k" style="text-align: center;">
+	简谱do所在区域:
+			<input type="radio" style="width:20px;" name="doPos2" value="lower" checked="checked" onclick="changeYG($('#K_div .selected').text(),'doPos2')">小字组
+			<input style="width:20px;" type="radio" name="doPos2" value="higher" onclick="changeYG($('#K_div .selected').text(),'doPos2')">小字一组
+	</div>
+		<!-- 这里是内容 end -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="changeNodeKey()">确定</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="Z_div" tabindex="-1" role="dialog" aria-labelledby="Z_divLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="width:600px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="Z_divLabel">移调</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body zkey">
+      <!-- 这里是内容 start -->
+       	<div class="keySignatureOptions">
+		<div class="keySignatures sharp">
+			<div class="keyChoice" style="margin-left: 30px; width: 25px;" value="c">C</div>
+			<!-- 以下是C大调的别名 -->
+			<div style="display: none;" value="c">Am</div>
+			<div style="display: none;" value="c">CMAJOR</div>
+			<div style="display: none;" value="c">Cmaj</div>
+			<div style="display: none;" value="c">Cmajor</div>
+			<div style="display: none;" value="c">C Ionian</div>
+			<!-- 以上是C大调的别名 -->
+			<div class="keyChoice" style="width: 28px;" value="g">G</div>
+			<!-- 以下是G大调的别名 -->
+			<div style="display: none;" value="g">Em</div>
+			<div style="display: none;" value="g">GMAJOR</div>
+			<div style="display: none;" value="g">Gmaj</div>
+			<div style="display: none;" value="g">Gmajor</div>
+			<div style="display: none;" value="g">G Ionian</div>
+			<div class="keyChoice" style="width: 34px;" value="d">D</div>
+			<!-- 以下是D大调的别名 -->
+			<div style="display: none;" value="d">Bm</div>
+			<div style="display: none;" value="d">DMAJOR</div>
+			<div style="display: none;" value="d">Dmaj</div>
+			<div style="display: none;" value="d">Dmajor</div>
+			<div style="display: none;" value="d">D Ionian</div>
+			<div class="keyChoice" style="width: 44px;" value="a">A</div>
+			<!-- 以下是A大调的别名 -->
+			<div style="display: none;" value="a">F#m</div>
+			<div style="display: none;" value="a">AMAJOR</div>
+			<div style="display: none;" value="a">Amaj</div>
+			<div style="display: none;" value="a">Amajor</div>
+			<div style="display: none;" value="a">A Ionian</div>
+			<div class="keyChoice" style="width: 54px;" value="e">E</div>
+			<!-- 以下是E大调的别名 -->
+			<div style="display: none;" value="e">C#m</div>
+			<div style="display: none;" value="e">EMAJOR</div>
+			<div style="display: none;" value="e">Emaj</div>
+			<div style="display: none;" value="e">Emajor</div>
+			<div style="display: none;" value="e">E Ionian</div>
+			<div class="keyChoice" style="width: 65px;" value="b,">B</div>
+			<!-- 以下是B大调的别名 -->
+			<div style="display: none;" value="b,">G#m</div>
+			<div style="display: none;" value="b,">BMAJOR</div>
+			<div style="display: none;" value="b,">Bmaj</div>
+			<div style="display: none;" value="b,">Bmajor</div>
+			<div style="display: none;" value="b,">B Ionian</div>
+			<div class="keyChoice" style="width: 74px;" value="^f">#F</div>
+			<!-- 以下是F#的别名 -->
+			<div style="display: none;" value="^f">D#m</div>
+			<div style="display: none;" value="^f">F#MAJOR</div>
+			<div style="display: none;" value="^f">F#maj</div>
+			<div style="display: none;" value="^f">F#major</div>
+			<div style="display: none;" value="^f">F# Ionian</div>
+			<div class="keyChoice" style="width: 85px;" value="^c">#C</div>
+			<!-- 以下是C#的别名 -->
+			<div style="display: none;" value="^c">A#m</div>
+			<div style="display: none;" value="^c">C#MAJOR</div>
+			<div style="display: none;" value="^c">C#maj</div>
+			<div style="display: none;" value="^c">C#major</div>
+			<div style="display: none;" value="^c">C# Ionian</div>
+		</div>
+		<div class="keySignatures flat">
+			<div class="keyChoice" style="margin-left: 30px; width: 25px;" value="">--</div>
+			<div class="keyChoice" style="width: 28px;"  value="f">F</div>
+			<!-- 以下是F的别名 -->
+			<div style="display: none;" value="f">Dm</div>
+			<div style="display: none;" value="f">FMAJOR</div>
+			<div style="display: none;" value="f">Fmaj</div>
+			<div style="display: none;" value="f">Fmajor</div>
+			<div style="display: none;" value="f">F Ionian</div>
+			<div class="keyChoice" style="width: 34px;"  value="_b,">Bb</div>
+			<!-- 以下是Bb的别名 -->
+			<div style="display: none;" value="_b,">Gm</div>
+			<div style="display: none;" value="_b,">BbMAJOR</div>
+			<div style="display: none;" value="_b,">Bbmaj</div>
+			<div style="display: none;" value="_b,">Bbmajor</div>
+			<div style="display: none;" value="_b,">Bb Ionian</div>
+			<div class="keyChoice" style="width: 44px;"  value="_e">Eb</div>
+			<!-- 以下是Eb的别名 -->
+			<div style="display: none;" value="_e">Cm</div>
+			<div style="display: none;" value="_e">EbMAJOR</div>
+			<div style="display: none;" value="_e">Ebmaj</div>
+			<div style="display: none;" value="_e">Ebmajor</div>
+			<div style="display: none;" value="_e">Eb Ionian</div>
+			<div class="keyChoice" style="width: 54px;"  value="_a,">Ab</div>
+			<!-- 以下是Ab的别名 -->
+			<div style="display: none;" value="_a,">Fm</div>
+			<div style="display: none;" value="_a,">AbMAJOR</div>
+			<div style="display: none;" value="_a,">Abmaj</div>
+			<div style="display: none;" value="_a,">Abmajor</div>
+			<div style="display: none;" value="_a,">Ab Ionian</div>
+			<div class="keyChoice" style="width: 65px;"  value="_d">Db</div>
+			<!-- 以下是Db的别名 -->
+			<div style="display: none;" value="_d">Bbm</div>
+			<div style="display: none;" value="_d">DbMAJOR</div>
+			<div style="display: none;" value="_d">Dbmaj</div>
+			<div style="display: none;" value="_d">Dbmajor</div>
+			<div style="display: none;" value="_d">Db Ionian</div>
+			<div class="keyChoice" style="width: 74px;"  value="_g">Gb</div>
+			<!-- 以下是Gb的别名 -->
+			<div style="display: none;" value="_g">Ebm</div>
+			<div style="display: none;" value="_g">GbMAJOR</div>
+			<div style="display: none;" value="_g">Gbmaj</div>
+			<div style="display: none;" value="_g">Gbmajor</div>
+			<div style="display: none;" value="_g">Gb Ionian</div>
+			<div class="keyChoice" style="width: 85px;"  value="_c">Cb</div>
+			<!-- 以下是Gb的别名 -->
+			<div style="display: none;" value="_c">Abm</div>
+			<div style="display: none;" value="_c">CbMAJOR</div>
+			<div style="display: none;" value="_c">Cbmaj</div>
+			<div style="display: none;" value="_c">Cbmajor</div>
+			<div style="display: none;" value="_c">Cb Ionian</div>
+		</div>
+	</div>
+		<!-- 这里是内容 end -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="changeZKey()">确定</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 小节线数据 -->
+<div class="modal center-modal bd-example-modal-lg fade" id="N_div" tabindex="-1" role="dialog" aria-labelledby="N_divLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="width:1200px;height:830px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="N_divLabel">小节线数据</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+	      <!-- 这里是内容 start -->
+	      <div style="float:left;">
+	      	<textarea rows="25" cols="75" id="nodelinedata_tmp" onclick="lightNode()"></textarea>
+	      </div>
+	      <canvas id="pre" style="" width="300px" height="50px"></canvas><br>
+	      <div style="width:1130px;height: 550px;float: left;overflow: auto;">
+		      <div style="position: relative;">
+				<img alt=""  id="imgpreview" src="" >
+				<div id="candiv" style="position:absolute;width: 0;height:0px;background: red;opacity: 0.3" onclick=""></div>
+			  </div>
+	      </div>
+		  
+		<!-- 这里是内容 end -->
+      </div>
+      <div class="modal-footer">
+        <!-- <button type="button" class="btn btn-primary" onclick="resetNodeLineDataIndex()" id="resetIndexBtn">索引号重新排列</button> -->
+        <button type="button" class="btn btn-primary" onclick="resetNodeLineData()" id="resetBtn">重新获取</button>
+        <button type="button" class="btn btn-primary" onclick="startPreview()" id="previewBtn">预览</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="setNodelineData()">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 智能纠错数据 -->
+<!-- <div class="modal fade" id="IEC_div" tabindex="-1" role="dialog" aria-labelledby="IEC_divLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="width:1000px;height:580px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="IEC_divLabel">智能纠错数据</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      这里是内容 start
+      <iframe src="iec.html" style="width:100%;height: 440px;overflow-y:scroll;border: 0px;" id="iecFrame"></iframe>
+	  这里是内容 end
+      
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-primary" onclick="getIECData()" id="playBtn">开始</button>
+	        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="setIECData()">确定</button>
+	      </div>
+      </div>
+    </div>
+  </div>
+</div> -->
+<!-- 歌词 -->
+<div class="modal fade" id="LYRIC_div" tabindex="-1" role="dialog" aria-labelledby="LYRIC_divLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="width:1024px;height:630px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="LYRIC_divLabel">编辑歌词</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+	      <!-- 这里是内容 start -->
+	      <div id="lyricpicdiv" style="float: left; height: 490px;overflow-y:scroll;max-width: 1024px; ">
+	      </div>
+		  <div id="lyric_edit_div" style="overflow: auto;">
+	      </div>
+		  <!-- 这里是内容 end -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">确定</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 快捷键 -->
+<div class="modal fade" id="SHORTCUT_div" tabindex="-1" role="dialog" aria-labelledby="SHORTCUT_divLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="width:600px;height:600px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="SHORTCUT_divLabel">快捷键</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      <!-- 这里是内容 start -->
+      	  <!-- <input type="text"  class="comm comm-short comm-center" style="width:180px;" id="zsInput" > -->
+      	Ctrl+E： 显示/隐藏语法编辑框
+      	 <br><hr>
+      	 Ctrl+D：显示/隐藏钢琴键盘
+      	 <br> <hr>
+      	  Ctrl+Q：切换定位状态
+      	  <br><hr>
+      	  <strong>选中音符高亮状态下:</strong><br>
+      	 ↑：升半音<br>
+      	 ↓：降半音<br>
+		 ←：选中前一个音符<br>
+		 →：选中后一个音符<br>
+		 ctrl+↑：单个音符升8度<br>
+		 ctrl+↓：单个音符降8度<br>
+		 ctrl+L：编辑歌词<br><hr>
+		 
+		 ctrl+←：增加时值设置<br>
+		 ctrl+→：减小时值设置<br><hr>
+		 
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 节奏谱 -->
+<div class="modal fade" id="RHYTHM_div" tabindex="-1" role="dialog" aria-labelledby="RHYTHM_divLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document" style="max-width: 100%!important;">
+    <div class="modal-content" style="width:1000px;height:580px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="RHYTHM_divLabel">节奏谱</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      <!-- 这里是内容 start -->
+      <iframe src="rhythm.html" style="width:100%;height: 440px;overflow-y:scroll;border: 0px;" id="rhythmFrame"></iframe>
+	  <!-- 这里是内容 end -->
+      
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="">关闭</button>
+	      </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 谱表属性 -->
+<div class="modal fade" id="STAFF_div" tabindex="-1" role="dialog" aria-labelledby="STAFF_divLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document" style="max-width: 100%!important;">
+    <div class="modal-content" style="width:1300px;height:580px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="STAFF_divLabel">谱表属性</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div>
+	      <!-- <input type="button" value="增加" class="btn btn-secondary" onclick="addStaff()"> -->
+      </div>
+      <div id="staffSplitDiv" style="text-align: center;">
+      	
+      </div>
+      <div class="modal-body">
+      <!-- 这里是内容 start -->
+      <div id="staffsettingdiv">
+      </div>
+	  <!-- 这里是内容 end -->
+      
+	      <div class="modal-footer">
+	      	<!-- <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="showPlsx()">上一步</button> -->
+	        <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="updateStaffProp()">确定</button>
+	      </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 保存选项 -->
+<div class="modal fade" id="SAVE_div" tabindex="-1" role="dialog" aria-labelledby="SAVE_divLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="width:300px;height:400px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="SAVE_divLabel">保存选项</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      <!-- 这里是内容 start -->
+      <div id="speed_div">
+      	请输入要生成的速度(按回车键确认)：<br>
+      	<input type="text" id="spinput" onkeyup="speedPress(this.value)">
+      	<div>将要生成以下速度的文件：</div>
+      	
+	      <div>正常速度: <input name="filespeed" style="width:60px;" disabled="disabled" value=""></div>
+	      <div id="demospeed" style="display: none;">
+	      	<div>
+	      	增加文件 :<input name="demospeedinput" style="width:60px;" value="speedval" saved="0"><input type="button" value="删除" onclick="removeme(this)">
+	      	</div>
+	      </div>
+	      <div id="addspeeds"></div>
+	  </div>
+	  <!-- 这里是内容 end -->
+	  
+      
+	      <div class="modal-footer">
+	        <!-- <button type="button" class="btn btn-primary" id="save_to_server" data-dismiss="modal" >确定</button> -->
+	      </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 调速度 -->
+<div class="modal fade" id="CHANGE_SPEED_div" tabindex="-1" role="dialog" aria-labelledby="CHANGE_SPEED_divLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="width:300px;height:200px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="CHANGE_SPEED_divLabel">速度文本</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      <!-- 这里是内容 start -->
+      	  <input id="speedDescInput"><br>
+	  <!-- 这里是内容 end -->
+	  
+      
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="changeSpeedDescInput()">确定</button>
+	      </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 追加小节 -->
+<div class="modal fade" id="APPEND_NODE_div" tabindex="-1" role="dialog" aria-labelledby="APPEND_NODE_divLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="width:700px;height:200px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="APPEND_NODE_divLabel">追加小节</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      <!-- 这里是内容 start -->
+      	  小节数：<input type="number" step="1" min="1" max="100" value="1" class="comm comm-short comm-center" style="width:80px;" id="appendNodeNum" >
+	  <!-- 这里是内容 end -->
+	  
+      
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="handleAppendNodes()">确定</button>
+	      </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 注释编辑 -->
+<div class="modal fade" id="ZS_EDIT_div" tabindex="-1" role="dialog" aria-labelledby="ZS_EDIT_divLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="width:400px;height:350px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ZS_EDIT_divLabel">编辑文字</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      		<input type="hidden" id="zsistart">
+      <!-- 这里是内容 start -->
+      	  <!-- <input type="text"  class="comm comm-short comm-center" style="width:180px;" id="zsInput" > -->
+      	  <textarea rows="" cols="" id="zsInput" style="width:280px;"></textarea><br>
+      	  字体大小：<input type="number" step="1" min="10" max="100" value="14" class="comm comm-short comm-center" style="width:80px;" id="annofontsize" >
+      	 <br>
+      	 字体类型：<input type="radio" name="fonttype" id="fonttype1" value="" checked="checked"><label for="fonttype1">普通字体</label>
+      	 		  <input type="radio" name="fonttype" id="fonttype2" value="∆"><label for="fonttype2">美术字体</label>      	 
+      	 <br> 
+      	  显示位置：<input type="radio" name="zspos" id="zsup" value="^" checked="checked"><label for="zsup">上</label> 
+      	  		  <input type="radio" name="zspos" id="zsdown" value="_"><label for="zsdown">下</label>
+      	  		  <!-- <br>
+      	  		 位置调整：
+						<a style="cursor: pointer;" href="javascript:setGchPos('down')">&#8595;</a>&nbsp;
+						<a style="cursor: pointer;" href="javascript:setGchPos('up')">&#8593;</a>&nbsp;
+						<a style="cursor: pointer;" href="javascript:setGchPos('left')">&larr;</a>&nbsp;
+						<a style="cursor: pointer;" href="javascript:setGchPos('right')">&rarr;</a>&nbsp; -->
+	  <!-- 这里是内容 end -->
+      		<input type="hidden" id="gchcoor" value="">
+      		<input type="hidden" id="xoffset" value="">
+      		<input type="hidden" id="yoffset" value="">
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="saveZs()">确定</button>
+	      </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 选择强弱模式 -->
+<div class="modal fade" id="METER_MODEL_div" tabindex="-1" role="dialog" aria-labelledby="METER_MODEL_divLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="width:600px;height:300px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="METER_MODEL_divLabel">模式选择</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      <!-- 这里是内容 start -->
+      	  <div id="metermodelhtml" class="comm comm-short comm-center" >
+      		<div id="m5_div" >
+      		<span>五拍子强弱模式选择</span>：<br>
+	      	  <input style="width: 40px;" type="radio" value="5" name="meter5" id="m5" onclick="changeMeterModel5('')"><label for="m5" style="cursor: pointer;">（强）（弱）（弱）（次强）（弱）</label><br>
+	      	  <input style="width: 40px;" type="radio" value="51" name="meter5" id="m51" onclick="changeMeterModel5('1')"><label for="m51" style="cursor: pointer;">（强）（弱）（次强）（弱）（弱）</label>
+      		</div>
+      		<div id="m7_div" style="border-top: 1px solid #e9ecef;">
+      		<span>七拍子强弱模式选择</span>：<br>
+	      	  <input style="width: 40px;" type="radio" value="7" name="meter7" id="m7" onclick="changeMeterModel7('')"><label for="m7" style="cursor: pointer;">（强）（弱）（次强）（弱）（次强）（弱）（弱）</label><br>
+	      	  <input style="width: 40px;" type="radio" value="71" name="meter7" id="m71" onclick="changeMeterModel7('1')"><label for="m71" style="cursor: pointer;">（强）（弱）（次强）（弱）（弱）（次强）（弱）</label><br>
+	      	  <input style="width: 40px;" type="radio" value="72" name="meter7" id="m72" onclick="changeMeterModel7('2')"><label for="m72" style="cursor: pointer;">（强）（弱）（弱）（次强）（弱）（次强）（弱）</label>
+      		</div>
+      	  </div>
+	  <!-- 这里是内容 end -->
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-primary" data-dismiss="modal" >确定</button>
+	      </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- midi设备 -->
+<div class="modal fade" id="MIDI_SETTING_div" tabindex="-1" role="dialog" aria-labelledby="MIDI_SETTING_divLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="width:400px;height:330px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="MIDI_SETTING_divLabel">MIDI设置</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      <!-- 这里是内容 start -->
+      	  <div id="midisets" class="comm comm-short comm-center">
+			输入设备：<select id="inputDev" class="comm comm-short comm-center"></select>
+			<label class="diy-switch">
+			  <input type="checkbox" id="inputDevEnabled" checked="checked">
+			  <div class="slider round"></div>
+			</label><br>
+			输出设备：<select id="outputDev" class="comm comm-short comm-center"></select>
+			<label class="diy-switch">
+			  <input type="checkbox" id="outputDevEnabled" checked="checked">
+			  <div class="slider round"></div>
+			</label><br>
+			按键声音：<label class="diy-switch" style="margin: 10px 5px;">
+			  <input type="checkbox" id="pressVoice">
+			  <div class="slider round"></div>
+			</label>
+      	  </div>
+	  <!-- 这里是内容 end -->
+	  
+      
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="setMidiDevice()">确定</button>
+	      </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 我的谱例 -->
+<div class="modal fade" id="MY_STAFF_div" tabindex="-1" role="dialog" aria-labelledby="MY_STAFF_divLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="width:1000px;height:638px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="MY_STAFF_divLabel">我的谱例</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      <iframe id="staffListIframe" src ="stafflist.html" style="width:955px;height:555px;border: 0px;">
+      
+      </iframe>
+      
+      <!-- 这里是内容 start -->
+
+
+
+
+      	  
+	  <!-- 这里是内容 end -->
+	  
+      
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 历史记录 -->
+<div class="modal fade" id="CONTENT_HIS_div" tabindex="-1" role="dialog" aria-labelledby="CONTENT_HIS_divLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="width:500px;height:650px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="CONTENT_HIS_divLabel">谱例历史记录</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      <!-- 这里是内容 start -->
+      	  
+		<table id="abchistorytab" class="table table-hover">
+			<thead>
+				<tr>
+					<th>记录时间</th>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+	  <!-- 这里是内容 end -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="Help_div" tabindex="-1" role="dialog" aria-labelledby="Help_divLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="width:1600px;height:850px;border: 0px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="M_divLabel">帮助</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <iframe src="" id="helpframe" style="width:100%;height:100%;"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 洛天依 -->
+<div class="modal fade" id="LTY_div" tabindex="-1" role="dialog" aria-labelledby="LTY_divLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="width:800px;height:450px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="LTY_divLabel">洛天依文本</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      <!-- 这里是内容 start -->
+      	  
+	  <textarea id="lty_txt" style="width:768px;height: 358px;"></textarea>
+
+
+      	  
+	  <!-- 这里是内容 end -->
+	  
+      
+      </div>
+    </div>
+  </div>
+</div>
+
+<input type="range" id="scale_control" value="1.4" step="0.2" style="display: none;">
+<form action="exportVoicePart" id="voicePartForm" name="voicePartForm" method="post">
+	<input type="hidden" id="exp_groupid" name="exp_groupid">
+	<input type="hidden" id="exp_attachid" name="exp_attachid">
+	<input type="hidden" name="mixStaffPic" id="mixStaffPic">
+	<input type="hidden" name="staffPic" id="staffPic">
+	<input type="hidden" name="numStaffPic" id="numStaffPic">
+	<input type="hidden" name="partAbc" id="partAbc">
+	<input type="hidden" name="expMidi" id="expMidi">
+	<input type="hidden" name="expMp3" id="expMp3">
+	<input type="hidden" name="exportTitle" id="exportTitle">
+	<div id="pdfpics">
+		<!--导出pdf的图片数组-->
+	</div>
+	
+</form>
+<!-- <audio id="low" src="data:audio/mp3;base64,SUQzAwAAAAAAFgAAAAAAAAAAAAAAAAAAAAAAAPwDUAX/+5DAAAAAAAEuAAAAIAAAJcAAAAS0BLEAACQAAAAW////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////RVWP//P/+6DAwQAvoAEuAAAAIQ6qYwgBIbGc+jfod84GL+ifOj3CcV9S/8JX/v/Tvf/3zCV+pZ/vpXoZSV4uen/N6V/LuAoHlX8JRBnlu4dh+SH9kChAeKiR2ySNrV/yIiFhwMDAE93dz+KU1///6atAee1b3vv/En08r548SPijIrGSaSJPZWUeQHW4dFYyeGxp9D37JEVjJEgesA5yDl7Q9Px7w47crFAXxCFBENMW8TANQhFkPOdC38Q5zLYlYaCMSjBBJYiEo43vvKjeRoqnLePWLmW866Jq5bCcE4LgrC4KZnRAkgOQbgdDQxl4YkWqjncy/wGfV739KUpe9//////SlNfMNXq9Xv7+97+jxWKxkfsaHmmaZ1qOPR+/HqIyhQQyRKYmQMstBLNNspoAQCzAVAAMRIAgwyjKFOJSYTwLgIAANE4cQ0jy54kwRSxIcwYwwjDEBQaZUYe+5st+nTZjYwgBMNCYYAABpEKmbyOY9Es5Yr23BXe3Nf62jCYDMFhFDlclksiFEUActwLBwDARSkwGJTKYlMOkMxEKTHI9p7XPl+2HO9SxwHANZxjsVmCgCgOMMBAx6AwABKnd6/LB1GmxqMMu65YOB5igBGESmZrI5jsfmDwsZSGl/P4g9jr3N/Vi1LAAwA1SQ628YMjl4zQWjQQ4KoBEgyZDE5gkBGCQGYaETv/2w7D/+5DA2wAY/ccjlDeADjnDaPs9wADuaqUtqG3qqRhS8YACTDkMPfgwEBm+AIrMpjUMBQUDxhgpGbBEDhMDBmZbJYk3DJ5R2/8e5lKOf///3bbpl+EfkUEEDq4Rf+2pZFE91/GMwiKhsxiE0zCAAGGhMCgoBgW3y6DAQcMMCYHBwweHc+/Xl87GO///////////////UlDZhACH7gf/////////////95BQFBwMSXMHgcMBD50nQIzI0iiUQwceeteujIlzDQ9ix0NTKQ+WQInGtL6Gy6KGh05mXwlmHQ6GPQRgkEAaFZgoAIqBawy6haA7AxpZQlptKKOK+LdxuPUcWoPNh0wUk9CQuhtVu1MOTSaxZ1C1nIJE5j+7PcseVCUlK9906DHGUIhnOllMOwxrm/51OpgynaCNZyq7mQTKp6zGaWGbeWOu2rJYHTgX2nMt5bRaVewiDy3ljjjd1/913v6/5tXDA37YiirGlKoGZUgO+tTbsZb5Us3v7nnn/6y7kxtaLQIjcg12JDTW7cMwBMzGOW+YfSf38d/+v/XNc13/+5DAdYAe5aFfmdyAApIy7De0wAX////Wuy2yVAn/vxCUmyknHJG25WFwWvSXIADFAQVOMo6BtADPWfXbEVTmcqhcVmIOSQuL4ksqMdEp2qyVq2y9OnZqtfr8d13r3LUiQq3Q1JKQ6ywvqe6PTdhyK6wRrnqi1nl6JQ/c9hcsSYMaRnOwJfjUo4E62/7W0273Jqt5c9bPyzSt1Q7bFtnvgtmz3375nn9r+zMWf8zBmrXW4Mx2Vs5F8zjffM5W9n8fmZnX5ggRiv5JJHJmqPyoOgJSkTyBAaIxQ0+EB028TxRCH10gEJoCFJuQQMjuqH5UPpYL5+ohIPqlLrSSEsSflayW0aGrXCVRJFTEPoRIOkJR5/qYK3iWYj88OxQ4GteYseCcsqXlh4cr2jisR66tLq9GeQXshVoy963lqx6xjPoUpjNoysuuw2pR+w406r8wsseaPykpzq70vyzfeSfKyZnF9E2FlD/5XKHSkTJt6M2k4TFp4cXVZ4f0P+hPqcSvS8CSknJbbrbb1O3jUAS3T+HRlkxRwDKQWClit7UHKkf/+6DAbYAXjaFZTbGNowizKzWnsbVivWFecCeeIrSaj5W2JPUR9FcunFaQxU38F8XyrXGyhDgnk44wVRaS88U0aYvlJCfdgASNi2qLgS+rBYjk2vDiP7xWbOVP1Pj08VmRlCXDU10nHaasY0oq2HkqVJyRwldOkB+qETL1WdSM+XL3kCyo+fpXkzdi02kscHxkzbJu5ppkrqzKZ51TVcfQm0pRMUHIkzCXEj8kFhdb+lpc0trb1alwwCAVI5ddtdduWYQGLXhdGQkJBksB/BAap7Ygu1o5fwmsJ4mzXYC4yPD/nQ01jmbdwXNifoSnlOzr1IScfTOLAwIbO9R2nOMThPVf9xxXumIjVIF1pyX4zgrCWzUdSbUSF2HakgoYTMlx4SkIddEWlzssD8pV8Y09cOi6rr5ouRlXpSlpYbjrcqLZN09h9dO7mw/GaFFl0OzLhUZWnULazH7zJXPZmZqvhrBDVKbLVmVGxCW/sLrT026m3mZmZnIT1n+iAgS25Ndttduqq8SlzXWsFVyQht8eiCa2tIs9iTEwASKaiIOgPlgi2MhgyCTKktcV0Efkh2uNSoO5KEMoHI4piwlWHyCvLJMPjqD0lzIvpUq8zLoApiVxPMgeMVx84R1nGy92qE8gPqz4eysfklXAWrXVctWpXradF2Emm7bnJX9gabSUdcZVtD0em1kiN5H/+5DAqIAYSZtXrL2NqxI0KrWGMbTZMYHrB9W91/q2iMWn6qqxpxzU9BHWUnl1TWLEpLhLUlYTD2ZLvzMzMqh0tMzMzJHqtcN5hPwkkluOf/1YQM01qLzuUSiPQDIl7jUbJ27r2ZmzF+JuVOWUTDhqRnqeihDPpc82c5GnolLqYOVLqWGpy5fxirlXKTCxlIbuVM6anS6bkupm1StbbEQk+Yx1rlPEaV0eGlhunCZJ/H21UhMi7Zk9t06az6XWEOc2aM3PmpbPFoR0mIWHkjDN2u79l3S/cmKseV/Ll9jMTOMby81JfbWxY1F+ZFezRrYiajOcG/rl7CxHUkdM6g2iaxbf//y9anv///t8QDy8F9sEglK3S7bW3SlPY0qBynbWFWLQKmXKoKy2WLmTGBzCHGU9gqE7h6jKVz6GnjSNI6p3qtQ00TmFuIUomaOfpOTRQ5XK6NBe6zVtOT2jRldbbCqCI6l4RjIlGQgjrlzESRJMYOKoimJi5COJN3rJRJJpJBqAKDYnHy4+vAZKoasmK3qsu2Sk1bWZ6cOnnrUeegX/+5DAqwAYwaNZjOHtsvizqLWHsbSrd2n7Np/rakXH34fH2TNS7SNpVbLfWfOVipb0IglnLTMzMzMlYnfMzMzOwHzPALaDLLJ//+MiUGSKYMlq3iaSIZ62BlBwnGac11mRlSwXYrpkh06lQ1EIezWsf0R9Gxm24NfltiMW9erp3XXsNNbsoWtu1pm2Q6+SRUVra8o64aBY65Va/iw5N+XFV+Ba48oPjvUYK15JA9YgWHipvDLf+EwLryhGFRCOxCD4cCkPf///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////+6DAroAwKUkfjD0NgGoM46QxFSD////////////////////////////////////////////////quipoAA2PqyhBKtKX1KZ8MHmyt/6gKHegeFj/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////+5DA2wAoYAEuAAAAIAAAJcAAAAT//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/+5DA/4AxgAEuAAAAIAAAJcAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" preload="auto" controls="controls" hidden="true"></audio>
+<audio id="mid" src="data:audio/mp3;base64,SUQzAwAAAAAAFgAAAAAAAAAAAAAAAAAAAAAAANQD6QT/+6DAAAABTALwgAAAIrI0o2D3pbgAEkAA6w4Azn6DPKyK/+pxJxN0OHoShzoXIh7t48Tiggx8sjeo47+NMMMMNAbw8mbEMidjc2BWRMMCseR+xs92NXx8vGCI/ngKxko/j7UgkzwQPhD0wXDc4UogYnvXYXb2yMVtCgnIyeVt1eo5IMuagoY1fVEDFEDmCMnnuAuBe6UAIJP7I1gBk+8oAA8j2sXegyiBwUEkCBVuFzxQECTPOf2CaNvYZNhASRnBRBFB+u3s5qBcEza0BLEAABsAAAApsSJJBC1X+LmpbEgPVPoxYT6EJ9bXDhdgYIiuaTJ+ZtsT8wHm3ivXJ3X7U5hkhg3BurSLKA3HfyQyfxydiQweL7Hm7b05+cHDjdnG4DDppc7JaiWKpzNtfARzwRDBRBXzgzV0PFmtGBMJ5/jZmdnzThLEs+mp2Vx3J9Y4DwwWCQWGLPDwJAgGBMKhgB83WJCwtfXnaw0qDcG5PEsG4frx4ERREdksliOob5zcbjQwaEyLl5bssiik4RNmdpxZEiI5lBEwiwkZDbazdd8ruNmOyRmZFYk5iEC+mm2IYwdcxgcAmGDKBaYCwGbI2bPGGAFv26zUDwMI3z7O4kN1GjzgjaQhxbs1f5Q9EnYrX1WFlgRKYgBDzWOgmhmNjt7LJTXpTReC6l2XwiQ62/b2aFH+PWJmzij/+5DAmgAXtaM3lPYAA3eyazs88AATqNpYcE5NBqxZw3b1PH+K/j2JieiHJ1zHkQxC7Q4D2LLlTN2PTedwIGo9ELFsSpSFjVjMMMWQGEI64xI1HLT6DI9ZviqvxFiN97x7f9LhzBqR1k2SqjQlLoYcyh3+9jKZd2tXMGtmoJI2yXG2o222243JJJJTGVUTU8hjFo+zUQtTJAMDxgjjLoJTBIGTKQWCABTJwRjDcBFOXKSbzYvJQElIXDQRA5JBsdh24oaQzR5SvOmIkhdUUjPuRR/ER4Uh4pYfYb66e7R660QIlvwaqdT/5h5iycVfdaTHju460U5tdyMs+0+tNDA6WfaqyXT2WVdYT2BCX8kYULGljiRguXXsrYVyHCSiaavs3oxY/vBBD8DhSeVsMM9OvxTJxVZtIUNWaTlVE7BarzSTTFmmUb6Gf/6f/6Q0AXNtdtrbcsG8Rh6MxrbJpnAHJhoMoQDMwjfDTvqbMEf2GWWXaheEV0cSAjLK4JT8flzSyplDBpfocKy0rMRFSnMRUKagmrUtFqpYcpldXeXjjo3/+6DAkgAZ+ZtVudYAA0Qzqre6wAQkU6ODAsHZmHbC0wSr7nJSIQdoz5XVGrkvOJjA4LKQHRqqVT47GnSYaLR5ICxMYotOfN1qxkXxFwqlYtrnNSG/vWz/U1dXXQhKKZ+W2TsskVbQrjuJI9PvHCwyToLp/g/rx0YOwaGfmBg+PhWKNjsgm+YfxTKYyerPbCXY8CiUi9bbdbLelQ65iGAJl5EwKUURCyzNsINCZGhaDM1PZ1Bf3wxWs02+KhxI1lzLTZeXHLR1CWjlLEcswkckHhuSbM2cV1GJRsC0/P1pN4vR0qpcyqRO9DzBqqDKhwH61dTK6VVOCqYHFCo7E6zAnRzVzlgQ4iSfRoN3HV2Jqv8vFeiDdiluinhGOllQxcn65qFSFCrY9MxTauxya79DVJhvdOlDVts22rNZ8rp9ayrVGlTtVKE11c/EONJOZhK5D2F7byq1xSf3jX66XMi52mUewoDf//S2paiaYmHJlfigJKjA9JgvKUALuu+l7DskeYfiFrrEVlYoG21oY47UwRmdXFubYrjCLgqlw2Rz+c8phxRMd9ZbORuVUjCpXh3nQx3QqEcqiXnJ+nlnKjhPnKfWEUcahXcRtSaGTtkdedQdyNLQ6VsZILpn7U/gsJzRH2IadV0+n0W0aOysjxXWq4vm7SnVZ0PLuFFbHZVeyztycO1kjxmO7tT/+5DAvAAaNZ9RrrHtq0sz6iXHvbaLfWELbEUwqxn8i4b0GdT2WFvwbtFD2QeSQHNKlv/+iMKiPSPeCT142lwOWMAokuS2yWyNuMmHQCFg6MgIQTbHA/RathgBPwoap0rp51imG8lYWRzcDd21SPHJO4UFmxPLSHRnOBaMpUWnEkZlhgMwh8U8UGbUBkP9C2c6Ucfx9tjeaJvLtcKlzdNBonanU+d62ZKHtx5J0mCsN45D8ZGxbXKUXUdXpGrCaJ9sZ0yQlOrYCceWV5clK6eMTguVIjlIoVYrk8v6hPmKHPA51FvLiwtz6OjVbAM583nXAJSvbOZhYyubFp8xNrKXenUkzCrUUcK1/4a7ri3yfytzr0zfB3tRcmlsQrNrQUW4T7hvySk5bbJbI26HDr9q4MjsRZPJTtRSDiIVZa1hL6RNutJkXbXVOp+65ZUcfr9YU8JPJVIw1a14Uu5EtCS8arge4tkZHoxDUYryQIXAenU1t6pXEVXq5VLtCTuiqU9IZLWQu5wquEstamMBtPB8W5mRChOZmU7ApVC9P1Tr6hf/+6DAr4AcSaNZrr3ts480avW3vbY1hXk5yiFOjFNCV61BVzWrX15IqmbzqbkIWo+HFXJeztXqBTqvGoDaxvKw1yhSuhRmt3IX5giYS+IDG7ncNv1nDtKnYh0T5KMuFo9NN6tU0eHOkhOyHw6twWoX53IbXsDgTlW/J2koJJKdkjcjaSgGDy4ZhZKSZwRVlgrYq/iz5W97I4nI5aJ4AsAZCdw3h8IYchwQWFWKw6GRwhravfrGX6fV7Oz3oizTOtzeKBCEITSL0wKgkFxM3GRREJFjnSeJaCRTdUSy38bZgZnaG+Vik4VB9ueHiwsLGm2zhZhqvbJb6+iGdr9RvJDhWvfagRHDvNWOGHFFbvnjGVbTvn9Grp31dZxxe/i5YwxRi2Ii5TYX0MvHDkOiWUx1XKi+IfoapEQDTgNE6S4RC8ZGe6ICyNE+JcJLJoAKbckbkbScdFaJiWTEMZFal00rDWdLqjbDWcs5BqTaEkGoNRFPUwTASAkJJ7AShKEo+9k6EonH3snJJEkSnySBEDpNdaMjESRJPaGQlCUJS2hKEoShKPoSSJRaXetMTESSa9VaYk09xolGJitq0ZGRkZdY6JROPrrTkyMnq1ZOT13WVpie1ouXLVtesuMjpdNly572TExJROXNnJiSSaidOSaDVTEw0SiSexWOicfLnjlYCQ7bkIgg1erayUH/+5DAxwAaBaNXrb2Ns0W0ajWGMbaqm2nT5jT6pgSHbarWBCBs/0J9cCltbZIX0qLBFkg4SDJmOjTDUtZExGd/HUaAIW0crUcRN/5W/1KVtAwo//Xhqq+1X/jL6qpUKx/1ebHxv6vs1WZqR+zQ/DCjDNs1X9wI+UBASPpN66qTGFARP///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////+6DAvAA23VMljBRtoAAAJcAAAAT///////////////////////////////////////////////////////////////////////////////////7//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/+5DA2wAoYAEuAAAAIAAAJcAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" preload="auto" controls="controls" hidden="true"></audio>
+<audio id="high" src="data:audio/mp3;base64,SUQzAwAAAAAAFgAAAAAAAAAAAAAAAGhiAAAAAAQF6QT/+6DAAAAF8AEuAAAAIBYAItAAAAT///////////////////////////////////////////////////////////////AAIAAHl7QEsQAAGwAAAClmqZVt+q1xWF29IBQKCcVto20c6gr1Gr3973vDZImve9/6Up9fd8R7+kNjV7kfghYSMQ8esW8I+A7gCcA7ATAbguBkRP5Hivj0gPHkTV1AyavmRWOJKwHQBYBUCaD0D0CEApAVAGMNWIeLmQs03M/B6AM4N8caF2YHjI83DvfFIDyJfGKUgPE4aA9Yt4asTchaFzsCGKOPv0p87owPHk0N/HgIeh6vZ379vT5pi2CGCaD0GgoJmNXqBWKyI8pRgiQFY8pSkCGGAHh7QeiIqFCCyAygyi6XU2nE43GnXLzBAIIMvInow4b7DfCGvcdTQxSAOjDjB3MKsGUwdwumov2YBwFgcBYYCIBpaFiD8GMcbzBQEjljDk4cgRvlll1qQ9DudJYsJBm84aADZmnKrILJOzD+Syf6dExnFGgEHPgB5QdtGzMsblLMsb+XAdQWEDSgNQg61w5OAS2LNSEoUDRVt2MNw/VjbKAcO7SgjBnsYOotMKYl1WbUAgJkHaSMbzlmPQxhGcFFhEjWGGGAMZRBfAEhF6k15ewAVAVDXcDPvwJ+HH3geksLfaCqdIBkc+8AOgQQGE3/+5DA2wAZbYsXNJeADVTB6b89kAAdFRc0ABmQGWaSuWsrYASDTaMAOO4QuUTkjsc7Uwww/8DSEOsEwHgOAAt2yWFkTECIpw9T3n7LZRMEDpgv0jyw2HC6z1OmgrKKeE/hz////////////////+XJN/////////////////a18I2SSSWiSSVVaarvzIbXiNEcRIw0xbjMZHMCg9Jm0g9GASBWYBQChgXAnGACAsFATAwHNmDLmCXV0uKYgFF6GPQVEwnnQC1CckIB8vTXPWFzurIXiWrEVVGuH1UsPnzeh4keOmoDJcemZ3dxyjpgg0dvkJZWGNCapdTOG0qnKEN3n3kKjOLiVYzHXX5ssufEVtUresgQ0ujsvMT2seMJkzzxJLRmnaHcOx/WNM/ZRpZjbObvEIeVlrkYyOUp0zVbYrHY+xWry87LfzkCy66qxQ020poo/EbJP////oUhJk2222124WBUwWCMyQDs6weY19HIx1KgaBWYLzsqbsyNdb9Ztdr1FegcwjdeKXB+oZdtmdqtmfvmRWO29hVj86VYgZL/+6DAkIAbcZdPmeYAA2Ozqze68AStqrSiddfbVFhw3ket4DUZT5ndIU+VTuIrIjjFiMkVsVUU5iXqpRVoqYsE/NR2VSwrrZJIKtaXA/LR4eVKunj1enbo92eGjkwjJ2RXqRbZ7yP5FIpo0Czelo3YnI9lWsOKgxFycMFRMCsOpGqrakUkpyOn7AqE2/23rCvbmXTY1tUdYyzK3/C7cvlxamaCxZo80qdADRCc1221116jTLg4PzglszKsBjAUIBoWG5lQBH8a9guPlCB74ymtbWsx2IQNXj5adWM0h8cvHdERmVT0m0PCydmaEJ81XcetsHyhGnUGopHwrrENk5Eip42OqkdlrXEWhMCa5GTH68zIvkBEhno+iLDyel0JVFUrHSerKGlRWgORLHAPUw02D8gFckkAknFCcOJmOv5LYZUYjnIS4P6XB5XVjWHx87Pa9qJp6ontA1QyqcPemiJQ9HCKsRYSiSin0K6SetbZSlYl3NTM3QKDX//Su2qVA4IDpkYMzgwvcJGiZRRfljK2JdHYYHWNp/mmdqlQCv5+dssmI5JzA8KpPi1TccsTD+fC49WQE8+fVMs7CqEWejg1I1gOdkXDtWt7NBTSUYmZnzHSKGR38zarUsqV+rJSDeSCtK5VaUima3rawRoakw+qysUWJeA4tk8F8tvWKzKhj6HdJYSmG+NBgPL/+5DAsIAZrZ9XrrGNoyOz6qXGPbYMaL6aYJ4FPudTRNP8eSXFceHDVK6UW6WzQv1rIpQ2NMvLWnMwItLLvZ/ufv2tPIUkEATGMsAEAJOSNyNpJreTCLQnd9mAAA5RMla5aJ/FbFTL9lkDms0PT9lmdnU4sEkBVzKVXxWhdJZLxmG+VchZvqxyJudIi47dnggSdlhV2kgyxTlSzS6hLo1jpb1IoHNRTqJUHS1nqdZ+PDtMVVkkbC7GcdMy/EOqiKc37E5l+TJ4R0JVSFrLM+TuFVc60MWoyayuT0S8ZMP8IxR+fGlimlCN4hZw1lUsSOxsBdoJ9IQ/HkgFKnlg+EXKsvdV0nUdZTxkWoV0sK/H+XdE5GxYvrPFWcpJfSSyuEzpLQDracbgkySTvEfRRJbltktkbdKA48JgMMnWGIUIlOQaSshSZd1TplbTYxByJbarlsbO+Tp7JldsDJHaEuq4KhbZ1665VjWzv2WChgt53k1OBWxU6W82lyUKcQ9drCiVcQtskcsJvLCcMN4ZZymGYijhnM8WVYP5UQEmJqkVEXn/+6DAqwAcNaNTrj3ts7M0azXHvbaRpYHFIJ4vzVcnMVGHehjMf5sRlM3MyrTjCxNLdZsqe6UOVhO9a3lwfqmDAolFeq2b5jQH+12yJuCyssK2T+SSFRzVxhjjKpHUgPtvl2oi3FvNwlDKXlkKpwS7ZYhKqd3MoxUGeB7HqcI8zMXLKfBykLYTYW08rR/gKJKcsjkjaSgGAaAMEBQ3vHxZeQ8JEWDFX3sXAh51JIK4QgggR8cY6yBs9mGOySqtD3NRp+OzzqxDFArGWqvT62Ww6C+HQdCcVCwXx0qf50vJliwohWPZ+S7n8PvIDp/vK05PMCQugE5NEhpmKSsPDhg8YO0P1t6UscNn5/do3TmbcU2xfJ+9dhhZ0UEHRVtaClHDyJ6OFU/aa98voa+8L9mJNHnf+WxUUhYIlhILg+rBcJ8BbLiJ+ZiFxHcL6ChEcnqak8ruiG8IYmnZYJJTckkkjbbkSQRGaQSnnA2CkWC4Nxa8w5YzEoel22VFQJAkCQJAGAEBoEhSKRShZjGREFQRACAEAIAQRBEUkRMiRNdCQkIWBIEhUGiYmRIs9LIhUFgSBIKilCKRShypRiqQiklIRSKSImRSl7iQiomCwBgBACAECQqQoRShgiFQqCwpBEEQyKSUlJUMtiqKRSCIIgiKg0iRComaWmiRIhUTIkQqERCKRSSinJURClD/+5DAvgAZmaNZrj2Ns1Iz6zWUpbehFJKKSUhQxbirVlJhULAkPSFRE/NIiZWOURCoEmYikU+yUqKWAFfqVVVVnZEYgKDN6MiMXs9CPzYi2MMQ8+0nsAkVdTVoatQVatL5FCqzkYCo1/yxN/4kJ5FsZXi68K73WN6hPn2/b//1rjO//B1/WFv/wre3t8W35Xudb/tmv8F7h9bL17a1vizFG/gxa/5gxd/4fQn1rf+FG8GLW3+Xsz61lMorp1Uyoa4K574TGJKXm3///yujSOplrWGFSFa46YnH////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////+6DAswA0maEXLKXtgAAAJcAAAAT///////////////////////////////////////////////////////////////////////////////////z//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/+5DA2wAoYAEuAAAAIAAAJcAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" preload="auto" controls="controls" hidden="true"></audio>
+ --></body>
+</html>
+<script type="text/javascript">
+//鼠标按下触发的事件
+var dragTarget;
+function Grab(evt) {
+	var targetElement = evt.target;//取得要拖动的DOM Object
+	if(targetElement.tagName.toLowerCase()=="rect"){
+		dragTarget = targetElement;
+	}
+	//console.log(targetElement.tagName)
+}
+function Drag(evt) {
+  evt.stopImmediatePropagation();
+  evt.preventDefault()
+	if(dragTarget!=null){
+		//有选中内容
+		//console.log("Drag")
+		//console.log(evt.clientY)
+		if(initY==0){
+			initStartPos = getStartPos(document.getElementById("source"));
+			initY = evt.clientY;
+			initNote = getSelectText("source");
+			lastNote = initNote;
+		}
+		var distance = initY - evt.clientY;
+		var interval = parseInt(distance/3);
+		if(interval!=lastInterval){
+			var newNote = getNoteByInterval(initNote,interval);
+			if(newNote!=""){
+				
+				var endPos = initStartPos + lastNote.length;
+				var bStr = $("#source").val().substr(0,initStartPos);
+				var eStr = $("#source").val().substr(endPos);
+				$("#source").val(bStr+newNote+eStr);
+				//replaceSelected(lastNote,newNote)
+				lastInterval = interval;
+				lastNote = newNote;
+				src_change();
+			}
+		}
+		
+	}else{
+		//没有选中内容
+		//console.log(evt.x+","+evt.y)
+	}
+}
+function Drop(evt) {//evt不是要拖动的元素本身，而是它所覆盖的元素，画布或其他元素
+	//console.log("Drop")
+	initY = 0;
+	initNote = "";
+	dragTarget = null;
+	lastNote = "";
+}
+
+$(function(){
+	// 默认显示谱子的展示形式（0：五线谱；1：简线；2：简谱）
+	$('.spl-staff-change').find('div:eq(' + musicType + ')').addClass('active');
+})
+
+function setAbcPlayWay(abcPlayWay, isOnload){
+	if(user){
+		if(isOnload && user.abcPlayWay != null){
+			return;
+		}
+		user.abcPlayWay = abcPlayWay;
+		$('.play-way').removeClass('active');
+		if(abcPlayWay == 0){
+			$('.play-way.piano').addClass('active');
+		}else{
+			$('.play-way.system').addClass('active');
+		}
+	}
+}
+// 默认钢琴按键不播abc
+var noteOnVol = false;
+
+</script>
+<script src='js/vue.min.js'></script>		  
+<script src="v2/js/popper.min.js" ></script>
+<script src="v2/js/bootstrap.min.js" ></script>
+<script src="compont/sweetalert/sweetalert.min.js"></script>
+<script src="compont/sweetalert/sweetalert.ext.js"></script>
+<script src="abcweb_177/full_source/abc2web.js" ></script>
+<script src="js/util.js?v=20211008" type="text/javascript"></script>
+
+<!-- 框选 -->
+<script src="js/abc_select.js?v=1280" type="text/javascript"></script>
+<!-- 上传组件 begin -->
+<script src="js/vue-upload-component.js"></script>
+<!-- 上传组件 end -->
+<script type="text/javascript" src="musicform/js/controller.js"></script>
+<script src='v2/js/abc_menu_config.js?v=20211008'></script>
+<script src='v2/js/pop.js?v=20211008'></script>
+<script src="js/piano.js" type="text/javascript"></script>
+
+<script src="js/staff2num-splnum.js?v=20211008" type="text/javascript"></script>
+<script src="js/edit-1-splnum.js?v=20211008" onload="setAbcPlayWay(1, true)" type="text/javascript"></script>
+<script src="js/abc2svg-1-splnum.js?v=20211008" type="text/javascript"></script>
+<script src="js/notes.js" type="text/javascript"></script>
+<script src="js/saveSvgAsPng.js"></script>
+<script src="js/webmidi-editor.js?v=20211008"></script>
+<script src="js/staff.js"></script>
+<script src="js/myabc_editor.js?v=20211008"></script>
+<script src='v2/js/abc-editor.js?v=20211008'></script>
+<script src="js/voicePart.js?v=20211008"></script>
+<script src="js/jscolor/jscolor.js"></script>
+<script src="js/canvg.js"></script>
+<script src="js/jspdf/jsPdf.debug.js"></script>
+<script src="js/html2canvas.js"></script>
+<script src="js/graph-editor.js?v=20211008"></script>
+<script src="js/piano_improvisation.js?v=20200520001"></script>
+<script src="js/myabc_plus.js"></script>
+<script type="text/javascript">
+pagewidth = ($(".right-top-content").width()-50)/37.8;
+</script>
+
+<script src="cm/soundtouch.js"></script>
+<!-- <script src="cm/play-cm.js"></script> -->
+<!-- <script src="js/tln/tln.min.js"></script>
+<link href="js/tln/tln.min.css" type="text/css" rel="stylesheet" /> -->
+<script type="text/javascript">
+
+jscolor.onComplete = function(bgcolor){
+	content_vue.musicForm.bgcolor = bgcolor;
+}
+/* if(window != window.top){
+    window.top.location.href = window.location.href;
+} */
+// 使用于曲式分析的预览功能
+function getAbcContent(){
+	return {
+		abcContent: $('#source').val(),
+		musicType: musicType
+	};
+}
+</script>
+<script type="text/javascript" src="https://imusic.ixzds.com/ixzdscommon/ossupload/lib/crypto1/crypto/crypto.js"></script>
+<script type="text/javascript" src="https://imusic.ixzds.com/ixzdscommon/ossupload/lib/crypto1/hmac/hmac.js"></script>
+<script type="text/javascript" src="https://imusic.ixzds.com/ixzdscommon/ossupload/lib/crypto1/sha1/sha1.js"></script>
+<script type="text/javascript" src="https://imusic.ixzds.com/ixzdscommon/ossupload/lib/base64.js"></script>
+<script type="text/javascript" src="https://imusic.ixzds.com/ixzdscommon/ossupload/lib/plupload-2.1.2/js/plupload.full.min.js"></script>
+<script type="text/javascript" src="https://imusic.ixzds.com/ixzdscommon/ossupload/upload.js"></script>
+
+<!-- <script src="soundfont-player-master/dist/soundfont-player.js"></script> -->
