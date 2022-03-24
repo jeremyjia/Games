@@ -1,0 +1,69 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch TestThread",
+            "request": "launch",
+            "mainClass": "TestThread"
+        },
+        {
+            "type": "java",
+            "name": "Launch Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Launch HelloApplication",
+            "request": "launch",
+            "mainClass": "com.pbz.demo.hello.HelloApplication",
+            "projectName": "pbz-demo"
+        },
+        {
+            "type": "java",
+            "name": "Launch FileUtil",
+            "request": "launch",
+            "mainClass": "com.pbz.demo.hello.util.FileUtil",
+            "projectName": "pbz-demo"
+        },
+        {
+            "type": "java",
+            "name": "Launch Application",
+            "request": "launch",
+            "mainClass": "com.Application",
+            "projectName": "pbzTools"
+        },
+        {
+            "type": "java",
+            "name": "Launch getOnlineUserTest",
+            "request": "launch",
+            "mainClass": "com.getOnlineUserTest",
+            "projectName": "pbzTools"
+        },
+        {
+            "type": "java",
+            "name": "Launch App",
+            "request": "launch",
+            "mainClass": "com.pbz.scriptengine.App",
+            "projectName": "scriptengine"
+        },
+        {
+            "type": "java",
+            "name": "Launch SeleniumDemo",
+            "request": "launch",
+            "mainClass": "com.seleniumTest.seleniumDemo.SeleniumDemo",
+            "projectName": "seleniumDemo"
+        },
+        {
+            "type": "java",
+            "name": "Launch Swagger2SpringBoot",
+            "request": "launch",
+            "mainClass": "io.swagger.Swagger2SpringBoot",
+            "projectName": "swagger-spring"
+        }
+    ]
+}
