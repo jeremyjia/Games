@@ -1,24 +1,23 @@
 import java.awt.Color;
 import java.awt.Graphics;
-import javax.swing.JComponent;
+import java.awt.Graphics2D;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
-class MyCanvas extends JComponent {
-   String s = "message";
-   int x = 45;
-   int y = 45;
-   public void paint(Graphics g) {
-      g.drawRect (10, 10, 200, 200);
-      g.setColor(Color.red);
-      g.drawString(s, x, y);
-   }
-}
-public class Panel {
-   public static void main(String[] a) {
-      JFrame window = new JFrame();
-      window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      window.setBounds(30, 30, 300, 300);
-      window.getContentPane().add(new MyCanvas());
-      window.setVisible(true);
+public class Panel extends JPanel {
+   public void paintComponent(Graphics g) {
+      super.paintComponent(g);
+      Graphics2D g2d = (Graphics2D) g;
+      g2d.setColor(new Color(31, 21, 1));
+      g2d.fillRect(250, 195, 90, 60);
+   } 
+   public static void main(String[] args) {
+      Panel rects = new Panel();
+      JFrame frame = new JFrame("Rectangles");
+      frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+      frame.add(rects);
+      frame.setSize(360, 300);
+      frame.setLocationRelativeTo(null);
+      frame.setVisible(true);
    }
 }
