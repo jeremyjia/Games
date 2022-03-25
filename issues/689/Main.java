@@ -1,29 +1,17 @@
-import java.awt.*;
-import javax.swing.*;
+import java.awt.Shape;
+import java.awt.geom.*;
 
-public class Main extends JPanel {
-   public void paint(Graphics g) {
-      g.setFont(new Font("",0,100));
-      FontMetrics fm = getFontMetrics(new Font("",0,100));
-      String s = "message";
-      int x = 5;
-      int y = 5;
-      
-      for (int i = 0; i < s.length(); i++) {
-         char c = s.charAt(i);
-         int h = fm.getHeight();
-         int w = fm.charWidth(c);
-         
-         g.drawRect(x, y, w, h);
-         g.drawString(String.valueOf(c), x, y + h);
-         x = x + w;
-      }
-   }
+public class Main {
    public static void main(String[] args) {
-      JFrame frame = new JFrame();
-      frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      frame.setContentPane(new Main());
-      frame.setSize(500, 700);
-      frame.setVisible(true);
+      int x1 = 1, x2 = 2, w = 3, h = 4, 
+      x = 5, y = 6, 
+	   y1 = 1, y2 = 2, start = 3;
+      
+      Shape line = new Line2D.Float(x1, y1, x2, y2);
+      Shape arc = new Arc2D.Float(x, y, w, h, start, 1, 1);
+      Shape oval = new Ellipse2D.Float(x, y, w, h);
+      Shape rectangle = new Rectangle2D.Float(x, y, w, h);
+      Shape roundRectangle = new RoundRectangle2D.Float (x, y, w, h, 1, 2);
+      System.out.println("Different shapes are created:");
    }
 }
