@@ -6,6 +6,12 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch Panel",
+            "request": "launch",
+            "mainClass": "Panel"
+        },
+        {
+            "type": "java",
             "name": "Launch Main",
             "request": "launch",
             "mainClass": "Main"
