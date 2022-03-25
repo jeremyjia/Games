@@ -22,9 +22,14 @@ public class Main extends JPanel {
       g2.drawString(s, centerX - width / 2, baselineY);
    }
    public static void main(String[] args) {
-      JFrame f = new JFrame();
-      f.getContentPane().add(new Main());
-      f.setSize(450, 350);
+      Frame f = new Frame("Tutorialspoint");
+      Component text = new TextArea("Sairamkrishna Mamamahe");
+      Component button = new Button("Button");
+      f.add(text, BorderLayout.NORTH);
+      f.add(button, BorderLayout.SOUTH);
+      int width = 300;
+      int height = 300;
+      f.setSize(width, height);
       f.setVisible(true);
    }
 }
