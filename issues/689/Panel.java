@@ -1,50 +1,24 @@
-import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import javax.swing.JComponent;
+import java.awt.RenderingHints;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
-class Part {
-   double value;
-   Color color;
-   
-   public Part(double value, Color color) {
-      this.value = value;
-      this.color = color;
-   }
-}
-class MyComponent extends JComponent {
-   Part[] slices = { 
-      new Part(15, Color.yellow), new Part(30, Color.white), new Part(25, Color.blue), new Part(30, Color.red) 
-   }; 
-   MyComponent() {
-   }
-   public void paint(Graphics g) {
-      drawPie((Graphics2D) g, getBounds(), slices);
+public class Panel extends JPanel {
+   public void paint(Graphics gr) {
+      Graphics2D g = (Graphics2D)gr;
+      g.setRenderingHint(
+         RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+     
+      Font font = new Font("Serif", Font.PLAIN, 96);
+      g.setFont(font);
+      g.drawString("Tutorialspoint", 40, 120);
    } 
-   void drawPie(Graphics2D g, Rectangle area, Part[] slices) {
-      double total = 0.0D;
-      for (int i = 0; i < slices.length; i++) {
-         total += slices[i].value;
-      } 
-      double curValue = 0.0D;
-      int startAngle = 0;
-      for (int i = 0; i < slices.length; i++) {
-         startAngle = (int) (curValue * 360 / total);
-         int arcAngle = (int) (slices[i].value * 360 / total);
-         
-         g.setColor(slices[i].color);
-         g.fillArc(area.x, area.y, area.width, area.height, startAngle, arcAngle);
-         curValue += slices[i].value;
-      } 
-   }
-}
-public class Panel {
-   public static void main(String[] argv) {
-      JFrame frame = new JFrame();
-      frame.getContentPane().add(new MyComponent());
-      frame.setSize(300, 200);
-      frame.setVisible(true);
-   }
+   public static void main(String[] args) {
+      JFrame f = new JFrame();
+      f.getContentPane().add(new Panel());
+      f.setSize(300, 200);
+      f.setVisible(true);
+   } 
 }
