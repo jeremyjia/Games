@@ -6,6 +6,18 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch HelloWorld",
+            "request": "launch",
+            "mainClass": "HelloWorld"
+        },
+        {
+            "type": "java",
+            "name": "Launch ExceptionDemo2",
+            "request": "launch",
+            "mainClass": "ExceptionDemo2"
+        },
+        {
+            "type": "java",
             "name": "Launch jdbcConn",
             "request": "launch",
             "mainClass": "jdbcConn"
