@@ -1,28 +1,29 @@
 import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
 
 public class Main extends JPanel {
-   public void paintComponent(Graphics g) {
-      super.paintComponent(g);
-      Polygon p = new Polygon();
-      for (int i = 0; i < 5; i++) p.addPoint((int) (
-         100 + 50 * Math.cos(i * 2 * Math.PI / 5)),(int) (100 + 50 * Math.sin(
-         i * 2 * Math.PI / 5)));
-      g.drawPolygon(p);
+   public void paint(Graphics g) {
+      g.setFont(new Font("",0,100));
+      FontMetrics fm = getFontMetrics(new Font("",0,100));
+      String s = "message";
+      int x = 5;
+      int y = 5;
+      
+      for (int i = 0; i < s.length(); i++) {
+         char c = s.charAt(i);
+         int h = fm.getHeight();
+         int w = fm.charWidth(c);
+         
+         g.drawRect(x, y, w, h);
+         g.drawString(String.valueOf(c), x, y + h);
+         x = x + w;
+      }
    }
    public static void main(String[] args) {
       JFrame frame = new JFrame();
-      frame.setTitle("Polygon");
-      frame.setSize(350, 250);
-      
-      frame.addWindowListener(new WindowAdapter() {
-         public void windowClosing(WindowEvent e) {
-            System.exit(0);
-         }
-      });
-      Container contentPane = frame.getContentPane();
-      contentPane.add(new Main());
+      frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+      frame.setContentPane(new Main());
+      frame.setSize(500, 700);
       frame.setVisible(true);
    }
 }
