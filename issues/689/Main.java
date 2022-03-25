@@ -1,44 +1,48 @@
+import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 
-public class Main extends JComponent {
-   BufferedImage image;
-   public void initialize() {
-      int width = getSize().width;
-      int height = getSize().height;
-      int[] data = new int[width * height];
-      int index = 0;
-      
-      for (int i = 0; i < height; i++) {
-         int red = (i * 255) / (height - 1);
-         for (int j = 0; j < width; j++) {
-            int green = (j * 255) / (width - 1);
-            int blue = 128;
-            data[index++] = (red<<16) | (green<<8) | blue;
-         }
-      }
-      image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-      image.setRGB(0, 0, width, height, data, 0, width);
+class Slice {
+   double value;
+   Color color;
+   public Slice(double value, Color color) {  
+      this.value = value;
+      this.color = color;
    }
+}
+class MyComponent extends JComponent {
+   Slice[] slices = { 
+      new Slice(5, Color.black), new Slice(33, Color.green), new Slice(20, Color.yellow), new Slice(15, Color.red) 
+   };
+   MyComponent() {}
    public void paint(Graphics g) {
-      if (image == null)
-      initialize();
-      g.drawImage(image, 0, 0, this);
+      drawPie((Graphics2D) g, getBounds(), slices);
    }
-   public static void main(String[] args) {
-      JFrame f = new JFrame("Display Colours");
-      f.getContentPane().add(new Main());
-      f.setSize(300, 300);
-      f.setLocation(100, 100);
-      f.addWindowListener(new WindowAdapter() {
-         public void windowClosing(WindowEvent e) {
-            System.exit(0);
-         }
-      });
-      f.setVisible(true);
+   void drawPie(Graphics2D g, Rectangle area, Slice[] slices) {
+      double total = 0.0D;
+      
+      for (int i = 0; i < slices.length; i++) {
+         total += slices[i].value;
+      }
+      double curValue = 0.0D;
+      int startAngle = 0;
+      for (int i = 0; i < slices.length; i++) {
+         startAngle = (int) (curValue * 360 / total);
+         int arcAngle = (int) (slices[i].value * 360 / total);
+         g.setColor(slices[i].color);
+         g.fillArc(area.x, area.y, area.width, area.height, startAngle, arcAngle);
+         curValue += slices[i].value;
+      }
+   }
+}
+public class Main {
+   public static void main(String[] argv) {
+      JFrame frame = new JFrame();
+      frame.getContentPane().add(new MyComponent());
+      frame.setSize(300, 200);
+      frame.setVisible(true);
    }
 }
