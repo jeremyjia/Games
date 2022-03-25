@@ -1,35 +1,24 @@
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Graphics;
-import java.awt.Polygon;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-
+import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 
-public class Panel extends JPanel {
-   public void paintComponent(Graphics g) {
-      super.paintComponent(g);
-      Polygon p = new Polygon();
-      for (int i = 0; i < 5; i++) p.addPoint((int) (
-         100 + 50 * Math.cos(i * 2 * Math.PI / 5)),(int) (
-         100 + 50 * Math.sin(i * 2 * Math.PI / 5)));
-      
-      g.drawPolygon(p);
-   } 
-   public static void main(String[] args) {
-      JFrame frame = new JFrame();
-      frame.getContentPane().setBackground(Color.YELLOW); 
-      frame.setTitle("DrawPoly");
-      frame.setSize(350, 250);
-      frame.addWindowListener(new WindowAdapter() {
-         public void windowClosing(WindowEvent e) {
-            System.exit(0);
-         } 
-      }); 
-      Container contentPane = frame.getContentPane();
-      contentPane.add(new Panel());
-      frame.show();
+class MyCanvas extends JComponent {
+   String s = "message";
+   int x = 45;
+   int y = 45;
+   public void paint(Graphics g) {
+      g.drawRect (10, 10, 200, 200);
+      g.setColor(Color.red);
+      g.drawString(s, x, y);
+   }
+}
+public class Panel {
+   public static void main(String[] a) {
+      JFrame window = new JFrame();
+      window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+      window.setBounds(30, 30, 300, 300);
+      window.getContentPane().add(new MyCanvas());
+      window.setVisible(true);
    }
 }
