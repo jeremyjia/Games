@@ -1,17 +1,16 @@
-import java.awt.Shape;
-import java.awt.geom.*;
+import java.awt.Graphics;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
-public class Main {
-   public static void main(String[] args) {
-      int x1 = 1, x2 = 2, w = 3, h = 4, 
-      x = 5, y = 6, 
-	   y1 = 1, y2 = 2, start = 3;
-      
-      Shape line = new Line2D.Float(x1, y1, x2, y2);
-      Shape arc = new Arc2D.Float(x, y, w, h, start, 1, 1);
-      Shape oval = new Ellipse2D.Float(x, y, w, h);
-      Shape rectangle = new Rectangle2D.Float(x, y, w, h);
-      Shape roundRectangle = new RoundRectangle2D.Float (x, y, w, h, 1, 2);
-      System.out.println("Different shapes are created:");
+public class Main extends JPanel {
+   public static void main(String[] a) {
+      JFrame f = new JFrame();
+      f.setSize(400, 400);
+      f.add(new Main());
+      f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+      f.setVisible(true);
+   }
+   public void paint(Graphics g) {
+      g.fillRect (5, 15, 50, 75);
    }
 }
