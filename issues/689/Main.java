@@ -1,16 +1,13 @@
-import java.awt.Graphics;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import java.awt.*;
+import java.awt.image.MemoryImageSource;
 
-public class Main extends JPanel {
-   public static void main(String[] a) {
-      JFrame f = new JFrame();
-      f.setSize(400, 400);
-      f.add(new Main());
-      f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      f.setVisible(true);
-   }
-   public void paint(Graphics g) {
-      g.fillRect (5, 15, 50, 75);
+public class Main {
+   public static void main(String[] argv) throws Exception {
+      int[] pixels = new int[16 * 16];
+      Image image = Toolkit.getDefaultToolkit().createImage(
+         new MemoryImageSource(16, 16, pixels, 0, 16));
+      Cursor transparentCursor = Toolkit.getDefaultToolkit().createCustomCursor(
+         image, new Point(0, 0), "invisibleCursor");
+      System.out.println("Transparent Cursor created.");
    }
 }
