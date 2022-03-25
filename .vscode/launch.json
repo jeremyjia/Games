@@ -6,6 +6,12 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch jdbcConn",
+            "request": "launch",
+            "mainClass": "jdbcConn"
+        },
+        {
+            "type": "java",
             "name": "Launch CreatingEmptyPdf",
             "request": "launch",
             "mainClass": "CreatingEmptyPdf"
