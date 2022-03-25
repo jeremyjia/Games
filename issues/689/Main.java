@@ -1,24 +1,22 @@
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.InputStreamReader;
+import java.net.URL;
 
-public class Main extends JPanel{
-   public void paint(Graphics g) {
-      Graphics2D g2 = (Graphics2D)g;
-      g2.setRenderingHint(
-         RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+public class Main {
+   public static void main(String[] args) throws Exception {
+      URL url = new URL("http://www.baidu.com");
+      BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+      BufferedWriter writer = new BufferedWriter(new FileWriter("data.html"));
+      String line;
       
-      Font font = new Font("Serif", Font.PLAIN, 96);
-      g2.setFont(font);
-      g2.drawString("Text", 40, 120);
-   }
-   public static void main(String[] args) {
-      JFrame f = new JFrame();
-      f.getContentPane().add(new Main());
-      f.setSize(300, 200);
-      f.setVisible(true);
+      while ((line = reader.readLine()) != null) {
+         System.out.println(line);
+         writer.write(line);
+         writer.newLine();
+      }
+      reader.close();
+      writer.close();
    }
 }
