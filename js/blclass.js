@@ -1,6 +1,6 @@
 // file: blclass.js   
 
-var g_ver_blClass = "CBlClass_v1.5.115"
+var g_ver_blClass = "CBlClass_v1.5.122"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -1775,6 +1775,12 @@ function CBlClass ()
         _on_off_div(b2,d2);
         b2.style.background = b2.style.background=="red"?blGrey[5]:blColor[4];            
     };
+	this.blfHTML = function(fn2Parse){
+		var a = "to_Parse:"+fn2Parse;
+		var b = a.split('--start--');
+		var c = b[1].split('--end--');  
+		return c[0];	
+	}
 }//END: function CBlClass ()
  
 var blo0 = new CBlClass;
