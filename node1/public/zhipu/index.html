@@ -16,6 +16,8 @@
 <script src="Zhipu-jsCode.js"></script>
 	<script>var isWindows = false;</script></head>
 <body>
+  
+<script src="https://jeremyjia.github.io/Games/js/blclass.js"></script>
 <div id="debugDiv"></div>
 <div class="win">
 	<div class="titleBar">
@@ -105,17 +107,12 @@
 
 <div id="filename">未命名.jps</div>
 
-<script>
-    var xdbtn = document.getElementById("filename");
-    xdbtn.onclick = function(){        
-        redraw(1,'editor');
-    }
-</script>
+
 
 <div class="head"><div class="main">
 <a href="http://www.jianpu99.net/" target="_blank"><img class="logo" src="/Public/zhipuStyle/default/images/logo.png"/></a><ul class="menu" onmousedown="noHideMenu();">
     	<li>
-        	<span id="menuFile" onClick="showMenu(this)">文件v0.13(F)</span>
+        	<span id="menuFile" onClick="showMenu(this)">文件(F)</span>
         	<ul>
             	<li id="menuNewFile" onClick="showWin('新建','./Zhipu-newFile.html');"><i>Ctrl+N</i>新建...</li>
             	<li id="menuOpenFile" onClick="showWin('打开','./Zhipu-fileBrowsing-type-open.html');"><i>Ctrl+O</i>打开...</li>
@@ -228,6 +225,20 @@
 </object>
 
 
-</div>
+</div> 
+<script>
+  var d = blo0.blMD("id_4_blo0_dbg","xdd",555,333,333,150,"lightgreen"); 
+  var tb = blo0.blDiv(d,d.id+"tb","xddv0.33","lightblue"); tb.style.color="brown";
+  var b1 = blo0.blBtn(tb,tb.id+"b1","b1",blGrey[1]);
+  b1.onclick = function(){
+    redraw(1,'editor'); 
+    window.frames["editFrame"].document.getElementById("editor_text").value="1111111111111"; 
+  }  
+  var b2 = blo0.blBtn(tb,tb.id+"b2","b2",blGrey[1]);
+  b2.onclick = function(){
+    xdShowJP(); 
+    window.frames["editFrame"].document.getElementById("editor_text").value="222222222222222";
+  } 
+</script>
 </body>
 </html>
