@@ -233,21 +233,40 @@
 }
 
   var d = blo0.blMD("id_4_blo0_dbg","xdd",555,333,333,150,"lightgreen"); 
-  var tb = blo0.blDiv(d,d.id+"tb","xddv0.44","lightblue"); tb.style.color="brown";
+  var tb = blo0.blDiv(d,d.id+"tb","xddv0.53","lightblue"); tb.style.color="brown";
   var xddbg1 = blo0.blDiv(d,d.id+"xddbg1","xddbg1","gray"); tb.style.color="lightblue";
   var xddbg2 = blo0.blDiv(d,d.id+"xddbg2","xddbg2","gray"); tb.style.color="lightgreen";
+  var xddbg3 = blo0.blDiv(d,d.id+"xddbg3","xddbg3","gray"); tb.style.color="gray";
+  var ta	= blo0.blTextarea(xddbg3,xddbg3.id+"ta","ta...","lightblue");
+					ta.style.width="95%"; 
+					ta.style.height="130px"; 
   var b1 = blo0.blBtn(tb,tb.id+"b1","b1",blGrey[1]);
   b1.onclick = function(){
     redraw(1,'editor'); 
     window.frames["editFrame"].document.getElementById("editor_text").value="1111111111111"; 
     xdl("b1");
-  }  
-  var b2 = blo0.blBtn(tb,tb.id+"b2","b2",blGrey[1]);
-  b2.onclick = function(){
-    xdShowJP(); 
-    window.frames["editFrame"].document.getElementById("editor_text").value="222222222222222";
-    xdl("b2");
-  } 
+  }   
+  const fs = [fTest0,fTest1,fTest2,fTest3];
+  tb.ls = [];
+  for(i in fs){
+    var btn = blo0.blBtn(tb,tb.id+i,i,blGrey[2]);
+    btn.onclick = function(_thisList,_thisBtn,_fs,_i){
+      return function(){
+        blo0.blMarkBtnInList(_thisBtn,_thisList,"green","grey");
+        xdShowJP(_fs[_i]); 
+        window.frames["editFrame"].document.getElementById("editor_text").value="ffffffffffffffffff"+_thisBtn.id;
+        xdl(_thisBtn.id);
+        ta.value = _fs[_i];
+      }
+    }(tb.ls,btn,fs,i);
+    tb.ls.push(btn);
+  }
+  
+  var bt = blo0.blBtn(tb,tb.id+"bt","bt",blGrey[1]);
+  bt.onclick = function(){
+
+    xdShowJP(ta.value); 
+  }   
 </script>
 </body>
 </html>
