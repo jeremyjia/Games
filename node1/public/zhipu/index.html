@@ -227,12 +227,15 @@
 
 </div> 
 <script>
-  const xdl = function(txt){
-    xddbg.innerHTML = blo0.blDate();
-  }
+  function xdl (txt){
+    xddbg1.innerHTML = txt + ":" + blo0.blDate();
+    xddbg2.innerHTML =  "winType = " + winType;
+}
+
   var d = blo0.blMD("id_4_blo0_dbg","xdd",555,333,333,150,"lightgreen"); 
-  var tb = blo0.blDiv(d,d.id+"tb","xddv0.35","lightblue"); tb.style.color="brown";
-  var xddbg = blo0.blDiv(d,d.id+"xddbg","xddbg","gray"); tb.style.color="lightblue";
+  var tb = blo0.blDiv(d,d.id+"tb","xddv0.44","lightblue"); tb.style.color="brown";
+  var xddbg1 = blo0.blDiv(d,d.id+"xddbg1","xddbg1","gray"); tb.style.color="lightblue";
+  var xddbg2 = blo0.blDiv(d,d.id+"xddbg2","xddbg2","gray"); tb.style.color="lightgreen";
   var b1 = blo0.blBtn(tb,tb.id+"b1","b1",blGrey[1]);
   b1.onclick = function(){
     redraw(1,'editor'); 
