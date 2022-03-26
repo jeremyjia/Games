@@ -15,35 +15,25 @@ $(document).ready(function(){
 
 window.onresize=function(){autoSize();autoWinSize();}
 document.onkeydown=function(){return setShortcuts(event);}
-document.onmousedown=hideMenu;
-function setShortcuts(ev){
-        if(ev.keyCode==9&&!$(".win").is(':visible')){
-            if(winType!=2){
-                upType=winType;setView(2);
-            }else{
-                setView(upType);
-            }
-            autoSize();
-            return false;
-        }
-        if(ev.keyCode==27){hideMenu();winClose();
-            return false;
-        }
-        if(ev.altKey&&ev.keyCode==70){$("#menuFile").click();return false;}
-        if(ev.altKey&&ev.keyCode==85){$("#menuUser").click();return false;}
-        if(ev.altKey&&ev.keyCode==72){$("#menuHelp").click();return false;}
-        if(ev.ctrlKey&&ev.shiftKey&&ev.keyCode==83){$("#menuSaveAs").click();return false;}
-        if(ev.ctrlKey&&ev.keyCode==83){$("#menuSave").click();return false;}
-        if(ev.ctrlKey&&ev.keyCode==78){$("#menuNewFile").click();return false;}
-        if(ev.ctrlKey&&ev.keyCode==79){$("#menuOpenFile").click();return false;}
-        if(ev.ctrlKey&&ev.keyCode==81){$("#menuPlayer").click();return false;}
-        if(ev.ctrlKey&&ev.keyCode==72){$("#menuTutorial").click();return false;}
-        if(ev.ctrlKey&&ev.keyCode==192){$("#menuSymbol").click();return false;}
-        if(ev.ctrlKey&&ev.keyCode==69){$("#menuAddLastSymbol").click();return false;}
-        if(ev.keyCode==37||ev.keyCode==38||ev.keyCode==39||ev.keyCode==40||ev.keyCode==46){return customShortcuts(ev.keyCode);}
+document.onmousedown=hideMenu;function setShortcuts(ev){if(ev.keyCode==9&&!$(".win").is(':visible')){if(winType!=2){upType=winType;setView(2);}else{setView(upType);}
+autoSize();return false;}
+if(ev.keyCode==27){hideMenu();winClose();return false;}
+if(ev.altKey&&ev.keyCode==70){$("#menuFile").click();return false;}
+if(ev.altKey&&ev.keyCode==85){$("#menuUser").click();return false;}
+if(ev.altKey&&ev.keyCode==72){$("#menuHelp").click();return false;}
+if(ev.ctrlKey&&ev.shiftKey&&ev.keyCode==83){$("#menuSaveAs").click();return false;}
+if(ev.ctrlKey&&ev.keyCode==83){$("#menuSave").click();return false;}
+if(ev.ctrlKey&&ev.keyCode==78){$("#menuNewFile").click();return false;}
+if(ev.ctrlKey&&ev.keyCode==79){$("#menuOpenFile").click();return false;}
+if(ev.ctrlKey&&ev.keyCode==81){$("#menuPlayer").click();return false;}
+if(ev.ctrlKey&&ev.keyCode==72){$("#menuTutorial").click();return false;}
+if(ev.ctrlKey&&ev.keyCode==192){$("#menuSymbol").click();return false;}
+if(ev.ctrlKey&&ev.keyCode==69){$("#menuAddLastSymbol").click();return false;}
+if(ev.keyCode==37||ev.keyCode==38||ev.keyCode==39||ev.keyCode==40||ev.keyCode==46){return customShortcuts(ev.keyCode);}
 }
 
-function redraw(pNum,redrawSource){  
+//xddbg
+function redraw(pNum,redrawSource){
     /*
     var jpcode=window.frames["editFrame"].document.getElementById("editor_text").value;
     var customCode=$("textarea[name=customCode]").text();
@@ -51,7 +41,7 @@ function redraw(pNum,redrawSource){
     jpcode=jpcode.replace(/\n/g,"&hh&");
     customCode=customCode.replace(/\n/g,"&hh&");
     */ 
-    $.get('http://localhost:3001/1.html',//'http://zhipu.lezhi99.com/Zhipu-draw',// '/Zhipu-draw',
+    $.get('response.html',//'http://zhipu.lezhi99.com/Zhipu-draw',// '/Zhipu-draw',
        null,//{code:jpcode,customCode:customCode,pageConfig:pageConfig,pageNum:pNum},
        function(re){
            var arr=re.split('[fenye]');
