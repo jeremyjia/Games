@@ -1,0 +1,155 @@
+
+<!DOCTYPE html>
+<html lang=en>
+<head>
+<title>Hello MIDI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="keywords" content="MIDI, Javascript" />
+<meta name="description" content="how to play low-level MIDI messages via Javascript" />
+<meta http-equiv="X-UA-Compatible" content="requiresActiveX=true"/>
+<script src="https://cdn.jsdelivr.net/npm/jzz"></script>
+<script src="https://cdn.jsdelivr.net/npm/jzz-synth-tiny"></script>
+<script src="https://cdn.jsdelivr.net/npm/jzz-input-kbd"></script>
+<link rel="stylesheet" type="text/css" href="../style.css" />
+<script src="/js/jquery-3.4.1.min.js"></script>
+<script src="/js/ads-prebid.js" onerror="abc()"></script>
+<script src="/js/prebid.js" onerror="abc()"></script>
+</head>
+
+<body>
+<div class=header>
+<div id=JazzLogo><div class=ebony>
+<span id=61_></span><span id=63_></span><span class=break></span><span id=66_></span><span id=68_></span><span id=70_></span>
+</div><div class=ivory>
+<span id=60_></span><span id=62_></span><span id=64_></span><span id=65_></span><span id=67_></span><span id=69_></span><span id=71_></span>
+</div>
+</div>
+<a href=https://github.com/sponsors/jazz-soft target=_blank><img id=donate src=/img/gheart.png alt=sponsor></a>
+<div id="title">Jazz-Soft.net</div>
+<div id="motto">We make it sound!</div>
+</div>
+<div class=links>
+<a href=https://jazz-soft.net> Jazz-Soft </a>
+<a href=https://jazz-soft.net/download> Download </a>
+<a href=https://jazz-soft.net/doc> Documentation </a>
+<a href=https://www.facebook.com/midi.javascript target=_blank> Community </a>
+<a class=right href=https://jazz-soft.net/sema> about the developer... </a>
+</div>
+<div class="adv"><div class="ads" id="panel">
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1270703683405367" crossorigin="anonymous" onerror="abc()"></script>
+<ins class="adsbygoogle ggg"
+  data-ad-client="ca-pub-1270703683405367"
+  data-ad-slot="4952279820"></ins>
+<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div></div>
+
+<div class=path>
+<a href=..>Home</a> &raquo;
+<a href=.>Examples</a> &raquo;
+Hello MIDI
+</div>
+
+<h1>Hello MIDI</h1>
+
+<script><!--
+JZZ.synth.Tiny.register('Synth');
+var port = JZZ().openMidiOut().or(function(){alert('Cannot open MIDI port!');});
+
+function play(){
+  port.send([0x90,60,100]).send([0x90,64,100]).send([0x90,67,100]);
+}
+
+function stop(){
+  port.send([0x80,60,0]).send([0x80,64,0]).send([0x80,67,0]);
+}
+--></script>
+
+<p><button onmousedown='play();' onmouseup='stop();'> Press to play... </button></p>
+
+<h2>How it works</h2>
+<p>
+Click the button above to hear the C-major chord.
+</p><p>
+This is the most basic example of how to play MIDI via Javascript.
+</p><p>
+</p><p>
+See the same example implemented purely with <a href=Jazz-Plugin/HelloMIDI.html>Jazz-Plugin</a>.
+</p>
+
+<h2>Page source</h2>
+<pre class=code>
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Hello MIDI!&lt;/title&gt;
+&lt;meta http-equiv="X-UA-Compatible" content="requiresActiveX=true"/&gt;
+&lt;script src="<a href=../doc/JZZ>JZZ.js</a>"&gt;&lt;/script&gt;
+&lt;script src="<a href=../doc/JZZ/synthTiny.html>JZZ.synth.Tiny.js</a>"&gt;&lt;/script&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+&lt;h1&gt;Hello MIDI!&lt;/h1&gt;
+
+&lt;script&gt;&lt;!--
+<a href=../doc/JZZ/synthTiny.html>JZZ.synth.Tiny.register</a>('Synth');
+var port = <a href=../doc/JZZ/jzz.html>JZZ</a>().<a href=../doc/JZZ/midiout.html>openMidiOut</a>().<a href=../doc/JZZ/common.html#or>or</a>(function(){alert('Cannot open MIDI port!');});
+
+function play(){
+  port.<a href=../doc/JZZ/midiout.html#send>send</a>([0x90,60,100]).<a href=../doc/JZZ/midiout.html#send>send</a>([0x90,64,100]).<a href=../doc/JZZ/midiout.html#send>send</a>([0x90,67,100]);
+}
+
+function stop(){
+  port.<a href=../doc/JZZ/midiout.html#send>send</a>([0x80,60,0]).<a href=../doc/JZZ/midiout.html#send>send</a>([0x80,64,0]).<a href=../doc/JZZ/midiout.html#send>send</a>([0x80,67,0]);
+}
+--&gt;&lt;/script&gt;
+
+&lt;button onmousedown='play();' onmouseup='stop();'&gt; Press to play... &lt;/button&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+
+<h2>See also</h2>
+<ul>
+<li><a href=../doc/JZZ>JZZ.js</a></li>
+</ul>
+
+<div class=footer>
+(C) 2011-21 Jazz-Soft
+</div>
+<script>
+function onLogo() {
+ if (JZZ().info().engine == 'none') {
+  var allcookies=document.cookie;
+  var cookies=allcookies.split(';');
+  var cookie=null;
+  var show = 1;
+  if (typeof navigator === 'undefined' || (navigator.userAgent.indexOf('Windows')==-1 && navigator.userAgent.indexOf('Linux')==-1 && navigator.userAgent.indexOf('Macintosh')==-1)) {
+   show = 0;
+  }
+  else {
+   for(var i=0;i<cookies.length;i++){
+    cookie=cookies[i];
+    if(cookie.charAt(0)==" ") cookie=cookie.substring(1);
+    if(cookie.substring(0,11)=="jazz_alert=") show=0;
+   }
+  }
+  if(show){
+   var logo=document.getElementById('JazzLogo');
+   var msg=document.createElement('span');
+   msg.className='msg';
+   msg.innerHTML='This piano could play better<br>if you enable <a href=/download/Jazz-Plugin/index.html>Jazz-Plugin</a> ...';
+   logo.appendChild(msg);
+   setTimeout(function(){logo.removeChild(msg);}, 6000);
+   document.cookie="jazz_alert=1;path=/";
+  }
+ }
+ onLogo=function(){};
+}
+JZZ.synth.Tiny.register('Web Audio');
+var logo=JZZ.input.Kbd({chan:15,keys:[['60_',60],['61_',61],['62_',62],['63_',63],['64_',64],['65_',65],['66_',66],['67_',67],['68_',68],['69_',69],['70_',70],['71_',71]],onCreate:function(){
+ this.getWhiteKeys().setStyle({backgroundColor:'#ffe'},{backgroundColor:'#aaa'}); this.getBlackKeys().setStyle({backgroundColor:'#111'},{backgroundColor:'#aaa'});
+}}).connect(JZZ().openMidiOut(/^((?!Midi Through).)*$/i)).connect(function(msg){onLogo();});
+</script>
+</body>
+</html>

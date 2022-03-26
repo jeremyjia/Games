@@ -1,0 +1,389 @@
+
+.pianoKeyboard {
+	position: relative;
+	z-index: 0;
+	-webkit-transition-property: left;
+	transition-property: left;
+	-webkit-transition-duration: .5s;
+	transition-duration: .5s
+}
+
+.pianoKeyboard .keyRow {
+	position: absolute;
+	top: 0
+}
+
+.pianoKeyboard .keyRow .key {
+	position: absolute;
+	width: 60px;
+	margin: 0 1px;
+	text-align: left;
+	color: #a0a0a0;
+	vertical-align: top;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	touch-action: none
+}
+
+.pianoKeyboard .keyIcon {
+	text-align: center;
+	margin-top: 160px;
+	height: 50px;
+	background-repeat: no-repeat;
+	font-family: 微软雅黑;
+    font-size: 20px;
+    position: relative;
+    color: #830708;
+}
+
+.pianoKeyboard .keyIcon2 {
+	text-align: center;
+	margin-top: 110px;
+	height: 50px;
+	background-repeat: no-repeat;
+	font-family: 微软雅黑;
+    font-size: 20px;
+    position: relative;
+    color: #830708;
+}
+
+.pianoKeyboard .keyIcon3 {
+	text-align: center;
+	margin-top: 143px;
+	height: 50px;
+	background-repeat: no-repeat;
+	font-family: 微软雅黑;
+    font-size: 20px;
+    position: relative;
+    color: #830708;
+}
+.pianoKeyboard .keyIcon4 {
+	text-align: center;
+	margin-top: 0px;
+	height: 50px;
+	background-repeat: no-repeat;
+	font-family: 微软雅黑;
+    font-size: 20px;
+    position: relative;
+    color: #830708;
+}
+.pianoKeyboard .keyIcon i,
+.pianoKeyboard .keyIcon2 i,
+.pianoKeyboard .keyIcon3 i,
+.pianoKeyboard .keyIcon4 i{
+    position: absolute;
+    top: -.3px;
+    font-style: normal;
+    font-size: 12px;
+}
+.pianoKeyboard .keyIcon i.down,
+.pianoKeyboard .keyIcon2 i.down,
+.pianoKeyboard .keyIcon3 i.down,
+.pianoKeyboard .keyIcon4 i.down{ 
+    top: 9px; 
+}
+
+.pianoKeyboard .key .trebleClef  {
+	background-image:
+		url(../assets/images/editorKeyboard/trebleClef-87ce3262aa1bcd051ea11d0492dcc48e.svg)
+}
+
+
+.pianoKeyboard .key .bassClef {
+	background-image:
+		url(../assets/images/editorKeyboard/bassClef-09f9db22d6222a886a801a26286f9300.svg)
+}
+
+.pianoKeyboard .key.selected .keyIcon.trebleClef {
+	background-image:
+		url(../assets/images/editorKeyboard/trebleClefSelected-9b00a844f7ae6c1fd2cc834b6e91419b.svg)
+}
+
+.pianoKeyboard .key.selected .keyIcon.bassClef {
+	background-image:
+		url(../assets/images/editorKeyboard/bassClefSelected-4356158017cfa647fe6c6104fd7bbe62.svg)
+}
+
+.pianoKeyboard .keyRow.black .key {
+	height: 90px;
+	width: 45px;
+	padding: 0;
+	margin: 0 9px;
+	border-width: 1px 2px 4px;
+	border-style: solid;
+	border-color: #666 #222 #111 #484848;
+	border-radius: 0 0 3px 3px;
+	background-color: #303030
+}
+
+.pianoKeyboard .keyRow.black .key:hover {
+	background-color: #181818;
+	height: 91px;
+	border-width: 1px 2px 3px;
+	border-color: #555 #111 #111 #303030;
+	box-shadow: 0 2px 2px rgba(0, 0, 0, .4)
+}
+
+.pianoKeyboard .keyRow.black .key.selected {
+	background-color: #dd4e1e;
+	background: -webkit-linear-gradient(110deg, #ea5523, #621e08);
+	background: linear-gradient(-20deg, #ea5523, #621e08);
+	border-color: #666 #752a11 #76321b #773e2b
+}
+
+.pianoKeyboard .keyRow.black .key.chord, .pianoKeyboard .keyRow.black .key.selected
+	{
+	height: 91px;
+	width: 52px;
+	border-width: 1px 1px 3px;
+	box-shadow: 0 2px 2px rgba(0, 0, 0, .4)
+}
+
+.pianoKeyboard .keyRow.black .key.chord {
+	background-color: #666;
+	background: -webkit-linear-gradient(110deg, #a0a0a0, #666);
+	background: linear-gradient(-20deg, #a0a0a0, #666);
+	border-color: #666 #555 #444 #888
+}
+
+.pianoKeyboard .keyRow.white .key {
+	height: 196px;
+	width: 52px;
+	padding: 4px 0 0 8px;
+	background: #fff;
+	font-size: 12px;
+	box-sizing: initial;
+}
+
+.pianoKeyboard .keyRow.white .key:hover {
+	background-color: #f2f2f2;
+	background-position: -60px bottom
+}
+
+.pianoKeyboard .keyRow.white .key.selected {
+	background-color: #ea5523 !important;
+	box-shadow: inset 0 0 10px #000;
+	color: #e0e0e0;
+	width: 54px;
+	margin: 0;
+	background-image: none
+}
+
+.pianoKeyboard .keyRow.white .key.chord {
+	background: rgba(0, 0, 0, .2);
+	box-shadow: inset 0 0 10px #000;
+	color: #505050;
+	width: 54px;
+	margin: 0;
+	background-image: none
+}
+
+.signupBackground {
+	padding: 10px;
+	padding-left: 30px;
+	text-align: center;
+	border: 1px solid #ccc;
+	border-radius: 3px;
+	cursor: pointer;
+	background-position: 5% 50%;
+	background-color: #fff;
+	position: relative
+}
+
+.externalConnectBackground, .signupBackground {
+	background-repeat: no-repeat;
+	background-size: 18px 18px
+}
+
+.externalConnectBackground {
+	padding: 5px;
+	background-position: 1% 50%
+}
+
+.externalConnectButton {
+	margin-left: 30px;
+	padding: 8px 20px;
+	background-color: #bdbaa9;
+	font-size: 12px;
+	text-decoration: none
+}
+
+.externalConnectLeft {
+	margin-left: 30px;
+	display: inline-block
+}
+
+.externalConnectRight {
+	float: right;
+	width: 100px
+}
+
+.loginOrSeparatorContainer {
+	margin-top: 40px;
+	margin-bottom: 40px !important;
+	height: 2px;
+	background-color: #d5d3c2
+}
+
+.loginOrSeparator {
+	font-size: 12px !important
+}
+
+.loginOrSeparator.hasLine {
+	display: block;
+	width: 44px;
+	margin: 0 auto;
+	top: -8px;
+	position: relative
+}
+
+.externalSignupLink {
+	display: inline-block;
+	width: 100%;
+	font-size: 13px
+}
+
+.externalLoginLink {
+	display: inline-block;
+	width: 100%;
+	font-size: 12px
+}
+.pianoKeyboard .keyRow.white  .group-active .key{
+	
+	background-image:none;
+	background-color:#ffe9cc;
+}
+
+
+.facebookSignupBackground {
+	background-image:
+		url(../assets/images/externalAuth/facebookIcon-c08b84f418720d91541f4ebecd13739e.png)
+}
+
+.googleSignupBackground {
+	background-image:
+		url(../assets/images/externalAuth/googleIcon-c7ffb90f3621fb8a197fdd14a38240b3.png)
+}
+
+.googleClassroomBackground {
+	background-image:
+		url(../assets/images/googleClassroom-bf87adce7013cd5da4f6151a0b5f9851.png)
+}
+
+.googleClassroomGroupIcon {
+	background-image:
+		url(../assets/images/googleClassroom-bf87adce7013cd5da4f6151a0b5f9851.png);
+	height: 22px;
+	width: 25px;
+	display: inline-block;
+	background-size: cover;
+	margin-right: 5px
+}
+
+.googleClassroomGroupIcon.small {
+	height: 18px;
+	width: 20px
+}
+
+.pianoKeyboardSlider {
+	position: absolute;
+	top: 84px;
+	width: 100px;
+	height: 45px;
+	background-size: 100%;
+	-webkit-transition-property: left, right, opacity;
+	transition-property: left, right, opacity;
+	-webkit-transition-duration: .25s;
+	transition-duration: .25s;
+	opacity: .2
+}
+
+.pianoKeyboardSlider.right {
+	right: -50px;
+	background-image:
+		url(../assets/images/editorKeyboard/sliderRight-6a0fe4fc93533cf0f2d75b3677a00432.svg)
+}
+
+.pianoKeyboardSlider.left {
+	left: -50px;
+	background-image:
+		url(../assets/images/editorKeyboard/sliderLeft-7625016b3e87df7f3319069da3c0b29a.svg)
+}
+
+.pianoKeyboardSlider.right:hover {
+	right: -40px;
+	opacity: 1
+}
+
+.pianoKeyboardSlider.left:hover {
+	left: -40px;
+	opacity: 1
+}
+#scoreEditorPianoKeyboardContainer {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 0;
+	-webkit-transition-property: height;
+	transition-property: height;
+	-webkit-transition-duration: .25s;
+	transition-duration: .25s
+}
+
+#scoreEditorPianoKeyboard {
+	position: absolute;
+	left: 0;
+	right: 0;
+	border-top: 1px solid #cfcdba;
+	height: 200px;
+	background-color: #eee;
+	overflow: hidden
+}
+
+
+.keySignatures {
+	width: 480px;
+	height: 83px;
+	margin-left: 40px;
+	background-repeat: no-repeat;
+	position: relative
+}
+
+.keySignatureOptions {
+	background-color: #fff;
+	padding-bottom: 24px;
+	padding-top: 8px;
+	margin-bottom: 5px;
+	border-radius: 5px
+}
+
+.keySignatures.sharp {
+	background-image: url("../images/editorPalette/sharpSignatures.svg"
+		/*tpa=https://production-assets.noteflight.com/assets/images/editorPalette/sharpSignatures-a2a89034cc209142db43d1568eab1326.svg*/
+		);
+	margin-bottom: 20px;
+	background-size: cover
+}
+
+.keySignatures.flat {
+	background-image: url("../images/editorPalette/flatSignatures.svg"
+		/*tpa=https://production-assets.noteflight.com/assets/images/editorPalette/flatSignatures-b2375e7d1fa9325ad62a956ae09c6f7a.svg*/
+		);
+	background-size: cover
+}
+
+.keySignatures .keyChoice {
+	float: left;
+	margin-right: 5px;
+	height: 100px;
+	text-align: center;
+	line-height: 160px
+}
+
+.keySignatures .keyChoice.selected {
+	background-color: rgba(128, 128, 255, .3)
+}
+
