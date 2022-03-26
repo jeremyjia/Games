@@ -32,6 +32,7 @@ if(ev.ctrlKey&&ev.keyCode==69){$("#menuAddLastSymbol").click();return false;}
 if(ev.keyCode==37||ev.keyCode==38||ev.keyCode==39||ev.keyCode==40||ev.keyCode==46){return customShortcuts(ev.keyCode);}
 }
 
+//xddbg
 function redraw(pNum,redrawSource){
     /*
     var jpcode=window.frames["editFrame"].document.getElementById("editor_text").value;
