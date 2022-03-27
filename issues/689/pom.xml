@@ -10,6 +10,8 @@
  
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
 	</properties>
  
 	<dependencies>
@@ -35,9 +37,30 @@
 			<version>5.5.1</version>
 			<type>jar</type>
 		</dependency>
+		<dependency>
+		    <groupId>mysql</groupId>
+		    <artifactId>mysql-connector-java</artifactId>
+		    <version>8.0.12</version>
+        </dependency>
+		<dependency>
+		   <groupId>com.mchange</groupId>
+		   <artifactId>c3p0</artifactId>
+		   <version>0.9.5.2</version>
+         </dependency>
+		<dependency>
+			<groupId>org.bytedeco.javacpp-presets</groupId>
+			<artifactId>opencv</artifactId>
+			<version>4.0.1-1.4.4</version>
+	    </dependency>
+		<dependency>
+			<groupId>org.bytedeco</groupId>
+			<artifactId>opencv-platform</artifactId>
+			<version>4.3.0-1.5.3</version>
+		</dependency>
 	</dependencies>
  
 	<build>
+	    <sourceDirectory>src</sourceDirectory>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -48,12 +71,22 @@
 						<tag>
 							<name>date</name>
 							<placement>a</placement>
-							<head>日期:</head>
+							<head>date:</head>
 						</tag>
 					</tags>
 				</configuration>
 			</plugin>
 		</plugins>
+		<resources>   
+            <resource>  
+                <directory>src</directory>  
+				<includes>  
+					<include>**/*.properties</include>  
+					<include>**/*.class</include>  
+				</includes>  
+				<filtering>false</filtering>  
+            </resource>  
+    </resources>  
 	</build>
  
 </project>

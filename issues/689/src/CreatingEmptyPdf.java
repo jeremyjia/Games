@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.IOException;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -13,7 +14,12 @@ public class CreatingEmptyPdf {
 		document.addPage(new PDPage());
 
 		// Saving the document
-		document.save("C:/pdfBox/BlankPdf.pdf");
+		File file = new File("C:/pdfBox/BlankPdf.pdf");
+		File fileParent = file.getParentFile();
+		if(!fileParent.exists()) {
+			fileParent.mkdirs();
+		}	
+		document.save(file.getAbsolutePath());
 		System.out.println("PDF created");
 
 		// Closing the document
