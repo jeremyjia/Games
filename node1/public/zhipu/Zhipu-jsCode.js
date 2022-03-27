@@ -1338,7 +1338,8 @@ function addToSvg(type,svgCode){
         }
         var maskObj=$("#"+customID).find("rect[mask]");
         if(lockCustomState==1){
-            $("#use_"+customID).css('cursor','default');maskObj.attr({x:-5555,y:-5555});
+            $("#use_"+customID).css('cursor','default');
+            maskObj.attr({x:-5555,y:-5555});
         }
         maskObj.attr({'data-width':maskObj.attr('width'),
                        'data-height':maskObj.attr('height'),
@@ -1350,8 +1351,15 @@ function addToSvg(type,svgCode){
     });
 }
 
-function parseSVG(s){var div=document.createElementNS('http://www.w3.org/1999/xhtml','div');div.innerHTML='<svg xmlns="http://www.w3.org/2000/svg">'+s+'</svg>';var frag=document.createDocumentFragment();while(div.firstChild.firstChild){frag.appendChild(div.firstChild.firstChild);}
-return frag;}
+function parseSVG(s){
+    var div=document.createElementNS('http://www.w3.org/1999/xhtml','div');
+    div.innerHTML='<svg xmlns="http://www.w3.org/2000/svg">'+s+'</svg>';
+    var frag=document.createDocumentFragment();
+    while(div.firstChild.firstChild){
+        frag.appendChild(div.firstChild.firstChild);
+    }
+    return frag;
+}
 function selectElement(obj){  
     selectedElement=obj;
     if(lockCustomState==0){
@@ -1377,7 +1385,8 @@ function moveElement(){
         var newY=s0bj.attr('y')*1+dy;
         s0bj.attr('x',newX);
         s0bj.attr('y',newY);
-        currentX=window.event.clientX;currentY=window.event.clientY;
+        currentX=window.event.clientX;
+        currentY=window.event.clientY;
         updateCustomAttributePos();
         updateCustomCode();
     }
@@ -1418,10 +1427,45 @@ function updateCustomCode(){
     localStorage.setItem('customCode',customCode);
 }
 function getSelectedObj(){return $($(selectedElement).attr('xlink:href'));}
-function showCustomAttributeDiv(){cSelectState=1;var customObj=getSelectedObj();var type=customObj.attr('data-type');$(".attributes").hide();$(".attributes_"+type).show();if(type=='text'){$("#custom_text_size").val(customObj.find("text").attr('font-size'));$("#custom_text_family").val(customObj.find("text").attr('font-family'));$("#custom_text_color").val(customObj.find("text").attr('fill'));$("#custom_text_weight").val(customObj.find("text").css('font-weight'));$("#custom_text_text").val(customObj.find("text").text());}
-if(type=='symbol'){$("#custom_symbol_fill").val(customObj.find("[fill]:eq(1)").attr('fill'));var scaleX=1;var scaleY=1;var transform=customObj.find("[transform]").attr('transform');if(transform){var scaleStart=transform.indexOf('scale');if(transform.indexOf('scale')>-1){var scale=transform.substring(scaleStart+6,transform.length);scale=scale.substring(0,scale.indexOf(')'));if(scale.indexOf(',')>-1){var temArr=scale.split(',');scaleX=temArr[0];scaleY=temArr[1];}else{scaleX=scale;scaleY=scale;}}}
-$("#custom_symbol_width").val(scaleX);$("#custom_symbol_height").val(scaleY);}
-updateCustomAttributePos();$("#customAttribute").show();}
+function showCustomAttributeDiv(){
+    cSelectState=1;
+    var customObj=getSelectedObj();
+    var type=customObj.attr('data-type');
+    $(".attributes").hide();
+    $(".attributes_"+type).show();
+    if(type=='text'){
+        $("#custom_text_size").val(customObj.find("text").attr('font-size'));
+        $("#custom_text_family").val(customObj.find("text").attr('font-family'));
+        $("#custom_text_color").val(customObj.find("text").attr('fill'));
+        $("#custom_text_weight").val(customObj.find("text").css('font-weight'));
+        $("#custom_text_text").val(customObj.find("text").text());
+    }
+    if(type=='symbol'){
+        $("#custom_symbol_fill").val(customObj.find("[fill]:eq(1)").attr('fill'));
+        var scaleX=1;
+        var scaleY=1;
+        var transform=customObj.find("[transform]").attr('transform');
+        if(transform){
+            var scaleStart=transform.indexOf('scale');
+            if(transform.indexOf('scale')>-1){
+                var scale=transform.substring(scaleStart+6,transform.length);
+                scale=scale.substring(0,scale.indexOf(')'));
+                if(scale.indexOf(',')>-1){
+                    var temArr=scale.split(',');
+                    scaleX=temArr[0];
+                    scaleY=temArr[1];
+                }else{
+                    scaleX=scale;
+                    scaleY=scale;
+                }
+            }
+        }
+        $("#custom_symbol_width").val(scaleX);
+        $("#custom_symbol_height").val(scaleY);
+    }
+    updateCustomAttributePos();
+    $("#customAttribute").show();
+}
 function updateCustomAttributePos(){
     if(cSelectState==1){
         var customObj=getSelectedObj();
