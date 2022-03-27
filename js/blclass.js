@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_v1.5.125"
+var g_ver_blClass = "CBlClass_v1.5.133"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -1781,10 +1781,87 @@ function CBlClass ()
 		return c[0];	
 	}
 	this.blSVG = function(){
+		
 		var _r = function(){
-			this.render = function(){}
+			this.render = function(_v){_v.innerHTML = blo0.blfHTML(_svg1);}
+			this.showSVGScript = function(_v){bl$("id_4_ta_blrRunJS").value = blo0.blfHTML(_svg1);}
+			this.blrToolbar = function(b,d){_tb(b,d);}
 		}
-		return new _r();		
+		var _o = new _r();
+
+		var _svg = "<*svg>";
+		_svg += "</svg>";
+		
+		var _svg1 = function(){
+			/*--start--
+<svg width="1000" height="1415" version="1.1" viewBox="0 0 1000 1415" encoding="UTF-8" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" height="100%" width="100%" fill="#11ff11" />
+	<defs>
+		<g id="diaohao_fu" transform="translate(-50,-50)">
+			<path d="m63.90001,57.81227l-8.81873,0l0,-1.70001l3.45433,0l0,-11.7568l-3.53561,1.04459l0,-1.80243l5.46599,-1.59762l0,14.11224l3.43402,0l0,1.70001l0,0.00001l0,0.00001z" fill="#1b1b1b"/><rect height="2" width="11" y="46.85897" x="68" stroke-width="33" fill="#1b1b1b"/><rect height="2" width="11" y="51.32479" x="68" stroke-width="33" fill="#1b1b1b"/></g><g id="shuzi_c_5" transform="translate(-50,-50)"><rect height="17.9" width="11.1" y="41.05" x="44.45" stroke-width="0" fill="#11ffff"/><path fill="blue" d="m46.03386,41.2363l6.28103,0c0.58697,0 0.91767,-0.1824 0.99153,-0.55116l0.88186,0l-0.44093,3.30586l-6.72194,0l-0.11024,3.4161c0.73358,-0.22047 1.50465,-0.33071 2.31377,-0.33071c3.89339,0.22047 5.95088,2.16774 6.17079,5.84065c-0.29433,3.82066 -2.60865,5.84066 -6.94241,6.06112c-2.42457,-0.07386 -3.71043,-0.77164 -3.85703,-2.09386c0.07218,-0.95404 0.55059,-1.43302 1.43246,-1.43302c0.66141,0 1.24837,0.44093 1.76316,1.32222c0.51311,0.80912 1.06427,1.21257 1.65292,1.21257c1.61488,-0.14661 2.49675,-1.39497 2.64503,-3.7468c-0.07386,-2.64502 -1.21256,-4.03943 -3.41608,-4.18715c-0.73527,0 -1.47052,0.18409 -2.20411,0.55059l-0.77106,-0.44093l0.33126,-8.92548z"/>
+		</g>
+		<g id="xiaojiexian_weibu" transform="translate(-50,-50)">
+			<rect fill="#ff11ff" stroke-width="0" x="45.05" y="35.85" width="9.9" height="28.4"/>
+			<rect height="29" width="1.5" y="35.5" x="49.25" stroke-width="null" fill="#ffffff"/>
+		</g>
+		<g id="yingao_di" transform="translate(-50,-50)">
+			<ellipse ry="1.9" rx="1.9" cy="63" cx="49.3" fill="#1b1b1b"/>
+		</g>
+	</defs>
+	<text x="500" y="110" dy="30.078" text-anchor="middle" fill="#1b1b1b" style="font-weight:bold;" font-size="36" font-family="Microsoft YaHei" >
+		同一首歌0
+	</text>
+	<use x="80" y="176" xlink:href="#diaohao_fu" xmlns:xlink="http://www.w3.org/1999/xlink" ></use>
+	<use x="120" y="176" xlink:href="#diaohao_zimu_" xmlns:xlink="http://www.w3.org/1999/xlink" ></use>
+	<use x="83" y="236" xlink:href="#shuzi_c_5" time="1" audio="5," notepos="0_1_1" code="5," xmlns:xlink="http://www.w3.org/1999/xlink" ></use>
+	<use x="118" y="236" xlink:href="#xiaojiexian_weibu" notepos="0_1_2" time="0" audio="" code="|w" xmlns:xlink="http://www.w3.org/1999/xlink" ></use>
+	<use x="83" y="237" xlink:href="#yingao_di" xmlns:xlink="http://www.w3.org/1999/xlink" ></use>
+	<g id="custom">
+		<defs>
+			<g id="custom_4yPJ2wPA6h" data-type="symbol">
+				<rect fill="#ffff00" stroke-width="0" y="-5" x="-5" width="44.8" height="10.600000000000001" mask="true" data-width="39" data-height="11.5" opacity="0.8" stroke="#ff0000" stroke-dasharray="5,5"></rect>
+				<rect fill="#000000" x="0" y="0" width="29" height="1.5" stroke="#000000" transform="scale(1.2,0.4)"></rect>
+			</g>
+		</defs>
+		<use onmousedown="selectElement(this)" style="cursor: move;" id="use_custom_4yPJ2wPA6h" x="110" y="452" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#custom_4yPJ2wPA6h"></use>
+		<defs>
+			<g id="custom_m5sXGXicsk" data-type="symbol">
+				<rect fill="#ffff00" stroke-width="0" y="-5" x="-5" width="44.8" height="10.75" mask="true" data-width="39" data-height="11.5" opacity="0.8" stroke="#ff0000" stroke-dasharray="5,5"></rect>
+				<rect fill="#000000" x="0" y="0" width="29" height="1.5" stroke="#000000" transform="scale(1.2,0.5)"></rect>
+			</g>
+		</defs>
+		<use onmousedown="selectElement(this)" style="cursor: move;" id="use_custom_m5sXGXicsk" x="110" y="456" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#custom_m5sXGXicsk"></use>
+	</g>
+
+	<g id="customID" data-type="symbol">
+		<rect fill="#ffff00" stroke-width="0" y="-5" x="-5" width="15.5764" height="49.42324" mask="true"/>
+		<path fill="#000000" d="m5.64751,0.75575l0,-0.75575c-1.12949,0.32387 -2.04508,1.28648 -2.74674,2.88787s-1.05249,3.37368 -1.05249,5.31692c0,1.00763 0.07701,2.18615 0.23103,3.53562s0.23103,2.40206 0.23103,3.15777c0,1.00762 -0.20536,1.95226 -0.61609,2.83389s-0.97547,1.43044 -1.69425,1.64636l0,0.86366c0.71877,0.21591 1.28352,0.7557 1.69425,1.61937s0.61609,1.81731 0.61609,2.86088c0,0.75571 -0.07701,1.79929 -0.23103,3.13077s-0.23103,2.51904 -0.23103,3.56261c0,1.90724 0.35083,3.66156 1.05249,5.26295s1.61725,2.564 2.74674,2.88787l0,-0.7557c-0.78723,-0.39583 -1.36482,-1.04358 -1.73275,-1.94324s-0.55193,-1.87128 -0.55193,-2.91486c0,-0.86366 0.07273,-1.97924 0.2182,-3.34669s0.21819,-2.51899 0.21819,-3.4546c0,-1.43945 -0.24815,-2.83389 -0.74444,-4.18336s-1.23218,-2.38409 -2.20766,-3.10378c0.95835,-0.75571 1.68997,-1.81731 2.19483,-3.18475s0.75727,-2.7709 0.75727,-4.21035c0,-0.97162 -0.07271,-2.13217 -0.21819,-3.48164s-0.2182,-2.45604 -0.2182,-3.3197c0,-1.07957 0.18399,-2.06021 0.55193,-2.94185s0.94552,-1.5384 1.73275,-1.97023l0,-0.00001z"/>
+	</g>
+</svg>
+			--end--*/
+		}
+		var _tb = function(b,d){
+			if(!d.v){
+				d.v = true;
+				var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
+				var v = blo0.blDiv(d,d.id+"v","v",blGrey[5]);
+				var btnRender = blo0.blBtn(tb,tb.id+"btnRender","render",blGrey[1]);
+				btnRender.onclick = function(_v){
+					return function(){
+						_o.render(_v);
+					}
+				}(v);
+				
+				var btnShowScript = blo0.blBtn(tb,tb.id+"btnShowScript","script",blGrey[1]);
+				btnShowScript.onclick = function(_v){
+					return function(){
+						_o.showSVGScript(_v);
+					}
+				}(v);
+			}
+			_on_off_div(b,d); 
+			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+		}
+		return _o;		
 	}
 }//END: function CBlClass ()
  
@@ -2726,4 +2803,10 @@ function CCVSRect(_x,_y,_w,_h,_clr){
 				if(fClick) fClick(this,_x,_y);
 			} 
 	} 
+}
+
+function selectElement(e){ 
+	e.onclick = function(){
+		alert(1);
+	}
 }
