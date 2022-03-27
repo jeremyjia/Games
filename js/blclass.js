@@ -1,6 +1,5 @@
 // file: blclass.js   
-
-var g_ver_blClass = "CBlClass_v1.5.122"
+var g_ver_blClass = "CBlClass_v1.5.125"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -1780,6 +1779,12 @@ function CBlClass ()
 		var b = a.split('--start--');
 		var c = b[1].split('--end--');  
 		return c[0];	
+	}
+	this.blSVG = function(){
+		var _r = function(){
+			this.render = function(){}
+		}
+		return new _r();		
 	}
 }//END: function CBlClass ()
  
