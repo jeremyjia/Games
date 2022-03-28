@@ -26,11 +26,15 @@
 			</a>
 </div> 
 <div id="id_div_4_plxWrap" style="border:brown 1px;">
-  <H3>littleflute v0.11</H3>
-  <div id ="id_div_4_User_plx" style="background-color:white">
+  <H3>littleflute v0.23</H3>
+  <div id ="id_div_4_xd_dbg" style="background-color:lightskyblue">
+    xd dbg...
+  </div>
+  <div id ="id_div_4_User_plx" style="background-color:lightcoral">
     加载各自主页...
   </div>
 </div>
+<script src="node1/public/zhipu/jquery.min.js"></script>
 <script src="https://littleflute.github.io/JavaScript/w3.js" ></script>
 <script src="js/blclass.js" ></script> 
 
@@ -59,7 +63,39 @@
   }
   w3.getHttpObject("https://api.github.com/repos/jeremyjia/Games/issues/4", _loadIssue);	
   w3.getHttpObject("https://api.github.com/repos/jeremyjia/Games/issues/96", _loadIssue);	//load UserPlxApp
-
+  
+const _gd = bl$("id_div_4_xd_dbg");
+const _gdl = function(txt){_gd.innerHTML = txt;}
+var selectedElement = 0;
+document.onkeydown=function(){    return setShortcuts(event);  }  
+function setShortcuts(ev){     
+    if(ev.keyCode==65){_gdl('a');return false;} 
+    if(ev.keyCode==37||ev.keyCode==38||ev.keyCode==39||ev.keyCode==40||ev.keyCode==46){ 
+        return customShortcuts(ev.keyCode);
+    }
+}
+function customShortcuts(keyCode){
+    //if(cSelectState==0){return true;}
+    if(keyCode==46){
+      //removeCustom(); 
+      _gdl("del");
+    }
+    if(keyCode==37){lightMove('x',-1);}
+    if(keyCode==38){lightMove('y',-1);}
+    if(keyCode==39){lightMove('x',1);}
+    if(keyCode==40){lightMove('y',1);}
+    return false;
+}
+function lightMove(type,num){ 
+    var customObj=$(selectedElement);
+    customObj.attr(type,customObj.attr(type)*1+num);
+    //updateCustomAttributePos();
+    //updateCustomCode(); 
+    _gdl(type+":"+num);
+}
+function selectElement(obj){  _gdl(obj);
+    selectedElement=obj;
+}
 </script> 
 	
 <script src="http://open.iciba.com/huaci/huaci.js"></script>

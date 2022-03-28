@@ -17,6 +17,7 @@ $(document).ready(function(){
 window.onresize=function(){autoSize();autoWinSize();}
 document.onkeydown=function(){return setShortcuts(event);}
 document.onmousedown=hideMenu;
+
 function setShortcuts(ev){
     if(ev.keyCode==9&&!$(".win").is(':visible')){
         if(winType!=2){upType=winType;setView(2);}
@@ -1471,9 +1472,18 @@ function updateCustomAttributePos(){
         var customObj=getSelectedObj();
         var svgObj_=customObj.parents("svg");
         var top_=svgObj_.offset().top+$(selectedElement).attr('y')*1-7;
-        var left_=svgObj_.offset().left+$(selectedElement).attr('x')*1-($("#customAttribute").width()+20);$("#customAttribute").css({top:top_,left:left_});}}
+        var left_=svgObj_.offset().left+$(selectedElement).attr('x')*1-($("#customAttribute").width()+20);$("#customAttribute").css({top:top_,left:left_});
+    }
+}
 function updateTextSize(){var customObj=getSelectedObj();var textWidth=customObj.find("text")[0].getComputedTextLength();var textHeight=customObj.find("text").attr('font-size')*1;customObj.find("rect").attr({width:textWidth+10,height:textHeight+10});customObj.find("text").attr('dy',textHeight*0.88);}
-function lightMove(type,num){var customObj=$(selectedElement);customObj.attr(type,customObj.attr(type)*1+num);updateCustomAttributePos();updateCustomCode();}
+
+function lightMove(type,num){
+    var customObj=$(selectedElement);
+    customObj.attr(type,customObj.attr(type)*1+num);
+    //updateCustomAttributePos();
+    //updateCustomCode();
+}
+
 function removeCustom(){
     if(cSelectState==0){return false;}
     var customObj=getSelectedObj();
@@ -1483,9 +1493,45 @@ function removeCustom(){
     updateCustomCode();
     cSelectState=0;
 }
-$(document).ready(function(){$("#customAttribute select").bind("click",function(){clickSelect=1;});$("#customAttribute select").bind("change",function(){var customObj=getSelectedObj();var val=this.value;var selectId=$(this).attr('id');switch(selectId){case'custom_text_size':customObj.find("text").attr('font-size',val);break;case'custom_text_family':customObj.find("text").attr('font-family',val);break;case'custom_text_color':customObj.find("text").attr('fill',val);break;case'custom_text_weight':customObj.find("text").css('font-weight',val);break;case'custom_symbol_fill':customObj.children('[mask!=true]').attr('fill',val);break;}
-if(selectId.indexOf('_text_')>-1){updateTextSize();}
-setTimeout(function(){clickSelect=0;},200);updateCustomCode();});$("#custom_text_text").bind("input",function(){var customObj=getSelectedObj();var val=this.value;customObj.find("text").text(val);updateTextSize();updateCustomCode();});$("#custom_symbol_width,#custom_symbol_height").bind("input",function(){var customObj=getSelectedObj();var widthR=$("#custom_symbol_width").val();var heightR=$("#custom_symbol_height").val();customObj.children('[mask!=true]').attr('transform','scale('+widthR+','+heightR+')');var maskObj=customObj.children('[mask=true]');var newWidth=maskObj.attr('data-width')*widthR-((widthR-1)*10);var newHeight=maskObj.attr('data-height')*heightR-((heightR-1)*10);maskObj.attr({width:newWidth,height:newHeight});updateCustomCode();});});function nobr(e){var et=e||window.event;var keycode=et.charCode||et.keyCode;if(keycode==13){if(window.event){window.event.returnValue=false;}else{e.preventDefault();}}}function thisMovie(movieName){return document[movieName];var isIE=navigator.appName.indexOf("Microsoft")!=-1;return(isIE)?window[movieName]:document[movieName];}
+
+$(document).ready(function(){
+    $("#customAttribute select").bind("click",function(){
+        clickSelect=1;
+    });
+    $("#customAttribute select").bind("change",function(){
+            var customObj=getSelectedObj();
+            var val=this.value;
+            var selectId=$(this).attr('id');
+            switch(selectId){
+                case'custom_text_size':customObj.find("text").attr('font-size',val);break;
+                case'custom_text_family':customObj.find("text").attr('font-family',val);break;
+                case'custom_text_color':customObj.find("text").attr('fill',val);break;
+                case'custom_text_weight':customObj.find("text").css('font-weight',val);break;
+                case'custom_symbol_fill':customObj.children('[mask!=true]').attr('fill',val);break;
+            }
+            if(selectId.indexOf('_text_')>-1){updateTextSize();}
+            setTimeout(function(){clickSelect=0;},200);
+            updateCustomCode();
+    });
+    $("#custom_text_text").bind("input",function(){
+            var customObj=getSelectedObj();
+            var val=this.value;customObj.find("text").text(val);
+            updateTextSize();updateCustomCode();
+    });
+    $("#custom_symbol_width,#custom_symbol_height").bind("input",function(){
+            var customObj=getSelectedObj();
+            var widthR=$("#custom_symbol_width").val();
+            var heightR=$("#custom_symbol_height").val();
+            customObj.children('[mask!=true]').attr('transform','scale('+widthR+','+heightR+')');
+            var maskObj=customObj.children('[mask=true]');
+            var newWidth=maskObj.attr('data-width')*widthR-((widthR-1)*10);
+            var newHeight=maskObj.attr('data-height')*heightR-((heightR-1)*10);
+            maskObj.attr({width:newWidth,height:newHeight});
+            updateCustomCode();
+    });
+});
+            
+function nobr(e){var et=e||window.event;var keycode=et.charCode||et.keyCode;if(keycode==13){if(window.event){window.event.returnValue=false;}else{e.preventDefault();}}}function thisMovie(movieName){return document[movieName];var isIE=navigator.appName.indexOf("Microsoft")!=-1;return(isIE)?window[movieName]:document[movieName];}
 var countTime=0,currentPlay=0,playInterval;var plays=new Array();var xunhuan=new Array();var playState=0;function toPlay(){if(playState!=1){var jpcode=window.frames["editFrame"].document.getElementById("editor_text").value;if(jpcode.indexOf('Q2')>-1||jpcode.indexOf('{bz')>-1||jpcode.indexOf('{dsb')>-1){alert("不很抱歉，程序目前不支持包含多声部的简谱试听。");return false;}
 playAll();playState=1;$("#playBut").val('暂停');$("#speed")[0].disabled=true;$("#adjust")[0].disabled=true;$("#hulvFanfu")[0].disabled=true;}else{pausePlay();playState=2;$("#playBut").val('播放');}}
 function stopPlay(){countTime=0;currentPlay=0;plays=[];againState=[];fanfuNum=1;datiaoyueNum=1;clearInterval(playInterval);playState=0;$("#playBut").val('播放');$("#speed")[0].disabled=false;$("#adjust")[0].disabled=false;$("#hulvFanfu")[0].disabled=false;$("#playerLine").hide();}
