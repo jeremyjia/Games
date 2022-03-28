@@ -1257,14 +1257,14 @@ var cSelectState=0
 $(document).ready(function(){
     $(document).bind("mousemove",moveElement);
     $(document).bind("mouseup",
-    function(){
-        custom_drag_state=0;
-        if(clickCustom==0&&clickSelect==0){
-            $("#custom defs g rect[mask]").attr({'stroke-width':"0"});
-            $("#customAttribute").hide();
-            cSelectState=0;
-        }
-        if(clickSelect==1){clickSelect=0;}
+        function(){
+            custom_drag_state=0;
+            if(clickCustom==0&&clickSelect==0){
+                $("#custom defs g rect[mask]").attr({'stroke-width':"0"});
+                $("#customAttribute").hide();
+                cSelectState=0;
+            }
+            if(clickSelect==1){clickSelect=0;}
     });
     $("#customAttribute").bind("mousedown",
         function(){
@@ -1480,7 +1480,7 @@ function updateTextSize(){var customObj=getSelectedObj();var textWidth=customObj
 function lightMove(type,num){
     var customObj=$(selectedElement);
     customObj.attr(type,customObj.attr(type)*1+num);
-    //updateCustomAttributePos();
+    updateCustomAttributePos();
     //updateCustomCode();
 }
 
