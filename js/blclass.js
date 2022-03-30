@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_v1.5.142"
+var g_ver_blClass = "CBlClass_v1.5.221"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -1859,11 +1859,39 @@ function CBlClass ()
 						_o.showSVGScript(_v);
 					}
 				}(v);
+				var btnGetGhc = blo0.blBtn(tb,tb.id+"btnGetGhc","btnGetGhc",blGrey[1]);
+				btnGetGhc.onclick = function(_v){
+					return function(){
+						_v.innerHTML = "to do: blGetGithubCs ...";
+						var tb = blo0.blDiv(_v,_v.id+"tb","tb",blGrey[5]);
+						var v2 = blo0.blDiv(_v,_v.id+"v2","v2",blGrey[5]);
+						var url = "https://api.github.com/repos/jeremyjia/Games/issues/702/comments";
+						blo0.blGetGithubCs(url,function(o){ 							
+							var _i = 0; 							
+							for(i in o){
+								_i++;
+								var a = o[i].body;
+								var btnJS = blo0.blBtn(tb, tb.id+"btnJS"+i,_i,blGrey[2]);
+								btnJS.onclick = function(_txt){
+										return function(){
+											v2.innerHTML = _txt;
+										}
+								}(a);
+							}
+						});
+						//alert(2);//xd2do
+					}
+				}(v);
 			}
 			_on_off_div(b,d); 
 			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 		}
 		return _o;		
+	}
+	this.blGetGithubCs = function(_url,_cb4ghcs){ 
+		if(!_cb4ghcs) {alert("I need a callback function."); return;}
+		if(w3) w3.getHttpObject(_url, _cb4ghcs);
+		else alert("can't find w3");
 	}
 }//END: function CBlClass ()
  

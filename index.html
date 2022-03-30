@@ -14,7 +14,7 @@
     <a class="xd2" href="https://littleflute.github.io/Games/"  target="_blank">littleflute主页</a>
     <a class="xd3" href="https://maomaof.github.io/Games/"  target="_blank">maomaof主页</a> 
     <a class="xd4" href="https://waynexw.github.io/Games/"  target="_blank">waynexw主页</a> 
-    <a href="##" >v0.3.33</a> 
+    <a href="##" >v0.3.34</a> 
     <button id="id_a_4_blclass.js" >blclass.js</button> 
   </div>
 </div>
@@ -76,7 +76,7 @@ var scaleY=1;
 
 document.onkeydown=function(){    return setShortcuts(event);  }  
 function setShortcuts(ev){     
-    if(ev.keyCode==65){_gdl('a');return false;} 
+    if(ev.keyCode==65){_gdl('a');return true;} 
     if(ev.keyCode==37||ev.keyCode==38||ev.keyCode==39||ev.keyCode==40||ev.keyCode==46){ 
         return customShortcuts(ev.keyCode);
     }
