@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <body>
-<button onclick="a(this);">a</button>
+<button onclick="a(this);">v0.12</button>
 <div id="xdv">d</div>
 <svg height="400" width="450">
 <path id="lineAB" d="M 100 350 l 150 -300" stroke="red" stroke-width="3" fill="none" />
@@ -13,6 +13,7 @@
     <circle id="pointA" cx="100" cy="350" r="3" />
     <circle id="pointB" cx="250" cy="50" r="3" />
     <circle id="pointC" cx="400" cy="350" r="3" />
+    <use onmousedown="selectElement(this)" style="cursor: move;" id="use_custom_pointA" x="11" y="11" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#pointA"></use>
   </g>
   <!-- Label the points -->
   <g font-size="30" font-family="sans-serif" fill="black" stroke="none" text-anchor="middle">
@@ -24,6 +25,9 @@
 </svg>
 
 <script>
+   function selectElement(_this){
+      alert(_this.id);
+   }
 function a(){
  const svg=`<svg version="1.1" baseProfile="full" width="300" height="200"
 xmlns="http://www.w3.org/2000/svg">
