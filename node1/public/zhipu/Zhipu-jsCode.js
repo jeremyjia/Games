@@ -1392,7 +1392,21 @@ function moveElement(){
         updateCustomCode();
     }
 }
-function getScale(transform){var scaleStart=transform.indexOf('scale');if(transform.indexOf('scale')>-1){var scale=transform.substring(scaleStart+6,transform.length);scale=scale.substring(0,scale.indexOf(')'));if(scale.indexOf(',')>-1){var temArr=scale.split(',');scaleX=temArr[0];scaleY=temArr[1];}else{scaleX=scale;scaleY=scale;}}else{scaleX=1;scaleY=1;}}
+function getScale(transform){
+    var scaleStart=transform.indexOf('scale');
+    if(transform.indexOf('scale')>-1){
+        var scale=transform.substring(scaleStart+6,transform.length);
+        scale=scale.substring(0,scale.indexOf(')'));
+        if(scale.indexOf(',')>-1){
+            var temArr=scale.split(',');   
+            scaleX=temArr[0];scaleY=temArr[1];
+        }else{
+            scaleX=scale;scaleY=scale;
+        }
+    }else{
+        scaleX=1;scaleY=1;
+    }
+}
 function randomString(len){
     len=len||32;
     var $chars='ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678';
@@ -1516,7 +1530,8 @@ $(document).ready(function(){
     $("#custom_text_text").bind("input",function(){
             var customObj=getSelectedObj();
             var val=this.value;customObj.find("text").text(val);
-            updateTextSize();updateCustomCode();
+            updateTextSize();
+            updateCustomCode();
     });
     $("#custom_symbol_width,#custom_symbol_height").bind("input",function(){
             var customObj=getSelectedObj();

@@ -66,7 +66,14 @@
   
 const _gd = bl$("id_div_4_xd_dbg");
 const _gdl = function(txt){_gd.innerHTML = txt;}
+
 var selectedElement = 0;
+var custom_drag_state=0;
+var currentX=0;
+var currentY=0;
+var scaleX=1;
+var scaleY=1;
+
 document.onkeydown=function(){    return setShortcuts(event);  }  
 function setShortcuts(ev){     
     if(ev.keyCode==65){_gdl('a');return false;} 
@@ -95,7 +102,32 @@ function lightMove(type,num){
 }
 function selectElement(obj){  _gdl(obj);
     selectedElement=obj;
+    custom_drag_state=1;
+    currentX=window.event.clientX;
+    currentY=window.event.clientY;
 }
+function moveElement(){
+    _gdl("mv: "+currentX + "," + currentY + " :"+blo0.blDate());
+    if(custom_drag_state==1){
+        var s0bj=$(selectedElement);
+        var dx=(window.event.clientX-currentX)/scaleX;
+        var dy=(window.event.clientY-currentY)/scaleY;
+        var newX=s0bj.attr('x')*1+dx;
+        var newY=s0bj.attr('y')*1+dy;
+        s0bj.attr('x',newX);
+        s0bj.attr('y',newY);
+        currentX=window.event.clientX;
+        currentY=window.event.clientY;
+        //updateCustomAttributePos();
+        //updateCustomCode();
+    }
+}
+$(document).bind("mousemove",moveElement);
+$(document).bind("mouseup",
+  function(){
+            custom_drag_state=0; 
+  }
+);
 </script> 
 	
 <script src="http://open.iciba.com/huaci/huaci.js"></script>
