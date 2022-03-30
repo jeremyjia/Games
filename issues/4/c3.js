@@ -1,5 +1,5 @@
 //i4c3  
-var s= "v0.0. 143 "; 
+var s= "v0.0. 151 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c3.js'"
 s += " style='color:blue;'";		s +=">"; s += "c3.js* ";
 s += "<a target='_blank' href='issues/4/c3.js'"
@@ -111,6 +111,31 @@ function _myJobClass(){
 
 				var _v = blo0.blDiv(d.v,d.v.id+"_v", _s, blGrey[1]);
 				_v.bs = [];
+				
+				var vSnap = blo0.blDiv(d.v,d.v.id+"vSnap", "vSnap", "darkgrey");
+				vSnap.ls = [];
+				vSnap.cur = null;
+				var btnSnap = blo0.blBtn(_v, _v.id+"btnJS_Snap","+","brown"); 
+				btnSnap.onclick = function(){
+					var n = vSnap.ls.length;
+					if(n==0){
+						var btnSave = blo0.blBtn(vSnap,vSnap.id+"btnSave","save",blGrey[0]);
+						btnSave.onclick = function(){
+							vSnap.cur.txt = d.v.ta.value;
+						}
+					}
+					var btn = blo0.blBtn(vSnap,vSnap.id+n,n,blGrey[0]);
+					btn.txt = d.v.ta.value;
+					btn.onclick = function(_myTa,_thisBtn,_thisList){
+						return function(){
+							_myTa.value = _thisBtn.txt;
+							blo0.blMarkBtnInList(_thisBtn,_thisList,"green","grey");
+							vSnap.cur = _thisBtn;
+						}
+					}(d.v.ta,btn,vSnap.ls);
+					vSnap.ls.push(btn);
+				}
+
 				for(i in o){
 					_i++;
 					var bodyTxt = o[i].body;

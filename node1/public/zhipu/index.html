@@ -16,6 +16,8 @@
 <script src="Zhipu-jsCode.js"></script>
 	<script>var isWindows = false;</script></head>
 <body>
+  
+<script src="https://jeremyjia.github.io/Games/js/blclass.js"></script>
 <div id="debugDiv"></div>
 <div class="win">
 	<div class="titleBar">
@@ -105,17 +107,12 @@
 
 <div id="filename">未命名.jps</div>
 
-<script>
-    var xdbtn = document.getElementById("filename");
-    xdbtn.onclick = function(){        
-        redraw(1,'editor');
-    }
-</script>
+
 
 <div class="head"><div class="main">
 <a href="http://www.jianpu99.net/" target="_blank"><img class="logo" src="/Public/zhipuStyle/default/images/logo.png"/></a><ul class="menu" onmousedown="noHideMenu();">
     	<li>
-        	<span id="menuFile" onClick="showMenu(this)">文件v0.12(F)</span>
+        	<span id="menuFile" onClick="showMenu(this)">文件(F)</span>
         	<ul>
             	<li id="menuNewFile" onClick="showWin('新建','./Zhipu-newFile.html');"><i>Ctrl+N</i>新建...</li>
             	<li id="menuOpenFile" onClick="showWin('打开','./Zhipu-fileBrowsing-type-open.html');"><i>Ctrl+O</i>打开...</li>
@@ -147,7 +144,7 @@
     	<li>
         	<span onClick="showMenu(this)">插入(I)</span>
         	<ul>
-            	<li onClick="showWin('插入文字','./Zhipu-addCustomText.html');">自定义文字</li>
+            	<li onClick="showWin('插入文字','./xdText.html');">xd自定义文字</li>
             	<li onClick="showWin('xd插入符号','./xdSymbol.html');">xd符号大全</li>
             	<li class="line"></li>
             	<li id="menuAddLastSymbol" onClick="addSymbol(lastAddSymbol);"><i>Ctrl+E</i>插入最后使用的符号</li>
@@ -228,6 +225,48 @@
 </object>
 
 
-</div>
+</div> 
+<script>
+  function xdl (txt){
+    xddbg1.innerHTML = txt + ":" + blo0.blDate();
+    xddbg2.innerHTML =  "winType = " + winType;
+}
+
+  var d = blo0.blMD("id_4_blo0_dbg","xdd",555,333,333,150,"lightgreen"); 
+  var tb = blo0.blDiv(d,d.id+"tb","xddv0.53","lightblue"); tb.style.color="brown";
+  var xddbg1 = blo0.blDiv(d,d.id+"xddbg1","xddbg1","gray"); tb.style.color="lightblue";
+  var xddbg2 = blo0.blDiv(d,d.id+"xddbg2","xddbg2","gray"); tb.style.color="lightgreen";
+  var xddbg3 = blo0.blDiv(d,d.id+"xddbg3","xddbg3","gray"); tb.style.color="gray";
+  var ta	= blo0.blTextarea(xddbg3,xddbg3.id+"ta","ta...","lightblue");
+					ta.style.width="95%"; 
+					ta.style.height="130px"; 
+  var b1 = blo0.blBtn(tb,tb.id+"b1","b1",blGrey[1]);
+  b1.onclick = function(){
+    redraw(1,'editor'); 
+    window.frames["editFrame"].document.getElementById("editor_text").value="1111111111111"; 
+    xdl("b1");
+  }   
+  const fs = [fTest0,fTest1,fTest2,fTest3];
+  tb.ls = [];
+  for(i in fs){
+    var btn = blo0.blBtn(tb,tb.id+i,i,blGrey[2]);
+    btn.onclick = function(_thisList,_thisBtn,_fs,_i){
+      return function(){
+        blo0.blMarkBtnInList(_thisBtn,_thisList,"green","grey");
+        xdShowJP(_fs[_i]); 
+        window.frames["editFrame"].document.getElementById("editor_text").value="ffffffffffffffffff"+_thisBtn.id;
+        xdl(_thisBtn.id);
+        ta.value = _fs[_i];
+      }
+    }(tb.ls,btn,fs,i);
+    tb.ls.push(btn);
+  }
+  
+  var bt = blo0.blBtn(tb,tb.id+"bt","bt",blGrey[1]);
+  bt.onclick = function(){
+
+    xdShowJP(ta.value); 
+  }   
+</script>
 </body>
 </html>
