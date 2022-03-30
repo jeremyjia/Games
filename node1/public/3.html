@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<body>
+<button onclick="a(this);">a</button>
+<div id="xdv">d</div>
+<svg height="400" width="450">
+<path id="lineAB" d="M 100 350 l 150 -300" stroke="red" stroke-width="3" fill="none" />
+  <path id="lineBC" d="M 250 50 l 150 300" stroke="red" stroke-width="3" fill="none" />
+  <path d="M 175 200 l 150 0" stroke="green" stroke-width="3" fill="none" />
+  <path d="M 100 350 q 150 -300 300 0" stroke="blue" stroke-width="5" fill="none" />
+  <!-- Mark relevant points -->
+  <g stroke="black" stroke-width="3" fill="black">
+    <circle id="pointA" cx="100" cy="350" r="3" />
+    <circle id="pointB" cx="250" cy="50" r="3" />
+    <circle id="pointC" cx="400" cy="350" r="3" />
+  </g>
+  <!-- Label the points -->
+  <g font-size="30" font-family="sans-serif" fill="black" stroke="none" text-anchor="middle">
+    <text x="100" y="350" dx="-30">A</text>
+    <text x="250" y="50" dy="-10">B</text>
+    <text x="400" y="350" dx="30">C</text>
+  </g>
+  Sorry, your browser does not support inline SVG.
+</svg>
+
+<script>
+function a(){
+ const svg=`<svg version="1.1" baseProfile="full" width="300" height="200"
+xmlns="http://www.w3.org/2000/svg">
+   <rect width="100%" height="100%" fill="red" />
+   <circle cx="150" cy="100" r="80" fill="green" />
+   <text x="150" y="125" font-size="60" text-anchor="middle" fill="white">SVG</text></svg>`;
+   document.getElementById("xdv").innerHTML = svg;
+   svgToPng(svg,(imgData)=>{
+    const pngImage = document.createElement('img');
+    document.body.appendChild(pngImage);
+    pngImage.src=imgData;
+});
+}
+
+
+ function svgToPng(svg, callback) {
+    const url = getSvgUrl(svg);
+    svgUrlToPng(url, (imgData) => {
+        callback(imgData);
+        URL.revokeObjectURL(url);
+    });
+}
+function getSvgUrl(svg) {
+    return  URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+}
+function svgUrlToPng(svgUrl, callback) {
+    const svgImage = document.createElement('img');
+    // imgPreview.style.position = 'absolute';
+    // imgPreview.style.top = '-9999px';
+    document.body.appendChild(svgImage);
+    svgImage.onload = function () {
+        const canvas = document.createElement('canvas');
+        canvas.width = svgImage.clientWidth;
+        canvas.height = svgImage.clientHeight;
+        const canvasCtx = canvas.getContext('2d');
+        canvasCtx.drawImage(svgImage, 0, 0);
+        const imgData = canvas.toDataURL('image/png');
+        callback(imgData);
+        // document.body.removeChild(imgPreview);
+    };
+    svgImage.src = svgUrl;
+ }
+</script>
+</body>
+</html>
