@@ -2,7 +2,9 @@ package main
 import ("fmt")
 
 func main() {
-  var i,j string = "Hello","World"
+  var i string = "Hello"
+  var j int = 15
 
-  fmt.Print(i, " ", j)
+  fmt.Printf("i has value: %v and type: %T\n", i, i)
+  fmt.Printf("j has value: %v and type: %T", j, j)
 }
