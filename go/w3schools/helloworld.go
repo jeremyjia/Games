@@ -2,7 +2,8 @@ package main
 import ("fmt")
 
 func main() {
-  var a, b, c, d int = 1, 3, 5, 7
+  var a, b = 6, "Hello"
+  c, d := 7, "World!"
 
   fmt.Println(a)
   fmt.Println(b)
