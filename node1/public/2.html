@@ -153,7 +153,7 @@
          <!-- ============NewRow============== -->
          <div id="Row1">
             <div id="Row1Cell1">
-               <p contenteditable="true" id="mainHeading">MainHeading</p>
+               <p contenteditable="true" id="mainHeading">MainHeading: xdv0.11</p>
             </div>
             <!-- <div class="Cell"  -->
          </div>
@@ -204,11 +204,10 @@
          var  filename = "myStory.html";
          var allHtml =  document.documentElement.outerHTML; 
          var  document_URL;
-         function documentURL() {
-         document_URL = document.URL;
-         document.getElementById("currentPage_Address").innerHTML = document_URL;  
-         window.addEventListener("keydown", onPress_ENTER, false);
-
+         function documentURL() {           
+            document_URL = document.URL;
+            document.getElementById("currentPage_Address").innerHTML = document_URL;  
+            window.addEventListener("keydown", onPress_ENTER, false);
          }
       </script>
       <script>
