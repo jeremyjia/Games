@@ -1,8 +1,10 @@
 package main
 import ("fmt")
 
+func myMessage() {
+  fmt.Println("I just got executed!")
+}
+
 func main() {
-  for i:=0; i <= 100; i+=10 {
-    fmt.Println(i)
-  }
+  myMessage() // call the function
 }
