@@ -224,15 +224,21 @@ def trans_pics(): # 这是新加的参数
 # </body>
 
 
-@REQUEST_API.route('/crawl', methods=['GET'])
-def crawl_data(): # 这是新加的参数
+@REQUEST_API.route('/trans/<string:_id>', methods=['GET'])
+def crawl_data(_id): # 这是新加的参数58tongcheng搜房信息
     """Return crawl data requests
-    @return: 200: an array of all known BOOK_REQUESTS as a \
-    flask/response object with application/json mimetype.
     """
-    //act 58HouseInfo.py <input> <output> python 运行另外脚本
-    s="<script src='static/showpic.js' ></script> "
-    return s
+    if _id == '{id}':
+      abort(400)   # caution 如果第一次访问什么id都没输入，则程序应返回400,但是没有成功
+    # str = 'py ./routes/w.py'
+    str = ('py ./routes/58Tongcheng.py')
+    results = os.system(str)
+    print (results)
+    # execute file 58HouseInfo.py <input> <output> python 运行另外脚本
+    # s="<script src='static/showpic.js' ></script> "
+    # return s
+    BOOK_REQUESTS = results
+    return jsonify(BOOK_REQUESTS)
     
 
 @REQUEST_API.route('/request', methods=['GET'])
