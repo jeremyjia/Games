@@ -4,17 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport"content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet"type="text/css"href="style.css">
+
 <title>Whiteboard</title>
 </head>
 <body>
 
+	<script type="text/javascript" src="../../js/blclass.js"></script>
 
+<button id="xdtest">xd</button>
 <input  type="color" id="xd" class="C" value="#00ff00">
 <input onchange ="getThing()" type="color" id="C" class="C" value="#ffff00">
 <input onchange ="getThing()" type="number" id="S" class="S"value="5">
 <input onclick ="clearAll()" type="button" id="B" class="B" >
 
-<div>v0.14
+<div>xdv0.31
 <canvas id="canvas"></canvas>
 </div>
 
@@ -68,6 +71,37 @@ function overDraw() {
 canvas.addEventListener("mousedown", startDraw);
 canvas.addEventListener("mouseup", overDraw);
 canvas.addEventListener("mousemove", draw);
+
+var b = bl$("xdtest");
+b.onclick = function(){ 
+	var d = blo0.blMD("id_4_blWhiteBoard", "blWhiteBoard", 300,100,55,55, "lightgreen"); 
+	var v0 = blo0.blDiv(d,d.id+"v0",'v0',blGrey[0]);
+	var v = blo0.blDiv(d,d.id+"v",'<canvas id="blCanvas"></canvas>',"brown");
+	var blc = bl$("blCanvas");
+	blc.width = 555;
+	blc.height = window.innerHeight;
+	var cc = canvas.getContext("2d");
+	var blDraw = function(_ctx){
+		_ctx.fillStyle = "#00FFff";
+		_ctx.fillRect(0, 0, 555, 555);
+	}
+
+	blc.addEventListener("mousedown", function(){
+		v0.innerHTML = Date();
+		blDraw(cc);
+	});
+	blc.addEventListener("mouseup", function(){
+
+	});
+	blc.addEventListener("mousemove", function(){
+
+	});
+
+
+	
+	_on_off_div(b,d); 
+   b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+}
 </script>
 
 </body>
