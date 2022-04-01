@@ -222,7 +222,7 @@
           {
             "in": "path",
             "name": "id",
-            "required": true,
+            "required": false,
             "description": "Crawl Request Webpage",
             "schema": {
               "$ref": "#/components/schemas/id"
