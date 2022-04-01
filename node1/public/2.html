@@ -1,0 +1,278 @@
+<!DOCTYPE  html>  
+<html>
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>MyStory.html</title>
+      <!--   
+         file:///C:/Users/vmars/Desktop/myPrograms/HeyBuddy/~~Hey-Buddy-WIP/MyStory.html
+         https://www.dummies.com/web-design-development/css3/using-the-div-tag-to-create-tables/
+         https://www.freeformatter.com/html-validator.html 
+         <a href="https://developer.mozilla.org/en-US/" target="_blank">
+         <img src="https://mdn.mozillademos.org/files/6851/mdn_logo.png"alt="MDN logo" />
+         </a>
+         still to do: intercept 'enter-key' replace with 8 spaces ELSE just cancel it .
+         -->  
+      <style type="text/css">
+         body {
+         font-family: Comic Sans MS;
+         height: 100%;
+         margin: 0 auto;
+         padding:0;
+         }
+         html {
+         height: 100%; 
+         margin: 0 auto;
+         padding:0;
+         border: 0;
+         }
+         .Table {/*  wrapper  */
+         min-height:100%;
+         text-align: center;    
+         margin: 0 auto;
+         padding:0;
+         background: red;
+         }
+         #mainHeading {
+         color: #566573 ; 
+         text-align: center;
+         width: 100%;
+         background: #BCCE98;
+         vertical-align: top;
+         margin: 0 auto;
+         padding:0;
+         }
+         #container {
+         padding-bottom: 1001em;
+         margin-bottom: -1000em;
+         overflow: hidden;
+         margin: 0 auto;
+         padding:0;
+         }
+         #Row1
+         {
+         display: block;
+         width: 100%;
+         vertical-align: top;
+         margin: 0 auto;
+         padding:0;
+         }
+         #Row2
+         {
+         display: block;    
+         width: 100%;
+         margin: 0 auto;
+         padding:0;
+         }
+         #Row3
+         {
+         width: 100%;    
+         margin: 0 auto;
+         padding:0;
+         display: inline;   
+         }
+         #Row1Cell1
+         {
+         color: #4C4C4C; 
+         display: inline-block;   
+         text-align: center;
+         width: 100%;
+         font-size: 18px
+         }
+         #Row2Cell1
+         {
+         display: inline-block;   
+         background-color: #DAE9BC;
+         width: 20%;
+         margin: 0 auto;        
+         float: left;
+         padding-bottom: 1001em;
+         margin-bottom: -1000em;
+         }
+         #Row2Cell2
+         {
+         display: inline-block;   
+         text-align: left;
+         width: 60%;
+         background-color:#F8F8FF;
+         margin: 0 auto;         
+         float:left; 
+         padding-bottom: 1001em;
+         margin-bottom: -1000em;
+         }
+         #Row2Cell3
+         {
+         display: inline-block;   
+         width: 20%;
+         background: #e9f2d7; 
+         margin: 0 auto;         
+         float: right;
+         padding-bottom: 1001em;
+         margin-bottom: -1000em;
+         }
+         #Row3Cell1
+         {
+         display: inline-block;   
+         width: 100%;
+         background: #BCCE98;
+         margin: 0 auto;    
+         overflow: auto;      
+         text-align: center;         
+         }
+         div{ 
+         text-align: left;
+         font-size: 14px
+         }
+         .p_bn {
+         text-align: left;
+         }
+         .p_ah {
+         color: DarkGreen;
+         text-align: left;
+         font-size: 16px
+         }
+         .p_tgh {
+         color: #566573; 
+         text-align: left;
+         font-size: 14px
+         }
+         #left_note {
+         color:#5886BC;
+         }
+         #left_note {
+         color:#576C15;
+         }
+         #currentPage_Address {
+         color:#e9f2d7;
+         }
+      </style>
+   </head>
+   <body onload="documentURL()">
+      <!-- Run me 1st -->
+      <div class="Table">
+         <!-- ============NewRow============== -->
+         <div id="Row1">
+            <div id="Row1Cell1">
+               <p contenteditable="true" id="mainHeading">MainHeading: xdv0.11</p>
+            </div>
+            <!-- <div class="Cell"  -->
+         </div>
+         <!-- <div class="Row"  -->
+         <!-- ============NewRow============== -->
+         <div id="container">
+            <div id="Row2">
+               <div id="Row2Cell1">
+                  <p contenteditable="" class="left_note" style="color:#5886BC;">notes</p>
+               </div>
+               <!-- <div class="Cell"  -->
+               <div id="Row2Cell2">
+                  <p contenteditable="" class="p_ah">Heading</p>
+                  <p contenteditable="" class="p_tgh">Text</p>
+               </div>
+               <!-- <div class="Cell"  -->
+               <div id="Row2Cell3">
+                  <p contenteditable="true" class="right_note" style="color:#576C15">notes</p>
+               </div>
+               <!-- <div class="Cell"  -->
+            </div>
+            <!-- <div class="Row"  -->
+         </div>
+         <!--  id="container"  -->
+         <!-- ============NewRow============== -->
+         <div id="Row3">
+            <div id="Row3Cell1">
+               <br>
+               <button onclick="createLeftNote()">Add Left Note</button>
+               <button onclick="createArticleHeading()">Add Heading</button>
+               <button onclick="createTextArea()">Add Text Paragraph</button>
+               <button onclick="createRightNote()">Add Right Note</button>
+               <form action="http://google.com" target="_blank" style="display: inline;">
+                  <input type="submit" value="Search Google" />
+               </form>
+               <button onclick="saveAs(filename, allHtml)">Save This Page</button>
+               <p id="currentPage_Address" > </p>
+            </div>  <!-- id="Row3Cell1"  -->
+         </div>  <!-- <div class="Row"  -->
+      </div>  <!--  <div class="Table">  -->
+      <script>
+         var  LeftNote = "LeftNote";
+         var  ArticleHeading = "Heading";
+         var  TextParagraph = "Text";
+         var  RightNote = "RightNote";
+         var  ButtonParagraph = "New Link";
+         var  document_URL;
+         var  filename = "myStory.html";
+         var allHtml =  document.documentElement.outerHTML; 
+         var  document_URL;
+         function documentURL() {           
+            document_URL = document.URL;
+            document.getElementById("currentPage_Address").innerHTML = document_URL;  
+            window.addEventListener("keydown", onPress_ENTER, false);
+         }
+      </script>
+      <script>
+      function onPress_ENTER(event){
+        var keyPressed = event.keyCode || event.which;
+        //if ENTER is pressed
+        if(keyPressed==13)
+        {
+//            alert('enter pressed');
+            event.preventDefault();
+            stopImmediatePropagation();
+        }
+        else
+        {
+            return false;
+        }
+} 
+      </script>
+      <script contenteditable="">
+         function createTextArea() {
+                   var p_tgh = document.createElement("p");
+                   p_tgh.innerHTML = TextParagraph;
+                   p_tgh.setAttribute("contenteditable", "true");
+                   p_tgh.setAttribute("class","p_tgh");
+                   var content = document.getElementById("Row2Cell2");
+                   content.appendChild(p_tgh);
+                 }﻿	
+      </script>	
+      <script contenteditable="">
+         function createArticleHeading() {
+           var p_ah = document.createElement('p');
+           p_ah.innerHTML = ArticleHeading;
+           p_ah.setAttribute('contenteditable', 'true');
+           p_ah.setAttribute("class","p_ah");
+           var content = document.getElementById('Row2Cell2');
+           content.appendChild(p_ah);
+         }
+      </script> 
+      <script>
+         function saveAs(filename, allHtml) {
+           allHtml =  document.documentElement.outerHTML; 
+          var blob = new Blob([allHtml], {type: 'text/csv'});
+          if(window.navigator.msSaveOrOpenBlob) {
+              window.navigator.msSaveBlob(blob, filename);
+          }
+          else{
+              var elem = window.document.createElement('a');
+              elem.href = window.URL.createObjectURL(blob);
+              elem.download = filename;        
+              document.body.appendChild(elem);
+              elem.click();        
+              document.body.removeChild(elem);
+          }
+         }    
+          
+      </script> 
+      <script contenteditable=""> 
+         function createNewButton() {
+           var p_bn = document.createElement("li");
+           p_bn.innerHTML = ButtonParagraph;
+           p_bn.setAttribute('contenteditable', 'true');
+           p_bn.setAttribute("id","li-Default");
+           var content = document.getElementById("nav-01");
+           content.appendChild(p_bn);
+         }
+      </script> 
+   </body>
+</html>
