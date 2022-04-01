@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_v1.5.221"
+var g_ver_blClass = "CBlClass_v1.5.222"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -447,7 +447,7 @@ function CBlClass ()
 					var btnUI = blo0.blBtn(tb,tb.id+"btnUI","ui",blGrey[1]);
 					btnUI.onclick = function(){
 						if(!d.ui){
-							var w = 960, h = 540;
+							var w = 555, h = 444;
 							d.ui = blo0.blMDiv(d, d.id + "ui", "ui",555,10,w,h,blGrey[1]);
 							var tb4CVS = blo0.blDiv(d.ui,d.ui.id+"tb4CVS","tb4CVS",blGrey[2]);
 							var v4canvas = blo0.blDiv(d.ui,d.ui.id+"v4canvas","v4canvas",blGrey[0]);

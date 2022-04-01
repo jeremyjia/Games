@@ -17,10 +17,11 @@
 <input onchange ="getThing()" type="number" id="S" class="S"value="5">
 <input onclick ="clearAll()" type="button" id="B" class="B" >
 
-<div>xdv0.31
+<div>xdv0.34
 <canvas id="canvas"></canvas>
 </div>
 
+<div id="xddiv"></div>
 
 <script>
 var canvas = document.getElementById("canvas");
@@ -72,33 +73,37 @@ canvas.addEventListener("mousedown", startDraw);
 canvas.addEventListener("mouseup", overDraw);
 canvas.addEventListener("mousemove", draw);
 
-var b = bl$("xdtest");
+var blCanvas = function(d,w,h){
+	var cvs = document.createElement("canvas");
+	cvs.width = w;
+	cvs.height = h;
+	d.appendChild(cvs);
+	cvs.style.float = "left";
+}
+var b = bl$("xdtest"); 
 b.onclick = function(){ 
-	var d = blo0.blMD("id_4_blWhiteBoard", "blWhiteBoard", 300,100,55,55, "lightgreen"); 
-	var v0 = blo0.blDiv(d,d.id+"v0",'v0',blGrey[0]);
-	var v = blo0.blDiv(d,d.id+"v",'<canvas id="blCanvas"></canvas>',"brown");
-	var blc = bl$("blCanvas");
-	blc.width = 555;
-	blc.height = window.innerHeight;
-	var cc = canvas.getContext("2d");
-	var blDraw = function(_ctx){
-		_ctx.fillStyle = "#00FFff";
-		_ctx.fillRect(0, 0, 555, 555);
-	}
-
-	blc.addEventListener("mousedown", function(){
-		v0.innerHTML = Date();
-		blDraw(cc);
+	var w = 888, h = 888;
+	var d= blo0.blMD("ui", "ui",555,10,w,h,blGrey[1]);
+	var tb = blo0.blDiv(d,d.id+"tb4CVS","tb4CVS",blGrey[2]);
+	var vc = blo0.blDiv(d,d.id+"v4canvas","v4canvas",blGrey[0]);
+	var fCVS = blo0.blCanvas2(vc,w,h); fCVS.n = 0;
+	fCVS.addEventListener("mousedown", function(){
+		fCVS.n = 1;
 	});
-	blc.addEventListener("mouseup", function(){
-
+	fCVS.addEventListener("mousemove", function(e){
+		if(fCVS.n ){
+			var x = e.offsetX;
+			var y = e.offsetY;
+			tb.innerHTML = "("+x+","+y+")";
+		}
 	});
-	blc.addEventListener("mousemove", function(){
-
+	fCVS.addEventListener("mouseup", function(){
+		fCVS.n = 0;
 	});
+	var ctx = fCVS.getContext("2d");								 
+	ctx.fillStyle = "grey"; 
+	ctx.fillRect(0,0,w,h);
 
-
-	
 	_on_off_div(b,d); 
    b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 }
