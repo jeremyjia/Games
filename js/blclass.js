@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_v1.5.322"
+var g_ver_blClass = "CBlClass_v1.5.342"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -142,6 +142,296 @@ function CBlClass ()
 	var blRed = 120, blGreen=11, blBlue=220;
 	var _ps = []; 
 
+	this.blh_test_blPaint = function(v){//xd2do
+		var d = blo0.blPaint("blh_test_blPaint",50,50,1111,1111); 
+		return d;
+	}			
+	this.blPaint = function(_id,_x,_y,_w,_h){ 		 
+		var d= blo0.blMD(_id, "blPaint_"+_id,_x,_y,_w,_h,blGrey[1]);
+		if(!d.load){
+			d.load = true;	 
+			var items = [];   
+			d.addImgItem = function(x,y,w,h,src){
+				var i = {};  i.x = x; i.y = y; i.w = w; i.h = h;				
+				var block = new Image(); 
+				block.src = src; 
+				i.draw = function(ctx){		
+					ctx.fillStyle = "yellow"; 
+					ctx.fillRect(i.x,i.y,i.w,i.h);			
+					//*
+					ctx.beginPath();
+                    ctx.drawImage(block, i.x, i.y,i.w,i.h);
+					//*/
+				}
+				items.push(i);
+			}
+			d.addItem = function(type,x,y,w,h,iHandle){
+				var i = {}; i.type = type; i.x = x; i.y = y; i.w = w; i.h = h;
+				i.draw = function(ctx){
+					if(type == "rect"){
+						ctx.fillStyle = "blue"; 
+						ctx.fillRect(i.x,i.y,i.w,i.h);
+					}
+					else if(type == "div"){
+						ctx.fillStyle = "gray"; 
+						ctx.fillRect(i.x,i.y,i.w,i.h);
+					}
+					else if(type == "circle"){						
+					   ctx.beginPath();
+					   ctx.arc(x, y, w, h, 2 * Math.PI);				
+					   ctx.moveTo(x, y);
+					   ctx.stroke(); 
+					}
+				}
+				i._2move = function(dx,dy){ i.x += dx; i.y += dy;}
+				
+				if(iHandle){ iHandle._followMe(i);}
+				items.push(i);
+			}
+			d.getItems = function(){ return items;}
+			d.drawItems = function(ctx){
+				
+				ctx.fillStyle = "lightgreen"; 
+				ctx.fillRect(110,50,555,444);
+
+				
+				ctx.fillStyle = "#FF0000";
+				ctx.font = "30px Arial";
+				ctx.fillText("l=" + items.length, 150,50);
+				
+				for(i in items){
+					items[i].draw(ctx);
+				}
+			}
+			var x = 0, y = 0;
+			var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[2]);
+			var st = blo0.blDiv(d,d.id+"st","st",blGrey[3]);
+			var vc = blo0.blDiv(d,d.id+"v4canvas","v4canvas",blGrey[4]);
+			var dc = blo0.blDiv(d,d.id+"dc","dc",blGrey[4]);
+			
+			var fCVS = document.createElement("canvas");	
+			fCVS.id = "id_4_canvas_blPaint";	 
+			fCVS.width = _w;
+			fCVS.height = _h;	
+			fCVS.style.float = "left";   
+			dc.appendChild(fCVS);
+			var ctx = fCVS.getContext("2d");								 
+
+			var b1 = blo0.blBtn(tb,tb.id+"b1","clear",blGrey[1]);
+			b1.style.float = "left";   
+			b1.style.backgroundColor = "brown";   
+			b1.onclick = function(){
+				ctx.fillStyle = "lightblue"; 
+				ctx.fillRect(0,0,_w,_h);
+			}
+			var fun2draw = function(n){		
+				ctx.fillStyle = "lightblue"; 
+				ctx.fillRect(0,0,_w,_h);
+
+				ctx.fillStyle = "#FF0000";
+				ctx.font = "30px Arial";
+				ctx.fillText(n, 50,50);
+				d.drawItems(ctx);
+			}
+			var btn2Play = blo0.blBtn(tb,tb.id+"btn2Play","play",blGrey[1]);
+			btn2Play.style.float = "left";   
+			btn2Play.style.backgroundColor = "grey";   
+			btn2Play.onclick = function(_thisBtn2Play){
+				var t = null;
+				var n = 0;
+				return function(){
+					if(!t){ 
+						_thisBtn2Play.innerHTML = "stop";
+						t = setInterval(function(){
+							n++;
+							vc.innerHTML = n + ": " + Date();
+							fun2draw(n);
+						},200);
+					}
+					else{ 
+						_thisBtn2Play.innerHTML = "play";
+						clearInterval(t);
+						t = null;
+						n = 0;
+					}
+				}
+			}(btn2Play);
+			
+			
+			d.os = [];
+			d.co = null;
+
+			var CO_Circle = function(v1,v2){
+				var rC = 10; 
+				const Rs = [10,20,30];
+				this.getName = function(){return "circle";}
+				this.funClick = function(){
+					v1.innerHTML = this.getName() + rC;
+					v2.innerHTML = "";
+					for(i in Rs){
+						var btn = blo0.blBtn(v2,v2.id + i,Rs[i],blGrey[0]);
+						btn.style.float = "right";  
+						btn.onclick = function(_i){
+							return function(){
+								rC = Rs[_i];
+							}
+						}(i); 
+					}
+				}
+				this.funMD = function(){
+					ctx.beginPath();
+					ctx.arc(x, y, rC, 0, 2 * Math.PI);				
+					ctx.moveTo(x, y);
+					ctx.stroke();
+					ctx.font = "30px Arial";
+					ctx.strokeText(this.getName(), x, y);
+					
+					d.addItem("circle",x,y,rC,0);					
+				}
+				this.funMU = function(){}
+				this.funMM = function(){}
+			};
+			var CO_Rect = function(){
+				this.getName = function(){return "rectangle";}
+				this.funMD = function(){				
+					ctx.fillStyle = "#FF0000";
+					ctx.fillRect(x, y, 150, 75);
+					ctx.font = "30px Arial";
+					ctx.strokeText(this.getName(), x, y);
+
+					d.addItem("rect",x,y,150,75);
+				}
+				this.funMU = function(){}
+				this.funMM = function(){}
+			};
+			var CO_FreeDraw = function(){
+				var _2draw = false;
+				this.getName = function(){return "FreeDraw";}
+				this.funMD = function(){	_2draw = true;		}
+				this.funMM = function(){
+					if(_2draw){
+						ctx.font = "30px Arial";
+						ctx.strokeText(this.getName() + " MU", x, y);
+					}
+				}
+				this.funMU = function(){ _2draw = false;	}
+			};
+			var CO_Img = function(vImg1,vSelImg){  
+				var iSrc = "../../issues/190/img/block.gif";
+				const Is = ["block.gif","yelloball.png","box.png"];
+				this.getName = function(){return "CO_Img:";}
+				this.funClick = function(){
+					vImg1.innerHTML = this.getName() + Date();
+					vSelImg.innerHTML = "";
+					for(i in Is){
+						var btn = blo0.blBtn(vSelImg,vSelImg.id + i,i,blGrey[0]);
+						btn.style.float = "right";   
+						btn.onclick = function(_i){
+							return function(){
+								iSrc = "../../issues/190/img/" + Is[_i];
+							}
+						}(i);
+					}
+				}
+				this.funMD = function(){	 
+					d.addImgItem(x,y,35,35,iSrc);	
+				}
+				this.funMM = function(){ 
+				}
+				this.funMU = function(){ _2draw = false;	}
+			};
+			
+			var CO_Div = function(v1,v2){
+				var Ds = [];
+				this.getName = function(){return "Div";}
+				this.funClick = function(){
+					v1.innerHTML = this.getName() + Date();
+					v2.innerHTML = this.getName() + Date();
+				}
+				this.funMD = function(e){	
+					var xdx = e.pageX;
+					var xdy = e.pageY;				
+					ctx.fillStyle = "#00FF00";
+					ctx.fillRect(x, y, 150, 75);
+					ctx.font = "30px Arial";
+					ctx.strokeText(this.getName(), x, y);
+					var n = Ds.length; 
+					var md = blo0.blDiv(document.body, "id_4_co_div_"+n,n,blGrey[0]);  
+					var style ="position: absolute;cursor:move;";
+					style += "z-index: 9;";
+					style += "background-color: #11f1f1;";
+					style += "text-align: center;";
+					style += "border: 1px solid #d3d3d3;";
+					style += "left: 400px";
+					style += "top: 40px"; 
+					md .style =style;
+					md.style.left = xdx+"px";
+					md.style.top = xdy+"px";
+					md.style.width = 50+"px";			
+					md.style.height = 50+"px";
+					md._2move = function(_thisMD){
+						return function(dx,dy){
+							_move_div(_thisMD,dx,dy);
+						}
+					}(md);
+					blo0.blMakeDivMovable(md); 
+					d._followMe(md);
+					Ds.push(md);
+					
+					d.addItem("div",x,y,150,75,md);
+				}
+				this.funMU = function(){}
+				this.funMM = function(){}
+			};
+			var o1 = new CO_Circle(vc,st);		d.os.push(o1); 
+			var o2 = new CO_Rect();				d.os.push(o2); 
+			var o2 = new CO_FreeDraw();			d.os.push(o2); 
+			var o2 = new CO_Img(vc,st);			d.os.push(o2); 
+			var o2 = new CO_Div(vc,st);			d.os.push(o2); 
+
+			
+			d.btnOs = [];
+			for(i in d.os){		 			
+				var bo = blo0.blBtn(tb,tb.id+i,d.os[i].getName(),blGrey[1]);
+				bo.style.float = "right";   
+				bo.onclick = function(_thisPaintMD,_thisOs,_thisBtnOs,_thisObjBtn,_i){ 
+					return function(){
+						_thisPaintMD.co = _thisOs[_i];		
+						if(_thisPaintMD.co.funClick) _thisPaintMD.co.funClick();			
+						blo0.blMarkBtnInList(_thisObjBtn,_thisBtnOs,"yellow","grey");
+					}
+				}(d,d.os,d.btnOs,bo,i);
+				d.btnOs.push(bo);
+			}
+
+
+			ctx.fillStyle = "grey"; 
+			ctx.fillRect(0,0,_w,_h);
+
+			fCVS.addEventListener("mousedown", function(_thisPaintMD){ 
+				return function(e){
+					x = e.offsetX;
+					y = e.offsetY;  
+					if(_thisPaintMD.co) _thisPaintMD.co.funMD(e);
+				}
+			}(d));
+			fCVS.addEventListener("mousemove",function(_thisPaintMD){ 
+				return function(e){
+					x = e.offsetX;
+					y = e.offsetY;  
+					if(_thisPaintMD.co) _thisPaintMD.co.funMM();
+				}
+			}(d));
+			fCVS.addEventListener("mouseup", function(_thisPaintMD){ 
+				return function(e){
+					x = e.offsetX;
+					y = e.offsetY;  
+					if(_thisPaintMD.co) _thisPaintMD.co.funMU();
+				}
+			}(d)); 
+		}
+		return d;
+	}
 
 	function CTest(){
 		var _ot = {};
@@ -175,8 +465,8 @@ function CBlClass ()
 	this.v = g_ver_blClass;
 	this.blrAboutMe= function(b,d){		
 		var s = ""; 
-		s += _blhMakeLink('blclass.js ','https://littleflute.github.io/Games/blclass.js','color:skyblue;','_blank');
-		s += _blhMakeLink(' blclass.js*','https://github.com/littleflute/Games/edit/master/blclass.js','color:skyblue;','_blank');
+		s += _blhMakeLink('blclass.js ','https://jeremyjia.github.io/Games/js/blclass.js','color:skyblue;','_blank');
+		s += _blhMakeLink(' blclass.js*','https://github.com/jeremyjia/Games/edit/master/js/blclass.js','color:skyblue;','_blank');
 		s += _blhMakeLink(' blog','https://github.com/littleflute/blog','color:yellow;','_blank');
 		d.innerHTML = s;
 		_on_off_div(b,d);
@@ -1094,6 +1384,38 @@ function CBlClass ()
 		};  
         return r;
     }
+	
+    this.blMD = function(id,html,x,y,w,h,bkClr){
+	    var md = this.blDiv(document.body, id, g_ver_blClass + ":" + html,bkClr);  
+		if(!md.run){
+		    md.run = true; 
+			var style ="position: absolute;";
+			style += "z-index: 9;";
+			style += "background-color: #f1f1f1;";
+			style += "text-align: center;";
+			style += "border: 1px solid #d3d3d3;";
+			style += "left: 400px";
+			style += "top: 40px";
+			md .style =style;
+
+			var title = blo0.blDiv(md , md.id + "Header", "Header");
+			style ="padding: 10px;";
+			style += "z-index: 10;";
+			style += "cursor: move;";
+			style += "text-align: center;";
+			style += "border: 1px solid #fff;";
+			style += "background-color: #2196F3;";
+			title.style =style;
+
+			blo0.blMakeDivMovable(md );
+			md.style.left = x+"px";
+			md.style.top = y+"px";
+			md.style.width = w+"px";			
+			md.style.height = h+"px";
+		}
+	    return md;
+    }
+
     this.blMDiv = function (oBoss,id,html,x,y,w,h,bkClr){
 		var x1 = 0;
 		var y1 = 0; 
@@ -1147,37 +1469,6 @@ function CBlClass ()
 		};  
         return r;
     }
-    this.blMD = function(id,html,x,y,w,h,bkClr){
-	    var md = this.blDiv(document.body, id, g_ver_blClass + ":" + html,bkClr);  
-		if(!md.run){
-		    md.run = true; 
-			var style ="position: absolute;";
-			style += "z-index: 9;";
-			style += "background-color: #f1f1f1;";
-			style += "text-align: center;";
-			style += "border: 1px solid #d3d3d3;";
-			style += "left: 400px";
-			style += "top: 40px";
-			md .style =style;
-
-			var title = blo0.blDiv(md , md.id + "Header", "Header");
-			style ="padding: 10px;";
-			style += "z-index: 10;";
-			style += "cursor: move;";
-			style += "text-align: center;";
-			style += "border: 1px solid #fff;";
-			style += "background-color: #2196F3;";
-			title.style =style;
-
-			blo0.blMakeDivMovable(md );
-			md.style.left = x+"px";
-			md.style.top = y+"px";
-			md.style.width = w+"px";			
-			md.style.height = h+"px";
-		}
-	    return md;
-    }
-
     _blShowObj_2_Div_all = function (oBoss,obj,l) //blclassdbg 1039
     {	  
         oBoss.innerHTML = "";
@@ -1234,57 +1525,6 @@ function CBlClass ()
 		_blShowObj2Div(oDivBoss,obj);
 		 
 	}
-    _blShowObj2Div = function (oDivBoss,obj)
-    {        
-        var oBoss = oDivBoss;
-        if(!oBoss) {
-           oBoss = document.createElement("div");
-           oBoss.id = "divBlShowObj";
-           oBoss.style.border = "green 1px solid";
-           document.body.appendChild(oBoss);
-        } 
-        if(!oBoss){
-            alert("boss error!");return;
-        }
-        oBoss.innerHTML = "";
-        for(i in obj)
-		{
-			  var b = document.createElement("button");
-			  b.id = b.innerHTML = i;
-			  b.style.backgroundColor = "gray";
-			  if(i.charAt(0)=="b"&&i.charAt(1)=="l") b.style.backgroundColor = "yellow";
-			  oBoss.appendChild(b);
-			  var d = document.createElement("div");
-			  d.innerHTML = obj[i];
-			  d.style.border = "blue 1px solid";
-			  d.style.backgroundColor = "green";
-			  d.style.color = "yellow";
-			  oBoss.appendChild(d);
-
-			  if(i.charAt(0)=="b"&&i.charAt(1)=="l"&&i.charAt(2)=="r"){
-				b.style.backgroundColor = "red";
-				d.innerHTML = ""; 
-				d.id = b.id + "Div";
-				b.onclick = function(i_,b_,v_){
-					return function(){
-						var go = obj[i_];
-						if (typeof go == "function") {
-			    			go(b_,v_);
-						}
-					} 
-				}(i,b,d);
-			  }
-			  if(i.charAt(0)=="b"&&i.charAt(1)=="l"&&i.charAt(2)=="l"){ 
-					b.style.display = "none";	 
-					d.id			= d.html;	 
-			  }
-			  if(i.charAt(0)=="b"&&i.charAt(1)=="l"&&i.charAt(2)=="h"){ 
-					b.style.display = "none";	 
-					d.style.display = "none";	 
-			  }
-		}
-    }    
-
 	this.blAudio = function (oBoss,id,src)					
  	{  								
    		var s = "";							 
@@ -1916,297 +2156,81 @@ function CBlClass ()
 		else alert("can't find w3");
 	}
 	
-						
-	this.blPaint = function(_id,_x,_y,_w,_h){ 		 
-		var d= blo0.blMD(_id, "blPaint_"+_id,_x,_y,_w,_h,blGrey[1]);
-		if(!d.load){
-			d.load = true;	 
-			var items = [];   
-			d.addImgItem = function(x,y,w,h,src){
-				var i = {};  i.x = x; i.y = y; i.w = w; i.h = h;				
-				var block = new Image(); 
-				block.src = src; 
-				i.draw = function(ctx){		
-					ctx.fillStyle = "yellow"; 
-					ctx.fillRect(i.x,i.y,i.w,i.h);			
-					//*
-					ctx.beginPath();
-                    ctx.drawImage(block, i.x, i.y,i.w,i.h);
-					//*/
-				}
-				items.push(i);
-			}
-			d.addItem = function(type,x,y,w,h,iHandle){
-				var i = {}; i.type = type; i.x = x; i.y = y; i.w = w; i.h = h;
-				i.draw = function(ctx){
-					if(type == "rect"){
-						ctx.fillStyle = "blue"; 
-						ctx.fillRect(i.x,i.y,i.w,i.h);
-					}
-					else if(type == "div"){
-						ctx.fillStyle = "gray"; 
-						ctx.fillRect(i.x,i.y,i.w,i.h);
-					}
-					else if(type == "circle"){						
-					   ctx.beginPath();
-					   ctx.arc(x, y, w, h, 2 * Math.PI);				
-					   ctx.moveTo(x, y);
-					   ctx.stroke(); 
-					}
-				}
-				i._2move = function(dx,dy){ i.x += dx; i.y += dy;}
-				
-				if(iHandle){ iHandle._followMe(i);}
-				items.push(i);
-			}
-			d.getItems = function(){ return items;}
-			d.drawItems = function(ctx){
-				
-				ctx.fillStyle = "lightgreen"; 
-				ctx.fillRect(110,50,555,444);
-
-				
-				ctx.fillStyle = "#FF0000";
-				ctx.font = "30px Arial";
-				ctx.fillText("l=" + items.length, 150,50);
-				
-				for(i in items){
-					items[i].draw(ctx);
-				}
-			}
-			var x = 0, y = 0;
-			var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[2]);
-			var st = blo0.blDiv(d,d.id+"st","st",blGrey[3]);
-			var vc = blo0.blDiv(d,d.id+"v4canvas","v4canvas",blGrey[4]);
-			var dc = blo0.blDiv(d,d.id+"dc","dc",blGrey[4]);
-			
-			var fCVS = document.createElement("canvas");	
-			fCVS.id = "id_4_canvas_blPaint";	 
-			fCVS.width = _w;
-			fCVS.height = _h;	
-			fCVS.style.float = "left";   
-			dc.appendChild(fCVS);
-			var ctx = fCVS.getContext("2d");								 
-
-			var b1 = blo0.blBtn(tb,tb.id+"b1","clear",blGrey[1]);
-			b1.style.float = "left";   
-			b1.style.backgroundColor = "brown";   
-			b1.onclick = function(){
-				ctx.fillStyle = "lightblue"; 
-				ctx.fillRect(0,0,_w,_h);
-			}
-			var fun2draw = function(n){		
-				ctx.fillStyle = "lightblue"; 
-				ctx.fillRect(0,0,_w,_h);
-
-				ctx.fillStyle = "#FF0000";
-				ctx.font = "30px Arial";
-				ctx.fillText(n, 50,50);
-				d.drawItems(ctx);
-			}
-			var btn2Play = blo0.blBtn(tb,tb.id+"btn2Play","play",blGrey[1]);
-			btn2Play.style.float = "left";   
-			btn2Play.style.backgroundColor = "grey";   
-			btn2Play.onclick = function(_thisBtn2Play){
-				var t = null;
-				var n = 0;
-				return function(){
-					if(!t){ 
-						_thisBtn2Play.innerHTML = "stop";
-						t = setInterval(function(){
-							n++;
-							vc.innerHTML = n + ": " + Date();
-							fun2draw(n);
-						},200);
-					}
-					else{ 
-						_thisBtn2Play.innerHTML = "play";
-						clearInterval(t);
-						t = null;
-						n = 0;
-					}
-				}
-			}(btn2Play);
-			
-			
-			d.os = [];
-			d.co = null;
-
-			var CO_Circle = function(v1,v2){
-				var rC = 10; 
-				const Rs = [10,20,30];
-				this.getName = function(){return "circle";}
-				this.funClick = function(){
-					v1.innerHTML = this.getName() + rC;
-					v2.innerHTML = "";
-					for(i in Rs){
-						var btn = blo0.blBtn(v2,v2.id + i,Rs[i],blGrey[0]);
-						btn.style.float = "right";  
-						btn.onclick = function(_i){
-							return function(){
-								rC = Rs[_i];
-							}
-						}(i); 
-					}
-				}
-				this.funMD = function(){
-					ctx.beginPath();
-					ctx.arc(x, y, rC, 0, 2 * Math.PI);				
-					ctx.moveTo(x, y);
-					ctx.stroke();
-					ctx.font = "30px Arial";
-					ctx.strokeText(this.getName(), x, y);
-					
-					d.addItem("circle",x,y,rC,0);					
-				}
-				this.funMU = function(){}
-				this.funMM = function(){}
-			};
-			var CO_Rect = function(){
-				this.getName = function(){return "rectangle";}
-				this.funMD = function(){				
-					ctx.fillStyle = "#FF0000";
-					ctx.fillRect(x, y, 150, 75);
-					ctx.font = "30px Arial";
-					ctx.strokeText(this.getName(), x, y);
-
-					d.addItem("rect",x,y,150,75);
-				}
-				this.funMU = function(){}
-				this.funMM = function(){}
-			};
-			var CO_FreeDraw = function(){
-				var _2draw = false;
-				this.getName = function(){return "FreeDraw";}
-				this.funMD = function(){	_2draw = true;		}
-				this.funMM = function(){
-					if(_2draw){
-						ctx.font = "30px Arial";
-						ctx.strokeText(this.getName() + " MU", x, y);
-					}
-				}
-				this.funMU = function(){ _2draw = false;	}
-			};
-			var CO_Img = function(vImg1,vSelImg){  
-				var iSrc = "../../issues/190/img/block.gif";
-				const Is = ["block.gif","yelloball.png","box.png"];
-				this.getName = function(){return "CO_Img:";}
-				this.funClick = function(){
-					vImg1.innerHTML = this.getName() + Date();
-					vSelImg.innerHTML = "";
-					for(i in Is){
-						var btn = blo0.blBtn(vSelImg,vSelImg.id + i,i,blGrey[0]);
-						btn.style.float = "right";   
-						btn.onclick = function(_i){
-							return function(){
-								iSrc = "../../issues/190/img/" + Is[_i];
-							}
-						}(i);
-					}
-				}
-				this.funMD = function(){	 
-					d.addImgItem(x,y,35,35,iSrc);	
-				}
-				this.funMM = function(){ 
-				}
-				this.funMU = function(){ _2draw = false;	}
-			};
-			
-			var CO_Div = function(v1,v2){
-				var Ds = [];
-				this.getName = function(){return "Div";}
-				this.funClick = function(){
-					v1.innerHTML = this.getName() + Date();
-					v2.innerHTML = this.getName() + Date();
-				}
-				this.funMD = function(e){	
-					var xdx = e.pageX;
-					var xdy = e.pageY;				
-					ctx.fillStyle = "#00FF00";
-					ctx.fillRect(x, y, 150, 75);
-					ctx.font = "30px Arial";
-					ctx.strokeText(this.getName(), x, y);
-					var n = Ds.length; 
-					var md = blo0.blDiv(document.body, "id_4_co_div_"+n,n,blGrey[0]);  
-					var style ="position: absolute;cursor:move;";
-					style += "z-index: 9;";
-					style += "background-color: #11f1f1;";
-					style += "text-align: center;";
-					style += "border: 1px solid #d3d3d3;";
-					style += "left: 400px";
-					style += "top: 40px"; 
-					md .style =style;
-					md.style.left = xdx+"px";
-					md.style.top = xdy+"px";
-					md.style.width = 50+"px";			
-					md.style.height = 50+"px";
-					md._2move = function(_thisMD){
-						return function(dx,dy){
-							_move_div(_thisMD,dx,dy);
-						}
-					}(md);
-					blo0.blMakeDivMovable(md); 
-					d._followMe(md);
-					Ds.push(md);
-					
-					d.addItem("div",x,y,150,75,md);
-				}
-				this.funMU = function(){}
-				this.funMM = function(){}
-			};
-			var o1 = new CO_Circle(vc,st);		d.os.push(o1); 
-			var o2 = new CO_Rect();				d.os.push(o2); 
-			var o2 = new CO_FreeDraw();			d.os.push(o2); 
-			var o2 = new CO_Img(vc,st);			d.os.push(o2); 
-			var o2 = new CO_Div(vc,st);			d.os.push(o2); 
-
-			
-			d.btnOs = [];
-			for(i in d.os){		 			
-				var bo = blo0.blBtn(tb,tb.id+i,d.os[i].getName(),blGrey[1]);
-				bo.style.float = "right";   
-				bo.onclick = function(_thisPaintMD,_thisOs,_thisBtnOs,_thisObjBtn,_i){ 
-					return function(){
-						_thisPaintMD.co = _thisOs[_i];		
-						if(_thisPaintMD.co.funClick) _thisPaintMD.co.funClick();			
-						blo0.blMarkBtnInList(_thisObjBtn,_thisBtnOs,"yellow","grey");
-					}
-				}(d,d.os,d.btnOs,bo,i);
-				d.btnOs.push(bo);
-			}
-
-
-			ctx.fillStyle = "grey"; 
-			ctx.fillRect(0,0,_w,_h);
-
-			fCVS.addEventListener("mousedown", function(_thisPaintMD){ 
-				return function(e){
-					x = e.offsetX;
-					y = e.offsetY;  
-					if(_thisPaintMD.co) _thisPaintMD.co.funMD(e);
-				}
-			}(d));
-			fCVS.addEventListener("mousemove",function(_thisPaintMD){ 
-				return function(e){
-					x = e.offsetX;
-					y = e.offsetY;  
-					if(_thisPaintMD.co) _thisPaintMD.co.funMM();
-				}
-			}(d));
-			fCVS.addEventListener("mouseup", function(_thisPaintMD){ 
-				return function(e){
-					x = e.offsetX;
-					y = e.offsetY;  
-					if(_thisPaintMD.co) _thisPaintMD.co.funMU();
-				}
-			}(d)); 
-		}
-		return d;
-	}
+		
 }//END: function CBlClass ()
  
 var blo0 = new CBlClass;
  
+
+_blShowObj2Div = function (oDivBoss,obj)
+{        
+	var oBoss = oDivBoss;
+	if(!oBoss) {
+	   oBoss = document.createElement("div");
+	   oBoss.id = "divBlShowObj";
+	   oBoss.style.border = "green 1px solid";
+	   document.body.appendChild(oBoss);
+	} 
+	if(!oBoss){
+		alert("boss error!");return;
+	}
+	oBoss.innerHTML = "";
+	for(i in obj)
+	{
+		  var b = document.createElement("button");
+		  b.id = b.innerHTML = i;
+		  b.style.backgroundColor = "gray";
+		  if(i.charAt(0)=="b"&&i.charAt(1)=="l") b.style.backgroundColor = "yellow";
+		  oBoss.appendChild(b);
+		  var d = document.createElement("div");
+		  d.innerHTML = "";//obj[i];   
+		  d.style.border = "blue 1px solid";
+		  d.style.backgroundColor = "green";
+		  d.style.color = "yellow";
+		  oBoss.appendChild(d);
+		  b.onclick = function(_thisBtnFun,_thisDivFun){
+			  const _2Ts = ["blPaint"]; 
+			  const _fun2Ts = [blo0.blh_test_blPaint];
+			  for(j in _2Ts){
+				if(_thisBtnFun.id==_2Ts[j]){
+					b.style.backgroundColor = "brown";
+					return function(){ 
+						var tv = _fun2Ts[j](_thisDivFun); 
+						_on_off_div(_thisBtnFun,tv);
+						_thisBtnFun.style.background = _thisBtnFun.style.background=="red"?blGrey[5]:blColor[4];
+					}
+				}
+			  }
+			  return function(){}
+		  }(b,d);
+
+		 
+		  
+		if(i.charAt(0)=="b"&&i.charAt(1)=="l"&&i.charAt(2)=="r"){
+			b.style.backgroundColor = "red";
+			d.innerHTML = ""; 
+			d.id = b.id + "Div";
+			b.onclick = function(i_,b_,v_){
+				return function(){
+					var go = obj[i_];
+					if (typeof go == "function") {
+						go(b_,v_);
+					}
+				} 
+			}(i,b,d);
+		} 
+
+		if(i.charAt(0)=="b"&&i.charAt(1)=="l"&&i.charAt(2)=="l"){ 
+				b.style.display = "none";	 
+				d.id			= d.html;	 
+		  }
+		  if(i.charAt(0)=="b"&&i.charAt(1)=="l"&&i.charAt(2)=="h"){ 
+				b.style.display = "none";	 
+				d.style.display = "none";	 
+		  }
+	}
+}    
+
  
 blo0.lsCVS = [];
 var mousedownList = [];
