@@ -34,7 +34,7 @@ function clear() {
 	ctx.fillRect(0, 0, w, h);
 	ctx.fillStyle = 'rgba(255,0,0,0.3)';
 	ctx.font = "30px Arial";
-	ctx.fillText("xdv0.21 : " + Date() ,50,50);
+	ctx.fillText("xdv0.22 : " + Date() ,50,50);
 	ctx.restore();
 }
 
