@@ -10,27 +10,28 @@
 <body>
 
 	<script type="text/javascript" src="../../js/blclass.js"></script>
-
-<button id="xdtest">xd</button>
+	<button >xdv0.54</button>
 <input  type="color" id="xd" class="C" value="#00ff00">
 <input onchange ="getThing()" type="color" id="C" class="C" value="#ffff00">
 <input onchange ="getThing()" type="number" id="S" class="S"value="5">
 <input onclick ="clearAll()" type="button" id="B" class="B" >
 
-<div>xdv0.35
-<canvas id="canvas"></canvas>
+
+
+<div>
+	<canvas id="canvas" style="border:solid 1px red;width:800px;height: 400px;"></canvas>
 </div>
 
+<img src="../../issues/190/img/block.gif" id="xdtest">
 <div id="xddiv"></div>
-<img src="../../issues/190/img/block.gif">
 
 <script>
 var canvas = document.getElementById("canvas");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+canvas.width = 800;//window.innerWidth;
+canvas.height = 600;//window.innerHeight;
 var ctx = canvas.getContext("2d");
 
-
+var drawing = false;
 
 function getThing() {
 	var getC = document.getElementById("C").value;

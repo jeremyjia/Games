@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_v1.5.241"
+var g_ver_blClass = "CBlClass_v1.5.322"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -1175,8 +1175,9 @@ function CBlClass ()
 			md.style.width = w+"px";			
 			md.style.height = h+"px";
 		}
-	    	return md;
+	    return md;
     }
+
     _blShowObj_2_Div_all = function (oBoss,obj,l) //blclassdbg 1039
     {	  
         oBoss.innerHTML = "";
@@ -1423,6 +1424,13 @@ function CBlClass ()
     }
 
     this.blMakeDivMovable = function (elmnt) {
+		var x1 = 0, y1 = 0;
+		if(!elmnt._followMe){
+			elmnt.fs = [];
+			elmnt._followMe = function(of){
+				elmnt.fs.push(of);
+			}
+		}
       	var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
 		var idHeader = document.getElementById(elmnt.id + "Header");
       	if (idHeader) {
@@ -1434,6 +1442,10 @@ function CBlClass ()
       	}
 
       	function dragMouseDown(e) {
+			var c = _getXY(); 
+			x1 = c.x;
+			y1 = c.y;
+
         	e = e || window.event;
         	// get the mouse cursor position at startup:
         	pos3 = e.clientX;
@@ -1456,6 +1468,16 @@ function CBlClass ()
         // set the element's new position:
         elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
         elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+
+		var c = _getXY(); 
+		if(x1==0 &&y1==0) return false; 
+		if(elmnt.fs){
+			for(i in elmnt.fs){
+				if(elmnt.fs[i]._2move) elmnt.fs[i]._2move(c.x-x1,c.y-y1);
+			}
+		}		 		
+		x1 = c.x;
+		y1 = c.y;
       }
 
       function closeDragElement() {
@@ -1464,6 +1486,7 @@ function CBlClass ()
         document.onmousemove = null;
       }
 	}
+
 	this.sXY = function(x,y){
 		return " ["+x+","+y+"]";
 	}
@@ -1893,29 +1916,118 @@ function CBlClass ()
 		else alert("can't find w3");
 	}
 	
-						//alert(2);//xd2do
+						
 	this.blPaint = function(_id,_x,_y,_w,_h){ 		 
 		var d= blo0.blMD(_id, "blPaint_"+_id,_x,_y,_w,_h,blGrey[1]);
 		if(!d.load){
 			d.load = true;	 
+			var items = [];   
+			d.addImgItem = function(x,y,w,h,src){
+				var i = {};  i.x = x; i.y = y; i.w = w; i.h = h;				
+				var block = new Image(); 
+				block.src = src; 
+				i.draw = function(ctx){		
+					ctx.fillStyle = "yellow"; 
+					ctx.fillRect(i.x,i.y,i.w,i.h);			
+					//*
+					ctx.beginPath();
+                    ctx.drawImage(block, i.x, i.y,i.w,i.h);
+					//*/
+				}
+				items.push(i);
+			}
+			d.addItem = function(type,x,y,w,h,iHandle){
+				var i = {}; i.type = type; i.x = x; i.y = y; i.w = w; i.h = h;
+				i.draw = function(ctx){
+					if(type == "rect"){
+						ctx.fillStyle = "blue"; 
+						ctx.fillRect(i.x,i.y,i.w,i.h);
+					}
+					else if(type == "div"){
+						ctx.fillStyle = "gray"; 
+						ctx.fillRect(i.x,i.y,i.w,i.h);
+					}
+					else if(type == "circle"){						
+					   ctx.beginPath();
+					   ctx.arc(x, y, w, h, 2 * Math.PI);				
+					   ctx.moveTo(x, y);
+					   ctx.stroke(); 
+					}
+				}
+				i._2move = function(dx,dy){ i.x += dx; i.y += dy;}
+				
+				if(iHandle){ iHandle._followMe(i);}
+				items.push(i);
+			}
+			d.getItems = function(){ return items;}
+			d.drawItems = function(ctx){
+				
+				ctx.fillStyle = "lightgreen"; 
+				ctx.fillRect(110,50,555,444);
+
+				
+				ctx.fillStyle = "#FF0000";
+				ctx.font = "30px Arial";
+				ctx.fillText("l=" + items.length, 150,50);
+				
+				for(i in items){
+					items[i].draw(ctx);
+				}
+			}
 			var x = 0, y = 0;
 			var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[2]);
 			var st = blo0.blDiv(d,d.id+"st","st",blGrey[3]);
 			var vc = blo0.blDiv(d,d.id+"v4canvas","v4canvas",blGrey[4]);
+			var dc = blo0.blDiv(d,d.id+"dc","dc",blGrey[4]);
 			
-			var fCVS = document.createElement("canvas");		 
+			var fCVS = document.createElement("canvas");	
+			fCVS.id = "id_4_canvas_blPaint";	 
 			fCVS.width = _w;
 			fCVS.height = _h;	
 			fCVS.style.float = "left";   
-			d.appendChild(fCVS);
+			dc.appendChild(fCVS);
 			var ctx = fCVS.getContext("2d");								 
 
 			var b1 = blo0.blBtn(tb,tb.id+"b1","clear",blGrey[1]);
 			b1.style.float = "left";   
+			b1.style.backgroundColor = "brown";   
 			b1.onclick = function(){
 				ctx.fillStyle = "lightblue"; 
 				ctx.fillRect(0,0,_w,_h);
 			}
+			var fun2draw = function(n){		
+				ctx.fillStyle = "lightblue"; 
+				ctx.fillRect(0,0,_w,_h);
+
+				ctx.fillStyle = "#FF0000";
+				ctx.font = "30px Arial";
+				ctx.fillText(n, 50,50);
+				d.drawItems(ctx);
+			}
+			var btn2Play = blo0.blBtn(tb,tb.id+"btn2Play","play",blGrey[1]);
+			btn2Play.style.float = "left";   
+			btn2Play.style.backgroundColor = "grey";   
+			btn2Play.onclick = function(_thisBtn2Play){
+				var t = null;
+				var n = 0;
+				return function(){
+					if(!t){ 
+						_thisBtn2Play.innerHTML = "stop";
+						t = setInterval(function(){
+							n++;
+							vc.innerHTML = n + ": " + Date();
+							fun2draw(n);
+						},200);
+					}
+					else{ 
+						_thisBtn2Play.innerHTML = "play";
+						clearInterval(t);
+						t = null;
+						n = 0;
+					}
+				}
+			}(btn2Play);
+			
 			
 			d.os = [];
 			d.co = null;
@@ -1923,7 +2035,7 @@ function CBlClass ()
 			var CO_Circle = function(v1,v2){
 				var rC = 10; 
 				const Rs = [10,20,30];
-				this.getName = function(){return "circle" +rC;}
+				this.getName = function(){return "circle";}
 				this.funClick = function(){
 					v1.innerHTML = this.getName() + rC;
 					v2.innerHTML = "";
@@ -1944,6 +2056,8 @@ function CBlClass ()
 					ctx.stroke();
 					ctx.font = "30px Arial";
 					ctx.strokeText(this.getName(), x, y);
+					
+					d.addItem("circle",x,y,rC,0);					
 				}
 				this.funMU = function(){}
 				this.funMM = function(){}
@@ -1955,6 +2069,8 @@ function CBlClass ()
 					ctx.fillRect(x, y, 150, 75);
 					ctx.font = "30px Arial";
 					ctx.strokeText(this.getName(), x, y);
+
+					d.addItem("rect",x,y,150,75);
 				}
 				this.funMU = function(){}
 				this.funMM = function(){}
@@ -1988,22 +2104,61 @@ function CBlClass ()
 						}(i);
 					}
 				}
-				this.funMD = function(){	
-					ctx.font = "30px Arial";
-					ctx.strokeText(this.getName(), x, y);
-					var block = new Image(); 
-					block.src = iSrc; 
-					ctx.beginPath();
-                    ctx.drawImage(block, x, y,35,35);
+				this.funMD = function(){	 
+					d.addImgItem(x,y,35,35,iSrc);	
 				}
 				this.funMM = function(){ 
 				}
 				this.funMU = function(){ _2draw = false;	}
 			};
+			
+			var CO_Div = function(v1,v2){
+				var Ds = [];
+				this.getName = function(){return "Div";}
+				this.funClick = function(){
+					v1.innerHTML = this.getName() + Date();
+					v2.innerHTML = this.getName() + Date();
+				}
+				this.funMD = function(e){	
+					var xdx = e.pageX;
+					var xdy = e.pageY;				
+					ctx.fillStyle = "#00FF00";
+					ctx.fillRect(x, y, 150, 75);
+					ctx.font = "30px Arial";
+					ctx.strokeText(this.getName(), x, y);
+					var n = Ds.length; 
+					var md = blo0.blDiv(document.body, "id_4_co_div_"+n,n,blGrey[0]);  
+					var style ="position: absolute;cursor:move;";
+					style += "z-index: 9;";
+					style += "background-color: #11f1f1;";
+					style += "text-align: center;";
+					style += "border: 1px solid #d3d3d3;";
+					style += "left: 400px";
+					style += "top: 40px"; 
+					md .style =style;
+					md.style.left = xdx+"px";
+					md.style.top = xdy+"px";
+					md.style.width = 50+"px";			
+					md.style.height = 50+"px";
+					md._2move = function(_thisMD){
+						return function(dx,dy){
+							_move_div(_thisMD,dx,dy);
+						}
+					}(md);
+					blo0.blMakeDivMovable(md); 
+					d._followMe(md);
+					Ds.push(md);
+					
+					d.addItem("div",x,y,150,75,md);
+				}
+				this.funMU = function(){}
+				this.funMM = function(){}
+			};
 			var o1 = new CO_Circle(vc,st);		d.os.push(o1); 
 			var o2 = new CO_Rect();				d.os.push(o2); 
 			var o2 = new CO_FreeDraw();			d.os.push(o2); 
 			var o2 = new CO_Img(vc,st);			d.os.push(o2); 
+			var o2 = new CO_Div(vc,st);			d.os.push(o2); 
 
 			
 			d.btnOs = [];
@@ -2028,7 +2183,7 @@ function CBlClass ()
 				return function(e){
 					x = e.offsetX;
 					y = e.offsetY;  
-					if(_thisPaintMD.co) _thisPaintMD.co.funMD();
+					if(_thisPaintMD.co) _thisPaintMD.co.funMD(e);
 				}
 			}(d));
 			fCVS.addEventListener("mousemove",function(_thisPaintMD){ 
