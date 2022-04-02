@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_v1.5.243"
+var g_ver_blClass = "CBlClass_v1.5.253"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -1424,6 +1424,13 @@ function CBlClass ()
     }
 
     this.blMakeDivMovable = function (elmnt) {
+		var x1 = 0, y1 = 0;
+		if(!elmnt._2follow){
+			elmnt.fs = [];
+			elmnt._2follow = function(of){
+				elmnt.fs.push(of);
+			}
+		}
       	var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
 		var idHeader = document.getElementById(elmnt.id + "Header");
       	if (idHeader) {
@@ -1435,6 +1442,10 @@ function CBlClass ()
       	}
 
       	function dragMouseDown(e) {
+			var c = _getXY(); 
+			x1 = c.x;
+			y1 = c.y;
+
         	e = e || window.event;
         	// get the mouse cursor position at startup:
         	pos3 = e.clientX;
@@ -1457,6 +1468,16 @@ function CBlClass ()
         // set the element's new position:
         elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
         elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+
+		var c = _getXY(); 
+		if(x1==0 &&y1==0) return false; 
+		if(elmnt.fs){
+			for(i in elmnt.fs){
+				_move_div(elmnt.fs[i],c.x-x1,c.y-y1);
+			}
+		}		 		
+		x1 = c.x;
+		y1 = c.y;
       }
 
       function closeDragElement() {
@@ -1465,6 +1486,7 @@ function CBlClass ()
         document.onmousemove = null;
       }
 	}
+
 	this.sXY = function(x,y){
 		return " ["+x+","+y+"]";
 	}
@@ -2034,6 +2056,7 @@ function CBlClass ()
 					md.style.width = 50+"px";			
 					md.style.height = 50+"px";
 					blo0.blMakeDivMovable(md); //xd2do
+					d._2follow(md);
 					Ds.push(md);
 				}
 				this.funMU = function(){}
