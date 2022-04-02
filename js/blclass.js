@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_v1.5.241"
+var g_ver_blClass = "CBlClass_v1.5.243"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -1175,8 +1175,9 @@ function CBlClass ()
 			md.style.width = w+"px";			
 			md.style.height = h+"px";
 		}
-	    	return md;
+	    return md;
     }
+
     _blShowObj_2_Div_all = function (oBoss,obj,l) //blclassdbg 1039
     {	  
         oBoss.innerHTML = "";
@@ -1893,7 +1894,7 @@ function CBlClass ()
 		else alert("can't find w3");
 	}
 	
-						//alert(2);//xd2do
+						
 	this.blPaint = function(_id,_x,_y,_w,_h){ 		 
 		var d= blo0.blMD(_id, "blPaint_"+_id,_x,_y,_w,_h,blGrey[1]);
 		if(!d.load){
@@ -1902,16 +1903,19 @@ function CBlClass ()
 			var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[2]);
 			var st = blo0.blDiv(d,d.id+"st","st",blGrey[3]);
 			var vc = blo0.blDiv(d,d.id+"v4canvas","v4canvas",blGrey[4]);
+			var dc = blo0.blDiv(d,d.id+"dc","dc",blGrey[4]);
 			
-			var fCVS = document.createElement("canvas");		 
+			var fCVS = document.createElement("canvas");	
+			fCVS.id = "id_4_canvas_blPaint";	 
 			fCVS.width = _w;
 			fCVS.height = _h;	
 			fCVS.style.float = "left";   
-			d.appendChild(fCVS);
+			dc.appendChild(fCVS);
 			var ctx = fCVS.getContext("2d");								 
 
 			var b1 = blo0.blBtn(tb,tb.id+"b1","clear",blGrey[1]);
 			b1.style.float = "left";   
+			b1.style.backgroundColor = "brown";   
 			b1.onclick = function(){
 				ctx.fillStyle = "lightblue"; 
 				ctx.fillRect(0,0,_w,_h);
@@ -2000,10 +2004,46 @@ function CBlClass ()
 				}
 				this.funMU = function(){ _2draw = false;	}
 			};
+			
+			var CO_Div = function(v1,v2){
+				var Ds = [];
+				this.getName = function(){return "Div";}
+				this.funClick = function(){
+					v1.innerHTML = this.getName() + Date();
+					v2.innerHTML = this.getName() + Date();
+				}
+				this.funMD = function(e){	
+					var xdx = e.pageX;
+					var xdy = e.pageY;				
+					ctx.fillStyle = "#00FF00";
+					ctx.fillRect(x, y, 150, 75);
+					ctx.font = "30px Arial";
+					ctx.strokeText(this.getName(), x, y);
+					var n = Ds.length; 
+					var md = blo0.blDiv(document.body, "id_4_co_div_"+n,n,blGrey[0]);  
+					var style ="position: absolute;cursor:move;";
+					style += "z-index: 9;";
+					style += "background-color: #11f1f1;";
+					style += "text-align: center;";
+					style += "border: 1px solid #d3d3d3;";
+					style += "left: 400px";
+					style += "top: 40px"; 
+					md .style =style;
+					md.style.left = xdx+"px";
+					md.style.top = xdy+"px";
+					md.style.width = 50+"px";			
+					md.style.height = 50+"px";
+					blo0.blMakeDivMovable(md); //xd2do
+					Ds.push(md);
+				}
+				this.funMU = function(){}
+				this.funMM = function(){}
+			};
 			var o1 = new CO_Circle(vc,st);		d.os.push(o1); 
 			var o2 = new CO_Rect();				d.os.push(o2); 
 			var o2 = new CO_FreeDraw();			d.os.push(o2); 
 			var o2 = new CO_Img(vc,st);			d.os.push(o2); 
+			var o2 = new CO_Div(vc,st);			d.os.push(o2); 
 
 			
 			d.btnOs = [];
@@ -2028,7 +2068,7 @@ function CBlClass ()
 				return function(e){
 					x = e.offsetX;
 					y = e.offsetY;  
-					if(_thisPaintMD.co) _thisPaintMD.co.funMD();
+					if(_thisPaintMD.co) _thisPaintMD.co.funMD(e);
 				}
 			}(d));
 			fCVS.addEventListener("mousemove",function(_thisPaintMD){ 
