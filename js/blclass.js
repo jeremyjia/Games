@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_v1.5.411"
+var g_ver_blClass = "CBlClass_v1.5.415"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -151,7 +151,7 @@ function CBlClass ()
 		if(!d.load){
 			d.load = true;	 
 			var items = [];  
-			d.parseTa = function(ctx){//xd2do
+			d.parseTa = function(ctx){
 				var ta = bl$("id_4_ta_blrRunJS");
 				const x = 222, y = 111;
 				ctx.fillStyle = "brown"; 
@@ -1398,7 +1398,29 @@ function CBlClass ()
     }
 	
     this.blMD = function(id,html,x,y,w,h,bkClr){
-	    var md = this.blDiv(document.body, id, g_ver_blClass + ":" + html,bkClr);  
+		var idBtn = "btn_"+id;
+		var s = "<button style='float:left;' id='"+idBtn+"'>sel2Move</button>"; //xd2do
+	    var md = this.blDiv(document.body, id,s+g_ver_blClass + ":" + html,bkClr);  
+		bl$(idBtn).onclick = function(_w,_btn,_md){
+			var b = false; 
+			return function(){
+				if(!b) {
+					b = true;
+					_btn.style.backgroundColor = "yellow";
+					_w.onmousedown = function(e){
+						_w.onmousedown = null;
+						_btn.click();
+						var c = _getXY();
+						blo0.blMove2XY(_md,c.x,c.y); 
+					}
+				}
+				else{
+					b = false;
+					_btn.style.backgroundColor = "grey";
+					_w.onmousedown = null;
+				}
+			}
+		}(window,bl$(idBtn),md);
 		if(!md.run){
 		    md.run = true; 
 			var style ="position: absolute;";
@@ -2167,7 +2189,10 @@ function CBlClass ()
 		if(w3) w3.getHttpObject(_url, _cb4ghcs);
 		else alert("can't find w3");
 	}
-	
+	this.blMove2XY = function(o,x,y){		
+		o.style.left = x + "px";
+		o.style.top =  y + "px";
+	}
 		
 }//END: function CBlClass ()
  
