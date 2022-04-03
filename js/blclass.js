@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_v1.5.351"
+var g_ver_blClass = "CBlClass_v1.5.355"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -142,16 +142,24 @@ function CBlClass ()
 	var blRed = 120, blGreen=11, blBlue=220;
 	var _ps = []; 
 
-	this.blh_test_blPaint = function(v){//xd2do
-		var d = blo0.blPaint("id_4_test_blPaint",50,50,1111,1111); 
-		
+	this.blh_test_blPaint = function(v){
+		var d = blo0.blPaint("id_4_test_blPaint",50,50,1111,1111); 		
 		return d;
 	}			
 	this.blPaint = function(_id,_x,_y,_w,_h){ 		 
-		var d= blo0.blMD(_id, "blPaint_"+_id,_x,_y,_w,_h,blGrey[1]);
+		var d= blo0.blMD(_id, "blPaint-"+_id,_x,_y,_w,_h,blGrey[1]);
 		if(!d.load){
 			d.load = true;	 
-			var items = [];   
+			var items = [];  
+			d.parseTa = function(ctx){//xd2do
+				var ta = bl$("id_4_ta_blrRunJS");
+				const x = 222, y = 111;
+				ctx.fillStyle = "brown"; 
+				ctx.fillRect(x,y,555,444);
+				ctx.fillStyle = "#FF00f0";
+				ctx.font = "30px Arial";
+				ctx.fillText(ta.value, x,y);
+			} 
 			d.addImgItem = function(x,y,w,h,src){
 				var i = {};  i.x = x; i.y = y; i.w = w; i.h = h;				
 				var block = new Image(); 
@@ -225,14 +233,17 @@ function CBlClass ()
 				ctx.fillStyle = "lightblue"; 
 				ctx.fillRect(0,0,_w,_h);
 			}
+			  
 			var fun2draw = function(n){		
 				ctx.fillStyle = "lightblue"; 
 				ctx.fillRect(0,0,_w,_h);
 
-				ctx.fillStyle = "#FF0000";
+				ctx.fillStyle = "#FF00f0";
 				ctx.font = "30px Arial";
 				ctx.fillText(n, 50,50);
 				d.drawItems(ctx);
+
+				d.parseTa(ctx);
 			}
 			var btn2Play = blo0.blBtn(tb,tb.id+"btn2Play","play",blGrey[1]);
 			btn2Play.style.float = "left";   
