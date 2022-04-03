@@ -1,5 +1,7 @@
 //i4c3  
-var s= "v0.0. 151 "; 
+var idBtn = "btn_i4c3";
+var s = "<button style='float:left;' id='"+idBtn+"'>sel2Move</button>";
+s += "v0.0. 152 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c3.js'"
 s += " style='color:blue;'";		s +=">"; s += "c3.js* ";
 s += "<a target='_blank' href='issues/4/c3.js'"
@@ -12,7 +14,28 @@ s += "</a>";
 // 调用 blo0.blDiv 接口函数，创建 DIV。 
 // blGrey 是 blclass 库中的一个全局数组(灰色)
 // 
+
 var md = blo0.blDiv(document.body, "div_ID_4_I4C3", s ,blGrey[0]);  
+bl$(idBtn).onclick = function(_w,_btn,_md){
+	var b = false; 
+	return function(){
+		if(!b) {
+			b = true;
+			_btn.style.backgroundColor = "yellow";
+			_w.onmousedown = function(e){
+				_w.onmousedown = null;
+				_btn.click();
+				var c = _getXY();
+				blo0.blMove2XY(_md,c.x,c.y); 
+			}
+		}
+		else{
+			b = false;
+			_btn.style.backgroundColor = "grey";
+			_w.onmousedown = null;
+		}
+	}
+}(window,bl$(idBtn),md);
 if(!md.run){
     md.run = true; 
 	var style ="position: absolute;";
