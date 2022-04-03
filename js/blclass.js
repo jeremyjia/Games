@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_v1.5.342"
+var g_ver_blClass = "CBlClass_v1.5.351"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -143,7 +143,8 @@ function CBlClass ()
 	var _ps = []; 
 
 	this.blh_test_blPaint = function(v){//xd2do
-		var d = blo0.blPaint("blh_test_blPaint",50,50,1111,1111); 
+		var d = blo0.blPaint("id_4_test_blPaint",50,50,1111,1111); 
+		
 		return d;
 	}			
 	this.blPaint = function(_id,_x,_y,_w,_h){ 		 
@@ -246,7 +247,7 @@ function CBlClass ()
 							n++;
 							vc.innerHTML = n + ": " + Date();
 							fun2draw(n);
-						},200);
+						},10);
 					}
 					else{ 
 						_thisBtn2Play.innerHTML = "play";
@@ -317,7 +318,7 @@ function CBlClass ()
 				this.funMU = function(){ _2draw = false;	}
 			};
 			var CO_Img = function(vImg1,vSelImg){  
-				var iSrc = "../../issues/190/img/block.gif";
+				var iSrc = "https://littleflute.github.io/Games/issues/190/img/block.gif";
 				const Is = ["block.gif","yelloball.png","box.png"];
 				this.getName = function(){return "CO_Img:";}
 				this.funClick = function(){
@@ -328,7 +329,7 @@ function CBlClass ()
 						btn.style.float = "right";   
 						btn.onclick = function(_i){
 							return function(){
-								iSrc = "../../issues/190/img/" + Is[_i];
+								iSrc = "https://littleflute.github.io/Games/issues/190/img/" + Is[_i];
 							}
 						}(i);
 					}
