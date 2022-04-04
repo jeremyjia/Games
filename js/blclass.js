@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_v1.5.415"
+var g_ver_blClass = "CBlClass_v1.5.433"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -151,15 +151,28 @@ function CBlClass ()
 		if(!d.load){
 			d.load = true;	 
 			var items = [];  
+			var myBlC = this;
 			d.parseTa = function(ctx){
-				var ta = bl$("id_4_ta_blrRunJS");
-				const x = 222, y = 111;
-				ctx.fillStyle = "brown"; 
-				ctx.fillRect(x,y,555,444);
-				ctx.fillStyle = "#FF00f0";
-				ctx.font = "30px Arial";
-				ctx.fillText(ta.value, x,y);
-			} 
+				const x0 = 200, y0 = 100, ddx = 30, ddy = 100;
+				const parseMusic = function(ctx,txt,x,y){
+					var a = txt.split("Q:");
+					var sm = a[1].split(" ");
+					var dx = 0;
+					for(i in sm){
+						myBlC.musicNote(ctx,sm[i],x + dx,y); dx+=ddx;
+					} 
+					var a = txt.split("C:");
+					myBlC.musicLyric(ctx,a[1],x,y+150); 
+				}
+				return function(ctx){
+					var ta = bl$("id_4_ta_blrRunJS");
+					const x = x0, y = y0;
+					ctx.fillStyle = "grey"; 
+					ctx.fillRect(x,y,555,444);
+
+					parseMusic(ctx,ta.value,x,y);
+				}
+			}(); 
 			d.addImgItem = function(x,y,w,h,src){
 				var i = {};  i.x = x; i.y = y; i.w = w; i.h = h;				
 				var block = new Image(); 
@@ -445,6 +458,29 @@ function CBlClass ()
 		return d;
 	}
 
+    //谢谢 Nicole.
+	 //谢谢 Nicole.
+	  //谢谢 Nicole.
+	  this.musicLyric = function(ctx,txt,x,y){//xd2do		 
+		ctx.fillStyle = "#1F10f0";
+		ctx.font = "30px Arial"; 
+		var ym = y;
+		ctx.fillText(txt,x,ym); 
+	}
+	this.musicNote = function(ctx,txt,x,y){
+		if(txt=="") return;
+		var dy = 30;
+		var ym = y + dy;
+		ctx.fillStyle = "#fFf010";
+		ctx.font = "30px Arial"; 
+		let r = txt.match(/,+/g);
+		ctx.fillText(txt[0],x,ym); ym += dy;
+		for(i in r){
+			for(var j=0; j<r[i].length; j++){
+				ctx.fillText(".", x,ym); ym +=dy;	
+			}		
+		}
+	}
 	function CTest(){
 		var _ot = {};
 		_ot.blr_test_edit_script = function(b,d){
@@ -1399,7 +1435,7 @@ function CBlClass ()
 	
     this.blMD = function(id,html,x,y,w,h,bkClr){
 		var idBtn = "btn_"+id;
-		var s = "<button style='float:left;' id='"+idBtn+"'>sel2Move</button>"; //xd2do
+		var s = "<button style='float:left;' id='"+idBtn+"'>sel2Move</button>"; 
 	    var md = this.blDiv(document.body, id,s+g_ver_blClass + ":" + html,bkClr);  
 		bl$(idBtn).onclick = function(_w,_btn,_md){
 			var b = false; 
