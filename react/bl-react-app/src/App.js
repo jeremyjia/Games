@@ -6,8 +6,10 @@ import Button from 'react-bootstrap/Button';
 import ButtonToolbar from 'react-bootstrap/ButtonToolbar';
 import { LinkContainer } from 'react-router-bootstrap';
 
-import './App.css';
+import './css/w3.css';
+import './css/App.css';
 import About from './Components/About.js';
+import W3NavBar1 from './Components/w3/NavBar1.js';
 
 const Home = () => <span>Home</span>;
  
@@ -18,8 +20,9 @@ const App = () => (
   <MemoryRouter>
     <Container className="p-3">
       <Container className="p-5 mb-4 bg-light rounded-3">
-        <h1 className="header">Welcome To React-Bootstrap v0.22</h1>
+        <h1 className="header">Welcome To React-Bootstrap v0.54</h1>
         <h2>
+          <W3NavBar1 />
           Navigate to{' '}
           <ButtonToolbar className="custom-btn-toolbar">
             <LinkContainer to="/">
