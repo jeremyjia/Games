@@ -1,6 +1,7 @@
 {
   "name": "code-sandbox-examples",
   "version": "0.1.0",
+  "homepage": "./", 
   "private": true,
   "dependencies": {
     "bootstrap": "^5.1.3",
