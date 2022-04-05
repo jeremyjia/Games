@@ -7,7 +7,7 @@ import W3Blog from './Components/w3/blog/index.js';
 import NavBar1 from './Components/w3/NavBar1.js';
 
 const App = () => (
-  <NavBar1 />
+  <W3Blog />
 );
 
 export default App;

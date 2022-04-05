@@ -1,16 +1,13 @@
-
-import Container from 'react-bootstrap/Container'; 
-
+ 
 import '../../../css/w3.css';
+import Header from './header.js';
+
 const W3Blog = () => (    
-    <Container>
-    <div class="w3-bar w3-black">
-        <a href=".." class="w3-bar-item w3-button">W3Blog_xdv0.14</a>
-        <a href="http://baidu.com" class="w3-bar-item w3-button">baidu</a>
-        <a target="_blank" href="http://localhost:8080" class="w3-bar-item w3-button">8080</a>
-        <a target="_blank" href="http://localhost:3000" class="w3-bar-item w3-button">3000</a>
-    </div> 
-    </Container>
+    <body class="w3-light-grey"> 
+        <div class="w3-content" style={{maxWidth:"1400px"}}> 
+            <Header />
+        </div>         
+    </body>
 );
 
 export default W3Blog;
