@@ -3,7 +3,9 @@
 // Copyright (C) 2014-2022 Jean-Francois Moine - LGPL3+
 //abc2svg-abc2svg.js
 if(typeof abc2svg=="undefined")
-var abc2svg={};abc2svg.C={BLEN:1536,BAR:0,CLEF:1,CUSTOS:2,GRACE:4,KEY:5,METER:6,MREST:7,NOTE:8,PART:9,REST:10,SPACE:11,STAVES:12,STBRK:13,TEMPO:14,BLOCK:16,REMARK:17,FULL:0,EMPTY:1,OVAL:2,OVALBARS:3,SQUARE:4,SL_ABOVE:0x01,SL_BELOW:0x02,SL_AUTO:0x03,SL_HIDDEN:0x04,SL_DOTTED:0x08,SL_ALI_MSK:0x70,SL_ALIGN:0x10,SL_CENTER:0x20,SL_CLOSE:0x40};abc2svg.sym_name=['bar','clef','custos','','grace','key','meter','Zrest','note','part','rest','yspace','staves','Break','tempo','','block','remark']
+    var abc2svg={};
+
+abc2svg.C={BLEN:1536,BAR:0,CLEF:1,CUSTOS:2,GRACE:4,KEY:5,METER:6,MREST:7,NOTE:8,PART:9,REST:10,SPACE:11,STAVES:12,STBRK:13,TEMPO:14,BLOCK:16,REMARK:17,FULL:0,EMPTY:1,OVAL:2,OVALBARS:3,SQUARE:4,SL_ABOVE:0x01,SL_BELOW:0x02,SL_AUTO:0x03,SL_HIDDEN:0x04,SL_DOTTED:0x08,SL_ALI_MSK:0x70,SL_ALIGN:0x10,SL_CENTER:0x20,SL_CLOSE:0x40};abc2svg.sym_name=['bar','clef','custos','','grace','key','meter','Zrest','note','part','rest','yspace','staves','Break','tempo','','block','remark']
 abc2svg.keys=[new Int8Array([-1,-1,-1,-1,-1,-1,-1]),new Int8Array([-1,-1,-1,0,-1,-1,-1]),new Int8Array([0,-1,-1,0,-1,-1,-1]),new Int8Array([0,-1,-1,0,0,-1,-1]),new Int8Array([0,0,-1,0,0,-1,-1]),new Int8Array([0,0,-1,0,0,0,-1]),new Int8Array([0,0,0,0,0,0,-1]),new Int8Array([0,0,0,0,0,0,0]),new Int8Array([0,0,0,1,0,0,0]),new Int8Array([1,0,0,1,0,0,0]),new Int8Array([1,0,0,1,1,0,0]),new Int8Array([1,1,0,1,1,0,0]),new Int8Array([1,1,0,1,1,1,0]),new Int8Array([1,1,1,1,1,1,0]),new Int8Array([1,1,1,1,1,1,1])]
 abc2svg.p_b40=new Int8Array([2,8,14,19,25,31,37])
 abc2svg.b40_p=new Int8Array([0,0,0,0,0,0,1,1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,5,5,5,5,5,5,6,6,6,6,6])
@@ -49,7 +51,10 @@ d0=d1
 d1=t}
 return[n1,d1]}
 abc2svg.pitcmp=function(n1,n2){return n1.pit-n2.pit}
-abc2svg.Abc=function(user){"use strict";var C=abc2svg.C;var require=empty_function,system=empty_function,write=empty_function,XMLHttpRequest=empty_function;var OPEN_BRACE=0x01,CLOSE_BRACE=0x02,OPEN_BRACKET=0x04,CLOSE_BRACKET=0x08,OPEN_PARENTH=0x10,CLOSE_PARENTH=0x20,STOP_BAR=0x40,FL_VOICE=0x80,OPEN_BRACE2=0x0100,CLOSE_BRACE2=0x0200,OPEN_BRACKET2=0x0400,CLOSE_BRACKET2=0x0800,MASTER_VOICE=0x1000,IN=96,CM=37.8,YSTEP
+abc2svg.Abc=function(user){
+    "use strict";
+    var C=abc2svg.C;
+    var require=empty_function,system=empty_function,write=empty_function,XMLHttpRequest=empty_function;var OPEN_BRACE=0x01,CLOSE_BRACE=0x02,OPEN_BRACKET=0x04,CLOSE_BRACKET=0x08,OPEN_PARENTH=0x10,CLOSE_PARENTH=0x20,STOP_BAR=0x40,FL_VOICE=0x80,OPEN_BRACE2=0x0100,CLOSE_BRACE2=0x0200,OPEN_BRACKET2=0x0400,CLOSE_BRACKET2=0x0800,MASTER_VOICE=0x1000,IN=96,CM=37.8,YSTEP
 var errs={bad_char:"Bad character '$1'",bad_grace:"Bad character in grace note sequence",bad_transp:"Bad transpose value",bad_val:"Bad value in $1",bar_grace:"Cannot have a bar in grace notes",ignored:"$1: inside tune - ignored",misplaced:"Misplaced '$1' in %%score",must_note:"!$1! must be on a note",must_note_rest:"!$1! must be on a note or a rest",nonote_vo:"No note in voice overlay",not_ascii:"Not an ASCII character",not_enough_n:'Not enough notes/rests for %%repeat',not_enough_m:'Not enough measures for %%repeat',not_enough_p:"Not enough parameters in %%map",not_in_tune:"Cannot have '$1' inside a tune",notransp:"Cannot transpose with a temperament"}
 var self=this,glovar={meter:{type:C.METER,wmeasure:1,a_meter:[]},},info={},parse={ctx:{},prefix:'%',state:0,ottava:[],line:new scanBuf},tunes=[],psvg
 function clone(obj,lvl){if(!obj)
@@ -3414,8 +3419,10 @@ parse.tune_v_opts={};if(!parse.tune_v_opts[j])
 parse.tune_v_opts[j]=opts[j]
 else
 parse.tune_v_opts[j]=parse.tune_v_opts[j].concat(opts[j])}}}
+
 if(abc2svg.modules&&(abc2svg.modules.hooks.length||abc2svg.modules.g_hooks.length))
-set_hooks()
+    set_hooks()
+
 parse.file=file;parse.fname=in_fname
 if(bol==undefined)
 bol=0
@@ -9410,16 +9417,40 @@ Abc.prototype.set_hl=set_hl
 Abc.prototype.set_pagef=function(){blkdiv=1}
 Abc.prototype.set_scale=set_scale;Abc.prototype.set_tsfirst=function(s){tsfirst=s};Abc.prototype.set_v_param=set_v_param;Abc.prototype.strwh=strwh;Abc.prototype.stv_g=function(){return stv_g};Abc.prototype.svg_flush=svg_flush;Abc.prototype.syntax=syntax;Abc.prototype.tunes=tunes
 Abc.prototype.unlksym=unlksym;Abc.prototype.use_font=use_font;Abc.prototype.vskip=vskip
-Abc.prototype.xy_str=xy_str;Abc.prototype.xygl=xygl;var hook_init
-function set_hooks(){var h=abc2svg.modules.hooks,gh=abc2svg.modules.g_hooks
-function set_hs(hs){for(var k=0;k<hs.length;k++)
-hs[k](self)}
-if(hook_init){if(h.length){set_hs(h);gh.push.apply(gh,h);abc2svg.modules.hooks=[]}}else{if(h.length){gh.push.apply(gh,h);abc2svg.modules.hooks=[]}
-set_hs(gh);hook_init=true}}}
+Abc.prototype.xy_str=xy_str;Abc.prototype.xygl=xygl;
+var hook_init
+function set_hooks(){
+    var h=abc2svg.modules.hooks,gh=abc2svg.modules.g_hooks
+    function set_hs(hs){
+        for(var k=0;k<hs.length;k++)
+            hs[k](self)
+    }
+    if(hook_init){
+        if(h.length){
+            set_hs(h);
+            gh.push.apply(gh,h);
+            abc2svg.modules.hooks=[]
+        }
+    }
+    else{
+        if(h.length){
+            gh.push.apply(gh,h);
+            abc2svg.modules.hooks=[]
+        }
+        set_hs(gh);hook_init=true
+    }
+}
+}
+
 var Abc=abc2svg.Abc
 if(typeof module=='object'&&typeof exports=='object'){exports.abc2svg=abc2svg;exports.Abc=Abc}
-if(!abc2svg.loadjs){abc2svg.loadjs=function(fn,onsuccess,onerror){if(onerror)
-onerror(fn)}}
+if(!abc2svg.loadjs){
+    abc2svg.loadjs=function(fn,onsuccess,onerror){
+        if(onerror)
+        onerror(fn)
+    }
+}
+
 abc2svg.modules={ambitus:{},begingrid:{fn:'grid3'},beginps:{fn:'psvg'},break:{},capo:{},chordnames:{},clip:{},clairnote:{fn:'clair'},voicecombine:{fn:'combine'},diagram:{fn:'diag'},equalbars:{},gamelan:{},grid:{},grid2:{},jazzchord:{},jianpu:{},mdnn:{},MIDI:{},nns:{},pageheight:{fn:'page'},pedline:{},percmap:{fn:'perc'},roman:{},soloffs:{},sth:{},strtab:{},temperament:{fn:'temper'},nreq:0,hooks:[],g_hooks:[],load:function(file,relay,errmsg){function get_errmsg(){if(typeof user=='object'&&user.errmsg)
 return user.errmsg
 if(typeof abc2svg.printErr=='function')

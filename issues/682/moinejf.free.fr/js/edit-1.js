@@ -1,11 +1,14 @@
 //edit.js-file used in the abc2svg editor
-window.onerror=function(msg,url,line){if(typeof msg=='string')
-alert("window error: "+msg+"\nURL: "+url+"\nLine: "+line)
-else if(typeof msg=='object')
-alert("window error: "+msg.type+' '+msg.target.src)
-else
-alert("window error: "+msg)
-return false}
+window.onerror = function(msg,url,line){
+    if(typeof msg=='string')
+        alert("window error: "+msg+"\nURL: "+url+"\nLine: "+line)
+    else if(typeof msg=='object')
+        alert("window error: "+msg.type+' '+msg.target.src)
+    else
+        alert("window error: "+msg)
+    return false
+}
+
 var abc_images,abc_fname=["noname.abc",""],abc_mtime=[],abc,syms,ctxMenu,elt_ref={},selx=[0,0],selx_sav=[],play={},pop,texts={},jsdir=document.currentScript?document.currentScript.src.match(/.*\//):(function(){var s_a=document.getElementsByTagName('script')
 for(var k=0;k<s_a.length;k++){if(s_a[k].src.indexOf('edit-')>=0)
 return s_a[k].src.match(/.*\//)||''}
