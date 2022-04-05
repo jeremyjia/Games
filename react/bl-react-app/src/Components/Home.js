@@ -8,6 +8,7 @@ import { LinkContainer } from 'react-router-bootstrap';
 
 import About from './About.js';
 import W3NavBar1 from './w3/NavBar1.js';
+import W3Blog from './w3/blog/index.js';
 
 const Home = () => <span>Home</span>;
 const Users = () => <span>Users</span>;
