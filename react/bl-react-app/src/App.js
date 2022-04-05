@@ -1,58 +1,13 @@
 import React from 'react';
-import { MemoryRouter, Switch, Route } from 'react-router-dom';
 
-import Container from 'react-bootstrap/Container';
-import Button from 'react-bootstrap/Button';
-import ButtonToolbar from 'react-bootstrap/ButtonToolbar';
-import { LinkContainer } from 'react-router-bootstrap';
-
-import './App.css';
-import About from './Components/About.js';
-
-const Home = () => <span>Home</span>;
- 
-
-const Users = () => <span>Users</span>;
+import './css/w3.css';
+import './css/App.css';
+import AppHome from './Components/Home.js';
+import W3Blog from './Components/w3/blog/index.js';
+import NavBar1 from './Components/w3/NavBar1.js';
 
 const App = () => (
-  <MemoryRouter>
-    <Container className="p-3">
-      <Container className="p-5 mb-4 bg-light rounded-3">
-        <h1 className="header">Welcome To React-Bootstrap v0.22</h1>
-        <h2>
-          Navigate to{' '}
-          <ButtonToolbar className="custom-btn-toolbar">
-            <LinkContainer to="/">
-              <Button>Home</Button>
-            </LinkContainer>
-            <LinkContainer to="/about">
-              <Button>About</Button>
-            </LinkContainer>
-            <LinkContainer to="/users">
-              <Button>Users</Button>
-            </LinkContainer>
-          </ButtonToolbar>
-        </h2>
-        <h2>
-          Current Page is{' '}
-          <Switch>
-            <Route path="/about">
-              <About />
-            </Route>
-            <Route path="/users">
-              <Users />
-            </Route>
-            <Route path="/">
-              <Home />
-            </Route>
-          </Switch>
-        </h2>
-        
-      </Container>
-
-    </Container>
-    
-  </MemoryRouter>
+  <W3Blog />
 );
 
 export default App;
