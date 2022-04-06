@@ -68,6 +68,7 @@ body {
   <a href="..">[..]</a>
   <a href="https://github.com/jeremyjia/Games">HomeRepo</a>
   <a href="https://jeremyjia.github.io/Games/">HomePage</a>
+  <a href="javascript:void(0);" onclick="plxOn(this)" id="id_4_plx">blPlx_bv0.14</a>
   <a href="javascript:void(0);" class="icon" onclick="myFunction()">
     <i class="fa fa-bars"></i>
   </a>
@@ -99,7 +100,18 @@ function myFunction() {
     x.className = "topnav";
   }
 }
+
+function plxOn(b){
+  if(!b.d){
+    b.d = blo0.blMD("id_4_md_plx","plx",50,50,500,400,blGrey[0]);
+  } 
+    _on_off_div(b,b.d); 
+    
+		b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+}
 </script>
+
+<script src="../../js/blclass.js"></script>
 
 </body>
 </html>
