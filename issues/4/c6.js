@@ -1,7 +1,7 @@
 //i4c6
 var idBtn = "btn_i4c6";
 var s = "<button style='float:left;' id='"+idBtn+"'>sel2Move</button>";
-s += "bv0.0.35 "; 
+s += "bv0.0.45 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c6.js'"
 s += " style='color:blue;'";		s +=">"; s += "c6.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c6.js'"
@@ -52,12 +52,17 @@ if(!md.run){
 	title.style =style;
  
     blo0.blMakeDivMovable(md );
-	md.style.left = "400px";
+	md.style.left = "100px";
 	md.style.top = "40px";
 
 	md.v = blo0.blDiv(md,md.id+"v","v",blColor[0]);
 	// 调用 jsClass 的 blo0.blShowObj2Div 接口函数，显示一个对象到 DIV（md.v) 上 
     blo0.blShowObj2Div(md.v, new _myMediaProcessClass);
+	
+    if(bl$("blrNewImage")){
+		bl$("blrNewImage").click();
+		bl$("blrNewImage").click();
+	} 
     if(bl$("blrShowImage")){
 		bl$("blrShowImage").click();
 		bl$("blrShowImage").click();
@@ -74,49 +79,22 @@ if(!md.run){
 _on_off_div(this,md);
 
 
-function _myMediaProcessClass(){        
+function _myMediaProcessClass(){  
+	      
+    this.blrNewImage = function(b,d){
+		if(!d.viewer){
+			d.parentElement.style.backgroundColor = blColor[3]; 
+			d.viewer = newCreateImgView(d);
+        }
+		_on_off_div(b,d);		
+		b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];                  
+	}//this.blrNewImage   
+	this.bllNewImg = "";
+
     this.blrShowImage = function(b,d){
 		if(!d.viewer){
 			d.parentElement.style.backgroundColor = blColor[3]; 
-			d.viewer = blo0.blDiv(d,"Show_Image_DivID","",blGrey[5]);
-			if(!d.img){
-			   d.img = document.createElement("img");
-			}	  
-			d.img.width = "640";
-			d.img.height = "480";
-            bl$("Show_Image_DivID").appendChild(d.img);
-		    d.viewer.style.width="640"; 
-	        d.viewer.style.height="480"; 
-				
-			function _loadIssue46Comments(o) {
-				var _i = 0;
-				var _s = "<a target='_balnk' href ='";
-				_s += "https://github.com/jeremyjia/Games/issues/46'";
-				_s += ">#46</a>"; 
-				var _v = blo0.blDiv(d.viewer,d.viewer.id+"_v", _s, blGrey[1]);
-				var btnDel = blo0.blBtn(_v,_v.id+"del","del","brown");
-				btnDel.onclick = function(){ 
-					deleteGitHubComment(this.cid,Date(),function(){
-						b.click();
-					});
-				}
-				var lsImgBtn = [];
-				for(i in o){
-					_i++;
-					var a = o[i].body;
-					var btnJS = blo0.blBtn(_v, _v.id+"btnJS"+i,_i,blGrey[2]);
-					btnJS.onclick = function(_txt,_thisImgBtn,_thisListImgBtn,_CImgs,_cImgIdx){
-			              return function(){
-							  d.img.src=_txt;	
-							  blo0.blMarkBtnInList(_thisImgBtn,_thisListImgBtn,"yellow","grey");
-							  btnDel.cid = _CImgs[_cImgIdx].id;
-						}
-				    }(a,btnJS,lsImgBtn,o,i);
-					lsImgBtn.push(btnJS);
-				}
-			}
-			var _src = "https://api.github.com/repos/jeremyjia/Games/issues/46/comments";
-			w3.getHttpObject(_src, _loadIssue46Comments);	
+			d.viewer = oldCreateImgView(d);
         }
 		_on_off_div(b,d);		
 		b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];                  
@@ -199,5 +177,119 @@ function _myMediaProcessClass(){
 		_on_off_div(b,d);		
 		b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];                  
 	}//this.blrShowAudio
+
+	function newCreateImgView(d){
+		var mv = blo0.blMDiv(d,"new_Image_DivID","newImg",444,11,444,333,blGrey[5]);
+		var tb = blo0.blDiv(mv,mv.id+"tb","tb","grey");
+		var v = blo0.blDiv(mv,mv.id+"v","v","lightgrey");
+		var btnReflash = blo0.blBtn(tb,tb.id+"reflash","reflash","brown");
+		var btnAdd = blo0.blBtn(tb,tb.id+"btnAdd","add","green");
+		var btnDel= blo0.blBtn(tb,tb.id+"btnDel","delete","gray");
+		btnReflash.style.float = "left";
+		btnAdd.style.float = "left";
+		btnDel.style.float = "left";
+		btnAdd.onclick = function(){			
+			v.innerHTML = '<input type="file" id="fileInput">';      
+      		var fileInput = document.querySelector('#fileInput');
+			fileInput.onchange = function () {
+				var file = this.files[0];
+				var reader = new FileReader();
+				reader.readAsDataURL(file);
+				reader.onload = function () {            
+					console.log(reader.result);  
+					v.innerHTML = "";
+					
+					var vImg = blo0.blDiv(v,v.id+"vImg","vImg","grey"); 
+					var oImg = document.createElement("img");
+					oImg.width = "444";
+					oImg.height = "333";
+					vImg.appendChild(oImg); 
+					oImg.src = reader.result;  
+
+					//*  
+					addNewGitHubComment(46,reader.result,function(response){                            
+						if (response.readyState == 4) {
+							if (response.status == 200 || response.status == 201) {
+								v.innerHTML = Date();
+							} else {
+								d.v.innerHTML = "Errors, status=" + response.status;
+							}
+						}
+					}); 
+					//*/
+				};
+			};
+		}
+		btnDel.onclick = function(){
+			v.innerHTML = this.cid;
+		}
+
+		btnReflash.onclick = function(){
+			v.innerHTML = "";
+			var vImg = blo0.blDiv(v,v.id+"vImg","vImg","grey"); 
+			
+			
+			var _src = "https://api.github.com/repos/jeremyjia/Games/issues/46/comments";
+			w3.getHttpObject(_src, function(o) {
+				var lsImgBtn = [];
+				for(i in o){ 
+					var btnImg = blo0.blBtn(v,v.id+i,i,"grey");
+					btnImg.onclick = function(_thisImgBtn,_i){
+						return function(){ 
+							vImg.innerHTML = "";
+							var oImg = document.createElement("img");
+							oImg.width = "444";
+							oImg.height = "333";
+							vImg.appendChild(oImg); 
+							oImg.src = o[_i].body;  
+							btnDel.cid = o[_i].id;
+							blo0.blMarkBtnInList(_thisImgBtn,lsImgBtn,"yellow","grey");
+						}
+					}(btnImg,i)
+					lsImgBtn.push(btnImg);
+				}
+			});	
+		}
+	}
+	function oldCreateImgView(d){ 
+		var _imgV = blo0.blMDiv(d,"Show_Image_DivID","img",333,1,444,333,blGrey[5]);
+		if(!d.img){
+			d.img = document.createElement("img");
+		}	  
+		d.img.width = "444";
+		d.img.height = "333";
+		bl$("Show_Image_DivID").appendChild(d.img); 
+			
+		
+		var _src = "https://api.github.com/repos/jeremyjia/Games/issues/46/comments";
+		w3.getHttpObject(_src, function _loadIssue46Comments(o) {
+			var _i = 0;
+			var _s = "<a target='_balnk' href ='";
+			_s += "https://github.com/jeremyjia/Games/issues/46'";
+			_s += ">#46</a>"; 
+			var _v = blo0.blDiv(_imgV,_imgV.id+"_v", _s, blGrey[1]);
+			var btnDel = blo0.blBtn(_v,_v.id+"del","del","brown");
+			btnDel.onclick = function(){ 
+				deleteGitHubComment(this.cid,Date(),function(){
+					b.click();
+				});
+			}
+			var lsImgBtn = [];
+			for(i in o){
+				_i++;
+				var a = o[i].body;
+				var btnJS = blo0.blBtn(_v, _v.id+"btnJS"+i,_i,blGrey[2]);
+				btnJS.onclick = function(_txt,_thisImgBtn,_thisListImgBtn,_CImgs,_cImgIdx){
+					return function(){
+						d.img.src=_txt;	
+						blo0.blMarkBtnInList(_thisImgBtn,_thisListImgBtn,"yellow","grey");
+						btnDel.cid = _CImgs[_cImgIdx].id;
+					}
+				}(a,btnJS,lsImgBtn,o,i);
+				lsImgBtn.push(btnJS);
+			}
+		});	
+
+	}
 }
  
