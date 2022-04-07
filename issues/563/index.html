@@ -67,7 +67,8 @@ body {
   <a href="..">[..]</a>
   <a href="https://github.com/jeremyjia/Games">HomeRepo</a>
   <a href="https://jeremyjia.github.io/Games/">HomePage</a>
-  <a href="javascript:void(0);" onclick="plxOn(this)" id="id_4_plx">blPlx_bv0.51</a>
+  <a href="https://littleflute.github.io/Games/issues/4/c6Test.html">c6Test.html</a>
+  <a href="javascript:void(0);" onclick="plxOn(this)" id="id_4_plx">blPlx_bv0.121</a>
   <a href="javascript:void(0);" class="icon" onclick="myFunction()">
     <i class="fa fa-bars"></i>
   </a>
@@ -79,6 +80,7 @@ body {
 </div>
  
 <script>
+  var i1 = null;
 function myFunction() {
   var x = document.getElementById("myTopnav");
   if (x.className === "topnav") {
@@ -97,6 +99,10 @@ function plxOn(b){
     var b1 = blo0.blBtn(tb,tb.id+"b1","load",blGrey[4]); 
     var b3 = blo0.blBtn(tb,tb.id+"b3","player","grey"); 
     var btnMp4List = blo0.blBtn(tb,tb.id+"btnMp4List","MP4s","grey"); 
+    var btnTest = blo0.blBtn(tb,tb.id+"btnTest","test","grey"); 
+    btnTest.onclick = async function(){ 
+        blo0.blShowObj2Div(v1,i1);       
+    }
     btnMp4List.onclick = function(){
       v1.innerHTML = ""; 
 			var _srcVideo = "https://api.github.com/repos/jeremyjia/Games/issues/442/comments";
@@ -148,5 +154,13 @@ function plxOn(b){
 <script src="../../js/w3.js"></script>
 <script src="../../js/blclass.js"></script>
 
+<script type="module">
+  import { request } from "https://cdn.pika.dev/@octokit/request";
+  myAsyncMethod();
+
+  async function myAsyncMethod() {
+    i1 = await request("GET https://api.github.com/repos/jeremyjia/Games/issues/1");
+  }
+</script>
 </body>
 </html>
