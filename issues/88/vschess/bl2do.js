@@ -5,9 +5,9 @@
     var ZeroClipboard={
         version:"1.0.7",
         clients:{},
-            moviePath:DefaultPath+'copy.swf',
-            nextId:0,
-            $:function(thingy){
+        moviePath:DefaultPath+'copy.swf',
+        nextId:0,
+        $:function(thingy){
                 if(typeof(thingy)=='string'){
                     thingy=document.getElementById(thingy);
                 }
@@ -44,49 +44,301 @@
                     };
                 }
                 return thingy;
+        },
+        dispatch:function(id,eventName,args){
+                var client=this.clients[id];
+                if(client){
+                    client.receiveEvent(eventName,args);
+                }
+        },
+        register:function(id,client){
+                this.clients[id]=client;
+        },
+        getDOMObjectPosition:function(obj,stopObj){
+                var info={
+                    left:0,
+                    top:0,
+                    width:obj.width?obj.width:obj.offsetWidth,
+                    height:obj.height?obj.height:obj.offsetHeight
+                };
+                while(obj&&(obj!=stopObj)){
+                    info.left+=obj.offsetLeft;
+                    info.top+=obj.offsetTop;
+                    obj=obj.offsetParent;
+                }
+                return info;
+        },
+        Client:function(elem){
+                this.handlers={};
+                this.id=ZeroClipboard.nextId++;
+                this.movieId='vschess_copybutton_'+this.id;
+                ZeroClipboard.register(this.id,this);
+                if(elem){
+                    this.glue(elem);
+                }
+        }
+    };
+    ZeroClipboard.Client.prototype={
+            id:0,
+            ready:false,
+            movie:null,
+            clipText:'',
+            handCursorEnabled:true,
+            cssEffects:true,
+            handlers:
+            null,
+            glue:function(elem,appendElem,stylesToAdd){
+                this.domElement=ZeroClipboard.$(elem);
+                var zIndex=12000;
+                if(this.domElement.style.zIndex){
+                    zIndex=parseInt(this.domElement.style.zIndex,10)+1;
+                }
+                if(typeof(appendElem)=='string'){
+                    appendElem=ZeroClipboard.$(appendElem);
+                }
+                else if(typeof(appendElem)=='undefined'){
+                    appendElem=document.getElementsByTagName('body')[0];
+                }
+                var box=ZeroClipboard.getDOMObjectPosition(this.domElement,appendElem);
+                this.div=document.createElement('div');
+                var style=this.div.style;
+                style.position='absolute';
+                style.left=''+box.left+'px';
+                style.top=''+box.top+'px';
+                style.width=''+box.width+'px';
+                style.height=''+box.height+'px';
+                style.zIndex=zIndex;
+                if(typeof(stylesToAdd)=='object'){
+                    for(addedStyle in stylesToAdd){
+                        style[addedStyle]=stylesToAdd[addedStyle];
+                    }
+                }
+                appendElem.appendChild(this.div);
+                this.div.innerHTML=this.getHTML(box.width,box.height);
             },
-            dispatch:function(id,eventName,args){var client=this.clients[id];if(client){client.receiveEvent(eventName,args);}},register:function(id,client){this.clients[id]=client;},getDOMObjectPosition:function(obj,stopObj){var info={left:0,top:0,width:obj.width?obj.width:obj.offsetWidth,height:obj.height?obj.height:obj.offsetHeight};while(obj&&(obj!=stopObj)){info.left+=obj.offsetLeft;info.top+=obj.offsetTop;obj=obj.offsetParent;}
-return info;},Client:function(elem){this.handlers={};this.id=ZeroClipboard.nextId++;this.movieId='vschess_copybutton_'+this.id;ZeroClipboard.register(this.id,this);if(elem){this.glue(elem);}}};ZeroClipboard.Client.prototype={id:0,ready:false,movie:null,clipText:'',handCursorEnabled:true,cssEffects:true,handlers:null,glue:function(elem,appendElem,stylesToAdd){this.domElement=ZeroClipboard.$(elem);var zIndex=12000;if(this.domElement.style.zIndex){zIndex=parseInt(this.domElement.style.zIndex,10)+1;}
-if(typeof(appendElem)=='string'){appendElem=ZeroClipboard.$(appendElem);}
-else if(typeof(appendElem)=='undefined'){appendElem=document.getElementsByTagName('body')[0];}
-var box=ZeroClipboard.getDOMObjectPosition(this.domElement,appendElem);this.div=document.createElement('div');var style=this.div.style;style.position='absolute';style.left=''+box.left+'px';style.top=''+box.top+'px';style.width=''+box.width+'px';style.height=''+box.height+'px';style.zIndex=zIndex;if(typeof(stylesToAdd)=='object'){for(addedStyle in stylesToAdd){style[addedStyle]=stylesToAdd[addedStyle];}}
-appendElem.appendChild(this.div);this.div.innerHTML=this.getHTML(box.width,box.height);},getHTML:function(width,height){var html='';var flashvars='id='+this.id+'&width='+width+'&height='+height;html+='<embed id="'+this.movieId+'" src="'+ZeroClipboard.moviePath+'" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="'+width+'" height="'+height+'" name="'+this.movieId+'" align="middle" allowScriptAccess="always" allowFullScreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="'+flashvars+'" wmode="transparent" />';return html;},hide:function(){if(this.div){this.div.style.left='-2000px';}},show:function(){this.reposition();},reposition:function(elem){if(elem){this.domElement=ZeroClipboard.$(elem);if(!this.domElement){this.hide();}}
-if(this.domElement&&this.div){var box=ZeroClipboard.getDOMObjectPosition(this.domElement);var style=this.div.style;style.left=''+box.left+'px';style.top=''+box.top+'px';}},setText:function(newText){this.clipText=newText;if(this.ready){this.movie.setText(newText);}},addEventListener:function(eventName,func){eventName=eventName.toString().toLowerCase().replace(/^on/,'');if(!this.handlers[eventName]){this.handlers[eventName]=[];}
-this.handlers[eventName].push(func);},setHandCursor:function(enabled){this.handCursorEnabled=enabled;if(this.ready){this.movie.setHandCursor(enabled);}},receiveEvent:function(eventName,args){eventName=eventName.toString().toLowerCase().replace(/^on/,'');switch(eventName){case'load':this.movie=document.getElementById(this.movieId);if(!this.movie){var self=this;setTimeout(function(){self.receiveEvent('load',null);},1);return;}
-if(!this.ready&&navigator.userAgent.match(/Firefox/)&&navigator.userAgent.match(/Windows/)){var self=this;setTimeout(function(){self.receiveEvent('load',null);},100);this.ready=true;return;}
-this.ready=true;this.movie.setText(this.clipText);this.movie.setHandCursor(this.handCursorEnabled);break;case'mouseover':if(this.domElement&&this.cssEffects){this.domElement.addClass('hover');if(this.recoverActive){this.domElement.addClass('active');}}
-break;case'mouseout':if(this.domElement&&this.cssEffects){this.recoverActive=false;if(this.domElement.hasClass('active')){this.domElement.removeClass('active');this.recoverActive=true;}
-this.domElement.removeClass('hover');}
-break;}
-if(this.handlers[eventName]){for(var idx=0,len=this.handlers[eventName].length;idx<len;idx++){var func=this.handlers[eventName][idx];if(typeof(func)=='function'){func(this,args);}
-else if((typeof(func)=='object')&&(func.length==2)){func[0][func[1]](this,args);}
-else if(typeof(func)=='string'){window[func](this,args);}}}}
-};
+            getHTML:function(width,height){
+                var html='';
+                var flashvars='id='+this.id+'&width='+width+'&height='+height;
+                html+='<embed id="'+this.movieId+'" src="'+ZeroClipboard.moviePath+'" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="'+width+'" height="'+height+'" name="'+this.movieId+'" align="middle" allowScriptAccess="always" allowFullScreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="'+flashvars+'" wmode="transparent" />';
+                return html;
+            },
+            hide:function(){
+                if(this.div){
+                    this.div.style.left='-2000px';
+                }
+            },
+            show:function(){
+                this.reposition();
+            },
+            reposition:function(elem){
+                if(elem){
+                    this.domElement=ZeroClipboard.$(elem);
+                    if(!this.domElement){t
+                        his.hide();
+                    }
+                }
+                if(this.domElement&&this.div){
+                    var box=ZeroClipboard.getDOMObjectPosition(this.domElement);
+                    var style=this.div.style;
+                    style.left=''+box.left+'px';
+                    style.top=''+box.top+'px';
+                }
+            },
+            setText:function(newText){
+                this.clipText=newText;
+                if(this.ready){
+                    this.movie.setText(newText);
+                }
+            },
+            addEventListener:function(eventName,func){
+                eventName=eventName.toString().toLowerCase().replace(/^on/,'');
+                if(!this.handlers[eventName]){
+                    this.handlers[eventName]=[];
+                }
+                this.handlers[eventName].push(func);
+            },
+            setHandCursor:function(enabled){
+                this.handCursorEnabled=enabled;
+                if(this.ready){
+                    this.movie.setHandCursor(enabled);
+                }
+            },
+            receiveEvent:function(eventName,args){
+                eventName=eventName.toString().toLowerCase().replace(/^on/,'');
+                switch(eventName){
+                    case'load':
+                        this.movie=document.getElementById(this.movieId);
+                        if(!this.movie){
+                            var self=this;
+                            setTimeout(function(){
+                                self.receiveEvent('load',null);
+                            },1);
+                            return;
+                        }
+                        if(!this.ready&&navigator.userAgent.match(/Firefox/)&&navigator.userAgent.match(/Windows/)){
+                            var self=this;
+                            setTimeout(function(){
+                                self.receiveEvent('load',null);
+                            },100);
+                            this.ready=true;
+                            return;
+                        }
+                        this.ready=true;
+                        this.movie.setText(this.clipText);
+                        this.movie.setHandCursor(this.handCursorEnabled);
+                        break;
+                    case'mouseover':
+                        if(this.domElement&&this.cssEffects){
+                            this.domElement.addClass('hover');
+                            if(this.recoverActive){
+                                this.domElement.addClass('active');
+                            }
+                        }
+                        break;
+                    case'mouseout':
+                        if(this.domElement&&this.cssEffects){
+                            this.recoverActive=false;
+                            if(this.domElement.hasClass('active')){
+                                this.domElement.removeClass('active');
+                                this.recoverActive=true;
+                            }
+                            this.domElement.removeClass('hover');
+                        }
+                        break;
+                }
+                if(this.handlers[eventName]){
+                    for(var idx=0,len=this.handlers[eventName].length;idx<len;idx++){
+                        var func=this.handlers[eventName][idx];
+                        if(typeof(func)=='function'){
+                            func(this,args);
+                        }
+                        else if((typeof(func)=='object')&&(func.length==2)){
+                            func[0][func[1]](this,args);
+                        }
+                        else if(typeof(func)=='string'){
+                            window[func](this,args);
+                        }
+                    }
+                }
+            }
+    };
+    
+    if(typeof window.ZeroClipboard=="undefined"){
+        window.ZeroClipboard=ZeroClipboard;
+    }
+})(window);
 
-if(typeof window.ZeroClipboard=="undefined"){window.ZeroClipboard=ZeroClipboard;}})(window);(function($,window){Array.prototype.clone=function(){return this.slice(0);};var IE=false,IE6=false,IE7=false,IE8=false,IE9=false,IE10=false,IE11=false,IEother=false,WebKit=false,Opera=false,FireFox=false,Other=false;(function(){var browser=navigator.userAgent.toLowerCase();if(/msie/.test(browser)){IE=true;if(/msie 6\.0/.test(browser)){IE6=true;}
-else if(/msie 7\.0/.test(browser)){IE7=true;}
-else if(/msie 8\.0/.test(browser)){IE8=true;}
-else if(/msie 9\.0/.test(browser)){IE9=true;}
-else if(/msie 10\.0/.test(browser)){IE10=true;}
-else if(/msie 11\.0/.test(browser)){IE11=true;}
-else{IEother=true;}}
-else if(/chrome/.test(browser)||/webkit/.test(browser)){WebKit=true;}
-else if(/opera/.test(browser)){Opera=true;}
-else if(/mozilla/.test(browser)){FireFox=true;}
-else{Other=true;}})();var document=window.document;var DefaultPath=document.documentElement.lastChild.lastChild.src.split("/");DefaultPath[DefaultPath.length-1]="";DefaultPath=DefaultPath.join("/");
+(function($,window){
+    Array.prototype.clone=function(){
+        return this.slice(0);
+    };
+    var IE=false,IE6=false,IE7=false,IE8=false,IE9=false,IE10=false,IE11=false,IEother=false;
+    var WebKit=false,Opera=false,FireFox=false,Other=false;
+    (function(){
+        var browser=navigator.userAgent.toLowerCase();
+        if(/msie/.test(browser)){
+            IE=true;if(/msie 6\.0/.test(browser)){
+                IE6=true;
+            }
+            else if(/msie 7\.0/.test(browser)){
+                IE7=true;
+            }
+            else if(/msie 8\.0/.test(browser)){
+                IE8=true;
+            }
+            else if(/msie 9\.0/.test(browser)){
+                IE9=true;
+            }
+            else if(/msie 10\.0/.test(browser)){
+                IE10=true;
+            }
+            else if(/msie 11\.0/.test(browser)){
+                IE11=true;
+            }
+            else{
+                IEother=true;
+            }
+        }
+        else if(/chrome/.test(browser)||/webkit/.test(browser)){
+            WebKit=true;
+        }
+        else if(/opera/.test(browser)){
+            Opera=true;
+        }
+        else if(/mozilla/.test(browser)){
+            FireFox=true;
+        }
+        else{
+            Other=true;
+        }
+    })();
 
-var vschess={
-    version:"V1.2.0",
-    chessid:0,
-    copycontent:0,
-    iframe:0,
-    turl:"this",
-    savepgncopy:new ZeroClipboard.Client(),
-    server:DefaultPath+"vschess.php?",
-    picpath:DefaultPath+"chinese/",
-    chessmanstyle:"normal",soundpath:DefaultPath+"sounds/",soundlist:"n1 n2 n3 n4 n5 n6 n7 n8 n9 click bomb eat move check lose illegal r n b a c rk bk rp bp jin tui ping qian zhong hou".split(" ")};$.each(("play time step result automove autoMove time_each sound soundState turn move clip format usermove setsteps oldcontent "+"tips pfchess pfreload livepause pf2str senddom saveqq saveqqm currentfen beginfen situation resetdom putchessman "+"checkmove controlbar eachstep moveindex comments eachposition animate getnewdom chinesestep chinesestepm chinesepgn "+"chinesepgnm chinesehtml chinesehtmlm wxfstep wxfstepm wxfpgn wxfpgnm wxfhtml wxfhtmlm iccsstep iccsstepm iccspgn "+"iccspgnm iccshtml iccsmhtml chineseSoundStatus volume").split(" "),function(){vschess[this.toString()]=[];});vschess.help=(function(){var $html=[],$i=0;$html.push("微思象棋播放器 ",vschess.version,"<br />");$html.push("----------------------------------------------------------------------------<br />");$html.push(++$i,".","单击“播放”按钮，可以自动播放棋局。","<br />");$html.push(++$i,".","播放过程中，单击“暂停”按钮，棋局停止自动播放。","<br />");$html.push(++$i,".","单击“X秒”按钮，可以选择播放速度。","<br />");$html.push(++$i,".","单击“前进”“后退”按钮，每次变化1步。","<br />");$html.push(++$i,".","按住“前进”“后退”按钮，可以快进与快退。","<br />");$html.push(++$i,".","单击“快进”“快退”按钮，每次变化5个回合，即10步。","<br />");$html.push(++$i,".","单击“功能”按钮，可以复制当前局面，保存棋谱，翻转棋盘等。","<br />");$html.push(++$i,".","多种棋谱格式可选，单击对应的按钮以选择相应的格式。","<br />");$html.push(++$i,".","复制局面后，可以直接在专业象棋软件中粘贴使用。","<br />");$html.push(++$i,".","文字棋盘推荐粘贴到Word中，并设置字体为宋体，调整行距至最佳。","<br />");$html.push(++$i,".","分析局面时，建议将局面复制到专业象棋软件中进行分析。","<br />");$html.push(++$i,".","可以直接在棋盘上走棋，便于分析局面。","<br />");$html.push(++$i,".","在着法列表中可以调整变招顺序或删除着法。","<br />");$html.push(++$i,".","注释修改后直接在注释区外面任意处单击即可保存。","<br />");$html.push(++$i,".","编辑局面会失去当前棋谱，请注意保存。","<br />");$html.push(++$i,".","单击“选项”按钮，可以控制走子声音、走子检查等。","<br />");$html.push(++$i,".","手机查看功能支持多种移动设备，只需扫描二维码即可。","<br />");$html.push("----------------------------------------------------------------------------<br />");$html.push("官方网站：<a href=\"http://www.xiaxiangqi.com/\" target=\"_blank\">http://www.xiaxiangqi.com/</a><br />");$html.push("Email：<a href=\"mailto:fastlight@fastlight.cn\">fastlight@fastlight.cn</a><br />");$html.push("Copyright &copy; 2009-2014 <a href=\"http://www.fastlight.cn/\" target=\"_blank\">飞影阁</a> 版权所有<br />");return $html.join("");})();vschess.turnfen=function($str){var $i=0,$j=0;var $array=$str.split(" ");var $old=$array[0];var $new=[],$oldline=[];$old=$old.split("/");for($i=0;$i<10;++$i){$oldline=$old[$i].split("");for($j=$oldline.length-1;$j>=0;--$j){$new.push($oldline[$j]);}
-if($i!=9){$new.push("/");}}
-$new.push(" ",$array[1]," - - ",$array[4]," ",$array[5]);return $new.join("");};vschess.comment=function($str){var $pgn=$str.indexOf("[Game \"Chinese Chess\"]");if($pgn==-1){return"";}
+    var document=window.document;
+    var DefaultPath=document.documentElement.lastChild.lastChild.src.split("/");
+    DefaultPath[DefaultPath.length-1]="";
+    DefaultPath=DefaultPath.join("/");
+
+    var vschess={
+        version:"vschess-bv: 1.2. 13",
+        chessid:0,
+        copycontent:0,
+        iframe:0,
+        turl:"this",
+        savepgncopy:new ZeroClipboard.Client(),
+        server:DefaultPath+"vschess.php?",
+        picpath:DefaultPath+"chinese/",
+        chessmanstyle:"normal",
+        soundpath:DefaultPath+"sounds/",
+        soundlist:"n1 n2 n3 n4 n5 n6 n7 n8 n9 click bomb eat move check lose illegal r n b a c rk bk rp bp jin tui ping qian zhong hou".split(" ")};$.each(("play time step result automove autoMove time_each sound soundState turn move clip format usermove setsteps oldcontent "+"tips pfchess pfreload livepause pf2str senddom saveqq saveqqm currentfen beginfen situation resetdom putchessman "+"checkmove controlbar eachstep moveindex comments eachposition animate getnewdom chinesestep chinesestepm chinesepgn "+"chinesepgnm chinesehtml chinesehtmlm wxfstep wxfstepm wxfpgn wxfpgnm wxfhtml wxfhtmlm iccsstep iccsstepm iccspgn "+"iccspgnm iccshtml iccsmhtml chineseSoundStatus volume").split(" "),function(){
+            vschess[this.toString()]=[];
+        });
+
+        vschess.help=(function(){
+            var $html=[],$i=0;
+            $html.push("微思象棋播放器 ",vschess.version,"<br />");
+            $html.push("----------------------------------------------------------------------------<br />");
+            $html.push(++$i,".","单击“播放”按钮，可以自动播放棋局。","<br />");
+            $html.push(++$i,".","播放过程中，单击“暂停”按钮，棋局停止自动播放。","<br />");
+            $html.push(++$i,".","单击“X秒”按钮，可以选择播放速度。","<br />");
+            $html.push(++$i,".","单击“前进”“后退”按钮，每次变化1步。","<br />");
+            $html.push(++$i,".","按住“前进”“后退”按钮，可以快进与快退。","<br />");
+            $html.push(++$i,".","单击“快进”“快退”按钮，每次变化5个回合，即10步。","<br />");
+            $html.push(++$i,".","单击“功能”按钮，可以复制当前局面，保存棋谱，翻转棋盘等。","<br />");
+            $html.push(++$i,".","多种棋谱格式可选，单击对应的按钮以选择相应的格式。","<br />");
+            $html.push(++$i,".","复制局面后，可以直接在专业象棋软件中粘贴使用。","<br />");
+            $html.push(++$i,".","文字棋盘推荐粘贴到Word中，并设置字体为宋体，调整行距至最佳。","<br />");
+            $html.push(++$i,".","分析局面时，建议将局面复制到专业象棋软件中进行分析。","<br />");
+            $html.push(++$i,".","可以直接在棋盘上走棋，便于分析局面。","<br />");
+            $html.push(++$i,".","在着法列表中可以调整变招顺序或删除着法。","<br />");
+            $html.push(++$i,".","注释修改后直接在注释区外面任意处单击即可保存。","<br />");
+            $html.push(++$i,".","编辑局面会失去当前棋谱，请注意保存。","<br />");
+            $html.push(++$i,".","单击“选项”按钮，可以控制走子声音、走子检查等。","<br />");
+            $html.push(++$i,".","手机查看功能支持多种移动设备，只需扫描二维码即可。","<br />");
+            $html.push("----------------------------------------------------------------------------<br />");
+            $html.push("官方网站：<a href=\"http://www.xiaxiangqi.com/\" target=\"_blank\">http://www.xiaxiangqi.com/</a><br />");
+            $html.push("Email：<a href=\"mailto:fastlight@fastlight.cn\">fastlight@fastlight.cn</a><br />");
+            $html.push("Copyright &copy; 2009-2014 <a href=\"http://www.fastlight.cn/\" target=\"_blank\">飞影阁</a> 版权所有<br />");
+            return $html.join("");
+        })();
+
+        vschess.turnfen=function($str){
+            var $i=0,$j=0;
+            var $array=$str.split(" ");
+            var $old=$array[0];
+            var $new=[],$oldline=[];
+            $old=$old.split("/");
+            for($i=0;$i<10;++$i){
+                $oldline=$old[$i].split("");
+                for($j=$oldline.length-1;$j>=0;--$j){
+                    $new.push($oldline[$j]);
+                }
+                if($i!=9){$new.push("/");
+            }
+        }
+        $new.push(" ",$array[1]," - - ",$array[4]," ",$array[5]);
+        return $new.join("");
+        };
+        vschess.comment=function($str){var $pgn=$str.indexOf("[Game \"Chinese Chess\"]");if($pgn==-1){return"";}
 else{var $format=0,$array=[],$cmt=[],$temp="",$temparray=[],$i=0,$j=0;if($str.indexOf("[Format \"ICCS\"]")>=0){$format=1;}
 else if($str.indexOf("[Format \"WXF\"]")>=0){$format=2;}
 if($format==0){$str=$str.replace(/\[(.*)\]/g,"").replace(/\((.*)\)/g,"").replace(/[0-9]+\./g,"").replace(/1\-0(.*)/g,"").replace(/0\-1(.*)/g,"").replace(/1\/2\-1\/2(.*)/g,"").replace(/\*(.*)/g,"");}
@@ -1660,4 +1912,5 @@ $setddom.children("div:eq("+$changemove+")").remove();vschess.pfreload[vschess.a
 return vschess.api;};vschess.api.showNodeList=vschess.api.shownodelist;vschess.api.hidenodelist=function(){vschess.api.thisdom.find("ul.vschess_node,div.vschess_node_title,div.vschess_node_close").hide();if(typeof arguments[0]=="function"){arguments[0]();}
 return vschess.api;};vschess.api.hideNodeList=vschess.api.hidenodelist;vschess.api.refreshchess=function(){vschess.getnewdom[vschess.api.boardid]();return vschess.api;};vschess.api.refreshChess=vschess.api.refreshchess;vschess.api.toString=function(){return"微思象棋播放器"+vschess.version;};if(typeof window.vschess=="undefined"){window.vschess=vschess;$.fn.vschess=function(){if(typeof arguments[0]!="undefined"){var $args=arguments[0];}
 return this.each(function(){if(typeof $args=="undefined"){vschess.load(this);}
-else{vschess.load(this,$args);}});};}})(jQuery,window);
+else{vschess.load(this,$args);}});};}
+})(jQuery,window);
