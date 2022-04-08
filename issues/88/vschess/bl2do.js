@@ -1603,4 +1603,4 @@ $setddom.children("div:eq("+$changemove+")").remove();vschess.pfreload[vschess.a
 return vschess.api;};vschess.api.showNodeList=vschess.api.shownodelist;vschess.api.hidenodelist=function(){vschess.api.thisdom.find("ul.vschess_node,div.vschess_node_title,div.vschess_node_close").hide();if(typeof arguments[0]=="function"){arguments[0]();}
 return vschess.api;};vschess.api.hideNodeList=vschess.api.hidenodelist;vschess.api.refreshchess=function(){vschess.getnewdom[vschess.api.boardid]();return vschess.api;};vschess.api.refreshChess=vschess.api.refreshchess;vschess.api.toString=function(){return"微思象棋播放器"+vschess.version;};if(typeof window.vschess=="undefined"){window.vschess=vschess;$.fn.vschess=function(){if(typeof arguments[0]!="undefined"){var $args=arguments[0];}
 return this.each(function(){if(typeof $args=="undefined"){vschess.load(this);}
-else{vschess.load(this,$args);}});};}})(jQuery,window);
+else{vschess.load(this,$args);}});};}})(jQuery,window);
