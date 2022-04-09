@@ -1,0 +1,226 @@
+<!doctype html>
+    <html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>resizer</title>
+        <meta name="author" content="Andrej Hristoliubov anhr@mail.ru">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+       <style>
+          .drag-resize {
+                position: absolute;
+                border: 1px dashed transparent;
+                z-index: 999;
+                padding: 5px;
+                margin-top: -5px;
+                margin-left: -5px;
+                transform: translate3d(0, 0, 0);
+                -webkit-transform: translate3d(0, 0, 0);
+                /*transition: all 0.1s linear;*/
+                }
+            .drag-resize:hover {
+                border-color: rgb(0, 150, 253);
+                cursor: move;
+                display: block;
+                }
+            .drag-resize:hover .drag-resize-handlers {
+                display: block;
+                }
+            .drag-resize > div.drag-window {
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                }
+            .drag-resize-handlers {
+                position: absolute;
+                display: none;
+                width: 5px;
+                height: 5px;
+                font-size: 1px;
+                background: rgb(0, 150, 253);
+                -webkit-transition: all 0.1s linear;
+                transition: all 0.1s linear;
+                opacity: 0;
+                border: 1px solid rgb(255, 255, 255);
+            }
+            .drag-resize .drag-resize-handlers {
+                opacity: 1;
+                }
+                .drag-resize-handlers:hover {
+                transform: scale(3); /*chrome*/
+                -webkit-transform: scale(3); /*nodewebkit*/
+                }
+                .drag-resize-handlers[data-direction="tl"] {
+                top: -5px;
+                left: -5px;
+                cursor: nw-resize;
+                }
+                .drag-resize-handlers[data-direction="tm"] {
+                top: -5px;
+                left: 50%;
+                margin-left: -5px;
+                cursor: n-resize;
+                }
+                .drag-resize-handlers[data-direction="tr"] {
+                top: -5px;
+                right: -5px;
+                cursor: ne-resize;
+                }
+
+                .drag-resize-handlers[data-direction="ml"] {
+                top: 50%;
+                margin-top: -5px;
+                left: -5px;
+                cursor: w-resize;
+                }
+                .drag-resize-handlers[data-direction="mr"] {
+                top: 50%;
+                margin-top: -5px;
+                right: -5px;
+                cursor: e-resize;
+                }
+
+                .drag-resize-handlers[data-direction="bl"] {
+                bottom: -5px;
+                left: -5px;
+                cursor: sw-resize;
+                }
+                .drag-resize-handlers[data-direction="bm"] {
+                bottom: -5px;
+                left: 50%;
+                margin-left: -5px;
+                cursor: s-resize;
+                }
+                .drag-resize-handlers[data-direction="br"] {
+                bottom: -5px;
+                right: -5px;
+                cursor: se-resize;
+                }
+        </style>
+    </head>
+    <body>
+        <div style="width:100%;height:1000px">
+            <div id="content1" style="background-color:#aabbbb;text-align:center;width:300px;height:200px;color:#fff">Drag and resize me!</div>
+              <div id="content2" style="background-color:#bbaabb;text-align:center;width:300px;height:200px;color:#fff;left:400px;top:100px;">Drag and resize me!</div>
+            </div> 
+
+            
+        <script type="text/javascript">
+            let getPropertyValue = function(style, prop) {
+ let value = style.getPropertyValue(prop);
+ value = value ? value.replace(/[^0-9.]/g, '') : '0';
+ return parseFloat(value);
+}
+
+let getElementRect = function(element) {
+ let style = window.getComputedStyle(element, null);
+ return {
+   x: getPropertyValue(style, 'left'),
+   y: getPropertyValue(style, 'top'),
+   width: getPropertyValue(style, 'width'),
+   height: getPropertyValue(style, 'height')
+ }
+}
+
+class Resizer {
+   constructor(wrapper, element, options) {
+       this.wrapper = wrapper;
+       this.element = element;
+       this.options = options;
+       this.offsetX = 0;
+       this.offsetY = 0;
+       this.handle = document.createElement('div');
+       this.handle.setAttribute('class', 'drag-resize-handlers');
+       this.handle.setAttribute('data-direction', 'br');
+       this.wrapper.appendChild(this.handle);
+       this.wrapper.style.top = this.element.style.top;
+       this.wrapper.style.left = this.element.style.left;
+       this.wrapper.style.width = this.element.style.width;
+       this.wrapper.style.height = this.element.style.height;
+       this.element.style.position = 'relative';
+       this.element.style.top = 0;
+       this.element.style.left = 0;
+       this.onResize = this.resizeHandler.bind(this);
+       this.onStop = this.stopResize.bind(this);
+       this.handle.addEventListener('mousedown', this.initResize.bind(this));
+   }
+
+   initResize(event) {
+       this.stopResize(event, true);
+       this.handle.addEventListener('mousemove', this.onResize);
+       this.handle.addEventListener('mouseup', this.onStop);
+   }
+
+   resizeHandler(event) {
+       this.offsetX = event.clientX - (this.wrapper.offsetLeft + this.handle.offsetLeft);
+       this.offsetY = event.clientY - (this.wrapper.offsetTop + this.handle.offsetTop);
+       let wrapperRect = getElementRect(this.wrapper);
+       let elementRect = getElementRect(this.element);
+       this.wrapper.style.width = (wrapperRect.width + this.offsetX) + 'px';
+       this.wrapper.style.height = (wrapperRect.height + this.offsetY) + 'px';
+       this.element.style.width = (elementRect.width + this.offsetX) + 'px';
+       this.element.style.height = (elementRect.height + this.offsetY) + 'px';
+   }
+
+   stopResize(event, nocb) {
+       this.handle.removeEventListener('mousemove', this.onResize); 
+       this.handle.removeEventListener('mouseup', this.onStop);
+   }
+}
+
+class Dragger {
+   constructor(wrapper, element, options) {
+       this.wrapper = wrapper;
+       this.options = options;
+       this.element = element;
+       this.element.draggable = true;
+       this.element.setAttribute('draggable', true);
+       this.element.addEventListener('dragstart', this.dragStart.bind(this));
+   }
+
+   dragStart(event) {
+       let wrapperRect = getElementRect(this.wrapper);
+       var x = wrapperRect.x - parseFloat(event.clientX);
+       var y = wrapperRect.y - parseFloat(event.clientY);
+       event.dataTransfer.setData("text/plain", this.element.id + ',' + x + ',' + y);
+   }
+
+   dragStop(event, prevX, prevY) {
+       var posX = parseFloat(event.clientX) + prevX;
+       var posY = parseFloat(event.clientY) + prevY;
+       this.wrapper.style.left = posX + 'px';
+       this.wrapper.style.top = posY + 'px';
+   }
+}
+
+class DragResize {
+   constructor(element, options) {
+       options = options || {};
+       this.wrapper = document.createElement('div');
+       this.wrapper.setAttribute('class', 'tooltip drag-resize');
+       if (element.parentNode) {
+         element.parentNode.insertBefore(this.wrapper, element);
+       }
+       this.wrapper.appendChild(element);
+       element.resizer = new Resizer(this.wrapper, element, options);
+       element.dragger = new Dragger(this.wrapper, element, options);
+   }
+}
+
+document.body.addEventListener('dragover', function (event) {
+   event.preventDefault();
+   return false;
+});
+
+document.body.addEventListener('drop', function (event) {
+   event.preventDefault();
+   var dropData = event.dataTransfer.getData("text/plain").split(',');
+   var element = document.getElementById(dropData[0]);
+   element.dragger.dragStop(event, parseFloat(dropData[1]), parseFloat(dropData[2]));
+   return false;
+});
+
+new DragResize(document.getElementById('content1'))
+new DragResize(document.getElementById('content2'))
+
+       </script>
+    </body>
+    </html>

@@ -1,6 +1,5 @@
 // file: blclass.js   
-
-var g_ver_blClass = "CBlClass_v1.5.115"
+var g_ver_blClass = "CBlClass_v1.5.415"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -143,6 +142,308 @@ function CBlClass ()
 	var blRed = 120, blGreen=11, blBlue=220;
 	var _ps = []; 
 
+	this.blh_test_blPaint = function(v){
+		var d = blo0.blPaint("id_4_test_blPaint",50,50,1111,1111); 		
+		return d;
+	}			
+	this.blPaint = function(_id,_x,_y,_w,_h){ 		 
+		var d= blo0.blMD(_id, "blPaint-"+_id,_x,_y,_w,_h,blGrey[1]);
+		if(!d.load){
+			d.load = true;	 
+			var items = [];  
+			d.parseTa = function(ctx){
+				var ta = bl$("id_4_ta_blrRunJS");
+				const x = 222, y = 111;
+				ctx.fillStyle = "brown"; 
+				ctx.fillRect(x,y,555,444);
+				ctx.fillStyle = "#FF00f0";
+				ctx.font = "30px Arial";
+				ctx.fillText(ta.value, x,y);
+			} 
+			d.addImgItem = function(x,y,w,h,src){
+				var i = {};  i.x = x; i.y = y; i.w = w; i.h = h;				
+				var block = new Image(); 
+				block.src = src; 
+				i.draw = function(ctx){		
+					ctx.fillStyle = "yellow"; 
+					ctx.fillRect(i.x,i.y,i.w,i.h);			
+					//*
+					ctx.beginPath();
+                    ctx.drawImage(block, i.x, i.y,i.w,i.h);
+					//*/
+				}
+				items.push(i);
+			}
+			d.addItem = function(type,x,y,w,h,iHandle){
+				var i = {}; i.type = type; i.x = x; i.y = y; i.w = w; i.h = h;
+				i.draw = function(ctx){
+					if(type == "rect"){
+						ctx.fillStyle = "blue"; 
+						ctx.fillRect(i.x,i.y,i.w,i.h);
+					}
+					else if(type == "div"){
+						ctx.fillStyle = "gray"; 
+						ctx.fillRect(i.x,i.y,i.w,i.h);
+					}
+					else if(type == "circle"){						
+					   ctx.beginPath();
+					   ctx.arc(x, y, w, h, 2 * Math.PI);				
+					   ctx.moveTo(x, y);
+					   ctx.stroke(); 
+					}
+				}
+				i._2move = function(dx,dy){ i.x += dx; i.y += dy;}
+				
+				if(iHandle){ iHandle._followMe(i);}
+				items.push(i);
+			}
+			d.getItems = function(){ return items;}
+			d.drawItems = function(ctx){
+				
+				ctx.fillStyle = "lightgreen"; 
+				ctx.fillRect(110,50,555,444);
+
+				
+				ctx.fillStyle = "#FF0000";
+				ctx.font = "30px Arial";
+				ctx.fillText("l=" + items.length, 150,50);
+				
+				for(i in items){
+					items[i].draw(ctx);
+				}
+			}
+			var x = 0, y = 0;
+			var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[2]);
+			var st = blo0.blDiv(d,d.id+"st","st",blGrey[3]);
+			var vc = blo0.blDiv(d,d.id+"v4canvas","v4canvas",blGrey[4]);
+			var dc = blo0.blDiv(d,d.id+"dc","dc",blGrey[4]);
+			
+			var fCVS = document.createElement("canvas");	
+			fCVS.id = "id_4_canvas_blPaint";	 
+			fCVS.width = _w;
+			fCVS.height = _h;	
+			fCVS.style.float = "left";   
+			dc.appendChild(fCVS);
+			var ctx = fCVS.getContext("2d");								 
+
+			var b1 = blo0.blBtn(tb,tb.id+"b1","clear",blGrey[1]);
+			b1.style.float = "left";   
+			b1.style.backgroundColor = "brown";   
+			b1.onclick = function(){
+				ctx.fillStyle = "lightblue"; 
+				ctx.fillRect(0,0,_w,_h);
+			}
+			  
+			var fun2draw = function(n){		
+				ctx.fillStyle = "lightblue"; 
+				ctx.fillRect(0,0,_w,_h);
+
+				ctx.fillStyle = "#FF00f0";
+				ctx.font = "30px Arial";
+				ctx.fillText(n, 50,50);
+				d.drawItems(ctx);
+
+				d.parseTa(ctx);
+			}
+			var btn2Play = blo0.blBtn(tb,tb.id+"btn2Play","play",blGrey[1]);
+			btn2Play.style.float = "left";   
+			btn2Play.style.backgroundColor = "grey";   
+			btn2Play.onclick = function(_thisBtn2Play){
+				var t = null;
+				var n = 0;
+				return function(){
+					if(!t){ 
+						_thisBtn2Play.innerHTML = "stop";
+						t = setInterval(function(){
+							n++;
+							vc.innerHTML = n + ": " + Date();
+							fun2draw(n);
+						},10);
+					}
+					else{ 
+						_thisBtn2Play.innerHTML = "play";
+						clearInterval(t);
+						t = null;
+						n = 0;
+					}
+				}
+			}(btn2Play);
+			
+			
+			d.os = [];
+			d.co = null;
+
+			var CO_Circle = function(v1,v2){
+				var rC = 10; 
+				const Rs = [10,20,30];
+				this.getName = function(){return "circle";}
+				this.funClick = function(){
+					v1.innerHTML = this.getName() + rC;
+					v2.innerHTML = "";
+					for(i in Rs){
+						var btn = blo0.blBtn(v2,v2.id + i,Rs[i],blGrey[0]);
+						btn.style.float = "right";  
+						btn.onclick = function(_i){
+							return function(){
+								rC = Rs[_i];
+							}
+						}(i); 
+					}
+				}
+				this.funMD = function(){
+					ctx.beginPath();
+					ctx.arc(x, y, rC, 0, 2 * Math.PI);				
+					ctx.moveTo(x, y);
+					ctx.stroke();
+					ctx.font = "30px Arial";
+					ctx.strokeText(this.getName(), x, y);
+					
+					d.addItem("circle",x,y,rC,0);					
+				}
+				this.funMU = function(){}
+				this.funMM = function(){}
+			};
+			var CO_Rect = function(){
+				this.getName = function(){return "rectangle";}
+				this.funMD = function(){				
+					ctx.fillStyle = "#FF0000";
+					ctx.fillRect(x, y, 150, 75);
+					ctx.font = "30px Arial";
+					ctx.strokeText(this.getName(), x, y);
+
+					d.addItem("rect",x,y,150,75);
+				}
+				this.funMU = function(){}
+				this.funMM = function(){}
+			};
+			var CO_FreeDraw = function(){
+				var _2draw = false;
+				this.getName = function(){return "FreeDraw";}
+				this.funMD = function(){	_2draw = true;		}
+				this.funMM = function(){
+					if(_2draw){
+						ctx.font = "30px Arial";
+						ctx.strokeText(this.getName() + " MU", x, y);
+					}
+				}
+				this.funMU = function(){ _2draw = false;	}
+			};
+			var CO_Img = function(vImg1,vSelImg){  
+				var iSrc = "https://littleflute.github.io/Games/issues/190/img/block.gif";
+				const Is = ["block.gif","yelloball.png","box.png"];
+				this.getName = function(){return "CO_Img:";}
+				this.funClick = function(){
+					vImg1.innerHTML = this.getName() + Date();
+					vSelImg.innerHTML = "";
+					for(i in Is){
+						var btn = blo0.blBtn(vSelImg,vSelImg.id + i,i,blGrey[0]);
+						btn.style.float = "right";   
+						btn.onclick = function(_i){
+							return function(){
+								iSrc = "https://littleflute.github.io/Games/issues/190/img/" + Is[_i];
+							}
+						}(i);
+					}
+				}
+				this.funMD = function(){	 
+					d.addImgItem(x,y,35,35,iSrc);	
+				}
+				this.funMM = function(){ 
+				}
+				this.funMU = function(){ _2draw = false;	}
+			};
+			
+			var CO_Div = function(v1,v2){
+				var Ds = [];
+				this.getName = function(){return "Div";}
+				this.funClick = function(){
+					v1.innerHTML = this.getName() + Date();
+					v2.innerHTML = this.getName() + Date();
+				}
+				this.funMD = function(e){	
+					var xdx = e.pageX;
+					var xdy = e.pageY;				
+					ctx.fillStyle = "#00FF00";
+					ctx.fillRect(x, y, 150, 75);
+					ctx.font = "30px Arial";
+					ctx.strokeText(this.getName(), x, y);
+					var n = Ds.length; 
+					var md = blo0.blDiv(document.body, "id_4_co_div_"+n,n,blGrey[0]);  
+					var style ="position: absolute;cursor:move;";
+					style += "z-index: 9;";
+					style += "background-color: #11f1f1;";
+					style += "text-align: center;";
+					style += "border: 1px solid #d3d3d3;";
+					style += "left: 400px";
+					style += "top: 40px"; 
+					md .style =style;
+					md.style.left = xdx+"px";
+					md.style.top = xdy+"px";
+					md.style.width = 50+"px";			
+					md.style.height = 50+"px";
+					md._2move = function(_thisMD){
+						return function(dx,dy){
+							_move_div(_thisMD,dx,dy);
+						}
+					}(md);
+					blo0.blMakeDivMovable(md); 
+					d._followMe(md);
+					Ds.push(md);
+					
+					d.addItem("div",x,y,150,75,md);
+				}
+				this.funMU = function(){}
+				this.funMM = function(){}
+			};
+			var o1 = new CO_Circle(vc,st);		d.os.push(o1); 
+			var o2 = new CO_Rect();				d.os.push(o2); 
+			var o2 = new CO_FreeDraw();			d.os.push(o2); 
+			var o2 = new CO_Img(vc,st);			d.os.push(o2); 
+			var o2 = new CO_Div(vc,st);			d.os.push(o2); 
+
+			
+			d.btnOs = [];
+			for(i in d.os){		 			
+				var bo = blo0.blBtn(tb,tb.id+i,d.os[i].getName(),blGrey[1]);
+				bo.style.float = "right";   
+				bo.onclick = function(_thisPaintMD,_thisOs,_thisBtnOs,_thisObjBtn,_i){ 
+					return function(){
+						_thisPaintMD.co = _thisOs[_i];		
+						if(_thisPaintMD.co.funClick) _thisPaintMD.co.funClick();			
+						blo0.blMarkBtnInList(_thisObjBtn,_thisBtnOs,"yellow","grey");
+					}
+				}(d,d.os,d.btnOs,bo,i);
+				d.btnOs.push(bo);
+			}
+
+
+			ctx.fillStyle = "grey"; 
+			ctx.fillRect(0,0,_w,_h);
+
+			fCVS.addEventListener("mousedown", function(_thisPaintMD){ 
+				return function(e){
+					x = e.offsetX;
+					y = e.offsetY;  
+					if(_thisPaintMD.co) _thisPaintMD.co.funMD(e);
+				}
+			}(d));
+			fCVS.addEventListener("mousemove",function(_thisPaintMD){ 
+				return function(e){
+					x = e.offsetX;
+					y = e.offsetY;  
+					if(_thisPaintMD.co) _thisPaintMD.co.funMM();
+				}
+			}(d));
+			fCVS.addEventListener("mouseup", function(_thisPaintMD){ 
+				return function(e){
+					x = e.offsetX;
+					y = e.offsetY;  
+					if(_thisPaintMD.co) _thisPaintMD.co.funMU();
+				}
+			}(d)); 
+		}
+		return d;
+	}
 
 	function CTest(){
 		var _ot = {};
@@ -176,8 +477,8 @@ function CBlClass ()
 	this.v = g_ver_blClass;
 	this.blrAboutMe= function(b,d){		
 		var s = ""; 
-		s += _blhMakeLink('blclass.js ','https://littleflute.github.io/Games/blclass.js','color:skyblue;','_blank');
-		s += _blhMakeLink(' blclass.js*','https://github.com/littleflute/Games/edit/master/blclass.js','color:skyblue;','_blank');
+		s += _blhMakeLink('blclass.js ','https://jeremyjia.github.io/Games/js/blclass.js','color:skyblue;','_blank');
+		s += _blhMakeLink(' blclass.js*','https://github.com/jeremyjia/Games/edit/master/js/blclass.js','color:skyblue;','_blank');
 		s += _blhMakeLink(' blog','https://github.com/littleflute/blog','color:yellow;','_blank');
 		d.innerHTML = s;
 		_on_off_div(b,d);
@@ -448,7 +749,7 @@ function CBlClass ()
 					var btnUI = blo0.blBtn(tb,tb.id+"btnUI","ui",blGrey[1]);
 					btnUI.onclick = function(){
 						if(!d.ui){
-							var w = 960, h = 540;
+							var w = 555, h = 444;
 							d.ui = blo0.blMDiv(d, d.id + "ui", "ui",555,10,w,h,blGrey[1]);
 							var tb4CVS = blo0.blDiv(d.ui,d.ui.id+"tb4CVS","tb4CVS",blGrey[2]);
 							var v4canvas = blo0.blDiv(d.ui,d.ui.id+"v4canvas","v4canvas",blGrey[0]);
@@ -1095,6 +1396,60 @@ function CBlClass ()
 		};  
         return r;
     }
+	
+    this.blMD = function(id,html,x,y,w,h,bkClr){
+		var idBtn = "btn_"+id;
+		var s = "<button style='float:left;' id='"+idBtn+"'>sel2Move</button>"; //xd2do
+	    var md = this.blDiv(document.body, id,s+g_ver_blClass + ":" + html,bkClr);  
+		bl$(idBtn).onclick = function(_w,_btn,_md){
+			var b = false; 
+			return function(){
+				if(!b) {
+					b = true;
+					_btn.style.backgroundColor = "yellow";
+					_w.onmousedown = function(e){
+						_w.onmousedown = null;
+						_btn.click();
+						var c = _getXY();
+						blo0.blMove2XY(_md,c.x,c.y); 
+					}
+				}
+				else{
+					b = false;
+					_btn.style.backgroundColor = "grey";
+					_w.onmousedown = null;
+				}
+			}
+		}(window,bl$(idBtn),md);
+		if(!md.run){
+		    md.run = true; 
+			var style ="position: absolute;";
+			style += "z-index: 9;";
+			style += "background-color: #f1f1f1;";
+			style += "text-align: center;";
+			style += "border: 1px solid #d3d3d3;";
+			style += "left: 400px";
+			style += "top: 40px";
+			md .style =style;
+
+			var title = blo0.blDiv(md , md.id + "Header", "Header");
+			style ="padding: 10px;";
+			style += "z-index: 10;";
+			style += "cursor: move;";
+			style += "text-align: center;";
+			style += "border: 1px solid #fff;";
+			style += "background-color: #2196F3;";
+			title.style =style;
+
+			blo0.blMakeDivMovable(md );
+			md.style.left = x+"px";
+			md.style.top = y+"px";
+			md.style.width = w+"px";			
+			md.style.height = h+"px";
+		}
+	    return md;
+    }
+
     this.blMDiv = function (oBoss,id,html,x,y,w,h,bkClr){
 		var x1 = 0;
 		var y1 = 0; 
@@ -1147,36 +1502,6 @@ function CBlClass ()
 			y1 = 0; 
 		};  
         return r;
-    }
-    this.blMD = function(id,html,x,y,w,h,bkClr){
-	    var md = this.blDiv(document.body, id, g_ver_blClass + ":" + html,bkClr);  
-		if(!md.run){
-		    md.run = true; 
-			var style ="position: absolute;";
-			style += "z-index: 9;";
-			style += "background-color: #f1f1f1;";
-			style += "text-align: center;";
-			style += "border: 1px solid #d3d3d3;";
-			style += "left: 400px";
-			style += "top: 40px";
-			md .style =style;
-
-			var title = blo0.blDiv(md , md.id + "Header", "Header");
-			style ="padding: 10px;";
-			style += "z-index: 10;";
-			style += "cursor: move;";
-			style += "text-align: center;";
-			style += "border: 1px solid #fff;";
-			style += "background-color: #2196F3;";
-			title.style =style;
-
-			blo0.blMakeDivMovable(md );
-			md.style.left = x+"px";
-			md.style.top = y+"px";
-			md.style.width = w+"px";			
-			md.style.height = h+"px";
-		}
-	    	return md;
     }
     _blShowObj_2_Div_all = function (oBoss,obj,l) //blclassdbg 1039
     {	  
@@ -1234,57 +1559,6 @@ function CBlClass ()
 		_blShowObj2Div(oDivBoss,obj);
 		 
 	}
-    _blShowObj2Div = function (oDivBoss,obj)
-    {        
-        var oBoss = oDivBoss;
-        if(!oBoss) {
-           oBoss = document.createElement("div");
-           oBoss.id = "divBlShowObj";
-           oBoss.style.border = "green 1px solid";
-           document.body.appendChild(oBoss);
-        } 
-        if(!oBoss){
-            alert("boss error!");return;
-        }
-        oBoss.innerHTML = "";
-        for(i in obj)
-		{
-			  var b = document.createElement("button");
-			  b.id = b.innerHTML = i;
-			  b.style.backgroundColor = "gray";
-			  if(i.charAt(0)=="b"&&i.charAt(1)=="l") b.style.backgroundColor = "yellow";
-			  oBoss.appendChild(b);
-			  var d = document.createElement("div");
-			  d.innerHTML = obj[i];
-			  d.style.border = "blue 1px solid";
-			  d.style.backgroundColor = "green";
-			  d.style.color = "yellow";
-			  oBoss.appendChild(d);
-
-			  if(i.charAt(0)=="b"&&i.charAt(1)=="l"&&i.charAt(2)=="r"){
-				b.style.backgroundColor = "red";
-				d.innerHTML = ""; 
-				d.id = b.id + "Div";
-				b.onclick = function(i_,b_,v_){
-					return function(){
-						var go = obj[i_];
-						if (typeof go == "function") {
-			    			go(b_,v_);
-						}
-					} 
-				}(i,b,d);
-			  }
-			  if(i.charAt(0)=="b"&&i.charAt(1)=="l"&&i.charAt(2)=="l"){ 
-					b.style.display = "none";	 
-					d.id			= d.html;	 
-			  }
-			  if(i.charAt(0)=="b"&&i.charAt(1)=="l"&&i.charAt(2)=="h"){ 
-					b.style.display = "none";	 
-					d.style.display = "none";	 
-			  }
-		}
-    }    
-
 	this.blAudio = function (oBoss,id,src)					
  	{  								
    		var s = "";							 
@@ -1424,6 +1698,13 @@ function CBlClass ()
     }
 
     this.blMakeDivMovable = function (elmnt) {
+		var x1 = 0, y1 = 0;
+		if(!elmnt._followMe){
+			elmnt.fs = [];
+			elmnt._followMe = function(of){
+				elmnt.fs.push(of);
+			}
+		}
       	var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
 		var idHeader = document.getElementById(elmnt.id + "Header");
       	if (idHeader) {
@@ -1435,6 +1716,10 @@ function CBlClass ()
       	}
 
       	function dragMouseDown(e) {
+			var c = _getXY(); 
+			x1 = c.x;
+			y1 = c.y;
+
         	e = e || window.event;
         	// get the mouse cursor position at startup:
         	pos3 = e.clientX;
@@ -1457,6 +1742,16 @@ function CBlClass ()
         // set the element's new position:
         elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
         elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+
+		var c = _getXY(); 
+		if(x1==0 &&y1==0) return false; 
+		if(elmnt.fs){
+			for(i in elmnt.fs){
+				if(elmnt.fs[i]._2move) elmnt.fs[i]._2move(c.x-x1,c.y-y1);
+			}
+		}		 		
+		x1 = c.x;
+		y1 = c.y;
       }
 
       function closeDragElement() {
@@ -1465,6 +1760,7 @@ function CBlClass ()
         document.onmousemove = null;
       }
 	}
+
 	this.sXY = function(x,y){
 		return " ["+x+","+y+"]";
 	}
@@ -1775,10 +2071,203 @@ function CBlClass ()
         _on_off_div(b2,d2);
         b2.style.background = b2.style.background=="red"?blGrey[5]:blColor[4];            
     };
+	this.blfHTML = function(fn2Parse){
+		var a = "to_Parse:"+fn2Parse;
+		var b = a.split('--start--');
+		var c = b[1].split('--end--');  
+		return c[0];	
+	}
+	this.blSVG = function(){
+		
+		var _r = function(){
+			this.render = function(_v){_v.innerHTML = blo0.blfHTML(_svg1);}
+			this.showSVGScript = function(_v){bl$("id_4_ta_blrRunJS").value = blo0.blfHTML(_svg1);}
+			this.blrToolbar = function(b,d){_tb(b,d);}
+		}
+		var _o = new _r();
+
+		var _svg = "<*svg>";
+		_svg += "</svg>";
+		
+		var _svg1 = function(){
+			/*--start--
+<svg width="1000" height="1415" version="1.1" viewBox="0 0 1000 1415" encoding="UTF-8" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" height="100%" width="100%" fill="#11ff11" />
+	<defs>
+		<g id="diaohao_fu" transform="translate(-50,-50)">
+			<path d="m63.90001,57.81227l-8.81873,0l0,-1.70001l3.45433,0l0,-11.7568l-3.53561,1.04459l0,-1.80243l5.46599,-1.59762l0,14.11224l3.43402,0l0,1.70001l0,0.00001l0,0.00001z" fill="#1b1b1b"/><rect height="2" width="11" y="46.85897" x="68" stroke-width="33" fill="#1b1b1b"/><rect height="2" width="11" y="51.32479" x="68" stroke-width="33" fill="#1b1b1b"/></g><g id="shuzi_c_5" transform="translate(-50,-50)"><rect height="17.9" width="11.1" y="41.05" x="44.45" stroke-width="0" fill="#11ffff"/><path fill="blue" d="m46.03386,41.2363l6.28103,0c0.58697,0 0.91767,-0.1824 0.99153,-0.55116l0.88186,0l-0.44093,3.30586l-6.72194,0l-0.11024,3.4161c0.73358,-0.22047 1.50465,-0.33071 2.31377,-0.33071c3.89339,0.22047 5.95088,2.16774 6.17079,5.84065c-0.29433,3.82066 -2.60865,5.84066 -6.94241,6.06112c-2.42457,-0.07386 -3.71043,-0.77164 -3.85703,-2.09386c0.07218,-0.95404 0.55059,-1.43302 1.43246,-1.43302c0.66141,0 1.24837,0.44093 1.76316,1.32222c0.51311,0.80912 1.06427,1.21257 1.65292,1.21257c1.61488,-0.14661 2.49675,-1.39497 2.64503,-3.7468c-0.07386,-2.64502 -1.21256,-4.03943 -3.41608,-4.18715c-0.73527,0 -1.47052,0.18409 -2.20411,0.55059l-0.77106,-0.44093l0.33126,-8.92548z"/>
+		</g>
+		<g id="xiaojiexian_weibu" transform="translate(-50,-50)">
+			<rect fill="#ff11ff" stroke-width="0" x="45.05" y="35.85" width="9.9" height="28.4"/>
+			<rect height="29" width="1.5" y="35.5" x="49.25" stroke-width="null" fill="#ffffff"/>
+		</g>
+		<g id="yingao_di" transform="translate(-50,-50)">
+			<ellipse ry="1.9" rx="1.9" cy="63" cx="49.3" fill="#1b1b1b"/>
+		</g>
+	</defs>
+	<text x="500" y="110" dy="30.078" text-anchor="middle" fill="#1b1b1b" style="font-weight:bold;" font-size="36" font-family="Microsoft YaHei" >
+		同一首歌0
+	</text>
+	<use x="80" y="176" xlink:href="#diaohao_fu" xmlns:xlink="http://www.w3.org/1999/xlink" ></use>
+	<use x="120" y="176" xlink:href="#diaohao_zimu_" xmlns:xlink="http://www.w3.org/1999/xlink" ></use>
+	<use x="83" y="236" xlink:href="#shuzi_c_5" time="1" audio="5," notepos="0_1_1" code="5," xmlns:xlink="http://www.w3.org/1999/xlink" ></use>
+	<use x="118" y="236" xlink:href="#xiaojiexian_weibu" notepos="0_1_2" time="0" audio="" code="|w" xmlns:xlink="http://www.w3.org/1999/xlink" ></use>
+	<use x="83" y="237" xlink:href="#yingao_di" xmlns:xlink="http://www.w3.org/1999/xlink" ></use>
+	<g id="custom">
+		<defs>
+			<g id="custom_4yPJ2wPA6h" data-type="symbol">
+				<rect fill="#ffff00" stroke-width="0" y="-5" x="-5" width="44.8" height="10.600000000000001" mask="true" data-width="39" data-height="11.5" opacity="0.8" stroke="#ff0000" stroke-dasharray="5,5"></rect>
+				<rect fill="#000000" x="0" y="0" width="29" height="1.5" stroke="#000000" transform="scale(1.2,0.4)"></rect>
+			</g>
+		</defs>
+		<use onmousedown="selectElement(this)" style="cursor: move;" id="use_custom_4yPJ2wPA6h" x="110" y="452" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#custom_4yPJ2wPA6h"></use>
+		<defs>
+			<g id="custom_m5sXGXicsk" data-type="symbol">
+				<rect fill="#ffff00" stroke-width="0" y="-5" x="-5" width="44.8" height="10.75" mask="true" data-width="39" data-height="11.5" opacity="0.8" stroke="#ff0000" stroke-dasharray="5,5"></rect>
+				<rect fill="#000000" x="0" y="0" width="29" height="1.5" stroke="#000000" transform="scale(1.2,0.5)"></rect>
+			</g>
+		</defs>
+		<use onmousedown="selectElement(this)" style="cursor: move;" id="use_custom_m5sXGXicsk" x="110" y="456" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#custom_m5sXGXicsk"></use>
+	</g>
+
+	<g id="customID" data-type="symbol">
+		<rect fill="#ffff00" stroke-width="0" y="-5" x="-5" width="15.5764" height="49.42324" mask="true"/>
+		<path fill="#000000" d="m5.64751,0.75575l0,-0.75575c-1.12949,0.32387 -2.04508,1.28648 -2.74674,2.88787s-1.05249,3.37368 -1.05249,5.31692c0,1.00763 0.07701,2.18615 0.23103,3.53562s0.23103,2.40206 0.23103,3.15777c0,1.00762 -0.20536,1.95226 -0.61609,2.83389s-0.97547,1.43044 -1.69425,1.64636l0,0.86366c0.71877,0.21591 1.28352,0.7557 1.69425,1.61937s0.61609,1.81731 0.61609,2.86088c0,0.75571 -0.07701,1.79929 -0.23103,3.13077s-0.23103,2.51904 -0.23103,3.56261c0,1.90724 0.35083,3.66156 1.05249,5.26295s1.61725,2.564 2.74674,2.88787l0,-0.7557c-0.78723,-0.39583 -1.36482,-1.04358 -1.73275,-1.94324s-0.55193,-1.87128 -0.55193,-2.91486c0,-0.86366 0.07273,-1.97924 0.2182,-3.34669s0.21819,-2.51899 0.21819,-3.4546c0,-1.43945 -0.24815,-2.83389 -0.74444,-4.18336s-1.23218,-2.38409 -2.20766,-3.10378c0.95835,-0.75571 1.68997,-1.81731 2.19483,-3.18475s0.75727,-2.7709 0.75727,-4.21035c0,-0.97162 -0.07271,-2.13217 -0.21819,-3.48164s-0.2182,-2.45604 -0.2182,-3.3197c0,-1.07957 0.18399,-2.06021 0.55193,-2.94185s0.94552,-1.5384 1.73275,-1.97023l0,-0.00001z"/>
+
+	</g>
+	<use onmousedown="selectElement(this)" style="cursor: move;" id="use_customID" x="110" y="456" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#customID"></use>
+</svg>
+			--end--*/
+		}
+		var _tb = function(b,d){
+			if(!d.v){
+				d.v = true;
+				var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
+				var v = blo0.blDiv(d,d.id+"v","v",blGrey[5]);
+				var btnRender = blo0.blBtn(tb,tb.id+"btnRender","render",blGrey[1]);
+				btnRender.onclick = function(_v){
+					return function(){
+						_o.render(_v);
+					}
+				}(v);
+				
+				var btnShowScript = blo0.blBtn(tb,tb.id+"btnShowScript","script",blGrey[1]);
+				btnShowScript.onclick = function(_v){
+					return function(){
+						_o.showSVGScript(_v);
+					}
+				}(v);
+				var btnGetGhc = blo0.blBtn(tb,tb.id+"btnGetGhc","btnGetGhc",blGrey[1]);
+				btnGetGhc.onclick = function(_v){
+					return function(){
+						_v.innerHTML = "to do: blGetGithubCs ...";
+						var tb = blo0.blDiv(_v,_v.id+"tb","tb",blGrey[5]);
+						var v2 = blo0.blDiv(_v,_v.id+"v2","v2",blGrey[5]);
+						var url = "https://api.github.com/repos/jeremyjia/Games/issues/702/comments";
+						blo0.blGetGithubCs(url,function(o){ 							
+							var _i = 0; 							
+							for(i in o){
+								_i++;
+								var a = o[i].body;
+								var btnJS = blo0.blBtn(tb, tb.id+"btnJS"+i,_i,blGrey[2]);
+								btnJS.onclick = function(_txt){
+										return function(){
+											v2.innerHTML = _txt;
+										}
+								}(a);
+							}
+						});
+					}
+				}(v);
+			}
+			_on_off_div(b,d); 
+			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+		}
+		return _o;		
+	}
+	this.blGetGithubCs = function(_url,_cb4ghcs){ 
+		if(!_cb4ghcs) {alert("I need a callback function."); return;}
+		if(w3) w3.getHttpObject(_url, _cb4ghcs);
+		else alert("can't find w3");
+	}
+	this.blMove2XY = function(o,x,y){		
+		o.style.left = x + "px";
+		o.style.top =  y + "px";
+	}
+		
 }//END: function CBlClass ()
  
 var blo0 = new CBlClass;
  
+
+_blShowObj2Div = function (oDivBoss,obj)
+{        
+	var oBoss = oDivBoss;
+	if(!oBoss) {
+	   oBoss = document.createElement("div");
+	   oBoss.id = "divBlShowObj";
+	   oBoss.style.border = "green 1px solid";
+	   document.body.appendChild(oBoss);
+	} 
+	if(!oBoss){
+		alert("boss error!");return;
+	}
+	oBoss.innerHTML = "";
+	for(i in obj)
+	{
+		  var b = document.createElement("button");
+		  b.id = b.innerHTML = i;
+		  b.style.backgroundColor = "gray";
+		  if(i.charAt(0)=="b"&&i.charAt(1)=="l") b.style.backgroundColor = "yellow";
+		  oBoss.appendChild(b);
+		  var d = document.createElement("div");
+		  d.innerHTML = "";//obj[i];   
+		  d.style.border = "blue 1px solid";
+		  d.style.backgroundColor = "green";
+		  d.style.color = "yellow";
+		  oBoss.appendChild(d);
+		  b.onclick = function(_thisBtnFun,_thisDivFun){
+			  const _2Ts = ["blPaint"]; 
+			  const _fun2Ts = [blo0.blh_test_blPaint];
+			  for(j in _2Ts){
+				if(_thisBtnFun.id==_2Ts[j]){
+					b.style.backgroundColor = "brown";
+					return function(){ 
+						var tv = _fun2Ts[j](_thisDivFun); 
+						_on_off_div(_thisBtnFun,tv);
+						_thisBtnFun.style.background = _thisBtnFun.style.background=="red"?blGrey[5]:blColor[4];
+					}
+				}
+			  }
+			  return function(){}
+		  }(b,d);
+
+		 
+		  
+		if(i.charAt(0)=="b"&&i.charAt(1)=="l"&&i.charAt(2)=="r"){
+			b.style.backgroundColor = "red";
+			d.innerHTML = ""; 
+			d.id = b.id + "Div";
+			b.onclick = function(i_,b_,v_){
+				return function(){
+					var go = obj[i_];
+					if (typeof go == "function") {
+						go(b_,v_);
+					}
+				} 
+			}(i,b,d);
+		} 
+
+		if(i.charAt(0)=="b"&&i.charAt(1)=="l"&&i.charAt(2)=="l"){ 
+				b.style.display = "none";	 
+				d.id			= d.html;	 
+		  }
+		  if(i.charAt(0)=="b"&&i.charAt(1)=="l"&&i.charAt(2)=="h"){ 
+				b.style.display = "none";	 
+				d.style.display = "none";	 
+		  }
+	}
+}    
+
  
 blo0.lsCVS = [];
 var mousedownList = [];
@@ -2715,4 +3204,10 @@ function CCVSRect(_x,_y,_w,_h,_clr){
 				if(fClick) fClick(this,_x,_y);
 			} 
 	} 
+}
+
+function selectElement(e){ 
+	e.onclick = function(){
+		alert(1);
+	}
 }
