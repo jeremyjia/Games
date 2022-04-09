@@ -19,6 +19,7 @@
     "request": "^2.88.2",
     "supertest": "^6.2.2",
     "swagger-ui-express": "^4.3.0",
+    "win32-api": "^9.6.0",
     "winston": "^3.6.0",
     "yamljs": "^0.3.0"
   },
