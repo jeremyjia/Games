@@ -7,12 +7,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -161,8 +162,8 @@ public class FileController {
 		String txtFromURL = JsonSriptParser.getJsonString(url);
 		JSONObject jsonObj = new JSONObject(txtFromURL);
 		JSONObject requestObj = JsonSriptParser.getJsonObjectbyName(jsonObj, "request");	 
-		 
-		String s = requestObj.toString();
+		JSONArray frameArray = (JSONArray) requestObj.get("frames");
+		String s = frameArray.toString(); 
 		s += "\n";
 		s += "保存ok";
 		s += "\n";
@@ -206,7 +207,13 @@ public class FileController {
 	}
 
 
-
+	@RequestMapping(value =  "/signature", method = RequestMethod.GET)
+	public ModelAndView signature() {
+		ModelAndView mv = new ModelAndView();
+		mv.setViewName("signature.html");
+		return mv;
+	}
+		
 	@ApiOperation(value = "获取文件资源列表", notes = "获取指定文件类型列表")
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "filetype", value = "json/mp3/...", paramType = "query", required = true, dataType = "string", defaultValue = "json") })

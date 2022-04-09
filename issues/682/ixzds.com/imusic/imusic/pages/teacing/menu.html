@@ -1,0 +1,530 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<meta name="description" content="">
+		<meta name="author" content="">
+		<link rel="icon" href="../../../../ixzdscommon/favicon.ico">
+		<title>课程内容</title>
+		<link rel="stylesheet" href="../../../../ixzdscommon/minipro/assets/vendor_components/sweetalert/sweetalert.css">
+		<link href="../../../../ixzdscommon/audio/diy_audio.css" rel="stylesheet">
+		
+		<link href="../../../../ixzdscommon/minipro/css/tooltip.css" rel="stylesheet">
+		
+		<link href="../../component/sing/css/abc_tool.css?v=1111" rel="stylesheet">
+    	
+		<!-- list -->
+    	<link href="../../css/common/list_group.css?v=1111" rel="stylesheet" type="text/css" />  
+		
+		<!-- 知识点链接 -->
+		<link href="../../../../ixzdscommon/knowlink/know_link.css?v=1111" rel="stylesheet">
+		<link rel="stylesheet" href="../../../../ixzdscommon/knowlink/css/cont_link.css?v=1111">
+    
+		<!-- 幻灯片，如果引用了master_style.css，则不需要再引用carousel.css -->
+		<link rel="stylesheet" href="../../../../ixzdscommon/slide/carousel.css?v=1111">
+		<link rel="stylesheet" href="../../../../ixzdscommon/slide/diy_slide.css?v=1111">
+	
+		<!-- 各种数学公式 -->
+		<link rel="stylesheet" href="../../../../ixzdscommon/mathjax3.0.5/css/mathjax.css">
+	
+		<link href="../../css/course/know_teac.css?v=1111" rel="stylesheet">
+		<link href="../../css/teacing/menu.css?v=1111" rel="stylesheet">
+	</head>
+	<body>
+		<div id="content" class="new-style" :class="[ 'content']" v-cloak>
+			<!-- 左部菜单 -->
+			<div v-show="isOpusLib || nodeList.length > 1" class="menu-box" :class="!menuShow && 'menu-hide'">
+				<!-- 菜单标题 -->
+				<!-- <div class="menu-title">iMusic</div> -->
+				<div class="opus-box" v-show="isOpusLib">
+					<div class="opus-search">
+						<input placeholder="输入关键字搜索" v-model="opusReqFrm.TITLE" @input="searchOpus"/><i class="search-btn"></i>
+					</div>
+					<ul>
+						<li class="opus-item" v-for="(opusPo ,index) in opusList">
+							<div class="opus-item-box">
+								<div class="info">
+									<div class="opus-name">
+										<span v-if="opusType == 'SJXBZ'" @click.stop="editOpus(opusPo)">{{opusPo.TITLE}}</span>
+										<span v-else @click.stop="openOpusDetail(opusPo.MUSIC_FORM_ID, opusPo.FORM_TYPE)">{{opusPo.TITLE}}</span>
+										<i class="edit-btn" @click.stop="switchOpusEdit(opusType == 'SJXBZ' ? opusPo.PIANO_COMPING_ID : opusPo.MUSIC_FORM_ID)"></i>
+									</div>
+									<div class="opus-info">
+										<span :title="opusPo.PERSON_NAME || opusPo.USERNAME">作者：{{opusPo.PERSON_NAME || opusPo.USERNAME}}</span>
+										<span>编辑时间：{{opusPo.EDIT_TIME}}</span>
+									</div>
+								</div>
+								<div class="opera-box" v-show="editOpusId == opusPo.MUSIC_FORM_ID || editOpusId == opusPo.PIANO_COMPING_ID">
+									<span class="edit" @click.stop="editOpus(opusPo)">修改</span>
+									<span class="del" @click.stop="delOpus(opusType == 'SJXBZ' ? opusPo.PIANO_COMPING_ID : opusPo.MUSIC_FORM_ID)">删除</span>
+									<span class="cancel" @click.stop="editOpusId = false">取消</span>
+								</div>
+							</div>
+						</li>
+					</ul>
+					<div class="center opus-empty" v-show="opusMsg">{{opusMsg}}</div>
+					
+					<ul class="bottom-btn-box">
+						<li @click="menuShow = !menuShow" class="expand-btn"><i></i></li>
+						<li @click="isOpusLib = !isOpusLib" class="catalog-btn"><i></i><span>目录</span></li>
+						<li class="opus-btn active"><i></i><span>作品库</span></li>
+					</ul>
+					
+				</div>
+				<div v-show="!isOpusLib">
+					<!-- 知识点菜单 beg -->
+					<div class="menu-content diy-scorll">
+						<div class="course-box">
+							<img class="course-cover" :src="course.COVER_PIC_PATH && course.COVER_PIC_PATH.indexOf('/') != -1 ? course.COVER_PIC_PATH : '../../images/default/course_def.png' "/>
+							<!-- <div class="course-name" v-text="course.COURSE_NAME"></div> -->
+						</div>
+							
+						<tree ref="tree" :data="treeData" :options="treeOptions" class="tree--small know-tree">
+			              	<div slot-scope="{ node }" @click="nodeClick(node, node.nodeIdx)" :style="node.searchStyle" :title="node.data.IS_EXAM == '1' ? '作业' : node.text"
+			              	 :class="[node.data.IS_EXAM == '1' ? 'know-exam' : (node.data.KNOW_TYPE <= C.KNOW_TYPE_LESSON ? 'know-parent': 'know-child'), 'know-node']">
+			                	<div class="know-txt">{{ node.text}}</div>
+			                </div> 
+			            </tree>
+					</div>
+					
+					<!-- 展开、收起按  -->
+					<div class="menu-btn expand" v-if="!menuShow" @click="menuShow = !menuShow">
+						<img title="展开" src="../../images/menu/expand.png" />
+					</div>
+					
+					<ul class="left-btn-box" >
+						<li @click="openTopKnow" class="tree-know" data-toggle="tooltip" data-placement="top" title="查看更多目录请点击这里"><img src="../../css/teacing/images/tree_know.png"/>目录</li>
+						<li @click="treeUnfold(false)" data-toggle="tooltip" data-placement="top" title="展开/折叠所有树节点">
+							<img :src="treeOptions.isFold ? '../../css/teacing/images/tree_collapse.png' : '../../css/teacing/images/tree_expand.png'"/>折叠
+						</li>
+						<li @click="treeSearchToggle" data-toggle="tooltip" data-placement="top" title="搜索树节点"><img src="../../css/teacing/images/tree_search.png"/>搜索</li>
+						<li @click="menuShow = !menuShow" title="隐藏知识点菜单"><img src="../../css/teacing/images/tree_hide.png"/>隐藏</li>
+						<li v-show="isShowOpusLib" @click="isOpusLib = !isOpusLib" title="作品库"><img src="../../css/teacing/images/tree_lib.png"/>作品</li>
+					</ul>
+					
+					<div class="tree-search-box hide">
+			            <form class="app-search" style="display: none;">
+		               	 	<input @keyup.enter="treeUtil.search( $event)" type="text" class="form-control w-300" placeholder="请输入知识点名称，回车查询"> 
+		               	 	<input type="text" class="hide" placeholder="请输入知识点名称，回车查询">
+		               	 	<div class="keyboard" v-if="isExe" @click="window.top.getSocket().runwincmd('osk'); $('.app-search .form-control').focus()"></div> 
+						</form>
+	  				</div>
+	  				<!-- 知识点菜单 end -->
+				</div>
+				<div class="bottom-box-cover-2"></div>
+			</div>
+			
+			<!-- 当页面仅有一个知识点的时候，左边整块都隐藏了，此时这个按钮要亮出来，否则没得玩了；  知识点预览的话，那就不需要了 -->
+			<li v-if="nodeList.length <= 1 && !isOnlyOneTopKnow && !isKnowPreview && !isAlone" @click="openTopKnow" title="查看更多目录请点击这里" class="menu-top-know"><img src="../../css/teacing/images/tree_know.png"/>目录</li>
+			
+			<div class="right-box" :style="(nodeList.length <= 1 ? 'width:100%;' : '')" 
+				@mousedown.stop="contentMouseDown($event )" @touchstart.stop="contentMouseDown($event )">
+				
+				<!-- 钢琴虚拟键盘 begin -->
+				<!-- pianoKeyboard.whiteKeyArr && !isFullScreen && isCurrPageHasAbc -->
+				<div v-show="isShowCont" v-if="pianoKeyboard.whiteKeyArr" class="piano-keyboard-box" :class="{'show' : pianoKeyboard.isOpen}" style="bottom: 60px;">
+					<!-- <div v-if="!isCurrPageHasAbc" class="switch" @click="pianoKeyboard.showOrHide()"></div> -->
+					<!-- <div v-show="pianoKeyboard.isOpen" class="pkb-op-box">
+						<span>时值: </span>
+						<select v-model="pianoKeyboard.length">
+							<option v-for="(model, index) in pianoKeyboard.lengthList" :value="model.value">{{model.name}}</option>
+						</select>
+						<span>速度: </span>
+						<select v-model="pianoKeyboard.speed">
+							<option v-for="(model, index) in pianoKeyboard.speedList" :value="model.value">{{model.name}}</option>
+						</select>
+					</div> -->
+					<img title="钢琴按键声音" v-show="pianoKeyboard.isOpen" class="voice-note"
+		 				:src="'/ixzdscommon/abc/css/images/' + (pianoKeyboard.isVoice ? 'note_voice_on.png' : 'note_voice_off.png')" @click="pianoKeyboard.isVoice = !pianoKeyboard.isVoice;" />
+		 	
+					<div v-show="pianoKeyboard.isOpen" class="piano-keyboard" data-bind="template: {name: 'score/html5EditorControls', data: html5Editor()}">
+						<div class="key-white-row">
+							<template>
+								<div v-for="(model, index) in pianoKeyboard.whiteKeyArr" :group="model.group" :class="{'group-active' : pianoKeyboard.selGroup == model.group}" :style="model.groupStyle">
+									<div v-for="(name, j) in model.name" class="key" @click="pianoKeyboard.click(model, j)" @mouseleave="pianoKeyboard.mouseleave(model, j)" :data-index="model.index[j]" :class="{'selected' : model.action[j] == 'down'}" :style="model.style[j]" v-html="index > 0 && j == 0 ? name : ''"></div>
+								</div>
+							</template>
+						</div>
+						<!-- 黑键 -->
+						<template v-for="(model, index) in pianoKeyboard.blackKeyArr" >
+							<div v-for="(name, j) in model.nameU" class="key black" @click="pianoKeyboard.click(model, j)" :data-index="model.index[j]" :class="{'selected' : model.action[j] == 'down'}" :group="model.group" :style="model.style[j]"></div>
+						</template>
+					</div>
+				</div>
+				<!-- 钢琴虚拟键盘 end -->
+				
+				<!-- 非全屏的时候才需要展示，有abc的才需要展示 -->
+				<div  class="bottom-box-cover" :class="{'abcfull' : isShowCont && isFullScreen}"></div>
+				
+				<!-- 用于放置 sing_abc_main.html 页面中的按钮 -->
+				<div v-show="isShowCont && isCurrPageHasAbc && !isFullScreen" class="sing-tool-box select-ban hide" data-iframe-id=""></div>
+				
+				<div class="right-content-container" :class="{fullscreen : isFullScreen}" >
+					<!-- 知识点链接 begin -->
+					<div class="link-box" v-if="!isAlone" v-show="link.isIconShow">
+						<ol class="link-dialog" v-if="link.isDialogShow">
+							<li v-for="(model, index) in link.knowArr" class="link-item">
+								<div class="title" @click="window.top.addIframeByLink(model);link.isDialogShow=false;" v-text="model.KNOWLEDGE_TITLE"></div>
+							</li>
+						</ol>
+						<div class="link-icon" @click="link.isDialogShow = !link.isDialogShow"></div>
+					</div>
+					<!-- 知识点链接 end -->
+		
+					<div v-show="!isShowCont" class="exam-box">
+						<iframe id="examIframe" src="" frameborder="0" style="width: 100%; height: 100%;"></iframe>
+					</div>
+					<!-- 图文混排页面需要滚动条 -->
+					<div v-show="isShowCont" class="right-content diy-scorll">
+						<!-- 背景区域 -->
+						<!-- <div class="right-bg" :style="itemBoxStyle"></div> -->
+						
+						<div class="item-list" :class="{'sing-iframe-full' : moreIframe.fullIframeId }" >
+						 <!-- style="height: 100%;" -->
+							<div v-show="CONT_ARR && CONT_ARR.length&&model.PAGE == currPage && isShowCont" v-for="(model, index) in CONT_ARR" :class="{active: model.PAGE == currPage}">
+								<!-- （多）曲谱切换 -->
+								<template v-if="moreIframe.arr" v-for="(m, index) in moreIframe.arr">
+									<div class='sing-iframe-name' v-if="moreIframe.arr.length > 1" :style="m.style">
+										{{ m.name }}
+										<div v-if="moreIframe.currIdx == index">当前选中</div>
+									</div>
+									<template v-if="m.isShowFull">
+										<img v-if="moreIframe.fullIframeId == m.iframeId" @click="singFullscreen(m, index, false )" :style="m.imgStyle" class="res-tool-switch" @click="openCloseTool" title="关闭曲谱全屏" src="../../css/teacing/images/abc_fullscreen_close.png">
+										<img v-if="!moreIframe.fullIframeId" @click="singFullscreen(m, index, true )" :style="m.imgStyle" class="res-tool-switch" @click="openCloseTool" title="将当前曲谱放大至全屏" src="../../css/teacing/images/abc_fullscreen.png">
+									</template>
+								</template>
+								
+								<!-- 每一页内容 -->
+								<template v-if="model.DATA && model.DATA.length" v-for="(subContPo, cndex) in model.DATA">
+									<!-- 声乐 -->
+									<!-- 本页面只有声乐一个内容的时候全屏 -->
+									<template v-if="(subContPo.CTYPE == 'vocal' || subContPo.CTYPE == 'sing') && (model.DATA.length == 1 || (subContPo.HAS_BG && model.DATA.length == 2))">
+										<iframe v-if="model.PAGE == currPage || subContPo.IS_LOAD == 1" @load="Vue.set(subContPo, 'IS_LOAD', 1);$('.bottom-box').addClass('full-screen-new');" :style="subContPo.STYLE" class="vocal-iframe fullscreen"
+											:id="subContPo.KNOW_TEAC_ID"
+											:src="buildVocalIframeUrl(subContPo, cndex, index, true)" frameborder="0"></iframe>
+									</template>
+									<!-- 多个内容的时候按数据来摆放位置 -->
+									<template v-else-if="subContPo.CTYPE == 'vocal' || subContPo.CTYPE == 'sing'">
+										<!-- 	allowtransparency 背景色透明 ，配置iframe中body设置 style="background-color: transparent" -->
+										<template v-if="subContPo.WIDTH >= 1">
+											<iframe v-if="model.PAGE == currPage || subContPo.IS_LOAD == 1" @load="Vue.set(subContPo, 'IS_LOAD', 1);$('.bottom-box').addClass('full-screen-new');" 
+												allowtransparency="true" class="vocal-iframe fullscreen" 
+												:class="{'sing-iframe-full-except' : moreIframe.fullIframeId == subContPo.KNOW_TEAC_ID}"
+												:id="subContPo.KNOW_TEAC_ID" 
+												:style="subContPo.STYLE"
+												:src="buildVocalIframeUrl(subContPo, cndex, index, false)" frameborder="0"></iframe>
+										</template>
+										<template v-else>
+											<div class="item-box" :class="{'sing-iframe-full-except' : moreIframe.fullIframeId == subContPo.KNOW_TEAC_ID}" :style="itemBoxStyle">
+												<iframe v-if="model.PAGE == currPage || subContPo.IS_LOAD == 1" @load="Vue.set(subContPo, 'IS_LOAD', 1);$('.bottom-box').addClass('full-screen-new');" 
+													allowtransparency="true" class="vocal-iframe fullscreen" 
+													:class="{'sing-iframe-full-except' : moreIframe.fullIframeId == subContPo.KNOW_TEAC_ID}"
+													:id="subContPo.KNOW_TEAC_ID" 
+													:style="subContPo.STYLE"
+													:src="buildVocalIframeUrl(subContPo, cndex, index, false)" frameborder="0"></iframe>
+											</div>
+										</template>
+									</template>
+									
+									<!-- 本页面只有钢琴一个内容的时候全屏 -->
+									<template v-if="(subContPo.CTYPE == 'piano') && (model.DATA.length == 1 || (subContPo.HAS_BG && model.DATA.length == 2))">
+										<iframe v-if="model.PAGE == currPage || subContPo.IS_LOAD == 1" @load="Vue.set(subContPo, 'IS_LOAD', 1);$('.bottom-box').addClass('full-screen-new');" class="piano-if" :id="'pianoIframe' + cndex + '_' + index" 
+											:src="'../teacing/teac_piano.html?HIDE_BTN_PIANO=1&INDEX=' + cndex + '&PAGE=' + model.PAGE + '&KNOW_TEAC_ID=' + subContPo.KNOW_TEAC_ID
+												+ ('&IFRAME_ID=vocalIframe' + cndex + '_' + index) + (isKnowPreview ? '&IS_KNOW_PREVIEW=1' : '') + '&IS_TEAC=' + (isTeac ? 1 : 0) + '&NEW_STYLE=1'"  frameborder="0" height="100%"></iframe>
+									</template>
+									<!-- 多个内容的时候按数据来摆放位置 -->
+									<template v-else-if="subContPo.CTYPE == 'piano'">
+										<iframe v-if="model.PAGE == currPage || subContPo.IS_LOAD == 1" @load="Vue.set(subContPo, 'IS_LOAD', 1);$('.bottom-box').addClass('full-screen-new');" class="vocal-if vocal-iframe" :id="'vocalIframe' + cndex + '_' + index" 
+											:src="'../teacing/teac_piano.html?IS_TOOL_PARENT=1&INDEX=' + cndex + '&PAGE=' + model.PAGE + '&KNOW_TEAC_ID=' + subContPo.KNOW_TEAC_ID
+												 + ('&IFRAME_ID=vocalIframe' + cndex + '_' + index) + (isKnowPreview ? '&IS_KNOW_PREVIEW=1' : '') + '&IS_TEAC=' + (isTeac ? 1 : 0)" frameborder="0"
+											:style="subContPo.STYLE"
+										></iframe>
+									</template>
+									<!-- 钢琴 -->
+		 							<!-- <template v-else-if="subContPo.CTYPE == 'piano'">
+										<iframe :id="'pianoIframe' + cndex + '_' + index" class="piano-if"	
+											 :src="'../teacing/teac_piano.html?INDEX=' + cndex + '&PAGE=' + model.PAGE + '&KNOW_TEAC_ID=' + subContPo.KNOW_TEAC_ID + '&IS_TEAC=' + (isTeac ? 1 : 0)" 
+											 frameborder="0"></iframe>
+									</template> -->
+									
+									<!-- 创编题库 -->
+									<template v-else-if="subContPo.CTYPE == 'qs' && subContPo.QS_JSON.QS_TYPE == 'SABC'">
+										<iframe v-if="model.PAGE == currPage || subContPo.IS_LOAD == 1" :src="buildQsUrl(subContPo)"
+											 @load="Vue.set(subContPo, 'IS_LOAD', 1);" class="qs-iframe" frameborder="0"></iframe>
+									</template>
+									
+									<!-- 节奏乐园  -->
+									<template v-else-if="subContPo.CTYPE == 'rhythm'">
+										<iframe v-if="model.PAGE == currPage || subContPo.IS_LOAD == 1" :src="buildRhythmUrl(subContPo)"
+											 @load="Vue.set(subContPo, 'IS_LOAD', 1);" class="qs-iframe" frameborder="0"></iframe>
+									</template>
+									
+									<!-- 曲式分析 -->
+									<template v-else-if="subContPo.CTYPE == 'qsfx' ">
+										<iframe v-if="model.PAGE == currPage || subContPo.IS_LOAD == 1" @load="Vue.set(subContPo, 'IS_LOAD', 1)" class="mf-iframe" :id="'musicformIframe' + cndex + '_' + index" 
+											:src="'../musicform/music_form_show_xs.html?attachid=' + subContPo.ATTACH_ID + '&iframeId=musicformIframe'+ subContPo.KNOW_TEAC_ID" 
+											:style="subContPo.STYLE " style="right:0;margin:auto;"
+											 frameborder="0" height="100%"></iframe>
+									</template>
+									<!-- 赏析 -->
+									<template v-else-if="subContPo.CTYPE == 'sx' ">
+										<iframe v-if="model.PAGE == currPage || subContPo.IS_LOAD == 1" @load="Vue.set(subContPo, 'IS_LOAD', 1)" class="mf-iframe" :id="'musicformIframe' + cndex + '_' + index" 
+											:src="'../musicform/music_form_show_sx.html?ctype=sx&attachid=' + subContPo.ATTACH_ID + '&p_iframeId=' + ('musicformIframe' + cndex + '_' + index) +'&iframeId=musicformIframe'+ subContPo.KNOW_TEAC_ID + '&COURSE_ID=' +selKnow.COURSE_ID+ '&KNOWLEDGE_ID=' +selKnow.KNOWLEDGE_ID" 
+											 style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; z-index: 2;"
+											 frameborder="0"  class="qs-iframe"></iframe>
+									</template>
+									
+									<!-- 3d模型 -->
+									<template v-else-if="subContPo.CTYPE == '3d' ">
+										<div class="item-box" :style="itemBoxStyle">
+											<iframe class="3d-iframe" :id="'3dIframe' + cndex + '_' + index" 
+												:src="build3dUrl(subContPo)"
+												:style="subContPo.STYLE "
+												 frameborder="0"></iframe>
+										</div>
+									</template>
+									
+									<!-- 图片谱音同步 -->
+									<template v-else-if="subContPo.CTYPE == 'img' && (subContPo.VOCAL_JSON && subContPo.VOCAL_JSON.length > 0 && subContPo.VOCAL_JSON[0].JSONVAL)">
+										<!-- 如果宽度设置了全屏，那么此处的宽度为100%； -->
+										<iframe v-if="model.PAGE == currPage || subContPo.IS_LOAD == 1" @load="Vue.set(subContPo, 'IS_LOAD', 1);"
+											class="mf-iframe" :class="{'w-p100' : subContPo.WIDTH >= 1}" :id="'imgPytb_' + cndex + '_' + index" :src="'../teacing/img_pytb.html?PAGE=' + model.PAGE + '&INDEX=' + cndex"
+											:style="subContPo.STYLE" frameborder="0"></iframe>
+									</template>
+									
+									<div v-else :class="{'item-box' : subContPo.IS_H_FULL != '1' }" :style="subContPo.IS_H_FULL != '1' ? itemBoxStyle : ''">
+										<!-- 图片 -->
+										<template v-if="subContPo.CTYPE == 'img' && !(subContPo.VOCAL_JSON && subContPo.VOCAL_JSON.length > 0 && subContPo.VOCAL_JSON[0].JSONVAL)">
+											<img class="cont-img" @click="contLink.contLinkClick($event, subContPo )" @dblclick="contImgClick( subContPo)"
+											 	:id="subContPo.KNOW_TEAC_ID" :src="subContPo.CONTENT" :style="subContPo.STYLE" 
+											 	:data-contlink-id="subContPo.contLinkId":data-contlink-pid="subContPo.contLinkPid" :data-contlink-child="subContPo.IS_LEVEL_CHILD"/>
+										</template>
+										<!-- 视频/切片视频 -->
+										<template v-else-if="subContPo.CTYPE == 'video' || subContPo.CTYPE == 'videocut'">
+											<div :class="{ 'selected' : !subContPo.IS_VIDEO_SELECT, 'video-box' : true }" 
+												@click="Vue.set(subContPo, 'IS_VIDEO_SELECT', !subContPo.IS_VIDEO_SELECT)" :id="subContPo.KNOW_TEAC_ID" 
+												:style="subContPo.STYLE" :data-contlink-id="subContPo.contLinkId":data-contlink-pid="subContPo.contLinkPid" :data-contlink-child="subContPo.IS_LEVEL_CHILD">
+												<div v-if="isAndroid" @click="openVideo( subContPo )" class="video-staff"></div>
+												<video :poster="isAndroid ? '../../images/common/video_poster.png' : ''" @play="videoPlay('video' + cndex + '_' + index)" 
+													@play="videoEnd(subContPo, $event, 'video' + cndex + '_' + index)" :id="'video' + cndex + '_' + index" 
+													width="100%" height="100%" class="video" :class="{'videocut' : subContPo.CTYPE == 'videocut'}" :src="subContPo.CONTENT" controls controlslist="nodownload" 
+													webkit-playsinline="true"></video>
+					    						<label class="video-loop" @click="videoLoop('video' + cndex + '_' + index, $event)"><input type="checkbox" />循环播放</label>
+					    						<div class="video-move" @mousedown.stop="itemMouseDown(subContPo, $event )" @touchstart.stop="itemMouseDown(subContPo, $event )"></div>
+					    						<div class="coor" @mousedown.stop="coorMouseDown(subContPo, $event)" @touchstart.stop="coorMouseDown(subContPo, $event)"></div>
+											</div>
+										</template>
+										<!-- 音频 -->
+										<template v-else-if="subContPo.CTYPE == 'audio'">
+											<!-- :id="'audio' + cndex + '_' + index" -->
+											<d-audio :wid="subContPo.ATTACH_ID" @play="audioPlay" :isauth="user.userType == '1'" :type="course.COURSE_TYPE" 
+												:data-class="musicFormParams[subContPo.ATTACH_ID] ? musicFormParams[subContPo.ATTACH_ID].isShowMusicFormBtn : false" 
+												:id="subContPo.KNOW_TEAC_ID" :src="subContPo.CONTENT" :style="subContPo.STYLE" 
+												:data-contlink-id="subContPo.contLinkId":data-contlink-pid="subContPo.contLinkPid" :data-contlink-child="subContPo.IS_LEVEL_CHILD"
+												:hei="subContPo.STYLE.height"
+												:class="{'active':( musicFormParams[subContPo.ATTACH_ID] ? musicFormParams[subContPo.ATTACH_ID].isShowMusicFormBtn : false),
+												 'selected': (musicFormParams[subContPo.ATTACH_ID] ? musicFormParams[subContPo.ATTACH_ID].isShowMusicForm : false)}" @mf-event="handleMf" @mf-edit-event="openOpusEdit" @mf-opus-event="handleOpusLib"></d-audio>
+										</template>
+										<!-- 文本 -->
+										<template v-else-if="subContPo.CTYPE == 'txt'">
+											<div class="know-teac know-teac-text" @click="contLink.contLinkClick($event, subContPo )" v-html="subContPo.CONTENT" 
+												:id="subContPo.KNOW_TEAC_ID" :style="subContPo.STYLE" 
+												:data-contlink-id="subContPo.contLinkId":data-contlink-pid="subContPo.contLinkPid" :data-contlink-child="subContPo.IS_LEVEL_CHILD"
+												 @mousedown.stop="search.close($event)" @touchstart.stop="search.close($event)"
+												 @mouseup.stop="search.open($event)" @touchend.stop="search.open($event)"></div>
+										</template>
+										<!-- 题库 -->
+										<template v-else-if="subContPo.CTYPE == 'qs' && subContPo.QS_JSON.QS_TYPE != 'SABC'">
+											<div class="know-teac know-teac-text" :id="subContPo.KNOW_TEAC_ID" :style="subContPo.STYLE" 
+												:data-contlink-id="subContPo.contLinkId":data-contlink-pid="subContPo.contLinkPid" :data-contlink-child="subContPo.IS_LEVEL_CHILD">
+												<span v-html="subContPo.CONTENT"></span>
+												<button @click="Vue.set(subContPo, 'showAns', !subContPo.showAns)" class="btn btn-primary qs-ans-btn" type="button">
+													{{ subContPo.showAns ? "隐藏" : "显示"}}答案
+												</button>
+												<div v-if="subContPo.showAns">正确答案：{{ subContPo.QS_JSON ? subContPo.QS_JSON.RIGHT_ANSWER : "" }}</div>
+											</div>
+										</template>
+										
+										<!-- 幻灯片 -->
+										<div v-else-if="subContPo.CTYPE == 'slide' && model.PAGE == currPage && subContPo.CONTENT && subContPo.CONTENT.ITEMS.length > 0" 
+											:style="subContPo.STYLE" :data-contlink-id="subContPo.contLinkId":data-contlink-pid="subContPo.contLinkPid" :data-contlink-child="subContPo.IS_LEVEL_CHILD">	
+											<diy-slide :id="subContPo.KNOW_TEAC_ID" :slide="subContPo.CONTENT" ></diy-slide>
+											<!-- <diy-slide :id="'slide' + index + subContPo.KNOW_TEAC_ID" :slide="subContPo.CONTENT" ></diy-slide> -->
+										</div>
+										
+										<!-- 锚点-->
+										<img v-else-if="subContPo.CTYPE == 'point' && subContPo.CONTENT" :id="subContPo.KNOW_TEAC_ID" :style="subContPo.STYLE" 
+											src="../../css/course/images/point_46.png" :data-contlink-id="subContPo.contLinkId":data-contlink-pid="subContPo.contLinkPid" :data-contlink-child="subContPo.IS_LEVEL_CHILD"
+											@click="material.preview( subContPo.CONTENT )" class="cont-img" draggable="false"/>
+											
+										<!-- 子级节点 -->
+										<div v-else-if="subContPo.CTYPE == 'contLinkList'" class="cont-link-item" :style="subContPo.STYLE"
+											:data-contlink-id="subContPo.contLinkId" :data-contlink-pid="subContPo.contLinkPid" :data-contlink-child="subContPo.IS_LEVEL_CHILD">
+											<ul v-if="subContPo.list">
+												<li v-for="( obj, objIdx) in subContPo.list" @click="contLink.openLink( obj, $event)" :style="obj.STYLE">
+													<span v-text="obj.title"></span>
+												</li>
+											</ul>
+										</div>
+									</div>
+								</template>
+							</div>
+						</div>
+					</div>		
+				</div>
+				
+				<div v-show="isShowCont" class="page-jump left select-ban">
+					<img @click.stop="gotoPrevPage()" title="上一页" class="prev-page" src="../../images/menu/prev_page.png" draggable="false" />
+					<span @click.stop="leftPageListShow = !leftPageListShow;" title="点击打开页码列表">{{currPage || 1}} / {{pageList.length || 1}}</span>
+					<img @click.stop="gotoNextPage()" title="下一页" class="next-page" src="../../images/menu/next_page.png" draggable="false" />
+					<div class="page-list-box">
+						<div class="page-list">
+							<li :class="{'active': currPage == index + 1}" :title="'第' + (index + 1) + '页'" @click.stop="gotoPage(index + 1)" v-for="(model, index) in pageList">{{index + 1}}</li>
+							<!-- 当页码不是3的倍数并且余数为2时，补全余数，不然两端对齐很奇怪 -->
+							<li style="opacity: 0;cursor: default;" v-show="pageList.length % 3 == 2"></li>
+						</div>
+					</div>
+				</div>
+				<div v-show="isShowCont" class="page-jump right select-ban">
+					<img @click.stop="gotoPrevPage()" title="上一页" class="prev-page" src="../../images/menu/prev_page.png" draggable="false" />
+					<span @click.stop="rightPageListShow = !rightPageListShow;" title="点击打开页码列表">{{currPage || 1}} / {{pageList.length || 1}}</span>
+					<img @click.stop="gotoNextPage()" title="下一页" class="next-page" src="../../images/menu/next_page.png" draggable="false" />
+					<div class="page-list-box">
+						<div class="page-list">
+							<li :class="{'active': currPage == index + 1}" :title="'第' + (index + 1) + '页'" @click.stop="gotoPage(index + 1)" v-for="(model, index) in pageList">{{index + 1}}</li>
+							<!-- 当页码不是3的倍数并且余数为2时，补全余数，不然两端对齐很奇怪 -->
+							<li style="opacity: 0;cursor: default;" v-show="pageList.length % 3 == 2"></li>
+						</div>
+					</div>
+				</div>		
+				<div class="gag-box"></div>
+				<!-- 底部菜单 -->
+				<!-- 知识点预览，直接不可见， 页码  page-item-hide  :class="{ 'page-box-link' : link.isIconShow }"-->
+				<div v-if="!isKnowPreview" class="bottom-box">
+					<!-- <div class="page-box select-ban"> -->
+						<div @click="openPianoKeyboard( $event )" v-if="!isDd && isShowCont" class="menu-btn-new">
+							<img class="menu-btn-img" src="../../images/menu/icon_piano_key.png" />
+							<span>键盘</span>
+						</div>
+						<!--   -->
+						<div v-if="isKtjsbx" @click="openKtjsbx()" class="menu-btn-new">
+							<img class="menu-btn-img" src="../../images/menu/good.png" />
+							<span>课堂表现</span>
+						</div>
+						
+						<div v-if="isShow.btnInteract && !isDd && !isAlone"  @click="openInteract( C.EXAM.USE_TYPE.INTERACT)" class="menu-btn-new">
+							<img class="menu-btn-img" src="../../images/menu/interact.png" />
+							<span>互动</span>
+						</div>
+						<div v-if="( examTask.list.length > 0 || isShow.btnInteract || !isShowCont) && !isDd && !isAlone" class="menu-btn-new" :class="{'active': examTask.isShow}" @click="examTask.isShow = !examTask.isShow" >
+							<img class="menu-btn-img" src="../../images/menu/homework.png" />
+							<span>作业{{ examTask.list.length > 0 ? '(' + examTask.list.length + ')' : '' }}</span>
+							<div :class="[ examTask.isShow ? 'show' : '', 'list-group task-list']">
+							  	<a v-for="( model, index) in examTask.list" @click="showExam( model )" href="javascript:void(0)" class="list-group-item">
+							    	{{ model.TITLE}}
+							  	</a>
+							  	<a v-show="isShow.btnInteract && !isKnowPreview" @click="openExamKnow()" href="javascript:voice(0)" class="list-group-item">布置作业</a>
+							  	<a v-show="!isShowCont" @click="isShowCont = true"  href="javascript:void(0)" class="list-group-item">返回学习</a>
+							</div>
+						</div>
+						<div v-if="isShow.btnTool" @click="openCloseTool" class="menu-btn-new">
+							<img class="menu-btn-img" src="../../images/menu/tool.png" />
+							<span>工具</span>
+						</div>
+						<div v-if="isTeac && !isDd && !isAlone" @click="openQrcode" class="menu-btn-new">
+							<img class="menu-btn-img" src="../../images/menu/saoyisao.png" />
+							<span>扫一扫</span>
+						</div>
+					<!-- </div> -->
+				</div>
+				<!-- exe，知识点预览，关闭按钮 -->
+				<div v-if="isExe && isKnowPreview" onclick="top.closeWin()" class="btn-exe-back" title="移动知识点的位置"  style="z-index:6">
+					<img src="../../images/common/back_arrow.png" />
+					<span>返回</span>
+				</div>
+			</div>
+			
+			<div class="search-box" :style="search.style">
+				<div class="click" @click="search.openDialog()">
+					搜索“{{ search.text }}”<span :style="search.closeStyle" @click.stop="search.close()">&times;</span>
+				</div>
+			</div>
+			
+			<div class="qrcode-box hide">
+				<img id="wsQrCodeImg" src=""/>
+			</div>
+		</div>
+	</body>
+	<script src='../../../../ixzdscommon/jquery/js/jquery-3.2.1.min.js'></script>
+	<!-- vue 框架文件 -->
+	<script src='../../../../ixzdscommon/vue/vue.min.js'></script>
+    <!-- vue ajax -->
+	<script src='../../../../ixzdscommon/vue/axios.min.js'></script>
+	
+	<script src="../../../../ixzdscommon/minipro/js/common/sweetalert.min.1.js"></script>
+	
+  	<script src="../../js/common/constants.js?v=1111"></script>
+	<script src="../../js/common/imusicCommon.js?v=1111"></script>
+	<!-- abc公用 -->
+	<script src="../../../../ixzdscommon/abc/js/util.js?v=1111"></script>
+	<script src="../../../../ixzdscommon/abc/js/abcUtil.js?v=1111" type="text/javascript"></script>
+	<!-- import JavaScript -->
+  	<script src="../../../../ixzdscommon/vue/liquor-tree.umd.js"></script>
+	<!-- 背景图片设置脚本 -->
+	<script src="../../js/course/know_teac_edit_bg.js?v=1111"></script> 
+	
+	<!-- 用于同步sing_abc_main.js中的按钮 -->
+	<script src="../../component/sing/js/sing_abc_tool.js?v=1111"></script> 
+
+	<!-- 知识点链接 -->
+	<script src="../../../../ixzdscommon/knowlink/know_link.js?v=1111"></script> 
+
+	<!-- popper 弹框 -->
+	<script src="../../../../ixzdscommon/minipro/js/common/popper.min.js"></script>
+	<!-- Bootstrap 4.0， 为了幻灯片才引用的js-->
+	<script src="../../../../ixzdscommon/minipro/js/common/bootstrap.min.js"></script>	
+	
+	<!-- 轮播图，需要bootstrap.min.js的支持 -->
+	<script src="../../../../ixzdscommon/slide/diy_slide.js?v=1111"></script> 
+
+	<!-- 自定义alert，用于覆盖window的alert -->
+	<script src="../../js/common/alert.js?v=1111"></script>
+	
+	<!-- 虚拟键盘 -->
+	<script src="../../../../ixzdscommon/abc/js/piano.js?v=1111" type="text/javascript"></script>
+	<script src="../../../../ixzdscommon/abc/js/piano_keybord.js?v=1111" type="text/javascript"></script>
+	
+	<!-- 搜索 -->
+	<script src="../../component/search/search.js?v=1111"></script> 
+	
+	<script src="../../js/common/treeUtil.js?v=1111"></script> 
+	<!-- 文件请求 -->
+	<script src="../../../../imusic/imusic/js/common/file.js?v=1111"></script>
+
+	<script src="../../../../ixzdscommon/midi/midi.js?v=1000"></script> 
+	
+	<!-- <script src="../../js/common/vconsole.min.js?v=1150"></script> -->
+	
+	<!-- 各种数学公式 -->
+	<script src="../../../../ixzdscommon/mathjax3.0.5/tex-chtml.js"></script> 
+	
+	<script src="../../../../ixzdscommon/audio/diy_audio.js?v=1111"></script> 
+	<script src="../../../../ixzdscommon/audio/wave_audio.js?v=1111"></script> 
+	<script src="../../js/course/know_teac.js?v=1111"></script>
+	
+	<script src="../material/js/material.js?v=1111"></script>
+	
+	<!-- 动画 -->
+	<script src="../animation/js/animation.js?v=1111"></script> 
+
+	<!-- 内容链接 -->
+	<script src="../../../../ixzdscommon/knowlink/cont_link.js?v=1111"></script> 
+	
+	<!-- 切片视频的播放，js很大，有需要再加载 -->
+	<script src="../../../../ixzdscommon/videocut/hls_ext.js?v=1111"></script> 
+	
+	<script src="../../js/teacing/menu.js?v=1111"></script> 
+</html>

@@ -1,5 +1,5 @@
 function CI21C2 (){
-  var s = "i21c2_v0.12";
+  var s = "i21c2_v0.13";
   s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/21/c2/c2.js'"
   s += " style='color:blue;'";		s +=">"; s += " c2.js* ";
   s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/21/c2/c2.js'"

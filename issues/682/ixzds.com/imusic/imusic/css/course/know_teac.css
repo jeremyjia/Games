@@ -1,0 +1,36 @@
+
+.know-teac{
+	display: inline-block;
+    border: 1px solid transparent;
+    position: absolute;
+}
+
+/* 文本样式 begin */
+.know-teac-text{
+	line-height: 1.7;
+	font-weight: normal;
+	font-family: "Microsoft YaHei","微软雅黑","宋体","新宋体","\5b8b\4f53","Arial","sans-serif";
+    letter-spacing: normal; /* 设置字符间距 */
+    word-spacing: normal; /* 字间距 */
+	text-transform: none; /* 控制元素中的字母 */
+	white-space: normal; /* 空白符 */
+}
+.know-teac-text strong{
+	font-weight: bold;
+}
+.know-teac table{
+	width: 100%!important;
+}
+
+/* 表格中的标题 */
+.know-teac-text caption{
+	padding: 0;
+    color: inherit;
+    text-align: center;
+    caption-side: inherit;
+}
+
+.know-teac-text img{
+    vertical-align: middle;
+}
+/* 文本样式 end */
