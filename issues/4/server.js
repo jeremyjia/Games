@@ -138,6 +138,18 @@ function addNewGitHubComment(issueId, jsonAll, callbackFun) {
   });
 }
 
+function deleteGitHubComment(issueId, jsonAll, callbackFun) {
+  var url = "https://api.github.com/repos/jeremyjia/Games/issues/" + issueId + "/comments";
+  var data = {
+    "body": jsonAll
+  };
+
+  myAjaxCmd('DELETE', url, data, function (response) {
+    callbackFun(response);
+  });
+}
+
+
 function uploadFileToGitHub(message, filePath, base64FileContent, callbackFun) {
   var url = "https://api.github.com/repos/jeremyjia/Games/contents/" + filePath;
   var data = {
@@ -164,6 +176,10 @@ function myAjaxCmd(method, url, data, callback) {
   };
   xmlHttpReg.open(method, url, true);
   if (method == "PATCH" || method == "POST") {
+    xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());
+    xmlHttpReg.send(JSON.stringify(data));
+  }else if (method == "DELETE") {
     xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());
     xmlHttpReg.send(JSON.stringify(data));
