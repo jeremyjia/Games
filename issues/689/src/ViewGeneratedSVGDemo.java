@@ -5,20 +5,22 @@ import java.awt.geom.Ellipse2D;
 
 import javax.swing.JFrame;
 
-import org.apache.batik.dom.svg.SVGDOMImplementation;
+import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.batik.swing.JSVGCanvas;
 import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.svg.SVGDocument;
 
 public class ViewGeneratedSVGDemo {
 
 	public static void main(String[] args) {
-		// Create an SVG document.
-		DOMImplementation impl = SVGDOMImplementation.getDOMImplementation();
-		String svgNS = SVGDOMImplementation.SVG_NAMESPACE_URI;
-		SVGDocument doc = (SVGDocument) impl.createDocument(svgNS, "svg", null);
+		// Get a DOMImplementation.
+		DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
+
+		// Create an instance of org.w3c.dom.Document.
+		String svgNS = "http://www.w3.org/2000/svg";
+		Document doc = domImpl.createDocument(svgNS, "svg", null);
 
 		// Create a converter for this document.
 		SVGGraphics2D g = new SVGGraphics2D(doc);
@@ -43,7 +45,7 @@ public class ViewGeneratedSVGDemo {
 		JSVGCanvas canvas = new JSVGCanvas();
 		JFrame f = new JFrame();
 		f.getContentPane().add(canvas);
-		canvas.setSVGDocument(doc);
+		canvas.setDocument(doc);
 		f.pack();
 		f.setVisible(true);
 	}
