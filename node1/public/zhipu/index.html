@@ -3,22 +3,22 @@
 <!doctype html>
 <html>
 <head>
-<meta charset="utf-8">
-<title>番茄简谱V1.0 beta1</title>
-<link href="main.css" rel="stylesheet" type="text/css" />
-<script>
-	//if(!window.applicationCache) {
-	//	window.location='./Zhipu-nohtml5-example-0.html';
-	//}
-	//var urlExampleId=0;
-</script>
-<script src="jquery.min.js"></script>
-<script src="Zhipu-jsCode.js"></script>
-	<script>var isWindows = false;</script></head>
-<body>
-  
-<script src="https://jeremyjia.github.io/Games/js/blclass.js"></script>
-<div id="debugDiv"></div>
+  <meta charset="utf-8">
+  <title>番茄简谱V1.0 beta1</title>
+  <link href="main.css" rel="stylesheet" type="text/css" />
+  <script>
+    //if(!window.applicationCache) {
+    //	window.location='./Zhipu-nohtml5-example-0.html';
+    //}
+    //var urlExampleId=0;
+  </script>
+  <script src="jquery.min.js"></script>
+  <script src="Zhipu-jsCode.js"></script>
+	<script>var isWindows = false;</script>
+</head>
+<body>  
+<script src="https://jeremyjia.github.io/Games/js/blclass.js"></script> 
+
 <div class="win">
 	<div class="titleBar">
     	<span></span>
@@ -26,6 +26,7 @@
     </div>
     <div class="body"></div>
 </div>
+
 <div class="mask"></div>
 
 <div id="tip">提示</div>
@@ -103,83 +104,83 @@
     </table>
     </div>
 </div>
+ 
+<div id="filename" style="border:1px solid red;">未命名-(bv0.11-index.html).jps</div> 
 
-
-<div id="filename">未命名.jps</div>
-
-
-
-<div class="head"><div class="main">
-<a href="http://www.jianpu99.net/" target="_blank"><img class="logo" src="/Public/zhipuStyle/default/images/logo.png"/></a><ul class="menu" onmousedown="noHideMenu();">
-    	<li>
-        	<span id="menuFile" onClick="showMenu(this)">文件(F)</span>
-        	<ul>
-            	<li id="menuNewFile" onClick="showWin('新建','./Zhipu-newFile.html');"><i>Ctrl+N</i>新建...</li>
-            	<li id="menuOpenFile" onClick="showWin('打开','./Zhipu-fileBrowsing-type-open.html');"><i>Ctrl+O</i>打开...</li>
-            	<li id="menuSave" onClick="toSave();"><i>Ctrl+S</i>保存</li>
-            	<li id="menuSaveAs" onClick="showWin('另存为','./Zhipu-fileBrowsing-type-save.html');"><i>Shift+Ctrl+S</i>另存为...</li>
-            	<li class="line"></li>
-            	<li onClick="showWin('系统示例文档','./Zhipu-exampleList.html');">从示例谱库中打开...</li>                
-            	<li class="line"></li>                
-            	<li onClick="showWin('页面设置','./Zhipu-pageConfig.html');">页面设置...</li>
-            	<li class="line"></li>
-            	<li onClick="showWin('导出PDF文档','./Zhipu-toPdf.html');">导出PDF文档...</li>
-            	<li onClick="showWin('导出JPG图片','./Zhipu-toJpg.html');">导出JPG图片...</li>
-            	<li onClick="toSvg();">导出SVG图片...</li>
-            	<li class="line"></li>
-            	<li onClick="toClose()">关闭</li>
-            </ul>
-        </li>
-        
-    	<li>
-        	<span id="tryUser" onClick="showMenu(this)">视图(V)</span>
-        	<ul>
-            	<li id="menuSetView1" onClick="setView(1)">编码</li>
-            	<li id="menuSetView3" onClick="setView(3)">拆分</li>
-            	<li id="menuSetView2" onClick="setView(2)"><i>Tab</i>预览</li>
+<div class="head">
+    <div class="main">
+  <a href="http://www.jianpu99.net/" target="_blank"><img class="logo" src="default/images/logo.png"/></a><ul class="menu" onmousedown="noHideMenu();">
+        <li>
+            <span id="menuFile" onClick="showMenu(this)">文件(F)</span>
+            <ul>
+                <li id="menuNewFile" onClick="showWin('新建','./Zhipu-newFile.html');"><i>Ctrl+N</i>新建...</li>
+                <li id="menuOpenFile" onClick="showWin('打开','./Zhipu-fileBrowsing-type-open.html');"><i>Ctrl+O</i>打开...</li>
+                <li id="menuSave" onClick="toSave();"><i>Ctrl+S</i>保存</li>
+                <li id="menuSaveAs" onClick="showWin('另存为','./Zhipu-fileBrowsing-type-save.html');"><i>Shift+Ctrl+S</i>另存为...</li>
                 <li class="line"></li>
-            		<li id="menuFullscreen" onClick="toFullscreen();"><i>F11</i>全屏</li>            </ul>
+                <li onClick="showWin('系统示例文档','./Zhipu-exampleList.html');">从示例谱库中打开...</li>                
+                <li class="line"></li>                
+                <li onClick="showWin('页面设置','./Zhipu-pageConfig.html');">页面设置...</li>
+                <li class="line"></li>
+                <li onClick="showWin('导出PDF文档','./Zhipu-toPdf.html');">导出PDF文档...</li>
+                <li onClick="showWin('导出JPG图片','./Zhipu-toJpg.html');">导出JPG图片...</li>
+                <li onClick="toSvg();">导出SVG图片...</li>
+                <li class="line"></li>
+                <li onClick="toClose()">关闭</li>
+              </ul>
+          </li>
+          
+        <li>
+            <span id="tryUser" onClick="showMenu(this)">视图(V)</span>
+            <ul>
+                <li id="menuSetView1" onClick="setView(1)">编码</li>
+                <li id="menuSetView3" onClick="setView(3)">拆分</li>
+                <li id="menuSetView2" onClick="setView(2)"><i>Tab</i>预览</li>
+                  <li class="line"></li>
+                  <li id="menuFullscreen" onClick="toFullscreen();"><i>F11</i>全屏</li>            </ul>
         </li>
-		
-    	<li>
-        	<span onClick="showMenu(this)">插入(I)</span>
-        	<ul>
-            	<li onClick="showWin('插入文字','./xdText.html');">xd自定义文字</li>
-            	<li onClick="showWin('xd插入符号','./xdSymbol.html');">xd符号大全</li>
-            	<li class="line"></li>
-            	<li id="menuAddLastSymbol" onClick="addSymbol(lastAddSymbol);"><i>Ctrl+E</i>插入最后使用的符号</li>
-            </ul>
-        </li>
-    	<li>
-        	<span id="tryUser" onClick="showMenu(this)">功能(T)</span>
-        	<ul>
-            	<li id="menuPlayer" onClick="showWin('听音查错','./Zhipu-player.html');"><i>Ctrl+Q</i>试听查错</li>
-            </ul>
-        </li>
-        
-    	<li class="userMenu">
-        	<span id="menuUser" onClick="showMenu(this)">用户(U)</span>
-        	<ul>
-            	<li onClick="showWin('修改我的登录密码','./Zhipu-newPassword.html');">修改登录密码</li>
-            	<li onClick="postwin.location='./Zhipu-qiut.html'">退出登录</li>
-            </ul>
-        </li>        
-            	
-    	<li>
-        	<span id="menuHelp" onClick="showMenu(this)">帮助(H)</span>
-        	<ul>
-            						<li onClick="window.open('http://doc.lezhi99.com/');hideMenu();">软件帮助</li>
-					<li onClick="window.open('http://doc.lezhi99.com/zhipu');hideMenu();">脚本说明手册</li>
-            	
-            	<li id="menuSymbol" onClick="showWin('常用符号表，此界面可用“Ctrl+~”快捷键呼出，ESC键可关闭此界面。','./Zhipu-helpSymbol.html');"><i>Ctrl+~</i>常用符号表</li>
-            	<li onClick="showWin('关于本软件','./Zhipu-about.html');">关于本软件</li>
-            </ul>
-        </li>
-    </ul>
-    <div class="userInfo">	当前用户：未登陆 <span class="but" onClick="showWin('用户登陆','/Zhipu-login');" style="color:#fff000">立刻登录</span>
-    <input type="hidden" value="0" id="uid">
-    <script>$(".userMenu").hide();</script></div>
-</div></div>
+      
+        <li>
+            <span onClick="showMenu(this)">插入(I)</span>
+            <ul>
+                <li onClick="showWin('插入文字','./xdText.html');">xd自定义文字</li>
+                <li onClick="showWin('xd插入符号','./xdSymbol.html');">xd符号大全</li>
+                <li class="line"></li>
+                <li id="menuAddLastSymbol" onClick="addSymbol(lastAddSymbol);"><i>Ctrl+E</i>插入最后使用的符号</li>
+              </ul>
+          </li>
+        <li>
+            <span id="tryUser" onClick="showMenu(this)">功能(T)</span>
+            <ul>
+                <li id="menuPlayer" onClick="showWin('听音查错','./Zhipu-player.html');"><i>Ctrl+Q</i>试听查错</li>
+              </ul>
+          </li>
+          
+        <li class="userMenu">
+            <span id="menuUser" onClick="showMenu(this)">用户(U)</span>
+            <ul>
+                <li onClick="showWin('修改我的登录密码','./Zhipu-newPassword.html');">修改登录密码</li>
+                <li onClick="postwin.location='./Zhipu-qiut.html'">退出登录</li>
+              </ul>
+          </li>        
+                
+        <li>
+            <span id="menuHelp" onClick="showMenu(this)">帮助(H)</span>
+            <ul>
+                          <li onClick="window.open('http://doc.lezhi99.com/');hideMenu();">软件帮助</li>
+            <li onClick="window.open('http://doc.lezhi99.com/zhipu');hideMenu();">脚本说明手册</li>
+                
+                <li id="menuSymbol" onClick="showWin('常用符号表，此界面可用“Ctrl+~”快捷键呼出，ESC键可关闭此界面。','./Zhipu-helpSymbol.html');"><i>Ctrl+~</i>常用符号表</li>
+                <li onClick="showWin('关于本软件','./Zhipu-about.html');">关于本软件</li>
+              </ul>
+          </li>
+      </ul>
+      <div class="userInfo">	当前用户：未登陆 <span class="but" onClick="showWin('用户登陆','/Zhipu-login');" style="color:#fff000">立刻登录</span>
+      <input type="hidden" value="0" id="uid">
+      <script>$(".userMenu").hide();</script></div>
+    </div>
+</div>
+
 <div class="preview">
 	<div class="svgList">
 		<div id="playerLine"></div>
@@ -188,9 +189,12 @@
 </div>
 
 <div class="editor">
-    <div class="line"><div class="main"></div></div>
+    <div class="line">
+      <div class="main"></div>
+    </div>
     <div class="body">
-		<iframe id="editFrame" name="editFrame" src="./e.html" style="width:100%; height:100%; border:0;"></iframe>
+		<iframe id="editFrame" name="editFrame" src="./e.html" style="width:100%; height:100%; border:0;">
+    </iframe>
     </div>
 </div>
 
@@ -264,8 +268,8 @@
   
   var bt = blo0.blBtn(tb,tb.id+"bt","bt",blGrey[1]);
   bt.onclick = function(){
-
-    xdShowJP(ta.value); 
+    ta.value = window.frames["editFrame"].document.getElementById("editor_text").value;
+    //xdf1(ta.value,"noUse"); 
   }   
 </script>
 </body>
