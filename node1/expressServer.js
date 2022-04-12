@@ -1,4 +1,4 @@
-const tag = "[expressServer.js_v0.41]"; 
+const tag = "[expressServer.js_v0.42]"; 
 const l = require('./logger');
 const path = require('path'); 
 const express = require('express');
@@ -23,9 +23,15 @@ class ExpressServer {
     this.setupMiddleware();
   } 
   setupMiddleware() {
+    
+    this.app.use(cors());
+    this.app.use(express.static(path.join(__dirname, 'public')));
+
     this.app.get('/', (req, res) => {      
       res.end('Hello index2.js.' + this.openApiYaml);
     });
+    
+
     this.app.get('/spider', (req, res) => {      
       spider.spider(req,res);
       //res.end('spider.' + this.openApiYaml);
