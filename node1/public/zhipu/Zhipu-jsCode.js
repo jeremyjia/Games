@@ -1,4 +1,4 @@
-
+const bvJsCode = "jsCode.js_bv0.11";
 var upType=3;
 $(document).ready(function(){
     var viewType_=localStorage.getItem('viewType');
@@ -909,7 +909,7 @@ function xdf1(re,p2){
              }
              else{
                  if(arr[i]!='noXD'){
-                    pageObj.html(arr[i]);
+                   pageObj.html(arr[i]);
                  }
              }
              pageNum++;
