@@ -113,6 +113,7 @@ function setColor(){
 var upContent="";
 
 setInterval(function(){
+    parent.blEditorInterval();
     if(parent.winType>1){
         content=$("#editor_text").val();
         if(content!=upContent){
@@ -289,6 +290,7 @@ function autoSize(){
 
 function editdorKeydown(){   
     parent.xdl("editor_keydown");
+    
     textObj=$("#editor_text")[0];
     var keyCode=event.keyCode;
     var str;
