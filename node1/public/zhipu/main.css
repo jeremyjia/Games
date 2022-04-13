@@ -1,7 +1,15 @@
 
 /*通用*/
-body { -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
-html,body{ margin:0; padding:0; background:#797979; overflow:hidden; font-size:14px; font-family:'微软雅黑'; color:#eee; }
+body { -webkit-touch-callout: none; 
+    -webkit-user-select: none; 
+    -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; 
+    user-select: none; 
+}
+html,body{ 
+    margin:0; padding:0; 
+    background: lightblue/*#7979f9*/; 
+    overflow:hidden; font-size:14px; font-family:'微软雅黑'; color:#eee; 
+}
 ul,li{ margin:0; padding:0; list-style:none;}
 a{ text-decoration:none; }
 table,td{ border:0; padding:0;}
@@ -38,7 +46,7 @@ table,td{ border:0; padding:0;}
 #customAttribute .mains{ background:#eeeeee; padding:5px;}
 
 /*顶部*/
-.head{ border-bottom:1px #353535 solid; }
+.head{ border-bottom:1px #35a5a5 solid; }
 .head .logo{ float:left; margin:8px 0 0 5px; width:16px; height:17px; }
 .head .main{ height:33px; background:#595959; border-bottom:1px #8e8e8e solid; }
 .head ul{ float:left; padding:5px 0 0 5px; }
@@ -60,21 +68,33 @@ table,td{ border:0; padding:0;}
 #filename{ position:absolute; text-align:center; line-height:33px; }
 
 /*预览界面*/
-.preview{ height:327px; overflow-x:auto; overflow-y:scroll;}
-.preview .page{width:1000px; height:1415px; border:1px #666 solid; margin:20px auto 30px auto; background:#fff; }
-.preview .page{ -webkit-box-shadow: 2px 2px 2px rgba(0,0,0,0.4);  -moz-box-shadow: 2px 2px 2px rgba(0,0,0,0.4);  box-shadow: 2px 2px 2px rgba(0,0,0,0.4); }
+.preview{ height:227px; overflow-x:auto; overflow-y:scroll;}
+.preview .page{
+    width:1000px; 
+    height:1415px; 
+    border:1px #666 solid; margin:20px auto 30px auto; background:lightslategray; 
+}
+.preview .page{ 
+    -webkit-box-shadow: 2px 2px 2px rgba(0,0,0,0.4);  
+    -moz-box-shadow: 2px 2px 2px rgba(0,0,0,0.4);  box-shadow: 2px 2px 2px rgba(0,0,0,0.4); 
+}
 .preview .svgList{ width:1000px; margin:auto; position:relative; }
 #playerLine{ background:#1a8b00; border-radius:5px; width:18px; height:45px; opacity:0.5; position:absolute; display:none; }
 #cursor{ background:url(images/cursor.gif); border-radius:2px; width:2px; height:35px; position:absolute; display:none; }
 
 /*编辑器*/
-.editor{ height:250px; background:#333333; }
+.editor{ height:120px; background:#3333f3; }
 .editor .line{ border-top:1px #454545 solid;}
-.editor .line .main{ border:1px #6a6a6a solid; border-width:1px 0 1px 0; background:#595959; height:3px; }
-.editor .body{ height:242px; }
+.editor .line .main{ 
+    border:1px #6a6a6a solid; 
+    border-width:1px 0 1px 0; 
+    background:#a95959; 
+    height:3px; 
+}
+.editor .body{ height:11px; }
 
 /*底部工具条*/
-.foot{ border-top:1px #282828 solid;}
+.foot{ border-top:1px #a82828 solid;}
 .foot .main{ border-top:1px #4a4a4a solid; height:28px; background:#3a3a3a; }
 
 .foot ul{ float:left; }
