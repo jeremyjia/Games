@@ -1,4 +1,4 @@
-
+const bvJsCode = "jsCode.js_bv0.11";
 var upType=3;
 $(document).ready(function(){
     var viewType_=localStorage.getItem('viewType');
