@@ -235,7 +235,9 @@
     xddbg1.innerHTML = txt + ":" + blo0.blDate();
     xddbg2.innerHTML =  "winType = " + winType;
   }
-  function blEditorInterval(){    bt.click();   }
+  function blEditorInterval(){    
+    bt.click();   
+  }
 
   var d = blo0.blMD("id_4_blo0_dbg","xdd",555,333,333,150,"lightgreen"); 
   var tb = blo0.blDiv(d,d.id+"tb","xddv0.53","lightblue"); tb.style.color="brown";
@@ -270,8 +272,15 @@
   var bt = blo0.blBtn(tb,tb.id+"bt","bt",blGrey[1]);
   bt.onclick = function(){
     ta.value = window.frames["editFrame"].document.getElementById("editor_text").value;
-    //xdf1(ta.value,"noUse"); 
+    var s = blStr2JP(ta.value);
+    xdf1(ta.value,"noUse"); 
   }   
+
+  function blStr2JP(txt){
+    var r = "";
+    r = txt;
+    return r;
+  }
 </script>
 </body>
 </html>

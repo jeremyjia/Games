@@ -909,7 +909,7 @@ function xdf1(re,p2){
              }
              else{
                  if(arr[i]!='noXD'){
-                    pageObj.html(arr[i]);
+                   pageObj.html(arr[i]);
                  }
              }
              pageNum++;

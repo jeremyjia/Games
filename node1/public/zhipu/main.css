@@ -69,8 +69,15 @@ table,td{ border:0; padding:0;}
 
 /*预览界面*/
 .preview{ height:227px; overflow-x:auto; overflow-y:scroll;}
-.preview .page{width:1000px; height:1415px; border:1px #666 solid; margin:20px auto 30px auto; background:#fff; }
-.preview .page{ -webkit-box-shadow: 2px 2px 2px rgba(0,0,0,0.4);  -moz-box-shadow: 2px 2px 2px rgba(0,0,0,0.4);  box-shadow: 2px 2px 2px rgba(0,0,0,0.4); }
+.preview .page{
+    width:1000px; 
+    height:1415px; 
+    border:1px #666 solid; margin:20px auto 30px auto; background:lightslategray; 
+}
+.preview .page{ 
+    -webkit-box-shadow: 2px 2px 2px rgba(0,0,0,0.4);  
+    -moz-box-shadow: 2px 2px 2px rgba(0,0,0,0.4);  box-shadow: 2px 2px 2px rgba(0,0,0,0.4); 
+}
 .preview .svgList{ width:1000px; margin:auto; position:relative; }
 #playerLine{ background:#1a8b00; border-radius:5px; width:18px; height:45px; opacity:0.5; position:absolute; display:none; }
 #cursor{ background:url(images/cursor.gif); border-radius:2px; width:2px; height:35px; position:absolute; display:none; }
