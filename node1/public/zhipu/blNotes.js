@@ -7,11 +7,16 @@ var _notes = function(lsNotes,x,y,dx,cbFun){
         for(i in l){
           var nt = l[i].split(',');
 
-          var ii = "["
+          var ii = "";
           if(nt.length>1){
-              ii += 
+              ii += "[";
+              ii += l[i];
+              ii += "]";
           }
-          ii +="]";
+          else{
+            ii += l[i];
+          }
+          ii +="";
           s += cbFun(ii, x +  i*dx , y,"brown");
         }
         return s;
