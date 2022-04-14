@@ -98,11 +98,11 @@ function CSample3 (){
                                     }(btn,j)
 
                                     
-                                    btn2.onclick = function(_thisBtn2,_j){
-                                        return function(){ 
-                                            ta.value = _thisBtn2.id;
-                                        }
-                                    }(btn2,j)
+                                    btn2.onclick = function(_thisBtn){
+                                        var s = "var f = " + _thisBtn.code;
+                                        eval(s);
+                                        return f;
+                                    }(btn)
                                 }
                             });
                         }
