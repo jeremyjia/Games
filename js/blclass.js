@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_v1.5.422"
+var g_ver_blClass = "CBlClass_v1.5.431"
 
 function myAjaxCmd(method, url, data, callback){
 	var xmlHttpReg = null;
@@ -1233,6 +1233,8 @@ function CBlClass ()
 		t.color = color;
 		return t;		
 	}
+	
+	this.blGetTa = function(){ return bl$("id_4_ta_blrRunJS");}
 	this.blSetPS = function(ps){		_ps = ps;	}
 	this.setScriptName = function(_scriptName){
 		blScriptName = _scriptName;
@@ -2195,9 +2197,7 @@ function CBlClass ()
 		url += "/" + repo;
 		url += "/issues/"+i;
 		
-		myAjaxCmd('GET',url, null, readCallBack);
-
-		function readCallBack(resp){
+		myAjaxCmd('GET',url, null, function readCallBack(resp){
 			if(resp.readyState == 4){
 				if(resp.status==200){
 					var o = JSON.parse(resp.responseText); 
@@ -2206,7 +2206,21 @@ function CBlClass ()
 					alert("The status code:"+resp.status); 
 				}
 			}			 
-		} 
+		});		
+		var i = {};
+		i.cs = function(csFun){
+			myAjaxCmd('GET',url+"/comments", null, function readCallBack(resp){
+				if(resp.readyState == 4){
+					if(resp.status==200){
+						var o = JSON.parse(resp.responseText); 
+						csFun(o);
+					}else{
+						alert("The status code:"+resp.status); 
+					}
+				}			 
+			});	
+		}
+		return i;
 	}
 	this.blMove2XY = function(o,x,y){		
 		o.style.left = x + "px";

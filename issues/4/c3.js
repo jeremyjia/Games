@@ -1,7 +1,7 @@
 //i4c3  
 var idBtn = "btn_i4c3";
 var s = "<button style='float:left;' id='"+idBtn+"'>sel2Move</button>";
-s += "v0.0. 152 "; 
+s += "v0.0. 153 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c3.js'"
 s += " style='color:blue;'";		s +=">"; s += "c3.js* ";
 s += "<a target='_blank' href='issues/4/c3.js'"
@@ -120,6 +120,8 @@ function _myJobClass(){
 			// 调用 jsClass 的 blo0.blBtn 接口函数，创建 button. 
 			d.v.btnRun= blo0.blBtn(d.v1,d.v1.id+"btnRun","run;",blColor[4]);
 			d.v.btnRun.onclick= function(){	  eval(d.v.ta.value);		}
+			d.v.btnSave2CO= blo0.blBtn(d.v1,d.v1.id+"btnSave2CO","s2co;","brown");
+			d.v.btnSave2CO.onclick= function(){	 if(d.v.ta.co) d.v.ta.co.code = d.v.ta.value;	}
 				
 
 			function _loadIssueComments(o) {

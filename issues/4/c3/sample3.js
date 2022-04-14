@@ -5,7 +5,7 @@ _btn.value = _s.getValue();
 _btn.click();
 
 function CSample3 (){
-    var _v = "CSample3_v0.44";
+    var _v = "CSample3_v0.53";
     this.getValue = function(){
         var s = "// ";
         s += _v;
@@ -23,27 +23,58 @@ function CSample3 (){
             d.v = blo0.blDiv(d,d.id+"v","v",blGrey[0]);
             var blse = new CBlOnlineEditor();
             blo0.blShowObj2Div(d.v,blse);                
-            bl$("blrLoadGHI").click();             
+            bl$("blrString2JpSVG").click();             
             bl$("blrMakeScript").click();
         }
         _on_off_div(null,d);
 
         function CBlOnlineEditor(){
-            this.blrLoadGHI = function(b,d){_loadIssue(1,b,d);} 
+            this.blrString2JpSVG = function(b,d){_loadIssue(724,b,d);} 
             this.blrMakeScript = function(b,d){_loadIssue(2,b,d);}
+
             const _loadIssue = function(i,b,d){
                 if(!d.v){
                     d.tb = blo0.blDiv(d,d.id+s+"tb","i="+i,"gray");
-                    d.v1 = blo0.blDiv(d,d.id+s+"v1","v1","grey");
+                    d.v1 = blo0.blDiv(d,d.id+s+"v1","v1","lightblue");
                     d.v2 = blo0.blDiv(d,d.id+s+"v2","-","gray");
                     b.style.float = "left";
 
-                    const b1 = blo0.blBtn(d.tb,d.tb.id+"b1","b1","gray");
-                    b1.style.float = "right";
-                    b1.onclick = function(){
-                        blo0.blGetGithubIssueByNumber("jeremyjia","Games",1,function(o){;
+                    const btnReflash = blo0.blBtn(d.tb,d.tb.id+"btnReflash","reflash","gray");
+                    btnReflash.style.float = "right";
+                    btnReflash.onclick = function(){
+                        d.i = blo0.blGetGithubIssueByNumber("jeremyjia","Games",i,function(o){
+                            d.o = o;
                             blo0.blShowObj2Div(d.v1,o);
                         });
+                    }
+                    const btnBody = blo0.blBtn(d.tb,d.tb.id+"btnBody","body","gray");
+                    btnBody.style.float = "right";
+                    btnBody.onclick = function(){
+                        d.v1.innerHTML = btnBody.id;
+                        var tb = blo0.blDiv(d.v1,d.v1.id+"tb","tb","lightgray"); 
+                        var v = blo0.blDiv(d.v1,d.v1.id+"v","v","gray");
+                        const b1 = blo0.blBtn(tb,tb.id+"b1","b1","gray");
+                        b1.style.float = "left";
+
+
+                        b1.onclick = function(){  
+                            v.innerHTML = this.id;
+                            var tb = blo0.blDiv(v,v.id+"tb","tb","gray");  
+                            d.i.cs(function(o){
+                                for(j in o){
+                                    const btn = blo0.blBtn(tb,tb.id+j,j,"gray");
+                                    btn.style.float = "left";
+                                    btn.code = o[j].body;
+                                    btn.onclick = function(_thisBtn,_j){
+                                        return function(){
+                                            var ta = blo0.blGetTa();
+                                            ta.co = _thisBtn;
+                                            ta.value = _thisBtn.code;
+                                        }
+                                    }(btn,j)
+                                }
+                            });
+                        }
                     }
                 }
                 _on_off_div(b,d.v1);
