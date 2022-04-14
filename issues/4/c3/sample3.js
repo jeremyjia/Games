@@ -5,7 +5,7 @@ _btn.value = _s.getValue();
 _btn.click();
 
 function CSample3 (){
-    var _v = "CSample3_v0.54";
+    var _v = "CSample3_bv0.111";
     this.getValue = function(){
         var s = "// ";
         s += _v;
@@ -66,13 +66,11 @@ function CSample3 (){
                                 for(j in o){
                                     const btn = blo0.blBtn(tb,tb.id+j,j,"gray");
                                     btn.style.float = "left";
-                                    btn.code = o[j].body;
+                                    btn.code = JSON.parse(o[j].body);
                                     btn.cid  = o[j].id;
                                     btn.save2gh = function(){
-                                        if( typeof updateGitHubComment == "function"){ 
-                                            var data = {};
-                                            data.body = this.code;
-                                            updateGitHubComment(this.cid,data);
+                                        if( typeof updateGitHubComment == "function"){  
+                                            updateGitHubComment(this.cid,this.code);
                                             ta.status (this.id + ": save to i=" + i+ " : c=" + j + " cid="+this.cid);
                                         }
                                         else{

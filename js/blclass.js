@@ -1,7 +1,10 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_v1.5.431"
+var g_ver_blClass = "CBlClass_v1.5.444"
 
 function myAjaxCmd(method, url, data, callback){
+	const getToken = function () {
+		return "ghp_Od6GW3"+"J2NiP01Zsz"+"g9JQV0amzn"+"UxhF33iBES"; //Jeremyjia
+	}
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
 	  xmlHttpReg = new XMLHttpRequest();
@@ -14,7 +17,8 @@ function myAjaxCmd(method, url, data, callback){
 	xmlHttpReg.open(method, url, true);
 	if(method == "PATCH" || method == "POST"){
 		xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-		xmlHttpReg.send(JSON.stringify(data));
+		xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());
+		xmlHttpReg.send(data);
 	}else if(method == "GET"){
 		xmlHttpReg.setRequestHeader('If-Modified-Since', '0');
 		xmlHttpReg.send(null);
@@ -2190,6 +2194,23 @@ function CBlClass ()
 		if(!_cb4ghcs) {alert("I need a callback function."); return;}
 		if(w3) w3.getHttpObject(_url, _cb4ghcs);
 		else alert("can't find w3");
+	}
+	this.blGetGithubCs2 = function(user,repo,i,_cb4Cs2){ 
+		if(!_cb4Cs2) {alert("I need a callback function."); return;}
+	    const _url = "https://api.github.com/repos/"+user+"/"+repo+"/issues/"+i+"/comments";
+		if(w3) w3.getHttpObject(_url, _cb4Cs2);
+		else alert("can't find w3");
+	}
+	this.blUpdateGithubCommentById = function(user,repo,cid,sData,updateFun){
+		var url = "https://api.github.com/repos/"+user+"/"+repo+"/issues/comments/" + cid;
+		var bodyData = JSON.stringify(sData);
+		var data = {
+			"body": bodyData
+		};
+
+		myAjaxCmd('PATCH', url, data, function (res) {
+			updateFun(res);
+		});
 	}
 	this.blGetGithubIssueByNumber = function(user,repo,i,cb){//blGetGHI 
 		var url = "https://api.github.com/repos/";
