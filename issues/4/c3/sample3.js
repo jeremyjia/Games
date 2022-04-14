@@ -5,7 +5,7 @@ _btn.value = _s.getValue();
 _btn.click();
 
 function CSample3 (){
-    var _v = "CSample3_v0.53";
+    var _v = "CSample3_v0.54";
     this.getValue = function(){
         var s = "// ";
         s += _v;
@@ -59,15 +59,29 @@ function CSample3 (){
 
                         b1.onclick = function(){  
                             v.innerHTML = this.id;
+                            
+                            var ta = blo0.blGetTa();
                             var tb = blo0.blDiv(v,v.id+"tb","tb","gray");  
                             d.i.cs(function(o){
                                 for(j in o){
                                     const btn = blo0.blBtn(tb,tb.id+j,j,"gray");
                                     btn.style.float = "left";
                                     btn.code = o[j].body;
+                                    btn.cid  = o[j].id;
+                                    btn.save2gh = function(){
+                                        if( typeof updateGitHubComment == "function"){ 
+                                            var data = {};
+                                            data.body = this.code;
+                                            updateGitHubComment(this.cid,data);
+                                            ta.status (this.id + ": save to i=" + i+ " : c=" + j + " cid="+this.cid);
+                                        }
+                                        else{
+                                            ta.status (this.id + ": can't find function updateGitHubComment");
+                                        }
+                                    }
+
                                     btn.onclick = function(_thisBtn,_j){
                                         return function(){
-                                            var ta = blo0.blGetTa();
                                             ta.co = _thisBtn;
                                             ta.value = _thisBtn.code;
                                         }
