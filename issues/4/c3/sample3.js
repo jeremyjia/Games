@@ -5,7 +5,7 @@ _btn.value = _s.getValue();
 _btn.click();
 
 function CSample3 (){
-    var _v = "CSample3_bv0.111";
+    var _v = "CSample3_bv0.112";
     this.getValue = function(){
         var s = "// ";
         s += _v;
@@ -53,24 +53,36 @@ function CSample3 (){
                         d.v1.innerHTML = btnBody.id;
                         var tb = blo0.blDiv(d.v1,d.v1.id+"tb","tb","lightgray"); 
                         var v = blo0.blDiv(d.v1,d.v1.id+"v","v","gray");
-                        const b1 = blo0.blBtn(tb,tb.id+"b1","b1","gray");
-                        b1.style.float = "left";
+                        const btnCs = blo0.blBtn(tb,tb.id+"btnCs","Cs","lightblue");
+                        btnCs.style.float = "left";
 
 
-                        b1.onclick = function(){  
+                        btnCs.onclick = function(){  
                             v.innerHTML = this.id;
                             
                             var ta = blo0.blGetTa();
-                            var tb = blo0.blDiv(v,v.id+"tb","tb","gray");  
+                            var tb1 = blo0.blDiv(v,v.id+"tb1","tb1","gray");  
+                            var v2 = blo0.blDiv(v,v.id+"v2","v2","lightblue");  
+                            var tb2 = blo0.blDiv(v2,v2.id+"tb2","tb2","lightgray");  
                             d.i.cs(function(o){
                                 for(j in o){
-                                    const btn = blo0.blBtn(tb,tb.id+j,j,"gray");
+                                    const btn = blo0.blBtn(tb1,tb1.id+j,j,"gray");
                                     btn.style.float = "left";
+                                    const btn2 = blo0.blBtn(tb2,tb2.id+j,j,"green");
+                                    btn2.style.float = "left";
+                                    
+                                    btn.btn2 = btn2;
                                     btn.code = JSON.parse(o[j].body);
                                     btn.cid  = o[j].id;
                                     btn.save2gh = function(){
                                         if( typeof updateGitHubComment == "function"){  
-                                            updateGitHubComment(this.cid,this.code);
+                                            updateGitHubComment(this.cid,this.code); 
+                                            var b = bl$(this.btn2.id); 
+                                            b.onclick = function(_code){
+                                                var s = "var f = " + _code;
+                                                eval(s);
+                                                return f;
+                                            }(this.code);
                                             ta.status (this.id + ": save to i=" + i+ " : c=" + j + " cid="+this.cid);
                                         }
                                         else{
@@ -84,6 +96,13 @@ function CSample3 (){
                                             ta.value = _thisBtn.code;
                                         }
                                     }(btn,j)
+
+                                    
+                                    btn2.onclick = function(_thisBtn2,_j){
+                                        return function(){ 
+                                            ta.value = _thisBtn2.id;
+                                        }
+                                    }(btn2,j)
                                 }
                             });
                         }
