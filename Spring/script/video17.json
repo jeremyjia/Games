@@ -1,0 +1,36 @@
+{
+    "request": {
+        "version": "0.0.15",
+        "width": 1024,
+        "height": 768,
+        "music": "1.mp3",
+        "rate": "1",
+        "frames": [
+            {
+                "time": 10,
+                "objects": [
+                    {
+                        "text": "SVG插件演示程序",
+                        "x": 50,
+                        "y": 200,
+                        "size": 60,
+                        "color": "110,120,180"
+                    }
+                ],
+                "backgroundPicture": "${VAR_DUCK_SRC}"
+            }
+        ],
+        "Macros": [
+            {
+                "name": "VAR_DUCK_SRC",
+                "value": {
+                    "type": "svg",
+                    "attribute": {
+                        "input": "duck.svg",
+                        "output": "duck.png"
+                    }
+                }
+            }
+        ]
+    }
+}
