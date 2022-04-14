@@ -1269,6 +1269,8 @@ function CBlClass ()
 		t.color = color;
 		return t;		
 	}
+	
+	this.blGetTa = function(){ return bl$("id_4_ta_blrRunJS");}
 	this.blSetPS = function(ps){		_ps = ps;	}
 	this.setScriptName = function(_scriptName){
 		blScriptName = _scriptName;
@@ -2224,6 +2226,37 @@ function CBlClass ()
 		if(!_cb4ghcs) {alert("I need a callback function."); return;}
 		if(w3) w3.getHttpObject(_url, _cb4ghcs);
 		else alert("can't find w3");
+	}
+	this.blGetGithubIssueByNumber = function(user,repo,i,cb){//blGetGHI 
+		var url = "https://api.github.com/repos/";
+		url += user;
+		url += "/" + repo;
+		url += "/issues/"+i;
+		
+		myAjaxCmd('GET',url, null, function readCallBack(resp){
+			if(resp.readyState == 4){
+				if(resp.status==200){
+					var o = JSON.parse(resp.responseText); 
+					cb(o);
+				}else{
+					alert("The status code:"+resp.status); 
+				}
+			}			 
+		});		
+		var i = {};
+		i.cs = function(csFun){
+			myAjaxCmd('GET',url+"/comments", null, function readCallBack(resp){
+				if(resp.readyState == 4){
+					if(resp.status==200){
+						var o = JSON.parse(resp.responseText); 
+						csFun(o);
+					}else{
+						alert("The status code:"+resp.status); 
+					}
+				}			 
+			});	
+		}
+		return i;
 	}
 	this.blMove2XY = function(o,x,y){		
 		o.style.left = x + "px";
