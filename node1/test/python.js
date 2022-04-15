@@ -3,6 +3,6 @@ const app = require('../app/python');
 
 describe('python', function(){
   it('test: python', function(){
-    assert.equal(app(),'to test python: doing.');
+    assert.equal(app(),'to test python: done.');
   });
 });
