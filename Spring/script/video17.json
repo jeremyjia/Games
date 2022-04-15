@@ -1,6 +1,6 @@
 {
     "request": {
-        "version": "0.0.15",
+        "version": "0.0.17",
         "width": 1024,
         "height": 768,
         "music": "1.mp3",
@@ -14,9 +14,17 @@
                         "x": 50,
                         "y": 200,
                         "size": 60,
-                        "color": "110,120,180"
+                        "color": "30,255,30"
+                    },
+					{
+                        "picture": "${VAR_DUCK_SRC}",
+                        "x": 600,
+                        "y": 500,
+                        "width":200,
+                        "heigth":200
                     }
                 ],
+				"backgroundColor": "135,206,250",
                 "backgroundPicture": "${VAR_DUCK_SRC}"
             }
         ],
