@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_v1.5.444"
+var g_ver_blClass = "CBlClass_bv1.5.453"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -449,6 +449,38 @@ function CBlClass ()
 		return d;
 	}
 
+	const ajax4GihubIssues = function (method, url, data, callback) {
+		const token1 = "ghp_Od6GW3"+"J2NiP01Zsz"+"g9JQV0amzn"+"UxhF33iBES"; //Jeremyjia
+		var cToken = token1;
+
+		var xmlHttpReg = null;
+		if (window.XMLHttpRequest) {
+		  xmlHttpReg = new XMLHttpRequest();
+		} else {
+		  xmlHttpReg = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		xmlHttpReg.onreadystatechange = function () {
+		  callback(xmlHttpReg);
+		};
+		xmlHttpReg.open(method, url, true);
+		if (method == "PATCH" || method == "POST") {
+		  xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+		  xmlHttpReg.setRequestHeader("Authorization", "token " + cToken);
+		  xmlHttpReg.send(JSON.stringify(data));
+		}else if (method == "DELETE") {
+		  xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+		  xmlHttpReg.setRequestHeader("Authorization", "token " + cToken);
+		  xmlHttpReg.send(null);
+		} else if (method == "GET") {
+		  xmlHttpReg.setRequestHeader('If-Modified-Since', '0');
+		  xmlHttpReg.setRequestHeader("Authorization", "token " + cToken);
+		  xmlHttpReg.send(null);
+		} else {
+		  xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+		  xmlHttpReg.setRequestHeader("Authorization", "token " + cToken);
+		  xmlHttpReg.send(JSON.stringify(data));
+		}
+	  }
 	function CTest(){
 		var _ot = {};
 		_ot.blr_test_edit_script = function(b,d){
@@ -1405,7 +1437,7 @@ function CBlClass ()
 	
     this.blMD = function(id,html,x,y,w,h,bkClr){
 		var idBtn = "btn_"+id;
-		var s = "<button style='float:left;' id='"+idBtn+"'>sel2Move</button>"; //xd2do
+		var s = "<button style='float:left;' id='"+idBtn+"'>sel2Move</button>"; 
 	    var md = this.blDiv(document.body, id,s+g_ver_blClass + ":" + html,bkClr);  
 		bl$(idBtn).onclick = function(_w,_btn,_md){
 			var b = false; 
@@ -2201,6 +2233,25 @@ function CBlClass ()
 		if(w3) w3.getHttpObject(_url, _cb4Cs2);
 		else alert("can't find w3");
 	}
+	this.addNewGitHubIssue = function(user,repo,sTitle,sBody,_cb4ni){ 
+	    const url = "https://api.github.com/repos/"+user+"/"+repo+"/issues/" ; 
+		var data = {
+			"title": sTitle,
+			"body": sBody
+		};
+
+		myAjaxCmd('POST', url, data, function readCallBack(resp){
+			if(resp.readyState == 4){
+				if(resp.status==200){
+					var o = JSON.parse(resp.responseText); 
+					_cb4ni(o);
+				}else{
+					_cb4ni("The status code:"+resp.status); 
+				}
+			}			 
+		});
+	}
+	//xd2do
 	this.blUpdateGithubCommentById = function(user,repo,cid,sData,updateFun){
 		var url = "https://api.github.com/repos/"+user+"/"+repo+"/issues/comments/" + cid;
 		var bodyData = JSON.stringify(sData);
@@ -2208,8 +2259,15 @@ function CBlClass ()
 			"body": bodyData
 		};
 
-		myAjaxCmd('PATCH', url, data, function (res) {
-			updateFun(res);
+		ajax4GihubIssues('PATCH', url, data,function readCallBack(resp){
+			if(resp.readyState == 4){
+				if(resp.status==200){
+					var o = JSON.parse(resp.responseText); 
+					updateFun(o);
+				}else{
+					alert("The status code:"+resp.status); 
+				}
+			}			 
 		});
 	}
 	this.blGetGithubIssueByNumber = function(user,repo,i,cb){//blGetGHI 

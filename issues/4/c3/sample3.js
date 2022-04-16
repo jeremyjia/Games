@@ -5,7 +5,7 @@ _btn.value = _s.getValue();
 _btn.click();
 
 function CSample3 (){
-    var _v = "CSample3_bv0.112";
+    var _v = "CSample3_bv0.122";
     this.getValue = function(){
         var s = "// ";
         s += _v;
@@ -29,8 +29,9 @@ function CSample3 (){
         _on_off_div(null,d);
 
         function CBlOnlineEditor(){
-            this.blrString2JpSVG = function(b,d){_loadIssue(724,b,d);} 
+            this.blrI3 = function(b,d){_loadIssue(3,b,d);}
             this.blrMakeScript = function(b,d){_loadIssue(2,b,d);}
+            this.blrString2JpSVG = function(b,d){_loadIssue(724,b,d);} 
 
             const _loadIssue = function(i,b,d){
                 if(!d.v){
@@ -72,7 +73,7 @@ function CSample3 (){
                                     btn2.style.float = "left";
                                     
                                     btn.btn2 = btn2;
-                                    btn.code = JSON.parse(o[j].body);
+                                    btn.code =  JSON.parse(o[j].body);
                                     btn.cid  = o[j].id;
                                     btn.save2gh = function(){
                                         if( typeof updateGitHubComment == "function"){  
