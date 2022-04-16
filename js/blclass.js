@@ -1,7 +1,10 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_v1.5.415"
+var g_ver_blClass = "CBlClass_v1.5.444"
 
 function myAjaxCmd(method, url, data, callback){
+	const getToken = function () {
+		return "ghp_Od6GW3"+"J2NiP01Zsz"+"g9JQV0amzn"+"UxhF33iBES"; //Jeremyjia
+	}
 	var xmlHttpReg = null;
 	if (window.XMLHttpRequest){
 	  xmlHttpReg = new XMLHttpRequest();
@@ -14,7 +17,8 @@ function myAjaxCmd(method, url, data, callback){
 	xmlHttpReg.open(method, url, true);
 	if(method == "PATCH" || method == "POST"){
 		xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-		xmlHttpReg.send(JSON.stringify(data));
+		xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());
+		xmlHttpReg.send(data);
 	}else if(method == "GET"){
 		xmlHttpReg.setRequestHeader('If-Modified-Since', '0');
 		xmlHttpReg.send(null);
@@ -1233,6 +1237,8 @@ function CBlClass ()
 		t.color = color;
 		return t;		
 	}
+	
+	this.blGetTa = function(){ return bl$("id_4_ta_blrRunJS");}
 	this.blSetPS = function(ps){		_ps = ps;	}
 	this.setScriptName = function(_scriptName){
 		blScriptName = _scriptName;
@@ -2188,6 +2194,54 @@ function CBlClass ()
 		if(!_cb4ghcs) {alert("I need a callback function."); return;}
 		if(w3) w3.getHttpObject(_url, _cb4ghcs);
 		else alert("can't find w3");
+	}
+	this.blGetGithubCs2 = function(user,repo,i,_cb4Cs2){ 
+		if(!_cb4Cs2) {alert("I need a callback function."); return;}
+	    const _url = "https://api.github.com/repos/"+user+"/"+repo+"/issues/"+i+"/comments";
+		if(w3) w3.getHttpObject(_url, _cb4Cs2);
+		else alert("can't find w3");
+	}
+	this.blUpdateGithubCommentById = function(user,repo,cid,sData,updateFun){
+		var url = "https://api.github.com/repos/"+user+"/"+repo+"/issues/comments/" + cid;
+		var bodyData = JSON.stringify(sData);
+		var data = {
+			"body": bodyData
+		};
+
+		myAjaxCmd('PATCH', url, data, function (res) {
+			updateFun(res);
+		});
+	}
+	this.blGetGithubIssueByNumber = function(user,repo,i,cb){//blGetGHI 
+		var url = "https://api.github.com/repos/";
+		url += user;
+		url += "/" + repo;
+		url += "/issues/"+i;
+		
+		myAjaxCmd('GET',url, null, function readCallBack(resp){
+			if(resp.readyState == 4){
+				if(resp.status==200){
+					var o = JSON.parse(resp.responseText); 
+					cb(o);
+				}else{
+					alert("The status code:"+resp.status); 
+				}
+			}			 
+		});		
+		var i = {};
+		i.cs = function(csFun){
+			myAjaxCmd('GET',url+"/comments", null, function readCallBack(resp){
+				if(resp.readyState == 4){
+					if(resp.status==200){
+						var o = JSON.parse(resp.responseText); 
+						csFun(o);
+					}else{
+						alert("The status code:"+resp.status); 
+					}
+				}			 
+			});	
+		}
+		return i;
 	}
 	this.blMove2XY = function(o,x,y){		
 		o.style.left = x + "px";
