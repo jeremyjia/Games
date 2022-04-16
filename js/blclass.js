@@ -462,31 +462,6 @@ function CBlClass ()
 		return d;
 	}
 
-<<<<<<< HEAD
-    //谢谢 Nicole.
-	 //谢谢 Nicole.
-	  //谢谢 Nicole.
-	  this.musicLyric = function(ctx,txt,x,y){//xd2do		 
-		ctx.fillStyle = "#1F10f0";
-		ctx.font = "30px Arial"; 
-		var ym = y;
-		ctx.fillText(txt,x,ym); 
-	}
-	this.musicNote = function(ctx,txt,x,y){
-		if(txt=="") return;
-		var dy = 30;
-		var ym = y + dy;
-		ctx.fillStyle = "#fFf010";
-		ctx.font = "30px Arial"; 
-		let r = txt.match(/,+/g);
-		ctx.fillText(txt[0],x,ym); ym += dy;
-		for(i in r){
-			for(var j=0; j<r[i].length; j++){
-				ctx.fillText(".", x,ym); ym +=dy;	
-			}		
-		}
-	}
-=======
 	const ajax4GihubIssues = function (method, url, data, callback) {
 		const token1 = "ghp_Od6GW3"+"J2NiP01Zsz"+"g9JQV0amzn"+"UxhF33iBES"; //Jeremyjia
 		var cToken = token1;
@@ -519,7 +494,6 @@ function CBlClass ()
 		  xmlHttpReg.send(JSON.stringify(data));
 		}
 	  }
->>>>>>> zhipu
 	function CTest(){
 		var _ot = {};
 		_ot.blr_test_edit_script = function(b,d){
