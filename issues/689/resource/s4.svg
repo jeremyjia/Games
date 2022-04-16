@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.0//EN' 'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="500" height="500" version="1.1" viewBox="0 0 500 500" encoding="UTF-8" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" height="100%" width="100%" fill="#11ff11" />
+	<defs>
+		<g id="diaohao_fu" transform="translate(-50,-50)">
+			<path d="m63.90001,57.81227l-8.81873,0l0,-1.70001l3.45433,0l0,-11.7568l-3.53561,1.04459l0,-1.80243l5.46599,-1.59762l0,14.11224l3.43402,0l0,1.70001l0,0.00001l0,0.00001z" fill="#1b1b1b"/><rect height="2" width="11" y="46.85897" x="68" stroke-width="33" fill="#1b1b1b"/><rect height="2" width="11" y="51.32479" x="68" stroke-width="33" fill="#1b1b1b"/></g><g id="shuzi_c_5" transform="translate(-50,-50)"><rect height="17.9" width="11.1" y="41.05" x="44.45" stroke-width="0" fill="#11ffff"/><path fill="blue" d="m46.03386,41.2363l6.28103,0c0.58697,0 0.91767,-0.1824 0.99153,-0.55116l0.88186,0l-0.44093,3.30586l-6.72194,0l-0.11024,3.4161c0.73358,-0.22047 1.50465,-0.33071 2.31377,-0.33071c3.89339,0.22047 5.95088,2.16774 6.17079,5.84065c-0.29433,3.82066 -2.60865,5.84066 -6.94241,6.06112c-2.42457,-0.07386 -3.71043,-0.77164 -3.85703,-2.09386c0.07218,-0.95404 0.55059,-1.43302 1.43246,-1.43302c0.66141,0 1.24837,0.44093 1.76316,1.32222c0.51311,0.80912 1.06427,1.21257 1.65292,1.21257c1.61488,-0.14661 2.49675,-1.39497 2.64503,-3.7468c-0.07386,-2.64502 -1.21256,-4.03943 -3.41608,-4.18715c-0.73527,0 -1.47052,0.18409 -2.20411,0.55059l-0.77106,-0.44093l0.33126,-8.92548z"/>
+		</g>
+		<g id="xiaojiexian_weibu" transform="translate(-50,-50)">
+			<rect fill="#ff11ff" stroke-width="0" x="45.05" y="35.85" width="9.9" height="28.4"/>
+			<rect height="29" width="1.5" y="35.5" x="49.25" stroke-width="null" fill="#ffffff"/>
+		</g>
+		<g id="yingao_di" transform="translate(-50,-50)">
+			<ellipse ry="1.9" rx="1.9" cy="63" cx="49.3" fill="#1b1b1b"/>
+		</g>
+	</defs>
+	<text x="100" y="110" dy="30.078" text-anchor="middle" fill="#1b1b1b" style="font-weight:bold;" font-size="36" font-family="Microsoft YaHei" >
+		同一首歌0
+	</text>
+	<use x="80" y="176" xlink:href="#diaohao_fu" xmlns:xlink="http://www.w3.org/1999/xlink" ></use>
+	<use x="83" y="236" xlink:href="#shuzi_c_5" time="1" audio="5," notepos="0_1_1" code="5," xmlns:xlink="http://www.w3.org/1999/xlink" ></use>
+	<use x="118" y="236" xlink:href="#xiaojiexian_weibu" notepos="0_1_2" time="0" audio="" code="|w" xmlns:xlink="http://www.w3.org/1999/xlink" ></use>
+	<use x="83" y="237" xlink:href="#yingao_di" xmlns:xlink="http://www.w3.org/1999/xlink" ></use>
+	<g id="custom">
+		<defs>
+			<g id="custom_4yPJ2wPA6h" data-type="symbol">
+				<rect fill="#ffff00" stroke-width="0" y="-5" x="-5" width="44.8" height="10.600000000000001" data-width="39" data-height="11.5" opacity="0.8" stroke="#ff0000" stroke-dasharray="5,5"></rect>
+				<rect fill="#000000" x="0" y="0" width="29" height="1.5" stroke="#000000" transform="scale(1.2,0.4)"></rect>
+			</g>
+		</defs>
+		<use onmousedown="selectElement(this)" style="cursor: move;" id="use_custom_4yPJ2wPA6h" x="110" y="452" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#custom_4yPJ2wPA6h"></use>
+		<defs>
+			<g id="custom_m5sXGXicsk" data-type="symbol">
+				<rect fill="#ffff00" stroke-width="0" y="-5" x="-5" width="44.8" height="10.75" mask="true" data-width="39" data-height="11.5" opacity="0.8" stroke="#ff0000" stroke-dasharray="5,5"></rect>
+				<rect fill="#000000" x="0" y="0" width="29" height="1.5" stroke="#000000" transform="scale(1.2,0.5)"></rect>
+			</g>
+		</defs>
+		<use onmousedown="selectElement(this)" style="cursor: move;" id="use_custom_m5sXGXicsk" x="110" y="456" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#custom_m5sXGXicsk"></use>
+	</g>
+
+	<g id="customID" data-type="symbol">
+<rect fill="#ffff00" stroke-width="0" y="-5" x="-5" width="39" height="11.5"/>
+<rect fill="#000000" x="0" y="0" width="29" height="1.5" stroke="#000000" stroke-opacity="0"/>
+</g>
+	<use onmousedown="selectElement(this)" style="cursor: move;" id="use_customID" x="110" y="456" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#customID"></use>
+</svg>
