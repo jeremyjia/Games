@@ -10,6 +10,11 @@ class Car extends React.Component {
       on: true
     };
   }
+  
+  static getDerivedStateFromProps(props, state) {
+    return {year: props.xd };
+  }
+
   changeColor = () => {
     let _color = "red";
     if(this.state.on){

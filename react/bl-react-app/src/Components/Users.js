@@ -50,7 +50,7 @@ const Users = () => (
       <div className="App">
         <ItemList />
       </div>
-      <Car />
+      <Car xd="1973" />
     </Container>
 );
 
