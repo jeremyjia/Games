@@ -12,9 +12,17 @@ class Car extends React.Component {
   }
   
   static getDerivedStateFromProps(props, state) {
-    return {year: props.xd };
+    return {brand: props.xd };
   }
+  componentDidMount() {
+    setTimeout(() => {
+      this.setState({year: 1965})
+    }, 1000)
+  }
+  changeYear = () => {
+    this.setState({year: 1980});
 
+  }
   changeColor = () => {
     let _color = "red";
     if(this.state.on){
@@ -37,10 +45,8 @@ class Car extends React.Component {
           {this.state.model}
           from {this.state.year}.
         </p>
-        <button
-          type="button"
-          onClick={this.changeColor}
-        >Change color</button>
+        <button type="button" onClick={this.changeColor}>Change color</button>
+        <button type="button" onClick={this.changeYear}>Change year</button>
       </div>
     );
   }
