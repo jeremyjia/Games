@@ -6,8 +6,22 @@ class Car extends React.Component {
       brand: "Ford",
       model: "Mustang",
       color: "red",
-      year: 1964
+      year: 1964,
+      on: true
     };
+  }
+  changeColor = () => {
+    let _color = "red";
+    if(this.state.on){
+      _color = "red";
+      this.state.on = false;
+    }
+    else{
+      _color = "blue";
+      this.state.on = true;
+
+    }
+    this.setState({color: _color});
   }
   render() {
     return (
@@ -18,6 +32,10 @@ class Car extends React.Component {
           {this.state.model}
           from {this.state.year}.
         </p>
+        <button
+          type="button"
+          onClick={this.changeColor}
+        >Change color</button>
       </div>
     );
   }
