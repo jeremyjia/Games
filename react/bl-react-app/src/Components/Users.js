@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useCallback  } from 'react';
 import { memo } from "react";
 import Container from 'react-bootstrap/Container';
 import PropTypes from "prop-types";
@@ -25,9 +25,11 @@ const AppUseCallback = () => {
   const increment = () => {
     setCount((c) => c + 1);
   };
-  const addTodo = () => {
+  
+  const addTodo = useCallback(() => {
     setTodos((t) => [...t, "New Todo"]);
-  };
+  }, [todos]);
+
 
   return (
     <>
