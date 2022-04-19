@@ -1,5 +1,5 @@
-import React, { useState, useEffect,useCallback  } from 'react';
-import { memo } from "react";
+import React, { useState, useEffect,useMemo   } from 'react';
+ 
 import Container from 'react-bootstrap/Container';
 import PropTypes from "prop-types";
  
@@ -17,29 +17,42 @@ const Todos = ({ todos, addTodo }) => {
     </>
   );
 };
-
+const expensiveCalculation = (num) => {
+  console.log("Calculating...");
+  for (let i = 0; i < 1000000000; i++) {
+    num += 1;
+  }
+  return num;
+};
 const AppUseCallback = () => {
   const [count, setCount] = useState(0);
-  const [todos, setTodos] = useState([]);
+  const [todos, setTodos] = useState([]); 
+  const calculation = useMemo(() => expensiveCalculation(count), [count]);
 
   const increment = () => {
     setCount((c) => c + 1);
   };
-  
-  const addTodo = useCallback(() => {
+  const addTodo = () => {
     setTodos((t) => [...t, "New Todo"]);
-  }, [todos]);
-
+  };
 
   return (
-    <>
-      <Todos todos={todos} addTodo={addTodo} />
+    <div>
+      <div>
+        <h2>My Todos</h2>
+        {todos.map((todo, index) => {
+          return <p key={index}>{todo}</p>;
+        })}
+        <button onClick={addTodo}>Add Todo</button>
+      </div>
       <hr />
       <div>
         Count: {count}
         <button onClick={increment}>+</button>
+        <h2>Expensive Calculation</h2>
+        {calculation}
       </div>
-    </>
+    </div>
   );
 };
 
