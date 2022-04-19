@@ -4,6 +4,7 @@ import Container from 'react-bootstrap/Container';
 import PropTypes from "prop-types";
  
 import Car from "./w3/Tutorial/Car.js" 
+import GoogleChart1 from "./w3/js/googleCharts/1.js"
 
 const initialTodos = [
   {
@@ -135,6 +136,7 @@ Hello.propTypes = {
 const Users = () => (    
     <Container>
       <span>Users:bv0.25</span>    
+      <GoogleChart1 />
       <Counter />
       <Example />
       <div className="App">
