@@ -1,28 +1,59 @@
-import React, { useState, useEffect,useRef    } from 'react';
+import React, { useState, useEffect,useReducer    } from 'react';
  
 import Container from 'react-bootstrap/Container';
 import PropTypes from "prop-types";
  
 import Car from "./w3/Tutorial/Car.js" 
 
+const initialTodos = [
+  {
+    id: 1,
+    title: "Todo 1",
+    complete: false,
+  },
+  {
+    id: 2,
+    title: "Todo 2",
+    complete: false,
+  },
+];
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "COMPLETE":
+      return state.map((todo) => {
+        if (todo.id === action.id) {
+          return { ...todo, complete: !todo.complete };
+        } else {
+          return todo;
+        }
+      });
+    default:
+      return state;
+  }
+};
 
 const AppUseCallback = () => {
-  const [inputValue, setInputValue] = useState("");
-  const previousInputValue = useRef("");
+  const [todos, dispatch] = useReducer(reducer, initialTodos);
 
-  useEffect(() => {
-    previousInputValue.current = inputValue;
-  }, [inputValue]);
+  const handleComplete = (todo) => {
+    dispatch({ type: "COMPLETE", id: todo.id });
+  };
 
   return (
     <>
-      <input
-        type="text"
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-      />
-      <h2>Current Value: {inputValue}</h2>
-      <h2>Previous Value: {previousInputValue.current}</h2>
+      {todos.map((todo) => (
+        <div key={todo.id}>
+          <label>
+            <input
+              type="checkbox"
+              checked={todo.complete}
+              onChange={() => handleComplete(todo)}
+            />
+            xd1: {todo.title}
+          </label>
+        </div>
+      ))}
     </>
   );
  
