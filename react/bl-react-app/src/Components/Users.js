@@ -1,14 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Container from 'react-bootstrap/Container';
 import PropTypes from "prop-types";
  
 import Car from "./w3/Tutorial/Car.js"
 
+function Timer() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setCount((count) => count + 1);
+    }, 1000);
+  }, []);  
+
+
+  return <h1>I've rendered {count} times!</h1>;
+}
+
 // Item组件
-class Item extends React.Component{
+class Item extends React.Component{   
   render(){
     return (
-      <li>{this.props.item}<Hello tips={"test"} /> </li>
+      <li><Timer />{this.props.item}<Hello tips={"test"} /> </li>
     )
   }
 }
@@ -43,10 +56,9 @@ Hello.propTypes = {
   tips: PropTypes.string
 };
 
-const Users = () => (
-    
+const Users = () => (    
     <Container>
-      <span>Users:bv0.22</span>    
+      <span>Users:bv0.23</span>    
       <div className="App">
         <ItemList />
       </div>
