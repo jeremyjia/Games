@@ -1,21 +1,27 @@
-import React, { useState, useEffect,useMemo   } from 'react';
+import React, { useState, useEffect,useRef    } from 'react';
  
 import Container from 'react-bootstrap/Container';
 import PropTypes from "prop-types";
  
-import Car from "./w3/Tutorial/Car.js"
-import useFetch from "./useFetch";
+import Car from "./w3/Tutorial/Car.js" 
 
 
 const AppUseCallback = () => {
-  const [data] = useFetch("https://jsonplaceholder.typicode.com/todos");
+  const [inputValue, setInputValue] = useState("");
+  const count = useRef(0);
+
+  useEffect(() => {
+    count.current = count.current + 1;
+  });
 
   return (
     <>
-      {data &&
-        data.map((item) => {
-          return <p key={item.id}> xd2::: {item.title}</p>;
-        })}
+      <input
+        type="text"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+      />
+      <h1>Render Count: {count.current}</h1>
     </>
   );
 };
