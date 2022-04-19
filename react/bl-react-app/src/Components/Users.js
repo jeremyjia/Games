@@ -4,24 +4,28 @@ import PropTypes from "prop-types";
  
 import Car from "./w3/Tutorial/Car.js"
 
-function Timer() {
-  const [count, setCount] = useState(0);
+function Counter() {
+  const [count, setCount] = useState(1);
+  const [calculation, setCalculation] = useState(0);
+ 
+ useEffect(() => {
+  setCalculation(() => count * 2);
+ },[count]);
 
-  useEffect(() => {
-    setTimeout(() => {
-      setCount((count) => count + 1);
-    }, 1000);
-  }, []);  
-
-
-  return <h1>I've rendered {count} times!</h1>;
+  return (
+    <>
+      <p>Count: {count}</p>
+      <button onClick={() => setCount((c) => c + 1)}>+</button>
+      <p>Calculation: {calculation}</p>
+    </>
+  );
 }
 
 // Item组件
 class Item extends React.Component{   
   render(){
     return (
-      <li><Timer />{this.props.item}<Hello tips={"test"} /> </li>
+      <li>{this.props.item}<Hello tips={"test"} /> </li>
     )
   }
 }
@@ -58,7 +62,8 @@ Hello.propTypes = {
 
 const Users = () => (    
     <Container>
-      <span>Users:bv0.23</span>    
+      <span>Users:bv0.24</span>    
+      <Counter />
       <div className="App">
         <ItemList />
       </div>
