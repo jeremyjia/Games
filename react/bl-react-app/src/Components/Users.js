@@ -4,31 +4,21 @@ import PropTypes from "prop-types";
  
 import Car from "./w3/Tutorial/Car.js"
 
-class Example extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      count: 0
-    };
-  }
+function Example() {
+  const [count, setCount] = useState(0);
 
-  componentDidMount() {
-    document.title = `You clicked ${this.state.count} times`;
-  }
-  componentDidUpdate() {
-    document.title = `You clicked ${this.state.count} times`;
-  }
+  useEffect(() => {
+    document.title = `You clicked ${count} times`;
+  });
 
-  render() {
-    return (
-      <div>
-        <p>You clicked {this.state.count} times</p>
-        <button onClick={() => this.setState({ count: this.state.count + 1 })}>
-          Click me
-        </button>
-      </div>
-    );
-  }
+  return (
+    <div>
+      <p>You clicked {count} times</p>
+      <button onClick={() => setCount(count + 1)}>
+        Click me
+      </button>
+    </div>
+  );
 }
 
 function Counter() {
