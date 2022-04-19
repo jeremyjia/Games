@@ -4,33 +4,17 @@ import Container from 'react-bootstrap/Container';
 import PropTypes from "prop-types";
  
 import Car from "./w3/Tutorial/Car.js"
+import useFetch from "./useFetch";
 
-const Todos = ({ todos, addTodo }) => {
-  console.log("child render");
-  return (
-    <>
-      <h2>My Todos</h2>
-      {todos.map((todo, index) => {
-        return <p key={index}>{todo}</p>;
-      })}
-      <button onClick={addTodo}>Add Todo</button>
-    </>
-  );
-}; 
+
 const AppUseCallback = () => {
-  const [data, setData] = useState(null);
-
-  useEffect(() => {
-    fetch("https://jsonplaceholder.typicode.com/todos")
-      .then((res) => res.json())
-      .then((data) => setData(data));
- }, []);
+  const [data] = useFetch("https://jsonplaceholder.typicode.com/todos");
 
   return (
     <>
       {data &&
         data.map((item) => {
-          return <p key={item.id}> xd::: {item.title}</p>;
+          return <p key={item.id}> xd2::: {item.title}</p>;
         })}
     </>
   );
