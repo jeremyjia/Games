@@ -1,5 +1,5 @@
 //index.js
-var s= "bv0.35";
+var s= "i2/index.js_bv0.41";
 var d = blo0.blMD("div_ID_4_Plx", s ,550,50,500,400,"gray");  
 if(!d.v){
     d.v = blo0.blDiv(d,d.id+"v","v",blGrey[0]);
