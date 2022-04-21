@@ -1,5 +1,5 @@
 //index.js
-var s= "bv0.32";
+var s= "bv0.34";
 var d = blo0.blMD("div_ID_4_Plx", s ,550,50,500,400,"gray");  
 if(!d.v){
     d.v = blo0.blDiv(d,d.id+"v","v",blGrey[0]);
@@ -7,6 +7,7 @@ if(!d.v){
     blo0.blShowObj2Div(d.v,blse);                
     bl$("blrString2JpSVG").click();             
     bl$("blrMakeScript").click();           
+    bl$("blrJpDhCam1").click();        
     bl$("blrRunJS").click();
 }
 _on_off_div(null,d);
@@ -14,6 +15,7 @@ _on_off_div(null,d);
 function CBlOnlineEditor(){ 
     this.blrMakeScript = function(b,d){blo0.blLoadGithubIssue("jeremyjia","Game",2,b,d);}
     this.blrString2JpSVG = function(b,d){blo0.blLoadGithubIssue("jeremyjia","Game",724,b,d);} 
+    this.blrJpDhCam1 = function(b,d){blo0.blLoadGithubIssue("jeremyjia","DhCam",1,b,d);} 
     this.blrRunJS = function(b,d){
 		if(!d.v){
 			d.parentElement.style.backgroundColor	 = blColor[3]; 

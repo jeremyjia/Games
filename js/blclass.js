@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.5.512"
+var g_ver_blClass = "CBlClass_bv1.5.524"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -448,39 +448,19 @@ function CBlClass ()
 		}
 		return d;
 	}
-
-	const ajax4GihubIssues = function (method, url, data, callback) {
-		const token1 = "ghp_Od6GW3"+"J2NiP01Zsz"+"g9JQV0amzn"+"UxhF33iBES"; //Jeremyjia
-		var cToken = token1;
-
-		var xmlHttpReg = null;
-		if (window.XMLHttpRequest) {
-		  xmlHttpReg = new XMLHttpRequest();
-		} else {
-		  xmlHttpReg = new ActiveXObject("Microsoft.XMLHTTP");
-		}
-		xmlHttpReg.onreadystatechange = function () {
-		  callback(xmlHttpReg);
+	function jpUpdateGitHubComment(commentId, jsonAll) {
+		
+		var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentId;
+		var bodyData = JSON.stringify(jsonAll);
+		var data = {
+		  "body": bodyData
 		};
-		xmlHttpReg.open(method, url, true);
-		if (method == "PATCH" || method == "POST") {
-		  xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-		  xmlHttpReg.setRequestHeader("Authorization", "token " + cToken);
-		  xmlHttpReg.send(JSON.stringify(data));
-		}else if (method == "DELETE") {
-		  xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-		  xmlHttpReg.setRequestHeader("Authorization", "token " + cToken);
-		  xmlHttpReg.send(null);
-		} else if (method == "GET") {
-		  xmlHttpReg.setRequestHeader('If-Modified-Since', '0');
-		  xmlHttpReg.setRequestHeader("Authorization", "token " + cToken);
-		  xmlHttpReg.send(null);
-		} else {
-		  xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-		  xmlHttpReg.setRequestHeader("Authorization", "token " + cToken);
-		  xmlHttpReg.send(JSON.stringify(data));
-		}
-	  }
+	  
+		jpAjaxCmd('PATCH', url, data, function (res) {
+		});
+	}
+	   
+
 	function CTest(){
 		var _ot = {};
 		_ot.blr_test_edit_script = function(b,d){
@@ -2256,25 +2236,28 @@ function CBlClass ()
 			}			 
 		});
 	}
-	//xd2do
+
 	this.blUpdateGithubCommentById = function(user,repo,cid,sData,updateFun){
 		var url = "https://api.github.com/repos/"+user+"/"+repo+"/issues/comments/" + cid;
 		var bodyData = JSON.stringify(sData);
 		var data = {
 			"body": bodyData
 		};
-
-		ajax4GihubIssues('PATCH', url, data,function readCallBack(resp){
-			if(resp.readyState == 4){
-				if(resp.status==200){
-					var o = JSON.parse(resp.responseText); 
-					updateFun(o);
-				}else{
-					alert("The status code:"+resp.status); 
-				}
-			}			 
-		});
+		jpUpdateGitHubComment(cid,sData); 
 	}
+	
+	//xd2do
+	this.addNewGitHubComment = function (issueId, jsonAll, callbackFun) {
+		var url = "https://api.github.com/repos/jeremyjia/Games/issues/" + issueId + "/comments";
+		var data = {
+		  "body": jsonAll
+		};
+	  
+		jpAjaxCmd('POST', url, data, function (response) {
+		  callbackFun(response);
+		});
+	  }
+	  
 	this.blGetGithubIssueByNumber = function(user,repo,i,cb){//blGetGHI 
 		var url = "https://api.github.com/repos/";
 		url += user;
@@ -2308,7 +2291,7 @@ function CBlClass ()
 	}
 	this.blLoadGithubIssue= function(user,repo,i,b,d){
 		if(!d.v){
-			d.tb = blo0.blDiv(d,d.id+"tb","blclass: i="+i,"gray");
+			d.tb = blo0.blDiv(d,d.id+"tb","blclass:"+user+"-"+repo+"-i="+i,"gray");
 			d.v1 = blo0.blDiv(d,d.id+"v1","v1","lightblue");
 			d.v2 = blo0.blDiv(d,d.id+"v2","-","gray");
 			b.style.float = "left";
@@ -2316,7 +2299,7 @@ function CBlClass ()
 			const btnReflash = blo0.blBtn(d.tb,d.tb.id+"btnReflash","reflash","gray");
 			btnReflash.style.float = "right";
 			btnReflash.onclick = function(){
-				d.i = blo0.blGetGithubIssueByNumber("jeremyjia","Games",i,function(o){
+				d.i = blo0.blGetGithubIssueByNumber(user,repo,i,function(o){
 					d.o = o;
 					blo0.blShowObj2Div(d.v1,o);
 				});
@@ -2350,8 +2333,10 @@ function CBlClass ()
 							btn.code =  JSON.parse(o[j].body);
 							btn.cid  = o[j].id;
 							btn.save2gh = function(){
-								if( typeof updateGitHubComment == "function"){  
-									updateGitHubComment(this.cid,this.code); 
+								if( typeof blo0.blUpdateGithubCommentById == "function"){  
+									blo0.blUpdateGithubCommentById(user,repo,this.cid,this.code,function(r){
+										ta.value = r;
+									}); 
 									var b = bl$(this.btn2.id); 
 									b.onclick = function(_code){
 										var s = "var f = " + _code;
@@ -2361,7 +2346,7 @@ function CBlClass ()
 									ta.status (this.id + ": save to i=" + i+ " : c=" + j + " cid="+this.cid);
 								}
 								else{
-									ta.status (this.id + ": can't find function updateGitHubComment");
+									ta.status (this.id + ": can't find function blo0.blUpdateGithubCommentById");
 								}
 							}
 
@@ -3406,5 +3391,37 @@ function CCVSRect(_x,_y,_w,_h,_clr){
 function selectElement(e){ 
 	e.onclick = function(){
 		alert(1);
+	}
+}
+function jpAjaxCmd(method, url, data, callback) {
+	const getToken = function () {
+		return "ghp_Od6GW3"+"J2NiP01Zsz"+"g9JQV0amzn"+"UxhF33iBES"; //Jeremyjia
+	}
+	var xmlHttpReg = null;
+	if (window.XMLHttpRequest) {
+	  xmlHttpReg = new XMLHttpRequest();
+	} else {
+	  xmlHttpReg = new ActiveXObject("Microsoft.XMLHTTP");
+	}
+	xmlHttpReg.onreadystatechange = function () {
+	  callback(xmlHttpReg);
+	};
+	xmlHttpReg.open(method, url, true);
+	if (method == "PATCH" || method == "POST") {
+	  xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	  xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());
+	  xmlHttpReg.send(JSON.stringify(data));
+	}else if (method == "DELETE") {
+	  xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	  xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());
+	  xmlHttpReg.send(null);
+	} else if (method == "GET") {
+	  xmlHttpReg.setRequestHeader('If-Modified-Since', '0');
+	  xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());
+	  xmlHttpReg.send(null);
+	} else {
+	  xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	  xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());
+	  xmlHttpReg.send(JSON.stringify(data));
 	}
 }
