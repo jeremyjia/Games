@@ -5,7 +5,7 @@ _btn.value = _s.getValue();
 _btn.click();
 
 function CSample3 (){
-    var _v = "CSample3_bv0.122";
+    var _v = "CSample3_bv0.123";
     this.getValue = function(){
         var s = "// ";
         s += _v;
@@ -30,7 +30,7 @@ function CSample3 (){
 
         function CBlOnlineEditor(){
             this.blrI3 = function(b,d){_loadIssue(3,b,d);}
-            this.blrMakeScript = function(b,d){_loadIssue(2,b,d);}
+            this.blrMakeScript = function(b,d){blo0.blLoadGithubIssue("jeremyjia","Game",2,b,d);}
             this.blrString2JpSVG = function(b,d){_loadIssue(724,b,d);} 
 
             const _loadIssue = function(i,b,d){

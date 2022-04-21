@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.5.453"
+var g_ver_blClass = "CBlClass_bv1.5.512"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -1612,11 +1612,16 @@ function CBlClass ()
 	   	oBoss.innerHTML = s;						 
 	 }	
 
-	this.blScript = function (id,src){
+	this.blScript = function (id,src,fnLoaded){
     		var r = document.getElementById(id);
     		if(!r){
         		r = document.createElement("script");
         		r.id = id;
+				r.addEventListener("DOMNodeInserted", function (ev) { 
+					if(typeof fnLoaded == "function"){
+						fnLoaded(ev);
+					}
+				  }, false);
     		}
     		r.src = src; 
     		document.body.appendChild(r);
@@ -2300,6 +2305,86 @@ function CBlClass ()
 			});	
 		}
 		return i;
+	}
+	this.blLoadGithubIssue= function(user,repo,i,b,d){
+		if(!d.v){
+			d.tb = blo0.blDiv(d,d.id+"tb","blclass: i="+i,"gray");
+			d.v1 = blo0.blDiv(d,d.id+"v1","v1","lightblue");
+			d.v2 = blo0.blDiv(d,d.id+"v2","-","gray");
+			b.style.float = "left";
+
+			const btnReflash = blo0.blBtn(d.tb,d.tb.id+"btnReflash","reflash","gray");
+			btnReflash.style.float = "right";
+			btnReflash.onclick = function(){
+				d.i = blo0.blGetGithubIssueByNumber("jeremyjia","Games",i,function(o){
+					d.o = o;
+					blo0.blShowObj2Div(d.v1,o);
+				});
+			} 
+			
+			const btnBody = blo0.blBtn(d.tb,d.tb.id+"btnBody","body","gray");
+			btnBody.style.float = "right";
+			btnBody.onclick = function(){
+				d.v1.innerHTML = btnBody.id;
+				var tb = blo0.blDiv(d.v1,d.v1.id+"tb","tb","lightgray"); 
+				var v = blo0.blDiv(d.v1,d.v1.id+"v","v","gray");
+				const btnCs = blo0.blBtn(tb,tb.id+"btnCs","Cs","lightblue");
+				btnCs.style.float = "left";
+
+
+				btnCs.onclick = function(){  
+					v.innerHTML = this.id;
+					
+					var ta = blo0.blGetTa();
+					var tb1 = blo0.blDiv(v,v.id+"tb1","tb1","gray");  
+					var v2 = blo0.blDiv(v,v.id+"v2","v2","lightblue");  
+					var tb2 = blo0.blDiv(v2,v2.id+"tb2","tb2","lightgray");  
+					d.i.cs(function(o){
+						for(j in o){
+							const btn = blo0.blBtn(tb1,tb1.id+j,j,"gray");
+							btn.style.float = "left";
+							const btn2 = blo0.blBtn(tb2,tb2.id+j,j,"green");
+							btn2.style.float = "left";
+							
+							btn.btn2 = btn2;
+							btn.code =  JSON.parse(o[j].body);
+							btn.cid  = o[j].id;
+							btn.save2gh = function(){
+								if( typeof updateGitHubComment == "function"){  
+									updateGitHubComment(this.cid,this.code); 
+									var b = bl$(this.btn2.id); 
+									b.onclick = function(_code){
+										var s = "var f = " + _code;
+										eval(s);
+										return f;
+									}(this.code);
+									ta.status (this.id + ": save to i=" + i+ " : c=" + j + " cid="+this.cid);
+								}
+								else{
+									ta.status (this.id + ": can't find function updateGitHubComment");
+								}
+							}
+
+							btn.onclick = function(_thisBtn,_j){
+								return function(){
+									ta.co = _thisBtn;
+									ta.value = _thisBtn.code;
+								}
+							}(btn,j)
+
+							
+							btn2.onclick = function(_thisBtn){
+								var s = "var f = " + _thisBtn.code;
+								eval(s);
+								return f;
+							}(btn)
+						}
+					});
+				}
+			}
+		}
+		_on_off_div(b,d.v1);
+		b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 	}
 	this.blMove2XY = function(o,x,y){		
 		o.style.left = x + "px";
