@@ -2265,8 +2265,36 @@ function CBlClass ()
 		jpAjaxCmd('POST', url, data, function (response) {
 		  callbackFun(response);
 		});
-	  }
-	  
+	}
+	this.blAjaxCmd = function(method,url,data,token,fnCallBack){
+		var xmlHttpReg = null;
+		if (window.XMLHttpRequest) {
+			xmlHttpReg = new XMLHttpRequest();
+		} else {
+			xmlHttpReg = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		xmlHttpReg.onreadystatechange = function () {
+			fnCallBack(xmlHttpReg);
+		};
+		xmlHttpReg.open(method, url, true);
+		if (method == "PATCH" || method == "POST") {
+			xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+			xmlHttpReg.setRequestHeader("Authorization", "token " + token);
+			xmlHttpReg.send(JSON.stringify(data));
+		}else if (method == "DELETE") {
+			xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+			xmlHttpReg.setRequestHeader("Authorization", "token " + token);
+			xmlHttpReg.send(null);
+		} else if (method == "GET") {
+			xmlHttpReg.setRequestHeader('If-Modified-Since', '0');
+			xmlHttpReg.setRequestHeader("Authorization", "token " + token);
+			xmlHttpReg.send(null);
+		} else {
+			xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+			xmlHttpReg.setRequestHeader("Authorization", "token " + token);
+			xmlHttpReg.send(JSON.stringify(data));
+		}
+	}  
 	this.blGetGithubIssueByNumber = function(user,repo,i,cb){ 
 		var url = "https://api.github.com/repos/";
 		url += user;

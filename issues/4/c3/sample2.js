@@ -6,7 +6,7 @@ _btn.click();
 
 
 function CVoa2Video (){
-    var _v = "CVoa2Video_v0.215";
+    var _v = "CVoa2Video_bv0.321";
 
     var fn = ["blrVLE","parseType","downloadPage","f4"];
     var fb = [];
@@ -28,6 +28,7 @@ function CVoa2Video (){
     var blrVLE = function(b,d){
         if(!d.load){
             d.load = true;
+            b.style.float = "left";
             
             var vles = [];
             var _add = function(t,n){
@@ -67,6 +68,7 @@ function CVoa2Video (){
                             o1.ss = ['<li class="col-xs-12 col-sm-6 col-md-3 col-lg-3">',];
                             o1.blrTypeParse = function(_o1){
                                 return function(b,d){
+                                    b.style.float = "left";
                                     os1.parseType(d,_o1,_o1.src,o1.ss);
                                     _on_off_div(b,d);
                                 }
@@ -91,9 +93,10 @@ function CVoa2Video (){
     
     var parseType = function(d,_o,url,ss){
         var ts = document.getElementsByTagName('textarea');
-        var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]); tb.bs = [];
-        var v1 = blo0.blDiv(d,"id_AsItIs_v1","v1",blGrey[0]);
-        var v2 = blo0.blDiv(d,d.id+"v2","v2","lightgreen"); 
+        var md3 = blo0.blMDiv(d,d.id+"md3","md3",111,11,500,400,"green");
+        var tb = blo0.blDiv(md3,md3.id+"tb","tb",blGrey[0]); tb.bs = [];
+        var v1 = blo0.blDiv(md3,"id_AsItIs_v1","v1",blGrey[0]);
+        var v2 = blo0.blDiv(md3,md3.id+"v2","v2","lightgreen"); 
         var w = {};
         w._2do = function(txt){
             var a = txt.split(ss[0]);
@@ -184,14 +187,17 @@ function CVoa2Video (){
                 o1.ss = ['a',];
                 o1.blrPageParse = function(_o1,_filename){
                     return function(b,d){
+                        d.md4 = blo0.blMDiv(d,d.id+"md4","md4",333,11,500,400,"brown");
+                        d.md4.v = blo0.blDiv(d.md4,d.md4.id+"v","v","gray");
                         var w = {};
                         w._2do = function(txt){                            
-                            os1.f4(d,txt,_filename);
+                            os1.f4(d.md4.v,txt,_filename);
                         }
                         blo0.blAjx(w,_o1.saveasURL); 
                     }
                 }(o1,saveFN);
                 blo0.blShowObj2Div(d,o1);
+                bl$("blrPageParse").click();
         }
         blo0.blAjx(w,blURL);
             
@@ -297,6 +303,13 @@ function CVoa2Video (){
                     }(btn,d,ps,i,ls);
                     ls.push(btn);
                 } 
+                
+                var btnWord = blo0.blBtn(d.tb,d.tb.id+"btnWord","word","green");
+                btnWord.onclick = function(){
+                    var ta = blo0.blGetTa();
+                    ta.value = Date();
+                }
+
             }
         }(d,txt);  
         o.blrTxt = function(_d,_txt){
@@ -316,9 +329,10 @@ function CVoa2Video (){
         return r;
     }
     var _run = function (_o2show){
-        var d = blo0.blMD("id_i4_c3_CVoa2Video", "xd*",    555,100,500,400, "lightgreen"); 
+        var d = blo0.blMD("id_i4_c3_CVoa2Video", "xd*",444,100,500,400, "lightgreen"); 
         d.v = blo0.blDiv(d,d.id+"v","v",blGrey[0]);
-        blo0.blShowObj2Div(d.v,_o2show);        
+        blo0.blShowObj2Div(d.v,_o2show);       
+        bl$("blrVLE").click(); 
         _on_off_div(null,d);
     };
 }
