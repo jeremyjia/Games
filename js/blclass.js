@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.5.551"
+var g_ver_blClass = "CBlClass_bv1.5.555"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2266,7 +2266,7 @@ function CBlClass ()
 		  callbackFun(response);
 		});
 	}
-	this.blAjaxCmd = function(method,url,data,token,fnCallBack){
+	this.blAjaxCmd = function(method,url,data,token,cb_fun){ 
 		var xmlHttpReg = null;
 		if (window.XMLHttpRequest) {
 			xmlHttpReg = new XMLHttpRequest();
@@ -2274,24 +2274,21 @@ function CBlClass ()
 			xmlHttpReg = new ActiveXObject("Microsoft.XMLHTTP");
 		}
 		xmlHttpReg.onreadystatechange = function () {
-			fnCallBack(xmlHttpReg);
+			cb_fun(xmlHttpReg);
 		};
 		xmlHttpReg.open(method, url, true);
+		if(token) xmlHttpReg.setRequestHeader("Authorization", "token " + token);
 		if (method == "PATCH" || method == "POST") {
-			xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-			xmlHttpReg.setRequestHeader("Authorization", "token " + token);
+			xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");			
 			xmlHttpReg.send(JSON.stringify(data));
 		}else if (method == "DELETE") {
-			xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-			xmlHttpReg.setRequestHeader("Authorization", "token " + token);
+			xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");			
 			xmlHttpReg.send(null);
 		} else if (method == "GET") {
-			xmlHttpReg.setRequestHeader('If-Modified-Since', '0');
-			xmlHttpReg.setRequestHeader("Authorization", "token " + token);
+			xmlHttpReg.setRequestHeader('If-Modified-Since', '0');			
 			xmlHttpReg.send(null);
 		} else {
 			xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-			xmlHttpReg.setRequestHeader("Authorization", "token " + token);
 			xmlHttpReg.send(JSON.stringify(data));
 		}
 	}  

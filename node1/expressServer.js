@@ -27,6 +27,7 @@ class ExpressServer {
     
     this.app.use(cors());
     this.app.use(express.static(path.join(__dirname, 'public')));
+    this.app.use(bodyParser.urlencoded({ extended: true }));
 
     this.app.get('/', (req, res) => {      
       res.end('Hello index2.js.' + this.openApiYaml);
@@ -45,7 +46,7 @@ class ExpressServer {
       res.json(r);
       */
     });
-    this.app.get('/word', (req, res) => {    word.word(req,res);    });
+    this.app.post('/word', (req, res) => {    word.word(req,res);    });
   }
 
   async launch() {

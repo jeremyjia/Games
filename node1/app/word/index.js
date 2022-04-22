@@ -1,4 +1,4 @@
-const tagWord = "index.js bv0.41";  
+const tagWord = "index.js bv0.42";  
 var officegen = require('officegen');
 var fs = require('fs');
 
@@ -162,11 +162,16 @@ function createWord(req, res) {
 
     //*
     res.status(200);
+    console.log(req.body);
+    
+    var bd =req.body;// JSON.stringify(req.body);
     var r = {};
     r.api = "word"; 
     r.date = Date();
     r.tag = tagWord;
-    r.out = out;
+    //r.out = out;
+    r.body = bd;
+    r.url =  req.url; 
     res.json(r); 
     //*/
  
