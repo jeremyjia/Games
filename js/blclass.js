@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.5.545"
+var g_ver_blClass = "CBlClass_bv1.5.551"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -155,15 +155,28 @@ function CBlClass ()
 		if(!d.load){
 			d.load = true;	 
 			var items = [];  
+			var myBlC = this;
 			d.parseTa = function(ctx){
-				var ta = bl$("id_4_ta_blrRunJS");
-				const x = 222, y = 111;
-				ctx.fillStyle = "brown"; 
-				ctx.fillRect(x,y,555,444);
-				ctx.fillStyle = "#FF00f0";
-				ctx.font = "30px Arial";
-				ctx.fillText(ta.value, x,y);
-			} 
+				const x0 = 200, y0 = 100, ddx = 30, ddy = 100;
+				const parseMusic = function(ctx,txt,x,y){
+					var a = txt.split("Q:");
+					var sm = a[1].split(" ");
+					var dx = 0;
+					for(i in sm){
+						myBlC.musicNote(ctx,sm[i],x + dx,y); dx+=ddx;
+					} 
+					var a = txt.split("C:");
+					myBlC.musicLyric(ctx,a[1],x,y+150); 
+				}
+				return function(ctx){
+					var ta = bl$("id_4_ta_blrRunJS");
+					const x = x0, y = y0;
+					ctx.fillStyle = "grey"; 
+					ctx.fillRect(x,y,555,444);
+
+					parseMusic(ctx,ta.value,x,y);
+				}
+			}(); 
 			d.addImgItem = function(x,y,w,h,src){
 				var i = {};  i.x = x; i.y = y; i.w = w; i.h = h;				
 				var block = new Image(); 
@@ -482,7 +495,7 @@ function CBlClass ()
 	var _oTest = new CTest();
 	
 	var _blVideo = document.createElement("VIDEO");
-	_blVideo.id = "id_blVideo_"+this.blDate();
+	_blVideo.id = "id_blVideo";
 	if (_blVideo.canPlayType("video/mp4")) {
 		_blVideo.setAttribute("src","https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3");
 	}
@@ -501,8 +514,7 @@ function CBlClass ()
 		b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 	}
 	this.bllAboutMe = "--aboutMe--";
- 
-	this.getPlayerID = function(){return _blVideo.id;};
+
 	this.blShowScript = function(_v){		
 		_blShowObj2Div(_v,_blScript);		
 		bl$("blrVersion").click();
@@ -579,7 +591,8 @@ function CBlClass ()
 		} 
 		this.setVersion = function(v1,v2,v3){ _v1 = v1; _v2 = v2; _v3 = v3;};
 		this.getVersion = function(){return "v"+_v1+"."+_v2+"."+_v3;}; 
-		this.getWidth = function(){return _w;}; 
+		this.getWidth = function(){return _w;};
+		this.getHeight = function(){return _h;};
 		this.getMusic = function(){return _blVideo.src;};
 		this.getFrameNumber = function(){return _frames.length;};
 		this.setSuperObjects = function(_ls){_sos = _ls;};
@@ -671,15 +684,15 @@ function CBlClass ()
 				return function(b,d){
 					if(!d.loadWidth){d.loadWidth = true; 				b.style.color = "white"; 
 						var tb = blo0.blDiv(d,d.id+"tb","width:",blGrey[0]);
-						var btnW= blo0.blBtn(tb,tb.id+"btnW",_w,"brown");btnW.style.color = "white";
+						var btnW= blo0.blBtn(tb,tb.id+"btnW",_thisOBlScript.getWidth(),"brown");btnW.style.color = "white";
 						var btnWPlus1 = blo0.blBtn(tb,tb.id+"btnWPlus1","+1",blGrey[1]);
-						btnWPlus1.onclick = function(){	_w++;	btnW.innerHTML = _w;					}
+						btnWPlus1.onclick = function(){	_w++;	btnW.innerHTML = _thisOBlScript.getWidth();					}
 						var btnWMinus1 = blo0.blBtn(tb,tb.id+"btnWMinus1","-1",blGrey[1]);
-						btnWMinus1.onclick = function(){	_w--;	btnW.innerHTML = _w;					}
+						btnWMinus1.onclick = function(){	_w--;	btnW.innerHTML = _thisOBlScript.getWidth();					}
 						var btnWPlus10 = blo0.blBtn(tb,tb.id+"btnWPlus10","+10",blGrey[1]);
-						btnWPlus10.onclick = function(){	_w+=10;	btnW.innerHTML = _w;					}
+						btnWPlus10.onclick = function(){	_w+=10;	btnW.innerHTML = _thisOBlScript.getWidth();					}
 						var btnWMinus10 = blo0.blBtn(tb,tb.id+"btnWMinus10","-10",blGrey[1]);
-						btnWMinus10.onclick = function(){	_w-=10;	btnW.innerHTML = _w;					}
+						btnWMinus10.onclick = function(){	_w-=10;	btnW.innerHTML = _thisOBlScript.getWidth();					}
 					}
 					_on_off_div(b,d);
 					b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
@@ -690,15 +703,15 @@ function CBlClass ()
 				return function(b,d){
 					if(!d.loadWidth){d.loadWidth = true; 				b.style.color = "white"; 
 						var tb = blo0.blDiv(d,d.id+"tb","height:",blGrey[0]);
-						var btnH= blo0.blBtn(tb,tb.id+"btnH",_h,"brown");btnH.style.color = "white";
+						var btnH= blo0.blBtn(tb,tb.id+"btnH",_thisOBlScript.getHeight(),"brown");btnH.style.color = "white";
 						var btnHPlus1= blo0.blBtn(tb,tb.id+"btnHPlus1","+1",blGrey[1]);
-						btnHPlus1.onclick = function(){	_h++;	btnH.innerHTML = _h;					}
+						btnHPlus1.onclick = function(){	_h++;	btnH.innerHTML = _thisOBlScript.getHeight();					}
 						var btnHMinus1 = blo0.blBtn(tb,tb.id+"btnHMinus1","-1",blGrey[1]);
-						btnHMinus1.onclick = function(){	_h--;	btnH.innerHTML = _h;					}
+						btnHMinus1.onclick = function(){	_h--;	btnH.innerHTML = _thisOBlScript.getHeight();					}
 						var btnHPlus10 = blo0.blBtn(tb,tb.id+"btnHPlus10","+10",blGrey[1]);
-						btnHPlus10.onclick = function(){	_h+=10;	btnH.innerHTML = _h;					}
+						btnHPlus10.onclick = function(){	_h+=10;	btnH.innerHTML = _thisOBlScript.getHeight();					}
 						var btnHMinus10 = blo0.blBtn(tb,tb.id+"btnHMinus10","-10",blGrey[1]);
-						btnHMinus10.onclick = function(){	_h-=10;	btnH.innerHTML = _h;					}
+						btnHMinus10.onclick = function(){	_h-=10;	btnH.innerHTML = _thisOBlScript.getHeight();					}
 					}
 					_on_off_div(b,d);
 					b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
@@ -1267,15 +1280,16 @@ function CBlClass ()
 		_blVideo.src = url;
 		_blVideo.load();
 	}
-	this.getPlayerSrc = function(){
+	this.getPlayerSrc = function(url){
 		return _blVideo.src;
 	}
 
 	this.getDuration = function(){ 
 		return _blVideo.duration;
 	}
-	this.toPlay = function(){ 		_blVideo.play();	}
-	this.toStop = function(){ 		_blVideo.pause();	}
+	this.toPlay = function(){ 
+		_blVideo.play();
+	}
 
 	
 	this.blhInitUI		= function(divUI){	
@@ -2067,6 +2081,17 @@ function CBlClass ()
 		blo0.blLoadGithubIssueComments(tb,"https://api.github.com/repos/jeremyjia/Games/issues/21",ta);
 
 		return d1;
+	}
+	this.blDate = function(){
+		const d = new Date();
+		var year = d.getFullYear();
+		var month = d.getMonth()+1;
+		var date = d.getDate();
+		var hours = d.getHours();
+		var minutes = d.getMinutes();
+		var seconds = d.getSeconds();
+		var s = year + "_" +month+"_"+date+"-"+hours+"_"+minutes+"_"+seconds;
+		return s;
 	}
 	this.blShowHTMLFile = function(urlFileName,b2,d2){ 
         if(!d2.v){
