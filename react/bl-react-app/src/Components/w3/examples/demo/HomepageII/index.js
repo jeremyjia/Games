@@ -18,7 +18,7 @@ const W3ExampleDemoHomepageII = () => (
             <div>
               <ButtonToolbar className="custom-btn-toolbar">
                 <LinkContainer to="/">
-                    <Button>Home</Button>
+                    <Button>Home1</Button>
                 </LinkContainer>  
               </ButtonToolbar>
             </div>
