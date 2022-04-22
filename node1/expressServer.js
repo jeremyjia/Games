@@ -1,4 +1,4 @@
-const tag = "[expressServer.js_v0.42]"; 
+const tag = "[expressServer.js_v0.43]"; 
 const l = require('./logger');
 const path = require('path'); 
 const express = require('express');
@@ -9,6 +9,7 @@ const { OpenApiValidator } = require('express-openapi-validator');
 const config = require('./config');
  
 const spider = require('./app/spider/index.js');
+const word = require('./app/word/index.js');
 
 l.tag1(tag,"-----------------------xd23------")
 console.log(tag);     
@@ -44,6 +45,7 @@ class ExpressServer {
       res.json(r);
       */
     });
+    this.app.get('/word', (req, res) => {    word.word(req,res);    });
   }
 
   async launch() {
