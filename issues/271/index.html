@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <body>
-    <button id="start">start</button>
+    <button id="start">start_xdv0.14</button>
 
 <canvas id="canvas" width="200" height="100"
 style="border:1px solid #c3c3c3;">
@@ -55,7 +55,7 @@ function BezierSim(){
 		var i = 0;		
 		for (i; i < points.length; i++){		
 			//Large points
-			drawPoint(points[i], 7);
+			drawPoint(points[i], 7,128);
 			if (i + 1 < points.length){
 				drawBetweenPoints(points[i], points[i + 1])
 			}		
@@ -102,8 +102,8 @@ function BezierSim(){
 	    animate();
 	}
 	
-	var drawPoint = function(point, size){
-		_this.context.fillStyle = 'rgba(0, 0, 0, 1)';
+	var drawPoint = function(point, size,r){
+		_this.context.fillStyle = "red";//'rgba(128,0,0,1)';//'rgba('+r+', 0, 0, 1)';
 		_this.context.lineWidth = 3;		
 		_this.context.beginPath();
 		_this.context.arc(point.x, point.y, size ,0 , Math.PI*2, true);
@@ -112,8 +112,8 @@ function BezierSim(){
 	}
 	
 	var drawBetweenPoints = function(point1, point2){
-		drawPoint(point1, 2);
-		drawPoint(point2, 2);
+		drawPoint(point1, 2,0);
+		drawPoint(point2, 2,0);
 		
 		_this.context.lineWidth = 0.4;		
 		_this.context.beginPath();
@@ -163,7 +163,7 @@ function BezierSim(){
 		
 		//Main point - Do not draw on first step (For ui purposes)
 		if (_this.step != 0) {
-			_this.context.fillStyle = 'rgba(0, 0, 0, 0.8)';
+			_this.context.fillStyle = 'rgba(220, 0, 0, 0.8)';
 			_this.context.beginPath();
 			_this.context.arc(point.x, point.y, 8, 0, Math.PI * 2, true);
 			_this.context.closePath();

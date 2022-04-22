@@ -1,5 +1,7 @@
 //i4c3  
-var s= "v0.0. 143 "; 
+var idBtn = "btn_i4c3";
+var s = "<button style='float:left;' id='"+idBtn+"'>sel2Move</button>";
+s += "bv0.0. 214 "; 
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c3.js'"
 s += " style='color:blue;'";		s +=">"; s += "c3.js* ";
 s += "<a target='_blank' href='issues/4/c3.js'"
@@ -12,7 +14,28 @@ s += "</a>";
 // 调用 blo0.blDiv 接口函数，创建 DIV。 
 // blGrey 是 blclass 库中的一个全局数组(灰色)
 // 
+
 var md = blo0.blDiv(document.body, "div_ID_4_I4C3", s ,blGrey[0]);  
+bl$(idBtn).onclick = function(_w,_btn,_md){
+	var b = false; 
+	return function(){
+		if(!b) {
+			b = true;
+			_btn.style.backgroundColor = "yellow";
+			_w.onmousedown = function(e){
+				_w.onmousedown = null;
+				_btn.click();
+				var c = _getXY();
+				blo0.blMove2XY(_md,c.x,c.y); 
+			}
+		}
+		else{
+			b = false;
+			_btn.style.backgroundColor = "grey";
+			_w.onmousedown = null;
+		}
+	}
+}(window,bl$(idBtn),md);
 if(!md.run){
     md.run = true; 
 	var style ="position: absolute;";
@@ -94,12 +117,50 @@ function _myJobClass(){
 
 			// 调用 jsClass 的 blo0.blDiv 接口函数，创建 DIV。 
 			d.v1 = blo0.blDiv(d,d.id+"v1","",blGrey[5]);
+			d.vs = blo0.blDiv(d,d.id+"vs","status",blGrey[5]);			
+			d.v.ta.status = function(txt){ d.vs.innerHTML = blo0.blDate()+ ":"+ txt;}
+
 			// 调用 jsClass 的 blo0.blBtn 接口函数，创建 button. 
 			d.v.btnRun= blo0.blBtn(d.v1,d.v1.id+"btnRun","run;",blColor[4]);
 			d.v.btnRun.onclick= function(){	  eval(d.v.ta.value);		}
-				
 
-			function _loadIssueComments(o) {
+			d.v.btnSave2CO= blo0.blBtn(d.v1,d.v1.id+"btnSave2CO","s2co","brown");
+			d.v.btnSave2CO.style.float = "right";
+			d.v.btnSave2CO.onclick= function(){	 
+				if(d.v.ta.co) {
+					d.v.ta.co.code = d.v.ta.value;	
+				}				
+				else{
+					d.v.ta.status ("not set current object yet.")
+				}
+			}
+			d.v.btnGetCoCode= blo0.blBtn(d.v1,d.v1.id+"btnGetCoCode","co","white");
+			d.v.btnGetCoCode.style.float = "right";
+			d.v.btnGetCoCode.onclick= function(){	 
+				if(d.v.ta.co) {
+					d.v.ta.value = d.v.ta.co.code;	
+					d.v.ta.status (d.v.ta.co.id);
+				}
+				else{
+					d.v.ta.status ("not set current object yet.")
+				}
+			}
+			
+			d.v.btnCO2Gh= blo0.blBtn(d.v1,d.v1.id+"btnCO2Gh","co2gh","lightblue");
+			d.v.btnCO2Gh.style.float = "right";
+			d.v.btnCO2Gh.onclick= function(){	 
+				if(d.v.ta.co) {
+					if(d.v.ta.co.save2gh) d.v.ta.co.save2gh();	
+					else d.v.ta.status ("No save2gh function in current object.")
+				}				
+				else{
+					d.v.ta.status ("not set current object yet.")
+				}
+			}			
+
+			
+			var _src = "https://api.github.com/repos/jeremyjia/Games/issues/21/comments";
+			w3.getHttpObject(_src, function _loadIssueComments(o) {
 				var _i = 0;
 				var _s = "<a target='_balnk' href ='";
 				_s += "https://github.com/jeremyjia/Games/issues/21'";
@@ -111,6 +172,31 @@ function _myJobClass(){
 
 				var _v = blo0.blDiv(d.v,d.v.id+"_v", _s, blGrey[1]);
 				_v.bs = [];
+				
+				var vSnap = blo0.blDiv(d.v,d.v.id+"vSnap", "vSnap", "darkgrey");
+				vSnap.ls = [];
+				vSnap.cur = null;
+				var btnSnap = blo0.blBtn(_v, _v.id+"btnJS_Snap","+","brown"); 
+				btnSnap.onclick = function(){
+					var n = vSnap.ls.length;
+					if(n==0){
+						var btnSave = blo0.blBtn(vSnap,vSnap.id+"btnSave","save",blGrey[0]);
+						btnSave.onclick = function(){
+							vSnap.cur.txt = d.v.ta.value;
+						}
+					}
+					var btn = blo0.blBtn(vSnap,vSnap.id+n,n,blGrey[0]);
+					btn.txt = d.v.ta.value;
+					btn.onclick = function(_myTa,_thisBtn,_thisList){
+						return function(){
+							_myTa.value = _thisBtn.txt;
+							blo0.blMarkBtnInList(_thisBtn,_thisList,"green","grey");
+							vSnap.cur = _thisBtn;
+						}
+					}(d.v.ta,btn,vSnap.ls);
+					vSnap.ls.push(btn);
+				}
+
 				for(i in o){
 					_i++;
 					var bodyTxt = o[i].body;
@@ -133,9 +219,7 @@ function _myJobClass(){
 				    }(btnJS,bodyTxt);
 					_v.bs.push(btnJS);
 				}
-			}
-			var _src = "https://api.github.com/repos/jeremyjia/Games/issues/21/comments";
-			w3.getHttpObject(_src, _loadIssueComments);	
+			});	
         }
 
         // 调用全局接口函数 _on_off_div，打开或关闭 DIV（此处为 md)

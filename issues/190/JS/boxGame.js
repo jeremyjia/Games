@@ -114,7 +114,7 @@ window.onload= function () {
                         realX:i,
                         realY:j
                     };
-                    me.role.src="img/role.png";
+                    me.role.src="img/me.png";
                 }
             }
         }

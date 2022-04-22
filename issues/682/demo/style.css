@@ -1,0 +1,36 @@
+body, html{
+	margin: 0;
+	padding: 0;
+    border: 0;
+    outline: 0;
+  -ms-overflow-style: none; 
+  scrollbar-width: none;
+    cursor: crosshair;
+}
+
+html::-webkit-scrollbar {
+    display: none;
+}
+
+.S{
+  position: fixed;
+  left: 70%;
+  top: 1%;
+  width: 5%;
+}
+
+.C{
+  position: fixed;
+  left: 80%;
+  top: 1%;
+  width: 5%;
+
+}
+
+.B{
+  position: fixed;
+  left: 90%;
+  top: 1%;
+  width: 5%;
+
+}

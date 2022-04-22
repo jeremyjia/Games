@@ -9,8 +9,10 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -25,6 +27,9 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -139,6 +144,22 @@ public final class JsonSriptParser {
 			String[] commands = cmds.toArray(new String[] {});
 			ExecuteCommand.executeCommandOnServer(commands);
 			strValue = outputFile;
+		} else if ("svg".equalsIgnoreCase(type)) {
+
+			JSONObject attrObj = valObj.getJSONObject("attribute");
+			String inputFile = attrObj.getString("input");
+			String outputFile = attrObj.getString("output");
+			inputFile = FileUtil.downloadFileIfNeed(inputFile);
+
+			TranscoderInput input_svg_image = new TranscoderInput(inputFile);
+			OutputStream png_ostream = new FileOutputStream(System.getProperty("user.dir") + "/" + outputFile);
+			TranscoderOutput output_png_image = new TranscoderOutput(png_ostream);
+			PNGTranscoder my_converter = new PNGTranscoder();
+			my_converter.transcode(input_svg_image, output_png_image);
+			png_ostream.flush();
+			png_ostream.close();
+			strValue = outputFile;
+
 		} else {
 			// Parse the text from web link
 			String href = valObj.getString("href");
@@ -157,7 +178,7 @@ public final class JsonSriptParser {
 	}
 
 	private static boolean generateVideo(String jsonString) throws Exception {
-		JSONObject jsonObj = new JSONObject(jsonString);		
+		JSONObject jsonObj = new JSONObject(jsonString);
 		JSONObject requestObj = getJsonObjectbyName(jsonObj, "request");
 		supperObjectsMapList.clear();
 		aoiMap.clear();
