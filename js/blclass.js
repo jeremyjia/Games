@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.5.524"
+var g_ver_blClass = "CBlClass_bv1.5.545"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -451,7 +451,7 @@ function CBlClass ()
 	function jpUpdateGitHubComment(commentId, jsonAll) {
 		
 		var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentId;
-		var bodyData = JSON.stringify(jsonAll);
+		var bodyData = jsonAll; 
 		var data = {
 		  "body": bodyData
 		};
@@ -2238,15 +2238,11 @@ function CBlClass ()
 	}
 
 	this.blUpdateGithubCommentById = function(user,repo,cid,sData,updateFun){
-		var url = "https://api.github.com/repos/"+user+"/"+repo+"/issues/comments/" + cid;
-		var bodyData = JSON.stringify(sData);
-		var data = {
-			"body": bodyData
-		};
+		var url = "https://api.github.com/repos/"+user+"/"+repo+"/issues/comments/" + cid;		 
 		jpUpdateGitHubComment(cid,sData); 
 	}
 	
-	//xd2do
+	
 	this.addNewGitHubComment = function (issueId, jsonAll, callbackFun) {
 		var url = "https://api.github.com/repos/jeremyjia/Games/issues/" + issueId + "/comments";
 		var data = {
@@ -2258,7 +2254,7 @@ function CBlClass ()
 		});
 	  }
 	  
-	this.blGetGithubIssueByNumber = function(user,repo,i,cb){//blGetGHI 
+	this.blGetGithubIssueByNumber = function(user,repo,i,cb){ 
 		var url = "https://api.github.com/repos/";
 		url += user;
 		url += "/" + repo;
@@ -2270,7 +2266,7 @@ function CBlClass ()
 					var o = JSON.parse(resp.responseText); 
 					cb(o);
 				}else{
-					alert("The status code:"+resp.status); 
+					alert("blGetGithubIssueByNumber: The status code:"+resp.status); 
 				}
 			}			 
 		});		
@@ -2282,14 +2278,14 @@ function CBlClass ()
 						var o = JSON.parse(resp.responseText); 
 						csFun(o);
 					}else{
-						alert("The status code:"+resp.status); 
+						alert("cs: The status code:"+resp.status); 
 					}
 				}			 
 			});	
 		}
 		return i;
 	}
-	this.blLoadGithubIssue= function(user,repo,i,b,d){
+	this.blLoadGhIssue= function(user,repo,i,b,d){
 		if(!d.v){
 			d.tb = blo0.blDiv(d,d.id+"tb","blclass:"+user+"-"+repo+"-i="+i,"gray");
 			d.v1 = blo0.blDiv(d,d.id+"v1","v1","lightblue");
@@ -2330,7 +2326,7 @@ function CBlClass ()
 							btn2.style.float = "left";
 							
 							btn.btn2 = btn2;
-							btn.code =  JSON.parse(o[j].body);
+							btn.code =  o[j].body;//JSON.parse(o[j].body); 
 							btn.cid  = o[j].id;
 							btn.save2gh = function(){
 								if( typeof blo0.blUpdateGithubCommentById == "function"){  
@@ -2358,9 +2354,17 @@ function CBlClass ()
 							}(btn,j)
 
 							
-							btn2.onclick = function(_thisBtn){
-								var s = "var f = " + _thisBtn.code;
-								eval(s);
+							btn2.onclick = function(_thisBtn){//xd2do
+								var a = _thisBtn.code;
+								var b = a.split("function");
+								var c = b[0].replace(/ /g,"");	
+								if(c==""){ 						
+									var s = "var f = " + _thisBtn.code;
+									eval(s);
+								}
+								else{
+									var f = function(){ta.value="else";} 
+								}
 								return f;
 							}(btn)
 						}
