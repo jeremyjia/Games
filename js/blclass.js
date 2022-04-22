@@ -1,10 +1,5 @@
 // file: blclass.js   
-<<<<<<< HEAD
-
-var g_ver_blClass = "CBlClass_v1.5.133"
-=======
 var g_ver_blClass = "CBlClass_v1.5.444"
->>>>>>> upstream/master
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -151,19 +146,6 @@ function CBlClass ()
 	var blRed = 120, blGreen=11, blBlue=220;
 	var _ps = []; 
 
-<<<<<<< HEAD
-	
-	this.blDate = function(){
-		const d = new Date();
-		var year = d.getFullYear();
-		var month = d.getMonth()+1;
-		var date = d.getDate();
-		var hours = d.getHours();
-		var minutes = d.getMinutes();
-		var seconds = d.getSeconds();
-		var s = year + "_" +month+"_"+date+"-"+hours+"_"+minutes+"_"+seconds;
-		return s;
-=======
 	this.blh_test_blPaint = function(v){
 		var d = blo0.blPaint("id_4_test_blPaint",50,50,1111,1111); 		
 		return d;
@@ -465,7 +447,6 @@ function CBlClass ()
 			}(d)); 
 		}
 		return d;
->>>>>>> upstream/master
 	}
 
 	function CTest(){
