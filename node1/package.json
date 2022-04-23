@@ -16,6 +16,7 @@
     "express": "^4.17.1",
     "express-openapi-validator": "^4.13.5",
     "mysql2": "^2.2.5",
+    "officegen": "^0.6.5",
     "request": "^2.88.2",
     "supertest": "^6.2.2",
     "swagger-ui-express": "^4.3.0",

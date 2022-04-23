@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.5.545"
+var g_ver_blClass = "CBlClass_bv1.5.1123"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2265,8 +2265,19 @@ function CBlClass ()
 		jpAjaxCmd('POST', url, data, function (response) {
 		  callbackFun(response);
 		});
-	  }
-	  
+	}
+	this.blAjaxFormData = function(method,url,data,cb_fun){ 
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				cb_fun(this.responseText);
+			}
+		};
+		xhttp.open(method, url, true);
+		xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		xhttp.send(data);	 
+	}  
+
 	this.blGetGithubIssueByNumber = function(user,repo,i,cb){ 
 		var url = "https://api.github.com/repos/";
 		url += user;
@@ -2367,7 +2378,7 @@ function CBlClass ()
 							}(btn,j)
 
 							
-							btn2.onclick = function(_thisBtn){//xd2do
+							btn2.onclick = function(_thisBtn){
 								var a = _thisBtn.code;
 								var b = a.split("function");
 								var c = b[0].replace(/ /g,"");	
@@ -2392,6 +2403,17 @@ function CBlClass ()
 		o.style.left = x + "px";
 		o.style.top =  y + "px";
 	}
+	this.blParsePS = function(){//xd2do
+		var r = "p5="+ _ps[5].innerHTML;
+		
+		return r;
+	 }
+	this.blWord = function(data,fnWord){ 
+		var url = "http://localhost:3001/word";
+		blo0.blAjaxFormData("POST",url,data,function(oRes){
+			fnWord(oRes);
+		});
+	 }
 		
 }//END: function CBlClass ()
  

@@ -1,4 +1,4 @@
-const tag = "[expressServer.js_v0.42]"; 
+const tag = "[expressServer.js_v0.43]"; 
 const l = require('./logger');
 const path = require('path'); 
 const express = require('express');
@@ -9,6 +9,7 @@ const { OpenApiValidator } = require('express-openapi-validator');
 const config = require('./config');
  
 const spider = require('./app/spider/index.js');
+const word = require('./app/word/index.js');
 
 l.tag1(tag,"-----------------------xd23------")
 console.log(tag);     
@@ -26,6 +27,7 @@ class ExpressServer {
     
     this.app.use(cors());
     this.app.use(express.static(path.join(__dirname, 'public')));
+    this.app.use(bodyParser.urlencoded({ extended: true }));
 
     this.app.get('/', (req, res) => {      
       res.end('Hello index2.js.' + this.openApiYaml);
@@ -44,6 +46,7 @@ class ExpressServer {
       res.json(r);
       */
     });
+    this.app.post('/word', (req, res) => {    word.word(req,res);    });
   }
 
   async launch() {
