@@ -1,4 +1,4 @@
-const tagWord = "index.js bv0.42";  
+const tagWord = "index.js bv0.43";  
 var officegen = require('officegen');
 var fs = require('fs');
 
@@ -9,7 +9,8 @@ e.word = function(req,res){
     createWord(req,res);
 }
 
-function createWord(req, res) {
+function createWord(req, res) {  
+    var bd =req.body; 
     const docx = officegen('docx')
     docx.on('finalize', function (written) {
         console.log(' finished to create word file.')
@@ -30,6 +31,9 @@ function createWord(req, res) {
   })
   */
   let pObj = docx.createP()
+  
+  pObj.addText(bd.p5);
+
   pObj.addText('Simple')
   pObj.addText(' with color', { color: '000088' })
   pObj.addText(' and back color.', { color: '00ffff', back: '000088' })
@@ -164,7 +168,6 @@ function createWord(req, res) {
     res.status(200);
     console.log(req.body);
     
-    var bd =req.body;// JSON.stringify(req.body);
     var r = {};
     r.api = "word"; 
     r.date = Date();

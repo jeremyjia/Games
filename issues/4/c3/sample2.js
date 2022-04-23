@@ -6,7 +6,7 @@ _btn.click();
 
 
 function CVoa2Video (){
-    var _v = "CVoa2Video_bv0.321";
+    var _v = "CVoa2Video_bv0.323";
 
     var fn = ["blrVLE","parseType","downloadPage","f4"];
     var fb = [];
@@ -307,7 +307,8 @@ function CVoa2Video (){
                 var btnWord = blo0.blBtn(d.tb,d.tb.id+"btnWord","word","green");
                 btnWord.onclick = function(){
                     var ta = blo0.blGetTa();
-                    ta.value = Date();
+                    ta.value = blo0.blParsePS();
+                    blo0.blWord(ta.value,function(txt){ta.value = txt;});
                 }
 
             }

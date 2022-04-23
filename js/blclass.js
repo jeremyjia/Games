@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.5.1113"
+var g_ver_blClass = "CBlClass_bv1.5.1123"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2266,7 +2266,7 @@ function CBlClass ()
 		  callbackFun(response);
 		});
 	}
-	this.blAjaxFormData = function(method,url,data,cb_fun){ //xd2do
+	this.blAjaxFormData = function(method,url,data,cb_fun){ 
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
@@ -2403,6 +2403,17 @@ function CBlClass ()
 		o.style.left = x + "px";
 		o.style.top =  y + "px";
 	}
+	this.blParsePS = function(){//xd2do
+		var r = "p5="+ _ps[5].innerHTML;
+		
+		return r;
+	 }
+	this.blWord = function(data,fnWord){ 
+		var url = "http://localhost:3001/word";
+		blo0.blAjaxFormData("POST",url,data,function(oRes){
+			fnWord(oRes);
+		});
+	 }
 		
 }//END: function CBlClass ()
  
