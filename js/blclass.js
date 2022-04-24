@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_v1.5.444"
+var g_ver_blClass = "CBlClass_bv1.5.551"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -155,15 +155,28 @@ function CBlClass ()
 		if(!d.load){
 			d.load = true;	 
 			var items = [];  
+			var myBlC = this;
 			d.parseTa = function(ctx){
-				var ta = bl$("id_4_ta_blrRunJS");
-				const x = 222, y = 111;
-				ctx.fillStyle = "brown"; 
-				ctx.fillRect(x,y,555,444);
-				ctx.fillStyle = "#FF00f0";
-				ctx.font = "30px Arial";
-				ctx.fillText(ta.value, x,y);
-			} 
+				const x0 = 200, y0 = 100, ddx = 30, ddy = 100;
+				const parseMusic = function(ctx,txt,x,y){
+					var a = txt.split("Q:");
+					var sm = a[1].split(" ");
+					var dx = 0;
+					for(i in sm){
+						myBlC.musicNote(ctx,sm[i],x + dx,y); dx+=ddx;
+					} 
+					var a = txt.split("C:");
+					myBlC.musicLyric(ctx,a[1],x,y+150); 
+				}
+				return function(ctx){
+					var ta = bl$("id_4_ta_blrRunJS");
+					const x = x0, y = y0;
+					ctx.fillStyle = "grey"; 
+					ctx.fillRect(x,y,555,444);
+
+					parseMusic(ctx,ta.value,x,y);
+				}
+			}(); 
 			d.addImgItem = function(x,y,w,h,src){
 				var i = {};  i.x = x; i.y = y; i.w = w; i.h = h;				
 				var block = new Image(); 
@@ -448,6 +461,18 @@ function CBlClass ()
 		}
 		return d;
 	}
+	function jpUpdateGitHubComment(commentId, jsonAll) {
+		
+		var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentId;
+		var bodyData = jsonAll; 
+		var data = {
+		  "body": bodyData
+		};
+	  
+		jpAjaxCmd('PATCH', url, data, function (res) {
+		});
+	}
+	   
 
 	function CTest(){
 		var _ot = {};
@@ -1405,7 +1430,7 @@ function CBlClass ()
 	
     this.blMD = function(id,html,x,y,w,h,bkClr){
 		var idBtn = "btn_"+id;
-		var s = "<button style='float:left;' id='"+idBtn+"'>sel2Move</button>"; //xd2do
+		var s = "<button style='float:left;' id='"+idBtn+"'>sel2Move</button>"; 
 	    var md = this.blDiv(document.body, id,s+g_ver_blClass + ":" + html,bkClr);  
 		bl$(idBtn).onclick = function(_w,_btn,_md){
 			var b = false; 
@@ -1580,11 +1605,16 @@ function CBlClass ()
 	   	oBoss.innerHTML = s;						 
 	 }	
 
-	this.blScript = function (id,src){
+	this.blScript = function (id,src,fnLoaded){
     		var r = document.getElementById(id);
     		if(!r){
         		r = document.createElement("script");
         		r.id = id;
+				r.addEventListener("DOMNodeInserted", function (ev) { 
+					if(typeof fnLoaded == "function"){
+						fnLoaded(ev);
+					}
+				  }, false);
     		}
     		r.src = src; 
     		document.body.appendChild(r);
@@ -2201,18 +2231,43 @@ function CBlClass ()
 		if(w3) w3.getHttpObject(_url, _cb4Cs2);
 		else alert("can't find w3");
 	}
-	this.blUpdateGithubCommentById = function(user,repo,cid,sData,updateFun){
-		var url = "https://api.github.com/repos/"+user+"/"+repo+"/issues/comments/" + cid;
-		var bodyData = JSON.stringify(sData);
+	this.addNewGitHubIssue = function(user,repo,sTitle,sBody,_cb4ni){ 
+	    const url = "https://api.github.com/repos/"+user+"/"+repo+"/issues/" ; 
 		var data = {
-			"body": bodyData
+			"title": sTitle,
+			"body": sBody
 		};
 
-		myAjaxCmd('PATCH', url, data, function (res) {
-			updateFun(res);
+		myAjaxCmd('POST', url, data, function readCallBack(resp){
+			if(resp.readyState == 4){
+				if(resp.status==200){
+					var o = JSON.parse(resp.responseText); 
+					_cb4ni(o);
+				}else{
+					_cb4ni("The status code:"+resp.status); 
+				}
+			}			 
 		});
 	}
-	this.blGetGithubIssueByNumber = function(user,repo,i,cb){//blGetGHI 
+
+	this.blUpdateGithubCommentById = function(user,repo,cid,sData,updateFun){
+		var url = "https://api.github.com/repos/"+user+"/"+repo+"/issues/comments/" + cid;		 
+		jpUpdateGitHubComment(cid,sData); 
+	}
+	
+	
+	this.addNewGitHubComment = function (issueId, jsonAll, callbackFun) {
+		var url = "https://api.github.com/repos/jeremyjia/Games/issues/" + issueId + "/comments";
+		var data = {
+		  "body": jsonAll
+		};
+	  
+		jpAjaxCmd('POST', url, data, function (response) {
+		  callbackFun(response);
+		});
+	  }
+	  
+	this.blGetGithubIssueByNumber = function(user,repo,i,cb){ 
 		var url = "https://api.github.com/repos/";
 		url += user;
 		url += "/" + repo;
@@ -2224,7 +2279,7 @@ function CBlClass ()
 					var o = JSON.parse(resp.responseText); 
 					cb(o);
 				}else{
-					alert("The status code:"+resp.status); 
+					alert("blGetGithubIssueByNumber: The status code:"+resp.status); 
 				}
 			}			 
 		});		
@@ -2236,12 +2291,102 @@ function CBlClass ()
 						var o = JSON.parse(resp.responseText); 
 						csFun(o);
 					}else{
-						alert("The status code:"+resp.status); 
+						alert("cs: The status code:"+resp.status); 
 					}
 				}			 
 			});	
 		}
 		return i;
+	}
+	this.blLoadGhIssue= function(user,repo,i,b,d){
+		if(!d.v){
+			d.tb = blo0.blDiv(d,d.id+"tb","blclass:"+user+"-"+repo+"-i="+i,"gray");
+			d.v1 = blo0.blDiv(d,d.id+"v1","v1","lightblue");
+			d.v2 = blo0.blDiv(d,d.id+"v2","-","gray");
+			b.style.float = "left";
+
+			const btnReflash = blo0.blBtn(d.tb,d.tb.id+"btnReflash","reflash","gray");
+			btnReflash.style.float = "right";
+			btnReflash.onclick = function(){
+				d.i = blo0.blGetGithubIssueByNumber(user,repo,i,function(o){
+					d.o = o;
+					blo0.blShowObj2Div(d.v1,o);
+				});
+			} 
+			
+			const btnBody = blo0.blBtn(d.tb,d.tb.id+"btnBody","body","gray");
+			btnBody.style.float = "right";
+			btnBody.onclick = function(){
+				d.v1.innerHTML = btnBody.id;
+				var tb = blo0.blDiv(d.v1,d.v1.id+"tb","tb","lightgray"); 
+				var v = blo0.blDiv(d.v1,d.v1.id+"v","v","gray");
+				const btnCs = blo0.blBtn(tb,tb.id+"btnCs","Cs","lightblue");
+				btnCs.style.float = "left";
+
+
+				btnCs.onclick = function(){  
+					v.innerHTML = this.id;
+					
+					var ta = blo0.blGetTa();
+					var tb1 = blo0.blDiv(v,v.id+"tb1","tb1","gray");  
+					var v2 = blo0.blDiv(v,v.id+"v2","v2","lightblue");  
+					var tb2 = blo0.blDiv(v2,v2.id+"tb2","tb2","lightgray");  
+					d.i.cs(function(o){
+						for(j in o){
+							const btn = blo0.blBtn(tb1,tb1.id+j,j,"gray");
+							btn.style.float = "left";
+							const btn2 = blo0.blBtn(tb2,tb2.id+j,j,"green");
+							btn2.style.float = "left";
+							
+							btn.btn2 = btn2;
+							btn.code =  o[j].body;//JSON.parse(o[j].body); 
+							btn.cid  = o[j].id;
+							btn.save2gh = function(){
+								if( typeof blo0.blUpdateGithubCommentById == "function"){  
+									blo0.blUpdateGithubCommentById(user,repo,this.cid,this.code,function(r){
+										ta.value = r;
+									}); 
+									var b = bl$(this.btn2.id); 
+									b.onclick = function(_code){
+										var s = "var f = " + _code;
+										eval(s);
+										return f;
+									}(this.code);
+									ta.status (this.id + ": save to i=" + i+ " : c=" + j + " cid="+this.cid);
+								}
+								else{
+									ta.status (this.id + ": can't find function blo0.blUpdateGithubCommentById");
+								}
+							}
+
+							btn.onclick = function(_thisBtn,_j){
+								return function(){
+									ta.co = _thisBtn;
+									ta.value = _thisBtn.code;
+								}
+							}(btn,j)
+
+							
+							btn2.onclick = function(_thisBtn){//xd2do
+								var a = _thisBtn.code;
+								var b = a.split("function");
+								var c = b[0].replace(/ /g,"");	
+								if(c==""){ 						
+									var s = "var f = " + _thisBtn.code;
+									eval(s);
+								}
+								else{
+									var f = function(){ta.value="else";} 
+								}
+								return f;
+							}(btn)
+						}
+					});
+				}
+			}
+		}
+		_on_off_div(b,d.v1);
+		b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 	}
 	this.blMove2XY = function(o,x,y){		
 		o.style.left = x + "px";
@@ -3263,5 +3408,37 @@ function CCVSRect(_x,_y,_w,_h,_clr){
 function selectElement(e){ 
 	e.onclick = function(){
 		alert(1);
+	}
+}
+function jpAjaxCmd(method, url, data, callback) {
+	const getToken = function () {
+		return "ghp_Od6GW3"+"J2NiP01Zsz"+"g9JQV0amzn"+"UxhF33iBES"; //Jeremyjia
+	}
+	var xmlHttpReg = null;
+	if (window.XMLHttpRequest) {
+	  xmlHttpReg = new XMLHttpRequest();
+	} else {
+	  xmlHttpReg = new ActiveXObject("Microsoft.XMLHTTP");
+	}
+	xmlHttpReg.onreadystatechange = function () {
+	  callback(xmlHttpReg);
+	};
+	xmlHttpReg.open(method, url, true);
+	if (method == "PATCH" || method == "POST") {
+	  xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	  xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());
+	  xmlHttpReg.send(JSON.stringify(data));
+	}else if (method == "DELETE") {
+	  xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	  xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());
+	  xmlHttpReg.send(null);
+	} else if (method == "GET") {
+	  xmlHttpReg.setRequestHeader('If-Modified-Since', '0');
+	  xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());
+	  xmlHttpReg.send(null);
+	} else {
+	  xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	  xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());
+	  xmlHttpReg.send(JSON.stringify(data));
 	}
 }

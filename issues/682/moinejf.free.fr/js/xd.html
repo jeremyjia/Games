@@ -14,89 +14,90 @@
 
 <!-- left -->
 <div id="dleft">
+    <!-- menu bar -->
+    <ul id="nav">
+    <li class="dropbutton"><label id="f">File</label>
+        <ul class="droplinks">
+            <li><input type="file" id="abcfile" accept="*"
+                style="display:none" onchange="loadtune()"/>
+            <label id="fl" for="abcfile">Load file</label>
+            </li>
+            <li><label id="saveas">Save file</label></li>
+        </ul>
+    </li>
+    <li class="dropbutton"><label id="pr">Preferences</label>
+        <ul class="droplinks">
+            <li><label id="fs">Font size</label>
+                <input type="number" id="fontsize"
+                min="10" max="20" value="14" onchange="setfont()"/>
+            </li>
+            <li id="playdiv1" style="display: none">
+                <label id="sful">Sound font URL</label>
+                <input id="sfu" type="text" maxlength="120"
+                    size="50"
+                    onblur="set_sfu(this.value)"/>
+            </li>
+            <li id="playdiv3" style="display: none">
+                <label id="gv">Volume</label>
+                <input id="gvol" type="range" min="1" max="10" value="7"
+                    onchange="set_vol(this.value / 10)"/>
+                <label id="gvl">0.70</label>
+            </li>
+            <li id="playdiv4" style="display: none">
+                <label id="sp">Speed</label>
+                <input id="spv" type="range"
+                    min="1" max="20" value="10" step=".5"
+                    onchange="set_speed(this.value)"/>
+                <label id="spvl">1</label>
+            </li>
+        </ul>
+    </li>
+    <li class="dropbutton"><label id="lg">Language</label>
+        <ul class="droplinks">
+        <li onclick="loadlang('de')">Deutsch</li>
+        <li onclick="loadlang('en')">English</li>
+        <li onclick="loadlang('fr')">Français</li>
+        <li onclick="loadlang('it')">Italiano</li>
+        <li onclick="loadlang('pt_BR')">Português do Brasil</li>
+        </ul>
+    </li>
+    <li class="dropbutton"><label id="h">Help</label>
+        <ul class="droplinks">
+            <li id="ha" onclick="popshow('help', true)">Help</li>
+            <li><a id="df" target="_blank"
+    href="http://moinejf.free.fr/abcm2ps-doc/features.html">abc2svg features</a>
+            </li>
+            <li><a id="dp" target="_blank"
+    href="http://moinejf.free.fr/abcm2ps-doc/index.html">abc2svg parameters</a>
+            </li>
+            <li id="a" onclick="popshow('about', true)">About</li>
+        </ul>
+    </li>
+    </ul>
+    <br/>   
 
-<!-- menu bar -->
-<ul id="nav">
-<li class="dropbutton"><label id="f">File</label>
-    <ul class="droplinks">
-        <li><input type="file" id="abcfile" accept="*"
-            style="display:none" onchange="loadtune()"/>
-        <label id="fl" for="abcfile">Load file</label>
-        </li>
-        <li><label id="saveas">Save file</label></li>
-    </ul>
-</li>
-<li class="dropbutton"><label id="pr">Preferences</label>
-    <ul class="droplinks">
-        <li><label id="fs">Font size</label>
-            <input type="number" id="fontsize"
-             min="10" max="20" value="14" onchange="setfont()"/>
-        </li>
-        <li id="playdiv1" style="display: none">
-            <label id="sful">Sound font URL</label>
-             <input id="sfu" type="text" maxlength="120"
-                size="50"
-                onblur="set_sfu(this.value)"/>
-        </li>
-        <li id="playdiv3" style="display: none">
-            <label id="gv">Volume</label>
-             <input id="gvol" type="range" min="1" max="10" value="7"
-                onchange="set_vol(this.value / 10)"/>
-            <label id="gvl">0.70</label>
-        </li>
-        <li id="playdiv4" style="display: none">
-            <label id="sp">Speed</label>
-             <input id="spv" type="range"
-                min="1" max="20" value="10" step=".5"
-                onchange="set_speed(this.value)"/>
-            <label id="spvl">1</label>
-        </li>
-    </ul>
-</li>
-<li class="dropbutton"><label id="lg">Language</label>
-    <ul class="droplinks">
-    <li onclick="loadlang('de')">Deutsch</li>
-    <li onclick="loadlang('en')">English</li>
-    <li onclick="loadlang('fr')">Français</li>
-    <li onclick="loadlang('it')">Italiano</li>
-    <li onclick="loadlang('pt_BR')">Português do Brasil</li>
-    </ul>
-</li>
-<li class="dropbutton"><label id="h">Help</label>
-    <ul class="droplinks">
-        <li id="ha" onclick="popshow('help', true)">Help</li>
-        <li><a id="df" target="_blank"
-href="http://moinejf.free.fr/abcm2ps-doc/features.html">abc2svg features</a>
-        </li>
-        <li><a id="dp" target="_blank"
-href="http://moinejf.free.fr/abcm2ps-doc/index.html">abc2svg parameters</a>
-        </li>
-        <li id="a" onclick="popshow('about', true)">About</li>
-    </ul>
-</li>
-</ul>
-<br/>
+    <!-- buttons -->
+    <p>
+    <label id="b">ABC files:</label>
+    <input id="s0" type="button" style="display: inline; background-color: #80ff80"
+    value="(noname_bv-0.13)"/>
+    <input id="s1" type="button" style="display: none; background-color: #ffd0d0"
+    value=""/>
+    <label id="er" onclick="popshow('errlist', true)"
+    style="display: none; background: #ff8080">Errors</label>
 
-<!-- buttons -->
-<p>
-<label id="b">ABC files:</label>
-<input id="s0" type="button" style="display: inline; background-color: #80ff80"
-value="(noname_xdv0.12)"/>
-<input id="s1" type="button" style="display: none; background-color: #ffd0d0"
-value=""/>
-<label id="er" onclick="popshow('errlist', true)"
-style="display: none; background: #ff8080">Errors</label>
-
-<!-- ABC source in textarea (main and include) -->
-</p>
-<textarea id="source" rows="40" cols="73" wrap="off"
-style="font: 14px monospace"
-ondrop="drop(event)" ondragenter="drag_enter(event)"
-oninput="src_change()"></textarea>
-<textarea id="src1" rows="40" cols="73" wrap="off"
-style="font: 14px monospace; display: none"
-ondrop="drop(event)" ondragenter="drag_enter(event)"
-oninput="src_change()"></textarea>
+    <!-- ABC source in textarea (main and include) -->
+    </p>
+    <textarea id="source" rows="40" cols="73" wrap="off" 
+        style="font: 14px monospace" 
+        ondrop="drop(event)" ondragenter="drag_enter(event)" 
+        oninput="src_change()">
+    </textarea>
+    <textarea id="src1" rows="40" cols="73" wrap="off" 
+        style="font: 14px monospace; display: none" 
+        ondrop="drop(event)" ondragenter="drag_enter(event)" 
+        oninput="src_change()">
+    </textarea>
 </div>
 
 <!-- right - needed for the scrollbars -->
@@ -104,15 +105,15 @@ oninput="src_change()"></textarea>
 
 <!-- context menu -->
 <div id="ctxMenu" title="Play">
-<ul class="droplinks">
-<!-- 'All' does not work anymore
-<li id="cmpa" onclick="play_tune(-1)" style="display:none">All</li>
--->
-<li id="cmpt" onclick="play_tune(0)">Tune</li>
-<li id="cmps" onclick="play_tune(1)">Selection</li>
-<li id="cmpl" onclick="play_tune(2)">Loop</li>
-<li id="cmpc" onclick="play_tune(3)">Continue</li>
-</ul>
+    <ul class="droplinks">
+    <!-- 'All' does not work anymore
+    <li id="cmpa" onclick="play_tune(-1)" style="display:none">All</li>
+    -->
+    <li id="cmpt" onclick="play_tune(0)">Tune</li>
+    <li id="cmps" onclick="play_tune(1)">Selection</li>
+    <li id="cmpl" onclick="play_tune(2)">Loop</li>
+    <li id="cmpc" onclick="play_tune(3)">Continue</li>
+    </ul>
 </div>
 
 <!-- rendering area -->
@@ -151,9 +152,9 @@ href="http://moinejf.free.fr">Jean-François Moine</a></p>
 
 <!-- javascript must be enabled -->
 <noscript>
-<div id="okjs" class="popup" style="width:50%;background:#ff8080;visibility:visible">
-Please enable Javascript.
-</div>
+    <div id="okjs" class="popup" style="width:50%;background:#ff8080;visibility:visible">
+        Please enable Javascript.
+    </div>
 </noscript>
 
 </body>
