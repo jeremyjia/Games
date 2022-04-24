@@ -1,4 +1,4 @@
-const tagWord = "index.js bv0.44";  
+const tagWord = "index.js bv0.45";  
 var officegen = require('officegen');
 var fs = require('fs');
 
@@ -20,50 +20,17 @@ function createWord(req, res) {
     docx.on('error', function (err) {
         console.log(err)
     })
-    
+
   blP.makeP(docx,bd);
-
+  
   pObj = docx.createP()
 
-
-  pObj = docx.createP()
-  // 添加一个链接
-  pObj.addText('这是一个链接 ')
-  pObj.addText('点我', { underline: true, color: '000088', link: 'https://github.com' })
-  pObj.addText('!')
-
-  pObj = docx.createP()
-  pObj.addText('加粗—+下划线', { bold: true, underline: true })
-
-  pObj = docx.createP({ align: 'center' })
-
-  pObj.addText('加边框', {
-    border: 'dotted',
-    borderSize: 12,
-    borderColor: '88CCFF'
-  })
-
-  pObj = docx.createP()
-  pObj.options.align = 'right'
-
-  pObj.addText('Align this text to the right.')
-
-  pObj = docx.createP()
-
-  pObj.addText('Those two lines are in the same paragraph,')
-  pObj.addLineBreak()// 换行
-  pObj.addText('but they are separated by a line break.')
-
-  docx.putPageBreak()//换页
-
-  pObj = docx.createP()
-
-  pObj.addText('Fonts face only.', { font_face: 'Arial' })
-  pObj.addText(' 换字体并加大.', { font_face: 'Arial', font_size: 40 })
+  pObj.addText('欢迎加入英语学习会员群！', { font_face: 'Arial' })
+  pObj.addText(' 每天发红包奖学金.', { font_face: 'Arial', font_size: 40 })
 
   pObj = docx.createP({align: 'center'})
   // pObj.options.align = 'center'
-  pObj.addText('学生信息', { bold: true, font_face: 'Arial', font_size: 18 })
+  pObj.addText('会员信息', { bold: true, font_face: 'Arial', font_size: 18 })
   let tableStyle = {
     tableColWidth: 2400,
     tableSize: 24,
@@ -106,8 +73,9 @@ function createWord(req, res) {
     }]
   ]
 
-  let student1 = ['李四', '男', 12]
-  let student2 = ['李四2', '男', 28]
+  let student1 = ['李**', '男', 22]
+  let student2 = ['张**', '男', 28]
+  let student3 = ['孙**', '女', 18]
   table.push(student1, student2)
   // 表格
   docx.createTable(table, tableStyle)

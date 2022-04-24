@@ -1,4 +1,4 @@
-const tagMakeP = "blMakeP.js bv0.34";     
+const tagMakeP = "blMakeP.js bv0.43";     
 console.log(tagMakeP);
 var e = {};
 module.exports = e;
@@ -32,16 +32,47 @@ e.makeP = function(docx,o){
   p.addText('你会发现 ', { highlight: true }) // Highlight!
   p.addText('进步好大!', { highlight: 'darkRed' }) // Different highlight color.
 
+  p = docx.createP()
+  // 添加一个链接
+  p.addText('漂泊者乐园主页链接 ')
+  p.addText('点我', { underline: true, color: '000088', link: 'http://mp.weixin.qq.com/mp/homepage?__biz=MzIxMTUzOTUzOA==&hid=13&sn=aab5a9a934bad54ecd823bca0201e226&scene=18#wechat_redirect' })
+  p.addText('!')
+  
+  p = docx.createP()
+  p.addText('这是广告位：请联系微信 littleflute', { bold: true, underline: true })
+
+  pObj = docx.createP({ align: 'center' })
+
+  pObj.addText('这是广告位：请联系微信 littleflute', {
+    border: 'dotted',
+    borderSize: 12,
+    borderColor: '88CCFF'
+  })
+
+  pObj = docx.createP()
+  pObj.options.align = 'right'
+
+  pObj.addText('这是广告位：请联系微信 littleflute')
+
+  pObj = docx.createP()
+
+  pObj.addText('这是广告位：请联系微信 littleflute')
+  pObj.addLineBreak()// 换行
+  pObj.addText('这是广告位：请联系微信 littleflute')
+
+  docx.putPageBreak()//换页
+
+
   for(i in o){
     console.log(i + " : " + o[i]);
     p = docx.createP();
-    p.addText(i);
+    p.addText(i + " 有学员留言: 坚持1个月后, 才发现英语进步这么大！");
     p = docx.createP();
     p.addText(o[i]); 
   }
   docx.putPageBreak()
  
   p = docx.createP() 
-  p.addImage('../img/as_it_is.webp')
+  p.addImage('../img/board.jpeg')
 }
  
