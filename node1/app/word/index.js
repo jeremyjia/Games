@@ -1,6 +1,8 @@
-const tagWord = "index.js bv0.43";  
+const tagWord = "index.js bv0.44";  
 var officegen = require('officegen');
 var fs = require('fs');
+
+var blP = require('./blMakeP');
 
 var e = {};
 module.exports = e;
@@ -18,38 +20,11 @@ function createWord(req, res) {
     docx.on('error', function (err) {
         console.log(err)
     })
-    // Create a new paragraph: 
-  /*
-  addText(内容, {
-    color: 字体颜色string,
-    back: 后背景颜色string,
-    bold: 加粗 boolean,默认是false
-    underline:下划线默认false,
-    highlight: 提亮，默认黄色,
-    link: 添加一个链接
-    align: 位置， center/right
-  })
-  */
-  let pObj = docx.createP()
-  
-  pObj.addText(bd.p5);
+    
+  blP.makeP(docx,bd);
 
-  pObj.addText('Simple')
-  pObj.addText(' with color', { color: '000088' })
-  pObj.addText(' and back color.', { color: '00ffff', back: '000088' })
   pObj = docx.createP()
 
-  pObj.addText('Since ')
-  pObj.addText('officegen 0.2.12', {
-    back: '00ffff',
-    shdType: 'pct12',
-    shdColor: 'ff0000'
-  })
-
-  // Use pattern in the background.
-  pObj.addText(' you can do ')
-  pObj.addText('高亮 ', { highlight: true }) // Highlight!
-  pObj.addText('填充!', { highlight: 'darkGreen' }) // Different highlight color.
 
   pObj = docx.createP()
   // 添加一个链接
@@ -137,12 +112,7 @@ function createWord(req, res) {
   // 表格
   docx.createTable(table, tableStyle)
 
-  docx.putPageBreak()
  
-  pObj = docx.createP()
-
-  // 添加图片
-  pObj.addImage('../img/board.jpeg')
 
   //* 服务器生成文件
   let out = fs.createWriteStream('public/example.docx')
@@ -165,9 +135,7 @@ function createWord(req, res) {
     //*/
 
     //*
-    res.status(200);
-    console.log(req.body);
-    
+    res.status(200); 
     var r = {};
     r.api = "word"; 
     r.date = Date();

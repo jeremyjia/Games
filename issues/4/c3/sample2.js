@@ -6,7 +6,7 @@ _btn.click();
 
 
 function CVoa2Video (){
-    var _v = "CVoa2Video_bv0.323";
+    var _v = "CVoa2Video_bv0.325";
 
     var fn = ["blrVLE","parseType","downloadPage","f4"];
     var fb = [];
@@ -249,10 +249,10 @@ function CVoa2Video (){
                 var s1 = v.innerHTML;
                 
                 var ps = v.getElementsByTagName('p');
-                blo0.blSetPS(ps);
                 var ls = [];
                 d.tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
                 d.v = blo0.blDiv(d,d.id+"v","v",blGrey[3]);
+                 
                 for(var i=0; i<ps.length;i++){
                     var btn = blo0.blBtn(d.tb,d.tb.id+i,i,blGrey[1]);
                     btn.onclick = function(_btn,_d,_ps,_i,_ls){
@@ -261,7 +261,7 @@ function CVoa2Video (){
                                 var btnFrame = bl$("FRAME_ID_"+_ps[_i].t);
                                 btnFrame.click();      
                             }
-                            var cn = _ps[_i].className?_ps[_i].className + "_ " : "xxxx_ ";
+                            var cn = _ps[_i].className?_ps[_i].className + "_ " : "xdxdxxxx_ ";
                             
                             var s1 = _ps[_i].t;
                             s1 += " : " + cn;
@@ -304,6 +304,8 @@ function CVoa2Video (){
                     ls.push(btn);
                 } 
                 
+                blo0.blSetPS(ps);
+
                 var btnWord = blo0.blBtn(d.tb,d.tb.id+"btnWord","word","green");
                 btnWord.onclick = function(){
                     var ta = blo0.blGetTa();
