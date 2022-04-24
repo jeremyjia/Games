@@ -1,4 +1,4 @@
-const tagMakeP = "blMakeP.js bv0.43";     
+const tagMakeP = "blMakeP.js bv0.44";     
 console.log(tagMakeP);
 var e = {};
 module.exports = e;
@@ -72,7 +72,5 @@ e.makeP = function(docx,o){
   }
   docx.putPageBreak()
  
-  p = docx.createP() 
-  p.addImage('../img/board.jpeg')
 }
  
