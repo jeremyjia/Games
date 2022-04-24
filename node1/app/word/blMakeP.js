@@ -16,16 +16,7 @@ module.exports = e;
   })
   */
 e.makeP = function(docx,o){   
-  let p = docx.createP(); 
-  p.addText("本文主编:littleflute. ", { color: '000088' })
-  p.addText('[漂泊者乐园软件团队]', { color: '00ffff', back: '000088' })
-
-  p.addText('漂泊者乐园')
-  p.addText('英语学习专栏', {
-    back: '00ffff',
-    shdType: 'pct12',
-    shdColor: 'ff0000'
-  })
+  
 
   // Use pattern in the background.
   p.addText('坚持1个月后，')
