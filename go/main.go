@@ -9,6 +9,9 @@ import (
 )
  
 func sayhelloName(w http.ResponseWriter, r *http.Request) {
+	
+    currentTime := time.Now()
+	
 	r.ParseForm()  //解析参数，默认是不会解析的
 	fmt.Println(r.Form)  //这些信息是输出到服务器端的打印信息
 	fmt.Println("path", r.URL.Path)
@@ -18,7 +21,7 @@ func sayhelloName(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("key:", k)
 		fmt.Println("val:", strings.Join(v, ""))
 	}
-	fmt.Fprintf(w, "Hello world!" + time.Now()) //这个写入到w的是输出到客户端的
+	fmt.Fprintf(w, "Hello world!" + currentTime.String()) //这个写入到w的是输出到客户端的
 }
  
 func main() {
