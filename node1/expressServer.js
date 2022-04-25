@@ -1,4 +1,4 @@
-const tag = "[expressServer.js_v0.43]"; 
+const tag = "[expressServer.js_v0.44]"; 
 const l = require('./logger');
 const path = require('path'); 
 const express = require('express');
@@ -9,7 +9,7 @@ const { OpenApiValidator } = require('express-openapi-validator');
 const config = require('./config');
  
 const spider = require('./app/spider/index.js');
-const word = require('./app/word/index.js');
+const word = require('./app/word/index0.js');
 
 l.tag1(tag,"-----------------------xd23------")
 console.log(tag);     
