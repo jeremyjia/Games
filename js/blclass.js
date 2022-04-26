@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.15"
+var g_ver_blClass = "CBlClass_bv1.6.31"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2113,7 +2113,7 @@ function CBlClass ()
 		var c = b[1].split('--end--');  
 		return c[0];	
 	}
-	this.blStr2JpSVG = function (ntStr,lyStrs){//xd2do    
+	this.blStr2JpSVG = function (v,ntStr,lyStrs){//xd2do    
 		var _notes = function(lsNotes,x,y,dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id){     
 				const _getNoteId = function(c){
 					var sID = "";
@@ -2160,7 +2160,36 @@ function CBlClass ()
 			}
 			return s;
 		}
-		
+		if(!v.load){
+			const tb = blo0.blDiv(v,v.id+"tb","tb","lightblue");
+			v.v1 = blo0.blDiv(v,v.id+"v1","v1","green");
+			v.v = blo0.blDiv(v,v.id+"v","v","lightgray");
+			const b1 = blo0.blBtn(tb,tb.id+"b1","b1","gray");
+			var i = blo0.blGetGithubIssueByNumber("jeremyjia","Games",741,function(res){ 
+				b1.onclick = function(_res){
+					return function(){
+						v.v1.innerHTML = _res;
+					}
+				}(res);
+			});
+			i.cs(function(o){
+				for(j in o){
+					var btn = blo0.blBtn(tb,tb.id+j,j,"green");
+					btn.onclick = function(_thisSvgBtn,_j){
+						return function(){
+							if(!_thisSvgBtn.v){
+								_thisSvgBtn.v = blo0.blMDiv(_thisSvgBtn.parentElement,
+									_thisSvgBtn.id+"v",_j,50,50,100,100,"lightblue");
+								var v2 = blo0.blDiv(_thisSvgBtn.v,_thisSvgBtn.v.id+"v2",o[_j].body,"blue"); 
+							}
+							_on_off_div(_thisSvgBtn,_thisSvgBtn.v);
+						}
+					}(btn,j);
+				}
+			});
+
+			v.load = true;
+		}
 		var r = "";
 		var blcWork = function(ntStr,lyStrs){
 		  this.blMakeSVG = function(){ return _makeSVG(1000,1415); }
@@ -2388,6 +2417,7 @@ function CBlClass ()
 		}
 		var w = new blcWork(ntStr,lyStrs);
 		r = w.blMakeSVG();
+		v.v.innerHTML = r;
 		return r;
 	}
 	this.blSVG = function(){
@@ -2601,6 +2631,7 @@ function CBlClass ()
 					blo0.blShowObj2Div(d.v1,o);
 				});
 			} 
+
 			
 			const btnBody = blo0.blBtn(d.tb,d.tb.id+"btnBody","body","gray");
 			btnBody.style.float = "right";
