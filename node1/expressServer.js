@@ -44,7 +44,7 @@ class ExpressServer {
       r.yaml = this.openApiYaml;
       r.query = req.query;
       res.json(r);
-      */
+      //*/
     });
     this.app.post('/word', (req, res) => {    word.word(req,res);    });
   }
