@@ -6,7 +6,7 @@ _btn.click();
 
 
 function CVoa2Video (){
-    var _v = "CVoa2Video_bv0.325";
+    var _v = "CVoa2Video_bv0.331";
 
     var fn = ["blrVLE","parseType","downloadPage","f4"];
     var fb = [];
@@ -93,7 +93,7 @@ function CVoa2Video (){
     
     var parseType = function(d,_o,url,ss){
         var ts = document.getElementsByTagName('textarea');
-        var md3 = blo0.blMDiv(d,d.id+"md3","md3",111,11,500,400,"green");
+        var md3 = blo0.blMDiv(d,d.id+"md3","md3",511,11,500,400,"green");
         var tb = blo0.blDiv(md3,md3.id+"tb","tb",blGrey[0]); tb.bs = [];
         var v1 = blo0.blDiv(md3,"id_AsItIs_v1","v1",blGrey[0]);
         var v2 = blo0.blDiv(md3,md3.id+"v2","v2","lightgreen"); 

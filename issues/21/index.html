@@ -68,15 +68,13 @@
 <div class="topnav" id="myTopnav">
   <a href="../../index.html">Home</a>
   <a href="../index.html">issues</a>
-  <a href="#"  class="active">i21_bv0.54</a> 
+  <a href="#"  class="active">i21_bv0.111</a> 
   <a href="javascript:void(0);" class="icon" onclick="myFunction()">
     <i class="fa fa-bars"></i>
   </a>
 </div>
 
 <div style="padding-left:16px">
-  <h2>Responsive Topnav Example</h2>
-  <p>Resize the browser window to see how it works.</p>
   <button id="btn4Plx" onclick="fnPlx()">plxTest</button>
 </div>
 
@@ -100,7 +98,7 @@
         var v2 = blo0.blDiv(this.md,this.md.id+"v2","v2","brown");
         var v3 = blo0.blDiv(this.md,this.md.id+"v3","v3","green");
         for(i in ts){
-          var btn = blo0.blBtn(tb,tb.id+i,i,"lightgray");
+          var btn = blo0.blBtn(tb,tb.id+i,ts[i].fn,"lightgray");
           btn.style.float = "left";
           btn.onclick = function(_i){
             return function(){ 
@@ -121,6 +119,39 @@
   
 
     const ts = [
+      {
+        "v": "v0.21",
+        "fn":"C4SVG",
+        "run": function(v){  
+            v.innerHTML = "";
+            var tb = blo0.blDiv(v,v.id+"tb","tb","gray");tb.style.float = "left";
+            var v0 = blo0.blDiv(v,v.id+"v0","-","green"); 
+            var v1 = blo0.blDiv(v,v.id+"v1","v1","gray"); 
+            var sw = blo0.C4SVG(444,333);
+            var sCircle = '<circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="yellow" />';
+            const d2test = [
+              [sCircle],
+              ["id_4_def_1",sCircle],
+              ["test1"]
+            ];
+            for(i in sw){
+              var btn = blo0.blBtn(tb,tb.id+i,i,"green");
+              btn.onclick = function(_btn,_i,_v,_d){
+                return function(){
+                  var sf = 'sw[' + _i + '](';
+                  for(j in _d[_i]){
+                    if(j>0) {
+                      sf += ',';
+                    }
+                    sf += _d[_i][j];
+                  }
+                  sf += ')';
+                  _v.innerHTML = sf;//sw[i](sCircle);
+                }                  
+              }(btn,i,v1,d2test)
+            } 
+        }
+      },
       {
         "v": "v0.11",
         "fn":"blAjaxFormData",
