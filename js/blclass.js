@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.31"
+var g_ver_blClass = "CBlClass_bv1.6.44"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2112,6 +2112,60 @@ function CBlClass ()
 		var b = a.split('--start--');
 		var c = b[1].split('--end--');  
 		return c[0];	
+	}
+	this.C4SVG = function (w,h){        
+		function _C4SVG(w,h){
+			this.s1 = function(){
+				var s = '<svg ';
+				s +='width="' + w +'" ';
+				s +='height="' + h + '" ';
+				s +='version="1.1" ';
+				s +='viewBox="0 0 ' + w + '' + h + '" ';
+				s +='encoding="UTF-8" xmlns="http://www.w3.org/2000/svg">';
+				s += '<rect x="0" y="0" height="100%" width="100%" fill="gray" />';
+				return s;
+			};
+			this.s2 = function(){
+				var s = '</svg>'; 
+				return s;
+			};
+		}
+		const u = new _C4SVG(w,h);
+		u.gs = [];
+		u.ids = [];
+
+		var r = {};
+		r.string2svg = function(str){
+			var s = u.s1();
+			s += str;
+			s += u.s2();
+			return s;
+		};
+		r.def = function(id,str){
+			var s = '<defs>';
+			s += '<g id="'+id+'" ';
+			s += 'transform="translate(-50,-50)">';
+			s += str;
+			s += '</g>';
+			s += '</defs>'; 
+			u.gs.push(s);
+			u.ids.push(id);
+			return s;
+		};
+		r.use = function(id,x,y){
+			var s = '<use x="'+x+'" y="'+y+'" ';
+			s += 'xlink:href="#'+id+'" ';
+			s += ' time="1" audio="5," notepos="0_1_1" code="5," xmlns:xlink="http://www.w3.org/1999/xlink" ></use>';
+			return s;
+		  }
+		r.test1 = function(str){
+			var s = u.s1(); 
+			s += r.def("id1234",str);
+			s += r.use("id1234",20,220);
+			s += u.s2();
+			return s;
+		};
+		return r;
 	}
 	this.blStr2JpSVG = function (v,ntStr,lyStrs){//xd2do    
 		var _notes = function(lsNotes,x,y,dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id){     
