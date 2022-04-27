@@ -298,10 +298,13 @@
                 else if(c=='.'){
                     sID = "fudian";
                 }
+                else if(c=='/'){
+                    sID = "jianShi";
+                }
                 return sID;
             }
             var s = "";
-            s += _makeText("notes: bv0.33",111, 11,"yellow");
+            s += _makeText("notes: xv0.52",111, 11,"yellow");
             var l = lsNotes;
 
             for(i in l){            
@@ -321,6 +324,12 @@
                 if(fdNt.length>1){
                     for(var j = 0; j < (fdNt.length -1);j++){
                         s += _use_yingao_by_id("fudian",x + i*dx,y - j*8);
+                    }
+                }
+                var jsNt = l[i].split('/');    
+                if(jsNt.length>1){
+                    for(var j = 0; j < (jsNt.length -1);j++){
+                        s += _use_yingao_by_id("jianShi",x + i*dx,y - j*8); 
                     }
                 }
             }
@@ -376,6 +385,7 @@
         s += _use_shuzi_by_id("xiaojiexian",211,300);
         s += _use_shuzi_by_id("yanyinfu",244,300);
         s += _use_yingao_by_id("fudian",277,300);
+        s += _use_yingao_by_id("jianShi",311,300);
         
         return s;
       }
@@ -388,6 +398,7 @@
           this.shuzi_c_5 = function(){ return _2_def_shuzi_c_5(); }
           this.yingao_di = function(){ return _2_def_yingao_di(); }
           this.fudian = function(){ return _2_def_fudian(); }
+          this.jianShi = function(){ return _2_def_jianShi(); }
           this.shuzi_c_6 = function(){ return _2_def_shuzi_c_6(); }
           this.shuzi_c_7 = function(){ return _2_def_shuzi_c_7(); } 
           this.xiaojiexian = function(){ return _2_def_xiaojiexian(); }
@@ -414,9 +425,20 @@
             s += '<ellipse fill="#fb1b1b" cx="62.35" cy="49.75" rx="2.45" ry="2.45"/>';
             s += '</g>';
             return s;
-
-          }
+          } 
           
+          var _2_def_jianShi = function(){
+            const id = "jianShi"; //xd2do
+            var s = '';
+            s += '<g id="'+id+'" ';
+            s += 'transform="translate(-50,-50)">';
+
+            //s += '<rect height="17.9" width="11.1" y="41.05" x="44.45" stroke-width="0" fill="#1fffff"/>';
+            s += '<rect height="3.2" width="11" y="64.05" x="44.5" stroke-width="null" fill="#1b1bab"/>';
+            
+            s += '</g>';
+            return s;
+          }
           var _2_def_shuzi_c_1 = function(){
             const id = "shuzi_c_1";
             var s = '';
@@ -524,7 +546,7 @@
             s += '<g id="'+id+'" ';
             s += 'transform="translate(-50,-50)">';
 
-            s += '<rect height="17.9" width="11.1" y="41.05" x="44.45" stroke-width="0" fill="#ffffff"/>';
+            s += '<rect height="17.9" width="11.1" y="41.05" x="44.45" stroke-width="0" fill="#1fffff"/>';
             s += '<rect height="3.2" width="11" y="48.4" x="44.5" stroke-width="null" fill="#1b1b1b"/>';
             
             s += '</g>';
@@ -542,6 +564,7 @@
         s += od.shuzi_c_5();
         s += od.yingao_di();
         s += od.fudian();
+        s += od.jianShi();
         s += od.shuzi_c_6();
         s += od.shuzi_c_7();
         s += od.xiaojiexian(); 
