@@ -1,9 +1,20 @@
-var _lyrics1 = function(lsLyrics,x,y,dx,cbFun){
-    var s = "";
-    s += cbFun("lyrics: v0.12",111, 55,"blue");
-    var l = lsLyrics.length;
-    for(var i = 0; i<l;i++){
-      s += cbFun(lsLyrics[i],x +  i*dx , y,"blue");
+var makeMusic = function(ls){  
+  var ms = ls[0].split(" ");
+  var g = 0;
+  var mLast = 0;
+  for(i in ms){
+    if(ms[i]!='-' && ms[i]!='|'){
+      for(var j = 1; j<ls.length;j++){
+        if(ls[j][g]=='，' || ls[j][g]=='。') {
+          //ms[mLast] += ls[j][g];
+          g++;
+        }
+        ms[i] += "_" + ls[j][g];
+        mLast = i;
+      }
+      g++;
     }
-    return s;
+  }
+  return ms;
 }
+  
