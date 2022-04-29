@@ -107,7 +107,7 @@
     </div>
 </div>
  
-<div id="filename" style="border:1px solid red;">未命名-(bv0.32-index.html).jps</div> 
+<div id="filename" style="border:1px solid red;">未命名-(bv0.44-index.html).jps</div> 
 
 <div class="head">
     <div class="main">
@@ -233,6 +233,28 @@
 
 </div> 
 <script>
+  blo0._getNoteId = function(c){
+            var sID = "";
+            if(c=='1'|| c=='2'|| c=='3'|| c=='4'|| c=='5'|| c=='6'|| c=='7'){
+                sID = "shuzi_c_" + c;
+            }
+            else if(c=='|'){
+                sID = "xiaojiexian";
+            } 
+            else if(c=='-'){
+                sID = "yanyinfu";
+            }
+            else if(c==','){
+                sID = "yingao_di";
+            }
+            else if(c=='.'){
+                sID = "fudian";
+            }
+            else if(c=='/'){
+                sID = "jianShi";
+            }
+            return sID;
+  }
   function xdl (sLog){
     xddbg1.innerHTML = sLog + ":" + blo0.blDate();
     xddbg2.innerHTML =  "winType = " + winType;
@@ -280,73 +302,6 @@
 
   function blStr2JpSVG(txt){
     
-    var _notes = function(lsNotes,x,y,dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id){     
-            const _getNoteId = function(c){
-                var sID = "";
-                if(c=='1'|| c=='2'|| c=='3'|| c=='4'|| c=='5'|| c=='6'|| c=='7'){
-                    sID = "shuzi_c_" + c;
-                }
-                else if(c=='|'){
-                    sID = "xiaojiexian";
-                } 
-                else if(c=='-'){
-                    sID = "yanyinfu";
-                }
-                else if(c==','){
-                    sID = "yingao_di";
-                }
-                else if(c=='.'){
-                    sID = "fudian";
-                }
-                else if(c=='/'){
-                    sID = "jianShi";
-                }
-                return sID;
-            }
-            var s = "";
-            s += _makeText("notes: xv0.54",111, 11,"yellow");
-            var l = lsNotes;
-
-            for(i in l){            
-                var idNote = _getNoteId(l[i][0]);
-                s += _use_shuzi_by_id(idNote,x + i*dx,y);  
-              
-                var nt = l[i].split(',');
-
-    
-
-                if(nt.length>1){
-                    for(var j = 0; j < (nt.length -1);j++){
-                        s += _use_yingao_by_id("yingao_di",x + i*dx,y + j*8);
-                    }
-                }
-
-                var fdNt = l[i].split('.');    
-                if(fdNt.length>1){
-                    for(var j = 0; j < (fdNt.length -1);j++){
-                        s += _use_yingao_by_id("fudian",x + i*dx,y - j*8);
-                    }
-                }
-                var jsNt = l[i].split('/');    
-                if(jsNt.length>1){
-                    for(var j = 0; j < (jsNt.length -1);j++){
-                        s += _use_yingao_by_id("jianShi",x + i*dx,y - j*8); 
-                    }
-                }
-            }
-            return s;
-    }
-
-    var _lyrics = function(lsLyrics,x,y,dx,cbFun){
-        var s = "";
-        s += cbFun("lyrics: v0.13",111, 55,"blue");
-        var l = lsLyrics.length;
-        for(var i = 0; i<l;i++){
-          s += cbFun(lsLyrics[i],x +  i*dx , y,"blue");
-        }
-        return s;
-    }
-    
     var r = "";
     var blcWork = function(sInit){
       this.blMakeSVG = function(){ return _makeSVG(1000,1415); }
@@ -361,11 +316,11 @@
         s +='encoding="UTF-8" xmlns="http://www.w3.org/2000/svg">';
         s += '<rect x="0" y="0" height="100%" width="100%" fill="gray" />';
         
-        s += _makeText("Title",500,1,"red");
+        s += _makeText("Title",500,1, 36, "yellow");
         s += _defs();
-        s += _uses();
+        s += _uses(555,11);
          
-        var a = sInit.split(/Q[1-4]*:/g);// ("Q:");//
+        var a = sInit.split(/Q[1-4]*:/g); 
         var dy = 31;
         var y = 111;
         var x = 55;
@@ -374,36 +329,34 @@
         {
           if(i==0) continue; 
           var r = a[i].split(/C[1-4]*:/g);
-          for(j in r){
-            if(j==0){
-              var music = r[0].split(" ");
-              s += _notes(music,x,y, dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id);              
-            } 
-            else{
-              s += _lyrics(r[j],x,y, 33,_makeText);
-            }
-            y += dy;
-          }  
+
+          var music = makeMusic(r);//r[0].split(" ");           
+          s += _notes(music,x,y, dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id);    
+           
+          y += dy*3;
         }
 
         s += '</svg>';
         return s;
       }
       
-      var _uses = function(){
+      var _uses = function(x,y){
+        var _x = x;
+        var _y = y;
+        var _dx = 30;
         var s = "";
-        s += _use_shuzi_by_id("shuzi_c_1",11,300);
-        s += _use_shuzi_by_id("shuzi_c_2",33,300);
-        s += _use_shuzi_by_id("shuzi_c_3",66,300);
-        s += _use_shuzi_by_id("shuzi_c_4",99,300);
-        s += _use_shuzi_by_id("shuzi_c_5",122,300);
-        s += _use_yingao_by_id("yingao_di",122,300);
-        s += _use_shuzi_by_id("shuzi_c_6",155,300);
-        s += _use_shuzi_by_id("shuzi_c_7",188,300);  
-        s += _use_shuzi_by_id("xiaojiexian",211,300);
-        s += _use_shuzi_by_id("yanyinfu",244,300);
-        s += _use_yingao_by_id("fudian",277,300);
-        s += _use_yingao_by_id("jianShi",311,300);
+        s += _use_shuzi_by_id("shuzi_c_1",_x,_y); _x += _dx;
+        s += _use_shuzi_by_id("shuzi_c_2",_x,_y); _x += _dx;
+        s += _use_shuzi_by_id("shuzi_c_3",_x,_y); _x += _dx;
+        s += _use_shuzi_by_id("shuzi_c_4",_x,_y); _x += _dx;
+        s += _use_shuzi_by_id("shuzi_c_5",_x,_y); _x += _dx;
+        s += _use_yingao_by_id("yingao_di",_x,_y); _x += _dx;
+        s += _use_shuzi_by_id("shuzi_c_6",_x,_y); _x += _dx;
+        s += _use_shuzi_by_id("shuzi_c_7",_x,_y);   _x += _dx;
+        s += _use_shuzi_by_id("xiaojiexian",_x,_y); _x += _dx;
+        s += _use_shuzi_by_id("yanyinfu",_x,_y); _x += _dx;
+        s += _use_yingao_by_id("fudian",_x,_y); _x += _dx;
+        s += _use_yingao_by_id("jianShi",_x,_y); _x += _dx;
         
         return s;
       }
@@ -591,12 +544,12 @@
         return s;
       } 
 
-      var _makeText = function(sText,x,y,fillColor){
+      var _makeText = function(sText,x,y,sz,fillColor){
         var s = '<text ';
         s += 'x="'+x+'" y="'+y+'" ';
         s += 'dy="30.078" text-anchor="middle" ';
         s += 'fill = "'+ fillColor +'" ';
-        s += 'style="font-weight:bold;" font-size="36" font-family="Microsoft YaHei">';
+        s += 'style="font-weight:bold;" font-size="'+ sz + '" font-family="Microsoft YaHei">';
         s += sText;
         s += '</text>';
         return s;
