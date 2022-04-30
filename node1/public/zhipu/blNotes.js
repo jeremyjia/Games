@@ -31,7 +31,7 @@
             var ly = l[i].split('_');    
             if(ly.length>1){
                 for(var j = 0; j < (ly.length -1);j++){
-                    s += _makeText(ly[j+1],x + i*dx,y + j*24 + 10, 24, "yellow");
+                    s += _makeText(ly[j+1],x + i*dx,y + j*24 + 10, 20, "lightgreen");
                 }
             }
         }
