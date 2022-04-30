@@ -6,7 +6,7 @@ var makeMusic = function(ls){
     if(ms[i]!='-' && ms[i]!='|'){
       for(var j = 1; j<ls.length;j++){
         if(ls[j][g]=='，' || ls[j][g]=='。') {
-          //ms[mLast] += ls[j][g];
+          ms[mLast] += ls[j][g];
           g++;
         }
         ms[i] += "_" + ls[j][g];
