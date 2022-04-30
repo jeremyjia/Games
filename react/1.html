@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>React</title>
+</head>
+
+<body>
+    <div id="root"></div>
+</body>
+<script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel">
+  class Item extends React.Component{
+    render(){
+      return (
+        <li>{this.props.item}</li>
+      )
+    }
+  }
+
+  class ItemList extends React.Component{
+      render(){
+        const data = [1, 2, 3, 4, 5, 6];
+        const itemList = data.map((v, i) => <Item item={v} key={i}/>);
+        return (
+          <ul>{itemList}</ul>
+      )
+    }
+  }
+
+  class Hello extends React.Component{
+    constructor(props){
+      super(props);
+      this.state = { 
+        tips: "bv0.12: Hello World!"
+      }
+    }
+    render() {
+      return (
+        <div>{this.state.tips}</div>
+      );
+    }
+  }
+
+  class App extends React.Component{
+    render() {
+      return (
+        <div>
+            <Hello />
+            <ItemList />
+        </div>
+      );
+    }
+  }
+
+  var vm = ReactDOM.render(
+    <App />,
+    document.getElementById("root")
+  );
+</script>
+
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket测试</title>
+    <script>
+        function initWebSocket(wsUri) {
+            var websocket = new WebSocket(wsUri);
+            websocket.onopen = function(evt) {
+                console.log('连接建立中... '+wsUri);
+            };
+            websocket.onclose = function(evt) {
+                console.log('连接关闭中...', evt);
+            };
+            websocket.onmessage = function(evt) {
+                console.log('收到来自服务端的消息：', evt.data);
+				 if(typeof evt.data === 'string') {
+                     console.log("Received data string");
+                 }
+                 if(evt.data instanceof ArrayBuffer){
+                      var buffer = evt.data;
+                      console.log("Received arraybuffer");
+                  }
+            };
+            websocket.onerror = function(evt) {
+                console.log('发生错误...', evt);
+            };
+            return websocket;
+        }
+    
+        // websocket 的地址
+        var websocket = initWebSocket("ws://Jeremy-PC:8090");
+        var msg, i = 0;
+        var loop = setInterval(function(){
+            msg = "Hello " + (i++);
+            if(websocket.readyState == WebSocket.OPEN) {
+                websocket.send(msg);
+                console.log('已发送消息：' + msg);
+            } else {
+                clearInterval(loop);
+                console.log('连接已关闭，拜拜~');
+            }
+        }, 3000);
+    </script>
+</head>
+<body>
+    请按F12打开控制台查看消息
+</body>
+</html>

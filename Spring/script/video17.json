@@ -1,0 +1,88 @@
+{
+    "request": {
+        "version": "0.0.17",
+        "width": 1024,
+        "height": 768,
+        "music": "1.mp3",
+        "rate": "1",
+        "frames": [
+            {
+                "time": 10,
+                "objects": [
+                    {
+                        "text": "SVG插件演示程序",
+                        "x": 50,
+                        "y": 200,
+                        "size": 60,
+                        "color": "30,255,30"
+                    },
+					{
+                        "picture": "${VAR_DUCK_SRC}",
+                        "x": 600,
+                        "y": 500,
+                        "width":200,
+                        "heigth":200
+                    }
+                ],
+				"backgroundColor": "135,206,250",
+                "backgroundPicture": "${VAR_DUCK_SRC}"
+            },
+			{
+                "time": 5,
+                "objects": [
+                    {
+                        "text": "SVG插件演示程序",
+                        "x": 50,
+                        "y": 600,
+                        "size": 60,
+                        "color": "255,0,0"
+                    }
+                ],
+				"backgroundColor": "135,206,250",
+                "backgroundPicture": "${VAR_SVG4}"
+            }
+        ],
+		"superObjects": [
+		    {
+                "type": "picture",
+                "attribute": {
+                    "x1": 800,
+                    "y1": 100,
+                    "x2": 300,
+                    "y2": 300,
+                    "size": 10,
+                    "color": "255,0,0",
+                    "name": "${VAR_DUCK_SRC}"
+                },
+                "frameRange": "(3,14)",
+                "action": {
+                    "trace": "y=0*x*x+0*x+100",
+                    "step": -20
+                }
+            }
+		],
+		
+        "Macros": [
+            {
+                "name": "VAR_DUCK_SRC",
+                "value": {
+                    "type": "svg",
+                    "attribute": {
+                        "input": "duck.svg",
+                        "output": "duck.png"
+                    }
+                }
+            },
+			{
+                "name": "VAR_SVG4",
+                "value": {
+                    "type": "svg",
+                    "attribute": {
+                        "input": "https://jeremyjia.github.io/Games/issues/689/resource/s4.svg",
+                        "output": "svg4.png"
+                    }
+                }
+            }
+        ]
+    }
+}

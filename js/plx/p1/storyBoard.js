@@ -1,4 +1,4 @@
-var tag_storyBoard = "storyBoard.js_v0.114";
+var tag_storyBoard = "storyBoard.js_v0.125";
 var tb = bl$("id_p1_tb"); 
 
 tb.btnStoryBoard = blo0.blBtn(tb,"btnStoryBoard","storyBoard",blGrey[2]);
@@ -11,7 +11,7 @@ tb.btnStoryBoard.onclick = function(){
 
 function CStoryBoard(parentDiv){
 
-    var v = "CStoryBoard v0.13";
+    var v = "CStoryBoard v0.14";
     var ui = null;
     var p = parentDiv; 
        
@@ -54,8 +54,7 @@ function CStoryBoard(parentDiv){
                                 _btn.inf.w,
                                 _btn.inf.h,
                                 _btn.inf.music,
-                                _btn.inf.rate);
-                        //*
+                                _btn.inf.rate); 
                         var n=0;
                         for(i in listCards){                                                    
                             n++;
@@ -66,21 +65,20 @@ function CStoryBoard(parentDiv){
                             f.objects = listCards[i].inf.objects;
                             o.AddFrame2Script(r,f);     
                             
-                            var so = {
-                                "type": "javascript",
-                                "frameRange": "(1,1250)",
-                                "attribute": {
-                                    "script": "firework.js",
-                                    "function": "animateFrame",
-                                    "start": 1
-                                },
-                                "layer": 1
-                            };
+                            
+                        } 
+                        var so = {
+                            "type": "javascript",
+                            "frameRange": "(1,1250)",
+                            "attribute": {
+                                "script": "so646a.js",//"firework.js",//
+                                "function": "animateFrame",
+                                "start": 1
+                            },
+                            "layer": 1
+                        };
 
-                            o.addSuperObj2Script(r,so);
-                        }
-                        //*/
-                        
+                        o.addSuperObj2Script(r,so);
                         var s = JSON.stringify(r); 
                         return s;
                     }
@@ -160,9 +158,11 @@ function CStoryBoard(parentDiv){
             tb.btnAdd100Cards.style.float="left";
             tb.btnAdd100Cards.onclick = function(){
                 for(var i = 0; i < 100; i++ ){o.addCard(this);}
+            } 
+            
+            tb.blAddCard = function (_inBtn){
+                o.addCard(_inBtn);
             }
-            
-            
 
             o.addClass(ui,"w3-row");  
             o.addClass(ui,"w3-red");

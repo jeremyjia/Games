@@ -9,8 +9,10 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -25,6 +27,9 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -54,6 +59,9 @@ public final class JsonSriptParser {
 	private static SubtitleImageService subtitleImageService = new SubtitleImageService();
 	public static List<SubtitleModel> subtitleList = null;
 	private static String titleOfLRC = "";
+	private static String VAR_TIME = "VAR_TIME";// s
+	private static String VAR_FRAMES = "VAR_FRAMES";
+	private static String VAR_RATE = "VAR_RATE";
 
 	public static void setMacros(String scriptFilePath) throws Exception {
 		String jsonString = getJsonString(scriptFilePath);
@@ -63,6 +71,7 @@ public final class JsonSriptParser {
 		if (audioFilePath == null || audioFilePath.trim().length() == 0) {
 			audioFilePath = requestObj.optString("music");
 		}
+		String rate = requestObj.getString("rate");
 		// Resolve all macros
 		Iterator<String> keys = requestObj.keys();
 		while (keys.hasNext()) {
@@ -92,7 +101,12 @@ public final class JsonSriptParser {
 		String saveFile = System.getProperty("user.dir") + "/" + audioFile;
 		String audioTime = FileUtil.getAudioDuration(saveFile);
 		System.out.println("Audio file " + saveFile + " seconds:" + audioTime);
-		MacroResolver.setProperty("VAR_TIME", audioTime);
+		MacroResolver.setProperty(VAR_TIME, audioTime);
+		MacroResolver.setProperty(VAR_RATE, rate);
+		int s = Integer.parseInt(audioTime);
+		int r = Integer.parseInt(rate);
+		int frames = s * r;
+		MacroResolver.setProperty(VAR_FRAMES, String.valueOf(frames));
 
 	}
 
@@ -130,6 +144,22 @@ public final class JsonSriptParser {
 			String[] commands = cmds.toArray(new String[] {});
 			ExecuteCommand.executeCommandOnServer(commands);
 			strValue = outputFile;
+		} else if ("svg".equalsIgnoreCase(type)) {
+
+			JSONObject attrObj = valObj.getJSONObject("attribute");
+			String inputFile = attrObj.getString("input");
+			String outputFile = attrObj.getString("output");
+			inputFile = FileUtil.downloadFileIfNeed(inputFile);
+
+			TranscoderInput input_svg_image = new TranscoderInput(inputFile);
+			OutputStream png_ostream = new FileOutputStream(System.getProperty("user.dir") + "/" + outputFile);
+			TranscoderOutput output_png_image = new TranscoderOutput(png_ostream);
+			PNGTranscoder my_converter = new PNGTranscoder();
+			my_converter.transcode(input_svg_image, output_png_image);
+			png_ostream.flush();
+			png_ostream.close();
+			strValue = outputFile;
+
 		} else {
 			// Parse the text from web link
 			String href = valObj.getString("href");
@@ -500,7 +530,7 @@ public final class JsonSriptParser {
 		}
 	}
 
-	private static String getJsonString(String scriptFilePath) throws IOException {
+	public static String getJsonString(String scriptFilePath) throws IOException {
 		String jsonString = new String(Files.readAllBytes(new File(scriptFilePath).toPath()));
 		// Fix input JSON string
 		int s = jsonString.indexOf("{");
@@ -764,9 +794,13 @@ public final class JsonSriptParser {
 	}
 
 	private static String getSubTitleByFrame(List<SubtitleModel> ls, int number) {
+		String rate = MacroResolver.getProperty(VAR_RATE);
+		int r = Integer.parseInt(rate);
+		int s = number / r;
+
 		for (SubtitleModel info : ls) {
 			String strSubtitle = info.contextEng;
-			if (number >= info.star / 1000 && number <= info.end / 1000) {
+			if (s >= info.star / 1000 && s <= info.end / 1000) {
 				return strSubtitle;
 			}
 		}

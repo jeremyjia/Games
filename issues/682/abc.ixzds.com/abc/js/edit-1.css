@@ -1,0 +1,239 @@
+/* edit.css - file used in the abc2svg editor */
+@page {margin-top: 1cm; margin-left: 0cm; margin-right: 0cm}
+text tspan {white-space:pre; fill:currentColor}
+svg {display:block}
+.abcr {fill: #d00000; fill-opacity: 0; z-index: 15}
+
+.gradient-text-one{  
+    background-image:-webkit-linear-gradient(bottom,red,#fd8403,yellow); 
+    -webkit-background-clip:text; 
+    -webkit-text-fill-color:transparent; 
+}
+.editor_rect{
+	fill-opacity: 0.4 !important;
+}
+.selected_text{
+	fill: red;
+}
+.selected_path{
+	stroke:red !important;
+}
+@media screen {
+	body, html {height: 90%}
+	/*text, path {pointer-events: none}*/
+	#dleft {
+		width: auto;
+		position: absolute; top: 0; bottom:0; left: 0;
+		background-color:#faf0e6;
+		overflow: auto;
+	}
+	#nav {
+		position:relative;
+		padding: 0;
+		margin: 2px 0 0 2px;
+	}
+	.dropbutton {
+		float: left;
+		display:inline-block;
+		width: 90px;
+		text-align: center;
+	}
+	.dropbutton:hover { outline: solid; outline-width: 2px }
+	.dropbutton:hover > ul { display: block }
+	.droplinks {
+		list-style-type: none;
+		position: absolute;
+		min-width: 80px;
+		background-color: #e0e0e0;
+		display: none;
+		z-index: 20;
+		text-align: left;
+		padding: 0;
+		margin: 0;
+	}
+	.droplinks li:hover { outline: solid; outline-width: 2px }
+	.droplinks li { padding: 0 5px 0 5px; margin: 2px }
+	#dright {
+		width: 80%;
+		max-width: 800px;
+		position: absolute; top: 0; bottom:0; right:0;
+		background-color: white;
+		overflow: auto
+	}
+	#dright:hover {z-index: 10 !important}
+	#dright:active {z-index: 10 !important}
+	.popup {
+		position: absolute; top: 0; right: 20px;
+		padding: 10px;
+		background-color:#e0e0e0;
+		border-radius: 5px;
+		visibility: hidden;
+		z-index:20;
+	}
+	.close {
+		position: absolute;
+		top: 10px;
+		right: 20px;
+		font-size: 20px;
+		font-weight: bold;
+		color: red;
+	}
+	#abckbd td {
+		border: 1px solid black;
+		padding: 0.5rem;
+		text-align: center;
+	}
+	#ctxMenu {
+		position:absolute;
+		display:none;
+		left:0px;
+		top:0px;
+		padding:0;
+		margin:0;
+		border:1px solid;
+		background-color:white;
+		font-weight:normal;
+		white-space:nowrap;
+		z-index:100;
+	}
+	#ctxMenu:hover > .droplinks {
+		display:block;
+	}
+	
+}
+@media print {
+	#dleft, .popup { display: none }
+	body {
+		margin:0; padding:0; border:0;
+		background-color: white;
+	}
+	#dright { margin:0; padding:0; border:0 }
+	.newpage { page-break-before: always }
+	.nobrk { page-break-inside: avoid }
+}
+@page{margin:0}
+.lyric{
+	font-size: 0 !important;
+}
+.lyric tspan{
+	font-size: 13px;
+}
+
+/* beg create by lhj 20201113 */		
+/* 和弦样式 */		
+.hx3,.hx3-46,.hx3-6, .hx7,.hx7-56,.hx7-34,.hx7-2 {
+	position: relative;
+	font-size: 18px;
+	font-weight: 10;
+	display: inline-block;
+	margin-right: 20px;
+ }
+ /* 三和弦 第二转位  */
+ .hx3-46:BEFORE {
+	content: '6';
+	position: absolute;
+	font-size: .4em;
+	top: -.5em;
+	right:  -.8em;
+}
+ .hx3-46:AFTER {
+	content: '4';
+	position: absolute;
+	font-size: .4em;
+	bottom: -.5em;
+	right:  -.8em;
+}
+ /* 三和弦 第一转位  */
+ .hx3-6:AFTER {
+	content: '6';
+	position: absolute;
+	font-size: .4em;
+	bottom: -.5em;
+	right:  -.8em;
+}
+ /* 七和弦 原位  */
+ .hx7:AFTER {
+	content: '7';
+	position: absolute;
+	font-size: .4em;
+	bottom: -.5em;
+	right:  -.8em;
+}
+ /* 七和弦 第一转位   */
+ .hx7-56:BEFORE {
+	content: '6';
+	position: absolute;
+	font-size: .4em;
+	top: -.5em;
+	right:  -.8em;
+}
+ .hx7-56:AFTER {
+	content: '5';
+	position: absolute;
+	font-size: .4em;
+	bottom: -.5em;
+	right:  -.8em;
+}
+ /* 七和弦 第一转位    */
+ .hx7-34:BEFORE {
+	content: '4';
+	position: absolute;
+	font-size: .4em;
+	top: -.5em;
+	right:  -.8em;
+}
+ .hx7-34:AFTER {
+	content: '3';
+	position: absolute;
+	font-size: .4em;
+	bottom: -.5em;
+	right:  -.8em;
+}
+ /* 七和弦 第三转位  */
+ .hx7-2:AFTER {
+	content: '2';
+	position: absolute;
+	font-size: .4em;
+	bottom: -.5em;
+	right:  -.8em;
+}
+/*下标*/
+.hx-sub{
+	font-size: .4em;
+    transform: translateY(0.5em) scale(0.8);
+    display: inline-block;
+}
+/*上标*/
+.hx-up{
+    font-size: .4em;
+    transform: translateY(-0.5em) scale(0.8);
+    display: inline-block;
+}
+/* 和弦样式 end*/		
+
+/* 
+html 用法
+<span class="hx3">Ⅰ</span><!-- 三和弦原位 （三和弦）-->
+<span class="hx3-6">Ⅰ</span><!-- 三和弦第一转位（六和弦） -->
+<span class="hx3-46">Ⅰ</span><!-- 三和弦第二转位（四六和弦） -->
+<span class="hx7">Ⅰ</span><!-- 七和弦原位（七和弦） -->
+<span class="hx7-56">Ⅰ</span><!-- 七和弦第一转位 （五六和弦）-->
+<span class="hx7-34">Ⅰ</span><!-- 七和弦第二转位（三四和弦） -->
+<span class="hx7-2">Ⅰ</span><!-- 七和弦第三转位（二和弦） --> 
+*/
+
+/*  end create by lhj 20201113 */
+.js-click{
+	cursor: pointer;
+}
+
+.js-click.active{
+	color: #FF9000;
+	background-color: #fff;
+	border: 1px solid #FF9000 !important;
+}
+ .panel-name .panel-name-item{
+ 	padding: 5px 8px;
+ 	border-radius: 5px;
+ 	border: 1px solid transparent;
+ }
