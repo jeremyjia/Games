@@ -14,8 +14,8 @@ e.index = function(req,res){
         var r = {};
         r.api = "spider";
         r.yaml = this.openApiYaml;
-        r.query = req.query;
-        r.Classnum = $('.list').length;
+        r.query = req.query; 
+        r.Classnum = $('.list').length; 
         res.json(r);
       }
   }); 
