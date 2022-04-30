@@ -116,6 +116,18 @@ function getGitHubComment(commentId, funObj) {
   }
 }
 
+function listGitHubComments(url, funObj) {
+  myAjaxCmd('GET', url, null, usercallback);
+  function usercallback(response) {
+    if (response.readyState == 4) {
+      if (response.status == 200 || response.status == 201) {
+        var jsonObj = JSON.parse(response.responseText);
+        funObj(jsonObj);
+      } 
+    }
+  }
+}
+
 function updateGitHubComment(commentId, jsonAll) {
   var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentId;
   var bodyData = JSON.stringify(jsonAll);
@@ -124,6 +136,18 @@ function updateGitHubComment(commentId, jsonAll) {
   };
 
   myAjaxCmd('PATCH', url, data, function (res) {
+  });
+}
+
+function addNewGitHubIssue(issueTitle, jsonAll, callbackFun) {
+  var url = "https://api.github.com/repos/jeremyjia/Games/issues";
+  var data = {
+	"title": issueTitle,
+    "body": jsonAll
+  };
+
+  myAjaxCmd('POST', url, data, function (response) {
+    callbackFun(response);
   });
 }
 
@@ -138,13 +162,10 @@ function addNewGitHubComment(issueId, jsonAll, callbackFun) {
   });
 }
 
-function deleteGitHubComment(issueId, jsonAll, callbackFun) {
-  var url = "https://api.github.com/repos/jeremyjia/Games/issues/" + issueId + "/comments";
-  var data = {
-    "body": jsonAll
-  };
+function deleteGitHubComment(commentId, callbackFun) {
+ var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentId;
 
-  myAjaxCmd('DELETE', url, data, function (response) {
+  myAjaxCmd('DELETE', url, null, function (response) {
     callbackFun(response);
   });
 }
@@ -182,7 +203,7 @@ function myAjaxCmd(method, url, data, callback) {
   }else if (method == "DELETE") {
     xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());
-    xmlHttpReg.send(JSON.stringify(data));
+    xmlHttpReg.send(null);
   } else if (method == "GET") {
     xmlHttpReg.setRequestHeader('If-Modified-Since', '0');
     xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());

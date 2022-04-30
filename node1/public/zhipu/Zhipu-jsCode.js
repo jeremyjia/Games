@@ -1,4 +1,4 @@
-
+const bvJsCode = "jsCode.js_bv0.11";
 var upType=3;
 $(document).ready(function(){
     var viewType_=localStorage.getItem('viewType');
@@ -909,7 +909,7 @@ function xdf1(re,p2){
              }
              else{
                  if(arr[i]!='noXD'){
-                    pageObj.html(arr[i]);
+                   pageObj.html(arr[i]);
                  }
              }
              pageNum++;
@@ -1251,7 +1251,14 @@ pageNum=pageNum*1;if($('#cf_height_page option[value='+pageNum+']').length>0){al
 $('#cf_height_page option').sort(function(a,b){var aText=$(a).attr('value')*1;var bText=$(b).attr('value')*1;if(aText>bText)return 1;if(aText<bText)return-1;return 0;}).appendTo('#cf_height_page');$("#cf_height_page").find("option[value="+pageNum+"]").attr("selected",true);setTempHeight();}
 function del_cf_height_page(){var pNum=$("#cf_height_page").val();if(pNum>-1){$("#cf_height_page").find("option[value="+pNum+"]").remove();delete TCF.heights['a'+pNum];setHeightPage();}else{alert("不能移除“所有页”的配置。")}}
 function notNum(str){return isNaN(parseInt(str,10));}
-function setJpFormat(){if($("#jpFormat").prop("checked")){localStorage.setItem('autoJpFormat',"y");}else{localStorage.setItem('autoJpFormat',"n");}}
+function setJpFormat(){
+    if($("#jpFormat").prop("checked")){
+        localStorage.setItem('autoJpFormat',"y");
+    }
+    else{
+        localStorage.setItem('autoJpFormat',"n");
+    }
+}
 var clickCustom=0;var clickSelect=0;
 var cSelectState=0
 $(document).ready(function(){

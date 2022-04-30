@@ -222,15 +222,15 @@ function _myMediaProcessClass(){
 		}
 		btnDel.onclick = function(){
 			v.innerHTML = this.cid;
+			deleteGitHubComment(this.cid,function(){});
 		}
 
 		btnReflash.onclick = function(){
 			v.innerHTML = "";
 			var vImg = blo0.blDiv(v,v.id+"vImg","vImg","grey"); 
 			
-			
 			var _src = "https://api.github.com/repos/jeremyjia/Games/issues/46/comments";
-			w3.getHttpObject(_src, function(o) {
+			listGitHubComments(_src, function(o) {
 				var lsImgBtn = [];
 				for(i in o){ 
 					var btnImg = blo0.blBtn(v,v.id+i,i,"grey");
@@ -270,7 +270,7 @@ function _myMediaProcessClass(){
 			var _v = blo0.blDiv(_imgV,_imgV.id+"_v", _s, blGrey[1]);
 			var btnDel = blo0.blBtn(_v,_v.id+"del","del","brown");
 			btnDel.onclick = function(){ 
-				deleteGitHubComment(this.cid,Date(),function(){
+				deleteGitHubComment(this.cid,function(){
 					b.click();
 				});
 			}

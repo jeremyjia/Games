@@ -1,4 +1,4 @@
-const tag = "[expressServer.js_v0.41]"; 
+const tag = "[expressServer.js_v0.44]"; 
 const l = require('./logger');
 const path = require('path'); 
 const express = require('express');
@@ -9,6 +9,7 @@ const { OpenApiValidator } = require('express-openapi-validator');
 const config = require('./config');
  
 const spider = require('./app/spider/index.js');
+const word = require('./app/word/index0.js');
 
 l.tag1(tag,"-----------------------xd23------")
 console.log(tag);     
@@ -23,9 +24,16 @@ class ExpressServer {
     this.setupMiddleware();
   } 
   setupMiddleware() {
+    
+    this.app.use(cors());
+    this.app.use(express.static(path.join(__dirname, 'public')));
+    this.app.use(bodyParser.urlencoded({ extended: true }));
+
     this.app.get('/', (req, res) => {      
       res.end('Hello index2.js.' + this.openApiYaml);
     });
+    
+
     this.app.get('/spider', (req, res) => {      
       spider.spider(req,res);
       //res.end('spider.' + this.openApiYaml);
@@ -36,8 +44,9 @@ class ExpressServer {
       r.yaml = this.openApiYaml;
       r.query = req.query;
       res.json(r);
-      */
+      //*/
     });
+    this.app.post('/word', (req, res) => {    word.word(req,res);    });
   }
 
   async launch() {

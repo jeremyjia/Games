@@ -1,0 +1,30 @@
+package main
+
+import (
+   "net/http"
+
+   "github.com/labstack/echo/v4"
+   "github.com/labstack/echo/v4/middleware"
+)
+
+func main() {
+   // Echo instance
+   e := echo.New()
+
+   // Middleware
+   e.Use(middleware.Logger())
+   e.Use(middleware.Recover())
+   e.Use(middleware.CORS())
+
+   // Routes
+   e.GET("/", HealthCheck)
+
+   // Start server
+   e.Logger.Fatal(e.Start(":3000"))
+}
+
+func HealthCheck(c echo.Context) error {
+   return c.JSON(http.StatusOK, map[string]interface{}{
+      "data": "Server is up and running",
+   })
+}
