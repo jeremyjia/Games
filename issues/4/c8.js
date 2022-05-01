@@ -1,5 +1,5 @@
 //i4c8
-var s = "v0.0.1 ";
+var s = "v0.0.2 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c8.js'"
 s += " style='color:blue;'"; s += ">"; s += "c8.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c8.js'"
@@ -138,7 +138,8 @@ function _myTaskProcessClass() {
 					var based64_txt = o;
 					d.video.src = based64_txt;
 				}
-				getStringComment(939443982, _loadIssue451CommentOfData);
+				//getStringComment(939443982, _loadIssue451CommentOfData);
+				getAllCommentOfOneIssue(743, _loadIssue451CommentOfData);
 			}
 
 		}
@@ -169,6 +170,28 @@ function getStringComment(commentId, CBFunObj) {
 				var msgObj = JSON.parse(response.responseText);
 				if (msgObj.body != null && msgObj.body != "") {
 					CBFunObj(msgObj.body);
+				}
+			} else {
+				alert("Network error！" + response.status);
+			}
+		}
+	}
+}
+
+function getAllCommentOfOneIssue(issueId, CBFunObj) {
+	var url = "https://api.github.com/repos/jeremyjia/Games/issues/"+issueId+"/comments";
+	myAjaxCmd('GET', url, null, usercallback);
+
+	function usercallback(response) {
+		if (response.readyState == 4) {
+			if (response.status == 200 || response.status == 201) {
+				var msgObj = JSON.parse(response.responseText);
+				var all="";
+				for(i in msgObj){
+                    all+= msgObj[i].body;
+				}
+				if (all != null && all != "") {
+					CBFunObj(all);
 				}
 			} else {
 				alert("Network error！" + response.status);

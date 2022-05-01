@@ -21,6 +21,9 @@ public class ScheduledService {
 	@Value("${github.config.active}")
 	private boolean bConfigGitHubMonitor;
 
+	@Autowired
+	DataStreamStoreService dataStreamStoreService;
+
 	/**
 	 * 定时任务
 	 * 
@@ -49,9 +52,25 @@ public class ScheduledService {
 			doTaskOfSetRq(2);
 			String docStr = doTaskOfReadDocStrOnGitHub();
 			doTaskOfCreateVideo(docStr);
-			doTaskOfUpdateDocOnGitHub();
+			// doTaskOfUpdateDocOnGitHub();
+			doTaskOfSubmitVideoToGitHub();
 			doTaskOfSetRq(0);
 		}
+	}
+
+	private void doTaskOfSubmitVideoToGitHub() {
+		String targetPath = System.getProperty("user.dir");
+		String videoName = "SampleOnGithub.mp4";
+		File mp4File = new File(targetPath + "/" + videoName);
+		String strBase64DocStr = FileUtil.encryptToBase64(mp4File.getAbsolutePath());
+
+		try {
+			DataStreamStoreService.saveStreamData("743", "data:video/mp4;base64,", strBase64DocStr);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("******The video data are all submitted to GitHub!******");
+
 	}
 
 	private void doTaskOfUpdateDocOnGitHub() {
