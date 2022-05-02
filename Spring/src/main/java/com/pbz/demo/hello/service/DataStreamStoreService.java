@@ -68,7 +68,7 @@ public class DataStreamStoreService {
 	}
 
 	private static void clearAllComments(String issueId) {
-		String issueUrl = "https://api.github.com/repos/jeremyjia/Games/issues/" + issueId + "/comments";
+		String issueUrl = "https://api.github.com/repos/jeremyjia/Games/issues/" + issueId + "/comments?per_page=100";
 		String allComments = NetAccessUtil.doGetOnGitHub(issueUrl, "");
 
 		JSONArray jsonObjArray = new JSONArray(allComments);
@@ -86,7 +86,7 @@ public class DataStreamStoreService {
 		System.out.println("Begin test");
 
 		String type = "data:video/mp4;base64,";
-		String base64Stream = "abcdefghijk";
+		String base64Stream = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 		try {
 			saveStreamData("743", type, base64Stream);
