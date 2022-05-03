@@ -4,7 +4,7 @@ var touchMap = {};
 var pointMode = (window.location.hash == "#points");
 var pointerEventDisabledMode = (window.location.hash == "#nopointer");
 var enableForce = false;
-var drawTouchMajor = true;
+var bMajor = true;
 var foundRotationAngle = false;
 var scale = 1;
 var mousePressed = false;
@@ -37,9 +37,8 @@ function InitializeApp() {
         switch(e.which) {
         // ESC
         case 27:
-            var canvas = document.getElementById("canvas");
-            canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
-            break;
+          blClear();            
+          break;
 
         // p
         case 80:
@@ -54,7 +53,7 @@ function InitializeApp() {
 
         // a
         case 65:
-            drawTouchMajor = !drawTouchMajor;
+            bMajor = !bMajor;
             break;
 
         // c
@@ -215,7 +214,7 @@ function drawTouch(touch, eventType, coalesced) {
         context.stroke();
     }
 
-    if (drawTouchMajor && foundRotationAngle) {
+    if (bMajor && foundRotationAngle) {
         context.strokeStyle = "#fff";
         context.lineWidth = 1;
         context.beginPath();
@@ -257,12 +256,8 @@ function getAdjustedRadius(radius, otherRadius) {
 function getAdjustedRotationAngle(angle) {
     return angle * Math.PI / 180;
 }
-
-// Google analytics
-(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-ga('create', 'UA-69196529-2', 'auto');
-ga('send', 'pageview');
+ 
+function blClear(){
+  var canvas = document.getElementById("canvas");
+  canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+}

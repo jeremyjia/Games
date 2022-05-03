@@ -10,11 +10,27 @@
           height: 100%;
           touch-action: none;
         }
+        div {
+            position: fixed; 
+            padding: 15px; 
+            z-index: 10;
+        }
+        .topLeft {  
+            position: absolute;
+            top: 8px;
+            left: 16px;
+            font-size: 18px;
+            background: green;   
+         }
+         
       </style>
       <script src=paint.js></script>
     </head>
-    <body onload="InitializeApp();">
-      <canvas id="canvas"></canvas><br/>
+    <body onload="InitializeApp();">        
+      <div class="topLeft"><a href="../index.html">..v0.15</a>
+        <button onclick = "blClear();">clear</button>
+      </div> 
+      <canvas id="canvas"></canvas><br/>  
     </body>
   </html>
   
