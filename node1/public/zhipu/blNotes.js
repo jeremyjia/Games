@@ -2,11 +2,17 @@
     var _notes = function(lsNotes,x,y,dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id){     
         
         var s = "";
-        s += _makeText("notes: xv0.211",222, 11, 36, "yellow");
+        s += _makeText("notes: xv0.212",222, 11, 36, "yellow");
         var l = lsNotes;
 
         for(i in l){            
-            var idNote = blo0._getNoteId(l[i][0]);
+            var idNote = "";
+            if(l[i][0]=='('){
+                idNote = blo0._getNoteId(l[i][1]);
+            }
+            else{
+                idNote = blo0._getNoteId(l[i][0]);
+            }
             s += _use_shuzi_by_id(idNote,x + i*dx,y);  
           
             var nt = l[i].split(',');
@@ -15,6 +21,13 @@
                     s += _use_yingao_by_id("yingao_di",x + i*dx,y + j*8);
                 }
             }
+
+            var nt = l[i].split("'");
+            if(nt.length>1){
+                for(var j = 0; j < (nt.length -1);j++){
+                    s += _use_yingao_by_id("yingao_di",x + i*dx,y - j*8 -28);
+                }
+            } 
 
             var fdNt = l[i].split('.');    
             if(fdNt.length>1){
@@ -31,7 +44,7 @@
             var ly = l[i].split('_');    
             if(ly.length>1){
                 for(var j = 0; j < (ly.length -1);j++){
-                    s += _makeText(ly[j+1],x + i*dx,y + j*24 + 10, 24, "yellow");
+                    s += _makeText(ly[j+1],x + i*dx,y + j*24 + 10, 20, "lightgreen");
                 }
             }
         }

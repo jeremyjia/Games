@@ -107,11 +107,15 @@
     </div>
 </div>
  
-<div id="filename" style="border:1px solid red;">未命名-(bv0.44-index.html).jps</div> 
+<div id="filename" style="border:1px solid red;">未命名.jps</div> 
 
 <div class="head">
     <div class="main">
-  <a href="http://www.jianpu99.net/" target="_blank"><img class="logo" src="default/images/logo.png"/></a><ul class="menu" onmousedown="noHideMenu();">
+      <a href="http://www.jianpu99.net/" target="_blank">
+        <img class="logo" src="default/images/logo.png"/>
+      </a>
+      <ul class="menu" onmousedown="noHideMenu();">
+        <li><a href="../index.html" style="border:green 1px solid; color:white">.. bv0.52</a></li>
         <li>
             <span id="menuFile" onClick="showMenu(this)">文件(F)</span>
             <ul>
@@ -130,7 +134,7 @@
                 <li class="line"></li>
                 <li onClick="toClose()">关闭</li>
               </ul>
-          </li>
+        </li>
           
         <li>
             <span id="tryUser" onClick="showMenu(this)">视图(V)</span>
@@ -264,7 +268,7 @@
   }
 
   var d = blo0.blMD("id_4_blo0_dbg","xdd",555,333,333,150,"lightgreen"); 
-  var tb = blo0.blDiv(d,d.id+"tb",bvJsCode,"lightblue"); tb.style.color="brown";
+  var tb = blo0.blDiv(d,d.id+"tb","tb","lightblue"); tb.style.color="brown";
   var xddbg1 = blo0.blDiv(d,d.id+"xddbg1","xddbg1","gray"); tb.style.color="lightblue";
   var xddbg2 = blo0.blDiv(d,d.id+"xddbg2","xddbg2","gray"); tb.style.color="lightgreen";
   var xddbg3 = blo0.blDiv(d,d.id+"xddbg3","xddbg3","gray"); tb.style.color="gray";
@@ -319,8 +323,9 @@
         s += _makeText("Title",500,1, 36, "yellow");
         s += _defs();
         s += _uses(555,11);
-         
-        var a = sInit.split(/Q[1-4]*:/g); 
+        
+        
+        var a = sInit.split(/Q[1-7]*:/g); 
         var dy = 31;
         var y = 111;
         var x = 55;
@@ -393,7 +398,7 @@
             var s = '';
             s += '<g id="'+id+'" ';
             s += 'transform="translate(-50,-50)">';
-            s += '<ellipse fill="#fb1b1b" cx="62.35" cy="49.75" rx="2.45" ry="2.45"/>';
+            s += '<ellipse fill="#1b1b1b" cx="62.35" cy="49.75" rx="2.45" ry="2.45"/>';
             s += '</g>';
             return s;
           } 
@@ -517,7 +522,7 @@
             s += '<g id="'+id+'" ';
             s += 'transform="translate(-50,-50)">';
 
-            s += '<rect height="17.9" width="11.1" y="41.05" x="44.45" stroke-width="0" fill="#1fffff"/>';
+            s += '<rect height="17.9" width="11.1" y="41.05" x="44.45" stroke-width="0" fill="#ffffff"/>';
             s += '<rect height="3.2" width="11" y="48.4" x="44.5" stroke-width="null" fill="#1b1b1b"/>';
             
             s += '</g>';
