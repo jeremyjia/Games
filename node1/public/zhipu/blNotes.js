@@ -2,13 +2,14 @@
     var _notes = function(lsNotes,x,y,dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id){     
         
         var s = "";
-        s += _makeText("notes: xv0.212",222, 11, 36, "yellow");
+        s += _makeText("notes: xv0.214",222, 11, 36, "yellow");
         var l = lsNotes;
 
         for(i in l){            
             var idNote = "";
             if(l[i][0]=='('){
                 idNote = blo0._getNoteId(l[i][1]);
+                s += _use_shuzi_by_id("bl_lianYinXian_1",x + i*dx,y-20);  
             }
             else{
                 idNote = blo0._getNoteId(l[i][0]);

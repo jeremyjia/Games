@@ -115,7 +115,7 @@
         <img class="logo" src="default/images/logo.png"/>
       </a>
       <ul class="menu" onmousedown="noHideMenu();">
-        <li><a href="../index.html" style="border:green 1px solid; color:white">.. bv0.53</a></li><li>
+        <li><a href="../index.html" style="border:green 1px solid; color:white">.. bv0.54</a></li><li>
           <a href="ref/index.html" style="border:green 1px solid; color:white">ref</a></li>
         <li>
             <span id="menuFile" onClick="showMenu(this)">文件(F)</span>
@@ -351,6 +351,7 @@
         var _y = y;
         var _dx = 30;
         var s = "";
+        s += _use_shuzi_by_id("bl_lianYinXian_1",_x,_y); _x += _dx;
         s += _use_shuzi_by_id("shuzi_c_1",_x,_y); _x += _dx;
         s += _use_shuzi_by_id("shuzi_c_2",_x,_y); _x += _dx;
         s += _use_shuzi_by_id("shuzi_c_3",_x,_y); _x += _dx;
@@ -367,7 +368,8 @@
         return s;
       }
       var _defs = function(){
-        const CDefs = function(){
+        const CDefs = function(){  
+          this.bl_lianYinXian_1 = function(){ return _2_def_bl_lianYinXian_1(); }
           this.shuzi_c_1 = function(){ return _2_def_shuzi_c_1(); }
           this.shuzi_c_2 = function(){ return _2_def_shuzi_c_2(); }
           this.shuzi_c_3 = function(){ return _2_def_shuzi_c_3(); }
@@ -412,6 +414,19 @@
 
             //s += '<rect height="17.9" width="11.1" y="41.05" x="44.45" stroke-width="0" fill="#1fffff"/>';
             s += '<rect height="3.2" width="11" y="64.05" x="44.5" stroke-width="null" fill="#1b1bab"/>';
+            
+            s += '</g>';
+            return s;
+          }
+          var _2_def_bl_lianYinXian_1 = function(){
+            const id = "bl_lianYinXian_1";
+            var s = '';
+            s += '<g id="'+id+'" ';
+            s += 'transform="translate(-50,-50)">';
+            
+            s += '<rect height="17.9" width="11.1" y="41.05" x="44.45" stroke-width="0" fill="#1fffff"/>';
+            
+            s += '<path fill="black" d="m51.71225,56.72592c0,0.80306 0.32822,1.2029 0.98409,1.2029l1.85934,0l0,0.98408l-8.96846,0l0,-0.98408l1.74994,0c0.65642,-0.07163 0.98409,-0.43763 0.98409,-1.0935l0,-12.24893c-1.16737,0.65644 -2.26085,1.13125 -3.28105,1.42172l-0.43762,-0.76528c2.18699,-1.09351 4.04689,-2.47802 5.57743,-4.15573l1.53112,0l0,15.63882l0.00111,0l0.00001,0z"/>';            
             
             s += '</g>';
             return s;
@@ -534,6 +549,7 @@
 
         var od = new CDefs();
         var s = '<defs>';
+        s += od.bl_lianYinXian_1();
         s += od.shuzi_c_1();
         s += od.shuzi_c_2();
         s += od.shuzi_c_3();
