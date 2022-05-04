@@ -115,8 +115,8 @@
         <img class="logo" src="default/images/logo.png"/>
       </a>
       <ul class="menu" onmousedown="noHideMenu();">
-        <li><a href="../index.html" style="border:green 1px solid; color:white">.. bv0.54</a></li><li>
-          <a href="ref/index.html" style="border:green 1px solid; color:white">ref</a></li>
+        <li><a href="../index.html" style="border:green 1px solid; color:blue">.. bv0.114</a></li><li>
+          <a href="ref/index.html" style="border:green 1px solid; color:blue">ref</a></li>
         <li>
             <span id="menuFile" onClick="showMenu(this)">文件(F)</span>
             <ul>
@@ -319,7 +319,7 @@
         s +='version="1.1" ';
         s +='viewBox="0 0 ' + w + '' + h + '" ';
         s +='encoding="UTF-8" xmlns="http://www.w3.org/2000/svg">';
-        s += '<rect x="0" y="0" height="100%" width="100%" fill="gray" />';
+        s += '<rect x="0" y="0" height="100%" width="100%" fill="white" />';
         
         s += _makeText("Title",500,1, 36, "yellow");
         s += _defs();
@@ -423,11 +423,9 @@
             var s = '';
             s += '<g id="'+id+'" ';
             s += 'transform="translate(-50,-50)">';
-            
-            s += '<rect height="17.9" width="11.1" y="41.05" x="44.45" stroke-width="0" fill="#1fffff"/>';
-            
-            s += '<path fill="black" d="m51.71225,56.72592c0,0.80306 0.32822,1.2029 0.98409,1.2029l1.85934,0l0,0.98408l-8.96846,0l0,-0.98408l1.74994,0c0.65642,-0.07163 0.98409,-0.43763 0.98409,-1.0935l0,-12.24893c-1.16737,0.65644 -2.26085,1.13125 -3.28105,1.42172l-0.43762,-0.76528c2.18699,-1.09351 4.04689,-2.47802 5.57743,-4.15573l1.53112,0l0,15.63882l0.00111,0l0.00001,0z"/>';            
-            
+       
+            s += '<path d="M 84,114 C 90.5,104,100.5,104,107,114 M 107,114 C  100.5,105,90.5,105,84,114" stroke-width="0.5" stroke="#fb1b1b"/>';            
+
             s += '</g>';
             return s;
           }
@@ -579,6 +577,7 @@
       
       var _use_shuzi_by_id = function(id,x,y){
         var s = '<use x="'+x+'" y="'+y+'" ';
+        s += 'onmousedown="selectElement(this)" ';
         s += 'xlink:href="#'+id+'" ';
         s += ' time="1" audio="5," notepos="0_1_1" code="5," xmlns:xlink="http://www.w3.org/1999/xlink" ></use>';
         return s;
