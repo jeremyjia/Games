@@ -1,0 +1,114 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <title>Live code editor</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.31.0/codemirror.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.31.0/theme/elegant.css">
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.31.0/codemirror.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.31.0/mode/javascript/javascript.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
+        <script src="https://cdn.rawgit.com/eligrey/FileSaver.js/e9d941381475b5df8b7d7691013401e171014e89/FileSaver.min.js"></script>
+
+
+        <style>
+
+            .container {
+                display: flex;
+                flex-direction: row;
+            }
+
+            .column {
+                flex: 1;
+                border-left: 1px solid #ccc;
+            }
+
+            #svgImage {
+                background: white;
+                margin: 0;
+                overflow: auto;
+            }
+
+            #downloadFile {
+                position: fixed;
+                right: 20px;
+                top: 15px;
+                padding: 5px 10px;
+                background: white;
+                border: 1px solid #2288ff;
+                outline: none;
+                font-weight: bold;
+                color: #2288ff;
+                font-family: sans-serif;
+                cursor: pointer;
+                z-index: 10;
+            }
+            #downloadFile:hover {
+                background: #d8efff;
+            }
+
+            .CodeMirror {
+                height: 100%;
+                line-height: 1.5;
+            }
+
+            @media all and (max-width: 500px) {
+                .container {
+                    flex-direction: column;
+                }
+            }
+
+        </style>
+    </head>
+    <body>
+
+    <iframe style="position: fixed; right: 0; top: 50px; z-index: 10" src="https://ghbtns.com/github-btn.html?user=Bogdan-Lyashenko&repo=js-code-to-svg-flowchart&type=star&count=true" frameborder="0" scrolling="0" width="110px" height="20px"></iframe>
+
+    <div class="container">
+        <div class="column">
+            <textarea id="codeEditor">
+ /**
+ * Binary search
+ * @param {Array} list
+ * @param {Number} element
+ * @returns {number}
+ */
+function indexSearch(list, element) {
+    let currentIndex,
+        currentElement,
+        minIndex = 0,
+        maxIndex = list.length - 1;
+
+    while (minIndex <= maxIndex) {
+        currentIndex = Math.floor((maxIndex + maxIndex) / 2);
+        currentElement = list[currentIndex];
+
+        if (currentElement === element) {
+            return currentIndex;
+        }
+
+        if (currentElement < element) {
+            minIndex = currentIndex + 1;
+        }
+
+        if (currentElement > element) {
+            maxIndex = currentIndex - 1;
+        }
+    }
+
+    return -1;
+}</textarea>
+        </div>
+        <button id="downloadFile">DOWNLOAD SVG FILE</button>
+        <div class="column">
+            <p id="svgImage"></p>
+        </div>
+    </div>
+
+    <script src="index.js"></script>
+
+    </body>
+</html>
