@@ -115,7 +115,8 @@
         <img class="logo" src="default/images/logo.png"/>
       </a>
       <ul class="menu" onmousedown="noHideMenu();">
-        <li><a href="../index.html" style="border:green 1px solid; color:white">.. bv0.52</a></li>
+        <li><a href="../index.html" style="border:green 1px solid; color:blue">.. bv0.114</a></li><li>
+          <a href="ref/index.html" style="border:green 1px solid; color:blue">ref</a></li>
         <li>
             <span id="menuFile" onClick="showMenu(this)">文件(F)</span>
             <ul>
@@ -318,7 +319,7 @@
         s +='version="1.1" ';
         s +='viewBox="0 0 ' + w + '' + h + '" ';
         s +='encoding="UTF-8" xmlns="http://www.w3.org/2000/svg">';
-        s += '<rect x="0" y="0" height="100%" width="100%" fill="gray" />';
+        s += '<rect x="0" y="0" height="100%" width="100%" fill="white" />';
         
         s += _makeText("Title",500,1, 36, "yellow");
         s += _defs();
@@ -350,6 +351,7 @@
         var _y = y;
         var _dx = 30;
         var s = "";
+        s += _use_shuzi_by_id("bl_lianYinXian_1",_x,_y); _x += _dx;
         s += _use_shuzi_by_id("shuzi_c_1",_x,_y); _x += _dx;
         s += _use_shuzi_by_id("shuzi_c_2",_x,_y); _x += _dx;
         s += _use_shuzi_by_id("shuzi_c_3",_x,_y); _x += _dx;
@@ -366,7 +368,8 @@
         return s;
       }
       var _defs = function(){
-        const CDefs = function(){
+        const CDefs = function(){  
+          this.bl_lianYinXian_1 = function(){ return _2_def_bl_lianYinXian_1(); }
           this.shuzi_c_1 = function(){ return _2_def_shuzi_c_1(); }
           this.shuzi_c_2 = function(){ return _2_def_shuzi_c_2(); }
           this.shuzi_c_3 = function(){ return _2_def_shuzi_c_3(); }
@@ -412,6 +415,17 @@
             //s += '<rect height="17.9" width="11.1" y="41.05" x="44.45" stroke-width="0" fill="#1fffff"/>';
             s += '<rect height="3.2" width="11" y="64.05" x="44.5" stroke-width="null" fill="#1b1bab"/>';
             
+            s += '</g>';
+            return s;
+          }
+          var _2_def_bl_lianYinXian_1 = function(){
+            const id = "bl_lianYinXian_1";
+            var s = '';
+            s += '<g id="'+id+'" ';
+            s += 'transform="translate(-50,-50)">';
+       
+            s += '<path d="M 84,114 C 90.5,104,100.5,104,107,114 M 107,114 C  100.5,105,90.5,105,84,114" stroke-width="0.5" stroke="#fb1b1b"/>';            
+
             s += '</g>';
             return s;
           }
@@ -533,6 +547,7 @@
 
         var od = new CDefs();
         var s = '<defs>';
+        s += od.bl_lianYinXian_1();
         s += od.shuzi_c_1();
         s += od.shuzi_c_2();
         s += od.shuzi_c_3();
@@ -562,6 +577,7 @@
       
       var _use_shuzi_by_id = function(id,x,y){
         var s = '<use x="'+x+'" y="'+y+'" ';
+        s += 'onmousedown="selectElement(this)" ';
         s += 'xlink:href="#'+id+'" ';
         s += ' time="1" audio="5," notepos="0_1_1" code="5," xmlns:xlink="http://www.w3.org/1999/xlink" ></use>';
         return s;

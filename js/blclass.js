@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.44"
+var g_ver_blClass = "CBlClass_bv1.6.54"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2074,8 +2074,9 @@ function CBlClass ()
 		var ta = blo0.blTextarea(d1,"id_4_ta_blrRunJS","alert(1);",blGrey[3]);
 		ta.style.width="95%"; 
 		ta.style.height="111"+"px"; 
+		d1.ta = ta;
 
-		var tb = blo0.blDiv(d1,d1.id+"tb","",blGrey[5]);
+		var tb = blo0.blDiv(d1,d1.id+"tb_4_i21","",blGrey[5]);
 	    var btnRun= blo0.blBtn(tb,tb.id+"btnRun","run",blColor[4]);
 	    btnRun.onclick= function(){	  eval(ta.value);		}
 		blo0.blLoadGithubIssueComments(tb,"https://api.github.com/repos/jeremyjia/Games/issues/21",ta);
@@ -2115,6 +2116,69 @@ function CBlClass ()
 	}
 	this.C4SVG = function (w,h){        
 		function _C4SVG(w,h){
+			var d = null;
+			var lsDef = [];
+			var makeID = function(){ var id = "id_4_svg_def_"+lsDef.length; return id;}
+			this.addDef = function(id,str){
+				var o = {}
+				o.id = id;
+				o.str = str;
+				lsDef.push(o);
+			}
+			this.ui = function(id,html,x,y,w,h,color){
+				if(!d){
+					d = blo0.blMD(id,html,x,y,w,h,color);
+					const tbDefs = blo0.blDiv(d,d.id+"tbDefs","tbDefs","gray");
+					const vDefs = blo0.blDiv(d,d.id+"vDefs","vDefs","lightblue");
+					const btnRefreshDefs = blo0.blBtn(tbDefs,tbDefs.id + "btnRefreshDefs","rDefs","brown");
+					btnRefreshDefs.style.float = "left";
+					btnRefreshDefs.onclick = function(){
+						vDefs.innerHTML = Date();
+						for(i in lsDef){
+							const btnDef = blo0.blBtn(vDefs,vDefs.id+i,i,"gray");
+							btnDef.onclick = function(_b,_i,_l){
+								return function(){
+									blo0.blGetTa().value = _l[_i].str;
+
+									var s = u.s1(); 
+									s += r.def(_l[_i].id,_l[_i].str);
+									s += r.use(_l[_i].id,20,22);
+									s += u.s2();
+									v.innerHTML = s;
+								}
+							}(btnDef,i,lsDef);
+						}
+					}
+					
+					const btnAddDef = blo0.blBtn(tbDefs,tbDefs.id + "btnAddDef","+","green");
+					btnAddDef.style.float = "left";
+					btnAddDef.onclick = function(){						
+						var s = u.addDef(makeID(),blo0.blGetTa().value);
+						v.innerHTML = JSON.stringify(s);
+						btnRefreshDefs.click();
+					}
+
+					const tb = blo0.blDiv(d,d.id+"tb","tb","gray");
+					const v = blo0.blDiv(d,d.id+"v","v","lightblue");
+					const b1 = blo0.blBtn(tb,tb.id + "b1","string2svg(ta.value)","green");
+					b1.style.float = "left";
+					b1.onclick = function(){
+						var s = r.string2svg(blo0.blGetTa().value);
+						v.innerHTML = s;
+					} 
+					const use1 = blo0.blBtn(tb,tb.id + "use1","use1","green");
+					use1.style.float = "left";
+					use1.onclick = function(){ 
+						var s = u.s1(); 
+						s += r.def(lsDef[0].id,lsDef[0].str);
+						s += r.use(lsDef[0].id,20,22);
+						s += u.s2();
+						v.innerHTML = s;
+						blo0.blGetTa().value = s;
+					}
+				}
+				_on_off_div(null,d);
+			}
 			this.s1 = function(){
 				var s = '<svg ';
 				s +='width="' + w +'" ';
@@ -2130,11 +2194,10 @@ function CBlClass ()
 				return s;
 			};
 		}
-		const u = new _C4SVG(w,h);
-		u.gs = [];
-		u.ids = [];
+		const u = new _C4SVG(w,h);  
 
 		var r = {};
+		r.ui = function(id,html,x,y,w,h,color){			u.ui(id,html,x,y,w,h,color);		}
 		r.string2svg = function(str){
 			var s = u.s1();
 			s += str;
@@ -2147,9 +2210,7 @@ function CBlClass ()
 			s += 'transform="translate(-50,-50)">';
 			s += str;
 			s += '</g>';
-			s += '</defs>'; 
-			u.gs.push(s);
-			u.ids.push(id);
+			s += '</defs>';  
 			return s;
 		};
 		r.use = function(id,x,y){
