@@ -68,7 +68,7 @@
 <div class="topnav" id="myTopnav">
   <a href="../../index.html">Home</a>
   <a href="../index.html">issues</a>
-  <a href="#"  class="active">i21_bv0.111</a> 
+  <a href="#"  class="active">i21_bv0.122</a> 
   <a href="javascript:void(0);" class="icon" onclick="myFunction()">
     <i class="fa fa-bars"></i>
   </a>
@@ -77,8 +77,10 @@
 <div style="padding-left:16px">
   <button id="btn4Plx" onclick="fnPlx()">plxTest</button>
 </div>
+<div id = "wrapSandbox">wrap sand box</div>
 
-  <script>
+  <script> 
+
     function myFunction() {
       var x = document.getElementById("myTopnav");
       if (x.className === "topnav") {
@@ -90,9 +92,9 @@
     
     
 
-    function fnPlx(){  
-      if(!this.md){
-        this.md = blo0.blMD("id_4_plx","blclass unit test",444,55,500,400,"green");
+    function fnPlx(){        
+      if(!this.md){ 
+        this.md = blo0.blMD("id_4_plx","blclass unit test",55,255,500,400,"green");
         var tb = blo0.blDiv(this.md,this.md.id+"tb4Plx","tb","gray");
         var v1 = blo0.blDiv(this.md,this.md.id+"v1","v1","lightgray");
         var v2 = blo0.blDiv(this.md,this.md.id+"v2","v2","brown");
@@ -108,13 +110,17 @@
               }
             }
           }(i);
-        }
-
-             
+        }          
+        
+        
+       v3.sb = blo0.blSandBox(bl$("wrapSandbox"));
+ 
       }
-      var b = this, d = this.md;
-      _on_off_div(b,d);
-		  b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+      else{
+        var b = this, d = this.md;
+        _on_off_div(b,d);
+        b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+      }       
     }
   
 
@@ -130,25 +136,41 @@
             var sw = blo0.C4SVG(444,333);
             var sCircle = '<circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="yellow" />';
             const d2test = [
-              [sCircle],
-              ["id_4_def_1",sCircle],
-              ["test1"]
+             {  
+               "id": "id_4_svg_ui",
+               "html": "svgUI_v0.11",
+               "x": 222,
+               "y": 255,
+               "w": 500,
+               "h": 400,
+               "color": "green"
+             },              
+             {  
+               "str": "abc..."
+             },
+              3
             ];
+            var j = -1;
             for(i in sw){
+              j++;
               var btn = blo0.blBtn(tb,tb.id+i,i,"green");
-              btn.onclick = function(_btn,_i,_v,_d){
+              btn.onclick = function(_btn,_i,_v,_d,_j){
                 return function(){
-                  var sf = 'sw[' + _i + '](';
-                  for(j in _d[_i]){
-                    if(j>0) {
-                      sf += ',';
+                  var sf = 'sw[_i](';
+                  var n = -1;
+                  for(k in _d[_j]){
+                    n++;
+                    if(n>0){
+                      sf += ",";
                     }
-                    sf += _d[_i][j];
-                  }
-                  sf += ')';
-                  _v.innerHTML = sf;//sw[i](sCircle);
+                    
+                    sf += "'" + _d[_j][k] + "'"; 
+                  } 
+                  sf +=")";            
+                  _v.innerHTML = sf; 
+                  eval(sf); 
                 }                  
-              }(btn,i,v1,d2test)
+              }(btn,i,v1,d2test,j)
             } 
         }
       },
@@ -182,5 +204,11 @@
   </script>
 
   <script src="../../js/blclass.js"></script>
+  <script src="../../js/w3.js"></script>
+  <script>
+    bl$("btn4Plx").click();
+    bl$("btn4Plx").click();
+
+  </script>
 </body>
 </html>
