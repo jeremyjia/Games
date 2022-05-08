@@ -6,9 +6,9 @@ _btn.click();
 
 
 function CVoa2Video (){
-    var _v = "CVoa2Video_bv0.331";
+    var _v = "CVoa2Video_bv0.332";
 
-    var fn = ["blrVLE","parseType","downloadPage","f4"];
+    var fn = ["blrVLE","parseType","downloadPage","parsePage"];
     var fb = [];
     this.getValue = function(){
         var s = "// ";
@@ -191,7 +191,7 @@ function CVoa2Video (){
                         d.md4.v = blo0.blDiv(d.md4,d.md4.id+"v","v","gray");
                         var w = {};
                         w._2do = function(txt){                            
-                            os1.f4(d.md4.v,txt,_filename);
+                            os1.parsePage(d.md4.v,txt,_filename);
                         }
                         blo0.blAjx(w,_o1.saveasURL); 
                     }
@@ -205,7 +205,7 @@ function CVoa2Video (){
     fb.push(downloadPage);
 
     
-    var f4 = function(d,txt,_filename){ 
+    var parsePage = function(d,txt,_filename){ 
         var vf4 = "[v0.12] ";
         var o = {};
         o.blrMakePlayScript = function(b,d){ 
@@ -306,10 +306,17 @@ function CVoa2Video (){
                 
                 blo0.blSetPS(ps);
 
+                
+                var h1 = v.getElementsByTagName('h1');
+
                 var btnWord = blo0.blBtn(d.tb,d.tb.id+"btnWord","word","green");
                 btnWord.onclick = function(){
                     var ta = blo0.blGetTa();
-                    ta.value = blo0.blParsePS();
+                    var r = "";
+                    r += "title=" + h1[0].innerHTML;
+                    r += "&";
+                    r += "scriptVersion=" + '听力文本—— v:0.14';
+                    ta.value = r + blo0.blParsePS();
                     blo0.blWord(ta.value,function(txt){ta.value = txt;});
                 }
 
@@ -324,7 +331,7 @@ function CVoa2Video (){
         }(d,txt);    
         blo0.blShowObj2Div(d,o);    
     }
-    fb.push(f4);
+    fb.push(parsePage);
     
     var _addFun2Obj = function(_objName,fnName,fnBody){ 
         var r = _objName + "." +  fnName + "=" + fnBody;

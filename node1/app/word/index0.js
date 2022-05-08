@@ -1,4 +1,4 @@
-const tagWord = "index.js bv0.152";  
+const tagWord = "index.js bv0.214";  
 var officegen = require('officegen');
 var fs = require('fs');
 
@@ -12,6 +12,7 @@ e.word = function(req,res){
 }
 
 function createWord(req, res) {  
+    var saveAs = "";
     var bd =req.body; 
     const docx = officegen('docx')
     docx.on('finalize', function (written) {
@@ -40,15 +41,23 @@ function createWord(req, res) {
     var o = bd;
     for(i in o){ 
       if("==============" == o[i] || "undefined" == o[i]) continue;
+      if("title" == i){
+        p = docx.createP();
+        p.addText( o[i] , { color: 'blue', back: 'lightgreen',font_size: 22  }); 
+        saveAs = o[i]; 
+        saveAs = saveAs.replace("\n","");
+
+        continue;
+      } 
       p = docx.createP();
       var a = o[i].split("n.");
       if(a.length>1){
-        p.addText(a.length + "_" + a[0] , { color: '00ffff', back: 'brown',font_size: 22  }); 
-        p.addText("n.", { color: '00ffff', back: 'black',font_size: 22  }); 
-        p.addText(a[1] , { color: '00ffff', back: 'blue',font_size: 22  }); 
+        p.addText(a[0] , { color: '00ffff', back: 'brown',font_size: 18  }); 
+        p.addText("n.", { color: '00ffff', back: 'black',font_size: 18  }); 
+        p.addText(a[1] , { color: '00ffff', back: 'blue',font_size: 18  }); 
       }
       else{
-        p.addText( a[0] , { color: '00ffff', back: 'gray',font_size: 22  }); 
+        p.addText( a[0] , { color: '00ffff', back: 'gray',font_size: 18  }); 
       }
       p.addLineBreak()// 换行
       p.addLineBreak()// 换行
@@ -144,7 +153,10 @@ function createWord(req, res) {
   pObj.addImage('../img/as_it_is.jpg')
 
   //* 服务器生成文件
-  let out = fs.createWriteStream('public/example.docx')
+  var s = 'public/'+ saveAs + '.docx';
+  s = s.replace("\n","");
+  console.log("xdtest1:: " + s);
+  let out = fs.createWriteStream(s)
 
   out.on('error', function (err) {
     console.log(err)
