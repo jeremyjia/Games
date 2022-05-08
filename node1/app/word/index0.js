@@ -1,4 +1,4 @@
-const tagWord = "index.js bv0.214";  
+const tagWord = "index.js bv0.215";  
 var officegen = require('officegen');
 var fs = require('fs');
 
@@ -23,10 +23,10 @@ function createWord(req, res) {
     }) 
 
     let p = docx.createP(); 
-    p.addText("点击下面播放器收听：", { color: '880088' });
+    p.addText("英语慢速听力：点击下面播放器收听：", { color: '880088' });
     
-    p.addText('点我', { underline: true, color: '000088', link: 'http://mp.weixin.qq.com/mp/homepage?__biz=MzIxMTUzOTUzOA==&hid=13&sn=aab5a9a934bad54ecd823bca0201e226&scene=18#wechat_redirect' })
-    
+    p.addImage('../img/as_it_is.jpg');
+
     p = docx.createP(); 
     p.addText("本文主编:littleflute. ", { color: '000088' })
     p.addText('[漂泊者乐园软件团队] ' + tagWord, { color: '00ffff', back: '000088' })
