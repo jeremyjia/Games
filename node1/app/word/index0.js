@@ -1,4 +1,4 @@
-const tagWord = "index.js bv0.131";  
+const tagWord = "index.js bv0.152";  
 var officegen = require('officegen');
 var fs = require('fs');
 
@@ -19,12 +19,11 @@ function createWord(req, res) {
     })
     docx.on('error', function (err) {
         console.log(err)
-    })
-    // Create a new paragraph: 
-  
-    //blP.makeP(docx,bd);
+    }) 
 
     let p = docx.createP(); 
+    p.addText("点击下面播放器收听：", { color: '880088' });
+    
     p.addText('点我', { underline: true, color: '000088', link: 'http://mp.weixin.qq.com/mp/homepage?__biz=MzIxMTUzOTUzOA==&hid=13&sn=aab5a9a934bad54ecd823bca0201e226&scene=18#wechat_redirect' })
     
     p = docx.createP(); 
@@ -40,18 +39,25 @@ function createWord(req, res) {
 
     var o = bd;
     for(i in o){ 
+      if("==============" == o[i] || "undefined" == o[i]) continue;
       p = docx.createP();
-      p.addText(o[i], { color: '00ffff', back: '008888',font_size: 22  }); 
+      var a = o[i].split("n.");
+      if(a.length>1){
+        p.addText(a.length + "_" + a[0] , { color: '00ffff', back: 'brown',font_size: 22  }); 
+        p.addText("n.", { color: '00ffff', back: 'black',font_size: 22  }); 
+        p.addText(a[1] , { color: '00ffff', back: 'blue',font_size: 22  }); 
+      }
+      else{
+        p.addText( a[0] , { color: '00ffff', back: 'gray',font_size: 22  }); 
+      }
+      p.addLineBreak()// 换行
+      p.addLineBreak()// 换行
     }
 
-  let pObj = docx.createP()
-   
-  pObj.addText('这是广告位：请联系微信 littleflute')
-  pObj.addText('这是广告位：请联系微信 littleflute', { color: '000088' })
-  pObj.addText('这是广告位：请联系微信 littleflute', { color: '00ffff', back: '000088' })
-  pObj = docx.createP()
+  let pObj = docx.createP();     
+  pObj.addText('这是广告位：请联系微信 littleflute', { color: '00ffff', back: '000088' });
 
-  pObj.addText('这是广告位：请联系微信 littleflute')
+  pObj = docx.createP()
   pObj.addText('这是广告位：请联系微信 littleflute', {
     back: '00ffff',
     shdType: 'pct12',
@@ -67,7 +73,8 @@ function createWord(req, res) {
 
   pObj = docx.createP()
 
-  pObj.addText('这是广告位：请联系微信 littleflute')
+  pObj.addText('这是广告位：请联系微信 littleflute ==1==')
+  pObj.addLineBreak()// 换行
   pObj.addLineBreak()// 换行
   pObj.addText('这是广告位：请联系微信 littleflute')
 
