@@ -1,4 +1,4 @@
-const tagWord = "index.js bv0.124";  
+const tagWord = "index.js bv0.131";  
 var officegen = require('officegen');
 var fs = require('fs');
 
@@ -25,6 +25,9 @@ function createWord(req, res) {
     //blP.makeP(docx,bd);
 
     let p = docx.createP(); 
+    p.addText('点我', { underline: true, color: '000088', link: 'http://mp.weixin.qq.com/mp/homepage?__biz=MzIxMTUzOTUzOA==&hid=13&sn=aab5a9a934bad54ecd823bca0201e226&scene=18#wechat_redirect' })
+    
+    p = docx.createP(); 
     p.addText("本文主编:littleflute. ", { color: '000088' })
     p.addText('[漂泊者乐园软件团队] ' + tagWord, { color: '00ffff', back: '000088' })
 
@@ -37,12 +40,8 @@ function createWord(req, res) {
 
     var o = bd;
     for(i in o){ 
-      p = docx.createP(); 
-      p.addText( " ------------- ", { color: '00ffff', back: 'aaaaaa',font_size: 11  });
-      p.addText(i + " 有学员留言: 坚持1个月后, 才发现英语进步这么大！");
-      p.addText( " ===========", { color: '00ffff', back: 'bbbbbb',font_size: 11  });
       p = docx.createP();
-      p.addText(o[i], { color: '00ffff', back: '000088',font_size: 22  }); 
+      p.addText(o[i], { color: '00ffff', back: '008888',font_size: 22  }); 
     }
 
   let pObj = docx.createP()
