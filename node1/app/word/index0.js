@@ -1,4 +1,4 @@
-const tagWord = "index.js bv0.215";  
+const tagWord = "index.js bv0.222";  
 var officegen = require('officegen');
 var fs = require('fs');
 
@@ -24,8 +24,7 @@ function createWord(req, res) {
 
     let p = docx.createP(); 
     p.addText("英语慢速听力：点击下面播放器收听：", { color: '880088' });
-    
-    p.addImage('../img/as_it_is.jpg');
+     
 
     p = docx.createP(); 
     p.addText("本文主编:littleflute. ", { color: '000088' })
@@ -155,7 +154,8 @@ function createWord(req, res) {
   //* 服务器生成文件
   var s = 'public/'+ saveAs + '.docx';
   s = s.replace("\n","");
-  console.log("xdtest1:: " + s);
+  s = s.replace(": ","_");
+  console.log("xdtest2:: " + s);
   let out = fs.createWriteStream(s)
 
   out.on('error', function (err) {
