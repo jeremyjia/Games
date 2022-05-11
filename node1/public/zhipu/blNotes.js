@@ -2,7 +2,7 @@
     var _notes = function(lsNotes,x,y,dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id){     
         
         var s = "";
-        s += _makeText("notes: xv0.215",222, 11, 36, "blue");
+        s += _makeText("notes: xv0.221",222, 11, 36, "blue");
         var l = lsNotes;
 
         for(i in l){            

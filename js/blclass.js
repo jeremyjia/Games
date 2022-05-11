@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.54"
+var g_ver_blClass = "CBlClass_bv1.6.114"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2193,14 +2193,65 @@ function CBlClass ()
 				var s = '</svg>'; 
 				return s;
 			};
+			this.text = function(sText,x,y,size,fillColor){
+				var s = '<text ';
+				s += 'x="'+x+'" y="'+y+'" ';
+				s += 'dy="30.078" text-anchor="middle" ';
+				s += 'fill = "'+ fillColor +'" ';
+				s += 'style="font-weight:bold;" font-size="'+size+'" font-family="Microsoft YaHei">';
+				s += sText;
+				s += '</text>';
+				return s;
+			}
+			this.ntMusic = function(ls){  
+				var ms = ls[0].split(" ");
+				var c = [];
+				for(i in ls){
+				  c[i] = 0;
+				}
+				for(i in ls){
+				  if(i==0) continue; 
+				  for(j in ms){
+					if(ms[j]=='-' || ms[j]=='|'){
+					  continue;
+					}
+					var l = ls[i][c[i]];
+					c[i]++;
+					if(ls[i][c[i]]=="，" || ls[i][c[i]]=="。") {
+					  l += ls[i][c[i]];
+					  c[i]++;
+					}
+					ms[j] += "_"+l; 
+				  }
+				}
+				return ms;
+			}
+			 
+		
 		}
 		const u = new _C4SVG(w,h);  
 
 		var r = {};
 		r.ui = function(id,html,x,y,w,h,color){			u.ui(id,html,x,y,w,h,color);		}
-		r.string2svg = function(str){
-			var s = u.s1();
-			s += str;
+		r.string2svg = function(str){//xd2do  
+			var s = "";
+			s = u.s1();
+			
+			var dy = 31;
+			var y = 111;
+			var x = 1111;
+			var dx = 24;
+
+			var a = str.split(/Q[1-7]*:/g); 
+			for(i in a)
+			{
+				if(i==0) continue; 
+				var r = a[i].split(/C[1-4]*:/g);
+				var music = u.ntMusic(r);
+				s += u.text(music,x,y,dx, "lightgreen");
+				y += dy*3;
+			}
+			
 			s += u.s2();
 			return s;
 		};
@@ -2228,7 +2279,7 @@ function CBlClass ()
 		};
 		return r;
 	}
-	this.blStr2JpSVG = function (v,ntStr,lyStrs){//xd2do    
+	this.blStr2JpSVG = function (v,ntStr,lyStrs){  
 		var _notes = function(lsNotes,x,y,dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id){     
 				const _getNoteId = function(c){
 					var sID = "";
@@ -2247,7 +2298,7 @@ function CBlClass ()
 					return sID;
 				}
 				var s = "";
-				s += _makeText("notes: v0.13",111, 11,"yellow");
+				s += _makeText("notes: v0.14",111, 11,"yellow");
 				var l = lsNotes;
 	
 				for(i in l){            
