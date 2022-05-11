@@ -154,7 +154,7 @@ function createWord(req, res) {
   //* 服务器生成文件
   var s = 'public/'+ saveAs + '.docx';
   s = s.replace("\n","");
-  s = s.replace(": ","_");
+  s = s.replace(": ","_"); 
   console.log("xdtest2:: " + s);
   let out = fs.createWriteStream(s)
 
