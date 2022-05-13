@@ -155,7 +155,9 @@ function createWord(req, res) {
   var s = 'public/'+ saveAs + '.docx';
   s = s.replace("\n","");
   s = s.replace(": ","_"); 
-  console.log("xdtest2:: " + s);
+  s = s.replace("’","-"); 
+  s = s.replace("?","_"); 
+  console.log("xdtest3:: " + s);
   let out = fs.createWriteStream(s)
 
   out.on('error', function (err) {
