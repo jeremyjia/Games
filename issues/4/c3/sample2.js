@@ -6,7 +6,7 @@ _btn.click();
 
 
 function CVoa2Video (){
-    var _v = "CVoa2Video_bv0.333";
+    var _v = "CVoa2Video_bv0.334";
 
     var fn = ["blrVLE","parseType","downloadPage","parsePage"];
     var fb = [];
@@ -247,7 +247,27 @@ function CVoa2Video (){
             return function(b,d){  
                 var a = _txt.split('"image":{"width":1080,"height":608,"@type":"ImageObject","url":"');
                 var b = a[1].split('"},"name":"');
-                d.innerHTML = "image.src = " + b[0];
+                
+                var urlImg = "http://localhost:8080/download?url=";
+                urlImg += b[0]; 
+                urlImg += "&filename=voa1.jpg";
+                var wImg = {};           
+                wImg._2do = function(txt1){ 
+                   d.innerHTML =  txt1 + " :: voa1.jpg";  
+
+                   var w2 = {};
+                   w2._2do = function(txt2){
+                    d.innerHTML =  txt2 + " :: voa1.jpg"; 
+                   }   
+                   var url2 = "http://localhost:3001/downloadImage?url=";
+                   url2 += "http://localhost:8080/voa1.jpg";
+                   url2 += "&fn=" + "C:\\FFOutput\\voa1.jpg";
+                   blo0.blAjx(w2,url2);   
+                }           
+                            
+                blo0.blAjx(wImg,urlImg);
+
+                o.imgTitle = b[0];
             }
         }(d,txt);    
         o.blrGetPS = function(_d,_txt){
@@ -323,7 +343,9 @@ function CVoa2Video (){
                     var r = "";
                     r += "title=" + h1[0].innerHTML;
                     r += "&";
-                    r += "scriptVersion=" + '听力文本—— v:0.14';
+                    r += "imgTitle=" + o.imgTitle;
+                    r += "&";
+                    r += "scriptVersion=" + '听力文本—— v:0.23';
                     ta.value = r + blo0.blParsePS();
                     blo0.blWord(ta.value,function(txt){ta.value = txt;});
                 }

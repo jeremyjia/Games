@@ -1,4 +1,4 @@
-const tagWord = "word/index0.js bv0.224";  
+const tagWord = "word/index0.js bv0.232";  
 var officegen = require('officegen');
 var fs = require('fs');
  
@@ -44,11 +44,16 @@ function createWord(req, res) {
       if("==============" == o[i] || "undefined" == o[i]) continue;
       if("title" == i){
         p = docx.createP();
-        p.addText( o[i] , { color: 'blue', back: 'lightgreen',font_size: 22  }); 
-        p.addImage("C:\FFOutput\voa1.jpg");
-
+        p.addText( o[i] , { color: 'blue', back: 'lightgreen',font_size: 22  });  
         saveAs = o[i]; 
         saveAs = saveAs.replace("\n","");
+
+        continue;
+      } 
+      if("imgTitle" == i){
+        p = docx.createP();
+        //p.addText( o[i] , { color: 'red', back: 'green',font_size: 22  }); 
+        p.addImage("C:\\FFOutput\\voa1.jpg"); 
 
         continue;
       } 
