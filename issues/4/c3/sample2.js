@@ -6,7 +6,7 @@ _btn.click();
 
 
 function CVoa2Video (){
-    var _v = "CVoa2Video_bv0.332";
+    var _v = "CVoa2Video_bv0.333";
 
     var fn = ["blrVLE","parseType","downloadPage","parsePage"];
     var fb = [];
@@ -242,6 +242,14 @@ function CVoa2Video (){
                 } 
             }
         }(d,txt);  
+        
+        o.blrImage = function(_d,_txt){
+            return function(b,d){  
+                var a = _txt.split('"image":{"width":1080,"height":608,"@type":"ImageObject","url":"');
+                var b = a[1].split('"},"name":"');
+                d.innerHTML = "image.src = " + b[0];
+            }
+        }(d,txt);    
         o.blrGetPS = function(_d,_txt){
             return function(b,d){  
                 var ts = document.getElementsByTagName('textarea');

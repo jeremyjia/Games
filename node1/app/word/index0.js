@@ -1,8 +1,10 @@
-const tagWord = "index.js bv0.222";  
+const tagWord = "word/index0.js bv0.224";  
 var officegen = require('officegen');
 var fs = require('fs');
-
-var blP = require('./blMakeP');
+ 
+const l = require('../../logger'); 
+l.tag1(tagWord,"--tagWord---------------------------")
+ 
 
 var e = {};
 module.exports = e;
@@ -43,6 +45,8 @@ function createWord(req, res) {
       if("title" == i){
         p = docx.createP();
         p.addText( o[i] , { color: 'blue', back: 'lightgreen',font_size: 22  }); 
+        p.addImage("C:\FFOutput\voa1.jpg");
+
         saveAs = o[i]; 
         saveAs = saveAs.replace("\n","");
 
@@ -149,7 +153,7 @@ function createWord(req, res) {
   pObj = docx.createP()
 
   // 添加图片
-  pObj.addImage('../img/as_it_is.jpg')
+  pObj.addImage('../img/as_it_is.jpg');
 
   //* 服务器生成文件
   var s = 'public/'+ saveAs + '.docx';
