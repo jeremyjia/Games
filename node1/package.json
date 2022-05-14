@@ -19,6 +19,7 @@
     "image-downloader": "^4.3.0",
     "mysql2": "^2.2.5",
     "officegen": "^0.6.5",
+    "puppeteer": "^14.1.0",
     "request": "^2.88.2",
     "supertest": "^6.2.2",
     "swagger-ui-express": "^4.3.0",
