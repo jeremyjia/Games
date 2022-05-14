@@ -21,6 +21,9 @@ public class ScheduledService {
 	@Value("${github.config.active}")
 	private boolean bConfigGitHubMonitor;
 
+	@Autowired
+	DataStreamStoreService dataStreamStoreService;
+
 	/**
 	 * 定时任务
 	 * 
@@ -28,11 +31,11 @@ public class ScheduledService {
 	 */
 	@Scheduled(fixedRate = 10000)
 	public void scheduledTask() throws Exception {
-		System.out.println("Processing scheduledTask");
-
 		if (!bConfigGitHubMonitor) {
 			return;
 		}
+		System.out.println("Processing scheduledTask!");
+
 		int rq = getRqStatus();
 		System.out.println(rq);
 		if (rq == -1) {
@@ -48,24 +51,31 @@ public class ScheduledService {
 		if (rq == 1) {
 			doTaskOfSetRq(2);
 			String docStr = doTaskOfReadDocStrOnGitHub();
-			doTaskOfCreateVideo(docStr);
-			doTaskOfUpdateDocOnGitHub();
+			try {
+				doTaskOfCreateVideo(docStr);
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+				doTaskOfSetRq(0); // If error reset the status.
+				return;
+			}
+			doTaskOfSubmitVideoToGitHub();
 			doTaskOfSetRq(0);
 		}
 	}
 
-	private void doTaskOfUpdateDocOnGitHub() {
-
+	private void doTaskOfSubmitVideoToGitHub() {
 		String targetPath = System.getProperty("user.dir");
 		String videoName = "SampleOnGithub.mp4";
 		File mp4File = new File(targetPath + "/" + videoName);
-
 		String strBase64DocStr = FileUtil.encryptToBase64(mp4File.getAbsolutePath());
-		String data = "data:video/mp4;base64," + strBase64DocStr;
 
-		String videoDataLink = "https://api.github.com/repos/jeremyjia/Games/issues/comments/939443982";
-		NetAccessUtil.doPostOnGitHub(videoDataLink, "POST", data);
-		System.out.println("******The video data is submitted to GitHub!******");
+		try {
+			DataStreamStoreService.saveStreamData("743", "data:video/mp4;base64,", strBase64DocStr);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("******The video data are all submitted to GitHub!******");
+
 	}
 
 	private void doTaskOfSetRq(int value) {
@@ -93,7 +103,6 @@ public class ScheduledService {
 		String fileName = "SampleOnGithub.json";
 		String videoName = "SampleOnGithub.mp4";
 		FileUtil.saveJsonString2File(jsonStr, fileName);
-
 		VideoOperator.generateVideoByscenario(fileName, videoName);
 
 		String targetPath = System.getProperty("user.dir");
