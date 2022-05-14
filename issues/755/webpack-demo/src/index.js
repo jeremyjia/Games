@@ -9,7 +9,7 @@ import Notes from './data.csv';
 
   // Lodash, currently included via a script, is required for this line to work
   // Lodash, now imported by this script
-   element.innerHTML = _.join(['bv0.13: ','Hello', 'webpack'], ' ');
+   element.innerHTML = _.join(['bv0.14: ','Hello', 'webpack'], ' ');
    element.classList.add('hello');
    
    // Add the image to our existing div.

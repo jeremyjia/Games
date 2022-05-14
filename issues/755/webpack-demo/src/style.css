@@ -7,8 +7,8 @@
 }
 
 .hello {
-  color: red;
-  font-family: 'MyFont';
+  color: green;
+  
   font-size:xx-large;
   background: url('./icon.png');
 }
