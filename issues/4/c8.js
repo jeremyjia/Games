@@ -1,5 +1,5 @@
 //i4c8
-var s = "v0.0.3 ";
+var s = "v0.0.4 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c8.js'"
 s += " style='color:blue;'"; s += ">"; s += "c8.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c8.js'"
@@ -60,9 +60,14 @@ function _myTaskProcessClass() {
 			d.v.btnReadVideoDoc = blo0.blBtn(d.v1, d.v1.id + "btnReadVideoDoc", "ReadVideoDoc", blColor[4]);
 			d.v.btnReadVideoDoc.onclick = function () {
 				function _loadIssue451CommentOfDoc(o) {
-					d.v.ta.value = JSON.stringify(o);;
+					if(o.indexOf("http") == 0) { 
+						d.v.ta.value = o;
+					}else if(o.indexOf("{") == 0){
+						var jsonDocObj = JSON.parse(o);
+						d.v.ta.value = JSON.stringify(jsonDocObj);
+					}
 				}
-				getGitHubComment(939612362, _loadIssue451CommentOfDoc);
+				getStringComment(939612362, _loadIssue451CommentOfDoc);
 			}
 
 			d.v.btnServer = blo0.blBtn(d.v1, d.v1.id + "btnServer", "QueryServer", blColor[4]);
@@ -91,6 +96,11 @@ function _myTaskProcessClass() {
 						return;
 					} else {
 						var strDoc = d.v.ta.value;
+						if(strDoc.indexOf("{") == 0){
+							var docObj = JSON.parse(d.v.ta.value);
+							strDoc = JSON.stringify(docObj);
+							d.v.ta.value = strDoc;
+						}
 						updateCommentOnGitHub(939612362, strDoc, CBUpdateVideoDoc);
 						function CBUpdateVideoDoc(response) {
 							if (response.readyState == 4) {

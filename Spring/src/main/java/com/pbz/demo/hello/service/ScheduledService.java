@@ -93,8 +93,10 @@ public class ScheduledService {
 			int e = resultString.indexOf("reactions");
 			jsonStr = resultString.substring(s + 7, e - 3);
 
-			jsonStr = jsonStr.replaceAll("(\\\\r\\\\n|\\\\r|\\\\n|\\\\t)", "");
+			jsonStr = jsonStr.replace("\\n", "$DOLLAR$");
+			// jsonStr = jsonStr.replaceAll("(\\\\r\\\\n|\\\\r|\\\\n|\\\\t)", "");
 			jsonStr = jsonStr.replaceAll("\\\\", "");
+			jsonStr = jsonStr.replace("$DOLLAR$", "\\n");
 		}
 		return jsonStr;
 	}
@@ -102,6 +104,11 @@ public class ScheduledService {
 	private void doTaskOfCreateVideo(String jsonStr) throws Exception {
 		String fileName = "SampleOnGithub.json";
 		String videoName = "SampleOnGithub.mp4";
+		if (jsonStr.toLowerCase().startsWith("http")) {
+			String tempFile = FileUtil.downloadFile(jsonStr);
+			jsonStr = FileUtil.readAllBytes(tempFile);
+		}
+
 		FileUtil.saveJsonString2File(jsonStr, fileName);
 		VideoOperator.generateVideoByscenario(fileName, videoName);
 
