@@ -1,4 +1,4 @@
-const tag = "[expressServer.js_v0.44]"; 
+const tag = "[expressServer.js_v0.52]"; 
 const l = require('./logger');
 const path = require('path'); 
 const express = require('express');
@@ -10,9 +10,9 @@ const config = require('./config');
  
 const spider = require('./app/spider/index.js');
 const word = require('./app/word/index0.js');
+const img = require('./app/image/index.js');
 
-l.tag1(tag,"-----------------------xd23------")
-console.log(tag);     
+l.tag1(tag,"-----------------------expressServer.js------") 
   
 
 
@@ -47,6 +47,7 @@ class ExpressServer {
       //*/
     });
     this.app.post('/word', (req, res) => {    word.word(req,res);    });
+    this.app.get('/downloadImage', (req, res) => {    img.download(req,res);    });
   }
 
   async launch() {
