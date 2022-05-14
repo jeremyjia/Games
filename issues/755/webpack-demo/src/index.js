@@ -9,6 +9,8 @@ import toml from './data.toml';
 import yaml from './data.yaml';
 import json from './data.json5';
 
+console.log("xdtest1....");
+
 console.log(toml.title); // output `TOML Example`
 console.log(toml.owner.name); // output `Tom Preston-Werner`
 
