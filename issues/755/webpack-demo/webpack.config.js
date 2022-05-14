@@ -1,6 +1,5 @@
 const path = require('path');
-const toml = require('toml');
-const yaml = require('yamljs');
+const toml = require('toml'); 
 const json5 = require('json5');
 
 module.exports = {
@@ -37,14 +36,7 @@ module.exports = {
         parser: {
           parse: toml.parse,
         },
-      },
-      {
-        test: /\.yaml$/i,
-        type: 'json',
-        parser: {
-          parse: yaml.parse,
-        },
-      },
+      }, 
       {
         test: /\.json5$/i,
         type: 'json',
