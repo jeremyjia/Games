@@ -1,304 +1,117 @@
+const ui = bl$("id_uiPlx");
+const ptb = blo0.blDiv(ui,ui.id+"ptb","bv0.52","lightgreen");
+const pv = blo0.blDiv(ui,ui.id+"pv","v","lightblue");
+const btn1 = blo0.blBtn(ptb,ptb.id+"btn1","1","gray");
+btn1.style.float = "left";
+btn1.onclick = function(){
+    pv.innerHTML = blo0.blStr2JpSVG2(ta.value); 
+} 
 
 
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>番茄简谱V1.0 beta1</title>
-  <link href="main.css" rel="stylesheet" type="text/css" />
-  <script>
-    //if(!window.applicationCache) {
-    //	window.location='./Zhipu-nohtml5-example-0.html';
-    //}
-    //var urlExampleId=0;
-  </script>
-  <script src="jquery.min.js"></script>
-  <script src="Zhipu-jsCode.js"></script>
-  <script src="blNotes.js"></script>
-  <script src="blLyrics.js"></script>
-	<script>var isWindows = false;</script>
-</head>
-<body>  
-<script src="https://jeremyjia.github.io/Games/js/blclass.js"></script> 
-
-<div class="win">
-	<div class="titleBar">
-    	<span></span>
-        <i onClick="winClose()" title="关闭"></i>
-    </div>
-    <div class="body"></div>
-</div>
-
-<div class="mask"></div>
-
-<div id="tip">提示</div>
-<div id="addCustomTip">提示：请在需要插入内容的地方点击鼠标左键即可。</div>
-<div id="customAttribute">
-	<div class="heads"></div>
-    <div class="mains">
-		<div class="attributes attributes_text">
-    <table border="0">
-      <tr>
-        <td height="25">
-        <select id="custom_text_family">
-          <option value="Microsoft YaHei">微软雅黑</option>
-          <option value="SimSun">宋体</option>
-          <option value="SimHei">黑体</option>
-          <option value="KaiTi">楷体</option>
-        </select>
-          <select id="custom_text_size">
-            <option value="12">12</option>
-            <option value="14">14</option>
-            <option value="16">16</option>
-            <option value="18">18</option>
-            <option value="24">24</option>
-            <option value="28">28</option>
-            <option value="32">32</option>
-            <option value="38">38</option>
-            <option value="52">52</option>
-            <option value="60">60</option>
-        </select>
-          <select id="custom_text_color">
-            <option value="#101010" style="color:#101010;">黑色</option>
-            <option value="#ff0000" style="color:#ff0000;">红色</option>
-            <option value="#ff9900" style="color:#ff9900">橙色</option>
-            <option value="#00cc00" style="color:#00cc00;">绿色</option>
-            <option value="#0000cc" style="color:#0000cc;">蓝色</option>
-            <option value="#ff00ff" style="color:#ff00ff;">粉色</option>
-            <option value="#ffff00" style="color:#ffff00">黄色</option>   
-        </select>
-          <select id="custom_text_weight">
-            <option value="normal">不加粗</option>
-            <option value="bold">加粗</option>
-        </select></td>
-      </tr>
-      <tr>
-        <td height="25">
-        <textarea id="custom_text_text" onkeydown="nobr(event)" style=" width:98%; height:35px; padding-left:1px;"></textarea>
-        </td>
-      </tr>
-      </table>
-</div>
-
-<div class="attributes attributes_symbol">
-    <table border="0" style="color:#333;">
-      <tr>
-        <td height="25">
-        颜色：<select id="custom_symbol_fill">
-            <option value="#101010" style="color:#101010;">黑色</option>
-            <option value="#ff0000" style="color:#ff0000;">红色</option>
-            <option value="#ff9900" style="color:#ff9900">橙色</option>
-            <option value="#00cc00" style="color:#00cc00;">绿色</option>
-            <option value="#0000cc" style="color:#0000cc;">蓝色</option>
-            <option value="#ff00ff" style="color:#ff00ff;">粉色</option>
-            <option value="#ffff00" style="color:#ffff00">黄色</option>
-        </select>&nbsp;
-        	缩放：宽度 <input id="custom_symbol_width" type="text" value="1" style="width:25px;"/> &nbsp;
-        	高度 <input id="custom_symbol_height" type="text" value="1" style="width:25px;"/>
-        </td>
-      </tr>
-      </table>
-</div>
-    <table border="0" style="border-top:1px #CCCCCC dashed; width:100%; margin-top:5px;">
-      <tr>
-        <td height="25" style="padding-top:5px;"><input type="button" onClick="removeCustom();" value="删除此元素"></td>
-      </tr>
-    </table>
-    </div>
-</div>
- 
-<div id="filename" style="border:1px solid red;">未命名.jps</div> 
-
-<div class="head">
-    <div class="main">
-      <a href="http://www.jianpu99.net/" target="_blank">
-        <img class="logo" src="default/images/logo.png"/>
-      </a>
-      <ul class="menu" onmousedown="noHideMenu();">
-        <li><a href="../index.html" style="border:green 1px solid; color:blue">.. bv0.122</a></li><li>
-          <a href="ref/index.html" style="border:green 1px solid; color:blue">ref</a></li>
-        <li>
-            <span id="menuFile" onClick="showMenu(this)">文件(F)</span>
-            <ul>
-                <li id="menuNewFile" onClick="showWin('新建','./Zhipu-newFile.html');"><i>Ctrl+N</i>新建...</li>
-                <li id="menuOpenFile" onClick="showWin('打开','./Zhipu-fileBrowsing-type-open.html');"><i>Ctrl+O</i>打开...</li>
-                <li id="menuSave" onClick="toSave();"><i>Ctrl+S</i>保存</li>
-                <li id="menuSaveAs" onClick="showWin('另存为','./Zhipu-fileBrowsing-type-save.html');"><i>Shift+Ctrl+S</i>另存为...</li>
-                <li class="line"></li>
-                <li onClick="showWin('系统示例文档','./Zhipu-exampleList.html');">从示例谱库中打开...</li>                
-                <li class="line"></li>                
-                <li onClick="showWin('页面设置','./Zhipu-pageConfig.html');">页面设置...</li>
-                <li class="line"></li>
-                <li onClick="showWin('导出PDF文档','./Zhipu-toPdf.html');">导出PDF文档...</li>
-                <li onClick="showWin('导出JPG图片','./Zhipu-toJpg.html');">导出JPG图片...</li>
-                <li onClick="toSvg();">导出SVG图片...</li>
-                <li class="line"></li>
-                <li onClick="toClose()">关闭</li>
-              </ul>
-        </li>
-          
-        <li>
-            <span id="tryUser" onClick="showMenu(this)">视图(V)</span>
-            <ul>
-                <li id="menuSetView1" onClick="setView(1)">编码</li>
-                <li id="menuSetView3" onClick="setView(3)">拆分</li>
-                <li id="menuSetView2" onClick="setView(2)"><i>Tab</i>预览</li>
-                  <li class="line"></li>
-                  <li id="menuFullscreen" onClick="toFullscreen();"><i>F11</i>全屏</li>            </ul>
-        </li>
-      
-        <li>
-            <span onClick="showMenu(this)">插入(I)</span>
-            <ul>
-                <li onClick="showWin('插入文字','./xdText.html');">xd自定义文字</li>
-                <li onClick="showWin('xd插入符号','./xdSymbol.html');">xd符号大全</li>
-                <li class="line"></li>
-                <li id="menuAddLastSymbol" onClick="addSymbol(lastAddSymbol);"><i>Ctrl+E</i>插入最后使用的符号</li>
-              </ul>
-          </li>
-        <li>
-            <span id="tryUser" onClick="showMenu(this)">功能(T)</span>
-            <ul>
-                <li id="menuPlayer" onClick="showWin('听音查错','./Zhipu-player.html');"><i>Ctrl+Q</i>试听查错</li>
-              </ul>
-          </li>
-          
-        <li class="userMenu">
-            <span id="menuUser" onClick="showMenu(this)">用户(U)</span>
-            <ul>
-                <li onClick="showWin('修改我的登录密码','./Zhipu-newPassword.html');">修改登录密码</li>
-                <li onClick="postwin.location='./Zhipu-qiut.html'">退出登录</li>
-              </ul>
-          </li>        
-                
-        <li>
-            <span id="menuHelp" onClick="showMenu(this)">帮助(H)</span>
-            <ul>
-                          <li onClick="window.open('http://doc.lezhi99.com/');hideMenu();">软件帮助</li>
-            <li onClick="window.open('http://doc.lezhi99.com/zhipu');hideMenu();">脚本说明手册</li>
-                
-                <li id="menuSymbol" onClick="showWin('常用符号表，此界面可用“Ctrl+~”快捷键呼出，ESC键可关闭此界面。','./Zhipu-helpSymbol.html');"><i>Ctrl+~</i>常用符号表</li>
-                <li onClick="showWin('关于本软件','./Zhipu-about.html');">关于本软件</li>
-              </ul>
-          </li>
-      </ul>
-      <div class="userInfo">	当前用户：未登陆 <span class="but" onClick="showWin('用户登陆','/Zhipu-login');" style="color:#fff000">立刻登录</span>
-      <input type="hidden" value="0" id="uid">
-      <script>$(".userMenu").hide();</script></div>
-    </div>
-</div>
-
-<div class="preview">
-	<div class="svgList">
-		<div id="playerLine"></div>
-		<div id="cursor"></div>
-    </div>
-</div>
-
-<div class="editor">
-    <div class="line">
-      <div class="main"></div>
-    </div>
-    <div class="body">
-		<iframe id="editFrame" name="editFrame" src="./e.html" style="width:100%; height:100%; border:0;">
-    </iframe>
-    </div>
-</div>
-
-<div class="foot">
-    <div class="main">
-        <ul class="viewBut">
-            <li class="viewBut1" onClick="setView(1)">脚本</li>
-            <li class="viewBut3 current" onClick="setView(3)">拆分</li>
-            <li class="viewBut2" onClick="setView(2)">预览</li>
-        </ul>
-        <div class="softInfo">
-			番茄制谱QQ群：371552722，欢迎加入！
-        	<label style="margin-right:5px;"><input type="checkbox" id="jpFormat" onChange="setJpFormat();" style="vertical-align:-3px;">自动格式化脚本</label>
-        	<label><input type="checkbox" id="lockCustom" style="vertical-align:-3px;" onChange="setLockCustom();" checked>锁定自定义元素</label>
-      </div>
-    </div>
-</div>
-
-<div style=" height:0; width:0;">
-<iframe name="postwin" id="postwin" style="border:0; width:5px; height:5px; "></iframe>
-
-<form id="postForm" name="postForm"> <textarea id="postContent" name="postContent"></textarea> </form>
-<textarea name="customCode"></textarea>
-<textarea name="pageConfig"></textarea>
-
-<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=7,0,19,0" width="1" height="1" id="Fplay" title="Fplay" align="middle">
-<param name="allowScriptAccess" value="always" />
-<param name="movie" value="/Public/js/player.swf">
-<param name="quality" value="high">
-<param name="wmode" value="transparent" />
-<embed src="/Public/js/player.swf" name="Fplay" quality="high" allowScriptAccess="always"  swLiveConnect="true" pluginspage="http://www.macromedia.com/go/getflashplayer" type="application/x-shockwave-flash"  width="1" height="1"></embed>
-</object>
-
-
-</div> 
-<script> 
-  function xdl (sLog){
-    xddbg1.innerHTML = sLog + ":" + blo0.blDate();
-    xddbg2.innerHTML =  "winType = " + winType;
-  }
-  function blEditorInterval(){    
-    bt.click();   
-  }
-
-  var d = blo0.blMD("id_4_blo0_dbg","xdd",555,333,333,150,"lightgreen"); 
-  var tb = blo0.blDiv(d,d.id+"tb","tb","lightblue"); tb.style.color="brown";
-  var xddbg1 = blo0.blDiv(d,d.id+"xddbg1","xddbg1","gray"); tb.style.color="lightblue";
-  var xddbg2 = blo0.blDiv(d,d.id+"xddbg2","xddbg2","gray"); tb.style.color="lightgreen";
-  var xddbg3 = blo0.blDiv(d,d.id+"xddbg3","xddbg3","gray"); tb.style.color="gray";
-  var ta	= blo0.blTextarea(xddbg3,xddbg3.id+"ta","ta...","lightblue");
-					ta.style.width="95%"; 
-					ta.style.height="130px"; 
-  var b1 = blo0.blBtn(tb,tb.id+"b1","b1",blGrey[1]);
-  b1.onclick = function(){
-    redraw(1,'editor'); 
-    window.frames["editFrame"].document.getElementById("editor_text").value="1111111111111"; 
-    xdl("b1");
-  }   
-  const fs = [fTest0,fTest1,fTest2,fTest3];
-  tb.ls = [];
-  for(i in fs){
-    var btn = blo0.blBtn(tb,tb.id+i,i,blGrey[2]);
-    btn.onclick = function(_thisList,_thisBtn,_fs,_i){
-      return function(){
-        blo0.blMarkBtnInList(_thisBtn,_thisList,"green","grey");
-        xdShowJP(_fs[_i]); 
-        window.frames["editFrame"].document.getElementById("editor_text").value="ffffffffffffffffff"+_thisBtn.id;
-        xdl(_thisBtn.id);
-        ta.value = _fs[_i];
-      }
-    }(tb.ls,btn,fs,i);
-    tb.ls.push(btn);
-  }
-  
-  var bt = blo0.blBtn(tb,tb.id+"bt","bt",blGrey[1]);
-  bt.onclick = function(){
-    ta.value = window.frames["editFrame"].document.getElementById("editor_text").value;
-    var s = blStr2JpSVG(ta.value);
-    xdf1(s,"noUse"); 
-  }   
-  var btnPlx = blo0.blBtn(tb,tb.id+"btnPlx","btnPlx",blGrey[1]);
-  btnPlx.onclick = function(){ 
-    if(!this.load){
-      this.load = true;
-      this.v = blo0.blMDiv(tb,"id_uiPlx","uiPlx",222,111,500,400,"lightblue");
-      blo0.blScript("id_plx","plx.js");
-    }
-    var b = this;
-    _on_off_div(b,b.v);
-		b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
-  }   
-
-  function blStr2JpSVG(txt){
-    
+blo0.blStr2JpSVG2 = function (txt){    
     var r = "";
     var blcWork = function(sInit){
       this.blMakeSVG = function(){ return _makeSVG(1000,1415); }
+
+      const _getNoteId = function(c){
+        var sID = "";
+        if(c=='1'|| c=='2'|| c=='3'|| c=='4'|| c=='5'|| c=='6'|| c=='7'){
+            sID = "shuzi_c_" + c;
+        }
+        else if(c=='|'){
+            sID = "xiaojiexian";
+        } 
+        else if(c=='-'){
+            sID = "yanyinfu";
+        }
+        else if(c==','){
+            sID = "yingao_di";
+        }
+        else if(c=='.'){
+            sID = "fudian";
+        }
+        else if(c=='/'){
+            sID = "jianShi";
+        }
+        return sID;
+      }
+      var _mkMusic = function(ls){  
+        var ms = ls[0].split(" ");
+        var c = [];
+        for(i in ls){
+          c[i] = 0;
+        }
+        for(i in ls){
+          if(i==0) continue; 
+          for(j in ms){
+            if(ms[j]=='-' || ms[j]=='|'){
+              continue;
+            }
+            var l = ls[i][c[i]];
+            c[i]++;
+            if(ls[i][c[i]]=="，" || ls[i][c[i]]=="。") {
+              l += ls[i][c[i]];
+              c[i]++;
+            }
+            ms[j] += "_"+l; 
+          }
+        }
+        return ms;
+      }
+        
+
+        var _nts = function(lsNotes,x,y,dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id){     
+            
+            var s = "";
+            s += _makeText("nts: xv0.223",222, 11, 36, "brown");
+            var l = lsNotes;
+
+            for(i in l){            
+                var idNote = "";
+                if(l[i][0]=='('){
+                    idNote = _getNoteId(l[i][1]);
+                    s += _use_shuzi_by_id("bl_lianYinXian_1",x + i*dx -30,y-81);  
+                }
+                else{
+                    idNote = _getNoteId(l[i][0]);
+                }
+                s += _use_shuzi_by_id(idNote,x + i*dx,y);  
+            
+                var nt = l[i].split(',');
+                if(nt.length>1){
+                    for(var j = 0; j < (nt.length -1);j++){
+                        s += _use_yingao_by_id("yingao_di",x + i*dx,y + j*8);
+                    }
+                }
+
+                var nt = l[i].split("'");
+                if(nt.length>1){
+                    for(var j = 0; j < (nt.length -1);j++){
+                        s += _use_yingao_by_id("yingao_di",x + i*dx,y - j*8 -28);
+                    }
+                } 
+
+                var fdNt = l[i].split('.');    
+                if(fdNt.length>1){
+                    for(var j = 0; j < (fdNt.length -1);j++){
+                        s += _use_yingao_by_id("fudian",x + i*dx,y - j*8);
+                    }
+                }
+                var jsNt = l[i].split('/');    
+                if(jsNt.length>1){
+                    for(var j = 0; j < (jsNt.length -1);j++){
+                        s += _use_yingao_by_id("jianShi",x + i*dx,y - j*8); 
+                    }
+                }
+                var ly = l[i].split('_');    
+                if(ly.length>1){
+                    for(var j = 0; j < (ly.length -1);j++){
+                        s += _makeText(ly[j+1],x + i*dx,y + j*24 + 10, 20, "black");
+                    }
+                }
+            }
+            return s;
+        }
 
       
       var _makeSVG = function (w,h){        
@@ -325,8 +138,8 @@
           if(i==0) continue; 
           var r = a[i].split(/C[1-4]*:/g);
 
-          var music = makeMusic(r);//r[0].split(" ");           
-          s += _notes(music,x,y, dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id);    
+          var music = _mkMusic(r);      
+          s += _nts(music,x,y, dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id);    
            
           y += dy*3;
         }
@@ -580,10 +393,8 @@
       }
       
     }
+    
     var w = new blcWork(txt);
     r = w.blMakeSVG();
     return r;
-  }
-</script>
-</body>
-</html>
+}
