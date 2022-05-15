@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.51"
+var g_ver_blClass = "CBlClass_bv1.6.55"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2771,7 +2771,8 @@ function CBlClass ()
 		for(i in ps){
 			r += "&";
 			if(!ps[i].className){
-				r += "p"+i+"="+ps[i].innerHTML;
+				var s = ps[i].innerText; 
+				r += "p"+i+"="+s;
 			}
 			else{
 				r += "p"+i+"="+"==============";
