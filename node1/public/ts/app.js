@@ -1,4 +1,4 @@
-var message = 'Hello, ts!';
+var message = 'xdv0.12: Hello, ts!';
 // create a new heading 1 element
 var heading = document.createElement('h1');
 heading.textContent = message;
