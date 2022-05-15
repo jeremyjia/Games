@@ -2879,12 +2879,12 @@ function CBlClass ()
 	}
 	this.blParsePS = function(){ 
 		var r = "";
-		r += "g_ver_blClass=" + g_ver_blClass;
 		var ps = this.blGetPS();
 		for(i in ps){
 			r += "&";
 			if(!ps[i].className){
-				r += "p"+i+"="+ps[i].innerHTML;
+				var s = ps[i].innerText; 
+				r += "p"+i+"="+s;
 			}
 			else{
 				r += "p"+i+"="+"==============";

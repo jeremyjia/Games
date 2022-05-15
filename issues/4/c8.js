@@ -1,5 +1,5 @@
 //i4c8
-var s = "v0.0.1 ";
+var s = "v0.0.3 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c8.js'"
 s += " style='color:blue;'"; s += ">"; s += "c8.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c8.js'"
@@ -136,9 +136,12 @@ function _myTaskProcessClass() {
 			d.videoViewer.btnRefresh.onclick = function () {
 				function _loadIssue451CommentOfData(o) {
 					var based64_txt = o;
+					//var blob = dataURLtoBlob(based64_txt);
+                    //var file = blobToFile(blob, "videoName");
 					d.video.src = based64_txt;
 				}
-				getStringComment(939443982, _loadIssue451CommentOfData);
+				//getStringComment(939443982, _loadIssue451CommentOfData);
+				getAllCommentOfOneIssue(743, _loadIssue451CommentOfData);
 			}
 
 		}
@@ -175,4 +178,49 @@ function getStringComment(commentId, CBFunObj) {
 			}
 		}
 	}
+}
+
+function getAllCommentOfOneIssue(issueId, CBFunObj) {
+	var url = "https://api.github.com/repos/jeremyjia/Games/issues/"+issueId+"/comments?per_page=100";
+	myAjaxCmd('GET', url, null, usercallback);
+
+	function usercallback(response) {
+		if (response.readyState == 4) {
+			if (response.status == 200 || response.status == 201) {
+				var msgObj = JSON.parse(response.responseText);
+				var all="";
+				var count=0;
+				for(i in msgObj){
+					all += msgObj[i].body;
+					count++
+				}
+				if (all != null && all != "") {
+					//alert(count);
+					CBFunObj(all);
+				}
+			} else {
+				alert("Network error！" + response.status);
+			}
+		}
+	}
+}
+
+//将base64转换为blob
+function  dataURLtoBlob(dataurl) { 
+	var arr = dataurl.split(',');
+	alert(arr[0]);
+		var mime = "base64";
+		var bstr = atob(arr[1]);
+		var n = bstr.length;
+		u8arr = new Uint8Array(n);
+	while (n--) {
+		u8arr[n] = bstr.charCodeAt(n);
+	}
+	return new Blob([u8arr], { type: mime });
+}
+//将blob转换为file
+function blobToFile(theBlob, fileName){
+   theBlob.lastModifiedDate = new Date();
+   theBlob.name = fileName;
+   return URL.createObjectURL(theBlob);
 }

@@ -1,8 +1,16 @@
  
-const _51voa = require('./51voa/index.js');
+const tagSpider = "index.js bv 0.21";
+
+var http = require('http');
+var fs = require('fs'); 
+
 var e = {};
 module.exports = e;
 
-e.spider = function(req,res){
-    _51voa.index(req,res); 
+e.spider = function(req,res){ 
+    fs.readFile('app/spider/index.html', function(err, data) {
+        res.writeHead(200, {'Content-Type': 'text/html'});
+        res.write(data);
+        return res.end();
+      });
 }

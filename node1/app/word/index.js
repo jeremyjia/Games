@@ -1,8 +1,10 @@
-const tagWord = "index.js bv0.51";  
+const tagWord = "index.js bv0.52";  
 var officegen = require('officegen');
 var fs = require('fs');
 
 var blP = require('./blMakeP');
+
+console.log(tagWord);
 
 var e = {};
 module.exports = e;
