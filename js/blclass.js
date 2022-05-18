@@ -2638,10 +2638,9 @@ function CBlClass ()
 		  }
 			
 	
-			var _nts = function(lsNotes,x,y,dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id){     
-				
+			var _nts = function(lsNotes,x,y,dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id){
 				var s = "";
-				s += _makeText("nts: xv0.223",222, 11, 36, "brown");
+				s += _makeText("nts: xv0.224",222, 11, 36, "red");
 				var l = lsNotes;
 	
 				for(i in l){            
@@ -2687,6 +2686,12 @@ function CBlClass ()
 							s += _makeText(ly[j+1],x + i*dx,y + j*24 + 10, 20, "black");
 						}
 					}
+					
+					var Chord = l[i].split('"');    
+					if(Chord.length>1){
+						s += _makeText(Chord[1],x + i*dx,y + j*24 - 66, 20, "brown");
+					}
+
 				}
 				return s;
 			}
