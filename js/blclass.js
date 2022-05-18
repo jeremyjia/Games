@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.121"
+var g_ver_blClass = "CBlClass_bv1.6.124"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2283,7 +2283,7 @@ function CBlClass ()
 		var _notes = function(lsNotes,x,y,dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id){     
 				const _getNoteId = function(c){
 					var sID = "";
-					if(c=='1'|| c=='2'|| c=='3'|| c=='4'|| c=='5'|| c=='6'|| c=='7'){
+					if(c=='0'||c=='1'|| c=='2'|| c=='3'|| c=='4'|| c=='5'|| c=='6'|| c=='7'){
 						sID = "shuzi_c_" + c;
 					}
 					else if(c=='|'){
@@ -2384,6 +2384,7 @@ function CBlClass ()
 		  
 		  var _uses = function(){
 			var s = "";
+			s += _use_shuzi_by_id("shuzi_c_0",11,300);
 			s += _use_shuzi_by_id("shuzi_c_1",11,300);
 			s += _use_shuzi_by_id("shuzi_c_2",33,300);
 			s += _use_shuzi_by_id("shuzi_c_3",66,300);
@@ -2399,6 +2400,7 @@ function CBlClass ()
 		  }
 		  var _defs = function(){
 			const CDefs = function(){
+			  this.shuzi_c_0 = function(){ return _2_def_shuzi_c_0(); }
 			  this.shuzi_c_1 = function(){ return _2_def_shuzi_c_1(); }
 			  this.shuzi_c_2 = function(){ return _2_def_shuzi_c_2(); }
 			  this.shuzi_c_3 = function(){ return _2_def_shuzi_c_3(); }
@@ -2423,6 +2425,19 @@ function CBlClass ()
 	
 			  }
 			  
+			  var _2_def_shuzi_c_0 = function(){
+				const id = "shuzi_c_0";
+				var s = '';
+				s += '<g id="'+id+'" ';
+				s += 'transform="translate(-50,-50)">';
+				
+				s += '<rect height="17.9" width="11.1" y="41.05" x="44.45" stroke-width="0" fill="#1fffff"/>';
+				
+				s += '<path fill="blue" d="m49.99374,41.08005c0.94927,0 1.7798,0.19606 2.48943,0.58818c0.71017,0.39212 1.3027,0.97158 1.77761,1.7384s0.83218,1.71009 1.07181,2.82927c0.23963,1.11972 0.35943,2.40719 0.35943,3.86185c0,2.89299 -0.47707,5.08615 -1.43124,6.58057c-0.95415,1.49442 -2.37614,2.24163 -4.26704,2.24163c-1.89962,0 -3.32215,-0.74721 -4.26759,-2.24163c-0.9449,-1.49442 -1.41818,-3.68758 -1.41818,-6.58057c0,-1.45466 0.11764,-2.74213 0.35292,-3.86185c0.23528,-1.11973 0.58982,-2.063 1.06471,-2.82927s1.06746,-1.34629 1.77817,-1.7384c0.71018,-0.39212 1.54017,-0.58818 2.48997,-0.58818zm0,15.23937c0.41827,0 0.7837,-0.10892 1.09793,-0.32676c0.31371,-0.2173 0.57729,-0.57294 0.79078,-1.06527c0.2135,-0.49232 0.37471,-1.1328 0.48362,-1.9214c0.10893,-0.7886 0.16339,-1.75801 0.16339,-2.90823s-0.05446,-2.13053 -0.16339,-2.94036s-0.27011,-1.47264 -0.48362,-1.98621c-0.21402,-0.51411 -0.47707,-0.89098 -0.79078,-1.13062c-0.31369,-0.23963 -0.67967,-0.35944 -1.09793,-0.35944c-0.40954,0 -0.77117,0.11763 -1.08488,0.35291c-0.31314,0.23527 -0.57892,0.60997 -0.79731,1.12354c-0.21731,0.51411 -0.38123,1.17636 -0.48962,1.98676c-0.10891,0.81038 -0.16338,1.79504 -0.16338,2.95343c0,1.15023 0.05447,2.12181 0.16338,2.91478c0.10839,0.79295 0.27231,1.43341 0.48962,1.9214c0.21785,0.48797 0.48417,0.84087 0.79731,1.05873c0.31371,0.21784 0.67533,0.32676 1.08488,0.32676z"/>';            
+				
+				s += '</g>';
+				return s;
+			  }
 			  var _2_def_shuzi_c_1 = function(){
 				const id = "shuzi_c_1";
 				var s = '';
@@ -2541,6 +2556,7 @@ function CBlClass ()
 	
 			var od = new CDefs();
 			var s = '<defs>';
+			s += od.shuzi_c_0();
 			s += od.shuzi_c_1();
 			s += od.shuzi_c_2();
 			s += od.shuzi_c_3();
@@ -2593,7 +2609,7 @@ function CBlClass ()
 	
 		  const _getNoteId = function(c){
 			var sID = "";
-			if(c=='1'|| c=='2'|| c=='3'|| c=='4'|| c=='5'|| c=='6'|| c=='7'){
+			if(c=='0'|| c=='1'|| c=='2'|| c=='3'|| c=='4'|| c=='5'|| c=='6'|| c=='7'){
 				sID = "shuzi_c_" + c;
 			}
 			else if(c=='|'){
@@ -2640,7 +2656,7 @@ function CBlClass ()
 	
 			var _nts = function(lsNotes,x,y,dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id){
 				var s = "";
-				s += _makeText("nts: xv0.224",222, 11, 36, "red");
+				s += _makeText("nts: xv0.225",222, 11, 36, "red");
 				var l = lsNotes;
 	
 				for(i in l){            
@@ -2652,7 +2668,7 @@ function CBlClass ()
 					else{
 						idNote = _getNoteId(l[i][0]);
 					}
-					s += _use_shuzi_by_id(idNote,x + i*dx,y);  
+					s += _use_shuzi_by_id(idNote,x + i*dx,y);   
 				
 					var nt = l[i].split(',');
 					if(nt.length>1){
@@ -2737,6 +2753,7 @@ function CBlClass ()
 			var _dx = 30;
 			var s = "";
 			s += _use_shuzi_by_id("bl_lianYinXian_1",_x,_y); _x += _dx;
+			s += _use_shuzi_by_id("shuzi_c_0",_x,_y); _x += _dx;
 			s += _use_shuzi_by_id("shuzi_c_1",_x,_y); _x += _dx;
 			s += _use_shuzi_by_id("shuzi_c_2",_x,_y); _x += _dx;
 			s += _use_shuzi_by_id("shuzi_c_3",_x,_y); _x += _dx;
@@ -2755,6 +2772,7 @@ function CBlClass ()
 		  var _defs = function(){
 			const CDefs = function(){  
 			  this.bl_lianYinXian_1 = function(){ return _2_def_bl_lianYinXian_1(); }
+			  this.shuzi_c_0 = function(){ return _2_def_shuzi_c_0(); }
 			  this.shuzi_c_1 = function(){ return _2_def_shuzi_c_1(); }
 			  this.shuzi_c_2 = function(){ return _2_def_shuzi_c_2(); }
 			  this.shuzi_c_3 = function(){ return _2_def_shuzi_c_3(); }
@@ -2811,6 +2829,19 @@ function CBlClass ()
 		   
 				s += '<path d="M 84,114 C 90.5,104,100.5,104,107,114 M 107,114 C  100.5,105,90.5,105,84,114" stroke-width="0.5" stroke="#fb1b1b"/>';            
 	
+				s += '</g>';
+				return s;
+			  }
+			  var _2_def_shuzi_c_0 = function(){
+				const id = "shuzi_c_0";
+				var s = '';
+				s += '<g id="'+id+'" ';
+				s += 'transform="translate(-50,-50)">';
+				
+				s += '<rect height="17.9" width="11.1" y="41.05" x="44.45" stroke-width="0" fill="#1fffff"/>';
+				
+				s += '<path fill="red" d="m49.99374,41.08005c0.94927,0 1.7798,0.19606 2.48943,0.58818c0.71017,0.39212 1.3027,0.97158 1.77761,1.7384s0.83218,1.71009 1.07181,2.82927c0.23963,1.11972 0.35943,2.40719 0.35943,3.86185c0,2.89299 -0.47707,5.08615 -1.43124,6.58057c-0.95415,1.49442 -2.37614,2.24163 -4.26704,2.24163c-1.89962,0 -3.32215,-0.74721 -4.26759,-2.24163c-0.9449,-1.49442 -1.41818,-3.68758 -1.41818,-6.58057c0,-1.45466 0.11764,-2.74213 0.35292,-3.86185c0.23528,-1.11973 0.58982,-2.063 1.06471,-2.82927s1.06746,-1.34629 1.77817,-1.7384c0.71018,-0.39212 1.54017,-0.58818 2.48997,-0.58818zm0,15.23937c0.41827,0 0.7837,-0.10892 1.09793,-0.32676c0.31371,-0.2173 0.57729,-0.57294 0.79078,-1.06527c0.2135,-0.49232 0.37471,-1.1328 0.48362,-1.9214c0.10893,-0.7886 0.16339,-1.75801 0.16339,-2.90823s-0.05446,-2.13053 -0.16339,-2.94036s-0.27011,-1.47264 -0.48362,-1.98621c-0.21402,-0.51411 -0.47707,-0.89098 -0.79078,-1.13062c-0.31369,-0.23963 -0.67967,-0.35944 -1.09793,-0.35944c-0.40954,0 -0.77117,0.11763 -1.08488,0.35291c-0.31314,0.23527 -0.57892,0.60997 -0.79731,1.12354c-0.21731,0.51411 -0.38123,1.17636 -0.48962,1.98676c-0.10891,0.81038 -0.16338,1.79504 -0.16338,2.95343c0,1.15023 0.05447,2.12181 0.16338,2.91478c0.10839,0.79295 0.27231,1.43341 0.48962,1.9214c0.21785,0.48797 0.48417,0.84087 0.79731,1.05873c0.31371,0.21784 0.67533,0.32676 1.08488,0.32676z"/>';            
+				
 				s += '</g>';
 				return s;
 			  }
@@ -2933,6 +2964,7 @@ function CBlClass ()
 			var od = new CDefs();
 			var s = '<defs>';
 			s += od.bl_lianYinXian_1();
+			s += od.shuzi_c_0();
 			s += od.shuzi_c_1();
 			s += od.shuzi_c_2();
 			s += od.shuzi_c_3();
