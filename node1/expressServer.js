@@ -1,4 +1,4 @@
-const tag = "[expressServer.js_v0.54]"; 
+const tag = "[expressServer.js_v0.55]"; 
 const l = require('./logger');
 const path = require('path'); 
 const express = require('express');
@@ -49,6 +49,12 @@ class ExpressServer {
 
     this.app.post('/word', (req, res) => {    word.word(req,res);    });
     this.app.get('/downloadImage', (req, res) => {    img.download(req,res);    });
+    
+    this.app.get('/api/data', (req, res) => {
+      const data = [100, 50, 300, 40, 350, 250]; // assuming this is coming from the database
+      res.json(data);
+    });
+
   }
 
   async launch() {
