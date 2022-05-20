@@ -1,4 +1,4 @@
-const tag = "[expressServer.js_bv0.123]"; 
+const tag = "[expressServer.js_bv0.132]"; 
 const l = require('./logger');
 const path = require('path'); 
 const express = require('express');
@@ -60,7 +60,7 @@ class ExpressServer {
       res.json(data);
     });
     this.app.get('/api/svg', (req, res) => { 
-      s = mkSVG(res); 
+        mkSVG(res); 
     });
 
   } 
@@ -84,28 +84,54 @@ class ExpressServer {
 
 async function mkSVG(res) {
   const fakeDom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
-
-  const outputLocation = './output.svg';
+ 
 
   let body = (await d3).select(fakeDom.window.document).select('body');
 
   // Make an SVG Container
-  let svgContainer = body.append('div').attr('class', 'container')
+  let svg = body.append('div').attr('class', 'container')
     .append("svg")
       .attr("width", 1280)
       .attr("height", 1024);
 
   // Draw a line
-  let circle = svgContainer.append("line")
+  let circle = svg.append("line")
     .attr("x1", 5)
     .attr("y1", 5)
     .attr("x2", 500)
     .attr("y2", 500)
     .attr("stroke-width", 2)
-    .attr("stroke", "black");
+    .attr("stroke", "red");
 
-  // Output the result to console
-  console.log(body.select('.container').html());
+  // Set Dimensions
+const xSize = 500; 
+const ySize = 500;
+const margin = 40;
+const xMax = xSize - margin*2;
+const yMax = ySize - margin*2;
+
+// Create Random Points
+const numPoints = 100;
+const data = [];
+for (let i = 0; i < numPoints; i++) {
+  data.push([Math.random() * xMax, Math.random() * yMax]);
+}
+ 
+  svg.append("g")
+  .attr("transform","translate(" + margin + "," + margin + ")");
+ 
+ 
+ 
+
+// Dots
+svg.append('g')
+  .selectAll("dot")
+  .data(data).enter()
+  .append("circle")
+  .attr("cx", function (d) { return d[0] } )
+  .attr("cy", function (d) { return d[1] } )
+  .attr("r", 3)
+  .style("fill", "Red");
 
   // Output the result to file
   
