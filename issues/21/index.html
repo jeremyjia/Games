@@ -68,7 +68,7 @@
 <div class="topnav" id="myTopnav">
   <a href="../../index.html">Home</a>
   <a href="../index.html">issues</a>
-  <a href="#"  class="active">i21_bv0.122</a> 
+  <a href="#"  class="active">i21_bv0.123</a> 
   <a href="javascript:void(0);" class="icon" onclick="myFunction()">
     <i class="fa fa-bars"></i>
   </a>
@@ -97,7 +97,7 @@
         this.md = blo0.blMD("id_4_plx","blclass unit test",55,255,500,400,"green");
         var tb = blo0.blDiv(this.md,this.md.id+"tb4Plx","tb","gray");
         var v1 = blo0.blDiv(this.md,this.md.id+"v1","v1","lightgray");
-        var v2 = blo0.blDiv(this.md,this.md.id+"v2","v2","brown");
+        var v2 = blo0.blDiv(this.md,this.md.id+"v2","v2","lightblue");
         var v3 = blo0.blDiv(this.md,this.md.id+"v3","v3","green");
         for(i in ts){
           var btn = blo0.blBtn(tb,tb.id+i,ts[i].fn,"lightgray");
@@ -172,6 +172,13 @@
                 }                  
               }(btn,i,v1,d2test,j)
             } 
+        }
+      },
+      {
+        "v": "v0.12",
+        "fn":"blStr2JpSVG2",
+        "run": function(v){ 
+          v.innerHTML = blo0.blStr2JpSVG2(bl$("id_4_ta_blrRunJS").value);
         }
       },
       {

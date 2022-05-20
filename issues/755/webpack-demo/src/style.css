@@ -1,0 +1,14 @@
+@font-face {
+  font-family: 'MyFont';
+  src: url('./MusiSync.ttf') format('woff2'),
+    url('./MusiSync.ttf') format('woff');
+  font-weight: 600;
+  font-style: normal;
+}
+
+.hello {
+  color: green;
+  
+  font-size:xx-large;
+  background: url('./icon.png');
+}
