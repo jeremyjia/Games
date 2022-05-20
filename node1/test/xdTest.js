@@ -22,15 +22,12 @@ describe(tag4xdTest, function(){
       .set('accept', 'application/json') 
       .expect(200) 
       .then(response => {   
-        var testMe = response.body.api; 
-        assert("spider"==testMe,"testMe=" + testMe);
-        var Classnum = response.body.Classnum; 
-        assert(1==Classnum,"Classnum=" + Classnum);
-
+        var testMe = JSON.stringify(response.body); 
+        assert("{}"==testMe,"testMe=" + testMe); 
     }) 
   });    
 
   it('xd dev', function(){ 
-    assert.equal(app(),'to test xdApp: done.word');
+    assert.equal(app(),'to test xdApp: done.');
   });
 });
