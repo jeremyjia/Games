@@ -68,7 +68,7 @@
 <div class="topnav" id="myTopnav">
   <a href="../../index.html">Home</a>
   <a href="../index.html">issues</a>
-  <a href="#"  class="active">i21_bv0.123</a> 
+  <a href="#"  class="active">i21_bv0.124</a> 
   <a href="javascript:void(0);" class="icon" onclick="myFunction()">
     <i class="fa fa-bars"></i>
   </a>
@@ -179,6 +179,15 @@
         "fn":"blStr2JpSVG2",
         "run": function(v){ 
           v.innerHTML = blo0.blStr2JpSVG2(bl$("id_4_ta_blrRunJS").value);
+        }
+      },
+      {
+        "v": "v0.12",
+        "fn":"baiduEn2Zh",
+        "run": function(v){ 
+          blo0.baiduEn2Zh(bl$("id_4_ta_blrRunJS").value,function(txt){
+            v.innerHTML = txt;
+          });
         }
       },
       {
