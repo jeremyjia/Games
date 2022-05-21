@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.131"
+var g_ver_blClass = "CBlClass_bv1.6.132"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -1622,47 +1622,7 @@ function CBlClass ()
 	}
 
     this.baiduEn2Zh = function(sEn,cbBaidu){
-		var xmlhttp = null;
-        if (window.XMLHttpRequest)
-        {// code for IE7+, Firefox, Chrome, Opera, Safari
-            xmlhttp=new XMLHttpRequest();
-        }
-        else
-        {// code for IE6, IE5
-            xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-        }
-        xmlhttp.onreadystatechange=function()
-        {
-            if (xmlhttp.readyState==4 && xmlhttp.status==200){
-				cbBaidu(xmlhttp.responseText);
-            }
-			else{    
-				cbBaidu("error xd 11");
-			}
-        }
-		const url = 'http://api.fanyi.baidu.com/api/trans/vip/translate';
-
-        xmlhttp.open("GET",url,true);
-		var appid = '20200816000544285';  //Jeremyjia's 
-        var key = '_HQWPevq4AMqM1z99nhZ';  //Jeremyjia's
-        var salt = (new Date).getTime();
-        var query = sEn;   
-        var from = 'en';
-        var to = 'zh';
-        var str1 = appid + query + salt + key;
-        var sign = MD5(str1);
-		const data = {
-			q: query,
-			appid: appid,
-			salt: salt,
-			from: from,
-			to: to,
-			sign: sign
-		}
-		
-		xmlhttp.setRequestHeader("Content-type", "application/json");
-        xmlhttp.send(data);
-
+		cbBaidu(sEn);
 	}
     this.blAjx = function(worker,href)
     {
