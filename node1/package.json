@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@scrapingant/scrapingant-client": "^0.2.1",
     "@sendgrid/mail": "^7.4.4",
     "cheerio": "^1.0.0-rc.10",
     "cookie-parser": "^1.4.6",
@@ -18,6 +19,7 @@
     "image-downloader": "^4.3.0",
     "mysql2": "^2.2.5",
     "officegen": "^0.6.5",
+    "puppeteer": "^14.1.0",
     "request": "^2.88.2",
     "supertest": "^6.2.2",
     "swagger-ui-express": "^4.3.0",

@@ -3,18 +3,22 @@
 
 <body>
   <div>
-    <a href="..">[..] v0.32</a>
+    <a href="..">[..] v0.42</a>
     <a href="zhipu">zhipu</a>
     <a href="abc/index.html">abc</a>
-    <a href="spider">spider</a>
+    <a href="html5tricks/index.html">html5tricks</a>
     <a href="word/index.html">word</a>
     <a href="whiteBoard.html">whiteBoard</a>
+    <a href="paint/index.html">paint</a>
+    <a href="ts/index.html">TypeScript</a>
     <a href="1.html">1.html</a>
     <a href="1a.html">1a.html</a>
     <a href="2.html">2.html</a>
     <a href="3.html">3.html</a>
     <a href="4.html">4.html</a>
     <a href="5.html">5.html</a>
+    <a href="live-editor/index.html">[live-editor]</a>
+    <a href="spider">spider</a>
   </div>
   <canvas id="myCanvas" width="444" height="333"></canvas>
   <script src="https://jeremyjia.github.io/Games/Spring/script/firework.js"></script>
@@ -30,7 +34,7 @@
     function draw(ts) {
         gN++;
         clear(); 
-        animateFrame(gN);
+        animateFrame(gN); 
         window.requestAnimationFrame(ts => draw(ts));
     }
 

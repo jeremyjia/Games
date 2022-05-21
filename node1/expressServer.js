@@ -1,14 +1,15 @@
-const tag = "[expressServer.js_v0.52]"; 
+const tag = "[expressServer.js_v0.54]"; 
 const l = require('./logger');
 const path = require('path'); 
 const express = require('express');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
+const cors = require('cors'); 
 const bodyParser = require('body-parser');
 const { OpenApiValidator } = require('express-openapi-validator'); 
 const config = require('./config');
  
 const spider = require('./app/spider/index.js');
+const _51voa = require('./app/spider/51voa/index.js');
+const ScrapingAntClient = require('./app/spider/ScrapingAntClient/index.js');
 const word = require('./app/word/index0.js');
 const img = require('./app/image/index.js');
 
@@ -35,17 +36,17 @@ class ExpressServer {
     
 
     this.app.get('/spider', (req, res) => {      
-      spider.spider(req,res);
-      //res.end('spider.' + this.openApiYaml);
-      /*
-      res.status(200);
-      var r = {};
-      r.api = "spider";
-      r.yaml = this.openApiYaml;
-      r.query = req.query;
-      res.json(r);
-      //*/
+      spider.spider(req,res); 
     });
+
+    this.app.get('/spider/51voa', (req, res) => {      
+      _51voa.index(req,res); 
+    });
+
+    this.app.get('/spider/ScrapingAntClient', (req, res) => {      
+      ScrapingAntClient.scrape(req,res); 
+    });
+
     this.app.post('/word', (req, res) => {    word.word(req,res);    });
     this.app.get('/downloadImage', (req, res) => {    img.download(req,res);    });
   }

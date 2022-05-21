@@ -107,11 +107,16 @@
     </div>
 </div>
  
-<div id="filename" style="border:1px solid red;">未命名-(bv0.44-index.html).jps</div> 
+<div id="filename" style="border:1px solid red;">未命名.jps</div> 
 
 <div class="head">
     <div class="main">
-  <a href="http://www.jianpu99.net/" target="_blank"><img class="logo" src="default/images/logo.png"/></a><ul class="menu" onmousedown="noHideMenu();">
+      <a href="http://www.jianpu99.net/" target="_blank">
+        <img class="logo" src="default/images/logo.png"/>
+      </a>
+      <ul class="menu" onmousedown="noHideMenu();">
+        <li><a href="../index.html" style="border:green 1px solid; color:blue">.. bv0.122</a></li><li>
+          <a href="ref/index.html" style="border:green 1px solid; color:blue">ref</a></li>
         <li>
             <span id="menuFile" onClick="showMenu(this)">文件(F)</span>
             <ul>
@@ -130,7 +135,7 @@
                 <li class="line"></li>
                 <li onClick="toClose()">关闭</li>
               </ul>
-          </li>
+        </li>
           
         <li>
             <span id="tryUser" onClick="showMenu(this)">视图(V)</span>
@@ -232,29 +237,7 @@
 
 
 </div> 
-<script>
-  blo0._getNoteId = function(c){
-            var sID = "";
-            if(c=='1'|| c=='2'|| c=='3'|| c=='4'|| c=='5'|| c=='6'|| c=='7'){
-                sID = "shuzi_c_" + c;
-            }
-            else if(c=='|'){
-                sID = "xiaojiexian";
-            } 
-            else if(c=='-'){
-                sID = "yanyinfu";
-            }
-            else if(c==','){
-                sID = "yingao_di";
-            }
-            else if(c=='.'){
-                sID = "fudian";
-            }
-            else if(c=='/'){
-                sID = "jianShi";
-            }
-            return sID;
-  }
+<script> 
   function xdl (sLog){
     xddbg1.innerHTML = sLog + ":" + blo0.blDate();
     xddbg2.innerHTML =  "winType = " + winType;
@@ -264,7 +247,7 @@
   }
 
   var d = blo0.blMD("id_4_blo0_dbg","xdd",555,333,333,150,"lightgreen"); 
-  var tb = blo0.blDiv(d,d.id+"tb",bvJsCode,"lightblue"); tb.style.color="brown";
+  var tb = blo0.blDiv(d,d.id+"tb","tb","lightblue"); tb.style.color="brown";
   var xddbg1 = blo0.blDiv(d,d.id+"xddbg1","xddbg1","gray"); tb.style.color="lightblue";
   var xddbg2 = blo0.blDiv(d,d.id+"xddbg2","xddbg2","gray"); tb.style.color="lightgreen";
   var xddbg3 = blo0.blDiv(d,d.id+"xddbg3","xddbg3","gray"); tb.style.color="gray";
@@ -299,6 +282,17 @@
     var s = blStr2JpSVG(ta.value);
     xdf1(s,"noUse"); 
   }   
+  var btnPlx = blo0.blBtn(tb,tb.id+"btnPlx","btnPlx",blGrey[1]);
+  btnPlx.onclick = function(){ 
+    if(!this.load){
+      this.load = true;
+      this.v = blo0.blMDiv(tb,"id_uiPlx","uiPlx",222,111,500,400,"lightblue");
+      blo0.blScript("id_plx","plx.js");
+    }
+    var b = this;
+    _on_off_div(b,b.v);
+		b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+  }   
 
   function blStr2JpSVG(txt){
     
@@ -314,13 +308,14 @@
         s +='version="1.1" ';
         s +='viewBox="0 0 ' + w + '' + h + '" ';
         s +='encoding="UTF-8" xmlns="http://www.w3.org/2000/svg">';
-        s += '<rect x="0" y="0" height="100%" width="100%" fill="gray" />';
+        s += '<rect x="0" y="0" height="100%" width="100%" fill="white" />';
         
         s += _makeText("Title",500,1, 36, "yellow");
         s += _defs();
         s += _uses(555,11);
-         
-        var a = sInit.split(/Q[1-4]*:/g); 
+        
+        
+        var a = sInit.split(/Q[1-7]*:/g); 
         var dy = 31;
         var y = 111;
         var x = 55;
@@ -345,6 +340,7 @@
         var _y = y;
         var _dx = 30;
         var s = "";
+        s += _use_shuzi_by_id("bl_lianYinXian_1",_x,_y); _x += _dx;
         s += _use_shuzi_by_id("shuzi_c_1",_x,_y); _x += _dx;
         s += _use_shuzi_by_id("shuzi_c_2",_x,_y); _x += _dx;
         s += _use_shuzi_by_id("shuzi_c_3",_x,_y); _x += _dx;
@@ -361,7 +357,8 @@
         return s;
       }
       var _defs = function(){
-        const CDefs = function(){
+        const CDefs = function(){  
+          this.bl_lianYinXian_1 = function(){ return _2_def_bl_lianYinXian_1(); }
           this.shuzi_c_1 = function(){ return _2_def_shuzi_c_1(); }
           this.shuzi_c_2 = function(){ return _2_def_shuzi_c_2(); }
           this.shuzi_c_3 = function(){ return _2_def_shuzi_c_3(); }
@@ -393,7 +390,7 @@
             var s = '';
             s += '<g id="'+id+'" ';
             s += 'transform="translate(-50,-50)">';
-            s += '<ellipse fill="#fb1b1b" cx="62.35" cy="49.75" rx="2.45" ry="2.45"/>';
+            s += '<ellipse fill="#1b1b1b" cx="62.35" cy="49.75" rx="2.45" ry="2.45"/>';
             s += '</g>';
             return s;
           } 
@@ -407,6 +404,17 @@
             //s += '<rect height="17.9" width="11.1" y="41.05" x="44.45" stroke-width="0" fill="#1fffff"/>';
             s += '<rect height="3.2" width="11" y="64.05" x="44.5" stroke-width="null" fill="#1b1bab"/>';
             
+            s += '</g>';
+            return s;
+          }
+          var _2_def_bl_lianYinXian_1 = function(){
+            const id = "bl_lianYinXian_1";
+            var s = '';
+            s += '<g id="'+id+'" ';
+            s += 'transform="translate(-50,-50)">';
+       
+            s += '<path d="M 84,114 C 90.5,104,100.5,104,107,114 M 107,114 C  100.5,105,90.5,105,84,114" stroke-width="0.5" stroke="#fb1b1b"/>';            
+
             s += '</g>';
             return s;
           }
@@ -517,7 +525,7 @@
             s += '<g id="'+id+'" ';
             s += 'transform="translate(-50,-50)">';
 
-            s += '<rect height="17.9" width="11.1" y="41.05" x="44.45" stroke-width="0" fill="#1fffff"/>';
+            s += '<rect height="17.9" width="11.1" y="41.05" x="44.45" stroke-width="0" fill="#ffffff"/>';
             s += '<rect height="3.2" width="11" y="48.4" x="44.5" stroke-width="null" fill="#1b1b1b"/>';
             
             s += '</g>';
@@ -528,6 +536,7 @@
 
         var od = new CDefs();
         var s = '<defs>';
+        s += od.bl_lianYinXian_1();
         s += od.shuzi_c_1();
         s += od.shuzi_c_2();
         s += od.shuzi_c_3();
@@ -557,6 +566,7 @@
       
       var _use_shuzi_by_id = function(id,x,y){
         var s = '<use x="'+x+'" y="'+y+'" ';
+        s += 'onmousedown="selectElement(this)" ';
         s += 'xlink:href="#'+id+'" ';
         s += ' time="1" audio="5," notepos="0_1_1" code="5," xmlns:xlink="http://www.w3.org/1999/xlink" ></use>';
         return s;
