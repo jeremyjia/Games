@@ -57,8 +57,16 @@ function createWord(req, res) {
 
         continue;
       } 
-      p = docx.createP();
+
+      if(typeof o[i].split != "function")
+      { 
+        p.addText( i, { color: 'red', back: 'green',font_size: 22  });  
+        continue;
+      }
+
       var a = o[i].split("adj.");
+      
+      p = docx.createP();
       if(a.length>1){
         p.addText(a[0] , { color: '00ffff', back: 'brown',font_size: 18  }); 
         p.addText("adj.", { color: '00ffff', back: 'black',font_size: 18  }); 
