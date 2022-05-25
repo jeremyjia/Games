@@ -68,7 +68,7 @@
 <div class="topnav" id="myTopnav">
   <a href="../../index.html">Home</a>
   <a href="../index.html">issues</a>
-  <a href="#"  class="active">i21_bv0.141</a> 
+  <a href="#"  class="active">i21_bv0.143</a> 
   <a href="javascript:void(0);" class="icon" onclick="myFunction()">
     <i class="fa fa-bars"></i>
   </a>
@@ -235,8 +235,8 @@
           var formData = "fname=Henry&lname=Ford"; 
 
           var url = "http://localhost:3001/word";
-          blo0.blAjaxFormData("POST",url,formData,function(txt){
-            v.innerHTML = txt;
+          blo0.blAjaxFormData("POST",url,formData,function(o){
+            v.innerHTML = JSON.stringify(o);
           });
         }
       },
@@ -244,7 +244,9 @@
         "v": "v0.11",
         "fn":"blGetGithubIssueByNumber",
         "run": function(v){
-          v.innerHTML = blo0.blGetGithubIssueByNumber;
+           var i = blo0.blGetGithubIssueByNumber("littleflute","Songs",1,function(o){
+            bl$("id_4_ta_blrRunJS").value = JSON.stringify(o);
+           });
         }
       },
       {
@@ -252,6 +254,14 @@
         "fn":"addNewGitHubComment",
         "run": function(v){
           v.innerHTML = blo0.addNewGitHubComment;
+        }
+      },
+      {
+        "v": "v0.11",
+        "fn":"test",
+        "run": function(v){
+          v.innerHTML = blo0.blDate();
+          bl$("id_4_ta_blrRunJS").value = JSON.stringify(ts);
         }
       }
     ];
