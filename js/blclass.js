@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.132"
+var g_ver_blClass = "CBlClass_bv1.6.133"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2236,7 +2236,7 @@ function CBlClass ()
 
 		var r = {};
 		r.ui = function(id,html,x,y,w,h,color){			u.ui(id,html,x,y,w,h,color);		}
-		r.string2svg = function(str){//xd2do  
+		r.string2svg = function(str){
 			var s = "";
 			s = u.s1();
 			
@@ -2659,10 +2659,12 @@ function CBlClass ()
 	
 			var _nts = function(lsNotes,x,y,dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id){
 				var s = "";
-				s += _makeText("nts: xv0.225",222, 11, 36, "red");
+				s += _makeText("nts: xv0.231",222, 11, 36, "red");
 				var l = lsNotes;
 	
-				for(i in l){            
+
+				for(i in l){     					
+					var dy = 0;       //xd2do  
 					var idNote = "";
 					if(l[i][0]=='('){
 						idNote = _getNoteId(l[i][1]);
@@ -2673,10 +2675,18 @@ function CBlClass ()
 					}
 					s += _use_shuzi_by_id(idNote,x + i*dx,y);   
 				
+					var jsNt = l[i].split('/');    
+					if(jsNt.length>1){
+						for(var j = 0; j < (jsNt.length -1);j++){
+							s += _use_yingao_by_id("jianShi",x + i*dx,y - j*8 + dy*12); 
+							dy++;
+						}
+					}
+
 					var nt = l[i].split(',');
 					if(nt.length>1){
 						for(var j = 0; j < (nt.length -1);j++){
-							s += _use_yingao_by_id("yingao_di",x + i*dx,y + j*8);
+							s += _use_yingao_by_id("yingao_di",x + i*dx,y + j*8 + dy*8); 
 						}
 					}
 	
@@ -2686,6 +2696,7 @@ function CBlClass ()
 							s += _use_yingao_by_id("yingao_di",x + i*dx,y - j*8 -28);
 						}
 					} 
+					
 	
 					var fdNt = l[i].split('.');    
 					if(fdNt.length>1){
@@ -2693,16 +2704,11 @@ function CBlClass ()
 							s += _use_yingao_by_id("fudian",x + i*dx,y - j*8);
 						}
 					}
-					var jsNt = l[i].split('/');    
-					if(jsNt.length>1){
-						for(var j = 0; j < (jsNt.length -1);j++){
-							s += _use_yingao_by_id("jianShi",x + i*dx,y - j*8); 
-						}
-					}
 					var ly = l[i].split('_');    
 					if(ly.length>1){
 						for(var j = 0; j < (ly.length -1);j++){
-							s += _makeText(ly[j+1],x + i*dx,y + j*24 + 10, 20, "black");
+							s += _makeText(ly[j+1],x + i*dx,y + j*24 + 10 + 12 + 8 , 20, "black");
+							
 						}
 					}
 					
@@ -2731,7 +2737,7 @@ function CBlClass ()
 			
 			
 			var a = sInit.split(/Q[1-7]*:/g); 
-			var dy = 31;
+			var dy = 44;
 			var y = 111;
 			var x = 55;
 			var dx = 30;
@@ -2813,7 +2819,7 @@ function CBlClass ()
 			  } 
 			  
 			  var _2_def_jianShi = function(){
-				const id = "jianShi"; //xd2do
+				const id = "jianShi"; 
 				var s = '';
 				s += '<g id="'+id+'" ';
 				s += 'transform="translate(-50,-50)">';
