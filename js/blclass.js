@@ -2664,7 +2664,7 @@ function CBlClass ()
 	
 
 				for(i in l){     					
-					var dy = 0;       //xd2do  
+					var dy = 0;       
 					var idNote = "";
 					if(l[i][0]=='('){
 						idNote = _getNoteId(l[i][1]);
