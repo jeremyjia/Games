@@ -50,11 +50,14 @@ if (!md.run) {
 		  b.logCmd.ta.style.width = "95%";
 		  b.logCmd.ta.style.height = "300" + "px";
 
-		  //
+		  //Read server log
 		  b.logCmd.v.btnReadLog = blo0.blBtn(b.logCmd.v,b.logCmd.v.id+"btnReadLog","readLog",blColor[4]);
 		  b.logCmd.v.btnReadLog.onclick= function(){
-			  alert(1);
-		 }
+			  function _loadIssue760CommentOfDoc(s) {
+	              b.logCmd.ta.value = s;
+			  }
+			  getStringComment(1139435588, _loadIssue760CommentOfDoc);
+		  }
 
 		  b.style.background = blColor[4];
 		  _on_off_div(this,this.logCmd);	  
