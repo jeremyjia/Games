@@ -44,11 +44,17 @@ if (!md.run) {
 	bl$("id_div_4_logCmd").onclick = function(){
 		var b = this;
 		if(!this.logCmd){
-		  this.logCmd = blo0.blMDiv(md, md.id + "logCmd","log",520,-50,330,50,blGrey[0]);
-		  this.logCmd.v = blo0.blDiv(this.logCmd,  "id_div_4_c8_logView" ,blGrey[5]);
+		  b.logCmd = blo0.blMDiv(md, md.id + "logCmd","log",520,-50,330,50,blGrey[0]);
+		  b.logCmd.v = blo0.blDiv(b.logCmd,  "id_div_4_c8_logView" ,blGrey[5]);
 		  b.logCmd.ta = blo0.blTextarea(b.logCmd.v, "id_4_ta_logTextArea", "log...", blGrey[3]);
 		  b.logCmd.ta.style.width = "95%";
 		  b.logCmd.ta.style.height = "300" + "px";
+
+		  //
+		  b.logCmd.v.btnReadLog = blo0.blBtn(b.logCmd.v,b.logCmd.v.id+"btnReadLog","readLog",blColor[4]);
+		  b.logCmd.v.btnReadLog.onclick= function(){
+			  alert(1);
+		 }
 
 		  b.style.background = blColor[4];
 		  _on_off_div(this,this.logCmd);	  
