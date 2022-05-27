@@ -58,10 +58,10 @@ function createWord(req, res) {
         continue;
       } 
       p = docx.createP();
-      var a = o[i].split("n.");
+      var a = o[i].split("adj.");
       if(a.length>1){
         p.addText(a[0] , { color: '00ffff', back: 'brown',font_size: 18  }); 
-        p.addText("n.", { color: '00ffff', back: 'black',font_size: 18  }); 
+        p.addText("adj.", { color: '00ffff', back: 'black',font_size: 18  }); 
         p.addText(a[1] , { color: '00ffff', back: 'blue',font_size: 18  }); 
       }
       else{

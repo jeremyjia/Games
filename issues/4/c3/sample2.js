@@ -6,7 +6,7 @@ _btn.click();
 
 
 function CVoa2Video (){
-    var _v = "CVoa2Video_bv0.334";
+    var _v = "CVoa2Video_bv0.335";
 
     var fn = ["blrVLE","parseType","downloadPage","parsePage"];
     var fb = [];
@@ -232,8 +232,18 @@ function CVoa2Video (){
                             url2Download += "&filename=" + _filename + ".mp3"; 
                             var wMp3 = {};           
                             wMp3._2do = function(txt){
-                                _d.v.innerHTML =  txt + ":: " + _filename + ".mp3";                                 
-                                blo0.setPlayerURL("http://localhost:8080/" + _filename + ".mp3"); 
+                                _d.v.innerHTML =  txt + ":: " + _filename + ".mp3";    
+                                var url1 = "http://localhost:8080/" + _filename + ".mp3";                             
+                                blo0.setPlayerURL(url1); 
+                                
+                                var w2 = {};
+                                w2._2do = function(txt2){
+                                    d.innerHTML =  txt2 + " :: " + _filename + ".mp3"; 
+                                }   
+                                var url2 = "http://localhost:3001/downloadImage?url=";
+                                url2 += url1;
+                                url2 += "&fn=" + "C:\\FFOutput\\"+ _filename + ".mp3";
+                                blo0.blAjx(w2,url2);   
                             }           
                             
                             blo0.blAjx(wMp3,url2Download);
