@@ -1,11 +1,12 @@
 //i4c8
-var s = "v0.0.4 ";
+var s = "v0.0.5 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c8.js'"
 s += " style='color:blue;'"; s += ">"; s += "c8.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c8.js'"
 s += " style='color:green;'"; s += ">"; s += "c8.js ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c8.html'"
-s += " style='color:brown;'"; s += ">"; s += "c8Test.html";
+s += " style='color:brown;'"; s += ">"; s += "c8Test.html"; s+="</a>";
+s += " <button id='id_div_4_logCmd'>+viewLog</button>"
 
 var md = blo0.blDiv(document.body, "div_ID_4_I4C8", s, blGrey[0]);
 if (!md.run) {
@@ -39,6 +40,32 @@ if (!md.run) {
 	if (bl$("blrVideoEditor")) {
 		bl$("blrVideoEditor").click();
 	}
+
+	bl$("id_div_4_logCmd").onclick = function(){
+		var b = this;
+		if(!this.logCmd){
+		  b.logCmd = blo0.blMDiv(md, md.id + "logCmd","log",520,-50,330,50,blGrey[0]);
+		  b.logCmd.v = blo0.blDiv(b.logCmd,  "id_div_4_c8_logView" ,blGrey[5]);
+		  b.logCmd.ta = blo0.blTextarea(b.logCmd.v, "id_4_ta_logTextArea", "log...", blGrey[3]);
+		  b.logCmd.ta.style.width = "95%";
+		  b.logCmd.ta.style.height = "300" + "px";
+
+		  //Read server log
+		  b.logCmd.v.btnReadLog = blo0.blBtn(b.logCmd.v,b.logCmd.v.id+"btnReadLog","readLog",blColor[4]);
+		  b.logCmd.v.btnReadLog.onclick= function(){
+			  function _loadIssue760CommentOfDoc(s) {
+	              b.logCmd.ta.value = s;
+			  }
+			  getStringComment(1139435588, _loadIssue760CommentOfDoc);
+		  }
+
+		  b.style.background = blColor[4];
+		  _on_off_div(this,this.logCmd);	  
+		}else{
+		  _on_off_div(this,this.logCmd);
+		  b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];   
+		}
+	  }
 }
 _on_off_div(this, md);
 

@@ -21,9 +21,6 @@ public class ScheduledService {
 	@Value("${github.config.active}")
 	private boolean bConfigGitHubMonitor;
 
-	@Autowired
-	DataStreamStoreService dataStreamStoreService;
-
 	/**
 	 * 定时任务
 	 * 
@@ -34,7 +31,9 @@ public class ScheduledService {
 		if (!bConfigGitHubMonitor) {
 			return;
 		}
-		System.out.println("Processing scheduledTask!");
+
+		String time = FileUtil.getCurrentTime();
+		System.out.println(time + ": Server " + FileUtil.getFQDN() + " is processing scheduled task!");
 
 		int rq = getRqStatus();
 		System.out.println(rq);
