@@ -160,9 +160,11 @@ public class FileUtil {
 		try (ReversedLinesFileReader reader = new ReversedLinesFileReader(file, s)) {
 			String line = "";
 			while ((line = reader.readLine()) != null && result.size() < numLastLineToRead) {
+				if (line.contains("--->")) {
+					continue;
+				}
 				result.add(line);
 			}
-			// 倒叙遍历
 			Collections.reverse(result);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -170,12 +172,17 @@ public class FileUtil {
 		return result;
 	}
 
-	public static String listToString(List<String> list, char separator) {
+	public static String listToString(List<String> list) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < list.size(); i++) {
-			sb.append(list.get(i)).append(separator);
+			sb.append(list.get(i));
 		}
-		return list.isEmpty() ? "" : sb.toString().substring(0, sb.toString().length() - 1);
+		return clearStr(sb.toString());
+	}
+
+	public static String clearStr(String str) {
+		String resultStr = str.replaceAll("\n", "").replaceAll("\t", "").replaceAll("\r", "");
+		return resultStr.trim();
 	}
 
 	public static String getCurrentTime() {
