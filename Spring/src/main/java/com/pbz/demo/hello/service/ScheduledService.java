@@ -1,6 +1,8 @@
 package com.pbz.demo.hello.service;
 
 import java.io.File;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,16 +36,19 @@ public class ScheduledService {
 
 		String time = FileUtil.getCurrentTime();
 		System.out.println(time + ": Server " + FileUtil.getFQDN() + " is processing scheduled task!");
+		writeServerLog("is tracking scheduled task!");
 
 		int rq = getRqStatus();
 		System.out.println(rq);
 		if (rq == -1) {
 			System.out.println("Network error!");
+			writeServerLog("Network error!");
 			return;
 		}
 
 		if (rq == 2) {
 			System.out.println("Server is processing a task!");
+			writeServerLog("checked that some server is processing a task!");
 			return;
 		}
 
@@ -51,13 +56,18 @@ public class ScheduledService {
 			doTaskOfSetRq(2);
 			String docStr = doTaskOfReadDocStrOnGitHub();
 			try {
+				writeServerLog("is creating video");
 				doTaskOfCreateVideo(docStr);
+				writeServerLog("finished creating video");
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
+				writeServerLog("error:" + e.getMessage());
 				doTaskOfSetRq(0); // If error reset the status.
 				return;
 			}
+			writeServerLog("is submitting video");
 			doTaskOfSubmitVideoToGitHub();
+			writeServerLog("finished submitting video to github");
 			doTaskOfSetRq(0);
 		}
 	}
@@ -133,6 +143,16 @@ public class ScheduledService {
 			rqStatus = jsonObj.getInt("rq");
 		}
 		return rqStatus;
+	}
+
+	private void writeServerLog(String updateString) throws Exception {
+		String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/1139435588"; // issue 760
+		updateString = FileUtil.clearStr(updateString);
+		updateString = URLEncoder.encode(updateString, "UTF-8");
+		updateString = URLDecoder.decode(updateString, "UTF-8");
+
+		updateString = FileUtil.getCurrentTime() + "_Server_" + FileUtil.getFQDN() + "_" + updateString;
+		NetAccessUtil.doPostOnGitHub(url, "POST", updateString);
 	}
 
 }

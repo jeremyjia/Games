@@ -19,9 +19,11 @@ public class ScheduledLogService {
 	@Value("${github.config.active}")
 	private boolean bConfigGitHubMonitor;
 
-	@Scheduled(fixedRate = 7000)
+	private boolean bForceDisabled = true;
+
+	@Scheduled(fixedRate = 60000)
 	public void scheduledTask() throws Exception {
-		if (!bConfigGitHubMonitor) {
+		if (bForceDisabled || !bConfigGitHubMonitor) {
 			return;
 		}
 

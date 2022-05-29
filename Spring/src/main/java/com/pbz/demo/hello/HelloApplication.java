@@ -75,6 +75,10 @@ public class HelloApplication {
 		String bConfigGitHubMonitor = environment.getProperty("github.config.active");
 		if ("true".equalsIgnoreCase(bConfigGitHubMonitor)) {
 			setServerConfig();
+		} else {
+			// clear server log
+			String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/1139435588";
+			NetAccessUtil.doPostOnGitHub(url, "POST", "");
 		}
 
 	}
