@@ -78,7 +78,7 @@ public class HelloApplication {
 		} else {
 			// clear server log
 			String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/1139435588";
-			NetAccessUtil.doPostOnGitHub(url, "POST", "");
+			NetAccessUtil.doPostOnGitHub(url, "POST", "No logging");
 		}
 
 	}
