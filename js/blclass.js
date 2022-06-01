@@ -2641,7 +2641,10 @@ function CBlClass ()
 			for(i in ls){
 			  if(i==0) continue; 
 			  for(j in ms){
-				if(ms[j]=='-' || ms[j]=='|'){
+				if(  
+					ms[j]=='-' 
+					|| ms[j]=='|'
+				){
 				  continue;
 				}
 				var l = ls[i][c[i]];
@@ -2650,7 +2653,7 @@ function CBlClass ()
 				  l += ls[i][c[i]];
 				  c[i]++;
 				}
-				ms[j] += "_"+l; 
+				ms[j] += "_"+l;  
 			  }
 			}
 			return ms;
@@ -2659,7 +2662,7 @@ function CBlClass ()
 	
 			var _nts = function(lsNotes,x,y,dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id){
 				var s = "";
-				s += _makeText("nts: xv0.231",222, 11, 36, "red");
+				s += _makeText("nts: xv0.234",222, 11, 36, "red");
 				var l = lsNotes;
 	
 
@@ -2678,10 +2681,20 @@ function CBlClass ()
 					var jsNt = l[i].split('/');    
 					if(jsNt.length>1){
 						for(var j = 0; j < (jsNt.length -1);j++){
-							s += _use_yingao_by_id("jianShi",x + i*dx,y - j*8 + dy*12); 
+							s += _use_yingao_by_id("jianShi",x + i*dx,y - j*8 + dy*12);  
 							dy++;
 						}
 					}
+					var jsNt = l[i].split('>');    
+					if(jsNt.length>1){
+						for(var j = 0; j < (jsNt.length -1);j++){
+							s += _use_yingao_by_id("jianShi",x + i*dx,y - j*8 + dy*12); 
+							s += _use_yingao_by_id("jianShi",x + i*dx+0.35*dx,y - j*8 + dy*12); 
+							s += _use_yingao_by_id("jianShi",x + i*dx+0.7*dx,y - j*8 + dy*12); 
+							dy++;
+						}
+					}
+
 
 					var nt = l[i].split(',');
 					if(nt.length>1){

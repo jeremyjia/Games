@@ -46,7 +46,7 @@ function createWord(req, res) {
         p = docx.createP();
         p.addText( o[i] , { color: 'blue', back: 'lightgreen',font_size: 22  });  
         saveAs = o[i]; 
-        saveAs = saveAs.replace("\n","");
+        saveAs = saveAs.replace("\n","");  
 
         continue;
       } 
