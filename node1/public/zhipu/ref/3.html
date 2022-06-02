@@ -69,7 +69,7 @@
 <body>
     
   <div>
-    <a href="../index.html">[..] v0.43</a> 
+    <a href="../index.html">[..] bv0.52</a> 
   </div>  
   <div id="app"></div>
   <script>
@@ -97,7 +97,7 @@ const TIME_LIMIT = 20;
 let timePassed = 0;
 let timeLeft = TIME_LIMIT;
 let timerInterval = null;
-let remainingPathColor = COLOR_CODES.info.color;
+let xdRemainingPathColor = COLOR_CODES.info.color;
 
 document.getElementById("app").innerHTML = `
 <div class="base-timer">
@@ -105,9 +105,9 @@ document.getElementById("app").innerHTML = `
     <g class="base-timer__circle">
       <circle class="base-timer__path-elapsed" cx="50" cy="50" r="45"></circle>
       <path
-        id="base-timer-path-remaining"
+        id="idBaseTimerPathRemaing"
         stroke-dasharray="283"
-        class="base-timer__path-remaining ${remainingPathColor}"
+        class="base-timer__path-remaining ${xdRemainingPathColor}"
         d="
           M 50, 50
           m -45, 0
@@ -158,17 +158,17 @@ function setRemainingPathColor(timeLeft) {
   const { alert, warning, info } = COLOR_CODES;
   if (timeLeft <= alert.threshold) {
     document
-      .getElementById("base-timer-path-remaining")
+      .getElementById("idBaseTimerPathRemaing")
       .classList.remove(warning.color);
     document
-      .getElementById("base-timer-path-remaining")
+      .getElementById("idBaseTimerPathRemaing")
       .classList.add(alert.color);
   } else if (timeLeft <= warning.threshold) {
     document
-      .getElementById("base-timer-path-remaining")
+      .getElementById("idBaseTimerPathRemaing")
       .classList.remove(info.color);
     document
-      .getElementById("base-timer-path-remaining")
+      .getElementById("idBaseTimerPathRemaing")
       .classList.add(warning.color);
   }
 }
@@ -179,12 +179,12 @@ function calculateTimeFraction() {
 }
 
 function setCircleDasharray() {
-  const circleDasharray = `${(
+  const _v = `${(
     calculateTimeFraction() * FULL_DASH_ARRAY
   ).toFixed(0)} 283`;
   document
-    .getElementById("base-timer-path-remaining")
-    .setAttribute("stroke-dasharray", circleDasharray);
+    .getElementById("idBaseTimerPathRemaing")
+    .setAttribute("stroke-dasharray", _v);
 }
   </script>
 </body>
