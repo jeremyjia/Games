@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.133"
+var g_ver_blClass = "CBlClass_bv1.6.135"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2024,6 +2024,30 @@ function CBlClass ()
 			blo0.blText(cvs,r.y,x,y,20,"yellow");
 		}
 		return r;
+	}
+	this.blTimer = function(vInterval,nLimit,cbTimer){
+		var bStop = false;
+		var t = {};
+		t.stop = function(){
+			bStop = true;
+		};
+
+		var timeLeft = nLimit;
+		var timePassed = 0;
+		const _Interval = setInterval(() => {
+			timePassed++;
+			timeLeft = nLimit - timePassed;
+			
+			if(typeof cbTimer == "function"){
+				cbTimer(timeLeft);
+			}
+		
+			if (timeLeft === 0 || bStop==true) {
+				clearInterval(_Interval);
+			}
+		  }, vInterval);
+
+		  return t;
 	}
 	this.blTime = function(nOption){
 		var d = new Date();
