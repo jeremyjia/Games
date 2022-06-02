@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.135"
+var g_ver_blClass = "CBlClass_bv1.6.145"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2384,11 +2384,11 @@ function CBlClass ()
 			v.load = true;
 		}
 		var r = "";
-		var blcWork = function(ntStr,lyStrs){
-		  this.blMakeSVG = function(){ return _makeSVG(1000,1415); }
+		var blcWork1 = function(ntStr,lyStrs){
+		  this.blMakeSVG = function(){ return _makeSVG1(1000,1415); }
 	
 		  
-		  var _makeSVG = function (w,h){        
+		  var _makeSVG1 = function (w,h){        
 			var s = '<svg ';
 			s +='width="' + w +'" ';
 			s +='height="' + h + '" ';
@@ -2624,15 +2624,15 @@ function CBlClass ()
 		  }
 		  
 		}
-		var w = new blcWork(ntStr,lyStrs);
+		var w = new blcWork1(ntStr,lyStrs);
 		r = w.blMakeSVG();
 		v.v.innerHTML = r;
 		return r;
 	}
-	this.blStr2JpSVG2 = function (txt){    
+	this.blStr2JpSVG2 = function (txt,x,y,w,h){    
 		var r = "";
-		var blcWork = function(sInit){
-		  this.blMakeSVG = function(){ return _makeSVG(1000,1415); }
+		var blcWork2 = function(sInit,x,y,w,h){
+		  this.blMakeSVG = function(){ return _makeSVG2(x,y,w,h); }
 	
 		  const _getNoteId = function(c){
 			var sID = "";
@@ -2759,12 +2759,12 @@ function CBlClass ()
 			}
 	
 		  
-		  var _makeSVG = function (w,h){        
+		  var _makeSVG2 = function (_x,_y,_w,_h){        
 			var s = '<svg ';
-			s +='width="' + w +'" ';
-			s +='height="' + h + '" ';
+			s +='width="' + _w +'" ';
+			s +='height="' + _h + '" ';
 			s +='version="1.1" ';
-			s +='viewBox="0 0 ' + w + '' + h + '" ';
+			s +='viewBox="' + _x + ' ' + _y +' ' + _w + ' ' + _h + '" ';
 			s +='encoding="UTF-8" xmlns="http://www.w3.org/2000/svg">';
 			s += '<rect x="0" y="0" height="100%" width="100%" fill="white" />';
 			
@@ -3055,7 +3055,7 @@ function CBlClass ()
 		  
 		}
 		
-		var w = new blcWork(txt);
+		var w = new blcWork2(txt,x,y,w,h);
 		r = w.blMakeSVG();
 		return r;
 	}

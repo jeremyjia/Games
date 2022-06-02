@@ -68,7 +68,7 @@
 <div class="topnav" id="myTopnav">
   <a href="../../index.html">Home</a>
   <a href="../index.html">issues</a>
-  <a href="#"  class="active">i21_bv0.145</a> 
+  <a href="#"  class="active">i21_bv0.153</a> 
   <a href="javascript:void(0);" class="icon" onclick="myFunction()">
     <i class="fa fa-bars"></i>
   </a>
@@ -185,7 +185,7 @@
         "v": "v0.12",
         "fn":"blStr2JpSVG2",
         "run": function(v){ 
-          v.innerHTML = blo0.blStr2JpSVG2(bl$("id_4_ta_blrRunJS").value);
+          v.innerHTML = blo0.blStr2JpSVG2(bl$("id_4_ta_blrRunJS").value,0,0,1000,1415);
         }
       },
       {
@@ -267,17 +267,20 @@
         "fn":"blTimer",
         "run": function(v){
           v.innerHTML = blo0.blDate();
+          var i = 0;
           v.timer = blo0.blTimer(1000,60*60,function(nLeft){
-            v.innerHTML = blo0.blStr2JpSVG2(bl$("id_4_ta_blrRunJS").value);
+            i++;
+            var s = blo0.blStr2JpSVG2(bl$("id_4_ta_blrRunJS").value,0,i*10,1000,1415);
+            s = s.replace("Title","Title i=" + i + " nLeft=" + nLeft);            
+            v.innerHTML = s;
           }); 
         }
       },
       {
         "v": "v0.11",
         "fn":"test",
-        "run": function(v){
-          v.innerHTML = blo0.blDate();
-          bl$("id_4_ta_blrRunJS").value = JSON.stringify(ts);
+        "run": function(v){ 
+          bl$("id_4_ta_blrRunJS").value = v.innerHTML ;
         }
       }
     ];
