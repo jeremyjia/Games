@@ -23,6 +23,8 @@ public class ScheduledService {
 	@Value("${github.config.active}")
 	private boolean bConfigGitHubMonitor;
 
+	private String errorMessage = "";
+
 	/**
 	 * 定时任务
 	 * 
@@ -36,7 +38,7 @@ public class ScheduledService {
 
 		String time = FileUtil.getCurrentTime();
 		System.out.println(time + ": Server " + FileUtil.getFQDN() + " is processing scheduled task!");
-		writeServerLog("is tracking scheduled task!");
+		writeServerLog("is tracking scheduled task! " + errorMessage);
 
 		int rq = getRqStatus();
 		System.out.println(rq);
@@ -58,31 +60,28 @@ public class ScheduledService {
 			try {
 				writeServerLog("is creating video");
 				doTaskOfCreateVideo(docStr);
-				writeServerLog("finished creating video");
-			} catch (Exception e) {
+
+				writeServerLog("is submitting video");
+				doTaskOfSubmitVideoToGitHub();
+				errorMessage = "";
+
+			} catch (Throwable e) {
 				System.out.println(e.getMessage());
-				writeServerLog("error:" + e.getMessage());
-				doTaskOfSetRq(0); // If error reset the status.
-				return;
+				errorMessage = e.getMessage(); // Recode the error message
+			} finally {
+				doTaskOfSetRq(0);// Reset the status.
 			}
-			writeServerLog("is submitting video");
-			doTaskOfSubmitVideoToGitHub();
-			writeServerLog("finished submitting video to github");
-			doTaskOfSetRq(0);
 		}
 	}
 
-	private void doTaskOfSubmitVideoToGitHub() {
+	private void doTaskOfSubmitVideoToGitHub() throws Exception {
 		String targetPath = System.getProperty("user.dir");
 		String videoName = "SampleOnGithub.mp4";
 		File mp4File = new File(targetPath + "/" + videoName);
 		String strBase64DocStr = FileUtil.encryptToBase64(mp4File.getAbsolutePath());
 
-		try {
-			DataStreamStoreService.saveStreamData("743", "data:video/mp4;base64,", strBase64DocStr);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		DataStreamStoreService.saveStreamData("743", "data:video/mp4;base64,", strBase64DocStr);
+
 		System.out.println("******The video data are all submitted to GitHub!******");
 
 	}
