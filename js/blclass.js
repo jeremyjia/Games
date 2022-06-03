@@ -2717,14 +2717,14 @@ function CBlClass ()
 						idNote = _getNoteId(l[i][0]);
 						if("xiaojiexian"==idNote){ 
 							nBar++; 
-							if(Math.ceil(_t/16)==_mr && Math.ceil(_t/4)==nBar){
+							if(Math.ceil(_t/16)==_mr && Math.ceil((_t-(_mr-1)*16)/4)==nBar){
 								var xBarStart = x +lsBars[nBar-1]*dx;
 								var xBarEnd = x + lsBars[nBar]*dx;
 
 								var n = _t%4;
 								n = n?n:4;
-								s += _makeText("["+ nBar+"."+ n + "]",xBarStart, y+13, 36, "brown");
-								s += _makeText(_mr+"*" + _t,xBarEnd, y+13, 36, "red");
+								s += _makeText("["+ nBar+"."+ n + "]",xBarStart, y+13, 22, "brown");
+								s += _makeText(_mr+"*" + _t,xBarEnd, y+13, 22, "red");
 							} 
 						}
 					}
@@ -2813,9 +2813,9 @@ function CBlClass ()
 			  nRow++;
 			  var r = a[i].split(/C[1-4]*:/g);
 	
-			  var mRow = _mkMusicRow(r);   
-			  s += _renderMusicRow(mRow,_getBars(mRow),x,y, dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id,_t,nRow);    
-			  s += _makeText("row:" + nRow,x,y, 36, "blue");
+			  var rowNotes = _mkMusicRow(r);   
+			  s += _renderMusicRow(rowNotes,_getBars(rowNotes),x,y, dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id,_t,nRow);    
+			  s += _makeText("r:" + nRow,x,y, 15, "blue");
 			   
 			  y += dy*3;
 			}
