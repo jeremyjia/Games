@@ -32,7 +32,8 @@ x.blrJPEditor= function(b,d){
               t.t =  blo0.blTimer(1000,60*60,function(nLeft){
                 i++; 
                 var s = blo0.blStr2JpSVG2(ta.value,0,0,1000,1415,i);
-                v.innerHTML = s;                  
+                v.innerHTML = s;       
+                if(i>=96) i=0;           
               });
            }
            else{
