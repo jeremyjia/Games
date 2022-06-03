@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.145"
+var g_ver_blClass = "CBlClass_bv1.6.151"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2629,10 +2629,10 @@ function CBlClass ()
 		v.v.innerHTML = r;
 		return r;
 	}
-	this.blStr2JpSVG2 = function (txt,x,y,w,h){    
+	this.blStr2JpSVG2 = function (txt,x,y,w,h,vTime){    
 		var r = "";
-		var blcWork2 = function(sInit,x,y,w,h){
-		  this.blMakeSVG = function(){ return _makeSVG2(x,y,w,h); }
+		var blcWork2 = function(sInit,x,y,w,h,vTime){
+		  this.blMakeSVG = function(){ return _makeSVG2(x,y,w,h,vTime); }
 	
 		  const _getNoteId = function(c){
 			var sID = "";
@@ -2656,7 +2656,7 @@ function CBlClass ()
 			}
 			return sID;
 		  }
-		  var _mkMusic = function(ls){  
+		  var _mkMusicRow = function(ls){  
 			var ms = ls[0].split(" ");
 			var c = [];
 			for(i in ls){
@@ -2684,13 +2684,29 @@ function CBlClass ()
 		  }
 			
 	
-			var _nts = function(lsNotes,x,y,dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id){
+		  var _getBars = function(lsNotes){ 
+			var l = lsNotes;
+			var nBar = 0;
+			var lsBar = [];
+			lsBar.push(0);
+
+			for(i in l){     		 
+				var idNote =  _getNoteId(l[i][0]);
+				if("xiaojiexian"==idNote){//xd2do
+						nBar++;
+						lsBar.push(i); 
+				} 
+			}
+			return lsBar;
+		  }
+		  var _renderMusicRow = function(lsNotes,lsBars,x,y,dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id,_t,_mr){
 				var s = "";
 				s += _makeText("nts: xv0.234",222, 11, 36, "red");
 				var l = lsNotes;
 	
+				var nBar = 0; 
 
-				for(i in l){     					
+				for(i in l){     				
 					var dy = 0;       
 					var idNote = "";
 					if(l[i][0]=='('){
@@ -2699,6 +2715,18 @@ function CBlClass ()
 					}
 					else{
 						idNote = _getNoteId(l[i][0]);
+						if("xiaojiexian"==idNote){ 
+							nBar++; 
+							if(Math.ceil(_t/16)==_mr && Math.ceil(_t/4)==nBar){
+								var xBarStart = x +lsBars[nBar-1]*dx;
+								var xBarEnd = x + lsBars[nBar]*dx;
+
+								var n = _t%4;
+								n = n?n:4;
+								s += _makeText("["+ nBar+"."+ n + "]",xBarStart, y+13, 36, "brown");
+								s += _makeText(_mr+"*" + _t,xBarEnd, y+13, 36, "red");
+							} 
+						}
 					}
 					s += _use_shuzi_by_id(idNote,x + i*dx,y);   
 				
@@ -2756,10 +2784,10 @@ function CBlClass ()
 
 				}
 				return s;
-			}
+			  }
 	
 		  
-		  var _makeSVG2 = function (_x,_y,_w,_h){        
+		  var _makeSVG2 = function (_x,_y,_w,_h,_t){        
 			var s = '<svg ';
 			s +='width="' + _w +'" ';
 			s +='height="' + _h + '" ';
@@ -2768,7 +2796,7 @@ function CBlClass ()
 			s +='encoding="UTF-8" xmlns="http://www.w3.org/2000/svg">';
 			s += '<rect x="0" y="0" height="100%" width="100%" fill="white" />';
 			
-			s += _makeText("Title",500,1, 36, "yellow");
+			s += _makeText("Title" + _t,500,1, 36, "yellow");
 			s += _defs();
 			s += _uses(555,11);
 			
@@ -2778,13 +2806,16 @@ function CBlClass ()
 			var y = 111;
 			var x = 55;
 			var dx = 30;
+			var nRow = 0;
 			for(i in a)
 			{
 			  if(i==0) continue; 
+			  nRow++;
 			  var r = a[i].split(/C[1-4]*:/g);
 	
-			  var music = _mkMusic(r);      
-			  s += _nts(music,x,y, dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id);    
+			  var mRow = _mkMusicRow(r);   
+			  s += _renderMusicRow(mRow,_getBars(mRow),x,y, dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id,_t,nRow);    
+			  s += _makeText("row:" + nRow,x,y, 36, "blue");
 			   
 			  y += dy*3;
 			}
@@ -3055,7 +3086,7 @@ function CBlClass ()
 		  
 		}
 		
-		var w = new blcWork2(txt,x,y,w,h);
+		var w = new blcWork2(txt,x,y,w,h,vTime);
 		r = w.blMakeSVG();
 		return r;
 	}
