@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.124"
+var g_ver_blClass = "CBlClass_bv1.6.151"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -1621,6 +1621,9 @@ function CBlClass ()
     		return r;
 	}
 
+    this.baiduEn2Zh = function(sEn,cbBaidu){
+		cbBaidu(sEn);
+	}
     this.blAjx = function(worker,href)
     {
         var xmlhttp;
@@ -1638,7 +1641,7 @@ function CBlClass ()
                worker._2do(xmlhttp.responseText);
             }
 			else{    
-			  worker._2do("error");
+			  worker._2do("error xd 11");
 			}
         }
         xmlhttp.open("GET",href,true);
@@ -2022,6 +2025,30 @@ function CBlClass ()
 		}
 		return r;
 	}
+	this.blTimer = function(vInterval,nLimit,cbTimer){
+		var bStop = false;
+		var t = {};
+		t.stop = function(){
+			bStop = true;
+		};
+
+		var timeLeft = nLimit;
+		var timePassed = 0;
+		const _Interval = setInterval(() => {
+			timePassed++;
+			timeLeft = nLimit - timePassed;
+			
+			if(typeof cbTimer == "function"){
+				cbTimer(timeLeft);
+			}
+		
+			if (timeLeft === 0 || bStop==true) {
+				clearInterval(_Interval);
+			}
+		  }, vInterval);
+
+		  return t;
+	}
 	this.blTime = function(nOption){
 		var d = new Date();
 		switch(nOption){
@@ -2233,7 +2260,7 @@ function CBlClass ()
 
 		var r = {};
 		r.ui = function(id,html,x,y,w,h,color){			u.ui(id,html,x,y,w,h,color);		}
-		r.string2svg = function(str){//xd2do  
+		r.string2svg = function(str){
 			var s = "";
 			s = u.s1();
 			
@@ -2357,11 +2384,11 @@ function CBlClass ()
 			v.load = true;
 		}
 		var r = "";
-		var blcWork = function(ntStr,lyStrs){
-		  this.blMakeSVG = function(){ return _makeSVG(1000,1415); }
+		var blcWork1 = function(ntStr,lyStrs){
+		  this.blMakeSVG = function(){ return _makeSVG1(1000,1415); }
 	
 		  
-		  var _makeSVG = function (w,h){        
+		  var _makeSVG1 = function (w,h){        
 			var s = '<svg ';
 			s +='width="' + w +'" ';
 			s +='height="' + h + '" ';
@@ -2597,15 +2624,15 @@ function CBlClass ()
 		  }
 		  
 		}
-		var w = new blcWork(ntStr,lyStrs);
+		var w = new blcWork1(ntStr,lyStrs);
 		r = w.blMakeSVG();
 		v.v.innerHTML = r;
 		return r;
 	}
-	this.blStr2JpSVG2 = function (txt){    
+	this.blStr2JpSVG2 = function (txt,x,y,w,h,vTime){    
 		var r = "";
-		var blcWork = function(sInit){
-		  this.blMakeSVG = function(){ return _makeSVG(1000,1415); }
+		var blcWork2 = function(sInit,x,y,w,h,vTime){
+		  this.blMakeSVG = function(){ return _makeSVG2(x,y,w,h,vTime); }
 	
 		  const _getNoteId = function(c){
 			var sID = "";
@@ -2629,7 +2656,7 @@ function CBlClass ()
 			}
 			return sID;
 		  }
-		  var _mkMusic = function(ls){  
+		  var _mkMusicRow = function(ls){  
 			var ms = ls[0].split(" ");
 			var c = [];
 			for(i in ls){
@@ -2638,7 +2665,10 @@ function CBlClass ()
 			for(i in ls){
 			  if(i==0) continue; 
 			  for(j in ms){
-				if(ms[j]=='-' || ms[j]=='|'){
+				if(  
+					ms[j]=='-' 
+					|| ms[j]=='|'
+				){
 				  continue;
 				}
 				var l = ls[i][c[i]];
@@ -2647,19 +2677,37 @@ function CBlClass ()
 				  l += ls[i][c[i]];
 				  c[i]++;
 				}
-				ms[j] += "_"+l; 
+				ms[j] += "_"+l;  
 			  }
 			}
 			return ms;
 		  }
 			
 	
-			var _nts = function(lsNotes,x,y,dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id){
+		  var _getBars = function(lsNotes){ 
+			var l = lsNotes;
+			var nBar = 0;
+			var lsBar = [];
+			lsBar.push(0);
+
+			for(i in l){     		 
+				var idNote =  _getNoteId(l[i][0]);
+				if("xiaojiexian"==idNote){//xd2do
+						nBar++;
+						lsBar.push(i); 
+				} 
+			}
+			return lsBar;
+		  }
+		  var _renderMusicRow = function(lsNotes,lsBars,x,y,dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id,_t,_mr){
 				var s = "";
-				s += _makeText("nts: xv0.225",222, 11, 36, "red");
+				s += _makeText("nts: xv0.234",222, 11, 36, "red");
 				var l = lsNotes;
 	
-				for(i in l){            
+				var nBar = 0; 
+
+				for(i in l){     				
+					var dy = 0;       
 					var idNote = "";
 					if(l[i][0]=='('){
 						idNote = _getNoteId(l[i][1]);
@@ -2667,13 +2715,43 @@ function CBlClass ()
 					}
 					else{
 						idNote = _getNoteId(l[i][0]);
+						if("xiaojiexian"==idNote){ 
+							nBar++; 
+							if(Math.ceil(_t/16)==_mr && Math.ceil((_t-(_mr-1)*16)/4)==nBar){
+								var xBarStart = x +lsBars[nBar-1]*dx;
+								var xBarEnd = x + lsBars[nBar]*dx;
+
+								var n = _t%4;
+								n = n?n:4;
+								s += _makeText("["+ nBar+"."+ n + "]",xBarStart, y+13, 22, "brown");
+								s += _makeText(_mr+"*" + _t,xBarEnd, y+13, 22, "red");
+							} 
+						}
 					}
 					s += _use_shuzi_by_id(idNote,x + i*dx,y);   
 				
+					var jsNt = l[i].split('/');    
+					if(jsNt.length>1){
+						for(var j = 0; j < (jsNt.length -1);j++){
+							s += _use_yingao_by_id("jianShi",x + i*dx,y - j*8 + dy*12);  
+							dy++;
+						}
+					}
+					var jsNt = l[i].split('>');    
+					if(jsNt.length>1){
+						for(var j = 0; j < (jsNt.length -1);j++){
+							s += _use_yingao_by_id("jianShi",x + i*dx,y - j*8 + dy*12); 
+							s += _use_yingao_by_id("jianShi",x + i*dx+0.35*dx,y - j*8 + dy*12); 
+							s += _use_yingao_by_id("jianShi",x + i*dx+0.7*dx,y - j*8 + dy*12); 
+							dy++;
+						}
+					}
+
+
 					var nt = l[i].split(',');
 					if(nt.length>1){
 						for(var j = 0; j < (nt.length -1);j++){
-							s += _use_yingao_by_id("yingao_di",x + i*dx,y + j*8);
+							s += _use_yingao_by_id("yingao_di",x + i*dx,y + j*8 + dy*8); 
 						}
 					}
 	
@@ -2683,6 +2761,7 @@ function CBlClass ()
 							s += _use_yingao_by_id("yingao_di",x + i*dx,y - j*8 -28);
 						}
 					} 
+					
 	
 					var fdNt = l[i].split('.');    
 					if(fdNt.length>1){
@@ -2690,16 +2769,11 @@ function CBlClass ()
 							s += _use_yingao_by_id("fudian",x + i*dx,y - j*8);
 						}
 					}
-					var jsNt = l[i].split('/');    
-					if(jsNt.length>1){
-						for(var j = 0; j < (jsNt.length -1);j++){
-							s += _use_yingao_by_id("jianShi",x + i*dx,y - j*8); 
-						}
-					}
 					var ly = l[i].split('_');    
 					if(ly.length>1){
 						for(var j = 0; j < (ly.length -1);j++){
-							s += _makeText(ly[j+1],x + i*dx,y + j*24 + 10, 20, "black");
+							s += _makeText(ly[j+1],x + i*dx,y + j*24 + 10 + 12 + 8 , 20, "black");
+							
 						}
 					}
 					
@@ -2710,35 +2784,38 @@ function CBlClass ()
 
 				}
 				return s;
-			}
+			  }
 	
 		  
-		  var _makeSVG = function (w,h){        
+		  var _makeSVG2 = function (_x,_y,_w,_h,_t){        
 			var s = '<svg ';
-			s +='width="' + w +'" ';
-			s +='height="' + h + '" ';
+			s +='width="' + _w +'" ';
+			s +='height="' + _h + '" ';
 			s +='version="1.1" ';
-			s +='viewBox="0 0 ' + w + '' + h + '" ';
+			s +='viewBox="' + _x + ' ' + _y +' ' + _w + ' ' + _h + '" ';
 			s +='encoding="UTF-8" xmlns="http://www.w3.org/2000/svg">';
 			s += '<rect x="0" y="0" height="100%" width="100%" fill="white" />';
 			
-			s += _makeText("Title",500,1, 36, "yellow");
+			s += _makeText("Title" + _t,500,1, 36, "yellow");
 			s += _defs();
 			s += _uses(555,11);
 			
 			
 			var a = sInit.split(/Q[1-7]*:/g); 
-			var dy = 31;
+			var dy = 44;
 			var y = 111;
 			var x = 55;
 			var dx = 30;
+			var nRow = 0;
 			for(i in a)
 			{
 			  if(i==0) continue; 
+			  nRow++;
 			  var r = a[i].split(/C[1-4]*:/g);
 	
-			  var music = _mkMusic(r);      
-			  s += _nts(music,x,y, dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id);    
+			  var rowNotes = _mkMusicRow(r);   
+			  s += _renderMusicRow(rowNotes,_getBars(rowNotes),x,y, dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id,_t,nRow);    
+			  s += _makeText("r:" + nRow,x,y, 15, "blue");
 			   
 			  y += dy*3;
 			}
@@ -2810,7 +2887,7 @@ function CBlClass ()
 			  } 
 			  
 			  var _2_def_jianShi = function(){
-				const id = "jianShi"; //xd2do
+				const id = "jianShi"; 
 				var s = '';
 				s += '<g id="'+id+'" ';
 				s += 'transform="translate(-50,-50)">';
@@ -3009,7 +3086,7 @@ function CBlClass ()
 		  
 		}
 		
-		var w = new blcWork(txt);
+		var w = new blcWork2(txt,x,y,w,h,vTime);
 		r = w.blMakeSVG();
 		return r;
 	}
@@ -4375,4 +4452,204 @@ function jpAjaxCmd(method, url, data, callback) {
 	  xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());
 	  xmlHttpReg.send(JSON.stringify(data));
 	}
+}
+var MD5 = function (string) {
+  
+    function RotateLeft(lValue, iShiftBits) {
+        return (lValue<<iShiftBits) | (lValue>>>(32-iShiftBits));
+    }
+  
+    function AddUnsigned(lX,lY) {
+        var lX4,lY4,lX8,lY8,lResult;
+        lX8 = (lX & 0x80000000);
+        lY8 = (lY & 0x80000000);
+        lX4 = (lX & 0x40000000);
+        lY4 = (lY & 0x40000000);
+        lResult = (lX & 0x3FFFFFFF)+(lY & 0x3FFFFFFF);
+        if (lX4 & lY4) {
+            return (lResult ^ 0x80000000 ^ lX8 ^ lY8);
+        }
+        if (lX4 | lY4) {
+            if (lResult & 0x40000000) {
+                return (lResult ^ 0xC0000000 ^ lX8 ^ lY8);
+            } else {
+                return (lResult ^ 0x40000000 ^ lX8 ^ lY8);
+            }
+        } else {
+            return (lResult ^ lX8 ^ lY8);
+        }
+    }
+  
+    function F(x,y,z) { return (x & y) | ((~x) & z); }
+    function G(x,y,z) { return (x & z) | (y & (~z)); }
+    function H(x,y,z) { return (x ^ y ^ z); }
+    function I(x,y,z) { return (y ^ (x | (~z))); }
+  
+    function FF(a,b,c,d,x,s,ac) {
+        a = AddUnsigned(a, AddUnsigned(AddUnsigned(F(b, c, d), x), ac));
+        return AddUnsigned(RotateLeft(a, s), b);
+    };
+  
+    function GG(a,b,c,d,x,s,ac) {
+        a = AddUnsigned(a, AddUnsigned(AddUnsigned(G(b, c, d), x), ac));
+        return AddUnsigned(RotateLeft(a, s), b);
+    };
+  
+    function HH(a,b,c,d,x,s,ac) {
+        a = AddUnsigned(a, AddUnsigned(AddUnsigned(H(b, c, d), x), ac));
+        return AddUnsigned(RotateLeft(a, s), b);
+    };
+  
+    function II(a,b,c,d,x,s,ac) {
+        a = AddUnsigned(a, AddUnsigned(AddUnsigned(I(b, c, d), x), ac));
+        return AddUnsigned(RotateLeft(a, s), b);
+    };
+  
+    function ConvertToWordArray(string) {
+        var lWordCount;
+        var lMessageLength = string.length;
+        var lNumberOfWords_temp1=lMessageLength + 8;
+        var lNumberOfWords_temp2=(lNumberOfWords_temp1-(lNumberOfWords_temp1 % 64))/64;
+        var lNumberOfWords = (lNumberOfWords_temp2+1)*16;
+        var lWordArray=Array(lNumberOfWords-1);
+        var lBytePosition = 0;
+        var lByteCount = 0;
+        while ( lByteCount < lMessageLength ) {
+            lWordCount = (lByteCount-(lByteCount % 4))/4;
+            lBytePosition = (lByteCount % 4)*8;
+            lWordArray[lWordCount] = (lWordArray[lWordCount] | (string.charCodeAt(lByteCount)<<lBytePosition));
+            lByteCount++;
+        }
+        lWordCount = (lByteCount-(lByteCount % 4))/4;
+        lBytePosition = (lByteCount % 4)*8;
+        lWordArray[lWordCount] = lWordArray[lWordCount] | (0x80<<lBytePosition);
+        lWordArray[lNumberOfWords-2] = lMessageLength<<3;
+        lWordArray[lNumberOfWords-1] = lMessageLength>>>29;
+        return lWordArray;
+    };
+  
+    function WordToHex(lValue) {
+        var WordToHexValue="",WordToHexValue_temp="",lByte,lCount;
+        for (lCount = 0;lCount<=3;lCount++) {
+            lByte = (lValue>>>(lCount*8)) & 255;
+            WordToHexValue_temp = "0" + lByte.toString(16);
+            WordToHexValue = WordToHexValue + WordToHexValue_temp.substr(WordToHexValue_temp.length-2,2);
+        }
+        return WordToHexValue;
+    };
+  
+    function Utf8Encode(string) {
+        string = string.replace(/\r\n/g,"\n");
+        var utftext = "";
+  
+        for (var n = 0; n < string.length; n++) {
+  
+            var c = string.charCodeAt(n);
+  
+            if (c < 128) {
+                utftext += String.fromCharCode(c);
+            }
+            else if((c > 127) && (c < 2048)) {
+                utftext += String.fromCharCode((c >> 6) | 192);
+                utftext += String.fromCharCode((c & 63) | 128);
+            }
+            else {
+                utftext += String.fromCharCode((c >> 12) | 224);
+                utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+                utftext += String.fromCharCode((c & 63) | 128);
+            }
+  
+        }
+  
+        return utftext;
+    };
+  
+    var x=Array();
+    var k,AA,BB,CC,DD,a,b,c,d;
+    var S11=7, S12=12, S13=17, S14=22;
+    var S21=5, S22=9 , S23=14, S24=20;
+    var S31=4, S32=11, S33=16, S34=23;
+    var S41=6, S42=10, S43=15, S44=21;
+  
+    string = Utf8Encode(string);
+  
+    x = ConvertToWordArray(string);
+  
+    a = 0x67452301; b = 0xEFCDAB89; c = 0x98BADCFE; d = 0x10325476;
+  
+    for (k=0;k<x.length;k+=16) {
+        AA=a; BB=b; CC=c; DD=d;
+        a=FF(a,b,c,d,x[k+0], S11,0xD76AA478);
+        d=FF(d,a,b,c,x[k+1], S12,0xE8C7B756);
+        c=FF(c,d,a,b,x[k+2], S13,0x242070DB);
+        b=FF(b,c,d,a,x[k+3], S14,0xC1BDCEEE);
+        a=FF(a,b,c,d,x[k+4], S11,0xF57C0FAF);
+        d=FF(d,a,b,c,x[k+5], S12,0x4787C62A);
+        c=FF(c,d,a,b,x[k+6], S13,0xA8304613);
+        b=FF(b,c,d,a,x[k+7], S14,0xFD469501);
+        a=FF(a,b,c,d,x[k+8], S11,0x698098D8);
+        d=FF(d,a,b,c,x[k+9], S12,0x8B44F7AF);
+        c=FF(c,d,a,b,x[k+10],S13,0xFFFF5BB1);
+        b=FF(b,c,d,a,x[k+11],S14,0x895CD7BE);
+        a=FF(a,b,c,d,x[k+12],S11,0x6B901122);
+        d=FF(d,a,b,c,x[k+13],S12,0xFD987193);
+        c=FF(c,d,a,b,x[k+14],S13,0xA679438E);
+        b=FF(b,c,d,a,x[k+15],S14,0x49B40821);
+        a=GG(a,b,c,d,x[k+1], S21,0xF61E2562);
+        d=GG(d,a,b,c,x[k+6], S22,0xC040B340);
+        c=GG(c,d,a,b,x[k+11],S23,0x265E5A51);
+        b=GG(b,c,d,a,x[k+0], S24,0xE9B6C7AA);
+        a=GG(a,b,c,d,x[k+5], S21,0xD62F105D);
+        d=GG(d,a,b,c,x[k+10],S22,0x2441453);
+        c=GG(c,d,a,b,x[k+15],S23,0xD8A1E681);
+        b=GG(b,c,d,a,x[k+4], S24,0xE7D3FBC8);
+        a=GG(a,b,c,d,x[k+9], S21,0x21E1CDE6);
+        d=GG(d,a,b,c,x[k+14],S22,0xC33707D6);
+        c=GG(c,d,a,b,x[k+3], S23,0xF4D50D87);
+        b=GG(b,c,d,a,x[k+8], S24,0x455A14ED);
+        a=GG(a,b,c,d,x[k+13],S21,0xA9E3E905);
+        d=GG(d,a,b,c,x[k+2], S22,0xFCEFA3F8);
+        c=GG(c,d,a,b,x[k+7], S23,0x676F02D9);
+        b=GG(b,c,d,a,x[k+12],S24,0x8D2A4C8A);
+        a=HH(a,b,c,d,x[k+5], S31,0xFFFA3942);
+        d=HH(d,a,b,c,x[k+8], S32,0x8771F681);
+        c=HH(c,d,a,b,x[k+11],S33,0x6D9D6122);
+        b=HH(b,c,d,a,x[k+14],S34,0xFDE5380C);
+        a=HH(a,b,c,d,x[k+1], S31,0xA4BEEA44);
+        d=HH(d,a,b,c,x[k+4], S32,0x4BDECFA9);
+        c=HH(c,d,a,b,x[k+7], S33,0xF6BB4B60);
+        b=HH(b,c,d,a,x[k+10],S34,0xBEBFBC70);
+        a=HH(a,b,c,d,x[k+13],S31,0x289B7EC6);
+        d=HH(d,a,b,c,x[k+0], S32,0xEAA127FA);
+        c=HH(c,d,a,b,x[k+3], S33,0xD4EF3085);
+        b=HH(b,c,d,a,x[k+6], S34,0x4881D05);
+        a=HH(a,b,c,d,x[k+9], S31,0xD9D4D039);
+        d=HH(d,a,b,c,x[k+12],S32,0xE6DB99E5);
+        c=HH(c,d,a,b,x[k+15],S33,0x1FA27CF8);
+        b=HH(b,c,d,a,x[k+2], S34,0xC4AC5665);
+        a=II(a,b,c,d,x[k+0], S41,0xF4292244);
+        d=II(d,a,b,c,x[k+7], S42,0x432AFF97);
+        c=II(c,d,a,b,x[k+14],S43,0xAB9423A7);
+        b=II(b,c,d,a,x[k+5], S44,0xFC93A039);
+        a=II(a,b,c,d,x[k+12],S41,0x655B59C3);
+        d=II(d,a,b,c,x[k+3], S42,0x8F0CCC92);
+        c=II(c,d,a,b,x[k+10],S43,0xFFEFF47D);
+        b=II(b,c,d,a,x[k+1], S44,0x85845DD1);
+        a=II(a,b,c,d,x[k+8], S41,0x6FA87E4F);
+        d=II(d,a,b,c,x[k+15],S42,0xFE2CE6E0);
+        c=II(c,d,a,b,x[k+6], S43,0xA3014314);
+        b=II(b,c,d,a,x[k+13],S44,0x4E0811A1);
+        a=II(a,b,c,d,x[k+4], S41,0xF7537E82);
+        d=II(d,a,b,c,x[k+11],S42,0xBD3AF235);
+        c=II(c,d,a,b,x[k+2], S43,0x2AD7D2BB);
+        b=II(b,c,d,a,x[k+9], S44,0xEB86D391);
+        a=AddUnsigned(a,AA);
+        b=AddUnsigned(b,BB);
+        c=AddUnsigned(c,CC);
+        d=AddUnsigned(d,DD);
+    }
+  
+    var temp = WordToHex(a)+WordToHex(b)+WordToHex(c)+WordToHex(d);
+  
+    return temp.toLowerCase();
 }

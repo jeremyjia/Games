@@ -68,7 +68,7 @@
 <div class="topnav" id="myTopnav">
   <a href="../../index.html">Home</a>
   <a href="../index.html">issues</a>
-  <a href="#"  class="active">i21_bv0.123</a> 
+  <a href="#"  class="active">i21_bv0.153</a> 
   <a href="javascript:void(0);" class="icon" onclick="myFunction()">
     <i class="fa fa-bars"></i>
   </a>
@@ -78,6 +78,7 @@
   <button id="btn4Plx" onclick="fnPlx()">plxTest</button>
 </div>
 <div id = "wrapSandbox">wrap sand box</div>
+<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js" type="text/javascript"></script>
 
   <script> 
 
@@ -99,6 +100,11 @@
         var v1 = blo0.blDiv(this.md,this.md.id+"v1","v1","lightgray");
         var v2 = blo0.blDiv(this.md,this.md.id+"v2","v2","lightblue");
         var v3 = blo0.blDiv(this.md,this.md.id+"v3","v3","green");
+        v3.init = function(){
+          if(v3.timer){
+            v3.timer.stop();
+          }
+        }
         for(i in ts){
           var btn = blo0.blBtn(tb,tb.id+i,ts[i].fn,"lightgray");
           btn.style.float = "left";
@@ -106,6 +112,7 @@
             return function(){ 
               v2.innerHTML = ts[_i].fn;
               if(typeof ts[_i].run == "function"){
+                v3.init();
                 ts[_i].run(v3);
               }
             }
@@ -178,8 +185,54 @@
         "v": "v0.12",
         "fn":"blStr2JpSVG2",
         "run": function(v){ 
-          v.innerHTML = blo0.blStr2JpSVG2(bl$("id_4_ta_blrRunJS").value);
+          v.innerHTML = blo0.blStr2JpSVG2(bl$("id_4_ta_blrRunJS").value,0,0,1000,1415);
         }
+      },
+      {
+        "v": "v0.13",
+        "fn":"baiduEn2Zh",
+        "run": function(v){ 
+          blo0.baiduEn2Zh($("#id_4_ta_blrRunJS").val(),
+            function(txt){
+              var contents = txt;
+              var appid = '20200816000544285';  //Jeremyjia's 
+              var key = '_HQWPevq4AMqM1z99nhZ';  //Jeremyjia's
+              var salt = (new Date).getTime();
+              var query = contents;  //query='apple\norange\nbanana\npear'
+              var from = 'en';
+              var to = 'zh';
+              var str1 = appid + query + salt + key;
+              var sign = MD5(str1);
+              
+              $.ajax({
+                url: 'http://api.fanyi.baidu.com/api/trans/vip/translate',
+                type: 'get',
+                dataType: 'jsonp',
+                data: {
+                    q: query,
+                    appid: appid,
+                    salt: salt,
+                    from: from,
+                    to: to,
+                    sign: sign
+                },
+                success: function (data) { 
+                   v.innerHTML = JSON.stringify(data);
+                    /*
+                    var result = "";
+                    for (var i = 0; i < data.trans_result.length; i++) {
+                        console.log(data.trans_result[i].dst);
+                        result = data.trans_result[i].dst;
+                        $("id_4_ta_blrRunJS").append(result + " <br />");
+                    }
+                    */
+                },
+                error: function () {
+                    alert('Failed to translate with baidu API!');
+                }
+              });
+            });
+        },
       },
       {
         "v": "v0.11",
@@ -188,8 +241,8 @@
           var formData = "fname=Henry&lname=Ford"; 
 
           var url = "http://localhost:3001/word";
-          blo0.blAjaxFormData("POST",url,formData,function(txt){
-            v.innerHTML = txt;
+          blo0.blAjaxFormData("POST",url,formData,function(o){
+            v.innerHTML = JSON.stringify(o);
           });
         }
       },
@@ -197,7 +250,9 @@
         "v": "v0.11",
         "fn":"blGetGithubIssueByNumber",
         "run": function(v){
-          v.innerHTML = blo0.blGetGithubIssueByNumber;
+           var i = blo0.blGetGithubIssueByNumber("littleflute","Songs",1,function(o){
+            bl$("id_4_ta_blrRunJS").value = JSON.stringify(o);
+           });
         }
       },
       {
@@ -205,6 +260,27 @@
         "fn":"addNewGitHubComment",
         "run": function(v){
           v.innerHTML = blo0.addNewGitHubComment;
+        }
+      },
+      {
+        "v": "v0.11",
+        "fn":"blTimer",
+        "run": function(v){
+          v.innerHTML = blo0.blDate();
+          var i = 0;
+          v.timer = blo0.blTimer(1000,60*60,function(nLeft){
+            i++;
+            var s = blo0.blStr2JpSVG2(bl$("id_4_ta_blrRunJS").value,0,i*10,1000,1415);
+            s = s.replace("Title","Title i=" + i + " nLeft=" + nLeft);            
+            v.innerHTML = s;
+          }); 
+        }
+      },
+      {
+        "v": "v0.11",
+        "fn":"test",
+        "run": function(v){ 
+          bl$("id_4_ta_blrRunJS").value = v.innerHTML ;
         }
       }
     ];
