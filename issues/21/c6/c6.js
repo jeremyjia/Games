@@ -1,4 +1,4 @@
-var s = "app_in_i21c6_bv0.13";
+var s = "app_in_i21c6_bv0.14";
 var d = blo0.blMD("id_"+s, s,    300,100,500,400, "gray"); 
 d.v = blo0.blDiv(d,d.id+"v","v",blGrey[0]);
 var nRowH = 88;
@@ -7,18 +7,7 @@ x.blrJPEditor= function(b,d){
     if(!d.tb){
         d.tb = blo0.blDiv(d,d.id+"tb","tb","gray");
         const v = blo0.blDiv(d,d.id+"v","v","green");
-        const b1 = blo0.blBtn(d.tb,d.tb.id+"b1","b1","green");
-        b1.style.float = "left";
-        b1.onclick = function(){
-            var s = blo0.blStr2JpSVG2(ta.value,0,0,1000,1415,1);
-            v.innerHTML = s;
-        }
-        const b2 = blo0.blBtn(d.tb,d.tb.id+"b2","b2","green");
-        b2.style.float = "left";
-        b2.onclick = function(){
-            var s = blo0.blStr2JpSVG2(ta.value,0,0,1000,1415,2);
-            v.innerHTML = s;
-        }
+        
         const e = blo0.blBtn(d.tb,d.tb.id+"e","e","lightblue");
         e.style.float = "left";
         e.onclick = function(){
