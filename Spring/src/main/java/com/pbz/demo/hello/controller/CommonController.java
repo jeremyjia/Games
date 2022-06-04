@@ -22,8 +22,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.pbz.demo.hello.model.VideoDoc;
+import com.pbz.demo.hello.service.DataStreamStoreService;
 import com.pbz.demo.hello.service.VideoDocService;
 import com.pbz.demo.hello.util.ExecuteCommand;
+import com.pbz.demo.hello.util.FileUtil;
 import com.pbz.demo.hello.util.NetAccessUtil;
 
 import io.swagger.annotations.Api;
@@ -183,6 +185,37 @@ public class CommonController {
 		mv.addObject("issue_link", issueLink);
 		mv.addObject("short_link", "#" + issueId);
 		return mv;
+	}
+
+	@RequestMapping(value = "/store/w", method = RequestMethod.POST)
+	@ResponseBody
+	public void saveStreamData(@RequestParam(name = "issueId", defaultValue = "767") Long issueId,
+			@RequestParam(name = "fileUrl", defaultValue = "1.jpg") String fileUrl) throws Exception {
+		String fileName = FileUtil.downloadFileIfNeed(fileUrl);
+
+		String targetPath = System.getProperty("user.dir");
+		File filePath = new File(targetPath + "/" + fileName);
+		String strBase64 = FileUtil.encryptToBase64(filePath.getAbsolutePath());
+		String strTpye = "";
+
+		if (fileName.toLowerCase().endsWith("mp4")) {
+			strTpye = "data:video/mp4;base64,";
+		} else if (fileName.toLowerCase().endsWith("jpg")) {
+			strTpye = "data:image/jpeg;base64,";
+		} else if (fileName.toLowerCase().endsWith("png")) {
+			strTpye = "data:image/png;base64,";
+		} else if (fileName.toLowerCase().endsWith("mp3")) {
+			strTpye = "data:audio/mpeg;base64,";
+		}
+		DataStreamStoreService.saveStreamData(String.valueOf(issueId), strTpye, strBase64);
+	}
+
+	@RequestMapping(value = "/store/r", method = RequestMethod.GET)
+	@ResponseBody
+	public String getStreamData(@RequestParam(name = "issueId", defaultValue = "767") Long issueId,
+			@RequestParam(name = "decode", defaultValue = "false") boolean decode) throws Exception {
+		String resultString = DataStreamStoreService.getStreamData(String.valueOf(issueId), decode);
+		return resultString;
 	}
 
 	@ApiOperation(value = "获取版本信息", notes = "获取应用版本、服务器等信息")

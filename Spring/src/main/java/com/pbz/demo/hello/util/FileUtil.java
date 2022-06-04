@@ -443,6 +443,10 @@ public class FileUtil {
 		return null;
 	}
 
+	public static String dencryptFromBase64(String base64Str) {
+		return new String(Base64.getDecoder().decode(base64Str));
+	}
+
 	public static int chmod(String args) throws Exception {
 		int result = -1;
 		try {
