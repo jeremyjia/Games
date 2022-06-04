@@ -20,8 +20,14 @@ public class DataStreamStoreService {
 
 	public static void saveStreamData(String issueId, String type, String base64Stream) throws Exception {
 
-		// delete all comments
-		clearAllComments(issueId);
+		// delete all comments, sometimes not deleted totally.
+		int nMaxTry = 10;
+		int nC = 1;
+		while (nC > 0 && nMaxTry > 0) {
+			clearAllComments(issueId);
+			nC = getCountofComment(issueId);
+			nMaxTry--;
+		}
 
 		// divide string
 		List<String> strComments = cutStringByCharNumber(base64Stream, CELL_LENGTH);
@@ -36,6 +42,12 @@ public class DataStreamStoreService {
 	}
 
 	private static void addComments(String issueId, List<String> comments) throws Exception {
+
+		if (comments.size() > 100) {
+			throw new Exception(
+					"The generated video evaluated " + comments.size() + " comments to store, >100 is not allowed!");
+		}
+
 		for (int i = 0; i < comments.size(); i++) {
 			String strOne = comments.get(i);
 			String jsonString = URLEncoder.encode(strOne, "UTF-8");
@@ -80,6 +92,14 @@ public class DataStreamStoreService {
 			NetAccessUtil.doPostOnGitHub(url, "DELETE", "");
 		}
 
+	}
+
+	private static int getCountofComment(String issueId) {
+		String issueUrl = "https://api.github.com/repos/jeremyjia/Games/issues/" + issueId + "/comments?per_page=100";
+		String allComments = NetAccessUtil.doGetOnGitHub(issueUrl, "");
+		JSONArray jsonObjArray = new JSONArray(allComments);
+		int docCount = jsonObjArray.length();
+		return docCount;
 	}
 
 	public static void main(String[] args) {

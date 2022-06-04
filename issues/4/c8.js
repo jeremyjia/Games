@@ -1,11 +1,12 @@
 //i4c8
-var s = "v0.0.3 ";
+var s = "v0.0.5 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c8.js'"
 s += " style='color:blue;'"; s += ">"; s += "c8.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c8.js'"
 s += " style='color:green;'"; s += ">"; s += "c8.js ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c8.html'"
-s += " style='color:brown;'"; s += ">"; s += "c8Test.html";
+s += " style='color:brown;'"; s += ">"; s += "c8Test.html"; s+="</a>";
+s += " <button id='id_div_4_logCmd'>+viewLog</button>"
 
 var md = blo0.blDiv(document.body, "div_ID_4_I4C8", s, blGrey[0]);
 if (!md.run) {
@@ -39,6 +40,32 @@ if (!md.run) {
 	if (bl$("blrVideoEditor")) {
 		bl$("blrVideoEditor").click();
 	}
+
+	bl$("id_div_4_logCmd").onclick = function(){
+		var b = this;
+		if(!this.logCmd){
+		  b.logCmd = blo0.blMDiv(md, md.id + "logCmd","log",520,-50,330,50,blGrey[0]);
+		  b.logCmd.v = blo0.blDiv(b.logCmd,  "id_div_4_c8_logView" ,blGrey[5]);
+		  b.logCmd.ta = blo0.blTextarea(b.logCmd.v, "id_4_ta_logTextArea", "log...", blGrey[3]);
+		  b.logCmd.ta.style.width = "95%";
+		  b.logCmd.ta.style.height = "300" + "px";
+
+		  //Read server log
+		  b.logCmd.v.btnReadLog = blo0.blBtn(b.logCmd.v,b.logCmd.v.id+"btnReadLog","readLog",blColor[4]);
+		  b.logCmd.v.btnReadLog.onclick= function(){
+			  function _loadIssue760CommentOfDoc(s) {
+	              b.logCmd.ta.value = s;
+			  }
+			  getStringComment(1139435588, _loadIssue760CommentOfDoc);
+		  }
+
+		  b.style.background = blColor[4];
+		  _on_off_div(this,this.logCmd);	  
+		}else{
+		  _on_off_div(this,this.logCmd);
+		  b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];   
+		}
+	  }
 }
 _on_off_div(this, md);
 
@@ -60,9 +87,14 @@ function _myTaskProcessClass() {
 			d.v.btnReadVideoDoc = blo0.blBtn(d.v1, d.v1.id + "btnReadVideoDoc", "ReadVideoDoc", blColor[4]);
 			d.v.btnReadVideoDoc.onclick = function () {
 				function _loadIssue451CommentOfDoc(o) {
-					d.v.ta.value = JSON.stringify(o);;
+					if(o.indexOf("http") == 0) { 
+						d.v.ta.value = o;
+					}else if(o.indexOf("{") == 0){
+						var jsonDocObj = JSON.parse(o);
+						d.v.ta.value = JSON.stringify(jsonDocObj);
+					}
 				}
-				getGitHubComment(939612362, _loadIssue451CommentOfDoc);
+				getStringComment(939612362, _loadIssue451CommentOfDoc);
 			}
 
 			d.v.btnServer = blo0.blBtn(d.v1, d.v1.id + "btnServer", "QueryServer", blColor[4]);
@@ -91,6 +123,11 @@ function _myTaskProcessClass() {
 						return;
 					} else {
 						var strDoc = d.v.ta.value;
+						if(strDoc.indexOf("{") == 0){
+							var docObj = JSON.parse(d.v.ta.value);
+							strDoc = JSON.stringify(docObj);
+							d.v.ta.value = strDoc;
+						}
 						updateCommentOnGitHub(939612362, strDoc, CBUpdateVideoDoc);
 						function CBUpdateVideoDoc(response) {
 							if (response.readyState == 4) {

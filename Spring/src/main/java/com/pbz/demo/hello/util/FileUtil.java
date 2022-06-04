@@ -12,15 +12,22 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,6 +36,7 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSessionContext;
 
+import org.apache.commons.io.input.ReversedLinesFileReader;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -141,6 +149,64 @@ public class FileUtil {
 		} catch (Exception exception) {
 			throw new Exception(exception);
 		}
+	}
+
+	/**
+	 * 读取日志最后N行
+	 */
+	public static List<String> readLastLine(String path, Charset s, int numLastLineToRead) {
+		File file = new File(path);
+		List<String> result = new ArrayList<>();
+		try (ReversedLinesFileReader reader = new ReversedLinesFileReader(file, s)) {
+			String line = "";
+			while ((line = reader.readLine()) != null && result.size() < numLastLineToRead) {
+				if (line.contains("--->")) {
+					continue;
+				}
+				result.add(line);
+			}
+			Collections.reverse(result);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	public static String listToString(List<String> list) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < list.size(); i++) {
+			sb.append(list.get(i));
+		}
+		return clearStr(sb.toString());
+	}
+
+	public static String clearStr(String str) {
+		String resultStr = str.replaceAll("\n", "").replaceAll("\t", "").replaceAll("\r", "");
+		return resultStr.trim();
+	}
+
+	public static String getCurrentTime() {
+		SimpleDateFormat sdf = new SimpleDateFormat();
+		sdf.applyPattern("yyyy-MM-ddHH:mm:ssa");
+		Date date = new Date();
+		return sdf.format(date);
+	}
+
+	public static String getFQDN() {
+		String defaultFQDN = "";
+		System.setProperty("java.net.preferIPv4Stack", "true");
+		try {
+			InetAddress address = InetAddress.getLocalHost();
+			String host = address.getHostName();
+			String ip = address.getHostAddress();
+			defaultFQDN = address.getCanonicalHostName();
+			if (defaultFQDN.equals(ip)) {
+				defaultFQDN = host;
+			}
+		} catch (Exception e) {
+			System.out.println("  " + e);
+		}
+		return defaultFQDN;
 	}
 
 	public static String getHTMLContentByUrl(String url, String charset) throws IOException {
