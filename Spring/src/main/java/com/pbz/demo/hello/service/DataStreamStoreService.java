@@ -56,7 +56,7 @@ public class DataStreamStoreService {
 			buffer.append(comment);
 		}
 		if (bDecode) {
-			FileUtil.dencryptFromBase64(buffer.toString().trim());
+			return FileUtil.dencryptFromBase64(buffer.toString().trim());
 		}
 		return buffer.toString().trim();
 	}
