@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.133"
+var g_ver_blClass = "CBlClass_bv1.6.151"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2025,6 +2025,30 @@ function CBlClass ()
 		}
 		return r;
 	}
+	this.blTimer = function(vInterval,nLimit,cbTimer){
+		var bStop = false;
+		var t = {};
+		t.stop = function(){
+			bStop = true;
+		};
+
+		var timeLeft = nLimit;
+		var timePassed = 0;
+		const _Interval = setInterval(() => {
+			timePassed++;
+			timeLeft = nLimit - timePassed;
+			
+			if(typeof cbTimer == "function"){
+				cbTimer(timeLeft);
+			}
+		
+			if (timeLeft === 0 || bStop==true) {
+				clearInterval(_Interval);
+			}
+		  }, vInterval);
+
+		  return t;
+	}
 	this.blTime = function(nOption){
 		var d = new Date();
 		switch(nOption){
@@ -2360,11 +2384,11 @@ function CBlClass ()
 			v.load = true;
 		}
 		var r = "";
-		var blcWork = function(ntStr,lyStrs){
-		  this.blMakeSVG = function(){ return _makeSVG(1000,1415); }
+		var blcWork1 = function(ntStr,lyStrs){
+		  this.blMakeSVG = function(){ return _makeSVG1(1000,1415); }
 	
 		  
-		  var _makeSVG = function (w,h){        
+		  var _makeSVG1 = function (w,h){        
 			var s = '<svg ';
 			s +='width="' + w +'" ';
 			s +='height="' + h + '" ';
@@ -2600,15 +2624,15 @@ function CBlClass ()
 		  }
 		  
 		}
-		var w = new blcWork(ntStr,lyStrs);
+		var w = new blcWork1(ntStr,lyStrs);
 		r = w.blMakeSVG();
 		v.v.innerHTML = r;
 		return r;
 	}
-	this.blStr2JpSVG2 = function (txt){    
+	this.blStr2JpSVG2 = function (txt,x,y,w,h,vTime){    
 		var r = "";
-		var blcWork = function(sInit){
-		  this.blMakeSVG = function(){ return _makeSVG(1000,1415); }
+		var blcWork2 = function(sInit,x,y,w,h,vTime){
+		  this.blMakeSVG = function(){ return _makeSVG2(x,y,w,h,vTime); }
 	
 		  const _getNoteId = function(c){
 			var sID = "";
@@ -2632,7 +2656,7 @@ function CBlClass ()
 			}
 			return sID;
 		  }
-		  var _mkMusic = function(ls){  
+		  var _mkMusicRow = function(ls){  
 			var ms = ls[0].split(" ");
 			var c = [];
 			for(i in ls){
@@ -2641,7 +2665,10 @@ function CBlClass ()
 			for(i in ls){
 			  if(i==0) continue; 
 			  for(j in ms){
-				if(ms[j]=='-' || ms[j]=='|'){
+				if(  
+					ms[j]=='-' 
+					|| ms[j]=='|'
+				){
 				  continue;
 				}
 				var l = ls[i][c[i]];
@@ -2650,20 +2677,36 @@ function CBlClass ()
 				  l += ls[i][c[i]];
 				  c[i]++;
 				}
-				ms[j] += "_"+l; 
+				ms[j] += "_"+l;  
 			  }
 			}
 			return ms;
 		  }
 			
 	
-			var _nts = function(lsNotes,x,y,dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id){
+		  var _getBars = function(lsNotes){ 
+			var l = lsNotes;
+			var nBar = 0;
+			var lsBar = [];
+			lsBar.push(0);
+
+			for(i in l){     		 
+				var idNote =  _getNoteId(l[i][0]);
+				if("xiaojiexian"==idNote){//xd2do
+						nBar++;
+						lsBar.push(i); 
+				} 
+			}
+			return lsBar;
+		  }
+		  var _renderMusicRow = function(lsNotes,lsBars,x,y,dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id,_t,_mr){
 				var s = "";
-				s += _makeText("nts: xv0.231",222, 11, 36, "red");
+				s += _makeText("nts: xv0.234",222, 11, 36, "red");
 				var l = lsNotes;
 	
+				var nBar = 0; 
 
-				for(i in l){     					
+				for(i in l){     				
 					var dy = 0;       
 					var idNote = "";
 					if(l[i][0]=='('){
@@ -2672,16 +2715,38 @@ function CBlClass ()
 					}
 					else{
 						idNote = _getNoteId(l[i][0]);
+						if("xiaojiexian"==idNote){ 
+							nBar++; 
+							if(Math.ceil(_t/16)==_mr && Math.ceil((_t-(_mr-1)*16)/4)==nBar){
+								var xBarStart = x +lsBars[nBar-1]*dx;
+								var xBarEnd = x + lsBars[nBar]*dx;
+
+								var n = _t%4;
+								n = n?n:4;
+								s += _makeText("["+ nBar+"."+ n + "]",xBarStart, y+13, 22, "brown");
+								s += _makeText(_mr+"*" + _t,xBarEnd, y+13, 22, "red");
+							} 
+						}
 					}
 					s += _use_shuzi_by_id(idNote,x + i*dx,y);   
 				
 					var jsNt = l[i].split('/');    
 					if(jsNt.length>1){
 						for(var j = 0; j < (jsNt.length -1);j++){
-							s += _use_yingao_by_id("jianShi",x + i*dx,y - j*8 + dy*12); 
+							s += _use_yingao_by_id("jianShi",x + i*dx,y - j*8 + dy*12);  
 							dy++;
 						}
 					}
+					var jsNt = l[i].split('>');    
+					if(jsNt.length>1){
+						for(var j = 0; j < (jsNt.length -1);j++){
+							s += _use_yingao_by_id("jianShi",x + i*dx,y - j*8 + dy*12); 
+							s += _use_yingao_by_id("jianShi",x + i*dx+0.35*dx,y - j*8 + dy*12); 
+							s += _use_yingao_by_id("jianShi",x + i*dx+0.7*dx,y - j*8 + dy*12); 
+							dy++;
+						}
+					}
+
 
 					var nt = l[i].split(',');
 					if(nt.length>1){
@@ -2719,19 +2784,19 @@ function CBlClass ()
 
 				}
 				return s;
-			}
+			  }
 	
 		  
-		  var _makeSVG = function (w,h){        
+		  var _makeSVG2 = function (_x,_y,_w,_h,_t){        
 			var s = '<svg ';
-			s +='width="' + w +'" ';
-			s +='height="' + h + '" ';
+			s +='width="' + _w +'" ';
+			s +='height="' + _h + '" ';
 			s +='version="1.1" ';
-			s +='viewBox="0 0 ' + w + '' + h + '" ';
+			s +='viewBox="' + _x + ' ' + _y +' ' + _w + ' ' + _h + '" ';
 			s +='encoding="UTF-8" xmlns="http://www.w3.org/2000/svg">';
 			s += '<rect x="0" y="0" height="100%" width="100%" fill="white" />';
 			
-			s += _makeText("Title",500,1, 36, "yellow");
+			s += _makeText("Title" + _t,500,1, 36, "yellow");
 			s += _defs();
 			s += _uses(555,11);
 			
@@ -2741,13 +2806,16 @@ function CBlClass ()
 			var y = 111;
 			var x = 55;
 			var dx = 30;
+			var nRow = 0;
 			for(i in a)
 			{
 			  if(i==0) continue; 
+			  nRow++;
 			  var r = a[i].split(/C[1-4]*:/g);
 	
-			  var music = _mkMusic(r);      
-			  s += _nts(music,x,y, dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id);    
+			  var rowNotes = _mkMusicRow(r);   
+			  s += _renderMusicRow(rowNotes,_getBars(rowNotes),x,y, dx,_makeText,_use_shuzi_by_id,_use_yingao_by_id,_t,nRow);    
+			  s += _makeText("r:" + nRow,x,y, 15, "blue");
 			   
 			  y += dy*3;
 			}
@@ -3018,7 +3086,7 @@ function CBlClass ()
 		  
 		}
 		
-		var w = new blcWork(txt);
+		var w = new blcWork2(txt,x,y,w,h,vTime);
 		r = w.blMakeSVG();
 		return r;
 	}
