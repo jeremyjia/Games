@@ -1,5 +1,5 @@
 //i4c8
-var s = "v0.0.11 ";
+var s = "v0.0.15 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c8.js'"
 s += " style='color:blue;'"; s += ">"; s += "c8.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c8.js'"
@@ -49,21 +49,17 @@ if (!md.run) {
 		  b.logCmd.ta = blo0.blTextarea(b.logCmd.v, "id_4_ta_logTextArea", "log...", blGrey[3]);
 		  b.logCmd.ta.style.width = "95%";
 		  b.logCmd.ta.style.height = "300" + "px";
-
-		  //Read server log
-		  b.logCmd.v.btnReadLog = blo0.blBtn(b.logCmd.v,b.logCmd.v.id+"btnReadLog","readLog",blColor[4]);
-		  b.logCmd.v.btnReadLog.onclick= function(){
-			  function _loadIssue760CommentOfDoc(s) {
-	              b.logCmd.ta.value = s;
-			  }
-			  getStringComment(1139435588, _loadIssue760CommentOfDoc);
-		  }
+ 
 
 		  if(!this.t){
 			var i = 0;
 			this.t =  blo0.blTimer(1000,60*60,function(nLeft){
 			  i++;  
-			  b.logCmd.ta.value = "nLeft=" + nLeft + " " + "i="+i;    
+			  function _loadIssue760CommentOfDoc(s) {
+				b.logCmd.ta.value = "nLeft=" + nLeft + " " + "i="+i + " \n " + s;
+			  }
+			  getStringComment(1139435588, _loadIssue760CommentOfDoc);
+			  //b.logCmd.ta.value = "nLeft=" + nLeft + " " + "i="+i;    
 			});
 		 }
 		 else{
