@@ -1,5 +1,5 @@
 //i4c8
-var s = "v0.0.5 ";
+var s = "v0.0.11 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c8.js'"
 s += " style='color:blue;'"; s += ">"; s += "c8.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c8.js'"
@@ -58,6 +58,19 @@ if (!md.run) {
 			  }
 			  getStringComment(1139435588, _loadIssue760CommentOfDoc);
 		  }
+
+		  if(!this.t){
+			var i = 0;
+			this.t =  blo0.blTimer(1000,60*60,function(nLeft){
+			  i++;  
+			  b.logCmd.ta.value = "nLeft=" + nLeft + " " + "i="+i;    
+			});
+		 }
+		 else{
+			  this.t.stop();
+			  this.t = null;
+			  b.logCmd.ta.value = 0;   
+		 } 
 
 		  b.style.background = blColor[4];
 		  _on_off_div(this,this.logCmd);	  
