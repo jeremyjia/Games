@@ -1,0 +1,225 @@
+
+<!DOCType html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<style>
+    div {
+    position: relative;
+    margin: 80px;
+    width: 220px;
+    height: 220px;
+    }
+    canvas {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    }
+    span {
+    color: #555;
+    display: block;
+    line-height: 220px;
+    text-align: center;
+    width: 100%;
+    font-family: sans-serif;
+    font-size: 40px;
+    font-weight: 100;
+    margin-left: 5px;
+    }
+    input {
+    width: 200px;
+    }
+ 
+</style>
+</head>
+<body>
+    
+  <div>
+    <a href="../index.html">[..] v0.43</a> 
+  </div>  
+  <table>
+    <tr>
+      <td>
+        <div class="chart" id="graph" data-percent="10"></div>
+      </td>
+      <td>
+        <div id="gauge"></div>
+      </td>
+    </tr>
+  </table>
+  <script>
+      var el = document.getElementById('graph'); // get canvas
+
+var options = {
+  percent: el.getAttribute('data-percent') || 25,
+  size: el.getAttribute('data-size') || 220,
+  lineWidth: el.getAttribute('data-line') || 4,
+  rotate: el.getAttribute('data-rotate') || 0
+}
+
+function Gauge() {
+  this.to_rad = to_rad = Math.PI / 180;
+  this.percentBg = "#efefef";
+  this.percentFg = "#555555";
+  this.tickFg = "#cccccc";
+  this.tickBg = "transparent";
+  this.tickFill = true;
+  this.tickDirection = -1; // 1=clockwise, -1=counterclockewise
+  this.percent = 0;
+  this.size = 220;
+  this.lineWidth = 14;
+  this.rotate = 0;
+  this.ticks = 40;
+  this.tick = 0;
+  this.can = document.createElement('canvas');
+  this.ctx = this.can.getContext('2d');
+}
+
+
+Gauge.prototype.drawCircle = function(color, lineWidth, percent, drawArrow) {
+  var ctx = this.ctx;
+  var circleMargin = 10; // need room for arrowhead
+  var radius = (this.size - this.lineWidth - circleMargin) / 2;
+
+  ctx.save();
+  var mid = this.size / 2;
+  ctx.translate(mid, mid);
+  ctx.rotate(-90 * to_rad);
+  percent = Math.min(Math.max(0, percent || 1), 1);
+  ctx.beginPath();
+  var endRadians = 360 * percent * this.to_rad;
+  ctx.arc(0, 0, radius, 0, endRadians, false);
+  ctx.strokeStyle = ctx.filStyle = color;
+  ctx.lineCap = 'round'; // butt, round or square
+  ctx.lineWidth = lineWidth
+  ctx.stroke();
+
+  if (drawArrow === true && percent !== 1) {
+    ctx.beginPath();
+    ctx.rotate(endRadians);
+
+    var arrowWidth = this.lineWidth + 12;
+    var arrowHeight = 10;
+    ctx.moveTo(radius - (arrowWidth / 2), 0);
+    ctx.lineTo(radius + (arrowWidth / 2), 0);
+    ctx.lineTo(radius, arrowHeight);
+    ctx.fill();
+  }
+
+  ctx.restore();
+};
+
+Gauge.prototype.drawTicks = function() {
+  var circleMargin = 10; // need room for arrowhead
+  var radius = (this.size - this.lineWidth - circleMargin) / 2;
+  var ctx = this.ctx;
+
+  ctx.save();
+  var mid = this.size / 2;
+  ctx.translate(mid, mid);
+  ctx.rotate(-90 * to_rad);
+  ctx.lineWidth = 3;
+
+  var angle = 360 / this.ticks;
+  var tickSize = 20;
+  var tickMargin = 10;
+
+  for (var i = 0; i < this.ticks; i++) {
+    if ((i < this.tick && this.tickFill == true) || i == this.tick) {
+      ctx.strokeStyle = this.tickFg;
+    } else {
+      ctx.strokeStyle = this.tickBg;
+    }
+    ctx.save();
+    if (this.tickDirection === -1) {
+      ctx.rotate((360 - (i * angle)) * this.to_rad);
+    } else {
+      ctx.rotate(i * angle * this.to_rad);
+    }
+    ctx.beginPath();
+    ctx.moveTo(radius - tickSize - tickMargin, 0);
+    ctx.lineTo(radius - tickMargin, 0);
+    ctx.stroke();
+    ctx.restore();
+  }
+  ctx.restore();
+};
+
+Gauge.prototype.render = function(el) {
+  this.can.width = this.can.height = this.size;
+  this.span = document.createElement('span');
+
+  el.innerHTML = "";
+  el.appendChild(this.can);
+  el.appendChild(this.span);
+
+  var self = this;
+  var ctx = self.ctx;
+
+  function loop() {
+
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    self.drawCircle(self.percentBg, self.lineWidth, 100 / 100);
+    self.drawCircle(self.percentFg, self.lineWidth, self.percent / 100, true);
+    self.drawTicks();
+    self.timeout = setTimeout(function() {
+      loop()
+    }, 1000 / 30);
+    
+  }
+
+  loop();
+}
+
+var myGauge = new Gauge();
+
+myGauge.size = options.size;
+myGauge.percent = options.percent;
+myGauge.lineWidth = options.lineWidth;
+myGauge.percent = options.percent;
+myGauge.render(el)
+
+var myGauge2 = new Gauge();
+
+myGauge2.size = options.size;
+myGauge2.percent = options.percent;
+myGauge2.lineWidth = options.lineWidth;
+myGauge2.percent = options.percent;
+myGauge2.tickFg = "#FF8800";
+myGauge2.tickBg = "#EEEEEE";
+myGauge2.tickFill = false;
+myGauge2.ticks = 60;
+myGauge2.tickDirection = 1;
+myGauge2.render(document.getElementById('gauge'));
+
+var startTime = (new Date()).getTime();
+
+var countDown = 99;
+
+function dataLoop() {
+
+
+  myGauge.percent = myGauge.percent > 100 ? 100 : (myGauge.percent * 1) + .1;
+
+  var elapsedMs = (new Date().getTime()) - startTime; // milliseconds;
+  var elapsedSec = elapsedMs / 1000;
+  var remainSec = Math.floor(countDown - elapsedSec);  
+  var progress = remainSec <=0 ? 1 : elapsedSec / countDown;
+  myGauge.tick = Math.floor(progress * myGauge.ticks); 
+  myGauge.span.innerHTML = remainSec > 0 ? remainSec + " sec" : "---";
+  
+  var d = new Date();
+
+  myGauge2.percent = (d.getMinutes() / 60) * 100;
+  if (myGauge2.percent > 100) myGauge2.percent = 100;
+  myGauge2.tick = d.getSeconds();
+  myGauge2.span.innerHTML = d.getSeconds() + " sec";
+  setTimeout(dataLoop,1000/30);
+}
+
+dataLoop();
+  </script>
+</body>
+</html>
