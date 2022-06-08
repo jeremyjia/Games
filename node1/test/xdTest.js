@@ -31,6 +31,6 @@ describe(tag4xdTest, function(){
     assert.equal(app(),'to test xdApp: done.');
   });
   
-  it('word', function(){     assert.equal("done",'done');  });
+  it('word', function(){     assert.equal("done",'doneX');  });
   
 });
