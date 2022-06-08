@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import com.pbz.demo.hello.util.FileUtil;
 import com.pbz.demo.hello.util.NetAccessUtil;
 
 @Component
@@ -19,23 +20,54 @@ public class DataStreamStoreService {
 	public static final int CELL_LENGTH = 146000;
 
 	public static void saveStreamData(String issueId, String type, String base64Stream) throws Exception {
-
-		// delete all comments
-		clearAllComments(issueId);
+		// delete all comments, sometimes not deleted totally.
+		int nMaxTry = 10;
+		int nC = 1;
+		while (nC > 0 && nMaxTry > 0) {
+			clearAllComments(issueId);
+			nC = getCountofComment(issueId);
+			nMaxTry--;
+		}
 
 		// divide string
 		List<String> strComments = cutStringByCharNumber(base64Stream, CELL_LENGTH);
 
 		// add type as the first comment
-		String url = "https://api.github.com/repos/jeremyjia/Games/issues/" + issueId + "/comments";
-		NetAccessUtil.doPostOnGitHub(url, "POST", type);
+		if (type != null && type.length() > 0) {
+			String url = "https://api.github.com/repos/jeremyjia/Games/issues/" + issueId + "/comments";
+			NetAccessUtil.doPostOnGitHub(url, "POST", type);
+		}
 
 		// add base64 data as others comments
 		addComments(issueId, strComments);
 
 	}
 
+	public static String getStreamData(String issueId, boolean bDecode) {
+		String issueUrl = "https://api.github.com/repos/jeremyjia/Games/issues/" + issueId + "/comments?per_page=100";
+		String allComments = NetAccessUtil.doGetOnGitHub(issueUrl, "");
+		JSONArray jsonObjArray = new JSONArray(allComments);
+		int docCount = jsonObjArray.length();
+
+		StringBuffer buffer = new StringBuffer();
+		for (int i = 0; i < docCount; i++) {
+			JSONObject jsonObj = jsonObjArray.getJSONObject(i);
+			String comment = jsonObj.getString("body");
+			buffer.append(comment);
+		}
+		if (bDecode) {
+			return FileUtil.dencryptFromBase64(buffer.toString().trim());
+		}
+		return buffer.toString().trim();
+	}
+
 	private static void addComments(String issueId, List<String> comments) throws Exception {
+
+		if (comments.size() > 100) {
+			throw new Exception(
+					"The generated video evaluated " + comments.size() + " comments to store, >100 is not allowed!");
+		}
+
 		for (int i = 0; i < comments.size(); i++) {
 			String strOne = comments.get(i);
 			String jsonString = URLEncoder.encode(strOne, "UTF-8");
@@ -82,6 +114,14 @@ public class DataStreamStoreService {
 
 	}
 
+	private static int getCountofComment(String issueId) {
+		String issueUrl = "https://api.github.com/repos/jeremyjia/Games/issues/" + issueId + "/comments?per_page=100";
+		String allComments = NetAccessUtil.doGetOnGitHub(issueUrl, "");
+		JSONArray jsonObjArray = new JSONArray(allComments);
+		int docCount = jsonObjArray.length();
+		return docCount;
+	}
+
 	public static void main(String[] args) {
 		System.out.println("Begin test");
 
@@ -89,7 +129,9 @@ public class DataStreamStoreService {
 		String base64Stream = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 		try {
-			saveStreamData("743", type, base64Stream);
+			saveStreamData("767", type, base64Stream);
+			String oriString = getStreamData("767", false);
+			System.out.println(oriString);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
