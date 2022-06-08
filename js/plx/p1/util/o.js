@@ -1,5 +1,5 @@
 function CP1Util (){
-    var _v = "CP1Util_v0.213";
+    var _v = "CP1Util_v0.221";
     var _list4Cards = [];
     
     this.listCards = function(){ return _list4Cards;}
@@ -36,7 +36,7 @@ function CP1Util (){
                     uiPG.inf.click = _this.innerHTML;
                 }
             }(bv);
-            if(i=="text" || i=="c" ||  i=="duration" || i=="rate"){
+            if(i=="text" || i=="c" ||  i=="duration" || i=="rate"|| i=="superObjFile"){
                 b.style.backgroundColor = "lightblue";
                 b.onclick = function(_this,_bv,_me,_i){
                     return function(){ 
@@ -53,7 +53,7 @@ function CP1Util (){
                             _bv.innerHTML = _bv.ta.value;
                             _me.inf[_i] = _bv.ta.value; 
                             vta.innerHTML = "";
-                            o.status(_me);
+                            o.status(_me); 
                        }
                     }
                 }(b,bv,me,i);
