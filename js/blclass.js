@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.153"
+var g_ver_blClass = "CBlClass_bv1.6.155"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2142,12 +2142,13 @@ function CBlClass ()
 		return c[0];	
 	}
 
-	this.C4Canvas = function(d,w,h,initColor){//xd2do
+	this.C4Canvas = function(d,w,h,initColor){
 		function _blCanvas(d,w,h){
 			var cvs = document.createElement("canvas");
 			cvs.width = w;
 			cvs.height = h;
 			cvs.ms = false;
+
 			cvs.addEventListener('mousedown', function (e) {
 				var x = e.offsetX;
 				var y = e.offsetY;
@@ -2157,18 +2158,31 @@ function CBlClass ()
 				var x = e.offsetX;
 				var y = e.offsetY;
 				cvs.ms = false;
-			});
-			
+			}); 
 			d.appendChild(cvs);
 			cvs.style.float = "left";
 
 			var ctx = cvs.getContext("2d");								 
 			ctx.fillStyle = initColor; 
 			ctx.fillRect(0,0,w,h);
+
 	
 			return cvs;
 		}
 		const c = new _blCanvas(d,w,h);
+
+		var cvxTimer = null;
+		var nTicks = 0;
+		const drawInTimer = function(){
+			var ctx = c.getContext("2d");	
+
+			ctx.fillStyle = "gray"; 
+			ctx.fillRect(0,0,w,h);
+			
+			ctx.fillStyle = "blue"; //xd2do
+			ctx.font = "30px Arial";
+			ctx.fillText(nTicks++, 10, 50);
+		}
 		var r = {};
 		r.drawCircle = function(x,y,r,fillColor,strokeColor,lineWidth){	
 			var ctx = c.getContext("2d");		 
@@ -2180,6 +2194,16 @@ function CBlClass ()
 			ctx.strokeStyle = strokeColor;
 			ctx.stroke(); 	
 		}
+		r.startTimer = function(){
+			if(cvxTimer) return;
+			cvxTimer = setInterval(drawInTimer, 20);
+		}
+		r.stopTimer = function(){
+			clearInterval(cvxTimer);
+			cvxTimer = null;
+			nTicks = 0;
+		}
+
 		return r;
 	}
 

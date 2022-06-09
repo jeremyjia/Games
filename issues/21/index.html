@@ -68,7 +68,7 @@
 <div class="topnav" id="myTopnav">
   <a href="../../index.html">Home</a>
   <a href="../index.html">issues</a>
-  <a href="#"  class="active">i21_bv0.211</a> 
+  <a href="#"  class="active">i21_bv0.213</a> 
   <a href="c1/index.html">c1</a>
   <a href="c2/index.html">c2</a>
   <a href="c4/index.html">c4</a>
@@ -191,8 +191,19 @@
         "fn":"C4Canvas",
         "run": function(v){ 
           v.innerHTML = "";
-          const cvs = blo0.C4Canvas(v,1000,500,"lightblue");
+          var tb = blo0.blDiv(v,v.id+"tb","tb","gray");
+          var ui = blo0.blDiv(v,v.id+"ui","ui","green");
+          const cvs = blo0.C4Canvas(ui,1000,500,"lightblue");
           cvs.drawCircle(100,100,55,"red","blue",5);
+          
+          var b1 = blo0.blBtn(tb,tb.id+"b1","start","green");
+          b1.onclick = function(){
+            cvs.startTimer();
+          }
+          var b2 = blo0.blBtn(tb,tb.id+"b2","stop","brown");
+          b2.onclick = function(){
+            cvs.stopTimer();
+          }
         }
       },
       {
