@@ -3,12 +3,14 @@ import Modal from '../../../lib/modal';
 
 class App3000 extends React.Component {
   state = {
-    show: false
+    show: false,
+    xd: "xdtest..."
   };
   showModal = e => {
     this.setState({
       show: !this.state.show
     });
+    document.getElementById('id01').style.display='block';
   };
   render() {
     return (
@@ -18,18 +20,14 @@ class App3000 extends React.Component {
           id="centered-toggle-button"
           onClick={e => {
             this.showModal(e);
+
           }}
         >
           {" "}
           show Modal{" "}
         </button>
 
-        <Modal onClose={this.showModal} show={this.state.show}>
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nobis
-          deserunt corrupti, ut fugit magni qui quasi nisi amet repellendus non
-          fuga omnis a sed impedit explicabo accusantium nihil doloremque
-          consequuntur.
-        </Modal>
+        <Modal state = {this.state}/>
       </div>
     );
   }
