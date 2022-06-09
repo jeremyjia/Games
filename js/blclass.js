@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.211"
+var g_ver_blClass = "CBlClass_bv1.6.212"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2177,12 +2177,48 @@ function CBlClass ()
 				}
 			});
 
+			cvs.parseStr = function(s){
+				var ctx = cvs.getContext("2d");			
+				ctx.fillStyle = "red"; 
+				const X0 = 11;
+				const Y0 = 77;
+				var _x = X0;
+				var _y = Y0;
+				var _dy = 44;
+				var _dx = 111;
+				var a = s.split(/Q[1-7]*:/g); 
+				for(i in a)
+				{ 
+					if(i==0) continue;
+
+					ctx.fillText("[" + i + "]", _x, _y);
+					_y += _dy;
+					
+						 
+					var r = a[i].split(/C[1-7]*:/g);
+					for(j in r){
+						if(j==0){
+							var ns = r[0].match(/[|1-70][ />.',"]*[A-Za-z]*["]*[ />.',"-]*/g);
+							_x = X0;
+							for(k in ns){
+								ctx.fillText(ns[k], _x,_y);//xd2do 
+								_x += _dx;
+							}
+						}
+						else{
+							_x = X0;
+							ctx.fillText(j + " = " + r[j], _x,_y);
+						}
+						_y += _dy;
+					} 
+				}
+			}
 			cvs.drawAllOs = function(){
 				var ctx = cvs.getContext("2d");			
 				ctx.fillStyle = "lightgreen"; 
 				ctx.fillRect(0,0,w,h);
 				
-				ctx.fillStyle = "blue"; //xd2do
+				ctx.fillStyle = "blue"; 
 				ctx.font = "30px Arial";
 				ctx.fillText(nTicks++, 10, 50);
 				ctx.font = "30px Arial";
@@ -2207,10 +2243,13 @@ function CBlClass ()
 
 		var cvxTimer = null;
 		var nTicks = 0;
+		var fn2do = null;
 		const drawInTimer = function(){
 			c.drawAllOs();
+			if(fn2do) fn2do();
 		}
 		var r = {};
+		r.parseStr = function(s){ c.parseStr(s);	}
 		r.drawCircle = function(x,y,r,fillColor,strokeColor,lineWidth){	
 			var ctx = c.getContext("2d");		 
 			ctx.beginPath();
@@ -2221,8 +2260,9 @@ function CBlClass ()
 			ctx.strokeStyle = strokeColor;
 			ctx.stroke(); 	
 		}
-		r.startTimer = function(){
+		r.startTimer = function(_fn){
 			if(cvxTimer) return;
+			fn2do = _fn;
 			cvxTimer = setInterval(drawInTimer, 20);
 		}
 		r.stopTimer = function(){

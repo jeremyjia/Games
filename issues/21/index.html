@@ -68,7 +68,7 @@
 <div class="topnav" id="myTopnav">
   <a href="../../index.html">Home</a>
   <a href="../index.html">issues</a>
-  <a href="#"  class="active">i21_bv0.213</a> 
+  <a href="#"  class="active">i21_bv0.214</a> 
   <a href="c1/index.html">c1</a>
   <a href="c2/index.html">c2</a>
   <a href="c4/index.html">c4</a>
@@ -193,12 +193,14 @@
           v.innerHTML = "";
           var tb = blo0.blDiv(v,v.id+"tb","tb","gray");
           var ui = blo0.blDiv(v,v.id+"ui","ui","green");
-          const cvs = blo0.C4Canvas(ui,1000,500,"lightblue");
+          const cvs = blo0.C4Canvas(ui,1000,1500,"lightblue");
           cvs.drawCircle(100,100,55,"red","blue",5);
           
           var b1 = blo0.blBtn(tb,tb.id+"b1","start","green");
           b1.onclick = function(){
-            cvs.startTimer();
+            cvs.startTimer(function(){
+              cvs.parseStr(bl$("id_4_ta_blrRunJS").value);
+            });
           }
           var b2 = blo0.blBtn(tb,tb.id+"b2","stop","brown");
           b2.onclick = function(){
