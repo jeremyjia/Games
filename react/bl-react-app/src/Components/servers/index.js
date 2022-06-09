@@ -8,8 +8,8 @@ import { LinkContainer } from 'react-router-bootstrap';
 
 
 import S8080 from './8080/index.js';
- 
-const S3000 = () => <span>S3000</span>; 
+import S3000 from './3000/index.js';
+  
 const S5000 = () => <span>S5000</span>; 
 
 const ServersHome = () => (
