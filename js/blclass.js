@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.151"
+var g_ver_blClass = "CBlClass_bv1.6.153"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2141,6 +2141,48 @@ function CBlClass ()
 		var c = b[1].split('--end--');  
 		return c[0];	
 	}
+
+	this.C4Canvas = function(d,w,h,initColor){//xd2do
+		function _blCanvas(d,w,h){
+			var cvs = document.createElement("canvas");
+			cvs.width = w;
+			cvs.height = h;
+			cvs.ms = false;
+			cvs.addEventListener('mousedown', function (e) {
+				var x = e.offsetX;
+				var y = e.offsetY;
+				cvs.ms = true;
+			});
+			cvs.addEventListener('mouseup', function (e) {
+				var x = e.offsetX;
+				var y = e.offsetY;
+				cvs.ms = false;
+			});
+			
+			d.appendChild(cvs);
+			cvs.style.float = "left";
+
+			var ctx = cvs.getContext("2d");								 
+			ctx.fillStyle = initColor; 
+			ctx.fillRect(0,0,w,h);
+	
+			return cvs;
+		}
+		const c = new _blCanvas(d,w,h);
+		var r = {};
+		r.drawCircle = function(x,y,r,fillColor,strokeColor,lineWidth){	
+			var ctx = c.getContext("2d");		 
+			ctx.beginPath();
+			ctx.arc(x, y, r, 0, 2 * Math.PI);
+			ctx.fillStyle = fillColor;
+			ctx.fill();
+			ctx.lineWidth = lineWidth;
+			ctx.strokeStyle = strokeColor;
+			ctx.stroke(); 	
+		}
+		return r;
+	}
+
 	this.C4SVG = function (w,h){        
 		function _C4SVG(w,h){
 			var d = null;
@@ -2692,7 +2734,7 @@ function CBlClass ()
 
 			for(i in l){     		 
 				var idNote =  _getNoteId(l[i][0]);
-				if("xiaojiexian"==idNote){//xd2do
+				if("xiaojiexian"==idNote){
 						nBar++;
 						lsBar.push(i); 
 				} 
