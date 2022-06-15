@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.212"
+var g_ver_blClass = "CBlClass_bv1.6.213"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2149,8 +2149,35 @@ function CBlClass ()
 			cvs.height = h;
 			var bMS = false;
 			var x = 0, y = 0;
-			var os = [];
+			var os = []; 
+			var draw_a_bar_of_Notes = function(ctx,ib,xBarStart,_y,_dx,_dy){ //xd2do
+				var oldStyle = ctx.fillStyle;
+				ctx.fillStyle = "purple"; 
 
+				var xBarEnd = xBarStart + _dx* 3;
+				ctx.fillText("bar" +(ib+1),xBarStart,_y);
+				for(var i = 0; i<4; i++){//beat
+					var xBeatStart = xBarStart + i * _dx * .8; 
+					ctx.fillText("beat" +(i+1),xBeatStart,_y + _dy);
+				}
+
+				ctx.fillText((ib+1) + "|",xBarEnd ,_y);
+
+				ctx.fillStyle = oldStyle; 
+			}
+			var draw_a_row_of_Notes = function(ctx,_s,_x,_y,_dx,_dy){ //xd2do
+				var oldStyle = ctx.fillStyle;
+				ctx.fillStyle = "black"; 
+
+				for(var i = 0; i<4; i++){
+					var xBarStart = _x + i * _dx * 3.5;
+					draw_a_bar_of_Notes(ctx,i,xBarStart,_y,_dx,_dy);
+				}
+
+				ctx.fillText(_s,_x,_y+_dy*2);
+
+				ctx.fillStyle = oldStyle; 
+			}
 			cvs.addEventListener('mousedown', function (e) {
 				x = e.offsetX;
 				y = e.offsetY;
@@ -2180,12 +2207,13 @@ function CBlClass ()
 			cvs.parseStr = function(s){
 				var ctx = cvs.getContext("2d");			
 				ctx.fillStyle = "red"; 
+				ctx.font = "20px Arial";
 				const X0 = 11;
 				const Y0 = 77;
 				var _x = X0;
 				var _y = Y0;
 				var _dy = 44;
-				var _dx = 111;
+				var _dx = 80;
 				var a = s.split(/Q[1-7]*:/g); 
 				for(i in a)
 				{ 
@@ -2198,12 +2226,19 @@ function CBlClass ()
 					var r = a[i].split(/C[1-7]*:/g);
 					for(j in r){
 						if(j==0){
+							 
+							
 							var ns = r[0].match(/[|1-70][ />.',"]*[A-Za-z]*["]*[ />.',"-]*/g);
+							
+							draw_a_row_of_Notes(ctx,ns,_x,_y,_dx,_dy);
+							_y += _dy*3;
+
 							_x = X0;
 							for(k in ns){
-								ctx.fillText(ns[k], _x,_y);//xd2do 
+								ctx.fillText(ns[k], _x,_y); 
 								_x += _dx;
 							}
+							
 						}
 						else{
 							_x = X0;
