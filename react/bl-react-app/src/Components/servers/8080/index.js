@@ -4,7 +4,7 @@ import { MemoryRouter, Switch, Route } from 'react-router-dom';
 import axios from 'axios';
 
 import Container from 'react-bootstrap/Container'; 
-
+import {fn1} from '../../../lib/blClassX.js';
 
 
 function Example() {
@@ -54,6 +54,7 @@ function Example() {
       <p>Test: {strTest}</p>
       <button onClick={getServerInfo}>getServerInfo</button>
       <button onClick={makeVideoTest}>makeV1</button>
+      <button onClick={fn1}>fn1Test</button>
     </div>
   );
 }

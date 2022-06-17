@@ -1,5 +1,5 @@
 var tagHTML = "51voa";
-var vHTML = "51voa: v0.52";
+var vHTML = "51voa: bv0.112";
 
 var tb = bl$("id_4_tb_server");
 var v = bl$("id_4_v_server");
@@ -9,7 +9,7 @@ const o51voa = new C51VOA(tb,v);
 
 function C51VOA(_tb,_v){ 
   var _ctx = {};
-  this.v = vHTML + " <a href='http://www.baidu.com' target='_blank'>ref</a>";
+  this.bll1 = vHTML + " <a href='http://www.baidu.com' target='_blank'>ref</a>";
   this.blrF1 = function(b,d){
     var w = {};
     w._2do = function(txt){ 
@@ -130,7 +130,7 @@ function C51VOA(_tb,_v){
     var w = {};
     w._2do = function(txt){ 
         var str = "var oReturn =" +  txt;  
-  eval(str);
+        eval(str);
         oReturn.originalURL = url;
         oReturn.blrShowLrcPage = function(b2,d2){ 
             var url = "http://localhost:8080/" + oReturn.filename;
@@ -139,24 +139,24 @@ function C51VOA(_tb,_v){
         oReturn.blrLastStep = function(b3,d3){ 
             var bgColor = "235,149,111";
             var o = {};                
-            o.v = "lastV0.11";
+            o.v = "lastV0.12";
             o.blrSet = function(b,d){
+                const cs = ["11,150,200","222,150,200","11,222,55","139,0,0","240,128,128"]; 
+                var lastI = -1;
+                var lastB = null;
                 var tbBGColor = blo0.blDiv(d,d.id+"tbBGColor","BGColor","green");
-                var b1 = blo0.blBtn(tbBGColor,tbBGColor.id+"b1","b1",blGrey[1]);
-                b1.onclick = function(){
-                    bgColor = "11,150,200";
-                    this.style.backgroundColor = bgColor;
-                }
-                var b2 = blo0.blBtn(tbBGColor,tbBGColor.id+"b2","b2",blGrey[1]);
-                b2.onclick = function(){
-                    bgColor = "222,150,200";
-                    this.style.backgroundColor = bgColor;
-                }
-                var b3 = blo0.blBtn(tbBGColor,tbBGColor.id+"b3","b3",blGrey[1]);
-                b2.onclick = function(){
-                    bgColor = "11,222,55";
-                    this.style.backgroundColor = bgColor;
-                }
+                for(i in cs){
+                    var b = blo0.blBtn(tbBGColor,tbBGColor.id+"b" + i,"c"+i,"rgb(" + cs[i] + ")");
+                    b.onclick = function(_i,_b){
+                        return function(){
+                            bgColor = cs[_i];
+                            if(lastB) lastB.innerHTML = "c" + lastI;
+                            _b.innerHTML = "v";
+                            lastI = _i;
+                            lastB = _b;
+                        }
+                    }(i,b)
+                } 
             }
             o.lrcURL = b.lrcURL;
             var oMP3 = document.getElementById("mp3");

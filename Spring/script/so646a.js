@@ -1,4 +1,4 @@
-var tagSO646a = "[so646a.js]_v0.51";
+var tagSO646a = "[so646a.js]_v0.52";
 
 var a="\n";
 var max=0;
@@ -10,7 +10,7 @@ function tlist(s) {
 }
 function init(){
   return new tlist(
-    "   o"+a+
+"   o"+a+
 "  /|\\"+a+
 " */ \\*        "+a,
 
