@@ -1,0 +1,84 @@
+//called by https://github.com/jeremyjia/Games/issues/96
+//for: id_div_4_User_plx #2 (littleflute) 
+<script src="../../js/blclass.js"></script>
+<h2>bv0.21</h2>
+// copy script below to issue 98#.
+
+
+
+<h3><font color="blue">录音并上传到六号主页试听</font></h3>
+<div class="app">
+        <button class="record-btn">record</button>
+        <audio controls class="audio-player"></audio>
+</div>
+
+
+<script id="id_script"> 
+const recordBtn = document.querySelector(".record-btn");
+const player = document.querySelector(".audio-player");
+
+if (navigator.mediaDevices.getUserMedia) {
+  var chunks = [];
+  const constraints = { audio: true };
+  navigator.mediaDevices.getUserMedia(constraints).then(
+    stream => {
+      console.log("授权成功！");
+
+      const mediaRecorder = new MediaRecorder(stream);
+
+      recordBtn.onclick = () => {
+        if (mediaRecorder.state === "recording") {
+          mediaRecorder.stop();
+          recordBtn.textContent = "record";
+          console.log("录音结束");
+        } else {
+          mediaRecorder.start();
+          console.log("录音中...");
+          recordBtn.textContent = "stop";
+        }
+        console.log("录音器状态：", mediaRecorder.state);
+      };
+
+      mediaRecorder.ondataavailable = e => {
+        chunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = e => {
+        var blob = new Blob(chunks, { type: "audio/ogg; codecs=opus" });
+        chunks = [];
+      
+         let reader= new FileReader();
+         reader.onload = function (e) { 
+             var audioData = e.target.result;
+             alert(audioData);
+             blo0.addNewGitHubComment(550, audioData, 
+                function CallBackSubmit2SixPage(response) {
+                    if (response.readyState == 4) {
+                        if (response.status == 200 || response.status == 201) {
+                            alert("上传到6号成功!");
+                        } else {
+                            alert("Errors, status=" + response.status);
+                        }
+                    }
+                }
+            );
+              console.log(audioData);
+         }
+         reader.readAsDataURL(blob);
+
+        var audioURL = window.URL.createObjectURL(blob);
+        player.src = audioURL;
+        player.play();
+      };
+    },
+    () => {
+      console.error("授权失败！");
+    }
+  );
+} else {
+  console.error("浏览器不支持 getUserMedia");
+}
+
+        
+</script>
+
