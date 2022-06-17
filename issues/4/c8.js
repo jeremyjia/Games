@@ -1,11 +1,12 @@
 //i4c8
-var s = "v0.0.1 ";
+var s = "v0.0.15 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c8.js'"
 s += " style='color:blue;'"; s += ">"; s += "c8.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c8.js'"
 s += " style='color:green;'"; s += ">"; s += "c8.js ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c8.html'"
-s += " style='color:brown;'"; s += ">"; s += "c8Test.html";
+s += " style='color:brown;'"; s += ">"; s += "c8Test.html"; s+="</a>";
+s += " <button id='id_div_4_logCmd'>+viewLog</button>"
 
 var md = blo0.blDiv(document.body, "div_ID_4_I4C8", s, blGrey[0]);
 if (!md.run) {
@@ -39,6 +40,41 @@ if (!md.run) {
 	if (bl$("blrVideoEditor")) {
 		bl$("blrVideoEditor").click();
 	}
+
+	bl$("id_div_4_logCmd").onclick = function(){
+		var b = this;
+		if(!this.logCmd){
+		  b.logCmd = blo0.blMDiv(md, md.id + "logCmd","log",520,-50,330,50,blGrey[0]);
+		  b.logCmd.v = blo0.blDiv(b.logCmd,  "id_div_4_c8_logView" ,blGrey[5]);
+		  b.logCmd.ta = blo0.blTextarea(b.logCmd.v, "id_4_ta_logTextArea", "log...", blGrey[3]);
+		  b.logCmd.ta.style.width = "95%";
+		  b.logCmd.ta.style.height = "300" + "px";
+ 
+
+		  if(!this.t){
+			var i = 0;
+			this.t =  blo0.blTimer(1000,60*60,function(nLeft){
+			  i++;  
+			  function _loadIssue760CommentOfDoc(s) {
+				b.logCmd.ta.value = "nLeft=" + nLeft + " " + "i="+i + " \n " + s;
+			  }
+			  getStringComment(1139435588, _loadIssue760CommentOfDoc);
+			  //b.logCmd.ta.value = "nLeft=" + nLeft + " " + "i="+i;    
+			});
+		 }
+		 else{
+			  this.t.stop();
+			  this.t = null;
+			  b.logCmd.ta.value = 0;   
+		 } 
+
+		  b.style.background = blColor[4];
+		  _on_off_div(this,this.logCmd);	  
+		}else{
+		  _on_off_div(this,this.logCmd);
+		  b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];   
+		}
+	  }
 }
 _on_off_div(this, md);
 
@@ -60,9 +96,14 @@ function _myTaskProcessClass() {
 			d.v.btnReadVideoDoc = blo0.blBtn(d.v1, d.v1.id + "btnReadVideoDoc", "ReadVideoDoc", blColor[4]);
 			d.v.btnReadVideoDoc.onclick = function () {
 				function _loadIssue451CommentOfDoc(o) {
-					d.v.ta.value = JSON.stringify(o);;
+					if(o.indexOf("http") == 0) { 
+						d.v.ta.value = o;
+					}else if(o.indexOf("{") == 0){
+						var jsonDocObj = JSON.parse(o);
+						d.v.ta.value = JSON.stringify(jsonDocObj);
+					}
 				}
-				getGitHubComment(939612362, _loadIssue451CommentOfDoc);
+				getStringComment(939612362, _loadIssue451CommentOfDoc);
 			}
 
 			d.v.btnServer = blo0.blBtn(d.v1, d.v1.id + "btnServer", "QueryServer", blColor[4]);
@@ -91,6 +132,11 @@ function _myTaskProcessClass() {
 						return;
 					} else {
 						var strDoc = d.v.ta.value;
+						if(strDoc.indexOf("{") == 0){
+							var docObj = JSON.parse(d.v.ta.value);
+							strDoc = JSON.stringify(docObj);
+							d.v.ta.value = strDoc;
+						}
 						updateCommentOnGitHub(939612362, strDoc, CBUpdateVideoDoc);
 						function CBUpdateVideoDoc(response) {
 							if (response.readyState == 4) {
@@ -136,9 +182,12 @@ function _myTaskProcessClass() {
 			d.videoViewer.btnRefresh.onclick = function () {
 				function _loadIssue451CommentOfData(o) {
 					var based64_txt = o;
+					//var blob = dataURLtoBlob(based64_txt);
+                    //var file = blobToFile(blob, "videoName");
 					d.video.src = based64_txt;
 				}
-				getStringComment(939443982, _loadIssue451CommentOfData);
+				//getStringComment(939443982, _loadIssue451CommentOfData);
+				getAllCommentOfOneIssue(743, _loadIssue451CommentOfData);
 			}
 
 		}
@@ -175,4 +224,49 @@ function getStringComment(commentId, CBFunObj) {
 			}
 		}
 	}
+}
+
+function getAllCommentOfOneIssue(issueId, CBFunObj) {
+	var url = "https://api.github.com/repos/jeremyjia/Games/issues/"+issueId+"/comments?per_page=100";
+	myAjaxCmd('GET', url, null, usercallback);
+
+	function usercallback(response) {
+		if (response.readyState == 4) {
+			if (response.status == 200 || response.status == 201) {
+				var msgObj = JSON.parse(response.responseText);
+				var all="";
+				var count=0;
+				for(i in msgObj){
+					all += msgObj[i].body;
+					count++
+				}
+				if (all != null && all != "") {
+					//alert(count);
+					CBFunObj(all);
+				}
+			} else {
+				alert("Network error！" + response.status);
+			}
+		}
+	}
+}
+
+//将base64转换为blob
+function  dataURLtoBlob(dataurl) { 
+	var arr = dataurl.split(',');
+	alert(arr[0]);
+		var mime = "base64";
+		var bstr = atob(arr[1]);
+		var n = bstr.length;
+		u8arr = new Uint8Array(n);
+	while (n--) {
+		u8arr[n] = bstr.charCodeAt(n);
+	}
+	return new Blob([u8arr], { type: mime });
+}
+//将blob转换为file
+function blobToFile(theBlob, fileName){
+   theBlob.lastModifiedDate = new Date();
+   theBlob.name = fileName;
+   return URL.createObjectURL(theBlob);
 }

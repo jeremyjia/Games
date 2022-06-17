@@ -1,18 +1,24 @@
-const tag = "[expressServer.js_v0.44]"; 
+const tag = "[expressServer.js_bv0.132]"; 
 const l = require('./logger');
 const path = require('path'); 
 const express = require('express');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
+const cors = require('cors'); 
 const bodyParser = require('body-parser');
+ 
+const jsdom = require('jsdom'); 
+const { JSDOM } = jsdom;
+const d3 = import('d3');
+
 const { OpenApiValidator } = require('express-openapi-validator'); 
 const config = require('./config');
  
 const spider = require('./app/spider/index.js');
+const _51voa = require('./app/spider/51voa/index.js');
+const ScrapingAntClient = require('./app/spider/ScrapingAntClient/index.js');
 const word = require('./app/word/index0.js');
+const img = require('./app/image/index.js');
 
-l.tag1(tag,"-----------------------xd23------")
-console.log(tag);     
+l.tag1(tag,"-----------------------expressServer.js------") 
   
 
 
@@ -35,19 +41,29 @@ class ExpressServer {
     
 
     this.app.get('/spider', (req, res) => {      
-      spider.spider(req,res);
-      //res.end('spider.' + this.openApiYaml);
-      /*
-      res.status(200);
-      var r = {};
-      r.api = "spider";
-      r.yaml = this.openApiYaml;
-      r.query = req.query;
-      res.json(r);
-      //*/
+      spider.spider(req,res); 
     });
+
+    this.app.get('/spider/51voa', (req, res) => {      
+      _51voa.index(req,res); 
+    });
+
+    this.app.get('/spider/ScrapingAntClient', (req, res) => {      
+      ScrapingAntClient.scrape(req,res); 
+    });
+
     this.app.post('/word', (req, res) => {    word.word(req,res);    });
-  }
+    this.app.get('/downloadImage', (req, res) => {    img.download(req,res);    });
+    
+    this.app.get('/api/data', (req, res) => {
+      const data = [100, 50, 300, 40, 350, 250];  
+      res.json(data);
+    });
+    this.app.get('/api/svg', (req, res) => { 
+        mkSVG(res); 
+    });
+
+  } 
 
   async launch() {
     return new Promise(
@@ -63,6 +79,65 @@ class ExpressServer {
       },
     );
   }
+}
+
+
+async function mkSVG(res) {
+  const fakeDom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
+ 
+
+  let body = (await d3).select(fakeDom.window.document).select('body');
+
+  // Make an SVG Container
+  let svg = body.append('div').attr('class', 'container')
+    .append("svg")
+      .attr("width", 1280)
+      .attr("height", 1024);
+
+  // Draw a line
+  let circle = svg.append("line")
+    .attr("x1", 5)
+    .attr("y1", 5)
+    .attr("x2", 500)
+    .attr("y2", 500)
+    .attr("stroke-width", 2)
+    .attr("stroke", "red");
+
+  // Set Dimensions
+const xSize = 500; 
+const ySize = 500;
+const margin = 40;
+const xMax = xSize - margin*2;
+const yMax = ySize - margin*2;
+
+// Create Random Points
+const numPoints = 100;
+const data = [];
+for (let i = 0; i < numPoints; i++) {
+  data.push([Math.random() * xMax, Math.random() * yMax]);
+}
+ 
+  svg.append("g")
+  .attr("transform","translate(" + margin + "," + margin + ")");
+ 
+ 
+ 
+
+// Dots
+svg.append('g')
+  .selectAll("dot")
+  .data(data).enter()
+  .append("circle")
+  .attr("cx", function (d) { return d[0] } )
+  .attr("cy", function (d) { return d[1] } )
+  .attr("r", 3)
+  .style("fill", "Red");
+
+  // Output the result to file
+  
+  res.writeHead(200, {'Content-Type': 'text/html'});
+  res.write(body.select('.container').html());
+  res.end();
 }
 
 module.exports = ExpressServer;

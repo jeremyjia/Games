@@ -25,6 +25,7 @@ public class NetAccessUtil {
 			conn.setRequestProperty("Connection", "Keep-Alive");
 			conn.setRequestProperty("Charset", "UTF-8");
 			conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
+			// conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 			conn.setRequestProperty("accept", "application/json");
 			conn.setRequestProperty("Authorization", "token " + getToken());
 
@@ -39,7 +40,7 @@ public class NetAccessUtil {
 				outwritestream.close();
 			}
 			int code = conn.getResponseCode();
-			System.out.println(code);
+			System.out.println("NetAccessUtil::ResponseCode:" + code);
 			if (code == 200 || code == 201) {
 				reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 				result = reader.readLine();
