@@ -2432,9 +2432,12 @@ function CBlClass ()
 			var s = "";
 			s = u.s1();
 			
+			s += u.text("1",1,1,11, "red");
+			s += u.text("11",11,11,22, "red");
+			
 			var dy = 31;
 			var y = 111;
-			var x = 1111;
+			var x = 555;
 			var dx = 24;
 
 			var a = str.split(/Q[1-7]*:/g); 

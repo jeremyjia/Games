@@ -1,4 +1,4 @@
-var tag_storyBoard = "storyBoard.js_v0.125";
+var tag_storyBoard = "storyBoard.js_bv0.135";
 var tb = bl$("id_p1_tb"); 
 
 tb.btnStoryBoard = blo0.blBtn(tb,"btnStoryBoard","storyBoard",blGrey[2]);
@@ -11,7 +11,7 @@ tb.btnStoryBoard.onclick = function(){
 
 function CStoryBoard(parentDiv){
 
-    var v = "CStoryBoard v0.14";
+    var v = tag_storyBoard;
     var ui = null;
     var p = parentDiv; 
        
@@ -45,6 +45,7 @@ function CStoryBoard(parentDiv){
                 _this.inf.h = 1080;
                 _this.inf.music = "1.mp3";
                 _this.inf.rate = "1";
+                _this.inf.superObjFile = "firework.js";//"so646a.js";
                 
                 _this.inf2JSON = function(_btn){
                     return function(){
@@ -71,7 +72,7 @@ function CStoryBoard(parentDiv){
                             "type": "javascript",
                             "frameRange": "(1,1250)",
                             "attribute": {
-                                "script": "so646a.js",//"firework.js",//
+                                "script": _btn.inf.superObjFile,
                                 "function": "animateFrame",
                                 "start": 1
                             },
