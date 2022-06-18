@@ -9,7 +9,8 @@ import { LinkContainer } from 'react-router-bootstrap';
 import About from './About.js';
 import Users from './Users.js';
 import W3NavBar1 from './w3/NavBar1.js';
-//import W3Blog from './w3/blog/index.js';
+import W3Blog from './w3/blog/index.js';
+import Servers from './servers/index.js';
 
 const Home = () => <span>Home</span>; 
 
@@ -17,7 +18,7 @@ const AppHome = () => (
   <MemoryRouter>
   <Container className="p-3">
     <Container className="p-5 mb-4 bg-light rounded-3">
-      <h1 className="header">Welcome To appHome v0.112</h1>
+      <h1 className="header">Welcome To appHome v0.113</h1>
       <h2>
         <W3NavBar1 />
         Navigate to{' '}
@@ -31,6 +32,12 @@ const AppHome = () => (
           <LinkContainer to="/users">
             <Button>Users</Button>
           </LinkContainer>
+          <LinkContainer to="/W3Blog">
+            <Button>W3Blog</Button>
+          </LinkContainer>
+          <LinkContainer to="/Servers">
+            <Button>Servers</Button>
+          </LinkContainer>
         </ButtonToolbar>
       </h2>
       <h2>
@@ -41,6 +48,12 @@ const AppHome = () => (
           </Route>
           <Route path="/users">
             <Users />
+          </Route>
+          <Route path="/Servers">
+            <Servers />
+          </Route>
+          <Route path="/W3Blog">
+            <W3Blog />
           </Route>
           <Route path="/">
             <Home />

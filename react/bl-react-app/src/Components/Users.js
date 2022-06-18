@@ -59,7 +59,20 @@ const AppUseCallback = () => {
   );
  
 };
+function BlClassTest(){ 
 
+  const fn = function(){
+    alert(1);
+  }
+  return (
+    <div> 
+      <button onClick={fn}>
+        BlClassTest
+      </button>
+    </div>
+  );
+
+}
 function Example() {
   const [count, setCount] = useState(0);
 
@@ -135,7 +148,9 @@ Hello.propTypes = {
 
 const Users = () => (    
     <Container>
-      <span>Users:bv0.25</span>    
+      <span>Users:bv0.31</span>    
+      
+      <BlClassTest />
       <GoogleChart1 />
       <Counter />
       <Example />
