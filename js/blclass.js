@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.214"
+var g_ver_blClass = "CBlClass_bv1.6.215"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -472,6 +472,23 @@ function CBlClass ()
 		}
 		return d;
 	}
+	this.f2do = function (ctx,_x,_y){
+		var x = _x;
+		var y = _y;
+
+		ctx.fillStyle = "blue"; 
+		ctx.fillRect(x,y,55,22); 	
+
+		y+=111; 
+		gBlNote(ctx,x,y,1,0,0);
+		x+=55; gBlNote(ctx,x,y,2,1,1);
+		x+=55; gBlNote(ctx,x,y,3,2,2);
+		x+=55; gBlNote(ctx,x,y,4,-1,3);
+		x+=88; gBlNote(ctx,x,y,5,-2,4);
+		x+=111; gBlNote(ctx,x,y,6,-2,3);
+		x+=111; gBlNote(ctx,x,y,7,-2,2);
+	}
+
 	function jpUpdateGitHubComment(commentId, jsonAll) {
 		
 		var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentId;
@@ -4835,3 +4852,65 @@ var MD5 = function (string) {
   
     return temp.toLowerCase();
 }
+
+const gBlNote = function(ctx,_x,_y,c,tone,time){
+	var x = _x;
+	var y = _y;
+	var dy = 10;
+	var dx = 10;
+	ctx.fillStyle = "#1122ff";
+	ctx.font = "30px Arial";
+	ctx.fillText(c, x,y);
+	if(time==0.5){
+	  y = _y + 0.5*dy;    
+	  ctx.fillRect(x,y,18, 2); 
+	} 
+	if(time==0.25){
+	  y = _y + 0.5*dy;    
+	  ctx.fillRect(x,y,18, 2); 
+	  y = _y + 1*dy;    
+	  ctx.fillRect(x,y,18, 2); 
+	}  
+	if(time==2){
+	  x = _x + 2*dx;
+	  ctx.fillText("-", x,y);
+	}  
+	if(time==3){
+	  x = _x + 2*dx;
+	  ctx.fillText("-", x,y);
+	  x = _x + 4*dx;
+	  ctx.fillText("-", x,y);
+	}  
+	if(time==4){
+	  x = _x + 2*dx;
+	  ctx.fillText("-", x,y);
+	  x = _x + 4*dx;
+	  ctx.fillText("-", x,y);
+	  x = _x + 6*dx;
+	  ctx.fillText("-", x,y);
+	}  
+	if(tone==1){
+	  y -= 3*dy;
+	  x = _x + 0.3*dx;
+	  ctx.fillText(".", x,y);
+	}  
+	if(tone==2){
+	  y -= 3*dy;
+	  x = _x + 0.3*dx;
+	  ctx.fillText(".", x,y);
+	  y -= 0.4*dy; 
+	  ctx.fillText(".", x,y);
+	}  
+	if(tone==-1){
+	  y += 1*dy;
+	  x = _x + 0.3*dx;
+	  ctx.fillText(".", x,y); 
+	} 
+	if(tone==-2){
+	  y += 1*dy;
+	  x = _x + 0.3*dx;
+	  ctx.fillText(".", x,y);
+	  y += 0.4*dy; 
+	  ctx.fillText(".", x,y);
+	}  
+  }
