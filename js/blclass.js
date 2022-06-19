@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.215"
+var g_ver_blClass = "CBlClass_bv1.6.221"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -212,6 +212,9 @@ function CBlClass ()
 					else if(type == "div"){
 						ctx.fillStyle = "lightgreen"; 
 						ctx.fillRect(i.x,i.y,i.w,i.h);
+						if(iHandle&&iHandle.drawMe){
+							iHandle.drawMe(ctx,i.x,i.y,i.w,i.h);
+						}
 					}
 					else if(type == "circle"){						
 					   ctx.beginPath();
@@ -396,7 +399,7 @@ function CBlClass ()
 					ctx.font = "30px Arial";
 					ctx.strokeText(this.getName(), x, y);
 					var n = Ds.length; 
-					var md = blo0.blDiv(document.body, "id_4_co_div_"+n,n,blGrey[0]);  
+					var dHandle = blo0.blDiv(document.body, "id_4_co_div_"+n,n,blGrey[0]);  
 					var style ="position: absolute;cursor:move;";
 					style += "z-index: 9;";
 					style += "background-color: #11f1f1;";
@@ -404,21 +407,30 @@ function CBlClass ()
 					style += "border: 1px solid #d3d3d3;";
 					style += "left: 400px";
 					style += "top: 40px"; 
-					md .style =style;
-					md.style.left = xdx+"px";
-					md.style.top = xdy+"px";
-					md.style.width = 50+"px";			
-					md.style.height = 50+"px";
-					md._2move = function(_thisMD){
+					dHandle .style =style;
+					dHandle.style.left = xdx+"px";
+					dHandle.style.top = xdy+"px";
+					dHandle.style.width = 50+"px";			
+					dHandle.style.height = 50+"px";
+					dHandle._2move = function(_thisMD){
 						return function(dx,dy){
 							_move_div(_thisMD,dx,dy);
 						}
-					}(md);
-					blo0.blMakeDivMovable(md); 
-					d._followMe(md);
-					Ds.push(md);
+					}(dHandle);
+					dHandle.drawMe = function(ctx,_x,_y,_w,_h){
+						ctx.fillStyle = "blue";
+						ctx.fillText("drawMe",_x,_y);
+					}
+					var tb = blo0.blToolbar(dHandle,dHandle.id+"tb","tb",1,1,100,33,"gray"); 
+					var b1 = blo0.blBtn(tb,tb.id+"b1","b1","green");
+					b1.onclick = function(){
+						alert(1);
+					}
+					blo0.blMakeDivMovable(dHandle); 
+					d._followMe(dHandle);
+					Ds.push(dHandle);
 					
-					d.addItem("div",x,y,150,75,md);
+					d.addItem("div",x,y,150,75,dHandle);
 				}
 				this.funMU = function(){}
 				this.funMM = function(){}
@@ -1562,6 +1574,24 @@ function CBlClass ()
 		};  
         return r;
     }
+	
+    this.blToolbar = function (oBoss,id,html,x,y,w,h,bkClr){ 
+        var r = document.getElementById(id);
+        if(!r){
+            r = document.createElement("div");
+            r.id = id;
+    	    r.innerHTML = html; 
+            r.style.backgroundColor=bkClr?bkClr:"gold";
+			r.style.position = "absolute";
+			r.style.left		= x+"px";
+			r.style.top			= y+"px";
+			r.style.width		= w+"px";
+			r.style.height		= h+"px";
+			r.style.cursor		= "default";
+    	    if(oBoss!=null)oBoss.appendChild(r);
+		}
+		return r;
+	}
     _blShowObj_2_Div_all = function (oBoss,obj,l) //blclassdbg 1039
     {	  
         oBoss.innerHTML = "";
