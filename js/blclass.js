@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.213"
+var g_ver_blClass = "CBlClass_bv1.6.214"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -154,29 +154,40 @@ function CBlClass ()
 		var d= blo0.blMD(_id, "blPaint-"+_id,_x,_y,_w,_h,blGrey[1]);
 		if(!d.load){
 			d.load = true;	 
-			var items = [];  
-			var myBlC = this;
-			d.parseTa = function(ctx){
-				const x0 = 200, y0 = 100, ddx = 30, ddy = 100;
-				const parseMusic = function(ctx,txt,x,y){
-					var a = txt.split("Q:");
-					var sm = a[1].split(" ");
-					var dx = 0;
-					for(i in sm){
-						myBlC.musicNote(ctx,sm[i],x + dx,y); dx+=ddx;
-					} 
-					var a = txt.split("C:");
-					myBlC.musicLyric(ctx,a[1],x,y+150); 
+			var items = [];   
+			d.parseTa = function(){//xd2do
+				const x0 = 200, y0 = 100, dx = 30, dy = 33;  
+				 
+				const _C4Parse = function(id4Ta){					
+					var ta = bl$(id4Ta);
+					var r = {};
+					r.draw = function (ctx,_x,_y){
+						var x = _x;
+						var y = _y;
+						ctx.fillStyle = "brown"; 
+						ctx.fillRect(x,y,55,22);
+						y += dy;
+						ctx.fillText(ta.value, x,y); 
+						y += dy;
+						if(blo0.f2do){blo0.f2do(ctx,x,y);}
+					}
+					return r;
 				}
-				return function(ctx){
-					var ta = bl$("id_4_ta_blrRunJS");
-					const x = x0, y = y0;
-					ctx.fillStyle = "grey"; 
+				return function(ctx,id4Ta){
+					var x = x0, y = y0;
+					ctx.fillStyle = "white"; 
 					ctx.fillRect(x,y,555,444);
-
-					parseMusic(ctx,ta.value,x,y);
+					ctx.fillStyle = "#FF0000";
+					ctx.font = "30px Arial"; 
+					y += dy;
+					ctx.fillText("parse Ta #"+id4Ta, x,y);  
+					y += dy;
+					const pst = new _C4Parse(id4Ta);
+					pst.draw(ctx,x,y);
 				}
+
 			}(); 
+
 			d.addImgItem = function(x,y,w,h,src){
 				var i = {};  i.x = x; i.y = y; i.w = w; i.h = h;				
 				var block = new Image(); 
@@ -199,7 +210,7 @@ function CBlClass ()
 						ctx.fillRect(i.x,i.y,i.w,i.h);
 					}
 					else if(type == "div"){
-						ctx.fillStyle = "gray"; 
+						ctx.fillStyle = "lightgreen"; 
 						ctx.fillRect(i.x,i.y,i.w,i.h);
 					}
 					else if(type == "circle"){						
@@ -217,7 +228,7 @@ function CBlClass ()
 			d.getItems = function(){ return items;}
 			d.drawItems = function(ctx){
 				
-				ctx.fillStyle = "lightgreen"; 
+				ctx.fillStyle = "green"; 
 				ctx.fillRect(110,50,555,444);
 
 				
@@ -260,7 +271,7 @@ function CBlClass ()
 				ctx.fillText(n, 50,50);
 				d.drawItems(ctx);
 
-				d.parseTa(ctx);
+				d.parseTa(ctx,"id_4_ta_blrRunJS");
 			}
 			var btn2Play = blo0.blBtn(tb,tb.id+"btn2Play","play",blGrey[1]);
 			btn2Play.style.float = "left";   
@@ -2150,7 +2161,7 @@ function CBlClass ()
 			var bMS = false;
 			var x = 0, y = 0;
 			var os = []; 
-			var draw_a_bar_of_Notes = function(ctx,ib,xBarStart,_y,_dx,_dy){ //xd2do
+			var draw_a_bar_of_Notes = function(ctx,ib,xBarStart,_y,_dx,_dy){  
 				var oldStyle = ctx.fillStyle;
 				ctx.fillStyle = "purple"; 
 
@@ -2165,7 +2176,7 @@ function CBlClass ()
 
 				ctx.fillStyle = oldStyle; 
 			}
-			var draw_a_row_of_Notes = function(ctx,_s,_x,_y,_dx,_dy){ //xd2do
+			var draw_a_row_of_Notes = function(ctx,_s,_x,_y,_dx,_dy){  
 				var oldStyle = ctx.fillStyle;
 				ctx.fillStyle = "black"; 
 
