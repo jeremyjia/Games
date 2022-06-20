@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.221"
+var g_ver_blClass = "CBlClass_bv1.6.222"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -499,6 +499,21 @@ function CBlClass ()
 		x+=88; gBlNote(ctx,x,y,5,-2,4);
 		x+=111; gBlNote(ctx,x,y,6,-2,3);
 		x+=111; gBlNote(ctx,x,y,7,-2,2);
+		
+		y += 111;
+		x = _x;
+		gBlBeat_2Nl (ctx,x,y,1,2,2,0);
+		x += 111;
+		gBlBeat_2Nl (ctx,x,y,1,-1,2,-2);
+
+		
+ 
+		x += 111;
+		gBlBeat_4Nll (ctx,x,y,1,2,2,0,1,2,2,0);
+		x += 111;
+		gBlBeat_4Nll (ctx,x,y,1,-1,2,-2,1,2,2,0);
+		x += 111;
+		gBlBeat_4Nll (ctx,x,y,1,-1,2,-2,1,2,2,0);
 	}
 
 	function jpUpdateGitHubComment(commentId, jsonAll) {
@@ -4943,4 +4958,31 @@ const gBlNote = function(ctx,_x,_y,c,tone,time){
 	  y += 0.4*dy; 
 	  ctx.fillText(".", x,y);
 	}  
+}
+
+const gBlBeat_2Nl = function(ctx,_x,_y,n1,t1,n2,t2){
+	var x = _x;
+	var y = _y;
+   x += 33;
+  
+	ctx.fillRect(x,y+5,33,2);
+  
+	gBlNote(ctx,x,y,n1,t1,.5);
+   x += 33;
+	gBlNote(ctx,x,y,n2,t2,.5);
   }
+  var gBlBeat_4Nll  = function(ctx,_x,_y,n1,t1,n2,t2,n3,t3,n4,t4){
+	var x = _x;
+	var y = _y;
+
+y += 2;
+ctx.fillRect(x,y+5,4*20,2);
+ctx.fillRect(x,y+10,4*20,2);
+	gBlNote(ctx,x,y,n1,t1,0.25); 
+x += 20;
+	gBlNote(ctx,x,y,n2,t2,0.25); 
+x += 20;
+	gBlNote(ctx,x,y,n3,t3,0.25); 
+x += 20;
+	gBlNote(ctx,x,y,n4,t4,0.25); 
+}
