@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.222"
+var g_ver_blClass = "CBlClass_bv1.6.224"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -484,14 +484,14 @@ function CBlClass ()
 		}
 		return d;
 	}
-	this.f2do = function (ctx,_x,_y){
+	this.f2do =  function (ctx,_x,_y){
 		var x = _x;
 		var y = _y;
 
 		ctx.fillStyle = "blue"; 
 		ctx.fillRect(x,y,55,22); 	
 
-		y+=111; 
+		y+=55; 
 		gBlNote(ctx,x,y,1,0,0);
 		x+=55; gBlNote(ctx,x,y,2,1,1);
 		x+=55; gBlNote(ctx,x,y,3,2,2);
@@ -500,7 +500,7 @@ function CBlClass ()
 		x+=111; gBlNote(ctx,x,y,6,-2,3);
 		x+=111; gBlNote(ctx,x,y,7,-2,2);
 		
-		y += 111;
+		y += 55;
 		x = _x;
 		gBlBeat_2Nl (ctx,x,y,1,2,2,0);
 		x += 111;
@@ -514,6 +514,33 @@ function CBlClass ()
 		gBlBeat_4Nll (ctx,x,y,1,-1,2,-2,1,2,2,0);
 		x += 111;
 		gBlBeat_4Nll (ctx,x,y,1,-1,2,-2,1,2,2,0);
+
+		
+		y+=66; x = _x +10;
+		gBlBeat_Nl2Nll(ctx,x,y,1,0,2,0,3,0);
+		x += 111;
+		gBlBeat_Nl2Nll(ctx,x,y,1,1,2,-1,3,2);
+
+		  x = _x +310;
+		gBlBeat_2NllNl(ctx,x,y,1,0,2,0,3,0);
+ 		x += 111;
+		gBlBeat_2NllNl(ctx,x,y,3,1,2,-1,3,2);
+
+		y+=55; x = _x +10;
+		gBlBeat_NllNlNll(ctx,x,y,5,0,2,0,3,0);
+ 		x += 111;
+		gBlBeat_NllNlNll(ctx,x,y,3,1,2,-1,3,2);
+
+		y+=55; x = _x +10;
+		gBlBeat_NldNll(ctx,x,y,1,0,2,0);
+ 		x += 111;
+		gBlBeat_NldNll(ctx,x,y,3,1,2,-1);
+
+ 		x += 111;
+		gBlBeat_NllNld(ctx,x,y,5,1,2,-1);
+ 		x += 111;
+		gBlBeat_NllNld(ctx,x,y,3,1,2,-1);
+
 	}
 
 	function jpUpdateGitHubComment(commentId, jsonAll) {
@@ -4975,14 +5002,81 @@ const gBlBeat_2Nl = function(ctx,_x,_y,n1,t1,n2,t2){
 	var x = _x;
 	var y = _y;
 
-y += 2;
-ctx.fillRect(x,y+5,4*20,2);
-ctx.fillRect(x,y+10,4*20,2);
+	y += 2;
+	ctx.fillRect(x,y+5,4*20,2);
+	ctx.fillRect(x,y+10,4*20,2);
 	gBlNote(ctx,x,y,n1,t1,0.25); 
-x += 20;
+	x += 20;
 	gBlNote(ctx,x,y,n2,t2,0.25); 
-x += 20;
+	x += 20;
 	gBlNote(ctx,x,y,n3,t3,0.25); 
-x += 20;
+	x += 20;
 	gBlNote(ctx,x,y,n4,t4,0.25); 
+}
+
+const gBlBeat_Nl2Nll = function(ctx,_x,_y,n1,t1,n2,t2,n3,t3){
+    var x = _x;
+    var y = _y;
+    y += 2;    
+	ctx.fillRect(x,y+5,3*20,2); 
+	ctx.fillRect(x+20,y+10,2*20,2); 
+    
+    gBlNote(ctx,x,y,n1,t1,.5); 
+    x += 20;
+    gBlNote(ctx,x,y,n2,t2,.25); 
+    x += 20;
+    gBlNote(ctx,x,y,n3,t3,.25); 
+}
+
+
+const gBlBeat_2NllNl = function(ctx,_x,_y,n1,t1,n2,t2,n3,t3){
+    var x = _x;
+    var y = _y;
+    y += 2;    
+	ctx.fillRect(x,y+5,3*20,2); 
+	ctx.fillRect(x,y+10,2*20,2); 
+    
+    gBlNote(ctx,x,y,n1,t1,.25); 
+    x += 20;
+    gBlNote(ctx,x,y,n2,t2,.25); 
+    x += 20;
+    gBlNote(ctx,x,y,n3,t3,.5); 
+}
+
+const gBlBeat_NllNlNll= function(ctx,_x,_y,n1,t1,n2,t2,n3,t3){
+    var x = _x;
+    var y = _y;
+    y += 2;    
+    ctx.fillRect(x,y+5,2*20,2);  
+    
+    gBlNote(ctx,x,y,n1,t1,.25); 
+    x += 20;
+    gBlNote(ctx,x,y,n2,t2,.5); 
+    x += 20;
+    gBlNote(ctx,x,y,n3,t3,.25); 
+}
+
+const gBlBeat_NldNll= function(ctx,_x,_y,n1,t1,n2,t2){
+    var x = _x;
+    var y = _y;
+    y += 2;    
+    ctx.fillRect(x,y+5,2*20,2);  
+    
+    gBlNote(ctx,x,y,n1,t1,.5); 
+    x += 20;
+    gBlNote(ctx,x,y,".",0,.5); 
+    x += 20;
+    gBlNote(ctx,x,y,n2,t2,.25); 
+}
+const gBlBeat_NllNld= function(ctx,_x,_y,n1,t1,n2,t2){
+    var x = _x;
+    var y = _y;
+    y += 2;    
+    ctx.fillRect(x,y+5,2*20,2);  
+    
+    gBlNote(ctx,x,y,n1,t1,.25); 
+    x += 20;
+    gBlNote(ctx,x,y,n2,t2,.5); 
+    x += 20;
+    gBlNote(ctx,x,y,".",0,.5); 
 }
