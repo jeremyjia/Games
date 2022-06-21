@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.213"
+var g_ver_blClass = "CBlClass_bv1.6.224"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -154,29 +154,40 @@ function CBlClass ()
 		var d= blo0.blMD(_id, "blPaint-"+_id,_x,_y,_w,_h,blGrey[1]);
 		if(!d.load){
 			d.load = true;	 
-			var items = [];  
-			var myBlC = this;
-			d.parseTa = function(ctx){
-				const x0 = 200, y0 = 100, ddx = 30, ddy = 100;
-				const parseMusic = function(ctx,txt,x,y){
-					var a = txt.split("Q:");
-					var sm = a[1].split(" ");
-					var dx = 0;
-					for(i in sm){
-						myBlC.musicNote(ctx,sm[i],x + dx,y); dx+=ddx;
-					} 
-					var a = txt.split("C:");
-					myBlC.musicLyric(ctx,a[1],x,y+150); 
+			var items = [];   
+			d.parseTa = function(){//xd2do
+				const x0 = 200, y0 = 100, dx = 30, dy = 33;  
+				 
+				const _C4Parse = function(id4Ta){					
+					var ta = bl$(id4Ta);
+					var r = {};
+					r.draw = function (ctx,_x,_y){
+						var x = _x;
+						var y = _y;
+						ctx.fillStyle = "brown"; 
+						ctx.fillRect(x,y,55,22);
+						y += dy;
+						ctx.fillText(ta.value, x,y); 
+						y += dy;
+						if(blo0.f2do){blo0.f2do(ctx,x,y);}
+					}
+					return r;
 				}
-				return function(ctx){
-					var ta = bl$("id_4_ta_blrRunJS");
-					const x = x0, y = y0;
-					ctx.fillStyle = "grey"; 
+				return function(ctx,id4Ta){
+					var x = x0, y = y0;
+					ctx.fillStyle = "white"; 
 					ctx.fillRect(x,y,555,444);
-
-					parseMusic(ctx,ta.value,x,y);
+					ctx.fillStyle = "#FF0000";
+					ctx.font = "30px Arial"; 
+					y += dy;
+					ctx.fillText("parse Ta #"+id4Ta, x,y);  
+					y += dy;
+					const pst = new _C4Parse(id4Ta);
+					pst.draw(ctx,x,y);
 				}
+
 			}(); 
+
 			d.addImgItem = function(x,y,w,h,src){
 				var i = {};  i.x = x; i.y = y; i.w = w; i.h = h;				
 				var block = new Image(); 
@@ -199,8 +210,11 @@ function CBlClass ()
 						ctx.fillRect(i.x,i.y,i.w,i.h);
 					}
 					else if(type == "div"){
-						ctx.fillStyle = "gray"; 
+						ctx.fillStyle = "lightgreen"; 
 						ctx.fillRect(i.x,i.y,i.w,i.h);
+						if(iHandle&&iHandle.drawMe){
+							iHandle.drawMe(ctx,i.x,i.y,i.w,i.h);
+						}
 					}
 					else if(type == "circle"){						
 					   ctx.beginPath();
@@ -217,7 +231,7 @@ function CBlClass ()
 			d.getItems = function(){ return items;}
 			d.drawItems = function(ctx){
 				
-				ctx.fillStyle = "lightgreen"; 
+				ctx.fillStyle = "green"; 
 				ctx.fillRect(110,50,555,444);
 
 				
@@ -260,7 +274,7 @@ function CBlClass ()
 				ctx.fillText(n, 50,50);
 				d.drawItems(ctx);
 
-				d.parseTa(ctx);
+				d.parseTa(ctx,"id_4_ta_blrRunJS");
 			}
 			var btn2Play = blo0.blBtn(tb,tb.id+"btn2Play","play",blGrey[1]);
 			btn2Play.style.float = "left";   
@@ -385,7 +399,7 @@ function CBlClass ()
 					ctx.font = "30px Arial";
 					ctx.strokeText(this.getName(), x, y);
 					var n = Ds.length; 
-					var md = blo0.blDiv(document.body, "id_4_co_div_"+n,n,blGrey[0]);  
+					var dHandle = blo0.blDiv(document.body, "id_4_co_div_"+n,n,blGrey[0]);  
 					var style ="position: absolute;cursor:move;";
 					style += "z-index: 9;";
 					style += "background-color: #11f1f1;";
@@ -393,21 +407,30 @@ function CBlClass ()
 					style += "border: 1px solid #d3d3d3;";
 					style += "left: 400px";
 					style += "top: 40px"; 
-					md .style =style;
-					md.style.left = xdx+"px";
-					md.style.top = xdy+"px";
-					md.style.width = 50+"px";			
-					md.style.height = 50+"px";
-					md._2move = function(_thisMD){
+					dHandle .style =style;
+					dHandle.style.left = xdx+"px";
+					dHandle.style.top = xdy+"px";
+					dHandle.style.width = 50+"px";			
+					dHandle.style.height = 50+"px";
+					dHandle._2move = function(_thisMD){
 						return function(dx,dy){
 							_move_div(_thisMD,dx,dy);
 						}
-					}(md);
-					blo0.blMakeDivMovable(md); 
-					d._followMe(md);
-					Ds.push(md);
+					}(dHandle);
+					dHandle.drawMe = function(ctx,_x,_y,_w,_h){
+						ctx.fillStyle = "blue";
+						ctx.fillText("drawMe",_x,_y);
+					}
+					var tb = blo0.blToolbar(dHandle,dHandle.id+"tb","tb",1,1,100,33,"gray"); 
+					var b1 = blo0.blBtn(tb,tb.id+"b1","b1","green");
+					b1.onclick = function(){
+						alert(1);
+					}
+					blo0.blMakeDivMovable(dHandle); 
+					d._followMe(dHandle);
+					Ds.push(dHandle);
 					
-					d.addItem("div",x,y,150,75,md);
+					d.addItem("div",x,y,150,75,dHandle);
 				}
 				this.funMU = function(){}
 				this.funMM = function(){}
@@ -461,6 +484,65 @@ function CBlClass ()
 		}
 		return d;
 	}
+	this.f2do =  function (ctx,_x,_y){
+		var x = _x;
+		var y = _y;
+
+		ctx.fillStyle = "blue"; 
+		ctx.fillRect(x,y,55,22); 	
+
+		y+=55; 
+		gBlNote(ctx,x,y,1,0,0);
+		x+=55; gBlNote(ctx,x,y,2,1,1);
+		x+=55; gBlNote(ctx,x,y,3,2,2);
+		x+=55; gBlNote(ctx,x,y,4,-1,3);
+		x+=88; gBlNote(ctx,x,y,5,-2,4);
+		x+=111; gBlNote(ctx,x,y,6,-2,3);
+		x+=111; gBlNote(ctx,x,y,7,-2,2);
+		
+		y += 55;
+		x = _x;
+		gBlBeat_2Nl (ctx,x,y,1,2,2,0);
+		x += 111;
+		gBlBeat_2Nl (ctx,x,y,1,-1,2,-2);
+
+		
+ 
+		x += 111;
+		gBlBeat_4Nll (ctx,x,y,1,2,2,0,1,2,2,0);
+		x += 111;
+		gBlBeat_4Nll (ctx,x,y,1,-1,2,-2,1,2,2,0);
+		x += 111;
+		gBlBeat_4Nll (ctx,x,y,1,-1,2,-2,1,2,2,0);
+
+		
+		y+=66; x = _x +10;
+		gBlBeat_Nl2Nll(ctx,x,y,1,0,2,0,3,0);
+		x += 111;
+		gBlBeat_Nl2Nll(ctx,x,y,1,1,2,-1,3,2);
+
+		  x = _x +310;
+		gBlBeat_2NllNl(ctx,x,y,1,0,2,0,3,0);
+ 		x += 111;
+		gBlBeat_2NllNl(ctx,x,y,3,1,2,-1,3,2);
+
+		y+=55; x = _x +10;
+		gBlBeat_NllNlNll(ctx,x,y,5,0,2,0,3,0);
+ 		x += 111;
+		gBlBeat_NllNlNll(ctx,x,y,3,1,2,-1,3,2);
+
+		y+=55; x = _x +10;
+		gBlBeat_NldNll(ctx,x,y,1,0,2,0);
+ 		x += 111;
+		gBlBeat_NldNll(ctx,x,y,3,1,2,-1);
+
+ 		x += 111;
+		gBlBeat_NllNld(ctx,x,y,5,1,2,-1);
+ 		x += 111;
+		gBlBeat_NllNld(ctx,x,y,3,1,2,-1);
+
+	}
+
 	function jpUpdateGitHubComment(commentId, jsonAll) {
 		
 		var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentId;
@@ -1534,6 +1616,24 @@ function CBlClass ()
 		};  
         return r;
     }
+	
+    this.blToolbar = function (oBoss,id,html,x,y,w,h,bkClr){ 
+        var r = document.getElementById(id);
+        if(!r){
+            r = document.createElement("div");
+            r.id = id;
+    	    r.innerHTML = html; 
+            r.style.backgroundColor=bkClr?bkClr:"gold";
+			r.style.position = "absolute";
+			r.style.left		= x+"px";
+			r.style.top			= y+"px";
+			r.style.width		= w+"px";
+			r.style.height		= h+"px";
+			r.style.cursor		= "default";
+    	    if(oBoss!=null)oBoss.appendChild(r);
+		}
+		return r;
+	}
     _blShowObj_2_Div_all = function (oBoss,obj,l) //blclassdbg 1039
     {	  
         oBoss.innerHTML = "";
@@ -2150,7 +2250,7 @@ function CBlClass ()
 			var bMS = false;
 			var x = 0, y = 0;
 			var os = []; 
-			var draw_a_bar_of_Notes = function(ctx,ib,xBarStart,_y,_dx,_dy){ //xd2do
+			var draw_a_bar_of_Notes = function(ctx,ib,xBarStart,_y,_dx,_dy){  
 				var oldStyle = ctx.fillStyle;
 				ctx.fillStyle = "purple"; 
 
@@ -2165,7 +2265,7 @@ function CBlClass ()
 
 				ctx.fillStyle = oldStyle; 
 			}
-			var draw_a_row_of_Notes = function(ctx,_s,_x,_y,_dx,_dy){ //xd2do
+			var draw_a_row_of_Notes = function(ctx,_s,_x,_y,_dx,_dy){  
 				var oldStyle = ctx.fillStyle;
 				ctx.fillStyle = "black"; 
 
@@ -4823,4 +4923,160 @@ var MD5 = function (string) {
     var temp = WordToHex(a)+WordToHex(b)+WordToHex(c)+WordToHex(d);
   
     return temp.toLowerCase();
+}
+
+const gBlNote = function(ctx,_x,_y,c,tone,time){
+	var x = _x;
+	var y = _y;
+	var dy = 10;
+	var dx = 10;
+	ctx.fillStyle = "#1122ff";
+	ctx.font = "30px Arial";
+	ctx.fillText(c, x,y);
+	if(time==0.5){
+	  y = _y + 0.5*dy;    
+	  ctx.fillRect(x,y,18, 2); 
+	} 
+	if(time==0.25){
+	  y = _y + 0.5*dy;    
+	  ctx.fillRect(x,y,18, 2); 
+	  y = _y + 1*dy;    
+	  ctx.fillRect(x,y,18, 2); 
+	}  
+	if(time==2){
+	  x = _x + 2*dx;
+	  ctx.fillText("-", x,y);
+	}  
+	if(time==3){
+	  x = _x + 2*dx;
+	  ctx.fillText("-", x,y);
+	  x = _x + 4*dx;
+	  ctx.fillText("-", x,y);
+	}  
+	if(time==4){
+	  x = _x + 2*dx;
+	  ctx.fillText("-", x,y);
+	  x = _x + 4*dx;
+	  ctx.fillText("-", x,y);
+	  x = _x + 6*dx;
+	  ctx.fillText("-", x,y);
+	}  
+	if(tone==1){
+	  y -= 3*dy;
+	  x = _x + 0.3*dx;
+	  ctx.fillText(".", x,y);
+	}  
+	if(tone==2){
+	  y -= 3*dy;
+	  x = _x + 0.3*dx;
+	  ctx.fillText(".", x,y);
+	  y -= 0.4*dy; 
+	  ctx.fillText(".", x,y);
+	}  
+	if(tone==-1){
+	  y += 1*dy;
+	  x = _x + 0.3*dx;
+	  ctx.fillText(".", x,y); 
+	} 
+	if(tone==-2){
+	  y += 1*dy;
+	  x = _x + 0.3*dx;
+	  ctx.fillText(".", x,y);
+	  y += 0.4*dy; 
+	  ctx.fillText(".", x,y);
+	}  
+}
+
+const gBlBeat_2Nl = function(ctx,_x,_y,n1,t1,n2,t2){
+	var x = _x;
+	var y = _y;
+   x += 33;
+  
+	ctx.fillRect(x,y+5,33,2);
+  
+	gBlNote(ctx,x,y,n1,t1,.5);
+   x += 33;
+	gBlNote(ctx,x,y,n2,t2,.5);
+  }
+  var gBlBeat_4Nll  = function(ctx,_x,_y,n1,t1,n2,t2,n3,t3,n4,t4){
+	var x = _x;
+	var y = _y;
+
+	y += 2;
+	ctx.fillRect(x,y+5,4*20,2);
+	ctx.fillRect(x,y+10,4*20,2);
+	gBlNote(ctx,x,y,n1,t1,0.25); 
+	x += 20;
+	gBlNote(ctx,x,y,n2,t2,0.25); 
+	x += 20;
+	gBlNote(ctx,x,y,n3,t3,0.25); 
+	x += 20;
+	gBlNote(ctx,x,y,n4,t4,0.25); 
+}
+
+const gBlBeat_Nl2Nll = function(ctx,_x,_y,n1,t1,n2,t2,n3,t3){
+    var x = _x;
+    var y = _y;
+    y += 2;    
+	ctx.fillRect(x,y+5,3*20,2); 
+	ctx.fillRect(x+20,y+10,2*20,2); 
+    
+    gBlNote(ctx,x,y,n1,t1,.5); 
+    x += 20;
+    gBlNote(ctx,x,y,n2,t2,.25); 
+    x += 20;
+    gBlNote(ctx,x,y,n3,t3,.25); 
+}
+
+
+const gBlBeat_2NllNl = function(ctx,_x,_y,n1,t1,n2,t2,n3,t3){
+    var x = _x;
+    var y = _y;
+    y += 2;    
+	ctx.fillRect(x,y+5,3*20,2); 
+	ctx.fillRect(x,y+10,2*20,2); 
+    
+    gBlNote(ctx,x,y,n1,t1,.25); 
+    x += 20;
+    gBlNote(ctx,x,y,n2,t2,.25); 
+    x += 20;
+    gBlNote(ctx,x,y,n3,t3,.5); 
+}
+
+const gBlBeat_NllNlNll= function(ctx,_x,_y,n1,t1,n2,t2,n3,t3){
+    var x = _x;
+    var y = _y;
+    y += 2;    
+    ctx.fillRect(x,y+5,2*20,2);  
+    
+    gBlNote(ctx,x,y,n1,t1,.25); 
+    x += 20;
+    gBlNote(ctx,x,y,n2,t2,.5); 
+    x += 20;
+    gBlNote(ctx,x,y,n3,t3,.25); 
+}
+
+const gBlBeat_NldNll= function(ctx,_x,_y,n1,t1,n2,t2){
+    var x = _x;
+    var y = _y;
+    y += 2;    
+    ctx.fillRect(x,y+5,2*20,2);  
+    
+    gBlNote(ctx,x,y,n1,t1,.5); 
+    x += 20;
+    gBlNote(ctx,x,y,".",0,.5); 
+    x += 20;
+    gBlNote(ctx,x,y,n2,t2,.25); 
+}
+const gBlBeat_NllNld= function(ctx,_x,_y,n1,t1,n2,t2){
+    var x = _x;
+    var y = _y;
+    y += 2;    
+    ctx.fillRect(x,y+5,2*20,2);  
+    
+    gBlNote(ctx,x,y,n1,t1,.25); 
+    x += 20;
+    gBlNote(ctx,x,y,n2,t2,.5); 
+    x += 20;
+    gBlNote(ctx,x,y,".",0,.5); 
 }
