@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.224"
+var g_ver_blClass = "CBlClass_bv1.6.231"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -155,7 +155,7 @@ function CBlClass ()
 		if(!d.load){
 			d.load = true;	 
 			var items = [];   
-			d.parseTa = function(){//xd2do
+			d.parseTa = function(){ 
 				const x0 = 200, y0 = 100, dx = 30, dy = 33;  
 				 
 				const _C4Parse = function(id4Ta){					
@@ -274,7 +274,7 @@ function CBlClass ()
 				ctx.fillText(n, 50,50);
 				d.drawItems(ctx);
 
-				d.parseTa(ctx,"id_4_ta_blrRunJS");
+				//d.parseTa(ctx,"id_4_ta_blrRunJS");
 			}
 			var btn2Play = blo0.blBtn(tb,tb.id+"btn2Play","play",blGrey[1]);
 			btn2Play.style.float = "left";   
@@ -419,7 +419,9 @@ function CBlClass ()
 					}(dHandle);
 					dHandle.drawMe = function(ctx,_x,_y,_w,_h){
 						ctx.fillStyle = "blue";
-						ctx.fillText("drawMe",_x,_y);
+						ctx.fillText(dHandle.id,_x,_y);
+						var m = new blo0.C4Music();
+						  m.draw_1_note  (ctx,_x,_y+111,"1,-/_line1_测_试");
 					}
 					var tb = blo0.blToolbar(dHandle,dHandle.id+"tb","tb",1,1,100,33,"gray"); 
 					var b1 = blo0.blBtn(tb,tb.id+"b1","b1","green");
@@ -3467,6 +3469,58 @@ function CBlClass ()
 			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 		}
 		return _o;		
+	}
+	this.C4Music = function(){
+		const _CMusic = function(){
+			this.note = function( ctx, _x, _y, _s){
+			   ctx.fillStyle = "yellow";
+			   var a = _s.split("_"); 
+	  
+			   var x = _x ;
+			   var y = _y; 
+			   for(i in a){
+				   if(i==0){
+					   var n = a[0].match(/[|1-70][,']*[ /-]*/g);
+					   var c = n[0].match(/[|1-70]*/g);
+					   var tn = -2;
+					   var tone = n[0].split("'");
+					   if(tone.length>1){
+							tn = tone.length-1;
+					   }
+					   else{
+							tone = n[0].split(",");
+							tn = -(tone.length-1);
+					   }
+	  
+					   var tm= 1;
+					   var time= n[0].split("/");
+					   if(time.length>1){
+						   const v = [1,0.5,0.25];
+						   tm= v[time.length-1];
+					   }
+					   else{
+							time= n[0].split("-");
+							tm = time.length;
+					   }
+					   
+					   gBlNote(ctx,x,y,c[0],tn,tm);      
+	   y += 55;     
+				   }
+				   else{
+						ctx.fillText(a[i],x,y);     y += 55;
+				   }
+			   }       
+			}
+		}
+		const _m = new _CMusic();
+	  
+		this.draw_1_note = function(ctx,_x,_y,s){ 
+		   var x = _x+55;
+		   var y = _y+55; 
+	   
+		   y+=55;
+		   _m.note(ctx,x,y,s);
+		}
 	}
 	this.blGetGithubCs = function(_url,_cb4ghcs){ 
 		if(!_cb4ghcs) {alert("I need a callback function."); return;}
