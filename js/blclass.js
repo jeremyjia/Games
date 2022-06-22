@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.231"
+var g_ver_blClass = "CBlClass_bv1.6.232"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -417,17 +417,22 @@ function CBlClass ()
 							_move_div(_thisMD,dx,dy);
 						}
 					}(dHandle);
+					dHandle.txt = "3,-/_line1_测_试;2,-/_line1_测_试";
+					var m = new blo0.C4Music();
 					dHandle.drawMe = function(ctx,_x,_y,_w,_h){
 						ctx.fillStyle = "blue";
-						ctx.fillText(dHandle.id,_x,_y);
-						var m = new blo0.C4Music();
-						  m.draw_1_note  (ctx,_x,_y+111,"1,-/_line1_测_试");
+						ctx.fillText(dHandle.id,_x,_y); 
+						var x = _x;
+						var y = _y + 111;
+						m.parseString(ctx,x,y,dHandle.txt);
 					}
 					var tb = blo0.blToolbar(dHandle,dHandle.id+"tb","tb",1,1,100,33,"gray"); 
 					var b1 = blo0.blBtn(tb,tb.id+"b1","b1","green");
-					b1.onclick = function(){
-						alert(1);
-					}
+					b1.onclick = function(_d){
+						return function(){
+							_d.txt =  bl$("id_4_ta_blrRunJS").value;
+						}
+					}(dHandle)
 					blo0.blMakeDivMovable(dHandle); 
 					d._followMe(dHandle);
 					Ds.push(dHandle);
@@ -3504,7 +3509,7 @@ function CBlClass ()
 					   }
 					   
 					   gBlNote(ctx,x,y,c[0],tn,tm);      
-	   y += 55;     
+	   				   y += 55;     
 				   }
 				   else{
 						ctx.fillText(a[i],x,y);     y += 55;
@@ -3515,11 +3520,22 @@ function CBlClass ()
 		const _m = new _CMusic();
 	  
 		this.draw_1_note = function(ctx,_x,_y,s){ 
-		   var x = _x+55;
-		   var y = _y+55; 
-	   
-		   y+=55;
+		   var x = _x;
+		   var y = _y; 	   
 		   _m.note(ctx,x,y,s);
+		}
+		this.draw_beat_hh = function(ctx,_x,_y,s){
+			const dx = 55;
+			var ns = s.split(";");
+			var x = _x;
+			var y = _y;
+		    _m.note  (ctx,x,y,ns[0]);
+			x += dx;
+			_m.note  (ctx,x,y,ns[1]);
+			ctx.fillRect(_x,_y+5,dx,2);
+		}
+		this.parseString = function(ctx,_x,_y,s){
+			this.draw_beat_hh(ctx,_x,_y,s);
 		}
 	}
 	this.blGetGithubCs = function(_url,_cb4ghcs){ 
