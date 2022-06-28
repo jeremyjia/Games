@@ -68,7 +68,7 @@
 <div class="topnav" id="myTopnav">
   <a href="../../index.html">Home</a>
   <a href="../index.html">issues</a>
-  <a href="#"  class="active">i21_bv0.215</a> 
+  <a href="#"  class="active">i21_bv0.222</a> 
   <a href="c1/index.html">c1</a>
   <a href="c2/index.html">c2</a>
   <a href="c4/index.html">c4</a>
@@ -197,14 +197,36 @@
           cvs.drawCircle(100,100,55,"red","blue",5);
           
           var b1 = blo0.blBtn(tb,tb.id+"b1","start","green");
+          b1.style.float = "left";
           b1.onclick = function(){
             cvs.startTimer(function(){
               cvs.parseStr(bl$("id_4_ta_blrRunJS").value);
             });
           }
           var b2 = blo0.blBtn(tb,tb.id+"b2","stop","brown");
+          b2.style.float = "left";
           b2.onclick = function(){
             cvs.stopTimer();
+          }
+          var btnClr = blo0.blBtn(tb,tb.id+"btnClr","Clear","green");
+          btnClr.style.float = "right";
+          btnClr.onclick = function(){
+            cvs.removeAll(-1);
+          }
+          var btnNothing = blo0.blBtn(tb,tb.id+"btnNothing","Nothing","gray");
+          btnNothing.style.float = "right";
+          btnNothing.onclick = function(){
+            cvs.setDrawType(0);
+          }
+          var btnFreedraw = blo0.blBtn(tb,tb.id+"btnFreedraw","freeDraw","white");
+          btnFreedraw.style.float = "right";
+          btnFreedraw.onclick = function(){
+            cvs.setDrawType(1);
+          }
+          var btnLine = blo0.blBtn(tb,tb.id+"btnLine","line","lightblue");
+          btnLine.style.float = "right";
+          btnLine.onclick = function(){
+            cvs.setDrawType(2);
           }
         }
       },

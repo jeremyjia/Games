@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.232"
+var g_ver_blClass = "CBlClass_bv1.6.235"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2256,7 +2256,11 @@ function CBlClass ()
 			cvs.height = h;
 			var bMS = false;
 			var x = 0, y = 0;
-			var os = []; 
+			var lsOs = []; 
+			var curDrawingType = 0;
+			var newObj = null;
+
+
 			var draw_a_bar_of_Notes = function(ctx,ib,xBarStart,_y,_dx,_dy){  
 				var oldStyle = ctx.fillStyle;
 				ctx.fillStyle = "purple"; 
@@ -2289,25 +2293,48 @@ function CBlClass ()
 				x = e.offsetX;
 				y = e.offsetY;
 				bMS= true;
-				const o = {};
-				o.x = x;
-				o.y = y;
-				os.push(o);
+				if(curDrawingType==1){
+					const o = {};
+					o.x = x;
+					o.y = y;
+					o.draw_me = function(ctx){
+						ctx.fillText(".",o.x,o.y);
+					}
+					lsOs.push(o);
+				}
+				else if(curDrawingType==2){
+					newObj = new gc4Line();
+					newObj.setXY1(x,y);					
+				}
 			});
 			cvs.addEventListener('mouseup', function (e) {
 				x = e.offsetX;
 				y = e.offsetY;
 				bMS = false;
+
+				
+				if(curDrawingType==2){
+					lsOs.push(newObj);
+					newObj = null;
+				}
 			}); 
 			cvs.addEventListener('mousemove', function (e) {
 				if(bMS){
 					x = e.offsetX;
 					y = e.offsetY; 
-					
-					const o = {};
-					o.x = x;
-					o.y = y;
-					os.push(o);
+					 
+					if(curDrawingType==1){
+						const o = {};
+						o.x = x;
+						o.y = y;
+						o.draw_me = function(ctx){
+							ctx.fillText(".",o.x,o.y);
+						}
+						lsOs.push(o);
+					}					
+					else if(curDrawingType==2){						
+						newObj.setXY2(x,y);
+					}
 				}
 			});
 
@@ -2355,6 +2382,8 @@ function CBlClass ()
 					} 
 				}
 			}
+			cvs.setType = function (_type){ curDrawingType = _type;}
+			cvs.removeAll = function(){ lsOs = [];}
 			cvs.drawAllOs = function(){
 				var ctx = cvs.getContext("2d");			
 				ctx.fillStyle = "lightgreen"; 
@@ -2367,8 +2396,9 @@ function CBlClass ()
 				ctx.fillText(bMS, 111, 50);
 				ctx.fillText("["+x+","+y+"]", 222, 50);
 				
-				for(i in os){
-					ctx.fillText(".",os[i].x,os[i].y);
+				for(i in lsOs){
+					lsOs[i].draw_me(ctx); 
+					if(newObj) newObj.draw_me(ctx);
 				}
 			}
 
@@ -2412,6 +2442,8 @@ function CBlClass ()
 			cvxTimer = null;
 			nTicks = 0;
 		}
+		r.setDrawType = function(_type){ c.setType(_type);	}
+		r.removeAll = function(){ c.removeAll();}
 
 		return r;
 	}
@@ -5149,4 +5181,16 @@ const gBlBeat_NllNld= function(ctx,_x,_y,n1,t1,n2,t2){
     gBlNote(ctx,x,y,n2,t2,.5); 
     x += 20;
     gBlNote(ctx,x,y,".",0,.5); 
+} 
+
+const gc4Line = function(){
+	var x1,y1,x2,y2;
+	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
+	this.setXY2 = function(x,y){		x2 = x; y2 = y;		}
+	this.draw_me = function(ctx){		 
+		ctx.beginPath();
+		ctx.moveTo(x1, y1);
+		ctx.lineTo(x2, y2);
+		ctx.stroke();
+	}
 }
