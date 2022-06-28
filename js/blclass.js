@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.235"
+var g_ver_blClass = "CBlClass_bv1.6.241"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2305,6 +2305,11 @@ function CBlClass ()
 				else if(curDrawingType==2){
 					newObj = new gc4Line();
 					newObj.setXY1(x,y);					
+				}
+				else if(curDrawingType==-2){ //select 					
+					for(i in lsOs){
+						if(lsOs[i].select_me) lsOs[i].select_me(x,y); 
+					}			
 				}
 			});
 			cvs.addEventListener('mouseup', function (e) {
@@ -5184,13 +5189,28 @@ const gBlBeat_NllNld= function(ctx,_x,_y,n1,t1,n2,t2){
 } 
 
 const gc4Line = function(){
-	var x1,y1,x2,y2;
+	var x1,y1,x2,y2,s = false;
+	this.select = function(b){		s = b;		}
 	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
 	this.setXY2 = function(x,y){		x2 = x; y2 = y;		}
-	this.draw_me = function(ctx){		 
+	this.draw_me = function(ctx){		
+		const d = 10; 
+		if(s){
+			var oldStyle = ctx.fillStyle;
+			ctx.fillStyle = "red";
+			ctx.fillRect(x1-d,y1-d,d*2,d*2);
+
+			ctx.fillstyle = oldStyle;
+		}
 		ctx.beginPath();
 		ctx.moveTo(x1, y1);
 		ctx.lineTo(x2, y2);
 		ctx.stroke();
 	}
+	this.select_me = function(x,y){
+		if(blo0.blPiR(x,y,x1,y1,10,10)){
+			 s = !s;
+		}
+	}
+
 }

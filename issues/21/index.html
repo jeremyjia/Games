@@ -213,6 +213,16 @@
           btnClr.onclick = function(){
             cvs.removeAll(-1);
           }
+          var btnSel = blo0.blBtn(tb,tb.id+"btnSel","select","brown");
+          btnSel.style.float = "right";
+          btnSel.onclick = function(){
+            cvs.setDrawType(-2);
+          }
+          var btnMove = blo0.blBtn(tb,tb.id+"btnMove","move","green");
+          btnMove.style.float = "right";
+          btnMove.onclick = function(){
+            cvs.setDrawType(-3);
+          }
           var btnNothing = blo0.blBtn(tb,tb.id+"btnNothing","Nothing","gray");
           btnNothing.style.float = "right";
           btnNothing.onclick = function(){
