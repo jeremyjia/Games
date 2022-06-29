@@ -2270,7 +2270,8 @@ function CBlClass ()
 				ctx.fillText("bar" +(ib+1),xBarStart,_y);
 				for(var i = 0; i<4; i++){//beat
 					var xBeatStart = xBarStart + i * _dx * .8; 
-					ctx.fillText("beat" +(i+1),xBeatStart,_y + _dy);
+					//ctx.fillText("beat" +(i+1),xBeatStart,_y + _dy);
+					gBlBeat_2Nl (ctx,xBeatStart,_y + _dy,1,2,2,0);
 				}
 
 				ctx.fillText((ib+1) + "|",xBarEnd ,_y);
@@ -2279,7 +2280,7 @@ function CBlClass ()
 			}
 			var draw_a_row_of_Notes = function(ctx,_s,_x,_y,_dx,_dy){  
 				var oldStyle = ctx.fillStyle;
-				ctx.fillStyle = "black"; 
+				ctx.fillStyle = "blue"; 
 
 				for(var i = 0; i<4; i++){
 					var xBarStart = _x + i * _dx * 3.5;
