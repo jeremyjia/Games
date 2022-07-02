@@ -5,7 +5,7 @@
 FROM openjdk:8-jdk-alpine
 VOLUME /tmp
 ARG JAR_FILE=target/*.jar
-ARG SCRIPT_FILES=script/*.*
+ARG SCRIPT_FILES=script
 RUN mkdir -p /opt
 COPY ${JAR_FILE} /opt/app.jar
 COPY ${SCRIPT_FILES} /opt

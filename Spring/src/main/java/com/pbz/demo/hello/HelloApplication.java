@@ -62,12 +62,13 @@ public class HelloApplication {
 			System.out.println("Copy resource files");
 			FileUtil.copyDirectory(new File(rescourceFolder), new File(applicationDir));
 			FileUtil.copyDirectory(new File(rescourceFolder + "/" + "plx"), new File(applicationDir));
-			boolean isWindows = System.getProperty("os.name").startsWith("Windows");
-			if (!isWindows) {
-				String scriptPath = applicationDir + "/" + "jpg2video.sh";
-				FileUtil.chmod("755 " + scriptPath);
-				System.out.println("Chmod file " + scriptPath);
-			}
+		}
+		
+		boolean isWindows = System.getProperty("os.name").startsWith("Windows");
+		if (!isWindows) {
+			String scriptPath = applicationDir + "/" + "jpg2video.sh";
+			FileUtil.chmod("755 " + scriptPath);
+			System.out.println("Chmod file " + scriptPath);
 		}
 		System.out.println("I am ready!");
 
