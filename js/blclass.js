@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.242"
+var g_ver_blClass = "CBlClass_bv1.6.243"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2259,7 +2259,8 @@ function CBlClass ()
 			var lsOs = []; 
 			var curDrawingType = 0;
 			var newObj = null;
-			var moveObj = null;// new gc4Move();	
+			var moveObj = null;			
+			var editObj = null;
 
 
 			var draw_a_bar_of_Notes = function(ctx,ib,xBarStart,_y,_dx,_dy){  
@@ -2304,16 +2305,21 @@ function CBlClass ()
 					}
 					lsOs.push(o);
 				}
-				else if(curDrawingType==2){
+				else if(curDrawingType==G_DRAW_LINE){
 					newObj = new gc4Line();
 					newObj.setXY1(x,y);					
-				}
-				else if(curDrawingType==-2){ //select 					
+				} 
+				else if(curDrawingType==G_DRAW_NOTE){
+					newObj = new gc4Note();
+					newObj.setXY1(x,y);					
+				} 
+				
+				else if(curDrawingType==G_SELECT_OBJECT){  					
 					for(i in lsOs){
 						if(lsOs[i].select_me) lsOs[i].select_me(x,y); 
 					}			
 				}
-				else if(curDrawingType==-3){ //move 
+				else if(curDrawingType==G_MOVE_OBJECT){  
 					moveObj =  new gc4Move();	
 					moveObj.setXY1(x,y);
 					moveObj.setXY2(x,y);	
@@ -2335,11 +2341,14 @@ function CBlClass ()
 							ctx.fillText(".",o.x,o.y);
 						}
 						lsOs.push(o);
+					}			
+					else if(curDrawingType==G_DRAW_LINE){						
+						newObj.setXY2(x,y);
 					}					
-					else if(curDrawingType==2){						
+					else if(curDrawingType==G_DRAW_NOTE){						
 						newObj.setXY2(x,y);
 					}
-					else if(curDrawingType==-3){ //move 
+					else if(curDrawingType==G_MOVE_OBJECT){ 
 						moveObj.setXY2(x,y);	
 						var d = moveObj.getDXY();	
 						for(i in lsOs){
@@ -2353,12 +2362,16 @@ function CBlClass ()
 				y = e.offsetY;
 				bMS = false;
 
-				
-				if(curDrawingType==2){
+				if(curDrawingType==G_DRAW_LINE){
 					lsOs.push(newObj);
 					newObj = null;
-				}
-				else if(curDrawingType==-3){ //move  	
+				} 
+				
+				if(curDrawingType==G_DRAW_NOTE){
+					lsOs.push(newObj);
+					newObj = null;
+				} 
+				else if(curDrawingType==G_MOVE_OBJECT){  	
 					moveObj = null;	
 				}
 			}); 
@@ -5208,6 +5221,11 @@ const gBlBeat_NllNld= function(ctx,_x,_y,n1,t1,n2,t2){
     x += 20;
     gBlNote(ctx,x,y,".",0,.5); 
 } 
+const G_DRAW_LINE 		= 2;
+const G_DRAW_NOTE 		= 3;
+
+const G_SELECT_OBJECT 	= -2;
+const G_MOVE_OBJECT 	= -3;
 const gc4Move = function(){
 	var x1,y1,x2,y2;
 	this.getDXY = function(){
@@ -5236,6 +5254,7 @@ const gc4Move = function(){
 		ctx.fillstyle = oldStyle; 
 	}
 }
+
 const gc4Line = function(){
 	var x1,y1,x2,y2,s = false,mx1,my1,mx2,my2;
 	this.select = function(b){		s = b;		}
@@ -5254,6 +5273,51 @@ const gc4Line = function(){
 		ctx.moveTo(x1, y1);
 		ctx.lineTo(x2, y2);
 		ctx.stroke();
+	}
+	this.select_me = function(x,y){
+		if(blo0.blPiR(x,y,x1,y1,10,10)){
+			 s = !s;
+		}
+	}
+	
+	this.move_start = function(dx,dy){
+		if(s){ 
+			mx1 = x1;
+			my1 = y1;
+			mx2 = x2;
+			my2 = y2;
+		}
+	}
+	this.move_me = function(dx,dy){
+		if(s){ 
+			x1 = mx1 + dx;
+			y1 = my1 + dy;
+			x2 = mx2 + dx;
+			y2 = my2 + dy;
+		}
+	}
+}
+
+
+const gc4Note = function(){
+	var x1,y1,x2,y2,s = false,mx1,my1,mx2,my2;
+	this.select = function(b){		s = b;		}
+	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
+	this.setXY2 = function(x,y){		x2 = x; y2 = y;		}
+	this.draw_me = function(ctx){		
+		const d = 10; 
+		if(s){
+			var oldStyle = ctx.fillStyle;
+			ctx.fillStyle = "red";
+			ctx.fillRect(x1-d,y1-d,d*2,d*2);
+
+			ctx.fillstyle = oldStyle;
+		}
+		
+		var oldStyle = ctx.fillStyle;
+		ctx.fillStyle = "yellow"; 
+		ctx.fillRect(x1,y1,x2-x1,y2-y1);
+		ctx.fillstyle = oldStyle;
 	}
 	this.select_me = function(x,y){
 		if(blo0.blPiR(x,y,x1,y1,10,10)){
