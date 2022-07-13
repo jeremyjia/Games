@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.243"
+var g_ver_blClass = "CBlClass_bv1.6.244"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2260,7 +2260,7 @@ function CBlClass ()
 			var curDrawingType = 0;
 			var newObj = null;
 			var moveObj = null;			
-			var editObj = null;
+			var eui = null;
 
 
 			var draw_a_bar_of_Notes = function(ctx,ib,xBarStart,_y,_dx,_dy){  
@@ -2314,6 +2314,15 @@ function CBlClass ()
 					newObj.setXY1(x,y);					
 				} 
 				
+				else if(curDrawingType==G_EDIT_OBJECT){  	
+					eui = blo0.blMD("id_eui","*",100,100,222,100,"blue");		
+					eui.v1 = blo0.blDiv(eui,eui.id+"v1","v1","lightblue");		
+					for(i in lsOs){
+						if(lsOs[i].edit_me) {
+							lsOs[i].edit_me(eui,x,y);
+						} 
+					}			
+				}
 				else if(curDrawingType==G_SELECT_OBJECT){  					
 					for(i in lsOs){
 						if(lsOs[i].select_me) lsOs[i].select_me(x,y); 
@@ -5226,6 +5235,8 @@ const G_DRAW_NOTE 		= 3;
 
 const G_SELECT_OBJECT 	= -2;
 const G_MOVE_OBJECT 	= -3;
+const G_EDIT_OBJECT 	= -4;
+
 const gc4Move = function(){
 	var x1,y1,x2,y2;
 	this.getDXY = function(){
@@ -5300,7 +5311,7 @@ const gc4Line = function(){
 
 
 const gc4Note = function(){
-	var x1,y1,x2,y2,s = false,mx1,my1,mx2,my2;
+	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,txt = "...";
 	this.select = function(b){		s = b;		}
 	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
 	this.setXY2 = function(x,y){		x2 = x; y2 = y;		}
@@ -5313,15 +5324,40 @@ const gc4Note = function(){
 
 			ctx.fillstyle = oldStyle;
 		}
+		if(e){
+			var oldStyle = ctx.fillStyle;
+			ctx.fillStyle = "brown";
+			ctx.fillRect(x2-d,y2-d,d*2,d*2);
+
+			ctx.fillstyle = oldStyle;
+		}
 		
 		var oldStyle = ctx.fillStyle;
 		ctx.fillStyle = "yellow"; 
 		ctx.fillRect(x1,y1,x2-x1,y2-y1);
+		
+		ctx.fillStyle = "blue";
+		ctx.font = "30px Arial";
+		ctx.fillText(txt, x1,y1);
+
 		ctx.fillstyle = oldStyle;
 	}
 	this.select_me = function(x,y){
 		if(blo0.blPiR(x,y,x1,y1,10,10)){
 			 s = !s;
+		}
+	} 
+	this.edit_me = function(eui,x,y){
+		if(blo0.blPiR(x,y,x2,y2,10,10)){
+			 e = true; 
+			 eui.v1.innerHTML = "";
+			 var b1 = blo0.blBtn(eui.v1,eui.v1.id+"b1","b1","gray");
+			 b1.onclick = function(){
+				txt = blo0.blGetTa().value;	
+			 }
+		}
+		else{
+			e = false;
 		}
 	}
 	
