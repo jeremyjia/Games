@@ -68,7 +68,7 @@
 <div class="topnav" id="myTopnav">
   <a href="../../index.html">Home</a>
   <a href="../index.html">issues</a>
-  <a href="#"  class="active">i21_bv0.222</a> 
+  <a href="#"  class="active">i21_bv0.225</a> 
   <a href="c1/index.html">c1</a>
   <a href="c2/index.html">c2</a>
   <a href="c4/index.html">c4</a>
@@ -100,7 +100,7 @@
 
     function fnPlx(){        
       if(!this.md){ 
-        this.md = blo0.blMD("id_4_plx","blclass unit test",55,255,500,400,"green");
+        this.md = blo0.blMD("id_4_plx","blclass unit test",55,255,600,400,"green");
         var tb = blo0.blDiv(this.md,this.md.id+"tb4Plx","tb","gray");
         var v1 = blo0.blDiv(this.md,this.md.id+"v1","v1","lightgray");
         var v2 = blo0.blDiv(this.md,this.md.id+"v2","v2","lightblue");
@@ -208,6 +208,11 @@
           b2.onclick = function(){
             cvs.stopTimer();
           }
+          var b3 = blo0.blBtn(tb,tb.id+"b3","bls","lightgreen");
+          b3.style.float = "left";
+          b3.onclick = function(){
+            cvs.runCmd(ID_CMD_BLS_UI,b3,tb);
+          }
           var btnClr = blo0.blBtn(tb,tb.id+"btnClr","Clear","green");
           btnClr.style.float = "right";
           btnClr.onclick = function(){
@@ -216,12 +221,17 @@
           var btnSel = blo0.blBtn(tb,tb.id+"btnSel","select","brown");
           btnSel.style.float = "right";
           btnSel.onclick = function(){
-            cvs.setDrawType(-2);
+            cvs.setDrawType(G_SELECT_OBJECT);
+          }
+          var btnEdit = blo0.blBtn(tb,tb.id+"btnEdit","edit","blue");
+          btnEdit.style.float = "right";
+          btnEdit.onclick = function(){
+            cvs.setDrawType(G_EDIT_OBJECT);
           }
           var btnMove = blo0.blBtn(tb,tb.id+"btnMove","move","green");
           btnMove.style.float = "right";
           btnMove.onclick = function(){
-            cvs.setDrawType(-3);
+            cvs.setDrawType(G_MOVE_OBJECT);
           }
           var btnNothing = blo0.blBtn(tb,tb.id+"btnNothing","Nothing","gray");
           btnNothing.style.float = "right";
@@ -236,7 +246,12 @@
           var btnLine = blo0.blBtn(tb,tb.id+"btnLine","line","lightblue");
           btnLine.style.float = "right";
           btnLine.onclick = function(){
-            cvs.setDrawType(2);
+            cvs.setDrawType(G_DRAW_LINE);
+          }
+          var btnNote = blo0.blBtn(tb,tb.id+"btnNote","note","yellow");
+          btnNote.style.float = "right";
+          btnNote.onclick = function(){
+            cvs.setDrawType(G_DRAW_NOTE);
           }
         }
       },
