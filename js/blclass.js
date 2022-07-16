@@ -2362,6 +2362,11 @@ function CBlClass ()
 					}			
 					else if(curDrawingType==G_DRAW_BLS){						
 						newObj.setXY2(x,y);
+					}	
+					else if(curDrawingType==G_EDIT_OBJECT){		 
+						for(i in lsOs){
+							if(lsOs[i].edit_move) lsOs[i].edit_move(x,y); 
+						}	
 					}
 					else if(curDrawingType==G_MOVE_OBJECT){ 
 						moveObj.setXY2(x,y);	
@@ -5338,6 +5343,8 @@ const gc4Line = function(){
 
 const gc4Note = function(){
 	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,txt = "...";
+	var ex1,ey1,ex2,ey2;
+
 	this.select = function(b){		s = b;		}
 	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
 	this.setXY2 = function(x,y){		x2 = x; y2 = y;		}
@@ -5353,7 +5360,7 @@ const gc4Note = function(){
 		if(e){
 			var oldStyle = ctx.fillStyle;
 			ctx.fillStyle = "brown";
-			ctx.fillRect(x2-d,y2-d,d*2,d*2);
+			ctx.fillRect(x2-d,y2-d,d*2,d*2); 
 
 			ctx.fillstyle = oldStyle;
 		}
@@ -5381,9 +5388,27 @@ const gc4Note = function(){
 			 b1.onclick = function(){
 				txt = blo0.blGetTa().value;	
 			 }
+			 ex1 = x;
+			 ey1 = y;
 		}
 		else{
 			e = false;
+		}
+	}
+	this.edit_move = function(x,y){
+		if(e){
+			
+			ex2 = x;
+			ey2 = y;
+
+			x1 += ex2 -ex1;
+			y1 += ey2 -ey1;
+			x2 += ex2 -ex1;
+			y2 += ey2 -ey1;
+	
+			ex1 = ex2;
+			ey1 = ey2;
+	
 		}
 	}
 	
@@ -5515,12 +5540,29 @@ const gc4BLS = function(){
 					b._2do = function(txt){vServer.innerHTML = txt};
 					blo0.blAjx(b,url);
 		   }
+		   ex1 = x;
+		   ey1 = y;
 		}
 		else{
 			e = false;
 		}
 	}
+	this.edit_move = function(x,y){
+		if(e){
+			
+			ex2 = x;
+			ey2 = y;
+
+			x1 += ex2 -ex1;
+			y1 += ey2 -ey1;
+			x2 += ex2 -ex1;
+			y2 += ey2 -ey1;
 	
+			ex1 = ex2;
+			ey1 = ey2;
+	
+		}
+	}
 	this.move_start = function(dx,dy){
 		if(s){ 
 			mx1 = x1;
