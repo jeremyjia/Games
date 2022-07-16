@@ -34,13 +34,13 @@
 		<dependency>
 			<groupId>com.itextpdf</groupId>
 			<artifactId>itextpdf</artifactId>
-			<version>5.5.1</version>
+			<version>5.5.12</version>
 			<type>jar</type>
 		</dependency>
 		<dependency>
 		    <groupId>mysql</groupId>
 		    <artifactId>mysql-connector-java</artifactId>
-		    <version>8.0.16</version>
+		    <version>8.0.28</version>
         </dependency>
 		<dependency>
 		   <groupId>com.mchange</groupId>
