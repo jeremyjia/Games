@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.245"
+var g_ver_blClass = "CBlClass_bv1.6.251"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -5507,19 +5507,33 @@ const gc4BLS = function(){
 			 const split1a = blo0.blDiv(eui.v1,eui.v1.id+"split1a","split1a","green");
 
 			 const tbFrames = blo0.blDiv(eui.v1,eui.v1.id+"tbFrames","Frames:","gray");
-
-			  
-			 for(i in lsFrame){ 
-				var b = blo0.blBtn(tbFrames,tbFrames.id+i,i,"gray");
-				b.style.float = "left";
-				b.onclick = function(_i){
-					return function(){ 
-						_curF = _i;
-					}
-				}(i);
+			 const split1b = blo0.blDiv(eui.v1,eui.v1.id+"split1b","split1b","lightgray");
+			 const tabFrames = blo0.blDiv(eui.v1,eui.v1.id+"tabFrames","tabFrames:","lightgray");
+			 tabFrames.refreshFrames = function(){
+				tabFrames.innerHTML = "";
+				for(i in lsFrame){ 
+				   var b = blo0.blBtn(tabFrames,tabFrames.id+i,i,"gray");
+				   b.style.float = "left";
+				   b.onclick = function(_i){
+					   return function(){ 
+						   _curF = _i;
+					   }
+				   }(i);
+				}
 			 }
+			 const newFrame = blo0.blBtn(tbFrames,tbFrames.id+"newFrame","+","gray");
+			 newFrame.style.float = "left";
+			 newFrame.onclick = function(){
+				var f = {};
+				f.times = 1;
+				lsFrame.push(f); 
+				tabFrames.refreshFrames(); 
+			 }
+
+			 tabFrames.refreshFrames(); 
 			 
 			 const split2 = blo0.blDiv(eui.v1,eui.v1.id+"split2","split2","green");
+			 const split3= blo0.blDiv(eui.v1,eui.v1.id+"split3","split3","lightblue");
 			 const tbServer = blo0.blDiv(eui.v1,eui.v1.id+"tbServer","tbServer:","gray");
 			 const vServer = blo0.blDiv(eui.v1,eui.v1.id+"vServer","vServer:","lightblue");
 			 
