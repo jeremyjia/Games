@@ -5451,8 +5451,8 @@ const gc4BLS = function(){
 			var oldStyle = ctx.fillStyle;
 			ctx.fillStyle = "brown";
 			ctx.fillRect(x2-d,y2-d,d*2,d*2);
-
 			ctx.fillstyle = oldStyle;
+ 
 		}
 		
 		var oldStyle = ctx.fillStyle;
