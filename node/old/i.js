@@ -33,7 +33,7 @@ http.createServer(function (req, res) {
 
   var h = "localhost"; var u = "root"; var pw = "group6db"; var db = "g6DB";  
 //var h = "dev-userdatabase-instance-1.coawyv4mqnwk.us-west-2.rds.amazonaws.com"; var u = "admin"; var pw = "group6dev"; var db = "g6DB";
-  SQL.init(h,u,pw,db);
+ // SQL.init(h,u,pw,db);
 
   if(c[1] === 'api1'){ 
     var sr = "api: v0.21 \n"; 

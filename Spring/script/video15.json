@@ -1,0 +1,87 @@
+{
+    "request": {
+        "version": "0.0.15",
+        "width": 1024,
+        "height": 768,
+        "music": "1.mp3",
+        "rate": "1",
+        "frames": [
+            {
+                "time": 5,
+                "objects": [
+                    {
+                        "text": "调用Python进行图片处理演示程序",
+                        "x": 50,
+                        "y": 200,
+                        "size": 60,
+                        "color": "110,120,180"
+                    },
+                    {
+                        "text": "可爱的小猫咪-原图",
+                        "x": 180,
+                        "y": 700,
+                        "size": 55,
+                        "color": "156,85,166"
+                    }
+                ],
+                "backgroundPicture": "${VAR_CAT_SRC}"
+            },
+            {
+                "time": 5,
+                "objects": [
+                    {
+                        "text": "可爱的小猫咪-水波纹特效1",
+                        "x": 170,
+                        "y": 700,
+                        "size": 55,
+                        "color": "100,200,80"
+                    }
+                ],
+                "backgroundPicture": "${VAR_CAT1}"
+            },
+            {
+                "time": 5,
+                "objects": [
+                    {
+                        "text": "可爱的小猫咪-水波纹特效2",
+                        "x": 170,
+                        "y": 700,
+                        "size": 55,
+                        "color": "180,100,220"
+                    }
+                ],
+                "backgroundPicture": "${VAR_CAT2}"
+            }
+        ],
+        "Macros": [
+            {
+                "name": "VAR_CAT_SRC",
+                "value": "https://jeremyjia.github.io/Games/python/i140/f1.jpg"
+            },
+            {
+                "name": "VAR_CAT1",
+                "value": {
+                    "type": "python",
+                    "attribute": {
+                        "script": "https://jeremyjia.github.io/Games/python/i140/water_effect.py",
+                        "input": "https://jeremyjia.github.io/Games/python/i140/f1.jpg",
+                        "output": "cat1.jpg",
+                        "opts": "-c 1 -w 4"
+                    }
+                }
+            },
+            {
+                "name": "VAR_CAT2",
+                "value": {
+                    "type": "python",
+                    "attribute": {
+                        "script": "https://jeremyjia.github.io/Games/python/i140/water_effect.py",
+                        "input": "https://jeremyjia.github.io/Games/python/i140/f1.jpg",
+                        "output": "cat2.jpg",
+                        "opts": "-c 5 -w 8"
+                    }
+                }
+            }
+        ]
+    }
+}

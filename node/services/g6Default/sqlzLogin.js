@@ -1,4 +1,4 @@
-const tag = "[g6Default/sqlzLogin.js_v0.42]"; 
+const tag = "[g6Default/sqlzLogin.js_v0.43]"; 
 const db = require("../../sequelize/models");
 const g6u = db.Group6Users;
 const token = require('../../auth/token');
@@ -30,21 +30,22 @@ exports.login = async function(loginInf,resolve,Service){
 } 
 
 var _userNameIsOK = function(i,resolve,Service){
-    var bMatch = hash.toCompare(i.loginInf.Password,i.u.Password);
-    if(bMatch){                 
-                     
-        const user = { 
-            id: i.u.UserID,
-            username: i.loginInf.UserName, 
-            password: i.u.Password  
-        }
+	const user = { 
+		id: i.u.UserID,
+		username: i.u.UserName, 
+		password: i.u.Password  
+	}
        
+    var bMatch = hash.toCompare(i.loginInf.Password,i.u.Password);
+	if(bMatch){                 
+                     
         token.sign({user: user},(err, token) => {    
             var s = {};
             s.info = "Now you're logged in.";
             s.code = 1;
             s.token = token;
-            s.UserName = user.username; 
+            s.userName = user.username; 
+			s.userID = user.id;
             resolve(Service.successResponse(s));
         }); 
     }   
@@ -54,6 +55,7 @@ var _userNameIsOK = function(i,resolve,Service){
         s.code = 0;
         s.token = "...";
         s.userName = i.loginInf.UserName; 
+		s.userID = i.u.UserID;
         resolve(Service.successResponse(s));
     }  
 }

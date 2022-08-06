@@ -1,0 +1,57 @@
+{
+    "request": {
+        "version": "0.0.16", 
+        "width": 1024, 
+        "height": 768, 
+        "music": "1.mp3", 
+        "video": "${VAR_VIDEO}", 
+        "rate": "10", 
+        "frames": [
+            {
+                "number": "1", 
+                "time": 200, 
+                "objects": [           
+                    {
+                        "graphic": "circle", 
+                        "attribute": {
+                            "left": 200, 
+                            "top": 200, 
+                            "width": 200, 
+                            "height": 200, 
+                            "color": "120,156,20"
+                        }
+                    }, 
+                    {
+                        "graphic": "rect", 
+                        "attribute": {
+                            "left": 500, 
+                            "top": 400, 
+                            "width": 100, 
+                            "height": 150, 
+                            "color": "142,28,124"
+                        }
+                    },
+                    {
+                        "text": "${VAR_TITLE}",
+                        "x": 100,
+                        "y": 600,
+                        "size": 50,
+                        "color": "50,150,120",
+                        "layer": 2
+                    }
+                ], 
+                "backgroundColor": "100,100,100"
+            }
+        ],
+    "Macros": [
+            {
+                "name": "VAR_TITLE",
+                "value": "以指定视频作为背景的剧本演示程序"
+            },
+            {
+                "name": "VAR_VIDEO",
+                "value": "https://littleflute.github.io/blog/mp4/漂泊者乐园_20180321_131927.mp4"
+            }
+        ]
+    }
+}

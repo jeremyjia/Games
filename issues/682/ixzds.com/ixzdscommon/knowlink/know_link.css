@@ -1,0 +1,106 @@
+
+.link-box{
+	position: absolute;
+	right: 20px;
+	bottom: 20px;
+    z-index: 1003;
+}
+
+.link-box:hover .link-del{
+	display: block;
+} 
+
+.link-icon{
+	background: url("images/links.png") no-repeat center center;
+	background-size: 100%;
+	width: 73px;
+	height: 72px;
+	cursor: pointer;
+    float: right;
+    margin-top: 5px;
+}
+.link-icon:hover{
+	opacity: .85;
+}
+
+.link-dialog{
+    padding: 0 10px;
+    border: 1px solid #e6e6e6;
+    border-radius: 5px;
+    width: 270px;
+    margin-right: 8px;
+    background: #fff;
+	max-height: 400px;
+    overflow: auto;
+    box-shadow: 1px 1px 8px rgb(236, 236, 236), 
+    			-1px 1px 8px rgb(236, 236, 236), 
+    			-1px -1px 8px rgb(236, 236, 236), 
+    			1px -1px 8px rgb(236, 236, 236);
+}
+.link-dialog li{
+	height: 66px;
+    line-height: 66px;
+    font-size: 20px;
+    color: #6F7889;
+    border-bottom: 1px solid #f5f4f4;
+    position: relative;
+    letter-spacing: .7px;
+    padding-left: 3px;
+}
+.link-dialog li:last-child{
+	border-bottom-width: 0;
+}
+.link-dialog li:hover{
+	opacity: .85;
+}
+
+.link-dialog li .title{
+	text-overflow:ellipsis;
+	overflow: hidden;
+	word-wrap: normal;
+	white-space:nowrap !important;
+	max-width: 88%;
+	cursor: pointer;
+}
+.link-dialog li .ti-close{
+	position: absolute;
+	right: 6px;
+	top: 24px;
+	font-size: 18px;
+}
+.link-dialog li .add-box{
+	color: #41B3FB;
+    display: inline-block;
+    width: 100%;
+    background-color: #EAF2FF;
+    border-radius: 3px;
+    height: 48px;
+    line-height: 48px;
+    text-align: center;
+}
+.link-dialog li .add{
+    background: url(images/icon_add.png) no-repeat center center;
+    background-size: 100%;
+    width: 24px;
+    height: 24px;
+    margin-right: 6px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-top: -4px;
+}
+
+.link-dialog li .close{
+	background: url("images/icon_close.png") no-repeat center center;
+	background-size: 100%;
+    width: 30px;
+    height: 30px;
+    top: 17px;
+    position: absolute;
+    right: 0;
+	display: none;
+}
+.link-dialog li:hover .close{
+	display: block;
+}
+
+

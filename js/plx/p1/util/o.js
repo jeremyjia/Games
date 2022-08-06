@@ -1,5 +1,5 @@
 function CP1Util (){
-    var _v = "CP1Util_v0.25";
+    var _v = "CP1Util_v0.221";
     var _list4Cards = [];
     
     this.listCards = function(){ return _list4Cards;}
@@ -9,10 +9,15 @@ function CP1Util (){
         ctx.fillStyle = "white";
         ctx.fillText(txt, x,y); 
     };
+    this.drawText = function(ctx,txt,x,y,c){ 
+        ctx.font= 12 + "px Comic Sans MS";
+        ctx.fillStyle = c;
+        ctx.fillText(txt, x,y); 
+    };
     this.status = function(me){   
         var d = bl$("id_4_vStatus");
         d.innerHTML = o.getV() + " : " + blo0.blTime(0);
-        var md = blo0.blMDiv(d,d.id+"md","o._status "+me.id+":"+me.style.backgroundColor,13,555,555,100,"lightgreen"); 
+        var md = blo0.blMDiv(d,d.id+"md","o._status "+_v+":"+me.style.backgroundColor,111,11,555,100,"lightgreen"); 
         var vs = blo0.blDiv(md,md.id+"vs","",blGrey[1]);
         var v1 = blo0.blDiv(md,md.id+"v1","v1",blGrey[1]);
         var n = 0; 
@@ -31,7 +36,7 @@ function CP1Util (){
                     uiPG.inf.click = _this.innerHTML;
                 }
             }(bv);
-            if(i=="text" || i=="c"){
+            if(i=="text" || i=="c" ||  i=="duration" || i=="rate"|| i=="superObjFile"){
                 b.style.backgroundColor = "lightblue";
                 b.onclick = function(_this,_bv,_me,_i){
                     return function(){ 
@@ -48,12 +53,24 @@ function CP1Util (){
                             _bv.innerHTML = _bv.ta.value;
                             _me.inf[_i] = _bv.ta.value; 
                             vta.innerHTML = "";
-                            o.status(_me);
+                            o.status(_me); 
                        }
                     }
                 }(b,bv,me,i);
+            } 
+            else if(i=="line"){
+                b.style.backgroundColor = "lightgreen";
+                b.onclick = function(_btnAddLine,_me){
+                    return function(){ 
+                        var x1 = Math.floor(Math.random() * 100);
+                        var y1 = Math.floor(Math.random() * 200);
+                        var x2 = Math.floor(Math.random() * 300);
+                        var y2 = Math.floor(Math.random() * 400);
+                        o.AddObj2Frame(_me.inf.objects,o.newObj("line",x1,y1,x2,y2,5,"255,1,255"));
+                    }
+                }(b,me);
             }
-            else if(i=="toJSON"){
+            else if(i=="makeBLS"){
                 bv.innerHTML = "fn...";
                 b.style.backgroundColor = "green";            
                 b.onclick = function(_this,_v1,_me,_i){
@@ -67,9 +84,10 @@ function CP1Util (){
                 b.style.backgroundColor = "green";            
                 b.onclick = function(_this,_v1,_me,_i){
                     return function(){ 
-                        _me.inf[_i](_v1);
+                        _me.inf[_i](_v1,_this);
                     }
                 }(b,v1,me,i);
+                b.click();
             }
             else if(i=="toDraw"){
                 bv.innerHTML = ".";
@@ -81,8 +99,9 @@ function CP1Util (){
                 }(b,v1,me,i);
             }
         } 
-    }
-    this.newObj = function(type,left,top,right,bottom,size,color){
+    };
+
+    this.newObj = function(type,left,top,right,bottom,size,color,txt){
         var r = {};
         r.graphic = type; 
         r.attribute = {};
@@ -92,20 +111,21 @@ function CP1Util (){
         r.attribute.bottom = bottom;
         r.attribute.size = size;
         r.attribute.color = color;  
+        r.attribute.txt = txt;  
         return r;
-    }
+    };
+
     this.addCard= function(_ls){
-        return function(btn){
+        return function(_inBtn){
             var n = _ls.length;
-            var v=bl$("id_4_cardV");
-            s = btn.id + ":" + n;
+            var v=bl$("id_4_cardV"); 
             var b = blo0.blBtn(v,v.id+"_"+n,n+1,"grey");
             b.style.float="left";
             b.No = n+1;
             b.inf = {};
             b.inf.type = "t_Card";
             b.inf.index = n; 
-            b.inf.toJSON = function(_btn){
+            b.inf.makeBLS = function(_thisCardBtn){
                 return function(v1){        
                     var vta = blo0.blDiv(v1,v1.id+"vta","vta" ,"grey"); 
                     vta.innerHTML = "";
@@ -114,54 +134,85 @@ function CP1Util (){
     
                     var ta = blo0.blTextarea(vta.v1,vta.v1.id+"ta","ta","lightgreen");
                     ta.style.width = 100 + "%";
-                    ta.value = _btn.inf2JSON();
+                    ta.style.height = "110px";
+                    ta.value = _thisCardBtn.inf2JSON();
     
-                    vta.v2.saveAs_v3 = blo0.blBtn(vta.v2,vta.v2.id+"b1","saveAs_v3.json",blGrey[0]);
-                    vta.v2.saveAs_v3.onclick = function(){ 
-                        var data = ta.value;
-                        var xhr = new XMLHttpRequest();
-                        xhr.withCredentials = true;
-                        xhr.addEventListener("readystatechange", function() {
-                        if(this.readyState === 4) {
-                            ta.value = this.responseText;
-                        }	
-                        });
-                        xhr.open("POST", "http://localhost:8080/json?fileName=v3.json");
-                        xhr.setRequestHeader("Content-Type", "text/plain");
-                        xhr.send(data);
-                    }
-                    vta.v2.setMusic = blo0.blBtn(vta.v2,vta.v2.id+"setMusic","setMusic",blGrey[0]);
-                    vta.v2.setMusic.onclick = function(){ 
-                        o.music = "a.mp3";
-                    }
+                    vta.v2.saveJSON = blo0.blBtn(vta.v2,vta.v2.id+"b1","saveJSON",blGrey[0]);
+                    vta.v2.saveJSON.onclick = function(_this_vta,_thisCardNumber){ 
+                        return function(){
+                            var data = ta.value;
+                            var xhr = new XMLHttpRequest();
+                            xhr.withCredentials = true;
+                            xhr.addEventListener("readystatechange", function() {
+                                if(this.readyState === 4) {
+                                    //ta.value = this.responseText;
+                                    if(!_this_vta.v3){
+                                        _this_vta.v3 = blo0.blDiv(_this_vta.v2,_this_vta.v2.id+"v3","v3",blGrey[3]);
+                                        var btnMakeMP4 = blo0.blBtn(_this_vta.v2,_this_vta.v2.id+"btnMakeMP4","makeMP4",blGrey[0]);
+                                        var v4MP4 = blo0.blDiv(_this_vta.v2,_this_vta.v2.id+"v4MP4","v4MP4",blGrey[4]);
+                                        btnMakeMP4.onclick = function(_v4MP4,_url){
+                                            return function(){
+                                                var w = {};
+                                                w._2do = function(txt){
+                                                    _v4MP4.innerHTML = txt;
+                                                }
+                                                blo0.blAjx(w,_url);                                                                         
+                                            }         
+                                        }(v4MP4,"http://localhost:8080/image/json2video?script=card"+_thisCardNumber + ".json&video=card" + _thisCardNumber +".mp4");
+                                    }
+                                    var s = "<a target='_blank' href='http://localhost:8080/card";
+                                    s += _thisCardNumber;
+                                    s += ".json'>card"+_thisCardNumber+".json</a>";
+
+                                    _this_vta.v3.innerHTML = s;
+                                }	
+                            });
+                            xhr.open("POST", "http://localhost:8080/json?fileName=card"+_thisCardNumber+".json");
+                            xhr.setRequestHeader("Content-Type", "text/plain");
+                            xhr.send(data);
+                        }
+                    }(vta,_thisCardBtn.inf.index+1); 
                 }
             }(b);
-            b.inf.version = "0.0.3";
+            b.inf.version = "0.0.4";
             b.inf.x = 17;
             b.inf.y = 80;
             b.inf.w = 1920;
             b.inf.h = 1080;
             b.inf.music = o.music;//"1.mp3";
-            b.inf.duration = o.duration;
+            b.inf.duration = 1;//o.duration;
             b.inf.rate = "1";
             b.inf.objects = [];
+            b.inf.line = [];
             b.inf.c = "skyblue";
             b.inf.text = "Card.txt"; 
           
             o.AddObj2Frame(b.inf.objects,o.newObj("circle",111,111,222,222,5,"red"));
-          // o.AddObj2Frame(b.inf.objects,o.newObj("rect",111,10,100,100,5,"blue"));
+            o.AddObj2Frame(b.inf.objects,o.newObj("rect",111,10,100,100,5,"blue"));
            // o.AddObj2Frame(b.inf.objects,o.newTextObj("test",10,10,60,"0,255,255"));
-            o.AddObj2Frame(b.inf.objects,o.newObj("text",15,110,333,222,5,"255,255,1"));
-            o.AddObj2Frame(b.inf.objects,o.newObj("line",15,110,333,222,5,"255,255,1"));
-            o.AddObj2Frame(b.inf.objects,o.newObj("line",15,222,333,111,5,"255,1,1"));
-            b.inf2JSON = function(_this){
+            var top = 100;
+            var left = 55 + n*50;
+            var dTop = 50;
+            o.AddObj2Frame(b.inf.objects,o.newObj("text",left,top,333,222,5,"brown","text1")); 
+            top += dTop;
+            o.AddObj2Frame(b.inf.objects,o.newObj("text",left,top,333,222,5,"green","text2")); 
+            top += dTop;
+            if(_inBtn.lsTxt){
+                var l = _inBtn.lsTxt;
+                for(j in l){
+                    o.AddObj2Frame(b.inf.objects,o.newObj("text",left,top,333,222,5,"yellow",l[j])); 
+                    top += dTop;
+                }
+            }
+
+            b.inf2JSON = function(_thisCard){
                 return function(){
                     var r = o.newScript(b.inf.version,
                                 b.inf.w,
                                 b.inf.h,
                                 b.inf.music,
                                 b.inf.rate);
-                    var f = o.newFrame(1,120,"1,100,200");                
+                    var f = o.newFrame(1,_thisCard.inf.duration,_thisCard.inf.c);                
                     for(i in b.inf.objects){
                         o.AddObj2Frame(f.objects,b.inf.objects[i]);
                     }
@@ -204,13 +255,38 @@ function CP1Util (){
                     for(i in _this.inf.objects){
                         var a = _this.inf.objects[i]; 
                         o.drawObj(ctx,a);                    
-                    } 
-    
+                    }     
                 }
             }(b);
             _ls.push(b);
         }
     }(_list4Cards);
+    
+    this.clearAllCards = function(){
+            var v=bl$("id_4_cardV");
+            v.innerHTML = "";
+            _list4Cards = [];     
+    };
+    this.newScript = function(v,w,h,m,r){ 
+        var json = {}; 
+        json.request = {}; 
+        json.request.version    = v;
+        json.request.width      = w;
+        json.request.height     = h;
+        json.request.music      = m;
+        json.request.rate       = r;  
+        json.request.frames     = [];
+        json.request.superObjects     = [];
+        return json;
+    };
+
+    this.AddFrame2Script = function(oScript,oFrame){
+        oScript.request.frames.push(oFrame);
+    }
+    this.addSuperObj2Script = function(oScript,oSuperObj){ 
+        oScript.request.superObjects.push(oSuperObj);
+    };
+
 }
  
 var o = new CP1Util();
@@ -228,24 +304,11 @@ o.listMousemove = [];
 o.curCard = 0;
 o.bPlay = false;
 
-o.AddFrame2Script = function(oScript,oFrame){
-    oScript.request.frames.push(oFrame);
-}
+
 o.AddObj2Frame = function(ls,oObj){ 
     ls.push(oObj);
 }
 
-o.newScript = function(v,w,h,m,r){ 
-    var json = {}; 
-    json.request = {}; 
-    json.request.version    = v;
-    json.request.width      = w;
-    json.request.height     = h;
-    json.request.music      = m;
-    json.request.rate       = r;  
-    json.request.frames     = [];
-    return json;
-}
 o.newFrame = function(number,time,backgroundColor){
     var r = {};
     r.number = number;
@@ -286,7 +349,7 @@ o.drawObj = function(ctx,obj){
         ctx.strokeRect(obj.attribute.left, obj.attribute.top, obj.attribute.right, obj.attribute.bottom);
     }
     else if(obj.graphic=="text"){
-        o.text(ctx,"TEXT",obj.attribute.left, obj.attribute.top);
+        o.drawText(ctx,obj.attribute.txt,obj.attribute.left, obj.attribute.top,"red");
     }
 }
 o.img = function(ctx,f,x,y,w,h){
@@ -298,12 +361,14 @@ o.img = function(ctx,f,x,y,w,h){
 o.rendFile = function(ctx,f,x,y,w,h){
     o.img(ctx,f,x,y,w,h);
 } 
-o.getServerFiles = function(tb,v,ft,fCallBack){o._getServerFiles(tb,v,ft,fCallBack);}
-o._getServerFiles = function(tb,v,ft,fCallBack){
+o.getServerFiles = function(tb,v,ft,fCallBack){ 
+    if(!tb.ls) tb.ls = [];
     var b = blo0.blBtn(tb,tb.id+ft,ft,blGrey[1]);
     b.style.float = "left";
-    b.onclick = function(_v,_ft){
+    b.onclick = function(_v,_ft,_thisList,_thisBtn){
         return function(){
+            blo0.blMarkBtnInList(_thisBtn,_thisList,"brown","grey");
+            _v.innerHTML = "";
             _v.dbg = blo0.blDiv(_v,_v.id+"dbg","dbg","lightgreen");   
             _v.d = blo0.blDiv(_v,_v.id+"d","d","lightblue");   
             _v.d.style.overflow = "auto";           
@@ -320,10 +385,10 @@ o._getServerFiles = function(tb,v,ft,fCallBack){
                     var bf=blo0.blBtn(_v.d.v,_v.d.v.id+"_bf_"+i,ro.resource[i],blGrey[2]);
                     bf.style.float = "left";
                     bf.inf = {};
-                    bf.onclick = function(_this,_dbg,_me,_fCallBack){
+                    bf.onclick = function(_this,_dbg,_me,_thisCallBack){
                         return function(){    
-                            _dbg.innerHTML = _me ; 
-                            o.makeINF(_this,_me,_fCallBack);
+                            _dbg.innerHTML = _me + " : " + blo0.blTime(0) ; 
+                            o.makeINF(_this,_me,_thisCallBack);
                             o.status(_this);
                         }
                     }(bf,_v.dbg,ro.resource[i],fCallBack);
@@ -332,11 +397,12 @@ o._getServerFiles = function(tb,v,ft,fCallBack){
             var url = 'http://localhost:8080/getResourceOnServer?filetype='+_ft;
             blo0.blAjx(w,url);
         }
-    }(v,ft);
+    }(v,ft,tb.ls,b);
+    tb.ls.push(b);
 }
-o.makeINF = function(obj,fileName,fCallBack){
-    if(fCallBack){
-        fCallBack(obj,fileName);
+o.makeINF = function(obj,fileName,cb2createInf){
+    if(cb2createInf){
+        cb2createInf(obj,fileName);
     }
     obj.inf.file = fileName; 
     var a = fileName.split(".");

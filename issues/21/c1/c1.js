@@ -1,0 +1,166 @@
+var version = "i21c1_v0. 234";
+var s = version;
+s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/21/c1/c1.js'"
+s += " style='color:blue;'";		s +=">"; s += " c1.js* ";
+s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/21/c1/c1.js'"
+s += " style='color:green;'";		s +=">"; s += " c1.js ";
+s += "<a target='_blank' href='";
+
+var a = blo0.blURL();
+var b = a.split("Games");
+s += b[0];
+
+s += "/Games/issues/21/c1/index.html'";
+s += " style='color:brown;'";		s +=">"; s += " index.html";
+
+var d = blo0.blMD("div_ID_4_I21_C1", s ,555,100,500,400, "lightgreen"); 
+d.v = blo0.blDiv(d,d.id+"v","v",blGrey[0]);
+
+var ui = new CC1();
+blo0.blShowObj2Div(d.v,ui);
+bl$("blr_test_json_endpoint").click();
+bl$("blr_test_json_endpoint").click(); 
+bl$("blr_test_blclass_blShowScript").click();   
+bl$("blr_test_blclass_blShowScript").click();   
+bl$("blr_test_blclass_blShowScript").click();   
+bl$("blrVOA").click();bl$("blrVOA").click();
+_on_off_div(null,d);
+
+function CC1(){
+  this.blr_test_json_endpoint = function(b,d){
+    if(!d.bRun){
+        var tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
+        var v = blo0.blDiv(d,d.id+"v","v",blGrey[3]); 
+
+        var makeScript = blo0.blBtn(tb,tb.id+"makeScript ","blo0.blMakeScript: a1.json ",blGrey[1]);
+        makeScript .onclick = function(){
+          var url = "http://localhost:8080/json?fileName=a1.json";
+          var pl =  blo0.blMakeScript();
+          blo0.blPOST(url,pl,function(txt){
+            v.innerHTML = txt;
+          });
+        }
+        var a1_json= blo0.blBtn(tb,tb.id+"a1_json","show:a1.json as DOM",blGrey[1]);
+        a1_json.onclick = function(){
+          var url = "http://localhost:8080/a1.json"; 
+          this._2do = function(txt){       
+            v.innerHTML = Date();
+            v.tb = blo0.blDiv(v,v.id+"tb","tb",blGrey[0]);
+            v.v1 = blo0.blDiv(v,v.id+"v1","v1",blGrey[2]);
+            var s = "var bls="+txt; eval(s);
+  
+            var btnShowAllInf = blo0.blBtn(v.tb,v.tb.id+"btnSHowAllInf","btnShowAllInf",blGrey[1]);
+            btnShowAllInf.onclick = function(){
+              blo0.blShowObj2Div(v.v1,bls.request);
+            }
+            var btnShowAllFrames = blo0.blBtn(v.tb,v.tb.id+"btnShowAllFrames","btnShowAllFrames",blGrey[1]);
+            btnShowAllFrames.onclick = function(){
+              v.v1.innerHTML = "";
+              var ftb = blo0.blDiv(v.v1,v.v1.id+"vftb","ftb",blGrey[2]);
+              var fv = blo0.blDiv(v.v1,v.v1.id+"fv","fv",blGrey[3]);
+              var fs = bls.request.frames;            
+              for(i in fs){
+                var btnFrame = blo0.blBtn(ftb,ftb.id+i,i,blGrey[4]);
+                btnFrame.onclick = function(_fs,_i){
+                  return function(){ 
+                    fv.innerHTML = "";
+                    var curFTb = blo0.blDiv(fv,fv.id+"curFTb","curFTb",blGrey[2]);
+                    var curFv = blo0.blDiv(fv,fv.id+"curFv","curFv",blGrey[3]);
+                    var btnCurFInf = blo0.blBtn(curFTb,curFTb.id+"btnCurFInf","btnCurFInf",blGrey[1]);
+                    btnCurFInf.onclick = function(_curF){
+                      return function(){
+                        blo0.blShowObj2Div(curFv,_curF);
+                      }
+                    }(_fs[_i]); 
+                    var btnCurFObjs = blo0.blBtn(curFTb,curFTb.id+"btnCurFObjs","btnCurFObjs",blGrey[1]);
+                    btnCurFObjs.onclick = function(_curF){
+                      return function(){
+                        curFv.innerHTML = "";
+                        var otb = blo0.blDiv(curFv,curFv.id+"otb","otb",blGrey[2]);
+                        var ov = blo0.blDiv(curFv,curFv.id+"ov","ov",blGrey[3]);
+                        var os = _curF.objects;
+                        for(i in os){
+                          var btnCurObj = blo0.blBtn(otb,otb.id+i,i,blGrey[1]);
+                          btnCurObj.onclick = function(_os,_i){
+                            return function(){
+                              blo0.blShowObj2Div(ov,_os[_i]);
+                            }
+                          }(os,i);
+                        }
+                      }
+                    }(_fs[_i]); 
+                  }
+                }(fs,i);
+              } 
+            }
+  
+            var btnMakeMP4 = blo0.blBtn(v.tb,v.tb.id+"btnMakeMP4","btnMakeMP4",blGrey[1]);
+            btnMakeMP4.onclick = function(){ 
+              var a = bls.request.music;
+               
+              var b = a.split("/"); 
+              var c = b[b.length-1];
+              var d = c.replace("mp3","mp4"); 
+              var url = "http://localhost:8080/image/json2video?script=a1.json&video="+d; 
+              this._2do = function(txt){v.v1.innerHTML = txt};
+              blo0.blAjx(this,url); 
+              v.v1.innerHTML = d;
+            }
+  
+          };
+          blo0.blAjx(this,url);
+        }
+        var showPlainBls= blo0.blBtn(tb,tb.id+"showPlainBls","show: a1.json",blGrey[1]);
+        showPlainBls.onclick = function(){
+          var url = "http://localhost:8080/a1.json"; 
+          this._2do = function(txt){        
+            var ta = blo0.blTextarea(v, v.id+"showPlainBls","ta","lightgreen");
+            ta.style.width = 100 + "%";
+            ta.style.height = 100 + "px";
+            ta.value = txt;        
+          };
+          blo0.blAjx(this,url);
+        }
+        var makeMp4= blo0.blBtn(tb,tb.id+"makeMp4","a1.json->makeMp4",blGrey[1]);
+        makeMp4.onclick = function(){
+          var url = "http://localhost:8080/image/json2video?script=a1.json&video=a1.mp4"; 
+          this._2do = function(txt){v.innerHTML = txt};
+          blo0.blAjx(this,url);
+        }
+    }
+    _on_off_div(b,d);  
+    b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+  }; 
+  this.bll1 = "-1-";
+  this.blr_test_blclass_blShowScript = function(b,d){
+    if(!d.bShow){
+      d.bShow = true;
+      d.innerHTML = "to test: blo0.blShowScript(v)";      
+      var v = blo0.blDiv(d,d.id+"v","v",blGrey[3]);
+      blo0.blShowScript(v); 
+    }
+    _on_off_div(b,d);
+    b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+  };
+  this.bll2 = "-2-";
+  this.blrVOA = function(b,d){
+     var a = bl$("id_btnPlayerBoard"); 
+     var ps = a.p.getBtnList();
+     var tb = blo0.blDiv(d,d.id+"_tb","_tb",blGrey[0]);
+     tb.ls = [];
+     var v = blo0.blDiv(d,d.id+"_v","_v",blGrey[5]); 
+     //*
+     for(i in ps){
+        var b1 = blo0.blBtn(tb,tb.id+"b"+i,i,blGrey[1]);
+        b1.onclick = function(_thisBtn,_i,_ps){
+           return function(){
+              v.innerHTML = _ps[_i].txt;
+           }
+        }(b1,i,ps);
+        tb.ls.push(b1);
+      }
+     // */
+      _on_off_div(b,d);
+      b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+  }
+}

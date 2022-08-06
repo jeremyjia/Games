@@ -1,25 +1,24 @@
-const express = require('express')
-const app = express()
-var cors = require('cors')
-const path = require('path');
-var request = require('request');
-
-const sgTest = require('./app/sendGrid.js');
-
-const port = 3000
+const tagIndex = "index.js_v0.13";
+const config = require('./config');
+const l = require('./logger');
+const ExpressServer = require('./expressServer'); 
  
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(cors())
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
+l.tag1(tagIndex,"---index.js-------");
 
-app.get('/email/', (req, res) => {
-  var s = sgTest.sendEmail();
-  res.send(s);
-})
+const launchServer = async () => {
+  try {  
+    l.tag1(tagIndex,"--launchServer-------");
+    
+    this.expressServer = new ExpressServer(config.HOST_PORT, config.OPENAPI_YAML);
+    await this.expressServer.launch(); 
 
-app.listen(port, () => { 
-  console.log(`Example app listening at http://localhost:${port}`)
-})
+    l.tag1(tagIndex,"--launchServer done-------");   
+    
+  } catch (error) {
+    l.error(error);
+    await this.close();
+  }
+};
+
+launchServer().catch(e => l.error(e));

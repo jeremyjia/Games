@@ -23,5 +23,7 @@ db.tutorials = require("./tutorial.model.js")(sequelize, Sequelize);
 db.Group6Users = require("./Group6User.model.js")(sequelize, Sequelize);
 db.PendingFriends = require("./PendingFriends.model.js")(sequelize, Sequelize);
 db.Friends = require("./Friends.model.js")(sequelize, Sequelize);
+db.Group6Items = require("./Group6Item.model.js")(sequelize, Sequelize);
+db.Group6UserItems = require("./Group6UserItem.model.js")(sequelize, Sequelize);
 
 module.exports = db;

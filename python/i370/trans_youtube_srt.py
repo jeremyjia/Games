@@ -3,7 +3,7 @@ from google_trans_new import google_translator
 
 YOUTUBEVIDEOCODE = "nc5EhK12QUw"
 LANGUAGECODETOCHANGETO = "zh"
-FILENAME = "Out.txt"
+FILENAME = "2.txt"
 
 #delete old text file
 with open(FILENAME, mode = "a") as file:

@@ -102,7 +102,7 @@ public class ImageController {
 
 		String filePath = System.getProperty("user.dir") + "/" + filename;// "1.srt";
 		System.out.println(filePath);
-		int number = subtitleImageService.saveSubtitleToImageFile(filePath, 768, 512);
+		int number = subtitleImageService.saveSubtitleToImageFile(filePath, 768, 512, null);
 		String strResult = "解析字幕文件错误!";
 		if (number > 0) {
 			strResult = "字幕文件解析成功，已在服务器端生成字幕图片，访问http://localhost:8080/NumberOfPicture.jpg查看图片，生成的图片总数:" + number;
@@ -122,13 +122,15 @@ public class ImageController {
 
 	}
 
-	@ApiOperation(value = "音频合成字幕生成视频", notes = "将音频合成字幕生成视频")
+	@ApiOperation(value = "通过音频与字幕文件生成视频", notes = "以一个音频MP3文件和一个标准字幕SRT文件或者LRC文件为输入，输出一个视频. 可以设置一个背景图片，默认无. \n调用示例：http://localhost:8080/image/combine?subtitlefile=1.srt&audiofile=1.mp3&bgfile=x1.jpg \n音频文件、字幕文件、背景图片还可以是URL.")
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "subtitlefile", value = "subtitle file (*.srt)", paramType = "query", required = true, dataType = "string", defaultValue = "example.srt"),
-			@ApiImplicitParam(name = "audiofile", value = "audio file (*.mp3)", paramType = "query", required = true, dataType = "string", defaultValue = "example.mp3") })
+			@ApiImplicitParam(name = "subtitlefile", value = "subtitle file (*.srt)", paramType = "query", required = true, dataType = "string", defaultValue = "1.srt"),
+			@ApiImplicitParam(name = "audiofile", value = "audio file (*.mp3)", paramType = "query", required = true, dataType = "string", defaultValue = "1.mp3"),
+			@ApiImplicitParam(name = "bgfile", value = "image file (*.jpg)", paramType = "query", required = false, dataType = "string", defaultValue = "") })
 	@RequestMapping(value = "/combine", method = RequestMethod.GET)
 	public ModelAndView combineSubtiteAndAudio2MP4(@RequestParam(name = "subtitlefile") String subtitleFile,
-			@RequestParam(name = "audiofile") String audioFile) throws Exception {
+			@RequestParam(name = "audiofile") String audioFile,
+			@RequestParam(name = "bgfile", defaultValue = "") String bgfile) throws Exception {
 		ModelAndView mv = new ModelAndView();
 		mv.setViewName("video.html");
 		FileUtil.removeTempFiles();
@@ -137,11 +139,13 @@ public class ImageController {
 		String subtitleFileName = FileUtil.downloadFileIfNeed(subtitleFile);
 		String audioFileName = FileUtil.downloadFileIfNeed(audioFile);
 		String path = System.getProperty("user.dir") + "/" + subtitleFileName;
-		int number = subtitleImageService.saveSubtitleToImageFile(path, 800, 600);
+		int width = 1024;
+		int height = 768;
+		int number = subtitleImageService.saveSubtitleToImageFile(path, width, height, bgfile);
 		if (number > 0) {
 			String suffix = isWindows ? ".bat" : ".sh";
 			String cmd = System.getProperty("user.dir") + "/" + "jpg2video" + suffix;
-			String[] args = { "800", "600", "1" };
+			String[] args = { Integer.toString(width), Integer.toString(height), "1" };
 			ExecuteCommand.executeCommand(cmd, args);
 			String ffmpegPath = "ffmpeg";
 			if (!isWindows) {
@@ -203,7 +207,7 @@ public class ImageController {
 		String strVideoUrl = "http://localhost:" + app_port + "/" + videoName;
 		String strHomePageUrl = "http://localhost:" + app_port;
 		if (b) {
-			strResultMsg = "已为您合成视频文件，点击即可播放视频，视频链接：" + strVideoUrl;
+			strResultMsg = "已为您合成视频文件，点击即可播放视频，视频链接：";
 		}
 		mv.addObject("message", strResultMsg);
 		mv.addObject("video_url", strVideoUrl);
@@ -211,6 +215,10 @@ public class ImageController {
 		if ("true".equalsIgnoreCase(MacroResolver.getProperty("VAR_GIF_ENABLED"))) {
 			mv.addObject("gif_url", strHomePageUrl + "/vFinal.gif");
 			mv.addObject("gif_enabled", true);
+		}
+		if (!"".equalsIgnoreCase(MacroResolver.getProperty(JsonSriptParser.current_Subtitle_Script))) {
+			MacroResolver.setProperty(JsonSriptParser.current_Subtitle_Script, "");
+			mv.addObject("subtitles",JsonSriptParser.subtitleList);
 		}
 
 		return mv;

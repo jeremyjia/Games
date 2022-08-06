@@ -1,0 +1,1117 @@
+
+<!doctype html> 
+<HTML>
+<HEAD>
+<TITLE>jsgraphics.html</TITLE>
+<META http-equiv=expires content=0>
+<META http-equiv=content-type content="text/html; charset=iso-8859-1">
+<SCRIPT src="https://littleflute.github.io/vc6/XdHtml/jsgraphics.js" type=text/javascript></SCRIPT>
+
+<script src="https://www.w3schools.com/lib/w3.js"></script>
+<script src="https://littleflute.github.io/JavaScript/blclass.js" ></script>
+
+</HEAD>
+<BODY bgColor=FloralWhite > 
+<div id="blPageV"> 
+	<a target = "_blank" href='https://github.com/littleflute/JavaScript/edit/master/xdgraph.html'>
+		v0.0. 111*</a>
+	<a target = "_blank" href='https://github.com/littleflute/JavaScript/issues/26'>#i26</a>
+	<button id="id_btn_4_blApp">++++++++++++++++++++++blApp++++++++++++++++++</button> 
+</div>
+<div id="xddbg"></div>
+<div id="idMedia"></div> 
+<script type="text/javascript" src="blclass.js"></script>
+<script type="text/javascript" src="xd.js"></script>
+
+<DIV id="xdMain" style="WIDTH: 100%; POSITION: relative; HEIGHT: 230px;border:1px green solid;">
+<TABLE id = "xdtable-1" width="100%" style="border:1px red solid;">
+  <TBODY>
+  <TR>
+    <TD height=230></TD></TR></TBODY></TABLE></DIV>
+<TABLE style="border:1px red solid;">
+  <TBODY>
+  <tr style="background-color:blue;border:1px red solid;"><td>xddbg1:</td></tr>
+  <TR>
+    <TD width=80><IMG height=1 alt="" 
+      src="DHTML Draw Line, Ellipse, Oval, Circle, Polyline, Polygon, Triangle with JavaScript.files/transparentpixel.gif" 
+      width=80></TD>
+    <TD>
+      <TABLE style="background-color:blue;border:1px red solid;">
+        <TBODY>
+        <TR>
+          <TD><B><BIG>DHTML, JavaScript <BR>Draw Line, Circle, Ellipse (Oval), 
+            Polyline, Polygon, Rectangle.</BIG> <BR>High Performance JavaScript 
+            Vector Graphics Library.</B><BR><SMALL>Developed by Walter 
+            Zorn</SMALL><BR>&nbsp;<BR></TD>
+          <TD vAlign=top rowSpan=4>
+            <TABLE cellSpacing=3 cellPadding=0>
+              <TBODY>
+              <TR>
+                <TD width=1 bgColor=#000099><IMG height=1 
+                  alt="DHTML, JavaScript: Draw Ellipses, Ovals, Circles, Polygons, Triangles, Rectangles, Lines, Polylines" 
+                  src="DHTML Draw Line, Ellipse, Oval, Circle, Polyline, Polygon, Triangle with JavaScript.files/transparentpixel.gif" 
+                  width=1></TD>
+                <TD><SMALL>&nbsp;<BR><A 
+                  href="#top">Top</A> 
+                  <BR>&nbsp;<BR><A 
+                  href="#browser">Cross Browser?</A> <BR>&nbsp;<BR><A 
+                  href="#docu">Documentation</A> 
+                  <BR>&nbsp;<BR><A 
+                  href="#download">Download</A> 
+                  <BR>&nbsp; </SMALL></TD></TR></TBODY></TABLE></TD></TR>
+        <TR>
+          <TD>This JavaScript VectorGraphics library provides graphics 
+            capabilities for JavaScript: functions to draw circles, ellipses 
+            (ovals), oblique lines, polylines and polygons (for instance 
+            triangles, rectangles) dynamically into a webpage. Usage of this 
+            Vector Graphics library should be easy even if you don't have 
+            JavaScript experience. <A 
+            href="#docu">Documentation</A>. 
+            Another goal during development of this JavaScript Draw Shapes 
+            Vector Graphics Library was to achieve optimized <A 
+            href="#performance">performance</A> 
+            and cleanly arranged pixel stair-step patterns (pixel-optimization). 
+          </TD></TR>
+        <TR>
+          <TD><BIG>&nbsp;<BR>&nbsp;<BR><B>Try it out:</B></BIG> </TD></TR>
+        <TR>
+          <TD>
+            <TABLE cellSpacing=0 cellPadding=0 width="100%" bgColor=#000099 
+            border=0>
+              <TBODY>
+              <TR>
+                <TD>
+                  <TABLE cellSpacing=1 cellPadding=0 width="100%" border=0>
+                    <TBODY>
+                    <TR>
+                      <TD bgColor=white>
+                        <FORM action="">
+                        <TABLE cellSpacing=0>
+                          <TBODY>
+                          <TR align=right>
+                            <TD><INPUT style="WIDTH: 100%" onclick=DRAW(this.value) type=button value=drawLine()></TD>
+                            <TD>x1<INPUT maxLength=4 size=5 value=50 
+                              name=dl_x1>&nbsp;</TD>
+                            <TD>y1<INPUT maxLength=4 size=5 value=-330 
+                              name=dl_y1>&nbsp;</TD>
+                            <TD>x2<INPUT maxLength=4 size=5 value=500 
+                              name=dl_x2>&nbsp;</TD>
+                            <TD>y2<INPUT maxLength=4 size=5 value=800 
+                              name=dl_y2>&nbsp;</TD></TR>
+                          <TR align=right>
+                            <TD><INPUT style="WIDTH: 100%" onclick=DRAW(this.value) type=button value=drawRect()></TD>
+                            <TD>x<INPUT maxLength=4 size=5 value=130 
+                              name=dr_x>&nbsp;</TD>
+                            <TD>y<INPUT maxLength=4 size=5 value=20 
+                            name=dr_y>&nbsp;</TD>
+                            <TD>w<INPUT maxLength=4 size=5 value=490 
+                              name=dr_w>&nbsp;</TD>
+                            <TD>h<INPUT maxLength=4 size=5 value=80 
+                            name=dr_h>&nbsp;</TD></TR>
+                          <TR align=right>
+                            <TD><INPUT style="WIDTH: 100%" onclick=DRAW(this.value) type=button value=fillRect()></TD>
+                            <TD>x<INPUT maxLength=4 size=5 value=-70 
+                              name=fr_x>&nbsp;</TD>
+                            <TD>y<INPUT maxLength=4 size=5 value=130 
+                              name=fr_y>&nbsp;</TD>
+                            <TD>w<INPUT maxLength=4 size=5 value=160 
+                              name=fr_w>&nbsp;</TD>
+                            <TD>h<INPUT maxLength=4 size=5 value=100 
+                              name=fr_h>&nbsp;</TD></TR>
+                          <TR align=right>
+                            <TD><INPUT onclick=DRAW(this.value) type=button value=fillPolygon()></TD>
+                            <TD colSpan=4>x<INPUT size=25 value=80,126,-30,-60 
+                              name=fp_x>&nbsp;y<INPUT size=25 value=0,130,40,100 
+                              name=fp_y> </TD></TR>
+                          <TR align=right>
+                            <TD><INPUT style="WIDTH: 100%" onclick=DRAW(this.value) type=button value=drawEllipse()></TD>
+                            <TD>x<INPUT maxLength=4 size=5 value=350 
+                              name=do_x>&nbsp;</TD>
+                            <TD>y<INPUT maxLength=4 size=5 value=-30 
+                              name=do_y>&nbsp;</TD>
+                            <TD>w<INPUT maxLength=3 size=5 value=140 
+                              name=do_w>&nbsp;</TD>
+                            <TD>h<INPUT maxLength=4 size=5 value=250 
+                              name=do_h>&nbsp;</TD></TR>
+                          <TR align=right>
+                            <TD><INPUT style="WIDTH: 100%" onclick=DRAW(this.value) type=button value=fillEllipse()></TD>
+                            <TD>x<INPUT maxLength=4 size=5 value=20 
+                            name=fo_x>&nbsp;</TD>
+                            <TD>y<INPUT maxLength=4 size=5 value=150 
+                              name=fo_y>&nbsp;</TD>
+                            <TD>w<INPUT maxLength=4 size=5 value=440 
+                              name=fo_w>&nbsp;</TD>
+                            <TD>h<INPUT maxLength=4 size=5 value=800 
+                              name=fo_h>&nbsp;</TD></TR>
+                          <TR>
+                            <TD colSpan=5>
+                              <TABLE cellSpacing=0 cellPadding=0 width="100%">
+                                <TBODY>
+                                <TR>
+                                <TD>setColor("#<INPUT maxLength=6 size=7 
+                                value=00aaaa name=Color>") </TD>
+                                <TD align=middle>setStroke(<INPUT maxLength=2 
+                                size=3 value=4 name=Stroke>) </TD>
+                                <TD align=right>setStroke(Stroke.DOTTED<INPUT 
+                                type=checkbox name=Dotted>) 
+                              </TD></TR></TBODY></TABLE><INPUT style="FONT-WEIGHT: bold; WIDTH: 290px" onclick=;if(jg2)jg2.clear(); type=button value="clear() this test area"> 
+                            </TD></TR>
+                          <TR>
+                            <TD colSpan=5 height=250>
+                              <DIV id=dt 
+                              style="LEFT: -80px; POSITION: relative; TOP: 10px; HEIGHT: 1px"></DIV>
+                              <DIV id=test 
+                              style="Z-INDEX: 2; LEFT: 0px; OVERFLOW: visible; WIDTH: 400px; POSITION: relative; TOP: 0px; HEIGHT: 250px;border:1px solid green;">
+                              <CENTER><SMALL>Test 
+                            Canvas</SMALL></CENTER></DIV></TD></TR></TBODY></TABLE></FORM></TD></TR></TBODY></TABLE></TD></TR></TBODY></TABLE></TD></TR></TBODY></TABLE></TD></TR></TBODY></TABLE>
+<TABLE id="xdtable-2" style="background-color:Cornsilk;border:1px red solid;">
+  <TBODY>
+  <TR>
+    <TD width=80><IMG height=1 alt="" 
+      src="DHTML Draw Line, Ellipse, Oval, Circle, Polyline, Polygon, Triangle with JavaScript.files/transparentpixel.gif" 
+      width=80></TD>
+    <TD>
+      <TABLE>
+        <TBODY>
+        <TR>
+          <TD><B><BIG>&nbsp;<BR>&nbsp;<BR><A 
+            name=performance></A>&nbsp;<BR>Performance</BIG></B></TD>
+          <TD vAlign=top rowSpan=4>
+            <TABLE cellSpacing=3 cellPadding=0>
+              <TBODY>
+              <TR>
+                <TD width=1 bgColor=#000099><IMG height=1 
+                  alt="DHTML, JavaScript: Draw Ellipse, Oval, Circle, Polygon, Triangle, Rectangle, Line, Polyline" 
+                  src="DHTML Draw Line, Ellipse, Oval, Circle, Polyline, Polygon, Triangle with JavaScript.files/transparentpixel.gif" 
+                  width=1></TD>
+                <TD><SMALL>&nbsp;<BR><A 
+                  href="#top">Top 
+                  of Page</A> <BR>&nbsp;<BR><A 
+                  href="#performance">Performance?</A> 
+                  <BR>&nbsp;<BR><A 
+                  href="#browser">Cross 
+                  Browser?</A> <BR>&nbsp;<BR><A 
+                  href="#docu">Documentation</A> 
+                  <BR>&nbsp;<BR><A 
+                  href="#download">Download</A> 
+                  <BR>&nbsp; </SMALL></TD></TR></TBODY></TABLE></TD></TR>
+        <TR>
+          <TD>In HTML there are no such elements as oblique lines, circles, 
+            ellipses or other non-rectangularly bounded elements available. For 
+            a workaround, pixels might be painted by creating small 
+            background-colored layers (DIV elements), and arranging these to the 
+            desired pattern. Creating a separate DIV for each pixel of the 
+            pattern, however, would be very inefficient since each of these DIVs 
+            inevitably has to lug it's complete browser-internal object 
+overhead.
+            <SCRIPT type=text/javascript>
+<!--
+function drwPxOv(hnd, left, top, width, height, fact, bad)
+{
+	var a = width>>1, b = height>>1,
+	cx = left + a*fact, cy = top + b*fact,
+	x = 0, y = b,
+	ox = 0, oy = b,
+	a2 = (a*a)<<1, b2 = (b*b)<<1,
+	st = (a2>>1)*(1-(b<<1)) + b2,
+	tt = (b2>>1) - a2*((b<<1)-1);
+	if (bad) hnd.drawRect(cx+fact*x, cy-fact*y, fact, fact);
+	do
+	{
+		if (st<0)
+		{
+			st += b2*((x<<1)+3);
+			tt += (b2<<1)*(x+1);
+			x++;
+		}
+		else if (tt<0)
+		{
+			st += b2*((x<<1)+3) - (a2<<1)*(y-1);
+			tt += (b2<<1)*(x+1) - a2*((y<<1)-3);
+			x++;
+			y--;
+		if (!bad) hnd.drawRect(cx+fact*ox, cy-fact*oy, fact*(x-ox), fact*(oy-y));
+		ox = x;
+		oy = y;
+		}
+		else
+		{
+			st -= (a2<<1)*(y-1);
+			tt -= a2*((y<<1)-3);
+			y--;
+		}
+		if (bad) hnd.drawRect(cx+fact*x, cy-fact*y, fact, fact);
+	}
+	while (y>0);
+	if (!bad) hnd.drawRect(cx+fact*ox, cy-fact*oy, fact*(a-ox+1), fact*(oy+1));
+}
+
+
+
+/////////////// Pixel stairs demo ///////////////
+var jg = new jsGraphics();
+
+jg.htm += '<table align="left" width="354" cellpadding="0"><tr><td height="150" valign="top"><div id="stairsdemo" style="position:relative;width:350px;height:150px;">';
+
+jg.setFont("verdana,geneva,sans-serif", "10px", Font.PLAIN);
+jg.setColor("#ee8800");
+jg.drawString("Image dynamically drawn with wz_jsgraphics.js", 0, 2);
+
+jg.setFont("verdana,geneva,sans-serif", "11px", Font.PLAIN);
+jg.setColor("#ff0099");
+jg.drawString("unfavourable", 10, 129);
+jg.drawRect(0, 25, 10, 10);
+jg.drawRect(10, 25, 10, 10);
+jg.drawRect(20, 25, 10, 10);
+jg.drawRect(20, 35, 10, 10);
+jg.drawRect(30, 35, 10, 10);
+jg.drawRect(40, 35, 10, 10);
+jg.drawRect(40, 45, 10, 10);
+jg.drawRect(50, 45, 10, 10);
+jg.drawRect(60, 45, 10, 10);
+jg.drawRect(60, 55, 10, 10);
+jg.drawRect(60, 65, 10, 10);
+jg.drawRect(70, 65, 10, 10);
+jg.drawRect(70, 75, 10, 10);
+jg.drawRect(70, 85, 10, 10);
+jg.drawRect(80, 85, 10, 10);
+jg.drawRect(80, 95, 10, 10);
+jg.drawRect(80, 105, 10, 10);
+
+jg.setColor("#008800");
+jg.drawString("better", 130, 129);
+//drwPxOv(jg, 30, 25, 16, 16, 10, true);
+
+jg.setColor("#0000cc");
+jg.drawString("optimal", 260, 129);
+//drwPxOv(jg, 150, 25, 16, 16, 10);
+
+jg.htm += '<\/div><\/td><\/tr><\/table>';
+
+//jg.paint();
+//-->
+</SCRIPT>
+             <BR>&nbsp;<BR>To minimize the amount of this overhead and to 
+            optimize performance to what's possible, this Draw Shapes JavaScript 
+            VectorGraphics Library, besides using fast algorithms (based on 
+            Bresenham algorithms) to compute the shapes, minimizes the number of 
+            required DIVs by combining as many pixels into each DIV as possible. 
+            Therefore, as illustrated by the picture on the left, the number of 
+            DIV elements is decreased <B><A 
+            href="#notes">[1]</A></B> 
+            from one per pixel to one per pixel stair-step. 
+            <BR>&nbsp;<BR><B>However, don't compare the performance with Java or 
+            stand-alone applications!</B> Making a browser create DIV elements 
+            is of course much slower than just colouring pixels. Even this 
+            JavaScript Vectorgraphics Library can't escape from this fundamental 
+            restriction - it just tries to squeeze out the maximum of what's 
+            possible. It's recommended to refrain from creating shapes that 
+            extend more than 600 - 1000 pixels in both dimensions. 
+            <BR>&nbsp;<BR><B>Alternative to SVG?</B> Currently SVG-capable 
+            browsers or browsers with a correctly included SVG plugin are still 
+            rare. Therefore you might use this vector graphics library as an 
+            non-proprietary alternative for small or not-too-complex graphic 
+            elements, presumably running on the machines of more than 95% of all 
+            internet visitors. Moreover, since this vectorgraphics library 
+            allows graphics to overflow the borders of their "canvases", it can 
+            render to almost everywhere on a page. </TD></TR>
+        <TR>
+          <TD><BIG>&nbsp;<BR>&nbsp;<BR><A 
+            name=browser></A>&nbsp;<BR>&nbsp;<BR><B>Cross Browser 
+            Functionality?</B></BIG> </TD></TR>
+        <TR>
+          <TD>Linux: <BR>Browsers with Gecko-Engine (Mozilla, 
+            Netscape&nbsp;6+, Galeon), Konqueror, Netscape&nbsp;4, Opera&nbsp;5, 
+            6 and 7. <BR>&nbsp;<BR>Windows: <BR>Gecko-Browsers, IE 4, 5 and 6, 
+            Netscape&nbsp;4, Opera&nbsp;5, 6 and 7. <BR>&nbsp;<BR>Mac: 
+            <BR>Safari, Gecko-Browsers, Opera, Netscape 4, partially IE. 
+            <BR>&nbsp;<BR>The functionality "Draw into html elements even after 
+            the page has fully loaded" isn't available for Opera&nbsp;prior to 
+            version&nbsp;7 and Netscape&nbsp;4, whereas "Draw into the document 
+            while the page is parsed" is cross-browser capable. </TD></TR>
+        <TR>
+          <TD><BIG>&nbsp;<BR>&nbsp;<BR><A 
+            name=docu></A>&nbsp;<BR>&nbsp;<BR>&nbsp;<BR><B>Documentation: How to 
+            Use the JavaScript Graphics Library</B></BIG> </TD>
+          <TD><BR></TD></TR>
+        <TR>
+          <TD><B><BIG>1.</BIG> Include the Library</B> <BR>Insert the 
+            following code into the head-section of the html file (between 
+            &lt;head&gt; and &lt;/head&gt;): </TD>
+          <TD><BR></TD></TR>
+        <TR>
+          <TD>
+            <TABLE cellSpacing=0 cellPadding=0 width="100%" bgColor=#000099 
+            border=0>
+              <TBODY>
+              <TR>
+                <TD>
+                  <TABLE cellSpacing=1 cellPadding=1 width="100%" border=0>
+                    <TBODY>
+                    <TR>
+                      <TD bgColor=#eeeeee><TT><FONT style="FONT-SIZE: 12px" 
+                        size=2>&lt;script type="text/javascript" 
+                        src="wz_jsgraphics.js"&gt;&lt;/script&gt;<BR></FONT></TT></TD></TR></TBODY></TABLE></TD></TR></TBODY></TABLE></TD>
+          <TD><BR></TD></TR>
+        <TR>
+          <TD><B>&nbsp;<BR><BIG>2.</BIG> HTML: &lt;div&gt; Elements as 
+            Canvases</B> <BR>This step isn't required for the mode "Draw 
+            directly into the document while the page is parsed". To draw into 
+            DIV elements even after the page has fully loaded, however, 
+            relatively as well as absolutely positioned layers (DIV elements) 
+            are appropriate to serve as canvases. Each of these layers must have 
+            a unique ID: <BR>&lt;div id="myCanvas" 
+            style="position:relative;height:250px;width:100%;"&gt;&lt;/div&gt;<BR>...<BR>&lt;div 
+            id="anotherCanvas" 
+            style="position:relative;height:100px;width:300px;"&gt;&lt;/div&gt; 
+          </TD>
+          <TD><BR></TD></TR>
+        <TR>
+          <TD><B>&nbsp;<BR><BIG>3.</BIG> Save the JavaScript Vectorgraphics 
+            Library</B> <BR><A 
+            href="#download">Download 
+            the JavaScript Vector Graphics Library</A> and unzipp it into the 
+            same directory as the html file. If you'd prefer the library to be 
+            placed in a different directory, adapt the path 
+            src="wz_jsgraphics.js" in the code piece above.<BR></TD>
+          <TD><BR></TD></TR>
+        <TR>
+          <TD><BIG>&nbsp;<BR>&nbsp;<BR>&nbsp;<BR>&nbsp;<BR>&nbsp;<BR>&nbsp;<BR><B>How 
+            to Draw Shapes</B></BIG> </TD>
+          <TD vAlign=top rowSpan=4>
+            <TABLE cellSpacing=3 cellPadding=0>
+              <TBODY>
+              <TR>
+                <TD width=1 bgColor=#000099><IMG height=1 
+                  alt="DHTML, JavaScript: Draw Ellipses, Ovals, Circles, Polygons, Triangles, Rectangles, Lines, Polylines" 
+                  src="DHTML Draw Line, Ellipse, Oval, Circle, Polyline, Polygon, Triangle with JavaScript.files/transparentpixel.gif" 
+                  width=1></TD>
+                <TD><SMALL>&nbsp;<BR><A 
+                  href="#top">Top 
+                  of Page</A> <BR>&nbsp;<BR><A 
+                  href="#performance">Performance?</A> 
+                  <BR>&nbsp;<BR><A 
+                  href="#browser">Cross 
+                  Browser?</A> <BR>&nbsp;<BR><A 
+                  href="#docu">Documentation</A> 
+                  <BR>&nbsp;<BR><A 
+                  href="#download">Download</A> 
+                  <BR>&nbsp; </SMALL></TD></TR></TBODY></TABLE></TD></TR>
+        <TR>
+          <TD><B><BIG>1.</BIG> Create a jsGraphics Object</B> <BR><B>a) Draw 
+            into DIV elements even after the page has fully loaded:</B> 
+            <BR>(This mode doesn't work in Netscape&nbsp;4 and 
+            Opera&nbsp;&lt;&nbsp;7.) See the example below how to create a 
+            jsGraphics object for a certain DIV element. This code should be 
+            inserted into the html code past the concerned DIV element, but in 
+            any case ahead of the closing body tag. The ID (in quotation marks) 
+            of the selected DIV element must be passed to the constructor 
+            function <TT>new&nbsp;jsGraphics()</TT>:<BR></TD></TR>
+        <TR>
+          <TD>
+            <TABLE cellSpacing=0 cellPadding=0 width="100%" bgColor=#000099 
+            border=0>
+              <TBODY>
+              <TR>
+                <TD>
+                  <TABLE cellSpacing=1 cellPadding=1 width="100%" border=0>
+                    <TBODY>
+                    <TR>
+                      <TD bgColor=#eeeeee><TT><FONT style="FONT-SIZE: 12px" 
+                        size=2>&lt;script 
+                        type="text/javascript"&gt;<BR>&lt;!--<BR><BR>var jg = 
+                        new 
+                        jsGraphics("myCanvas");<BR><BR>//--&gt;<BR>&lt;/script&gt; 
+                        </FONT></TT></TD></TR></TBODY></TABLE></TD></TR></TBODY></TABLE></TD></TR>
+        <TR>
+          <TD>If there are several separate DIV elements, each requires it's 
+            own jsGraphics instance: </TD></TR>
+        <TR>
+          <TD>
+            <TABLE cellSpacing=0 cellPadding=0 width="100%" bgColor=#000099 
+            border=0>
+              <TBODY>
+              <TR>
+                <TD>
+                  <TABLE cellSpacing=1 cellPadding=1 width="100%" border=0>
+                    <TBODY>
+                    <TR>
+                      <TD bgColor=#eeeeee><TT><FONT style="FONT-SIZE: 12px" 
+                        size=2>&lt;script 
+                        type="text/javascript"&gt;<BR>&lt;!--<BR><BR>var jg = 
+                        new jsGraphics("myCanvas");<BR>var jg2 = new 
+                        jsGraphics("anotherCanvas");<BR><BR>//--&gt;<BR>&lt;/script&gt; 
+                        </FONT></TT></TD></TR></TBODY></TABLE></TD></TR></TBODY></TABLE></TD>
+          <TD><BR></TD></TR>
+        <TR>
+          <TD>&nbsp;<BR>&nbsp;<BR><B>b) Draw directly into the document while 
+            the page is parsed:</B> <BR>Works even in Netscape 4 and Opera 5/6. 
+            Instead of the ID of a DIV element, nothing (or the value null) must 
+            be passed to the constructor function: </TD>
+          <TD><BR></TD></TR>
+        <TR>
+          <TD>
+            <TABLE cellSpacing=0 cellPadding=0 width="100%" bgColor=#000099 
+            border=0>
+              <TBODY>
+              <TR>
+                <TD>
+                  <TABLE cellSpacing=1 cellPadding=1 width="100%" border=0>
+                    <TBODY>
+                    <TR>
+                      <TD bgColor=#eeeeee><TT><FONT style="FONT-SIZE: 12px" 
+                        size=2>&lt;script 
+                        type="text/javascript"&gt;<BR>&lt;!--<BR><BR>var jg_doc 
+                        = new jsGraphics();<BR><BR>//--&gt;<BR>&lt;/script&gt; 
+                        </FONT></TT></TD></TR></TBODY></TABLE></TD></TR></TBODY></TABLE></TD>
+          <TD><BR></TD></TR>
+        <TR>
+          <TD>Instead of jg, jg2 or jg_doc you may choose any other variable 
+            name, provided it follows the rules for variable names in 
+            JavaScript. </TD>
+          <TD><BR></TD></TR>
+        <TR>
+          <TD><B>&nbsp;<BR>&nbsp;<BR>&nbsp;<BR><BIG>2.</BIG> Functions to Draw 
+            Shapes</B> <BR>Once generated, these graphics objects (in this 
+            expample jg, jg2 and/or jg_doc) can be used to call the Draw Shapes 
+            methods. The shapes generated by a certain graphics object will be 
+            drawn into the concerned html element, or, with mode b) used, into 
+            the document itself: </TD>
+          <TD><BR></TD></TR>
+        <TR>
+          <TD>
+            <TABLE cellSpacing=0 cellPadding=0 width="100%" bgColor=#000099 
+            border=0>
+              <TBODY>
+              <TR>
+                <TD>
+                  <TABLE cellSpacing=1 cellPadding=1 width="100%" border=0>
+                    <TBODY>
+                    <TR>
+                      <TD bgColor=#eeeeee><TT><FONT style="FONT-SIZE: 12px" 
+                        size=2>&lt;script 
+                        type="text/javascript"&gt;<BR>&lt;!--<BR>function 
+                        myDrawFunction()<BR>{<BR>&nbsp; 
+                        jg_doc.setColor("#00ff00"); <I><FONT color=#999999>// 
+                        green</FONT></I><BR>&nbsp;&nbsp;jg_doc.fillEllipse(100,&nbsp;200,&nbsp;100,&nbsp;180);&nbsp;<I><FONT 
+                        color=#999999>//&nbsp;co-ordinates&nbsp;related&nbsp;to&nbsp;the&nbsp;document</FONT></I><BR>&nbsp; 
+                        jg_doc.setColor("maroon");<BR>&nbsp; 
+                        jg_doc.drawPolyline(new Array(50, 10, 120), new 
+                        Array(10, 50, 70));<BR>&nbsp; jg_doc.paint(); <I><FONT 
+                        color=#999999>// draws, in this case, directly into the 
+                        document</FONT></I><BR><BR>&nbsp; 
+                        jg.setColor("#ff0000"); <I><FONT color=#999999>// 
+                        red</FONT></I><BR>&nbsp;&nbsp;jg.drawLine(10,&nbsp;113,&nbsp;220,&nbsp;55);&nbsp;<I><FONT 
+                        color=#999999>//&nbsp;co-ordinates&nbsp;related&nbsp;to&nbsp;"myCanvas"</FONT></I><BR>&nbsp; 
+                        jg.setColor("#0000ff"); <I><FONT color=#999999>// 
+                        blue</FONT></I><BR>&nbsp; jg.fillRect(110, 120, 30, 
+                        60);<BR>&nbsp; jg.paint();<BR><BR>&nbsp; 
+                        jg2.setColor("#0000ff"); <I><FONT color=#999999>// 
+                        blue</FONT></I><BR>&nbsp; jg2.drawEllipse(10, 50, 30, 
+                        100);<BR>&nbsp; jg2.drawRect(400, 10, 100, 
+                        50);<BR>&nbsp; jg2.paint();<BR>}<BR><BR>var 
+                        jg_doc&nbsp;=&nbsp;new&nbsp;jsGraphics();&nbsp;<I><FONT 
+                        color=#999999>//&nbsp;draw&nbsp;directly&nbsp;into&nbsp;document</FONT></I><BR>var 
+                        jg = new jsGraphics("myCanvas");<BR>var jg2 = new 
+                        jsGraphics("anotherCanvas");<BR><BR>myDrawFunction();<BR><BR>//--&gt;<BR>&lt;/script&gt; 
+                        </FONT></TT></TD></TR></TBODY></TABLE></TD></TR></TBODY></TABLE></TD>
+          <TD><BR></TD></TR>
+        <TR>
+          <TD>As illustrated in this example, at first the color of the "pen" 
+            should be set. Otherwise the default color black will be used. The 
+            coordinates passed to the Draw Shapes methods refer either, if mode 
+            b) used, to the left-top corner of the document itself, or to the 
+            left-top corner of the concerned DIV. For each canvas (graphics 
+            object) separately, it's paint() method must be called explicitly to 
+            render the internally-generated graphics html. Otherwise nothing 
+            will happen on your screen. </TD>
+          <TD><BR></TD></TR></TBODY></TABLE></TD></TR></TBODY></TABLE>
+<TABLE style="MARGIN: 10px;background-color:gold;border:1px red solid;" cellSpacing=0 cellPadding=0 
+border=0 id="xdtable-3" >
+  <TBODY>
+  <TR>
+    <TD>
+      <TABLE cellSpacing=1 cellPadding=8 border=0>
+        <TBODY>
+        <TR bgColor=#eeeeee>
+          <TD><B>Name of function (method)</B></TD>
+          <TD><B>Code example</B> as to be used with the above example object 
+            'jg' (which is the context of the DIV called "myCanvas")</TD></TR>
+        <TR bgColor=white>
+          <TD colSpan=2><B>General Notes</B> <BR>&nbsp;<BR><B>1.)</B> Numbers 
+            passed to these functions must always be <B>integer numbers</B>, 
+            rather than decimal point numbers (floating point numbers), 
+            characters or strings. For instance, values obtained from formular 
+            inputs are always strings, and results from previous JavaScript 
+            calculations typically floating point numbers. Use either the 
+            predefined <TT>parseInt()</TT> or the <TT>Math.round()</TT> 
+            JavaScript function to convert data to integer. Example: 
+            <BR><CODE>jg.setStroke(parseInt(document.MyForm.Linewidth.value));</CODE> 
+            <BR>&nbsp;<BR><B>2.)</B> Consider that co-ordinates lie between 
+            pixels, not on them, and that the drawing "pen" hangs beneath and to 
+            the right of the path specified by co-ordinates passed to the 
+            functions. </TD></TR>
+        <TR vAlign=top bgColor=white>
+          <TD><CODE><B>setColor(</B>"#HexColor"<B>);</B></CODE> 
+            <BR>&nbsp;<BR>Specifies the color of the drawing "pen". Once set, 
+            this color will be used by the subsequently called drawing methods 
+            until it will be overridden through another call of setColor(). The 
+            value must be enclosed in quotation marks, and should be hexadecimal 
+            following the pattern "#rrggbb" (as usual with HTML). Color names 
+            available in HTML (for instance "maroon") may be used as well. </TD>
+          <TD><CODE>jg.setColor("#ff0000");</CODE><BR>&nbsp;<BR>or with 
+            identical result<BR>&nbsp;<BR><CODE>jg.setColor("red");</CODE></TD></TR>
+        <TR vAlign=top bgColor=white>
+          <TD><CODE><B>setStroke(</B>Number<B>);</B></CODE> 
+            <BR>&nbsp;<BR>Specifies the thickness of the drawing "pen" for lines 
+            and bounding lines of shapes. Once set, this thickness will be used 
+            by the subsequently called drawing methods until it will be 
+            overridden through another call of setStroke(). Default line 
+            thickness is 1&nbsp;px, as long as .setStroke() has not yet been 
+            invoked. <BR>&nbsp;<BR>To create dotted lines, <TT>setStroke()</TT> 
+            requires the constant <TT>Stroke.DOTTED</TT> as argument. Width of 
+            dotted lines is always 1 pixel. </TD>
+          <TD><CODE>jg.setStroke(3);</CODE> <BR>&nbsp;<BR>or 
+            <BR>&nbsp;<BR><CODE>jg.setStroke(Stroke.DOTTED);</CODE> </TD></TR>
+        <TR vAlign=top bgColor=white>
+          <TD><CODE><B>drawLine(</B>X1, Y1, X2, Y2<B>);</B></CODE> <BR>
+            <SCRIPT type=text/javascript>
+<!--
+jg.htm += '<div style="position:relative;width:50px;height:13px;"><table cellpadding="0" cellspacing="0"><tr><td>';
+
+jg.setStroke(2);
+jg.setColor("#ff6666");
+jg.drawLine(0, 11, 40, 0);
+
+jg.htm += '<\/td><\/tr><\/table><\/div>';
+//jg.paint();
+//-->
+</SCRIPT>
+            Line from the first to the second pair of coordinates. Line 
+            thickness is either 1&nbsp;px or the value most recently specified 
+            by <B><TT>.setStroke()</TT></B>. </TD>
+          <TD><CODE>jg.drawLine(20,50,453,40);</CODE></TD></TR>
+        <TR vAlign=top bgColor=white>
+          <TD><CODE><B>drawPolyline(</B>Xpoints, Ypoints<B>);</B></CODE> <BR>
+            <SCRIPT type=text/javascript>
+<!--
+jg.htm += '<div style="position:relative;width:50px;height:13px;"><table cellpadding="0" cellspacing="0"><tr><td>';
+
+jg.setColor("#55aaaa");
+jg.drawPolyLine(new Array(0, 10, 20, 30, 40), new Array(0, 11, 0, 11, 0));
+
+jg.htm += '<\/td><\/tr><\/table><\/div>';
+jg.paint();
+//-->
+</SCRIPT>
+            A polyline is a series of connected line segments. Xpoints and 
+            Ypoints are arrays which specify the x and y coordinates of each 
+            point as follows: <BR><CODE>var Xpoints = new 
+            Array(x1,x2,x3,x4,x5);<BR>var YPoints = new 
+            Array(y1,y2,y3,y4,y5);</CODE> <BR>Instead of Xpoints and Ypoints you 
+            may of course use other names provided these follow the rules for 
+            JavaScript variable names. <BR>&nbsp;<BR>Line thickness is either 
+            1px or the value most recently specified by 
+            <B><TT>.setStroke()</TT></B>. </TD>
+          <TD><CODE>var Xpoints = new Array(10,85,93,60);<BR>var YPoints = new 
+            Array(50,10,105,87);<BR>jg.drawPolyline(Xpoints,Ypoints);</CODE></TD></TR>
+        <TR vAlign=top bgColor=white>
+          <TD><CODE><B>drawRect(</B>X,&nbsp;Y,&nbsp;width,&nbsp;height<B>);</B></CODE> 
+            <BR>
+            <SCRIPT type=text/javascript>
+<!--
+jg.htm += '<div style="position:relative;width:50px;height:13px;"><table cellpadding="0" cellspacing="0"><tr><td>';
+
+jg.setColor("#6666ff");
+jg.drawRect(0, 0, 40, 11);
+
+jg.htm += '<\/td><\/tr><\/table><\/div>';
+jg.paint();
+//-->
+</SCRIPT>
+            Outline of a rectangle. X and Y give the co-ordinates of the left 
+            top corner. Line thickness is either 1px or the value most recently 
+            specified by <B><TT>.setStroke()</TT></B>. </TD>
+          <TD><CODE>jg.drawRect(20,50,70,140);</CODE></TD></TR>
+        <TR vAlign=top bgColor=white>
+          <TD><CODE><B>fillRect(</B>X,&nbsp;Y,&nbsp;width,&nbsp;height<B>);</B></CODE> 
+            <BR>
+            <SCRIPT type=text/javascript>
+<!--
+jg.htm += '<div style="position:relative;width:50px;height:13px;"><table cellpadding="0" cellspacing="0"><tr><td>';
+
+jg.setColor("#ffcc66");
+jg.fillRect(0, 0, 40, 11);
+
+jg.htm += '<\/td><\/tr><\/table><\/div>';
+jg.paint();
+//-->
+</SCRIPT>
+            Filled rectangle. X and Y give the co-ordinates to the left top 
+            corner. </TD>
+          <TD><CODE>jg.fillRect(20,50,453,40);</CODE></TD></TR>
+        <TR vAlign=top bgColor=white>
+          <TD><CODE><B>drawPolygon(</B>Xpoints, Ypoints<B>);</B></CODE> <BR>
+            <SCRIPT type=text/javascript>
+<!--
+jg.htm += '<div style="position:relative;width:50px;height:13px;"><table cellpadding="0" cellspacing="0"><tr><td>';
+
+jg.setColor("#cc66cc");
+jg.drawPolygon(new Array(0, 20, 40, 20), new Array(5, 0, 5, 11));
+
+jg.htm += '<\/td><\/tr><\/table><\/div>';
+jg.paint();
+//-->
+</SCRIPT>
+            Polygon. Xpoints and Ypoints are arrays which specify the x and y 
+            coordinates of the polygon's corners as follows: <BR><CODE>var 
+            Xpoints = new Array(x1,x2,x3,x4,x5);<BR>var Ypoints = new 
+            Array(y1,y2,y3,y4,y5);</CODE> <BR>The polygon will be automatically 
+            closed if the first and last points are not identical. 
+            <BR>&nbsp;<BR>Line thickness is either 1px or the value most 
+            recently specified by <B><TT>.setStroke()</TT></B>. </TD>
+          <TD><CODE>var Xpoints = new Array(10,85,93,60);<BR>var Ypoints = new 
+            Array(50,10,105,87);<BR>jg.drawPolygon(Xpoints, 
+            Ypoints);</CODE><BR>&nbsp;<BR>Instead of Xpoints and Ypoints you may 
+            of course use other names provided these follow the rules for 
+            variable names. </TD></TR>
+        <TR vAlign=top bgColor=white>
+          <TD><CODE><B>fillPolygon(</B>Xpoints, Ypoints<B>);</B></CODE> <BR>
+            <SCRIPT type=text/javascript>
+<!--
+jg.htm += '<div style="position:relative;width:50px;height:13px;"><table cellpadding="0" cellspacing="0"><tr><td>';
+
+jg.setColor("#99ccff");
+jg.fillPolygon(new Array(0, 20, 40, 20), new Array(6, -1, 6, 13));
+
+jg.htm += '<\/td><\/tr><\/table><\/div>';
+jg.paint();
+//-->
+</SCRIPT>
+            Filled Polygon. Parameters as for drawPolygon() </TD>
+          <TD><CODE>jg.fillPolygon(new Array(10,85,93,60),</CODE> <CODE>new 
+            Array(50,10,105,87));</CODE> </TD></TR>
+        <TR vAlign=top bgColor=white>
+          <TD><CODE><B>drawEllipse(</B>X,&nbsp;Y,&nbsp;width,&nbsp;height<B>);</B></CODE> 
+            <BR>
+            <SCRIPT type=text/javascript>
+<!--
+jg.htm += '<div style="position:relative;width:50px;height:13px;"><table cellpadding="0" cellspacing="0"><tr><td>';
+
+jg.setColor("#55bb55");
+jg.drawOval(0, -1, 40, 12);
+
+jg.htm += '<\/td><\/tr><\/table><\/div>';
+jg.paint();
+//-->
+</SCRIPT>
+            Outline of an ellipse. Values refer to the bounding rectangle of the 
+            ellipse, X and Y give the co-ordinates of the left top corner of 
+            that rectangle rather than of it's center. Line thickness is either 
+            1px or the value most recently specified by 
+            <B><TT>.setStroke()</TT></B>. </TD>
+          <TD><CODE>jg.drawEllipse(20,50,70,140);</CODE> <BR>or 
+            <BR><CODE>jg.drawOval(20,50,70,140);</CODE> </TD></TR>
+        <TR vAlign=top bgColor=white>
+          <TD><CODE><B>fillEllipse(</B>X,&nbsp;Y,&nbsp;width,&nbsp;height<B>);</B></CODE> 
+            <BR>
+            <SCRIPT type=text/javascript>
+<!--
+jg.htm += '<div style="position:relative;width:50px;height:13px;"><table cellpadding="0" cellspacing="0"><tr><td>';
+
+jg.setColor("#ffccdd");
+jg.fillOval(0, -1, 41, 13);
+
+jg.htm += '<\/td><\/tr><\/table><\/div>';
+jg.paint();
+//-->
+</SCRIPT>
+            Filled ellipse. Values refer to the bounding rectangle of the 
+            ellipse, X and Y give the co-ordinates of the left top corner of 
+            that rectangle rather than of it's center. </TD>
+          <TD><CODE>jg.fillEllipse(20,50,71,141);</CODE> <BR>or 
+            <BR><CODE>jg.fillOval(20,50,71,141);</CODE> </TD></TR>
+        <TR vAlign=top bgColor=white>
+          <TD><CODE><B>setFont(</B>"font-family", "size+unit", 
+            Style<B>);</B></CODE> <BR>&nbsp;<BR>This method can be invoked prior 
+            to drawString() to specify or change font-family, -size and -style. 
+            Values or font-family and -size may be whatever possible in HTML, 
+            and must be enclosed in quotation marks. <BR>&nbsp;<BR>Available 
+            font styles:<BR>Font.PLAIN for normal style (not bold, not 
+            italic)<BR>Font.BOLD for bold fonts<BR>Font.ITALIC for 
+            italics<BR>Font.ITALIC_BOLD or Font.BOLD_ITALIC to combine the 
+            latters. </TD>
+          <TD>Example: see <CODE>drawString()</CODE> below </TD></TR>
+        <TR vAlign=top bgColor=white>
+          <TD><CODE><B>drawString(</B>"Text", X, Y<B>);</B></CODE> <BR>
+            <SCRIPT type=text/javascript>
+<!--
+jg.htm += '<div style="position:relative;width:400px;height:16px;"><table cellpadding="0" cellspacing="0" width="400"><tr><td>';
+
+jg.setFont("arial,helvetica,sans-serif", "15px", Font.ITALIC_BOLD);
+jg.setColor("#cc6600");
+jg.drawString("I've been drawn with the Vectorgraphics Library...", 0, 0);
+
+jg.htm += '<\/td><\/tr><\/table><\/div>';
+jg.paint();
+//-->
+</SCRIPT>
+            Writes text to the location specified by X and Y. Differently from 
+            Java, these coordinates refer to the left top corner of the first 
+            line of the text. The string passed to drawString() must be enclosed 
+            in quotation marks. (Non-escaped) HTML tags inside the string will 
+            be interpreted. For example, 
+            "Some&nbsp;Text&lt;br&gt;more&nbsp;Text" would indeed create a line 
+            break. </TD>
+          <TD><CODE>jg.setFont("arial","15px",Font.ITALIC_BOLD);</CODE> 
+            <BR><CODE>jg.drawString("Some&nbsp;Text",20,50);</CODE> </TD></TR>
+        <TR vAlign=top bgColor=white>
+          <TD><CODE><B>drawStringRect(</B>"Text", X, Y, Width, 
+            Alignment<B>);</B></CODE> <BR>
+            <SCRIPT type=text/javascript>
+<!--
+jg.htm += '<div style="position:relative;width:400px;height:100px;"><table cellpadding="0" cellspacing="0" width="400"><tr><td>';
+
+jg.setFont("verdana,geneva,sans-serif", "11px", Font.BOLD);
+jg.setColor("#009999");
+jg.drawStringRect("A text drawn by using drawStringRect() which allows to set the width of the text rectangle and to align the text horizontally (in this case &quot;right&quot;)", 4, 4, 292, "right");
+
+jg.htm += '<\/td><\/tr><\/table><\/div>';
+jg.paint();
+//-->
+</SCRIPT>
+            Like drawString. Allows however to set the width of the text 
+            rectangle and to specify the horizontal text-alignment. 
+            Text-alignment value must be a string (i.e. enclosed in quotation 
+            marks or apostrophes) and can be either "left", "center", "right" or 
+            "justify". </TD>
+          <TD><CODE>jg.setFont("verdana","11px",Font.BOLD);</CODE> 
+            <BR><CODE>jg.drawStringRect("Text",20,50,300,"right");</CODE> </TD></TR>
+        <TR vAlign=top bgColor=white>
+          <TD><CODE><B>drawImage(</B>"src", X, Y, width, 
+            height<B>);</B></CODE> <BR>
+            <SCRIPT type=text/javascript>
+<!--
+jg.htm += '<div style="position:relative;width:400px;height:64px;"><table cellpadding="0" cellspacing="0" width="400"><tr><td>';
+
+jg.drawImage("../images/dragdrop/deddie.jpg", 0, 0, 90, 62);
+
+jg.htm += '<\/td><\/tr><\/table><\/div>';
+jg.paint();
+//-->
+</SCRIPT>
+            Draws image on the specified location. "src" parameter specifies 
+            path, width and height parameters allow to stretch the image 
+            (almost) arbitrarily. <BR>&nbsp;<BR>Optionally, drawImage() accepts 
+            a fifth parameter which you can use to insert an eventhandler into 
+            the generated image tag. Example: 
+            <BR><CODE>jg.drawImage("anImg.jpg",8,5,95,70,"onmouseover=YourFunc()");</CODE> 
+            <BR>&nbsp;<BR></TD>
+          <TD><CODE>jg.drawImage("friendlyDog.jpg",</CODE> 
+            <CODE>20,50,100,150);</CODE> </TD></TR>
+        <TR vAlign=top bgColor=white>
+          <TD><CODE><B>paint();</B></CODE> <BR>&nbsp;<BR>Must be envoked 
+            explicitly to draw the internally-generated graphics into the html 
+            page. To optimize performance it's recommended to restrain from 
+            calling <TT>paint()</TT> in unnecessarily short intervals. 
+            <BR>&nbsp;<BR>Avoid something like: <BR><TT>jg.drawEllipse(0, 0, 
+            100, 100); <BR>jg.paint(); <BR>jg.drawLine(200, 10, 400, 40); 
+            <BR>jg.paint(); <BR>...</TT> <BR>&nbsp;<BR>The following will be 
+            faster: <BR><TT>jg.drawEllipse(0, 0, 100, 100); <BR>jg.drawLine(200, 
+            10, 400, 40); <BR>/*...further drawing methods... */ 
+            <BR>jg.paint();</TT> </TD>
+          <TD><CODE>jg.paint();</CODE></TD></TR>
+        <TR vAlign=top bgColor=white>
+          <TD><CODE><B>clear();</B></CODE> <BR>&nbsp;<BR>Any content created 
+            by the Graphics JavaScript Library will be deleted (within the 
+            canvas the graphics object refers to). The default content of the 
+            canvas (content not created by the script) will remain untouched, 
+            i.e. neither be changed nor be deleted. </TD>
+          <TD><CODE>jg.clear();</CODE><BR>&nbsp;<BR>Any stuff within 
+            "myCanvas" (in these examples the DIV 'jg' refers to) drawn by the 
+            script is deleted.</TD></TR>
+        <TR vAlign=top bgColor=white>
+          <TD><CODE><B>setPrintable(</B>true<B>);</B></CODE> <BR>&nbsp;<BR>By 
+            default, printing shapes isn't feasible since default printing 
+            settings of browsers usually prevent background colors from being 
+            printed. Invoking setPrintable() with the parameter true enables 
+            wz_jsgraphics.js to draw printable shapes (at least in 
+            Mozilla/Netscape&nbsp;6+ and IE). However, at the price of a 
+            slightly decreased rendering speed (about 10% to 25% slower). </TD>
+          <TD><CODE>jg.setPrintable(false);</CODE><BR>&nbsp;<BR>The parameter 
+            false switches wz_jsgraphics.js back to non-printable mode. The 
+            benefit from this, however, will be re-optimized rendering 
+            performance. </TD></TR></TBODY></TABLE></TD></TR></TBODY></TABLE>
+<TABLE width="100%" id="xdtable-4" style="background-color:DarkSeaGreen ;border:1px red solid;">
+  <TBODY>
+  <TR>
+    <TD width=80><IMG height=1 alt="" 
+      src="DHTML Draw Line, Ellipse, Oval, Circle, Polyline, Polygon, Triangle with JavaScript.files/transparentpixel.gif" 
+      width=80></TD>
+    <TD>
+      <TABLE width="100%" >
+        <TBODY>
+        <TR>
+          <TD><B><A 
+            name=download></A>&nbsp;<BR>&nbsp;<BR>&nbsp;<BR>&nbsp;<BR><BIG>Download</BIG></B> 
+          </TD>
+          <TD vAlign=top align=right rowSpan=4>
+            <TABLE cellSpacing=3 cellPadding=0>
+              <TBODY>
+              <TR>
+                <TD width=1 bgColor=#000099><IMG height=1 alt="" 
+                  src="DHTML Draw Line, Ellipse, Oval, Circle, Polyline, Polygon, Triangle with JavaScript.files/transparentpixel.gif" 
+                  width=1></TD>
+                <TD><SMALL>&nbsp;<BR><A 
+                  href="#top">Top 
+                  of Page</A> <BR>&nbsp;<BR><A 
+                  href="#performance">Performance?</A> 
+                  <BR>&nbsp;<BR><A 
+                  href="#browser">Cross 
+                  Browser?</A> <BR>&nbsp;<BR><A 
+                  href="#docu">Documentation</A> 
+                  <BR>&nbsp;<BR><A 
+                  href="#download">Download</A> 
+                  <BR>&nbsp; </SMALL></TD></TR></TBODY></TABLE></TD></TR>
+        <TR>
+          <TD vAlign=top>wz_jsgraphics.js &nbsp; 2.32 &nbsp; &nbsp; zipped 
+            5.38 KB (not MB)<BR><A 
+            href="http://www.walterzorn.com/scripts/wz_jsgraphics.zip">wz_jsgraphics.zip</A> 
+            <BR>&nbsp;<BR><A 
+            href="http://www.walterzorn.com/jsgraphics/history_e.htm">History of 
+            Updates</A> (it's recommended to read this, especially if you aren't 
+            sure about the benefits from an update :-) ). </TD></TR>
+        <TR>
+          <TD><B><A 
+            name=notes></A><BR>&nbsp;<BR>&nbsp;<BR>&nbsp;<BR>&nbsp;<BR><BIG>Notes</BIG></B> 
+          </TD></TR>
+        <TR>
+          <TD><B>[1]</B> <BR>If we assume the probability of line angles on 
+            the screen to be equally distributed over 360? <BR>Then for 1 px 
+            wide lines the number of layers is averagely 
+            <B>sin(45?&nbsp;/&nbsp;(1&nbsp;-&nbsp;sin(45?)&nbsp;=&nbsp;2.41</B> 
+            times larger if for each pixel a separate layer is created, compared 
+            with a solution that requires merely one layer per pixel stair-step 
+            (as is the case with this library). This is true under the 
+            assumption that both algorithms let pixel stair-steps touch each 
+            other corner-by-corner rather than side-by-side. Otherwise the 
+            number of pixels to be colored would be larger, and therefore the 
+            disadvantage of an unfavorable one-layer-per-pixel algorithm even 
+            bigger. </TD></TR></TBODY></TABLE></TD></TR></TBODY></TABLE>
+<HR width="95%" noShade SIZE=1>
+
+<TABLE cellPadding=20 id="xdtable-5" style="background-color:DarkKhaki  ;border:1px red solid;">
+  <TBODY>
+  <TR>
+    <TD><SMALL><A onmouseover=this.href=Ml() href="javascript:void(0)">Walter 
+      Zorn</A>, Munich, 2005</SMALL> 
+      <BR>&nbsp;<BR>&nbsp;<BR>&nbsp;<BR>&nbsp;<BR>&nbsp;<BR>&nbsp;<BR>&nbsp;<BR>&nbsp;<BR>&nbsp;<BR>&nbsp;<BR><IMG 
+      alt="" 
+      src="DHTML Draw Line, Ellipse, Oval, Circle, Polyline, Polygon, Triangle with JavaScript.files/cnt.gif"> 
+      <SMALL>visitors on www.walterzorn.com since 27. 12. 2002</SMALL> 
+  </TD></TR></TBODY></TABLE>
+<SCRIPT type=text/javascript>
+<!--
+var no_dhtm = (document.layers || window.opera && !document.defaultView);
+
+
+
+function ZOOM()
+{
+    if (document.body && document.body.style && typeof document.body.style.zoom != "undefined")
+    {
+        if (document.body.style.zoom=="400%")
+            document.body.style.zoom = "100%";
+        else
+        {
+            document.body.style.zoom = "400%";
+         //   alert('You\'ve doubleclicked on the document.\nDoubleclick again to unzoom.');
+        }
+    }
+}
+//document.ondblclick=ZOOM;
+
+
+
+function DRAW(shape)
+{
+    if (jg_n4 || window.opera && !document.defaultView)
+    {
+        alert('In Netscape 4 and Opera < version 7, the functionality\n"Draw into a canvas, even after the page has fully loaded" isn\'t available.\nThese browsers can only draw directly into the document\nwhile the page is parsed.');
+        return;
+    }
+
+
+    if (window.event) event.cancelBubble = true;
+    var f=document.forms[0];
+
+    var color = ''+f.Color.value;
+    for (var z = 0; z<color.length; z++)
+        if (isNaN(parseInt(color.charAt(z), 16)))
+            color = color.substring(0, z) + '6' + color.substring(z+1);
+
+
+
+var t0 = (new Date()).getTime();
+
+    jg2.setColor("#"+color);
+    jg2.setStroke(f.Dotted.checked? Stroke.DOTTED : parseInt(f.Stroke.value));
+
+    if (shape=="drawLine()")
+        jg2.drawLine(parseInt(f.dl_x1.value), parseInt(f.dl_y1.value), parseInt(f.dl_x2.value), parseInt(f.dl_y2.value));
+    else if (shape=="drawRect()")
+        jg2.drawRect(parseInt(f.dr_x.value), parseInt(f.dr_y.value), parseInt(f.dr_w.value), parseInt(f.dr_h.value));
+    else if(shape=="fillRect()")
+        jg2.fillRect(parseInt(f.fr_x.value), parseInt(f.fr_y.value), parseInt(f.fr_w.value), parseInt(f.fr_h.value));
+    else if(shape=="drawEllipse()")
+        jg2.drawEllipse(parseInt(f.do_x.value), parseInt(f.do_y.value), parseInt(f.do_w.value), parseInt(f.do_h.value));
+    else if(shape=="fillEllipse()")
+        jg2.fillEllipse(parseInt(f.fo_x.value), parseInt(f.fo_y.value), parseInt(f.fo_w.value), parseInt(f.fo_h.value));
+    else if(shape=="fillPolygon()")
+    {
+        var pgx = f.fp_x.value.split(',');
+        var pgy = f.fp_y.value.split(',');
+        var comm = '\n \nNote:\nValues must be separated with commas from each other.';
+        if (pgx.length!=pgy.length) alert('The number of x und y values must be equal.'+comm);
+        else
+        {
+            for (var z = 0; z<pgx.length; z++)
+            {
+                if (isNaN(pgx[z] = parseInt(pgx[z])) || isNaN(pgy[z] = parseInt(pgy[z])))
+                {
+                    alert('Invalid x or y value.'+comm);
+                    return;
+                }
+            }
+            jg2.fillPolygon(pgx, pgy);
+        }
+    }
+    jg2.paint();
+    var t1 = (new Date()).getTime() - t0;
+    jg3.clear();
+    jg3.setColor('#'+color);
+    jg3.setFont('verdana,geneva,sans-serif', '12px', Font.BOLD);
+    jg3.drawString(t1 + ' milliseconds', 0, 10);
+    jg3.paint();
+}
+
+var jg2=new jsGraphics("test");
+var jg3 = new jsGraphics("dt");
+
+
+
+function D()
+{
+    var wc = (window.innerWidth? innerWidth
+        : (document.documentElement && document.documentElement.clientWidth)? document.documentElement.clientWidth
+        : (document.body && document.body.clientWidth)? document.body.clientWidth
+        : document.getElementsByTagName? document.getElementsByTagName('body')[0].offsetWidth
+        : 800) >>1;
+    var dy = no_dhtm? 115 : 0;
+
+
+    var jg = new jsGraphics(no_dhtm? null : "xdMain");
+
+    jg.setColor("#ff9900");
+    jg.setFont("arial,helvetica,sans-serif", "11px", Font.PLAIN);
+    jg.drawString("<nobr>.drawEllipse(&nbsp;)<\/nobr>",35, 180+dy);
+    jg.drawLine(62, 197+dy, 48, 234+dy);
+    jg.drawLine(48, 234+dy, 45, 224+dy);
+    jg.drawLine(49, 234+dy, 57, 228+dy);
+    jg.drawEllipse(16, 240+dy, 59, 130);
+    jg.setColor("#008800");
+    jg.drawOval((250+wc+300)>>1, 4+dy, 64, 64);
+    jg.drawString("These are not image files.<br>Shapes &amp; text have been dynamically drawn with wz_jsgraphics.js.", ((wc+280)>>1)-60, 190+dy);
+
+    jg.setColor("#ff0099");
+    jg.drawLine(120, -60+dy, 265, 150+dy);
+    jg.drawString("<nobr>.drawLine(&nbsp;)<\/nobr>", 190, 145+dy);
+    var polylx=new Array(420, ((wc+280)>>1)+250, ((wc+280)>>1)+120, (wc<<1)-100);
+    var polyly=new Array(160+dy, 110+dy, 350+dy, 450+dy);
+    jg.drawPolyline(polylx, polyly);
+    jg.drawString(".drawPolyline(&nbsp;)", ((wc+280)>>1)+126, 155+dy);
+
+    jg.setColor("#ffddaa");
+    jg.setStroke(5);
+    jg.drawPolygon(new Array(379, 385, 391, 410, 391, 385, 379, 360), new Array(19+dy, 0+dy, 19+dy, 25+dy, 31+dy, 50+dy, 31+dy, 25+dy));
+    jg.setStroke(1);
+
+    var polygx=new Array(177, 247, 115);
+    var polygy=new Array(24+dy, 45+dy, 140+dy);
+    jg.setColor("#0000cc");
+    jg.drawPolygon(polygx, polygy);
+    jg.drawString(".drawPolygon(&nbsp;)", 256, 30+dy);
+    jg.drawString(".fillEllipse(&nbsp;)", wc+214, 200+dy);
+
+    jg.setColor("#990099");
+    jg.drawRect(wc+280, dy, 40, 50);
+    jg.setStroke(Stroke.DOTTED);
+    jg.drawEllipse(wc+250, dy+86, 48, 60);
+    jg.setStroke(1);
+    jg.drawString("<nobr>.drawRect(&nbsp;)<\/nobr>", wc+210, 20+dy);
+
+    jg.setColor("#ccddff");
+    jg.setStroke(5);
+    jg.drawOval(300, 110+dy, 80, 50);
+    jg.setStroke(1);
+    jg.fillEllipse(wc+285, 190+dy, 70, 40);
+
+    jg.fillOval(wc+292, 36+dy, 15, 15);
+    jg.setColor("#990099");
+    jg.drawOval(wc+292, 36+dy, 14, 14);
+    jg.setColor("#000033");
+    jg.fillRect(wc+295, 41+dy, 2, 2);
+    jg.fillRect(wc+302, 41+dy, 2, 2);
+//    jg.drawLine(wc+295, 45+dy, wc+296, 46+dy);
+    jg.drawLine(wc+297, 47+dy, wc+301, 47+dy);
+//    jg.drawLine(wc+301, 47+dy, wc+303, 45+dy);
+
+    jg.paint();
+}
+
+
+
+if(document.all && !document.getElementById)
+{
+    window.onload = function()
+    {
+        window.setTimeout("D();", 100);
+    }
+}
+else
+{
+	D();
+}
+// D();
+//-->
+</SCRIPT>
+<!--script type="text/javascript" src="../scripts/wz_dragdrop.js"></script>
+<script language="JavaScript" type="text/javascript">
+<!-
+
+SET_DHTML(CURSOR_MOVE, KEYDOWN_RESIZE, "test", "stairsdemo");
+
+//->
+</script-->
+
+	
+<script src="https://littleflute.github.io/JavaScript/blApp.js"></script>
+
+<script>
+var d = blo0.blMDiv(document.body,"dtest"  , "dtest" ,
+          300,100,500,400,blColor[1]);
+var d1 = blo0.blDiv(d, "dtest_d1", "d1", blColor[2]);
+
+  function _loadIssue (o) {     eval(o.body);   }
+  var url = "https://api.github.com/repos/littleflute/JavaScript/issues/26";
+  w3.getHttpObject(url, _loadIssue ); 
+
+if(!d.jx) d.jx = new jsGraphics("dtest_d1");
+
+d.jx.clear();
+    d.jx.setColor('#af1a10');
+    d.jx.setFont('verdana,geneva,sans-serif', '12px', Font.BOLD);
+    d.jx.drawString( 'xd milliseconds', 1, 88);
+d.jx.paint();
+</script>
+</BODY></HTML>

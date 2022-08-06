@@ -1,12 +1,12 @@
-var voaV = "v0.221";
+var voaV = "v0.233";
 
 var bbbb = true;
-var nCDrawVOA = 0;
+var nObjDrawVOA = 0;
 
 
 const voaUtil = new CUtilVOA();
 
-var CBtn = function(oBoss,id,dx,dy,dw,dh){
+var CBtn = function(oBoss,id,dx,dy,dw,dh,fBtnCB){
 
   var _id = id; var _dx = dx; var _dy = dy; var _dw = dw; var _dh = dh; 
   var x0 = 0; var y0 = 0;
@@ -16,14 +16,19 @@ var CBtn = function(oBoss,id,dx,dy,dw,dh){
     y0 = y;
     oDraw.rect(ctx,x0 + _dx,y0 + _dy,_dw,_dh,_myColor);   
     oDraw.text(ctx,id, x0 + _dx,y0 + _dy + 15);
-    oDraw.text(ctx,"["+x0+","+y0+"]", x0 + _dx,y0 + _dy + 33);
+    //oDraw.text(ctx,"["+x0+","+y0+"]", x0 + _dx,y0 + _dy + 33);
+    if(oBoss.drawInBtn) oBoss.drawInBtn(oDraw,ctx,x0 + _dx, y0 + _dy);
   }
   this.btnMousedown = function(x,y){ 
     if(blo0.blPiR(x,y,x0 + _dx,y0 + _dy,_dw,_dh)){  
       _myColor = "red";
       if(_id=="id_btn_2_save_blVOA"){ 
-        _save_blVOA(oBoss.blVOA(),"blVOA.json",oBoss);
+        _save_blVOA(oBoss.blMakeVOAScript(),"blVOA.json",oBoss);
       }
+      if(_id=="id_btn_2_parseType"){ 
+        oBoss.blParseType();
+      }
+      if(fBtnCB) fBtnCB();
     }         
     else{
       _myColor = "grey";
@@ -43,7 +48,7 @@ function CDrawVOA(_o,_parent){
     var _ls = [];
 
     _ls.push(new CBtn(_parent,"id_btn_2_save_blVOA",50, 55, 30,30));
-    _ls.push(new CBtn(_parent,2,150, 55, 30,30));
+    _ls.push(new CBtn(_parent,"id_btn_2_parseType",150, 55, 30,30));
     _ls.push(new CBtn(_parent,3,250, 55, 30,30));
      
     _ls.draw = function(oDraw,ctx,x,y){
@@ -59,7 +64,7 @@ function CDrawVOA(_o,_parent){
       }
     } 
 
-    if(nCDrawVOA>0) return;
+    if(nObjDrawVOA>0) return;
  
     this.onOff = function(){
       bbbb = !bbbb;
@@ -100,19 +105,40 @@ function CDrawVOA(_o,_parent){
     _o.regMousedown(this);
     _o.regMouseup(this);
     _o.regMousemove(this);
-    nCDrawVOA++;
+    nObjDrawVOA++;
 }
 
 function CUtilVOA(){ 
   var _save_bl_VOA_Res = "bl_voa_res>>>";
   var curClick = "curClick";
   var curDuration = 345;
-  var curType = "curType";
+  var curTypeFN = "";
+  var txtParseType = "";
   var originalMp3URL = "originMp3URL=";
   var _ps = [];
   var curP = "curText";
   var l = [];
   var n = 0;
+  var _op = {
+    v: "op-0.12",
+    n: 0,
+    parse_Page: function(txt){
+      this.n = txt.length;
+      blo0.txtPage = txt;
+
+      var a = txt.split('<a class="c-mmp__fallback-link" href="');
+      var b = a[1].split('">');
+      originalMp3URL = b[0]; 
+      blo0.setPlayerURL(originalMp3URL); 
+
+    },
+    draw: function(_o,_ctx,_x,_y){
+      _o.rect(_ctx,_x,_y,100,20,"yellow");   
+      _o.text(_ctx,this.v,_x,_y-20);    
+      _o.text(_ctx,this.n,_x,_y-5);    
+    },
+  }; 
+
   var drw = null;
 
   
@@ -127,10 +153,12 @@ function CUtilVOA(){
     originalMp3URL = b[0];
     d.innerHTML = originalMp3URL;
     blo0.setPlayerURL(originalMp3URL); 
+ 
+     bl$("id_btnPlayerBoard").p.setSrc(originalMp3URL);  
 
-    blo0.blPlayer(d,"f0Test",originalMp3URL,100,100,400,300,"lightgreen");
-    d.v = blo0.blDiv(d,"vvvvvv",originalMp3URL,"red"); 
-    var btnDownloadMp3 = blo0.blBtn(d.v,d.v.id+"btnDownloadMp3","btnDownloadMp3","grey");
+    d.tb = blo0.blDiv(d,d.id+"tb","tb","lightblue"); 
+    var dv = blo0.blDiv(d,d.id+"dv","dv","grey"); 
+    var btnDownloadMp3 = blo0.blBtn(d.tb,d.tb.id+"btnDownloadMp3","btnDownloadMp3","grey");
     btnDownloadMp3.onclick = function(){
       var w = {};
       w._2do = function(txt){
@@ -141,6 +169,17 @@ function CUtilVOA(){
       var sFN = a[0] + ".mp3"; 
       blo0.blAjx(w,"http://localhost:8080/download?url="+originalMp3URL +"&filename=" + sFN);
     }
+    
+    var btnMakeVoaScript = blo0.blBtn(d.tb,d.tb.id+"btnMakeVoaScript","btnMakeVoaScript","grey");
+    btnMakeVoaScript.onclick = function(){
+      alert(bl$("id_btnPlayerBoard").p.src); 
+    }
+    var btnSaveScript = blo0.blBtn(d.tb,d.tb.id+"btnSaveScript","btnSaveScript","grey");
+    btnSaveScript.onclick = function(){
+      var d = bl$("id_4_vStatusmdv1vtavpageVvv0dv");
+      d.innerHTML = Date()         
+    }
+
   }
 
   var f1 = function(d,txt){
@@ -175,8 +214,8 @@ function CUtilVOA(){
       //*
       var a = txt.split('<div id="comments" class="comments-parent">'); 
       var b = a[0].split('<p>');
-      voaUtil.setCurPs(b);
-
+      voaUtil.setCurPs(b,"P",50,30,10);
+      
       for(i in b){
         var btn4P = blo0.blBtn(mainTxtToolBar,mainTxtToolBar.id+i,i,blGrey[3]); 
         btn4P.onclick = function(_this,_i,_b){
@@ -190,17 +229,21 @@ function CUtilVOA(){
             var ta = bl$("id_ta_Page_Txt");
             ta.value = _b[_i]; 
             voaUtil.setCurP(_b[_i]);
-
+            
+            _this.lsTxt = ["aaaaaaaa","bbbbbb","ccccccc"];
+            var tbStoryBoard = bl$("tb4StoryBoard");
+            tbStoryBoard.blAddCard(_this);
           }
         }(btn4P,i,b);
         ps.push(btn4P);
       }
       //*/
+      bl$("id_btnPlayerBoard").p.setTxts(b);
     }
   }
 
   this.reg2o = function(_o,tyleFileName){    
-    curType = "[curType] " + tyleFileName;
+    curTypeFN =  tyleFileName;
     drw = new CDrawVOA(_o,this); 
   } 
   this.clickTest = function(x,y){
@@ -210,8 +253,71 @@ function CUtilVOA(){
     }
   }
    
+  this.drawInBtn = function(_oDraw,_ctx,_x,_y){
+    _oDraw.rect(_ctx,_x,_y,10,10,"red");
+  }
 
-  this.blVOA = function(){
+  this.blParseType = function(){ 
+    var w = {};
+    var that = this;
+    w._2do = function(txt){         
+      var ls = [];
+      var a = txt.split('<span class="date date--mb date--size-3" >');
+      var newData = null;
+      var n = 0;
+      for(i in a){
+        if(i==0) continue;
+        var d1 = a[i].split('</span>');
+        if(newData!=d1[0]){
+          newData=d1[0];
+          n = 1;
+        }
+        else {
+          n++;
+        } 
+        
+        var a1 = a[i].split('href="');
+        var a2 = a1[1].split('"');
+
+        var t = curTypeFN.split('.');
+        var fileName = d1[0] + "_"+t[0]+n; 
+        var o = {};
+        o.url = a2[0];
+        o.fileName = fileName;
+        ls.push(o);
+      }
+
+      that.setCurPs(ls,t[0],133,50,4,function(_MyType){
+        return function(n,ls){
+           curP = _MyType + ":" + n + " - https://learningenglish.voanews.com"+ ls[n].url+": setCurPs_in_parseType";
+
+           var url = "https://learningenglish.voanews.com" + ls[n].url; 
+          
+          var fn = ls[n].fileName;
+          fn = fn.replace(" ","-");
+          fn = fn.replace(", ","-");  
+          fn += "." + _MyType;
+          var lastURL = "http://localhost:8080/download?url="+url +"&filename=" + fn;
+          
+          var w = {};
+          w._2do = function(txt){ 
+            curP = blo0.blTime(0) + ": " + txt;
+
+            var w1 = {};
+            w1._2do = function(txtPage){        
+              _op.parse_Page(txtPage);
+            }
+            blo0.blAjx(w1,"http://localhost:8080/"+fn);
+          } 
+          blo0.blAjx(w,lastURL);
+
+        }
+      }(t[0]));          
+    }
+    blo0.blAjx(w,"http://localhost:8080/"+curTypeFN);
+  }
+
+  this.blMakeVOAScript = function(){
     var d = {};
     var r = {};
     
@@ -247,18 +353,23 @@ function CUtilVOA(){
     return d;
   }
   
-  this.setCurPs = function(ls){
+  this.setCurPs = function(ls,_typeFN,_w,_h,_nCol,fCB){
     _ps = [];
-    var x = 50;
-    var y = 155;
-    var w = 30;
+    var x = 11;
+    var y = 55;
+    var w = _w?_w:50;
+    var h = _h?_h:30;
     for(i in ls){
-      if(i%10==0){
-        x = 50;
-        y += w + 2;
+      if(i%_nCol==0){
+        x = 11;
+        y += h + 2;
       }
-      x += w + 2;
-      var btn = new CBtn(this,i,x, y, 30,30);
+      x += w + 2; 
+      var btn = new CBtn(this,ls[i] + "-" + i,x, y, 30,30,function(_i,_ls){
+        return function(){
+          if(fCB) fCB(_i,_ls);
+        }
+      }(i,ls));
       _ps.push(btn);
     }
   } 
@@ -288,11 +399,12 @@ function CUtilVOA(){
   this.drawUtil = function(o,ctx,x,y){
     o.text(ctx,_save_bl_VOA_Res,x,y - 44);
     o.text(ctx,curDuration,x,y - 22);
-    o.text(ctx,curType,x,y - 11);
+    o.text(ctx,curTypeFN,x,y - 11);
     o.text(ctx,"_parent: " + Date(),x,y+30);     
     o.text(ctx,curClick,x,y+122);     
     o.text(ctx,curP,x,y+50);  
     o.text(ctx,originalMp3URL,x,y + 111);
+    _op.draw(o,ctx,x+100,y-30);
      
 
     for(i in l){
@@ -317,7 +429,7 @@ function CUtilVOA(){
             }
         }(d,i,a);
     }
-}
+  }
 }
 
 

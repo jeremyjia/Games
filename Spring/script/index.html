@@ -1,78 +1,76 @@
-<!DOCTYPE html>	  
-<html>  
-<body> 
-<script src="https://www.w3schools.com/lib/w3.js"></script>				
-<script src="https://littleflute.github.io/JavaScript/blclass.js"></script>		
-<script src="https://littleflute.github.io/JavaScript/blApp1.js"></script>		
-<div id="id_div_mp4i_bat_info" >								
-<a target="_blank" href="https://github.com/littleflute/ted1/edit/master/docs/61/mp4i.bat">v1.3. 112 * </a>	
-<a href="..">[..]</a> <button id="id_btn_4_blApp" style="float:right;">+blApp</button>	
-</div>						 
-<div id="DivCurTime"></div> 			
-<br>  
-<div id="DivButtons"> 				
-<div id="DivButtons"> 				
-<div id="DivButtons"> 				
-<button onclick="play('1.mp3')">1:1.mp3</button> 
- </div> 			
-<br> 	
-<div id="id_div_4_gif" style="border:1px solid green;" >				
-bb.gif, 
-</div> 									
-<br> 	
-<div id="id_div_4_jpg" style="border:1px solid blue;" >				
-1.jpg, 
-2.jpg, 
-3.jpg, 
-bgpic.jpg, 
-l1.jpg, 
-l2.jpg, 
-l3.jpg, 
-l4.jpg, 
-r1.jpg, 
-r2.jpg, 
-r3.jpg, 
-r4.jpg, 
-x1.jpg, 
-</div> 									
-<br> 	
-<div id="id_div_4_png" style="border:1px solid blue;" >				
-</div> 								 
-<br> 	
-<div id="id_div_4_lrcJS" style="border:1px solid red;display: none;" >		
-</div> 								
-<script>  
-var s = '::<div id="id_4_plxTool"> </div>';				
-var str4V = '<video id="myVideo" width="720" height="480" controls> ';				
-str4V += '<source src="v1.mp4" type="video/mp4">Your browser does not support HTML5 video.'; 	
-str4V += '</video>';  										
-var md4v = blo0.blMD( "id_mdiv_4_myVideo" , s , 300,100,720,480,blColor[1]); 	
-  md4v.v = blo0.blDiv(md4v, md4v.id+"v" , str4V , blGrey[1]); 	
-var vid = document.getElementById("myVideo"); 
-function play(i) {
-    vid.src=i; 
-    vid.load();
-    vid.play(); 
-}
-function getCurTime() {  
-   document.getElementById("DivCurTime").innerHTML= vid.currentTime; 
-}   
-function setCurTime(t) { 
-   vid.currentTime=t;  
-   getCurTime();
-}  
-function moveMS(ms) { 
-  vid.currentTime+=ms;
-  getCurTime();  
-}   
-var btnPlx = blo0.blBtn(bl$("id_4_plxTool"),"id_btn_Plx","+plx",blGrey[0]);  
-btnPlx.onclick = function() { 
-  if(btnPlx.Load){													
- 	if(btnPlx.n){}													
- 	else{btnPlx.n=true;_on_off_div(this,bl$("id_mdiv_plx"));}		
-   _on_off_div(this,bl$("id_mdiv_plx"));  							
-  }																
-  else  { blo0.blScript ("id_script_plx","plx.js"); btnPlx.Load=true;	}
-}   
-</script> 
-</body> 
+
+<!DOCTYPE HTML>
+<html>
+
+<body>
+  <div id="id4dbg">v0.35
+    <a href="../../index.html">Home</a>
+    <a href="../index.html">[..]</a>
+    <a href="1.html">1.html</a>
+    <a href="2.html">2.html</a>
+    <a href="3.html">3.html</a>
+    <a href="51voa.html">51voa.html</a> 
+    <a href="blfw.html">blfw.html</a> 
+    <a href="bli.html">bli.html</a> 
+    <a href="pluginCall.html">pluginCall.html</a> 
+    <a href="translate.html">translate.html</a>
+    <a href="https://www.runoob.com/">runoob.com</a>
+    <a href="https://www.w3schools.com/">w3schools.com</a> 
+
+  </div>
+  <canvas id="myCanvas" width="444" height="333"></canvas>
+  <script src="https://jeremyjia.github.io/Games/js/blclass.js"></script>
+  <script src="firework.js"></script>
+  <script src="so646.js"></script>
+  <script type="text/javascript">
+    const d = bl$("id4dbg");
+    const tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]); tb.ls = [];
+    const s1= blo0.blBtn(tb,tb.id+"s1","s1",blGrey[1]); tb.ls.push(s1);
+    const s2= blo0.blBtn(tb,tb.id+"s2","s2",blGrey[1]);tb.ls.push(s2);
+    var sn = 2;
+    s1.onclick = function(){
+      blo0.blMarkBtnInList(this,tb.ls,"green","grey");
+      sn = 1;
+    }
+    s2.onclick = function(){
+      blo0.blMarkBtnInList(this,tb.ls,"green","grey");
+      sn = 2;
+    }
+
+
+    let c = document.querySelector('#myCanvas');
+    let ctx = c.getContext('2d');
+    c.width = 1200;//window.innerWidth/2;
+    c.height = 600;// window.innerHeight/2;
+    let w = c.width;
+    let h = c.height;  
+    let gN = 0;
+
+    function draw(ts) {
+        gN++;
+        clear(); 
+        if(sn==1)        animateFrame(gN);
+        if(sn==2)        animateFrame2(gN);
+        window.requestAnimationFrame(ts => draw(ts));
+    }
+
+    function clear() {
+        ctx.save();
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, w, h);
+        
+        ctx.fillStyle = 'blue';
+        ctx.font = "30px Verdana";
+        ctx.fillText(gN, 10, 44);
+        ctx.restore();
+    }
+
+    window.requestAnimationFrame(ts => { 
+        draw(ts);
+    });
+
+  </script>
+
+</body>
+
+</html>

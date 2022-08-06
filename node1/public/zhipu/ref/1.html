@@ -1,0 +1,130 @@
+
+<!DOCType html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<style>
+body {
+    position: fixed;
+    width: 100%;
+}
+.drag-button {
+    cursor: pointer;
+}
+body.dragging {
+    cursor: pointer;
+}
+text.volumn-value {
+   user-select: none;
+}
+.volumn-controller {
+    display: block;
+    margin: 0 auto;
+    -webkit-tap-highlight-color: transparent;
+}
+</style>
+</head>
+<body>
+    
+  <div>
+    <a href="../index.html">[..] v0.42</a> 
+  </div>
+<!--
+<svg width="580" height="400" xmlns="http://www.w3.org/2000/svg" class="volumn-controller">
+    <text class="volumn-value" transform="translate(240 100)" font-size="20">Volumn 0</text>
+    <path class="volumn-path" stroke="#000" d="m100,247c93,-128 284,-129 388,6" opacity="0.5" stroke-width="1" fill="#fff"/>
+    <circle class="drag-button" r="12" cx="100" cy="247" stroke-width="1" stroke="#000" fill="#fff"/>
+    <line class="my-line" x1="100" x2="100" y1="0" y2="400" stroke="#505050"/>
+ </g>
+</svg>
+-->
+<svg width="300" height="200" xmlns="http://www.w3.org/2000/svg" class="volumn-controller">
+    <text class="volumn-value" transform="translate(120 50)" font-size="20">Volumn 0</text>
+    <path class="volumn-path" stroke="#000" d="m38,149c83,-67 160,-67 241,2" stroke-width="1" fill="#1ff"/>
+    <circle class="drag-button" r="14" cx="38" cy="149" stroke-width="1" stroke="#000" fill="#fff"/>
+ </g>
+</svg>
+<!--
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/2.6.0/d3.min.js"></script>
+-->
+
+<script>
+!function() {
+    let $volumnController = document.querySelector('.volumn-controller'),
+        $volumnPath = $volumnController.querySelector('.volumn-path'),
+        $volumnValue = $volumnController.querySelector('.volumn-value');
+    let pathTotalLength = $volumnPath.getTotalLength() >> 0;
+    let points = [];
+    // console.log($volumnPath.getPointAtLength(0));
+    let startX = Math.round($volumnPath.getPointAtLength(0).x);
+    let volumnDistances = [];
+    // let $myLine = $volumnController.querySelector('.my-line');
+    for (let i = 0; i < pathTotalLength; i++) {
+        let p = $volumnPath.getPointAtLength(i);
+        let x = Math.round(p.x) - startX;
+        points[x] = Math.round(p.y);
+        volumnDistances[x] = i;
+    }
+    let $dragButton = $volumnController.querySelector('.drag-button'),
+        dragButtonPos = $dragButton.getBoundingClientRect();
+    function movePoint (event) {
+        let diffX = Math.round((event.clientX || event.touches[0].clientX) -
+            dragButtonPos.left - $dragButton.r.baseVal.value);
+        diffX < 0 && (diffX = 0);
+        diffX >= points.length && (diffX = points.length - 1);
+        $dragButton.setAttribute('cx', diffX + startX);
+        $dragButton.setAttribute('cy', points[diffX]);
+        let volumnValue = Math.round(volumnDistances[diffX] / pathTotalLength * 100);
+        $volumnValue.textContent = `Volumn ${volumnValue}`;
+        // $myLine.setAttribute('x1', diffX + startX);
+        // $myLine.setAttribute('x2', diffX + startX);
+    }
+    const MOBILE = /iPhone|Android|iPad|iPod/.test(window.navigator.userAgent),
+        MOUSE_DOWN = MOBILE ? 'touchstart' : 'mousedown',
+        MOUSE_MOVE = MOBILE ? 'touchmove' : 'mousemove',
+        MOUSE_UP = MOBILE ? 'touchend' : 'mouseup';
+    $dragButton.addEventListener(MOUSE_DOWN, function (event) {
+        document.body.classList.add('dragging');
+        document.addEventListener(MOUSE_MOVE, movePoint);
+    });
+    document.addEventListener(MOUSE_UP, function () {
+        document.body.classList.remove('dragging');
+        document.removeEventListener(MOUSE_MOVE, movePoint);
+    });
+    $volumnController.addEventListener('click', movePoint);
+}();
+</script>
+<script>
+/*
+var currentLength = 0
+
+function dragMove(d) {
+    console.log("dragging a circle");
+    currentLength += d3.event.dx + d3.event.dy
+    // We get funny effects in Chrome and Opera if we have negative a length
+    if (currentLength < 0) currentLength = 0
+    // Interestingly, path.getPointAtLength is undefined. Why is this so?
+    // As a workaround,  we explicitly grab the path element.
+    var pointAtCurrentLength = document.getElementsByTagName("path")[0].getPointAtLength(currentLength)
+    this.cx.baseVal.value = pointAtCurrentLength.x;
+    this.cy.baseVal.value = pointAtCurrentLength.y;
+}
+
+var drag = d3.behavior.drag().on("drag", dragMove);
+
+var content = d3.select("body")
+    .append("svg")
+    .attr("width", 500)
+    .attr("height", 500)
+    .attr("viewBox", "0 0 200 200");
+
+var path = content.append("path").attr("d", "M 100 100 L 200 200 L 150 150").style("stroke-width", 5).style("stroke", "steelblue");        
+
+var knob = content.append("circle").style("fill", "black").attr("r", 15).attr("cx", 100).attr("cy", 100).call(drag);
+*/
+
+
+</script>
+</body>
+</html>

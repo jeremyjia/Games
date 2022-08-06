@@ -1,4 +1,4 @@
-const tag = "[DefaultService.js_v0.215]";
+const tag = "[DefaultService.js_v0.233]";
 const g6Login = require('../sql/login.js');
 const g6Logout = require('./g6Default/logout.js');
 const Register = require('../sql/regester.js');
@@ -21,7 +21,9 @@ const checkEmailAddress = require('./g6Default/checkEmailAddress.js');
 const resetPasswordRequest = require('./g6Default/resetPasswordRequest.js');
 const toResetPassword = require('./g6Default/toResetPassword.js');
 const sqlz2MakeFriendRequest = require('./g6Default/sqlz2MakeFriendRequest.js'); 
- 
+const lookupItem = require('./g6Default/lookupItem.js'); 
+const listItems = require('./g6Default/listItems.js'); 
+
 const Service = require('./Service');
 const l = require('../logger');
 l.tag(tag); 
@@ -328,8 +330,7 @@ class DefaultService {
     return new Promise(
       async (resolve) => {
         try {
-          var r = deletePlayer.deletePlayer(h,u,pw,db,id,resolve,Service); 
-         // resolve(Service.successResponse(r));           
+          var r = deletePlayer.deletePlayer(id,resolve,Service);  
         } catch (e) {
           resolve(Service.rejectResponse(
             e.message || 'Invalid input',
@@ -375,6 +376,39 @@ class DefaultService {
       },
     );
   }
+  static lookupItem({ id }) {
+    return new Promise(
+      async (resolve) => {
+        try { 
+          var r = lookupItem.getItem(id,resolve,Service); 
+        } catch (e) {
+          resolve(Service.rejectResponse(
+            e.message || 'Invalid input',
+            e.status || 405,
+          ));
+        }
+      },
+    );
+  }
+
+  static listItems(_o) {
+    var _body = {};
+    _body.UserID = _o.curUserID;
+
+    return new Promise(
+      async (resolve) => {
+        try {
+          listItems.listItems(_body,resolve,Service);       
+        } catch (e) {
+          resolve(Service.rejectResponse(
+            e.message || 'Invalid input',
+            e.status || 405,
+          ));
+        }
+      },
+    );
+  }
+
 }
 
 module.exports = DefaultService;

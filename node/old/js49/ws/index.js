@@ -1,4 +1,4 @@
-const tag = "[old/js49/ws/index.js_v0.222]"; 
+const tag = "[old/js49/ws/index.js_v0.221]"; 
 const http = require("http");
 const mb = require("./msgBox.js");
 const l = require('../../../logger');
@@ -60,8 +60,8 @@ wsServer.on("request", request => {
             }
         }
 
-        if (result.method === "M_i_201") {  
-            l.tag1(tag,"------------------- " + result.clientId);
+        if (result.method === "javaTest") { 
+            console.log("javaclient:"+ result.msg);
         }
         l.tag1(tag,mb);
         const ch = require("./chatHandle.js");
@@ -125,7 +125,7 @@ wsServer.on("request", request => {
         "clientId": clientId  
     }    
     connection.send(JSON.stringify(payLoad));  
-    l.tag1(tag,"to check msg ...");   
+    l.tag1(tag,"to check msg ..." + clientId);   
     mb.checkMsg(clientId,clientList);
 }) 
 
