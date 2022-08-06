@@ -94,13 +94,16 @@ selsrc(0)
 if(l>=0)
 c=soffs(l,Number(c))
 s.focus();s.setSelectionRange(c,syms[c]?syms[c].iend:c+1)}
-function selsvg(evt){var v,cl=evt.target.getAttribute('class')
+function selsvg(evt){
+    alert("xddbg");
+    var v,cl=evt.target.getAttribute('class')
 play.loop=false;if(ctxMenu&&ctxMenu.style.display=="block"){ctxMenu.style.display="none"
 return}
 if(play.playing&&!play.stop){play.stop=-1;play.abcplay.stop()
 return}
 s=elt_ref.source;if(cl&&cl.substr(0,4)=='abcr'){v=Number(cl.slice(6,-1));s.setSelectionRange(v,syms[v].iend)}else{s.setSelectionRange(0,0)}
-s.blur();s.focus()}
+s.blur();s.focus()
+}
 function setsel(idx,v){var i,elts,s,old_v=selx[idx];if(v==old_v)
 return
 if(old_v){elts=document.getElementsByClassName('_'+old_v+'_');i=elts.length
@@ -267,7 +270,14 @@ document.getElementById("abc2svg").innerHTML='abc2svg-'+abc2svg.version+' ('+abc
 a=["diverr","source","src1","s0","s1","target"]
 for(i=0;i<a.length;i++){e=a[i]
 elt_ref[e]=document.getElementById(e)}
-document.getElementById("saveas").onclick=saveas;elt_ref.s0.onclick=function(){selsrc(0)};elt_ref.s1.onclick=function(){selsrc(1)};elt_ref.target.onclick=selsvg;elt_ref.source.onselect=seltxt;window.onbeforeprint=function(){selx_sav[0]=selx[0];selx_sav[1]=selx[1];setsel(0,0);setsel(1,0)};window.onafterprint=function(){setsel(0,selx_sav[0]);setsel(1,selx_sav[1])}
+document.getElementById("saveas").onclick=saveas;
+
+elt_ref.s0.onclick=function(){selsrc(0)};
+elt_ref.s1.onclick=function(){selsrc(1)};
+elt_ref.target.onclick=selsvg;
+elt_ref.source.onselect=seltxt;
+
+window.onbeforeprint=function(){selx_sav[0]=selx[0];selx_sav[1]=selx[1];setsel(0,0);setsel(1,0)};window.onafterprint=function(){setsel(0,selx_sav[0]);setsel(1,selx_sav[1])}
 if(window.AudioContext||window.webkitAudioContext||navigator.requestMIDIAccess){abc2svg.loadjs("snd-1.js",function(){play.abcplay=AbcPlay({onend:endplay,onnote:notehlight,});document.getElementById("playdiv1").style.display=document.getElementById("playdiv3").style.display=document.getElementById("playdiv4").style.display="list-item";document.getElementById("sfu").value=play.abcplay.set_sfu();document.getElementById("gvol").setAttribute("value",play.abcplay.set_vol()*10)
 document.getElementById("gvl").setAttribute("value",(play.abcplay.set_vol()*10).toFixed(2))});function show_menu(evt){var x,y,elt=evt.target,cl=elt.getAttribute('class')
 evt.preventDefault()
