@@ -13,8 +13,11 @@ var abc_images,abc_fname=["noname.abc",""],abc_mtime=[],abc,syms,ctxMenu,elt_ref
 for(var k=0;k<s_a.length;k++){if(s_a[k].src.indexOf('edit-')>=0)
 return s_a[k].src.match(/.*\//)||''}
 return""})()
-var user={read_file:function(fn){elt_ref["s"+srcidx].style.display="inline"
-return elt_ref.src1.value},errbld:function(sev,txt,fn,idx){var msg=sev+' '+clean_txt(txt)
+var user={
+    read_file:function(fn){
+        elt_ref["s"+srcidx].style.display="inline"
+        return elt_ref.src1.value
+    },errbld:function(sev,txt,fn,idx){var msg=sev+' '+clean_txt(txt)
 if(idx>=0)
 elt_ref.diverr.innerHTML+='<b onclick="gotoabc(-1,'+idx+')" style="cursor: pointer; display: inline-block">'+
 msg+"</b><br/>\n"
@@ -22,7 +25,9 @@ else
 elt_ref.diverr.innerHTML+=msg+"<br/>\n"},img_out:function(str){abc_images+=str},anno_stop:function(type,start,stop,x,y,w,h,s){if(["beam","slur","tuplet"].indexOf(type)>=0)
 return
 syms[start]=s
-abc.out_svg('<rect class="abcr _'+start+'_" x="');abc.out_sxsy(x,'" y="',y);abc.out_svg('" width="'+w.toFixed(2)+'" height="'+abc.sh(h).toFixed(2)+'"/>\n')},page_format:true},srcidx=0
+abc.out_svg('<rect class="abcr _'+start+'_" x="');abc.out_sxsy(x,'" y="',y);abc.out_svg('" width="'+w.toFixed(2)+'" height="'+abc.sh(h).toFixed(2)+'"/>\n')},page_format:true
+},srcidx=0
+
 function storage(t,k,v){try{t=t?localStorage:sessionStorage
 if(!t)
 return
