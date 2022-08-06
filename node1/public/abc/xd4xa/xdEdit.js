@@ -215,24 +215,49 @@ ei=null}
 if(what!=3){play.si=si;play.ei=ei;play.loop=what==2
 play.repv=0}
 play_start(si,ei)}
-function edit_init(){var a,i,e
-if(typeof abc2svg!="object"||!abc2svg.modules){setTimeout(edit_init,500)
-return}
-abc2svg.loadjs=function(fn,relay,onerror){var s=document.createElement('script');if(/:\/\//.test(fn))
-s.src=fn
-else
-s.src=jsdir+fn;s.type='text/javascript'
-if(relay)
-s.onload=relay;s.onerror=onerror||function(){alert('error loading '+fn)}
-document.head.appendChild(s)}
-abc2svg.abc_end=function(){}
-function set_pref(){var v=storage(true,"fontsz")
-if(v){elt_ref.source.style.fontSize=elt_ref.src1.style.fontSize=v+"px";document.getElementById("fontsize").value=Number(v)}
-v=storage(true,"lang");if(!v){v=(navigator.languages?navigator.languages[0]:navigator.language).split('-')[0]
-switch(v){case"de":case"en":case"fr":case"it":break
-case"pt":v="pt_BR";break
-default:v="en";break}}
-loadlang(v,true)}
+
+function edit_init(){
+    var a,i,e
+    if(typeof abc2svg!="object"||!abc2svg.modules){
+        setTimeout(edit_init,500)
+        return
+    }
+    abc2svg.loadjs=function(fn,relay,onerror){
+        var s=document.createElement('script');
+        if(/:\/\//.test(fn))
+            s.src=fn
+        else
+            s.src=jsdir+fn;s.type='text/javascript'
+        if(relay)
+            s.onload=relay;
+        s.onerror=onerror||function(){alert('error loading '+fn)}
+        document.head.appendChild(s)
+    }
+    abc2svg.abc_end=function(){}
+
+    function set_pref(){
+        var v=storage(true,"fontsz")
+        if(v){
+            elt_ref.source.style.fontSize=elt_ref.src1.style.fontSize=v+"px";document.getElementById("fontsize").value=Number(v)
+        }
+        v=storage(true,"lang");
+        if(!v){
+            v=(navigator.languages?navigator.languages[0]:navigator.language).split('-')[0]
+            switch(v){
+                case"de":
+                case"en":
+                case"fr":
+                case"it":
+                    break
+                case"pt":
+                    v="pt_BR";
+                    break
+                default:
+                    v="en";break
+            }
+        }
+        loadlang(v,true)
+    }
 document.getElementById("abc2svg").innerHTML='abc2svg-'+abc2svg.version+' ('+abc2svg.vdate+')'
 a=["diverr","source","src1","s0","s1","target"]
 for(i=0;i<a.length;i++){e=a[i]
@@ -249,27 +274,39 @@ ctxMenu=document.getElementById("ctxMenu");ctxMenu.style.display="block";x=evt.p
 e=elt_ref.target
 e.onauxclick=show_menu
 e.oncontextmenu=function(ev){ev.preventDefault()}}
-set_pref()}
+set_pref()
+}
+
 function drag_enter(evt){evt.stopImmediatePropagation();evt.preventDefault()}
-function drop(evt){evt.stopImmediatePropagation();evt.preventDefault()
-var data=evt.dataTransfer.getData("text")
-if(data){var x=evt.layerX,y=elt_ref.source.scrollTop+evt.layerY,h=elt_ref.source.offsetHeight/elt_ref.source.rows,w=elt_ref.source.offsetWidth/elt_ref.source.cols
-w=(x/w)|0
-h=(y/h)|0
-h=soffs(h,w)
-var e=evt.target
-e.value=e.value.slice(0,h)
-+data
-+e.value.slice(h)
-src_change()
-return}
-data=evt.dataTransfer.files
-if(data.length){var reader=new FileReader(),s=srcidx==0?"source":"src1"
-elt_ref["s"+srcidx].value=abc_fname[srcidx]=data[0].name
-reader.onload=function(evt){elt_ref[s].value=evt.target.result
-src_change()}
+
+function drop(evt){
+    evt.stopImmediatePropagation();evt.preventDefault()
+    var data=evt.dataTransfer.getData("text")
+    if(data){var x=evt.layerX,y=elt_ref.source.scrollTop+evt.layerY,h=elt_ref.source.offsetHeight/elt_ref.source.rows,w=elt_ref.source.offsetWidth/elt_ref.source.cols
+    w=(x/w)|0
+    h=(y/h)|0
+    h=soffs(h,w)
+    var e=evt.target
+    e.value=e.value.slice(0,h)
+    +data
+    +e.value.slice(h)
+    src_change()
+    return}
+    data=evt.dataTransfer.files
+    if(data.length){var reader=new FileReader(),s=srcidx==0?"source":"src1"
+    elt_ref["s"+srcidx].value=abc_fname[srcidx]=data[0].name
+    reader.onload=function(evt){elt_ref[s].value=evt.target.result
+    src_change()
+}
+
 reader.readAsText(data[0],"UTF-8")}}
+
 var timer
-function src_change(){clearTimeout(timer);if(!play.playing)
-timer=setTimeout(render,2000)}
+function src_change(){
+    clearTimeout(timer);
+    if(!play.playing) {
+        timer=setTimeout(render,2000)
+    }
+}
+
 window.addEventListener("load",edit_init)
