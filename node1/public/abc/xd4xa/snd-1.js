@@ -53,12 +53,16 @@ function AbcPlay(i_conf){var conf=i_conf,init={},audio=ToAudio(),audio5,midi5,cu
     if(typeof Midi5=="function")
     midi5=Midi5(conf)
     if(typeof Audio5=="function")
-    audio5=Audio5(conf);return abcplay}
-    if(typeof module=='object'&&typeof exports=='object')
+    audio5=Audio5(conf);return abcplay
+}
+
+if(typeof module=='object'&&typeof exports=='object')
     exports.AbcPlay=AbcPlay
-    if(!abc2svg)
+    
+if(!abc2svg)
     var abc2svg={}
-    function ToAudio(){return{add:function(first,voice_tb,cfmt){var toaud=this,C=abc2svg.C,p_time=0,abc_time=0,play_fac=C.BLEN/4*120/60,i,n,dt,d,v,c,s=first,rst=s,rst_fac,rsk,b_tim,b_typ,instr=[],chn=[]
+
+function ToAudio(){return{add:function(first,voice_tb,cfmt){var toaud=this,C=abc2svg.C,p_time=0,abc_time=0,play_fac=C.BLEN/4*120/60,i,n,dt,d,v,c,s=first,rst=s,rst_fac,rsk,b_tim,b_typ,instr=[],chn=[]
     function build_parts(first){var i,j,c,n,v,s=first,p=s.parts,st=[],r=""
     for(i=0;i<p.length;i++){c=p[i]
     switch(c){case'.':continue
