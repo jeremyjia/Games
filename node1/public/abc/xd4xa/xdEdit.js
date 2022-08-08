@@ -13,6 +13,7 @@ var abc_images,abc_fname=["noname.abc",""],abc_mtime=[],abc,syms,ctxMenu,elt_ref
 for(var k=0;k<s_a.length;k++){if(s_a[k].src.indexOf('edit-')>=0)
 return s_a[k].src.match(/.*\//)||''}
 return""})()
+
 var user={
     read_file:function(fn){
         elt_ref["s"+srcidx].style.display="inline"
@@ -78,22 +79,47 @@ function render(){
     render2()
 }
 
-function render2(){var content=elt_ref.source.value,def=(abc2svg.a_inc&&abc2svg.a_inc["default.abc"])||''
-if(!abc2svg.modules.load(content+elt_ref.src1.value+def,render2))
-return
-if(abc2svg.modules.pageheight.loaded){abc2svg.get_mtime=function(fn){var files=document.getElementById("abcfile").files
-if(files&&files[0].lastModified)
-return new Date(files[0].lastModified)
-return new Date()}}
-abc=new abc2svg.Abc(user);abc_images='';syms=[]
-if(abc2svg.a_inc&&abc2svg.a_inc["default.abc"]){try{abc.tosvg("default.abc",abc2svg.a_inc["default.abc"])}catch(e){alert(e.message+'\nabc2svg tosvg bug - stack:\n'+e.stack)
-return}}
-try{abc.tosvg(abc_fname[0],content)}catch(e){alert(e.message+'\nabc2svg tosvg bug - stack:\n'+e.stack)
-return}
-abc2svg.abc_end()
-try{elt_ref.target.innerHTML=abc_images}catch(e){alert(e.message+'\nabc2svg image bug - abort')
-return}
-document.getElementById("er").style.display=elt_ref.diverr.innerHTML?'inline':'none'}
+function render2(){
+    var content=elt_ref.source.value,def=(abc2svg.a_inc&&abc2svg.a_inc["default.abc"])||''
+    if(!abc2svg.modules.load(content+elt_ref.src1.value+def,render2)) return
+    if(abc2svg.modules.pageheight.loaded){
+        abc2svg.get_mtime=function(fn){
+            var files=document.getElementById("abcfile").files
+            if(files&&files[0].lastModified) return 
+            new Date(files[0].lastModified)
+            return new Date()
+        }
+    }
+    abc=new abc2svg.Abc(user);
+    abc_images='';
+    syms=[]
+    if(abc2svg.a_inc&&abc2svg.a_inc["default.abc"]){
+        try{
+            abc.tosvg("default.abc",abc2svg.a_inc["default.abc"])
+        }
+        catch(e){
+            alert(e.message+'\nabc2svg tosvg bug - stack:\n'+e.stack)
+            return
+        }
+    }
+    try{
+        abc.tosvg(abc_fname[0],content)
+    }
+    catch(e){
+        alert(e.message+'\nabc2svg tosvg bug - stack:\n'+e.stack)
+        return
+    }
+    abc2svg.abc_end()
+    try{
+        elt_ref.target.innerHTML=abc_images
+    }
+    catch(e){
+        alert(e.message+'\nabc2svg image bug - abort')
+        return
+    }
+    document.getElementById("er").style.display=elt_ref.diverr.innerHTML?'inline':'none'
+}
+
 function soffs(r,c){var m,s=elt_ref.source,o=0
 while(--r>=0){o=s.value.indexOf('\n',o)+1
 if(o<=0)
