@@ -360,15 +360,25 @@ if(window.AudioContext||window.webkitAudioContext||navigator.requestMIDIAccess){
     function show_menu(evt){
         var x,y,elt=evt.target,cl=elt.getAttribute('class')
         evt.preventDefault()
-        if(cl&&cl.substr(0,4)=='abcr'){setsel(1,Number(cl.slice(6,-1)))
+        if(cl&&cl.substr(0,4)=='abcr'){
+            setsel(1,Number(cl.slice(6,-1)))
             return false
         }
-        play.click={svg:elt,Y:evt.pageY}
-        ctxMenu=document.getElementById("ctxMenu");ctxMenu.style.display="block";x=evt.pageX-elt_ref.target.parentNode.offsetLeft
-+elt_ref.target.parentNode.scrollLeft;y=evt.pageY+elt_ref.target.parentNode.scrollTop;ctxMenu.style.left=(x-30)+"px";ctxMenu.style.top=(y-10)+"px"}
-e=elt_ref.target
-e.onauxclick=show_menu
-e.oncontextmenu=function(ev){ev.preventDefault()}}
+        play.click={
+            svg:elt,
+            Y:evt.pageY
+        }
+        ctxMenu=document.getElementById("ctxMenu");
+        ctxMenu.style.display="block";
+        x=evt.pageX-elt_ref.target.parentNode.offsetLeft+elt_ref.target.parentNode.scrollLeft;
+        y=evt.pageY+elt_ref.target.parentNode.scrollTop;ctxMenu.style.left=(x-30)+"px";
+        ctxMenu.style.top=(y-10)+"px"
+    }
+    e=elt_ref.target
+    e.onauxclick=show_menu
+    e.oncontextmenu=function(ev){ev.preventDefault()}
+}
+
 set_pref()
 }
 
