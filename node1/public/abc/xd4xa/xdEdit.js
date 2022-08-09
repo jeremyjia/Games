@@ -148,6 +148,9 @@ function gotoabc(l,c){
 }
 
 function selsvg(evt){ 
+    
+    var d = bl$("id_4_dbg");
+    
     var v,cl=evt.target.getAttribute('class')
     play.loop=false;
     if(ctxMenu&&ctxMenu.style.display=="block"){
@@ -167,6 +170,12 @@ function selsvg(evt){
     else{
         s.setSelectionRange(0,0)
     }
+
+    var x=evt.pageX-elt_ref.target.parentNode.offsetLeft+elt_ref.target.parentNode.scrollLeft;
+    var y=evt.pageY+elt_ref.target.parentNode.scrollTop; 
+
+    if(d) d.test(x + "," + y);
+    
     s.blur();
     s.focus()
 }
@@ -343,7 +352,15 @@ document.getElementById("saveas").onclick=saveas;
 
 elt_ref.s0.onclick=function(){selsrc(0)};
 elt_ref.s1.onclick=function(){selsrc(1)};
+
 elt_ref.target.onclick=selsvg;//xddbg1
+elt_ref.target.onmousemove = function(evt){
+    var d = bl$("id_4_dbg");
+    var x=evt.pageX-elt_ref.target.parentNode.offsetLeft+elt_ref.target.parentNode.scrollLeft;
+    var y=evt.pageY+elt_ref.target.parentNode.scrollTop; 
+    if(d) d.test2(x,y)
+
+}
 elt_ref.source.onselect=seltxt;
 
 window.onbeforeprint=function(){selx_sav[0]=selx[0];selx_sav[1]=selx[1];setsel(0,0);setsel(1,0)};

@@ -7,7 +7,8 @@
 <link href="edit-1.css" rel="stylesheet" type="text/css"/>
 <script src="xdEdit.js" type="text/javascript" async="true"></script>
 <script src="xd_abc2svg.js" type="text/javascript" async="true"></script> 
-<title>XD4XA bv0.11</title>
+<script src="https://littleflute.github.io/Games/js/blclass.js" type="text/javascript" async="true"></script>
+<title>XD4XA bv0.12</title>
 
 </head>
 <body ontouchstart="" bgcolor="#faf0e6">
@@ -78,6 +79,7 @@
 
     <!-- buttons -->
     <p>
+        <button onclick = "dbg();">dbg</button>
     <label id="b">ABC files:</label>
     <input id="s0" type="button" style="display: inline; background-color: #80ff80"
     value="(noname_bv-0.13)"/>
@@ -149,7 +151,21 @@ width="8.3in" height="2in" viewBox="0 0 595 144">
 <p>Copyright &#x00A9; 2016-2021 <a
 href="http://moinejf.free.fr">Jean-François Moine</a></p>
 </div>
-
+<script>
+    function dbg(){
+        var d = blo0.blMD("id_4_dbg", "dbg",    111,55,222,333, "lightgreen"); 
+        d.v1 = blo0.blDiv(d,d.id+"v1","v1",blGrey[0]);
+        d.v2 = blo0.blDiv(d,d.id+"v2","v2","lightblue");
+        d.test = function(txt){
+            d.v1.innerHTML = txt;
+        }
+        d.test2 = function(x,y){
+            d.v2.innerHTML = "("+x+","+y+")";
+        }
+        
+        _on_off_div(this,d);
+    }
+</script>
 <!-- javascript must be enabled -->
 <noscript>
     <div id="okjs" class="popup" style="width:50%;background:#ff8080;visibility:visible">
