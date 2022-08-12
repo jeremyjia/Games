@@ -79,7 +79,7 @@
 
     <!-- buttons -->
     <p>
-        <button onclick = "dbg();">dbg_bv0.12</button>
+        <button onclick = "dbg();">dbg_bv0.13</button>
     <label id="b">ABC files:</label>
     <input id="s0" type="button" style="display: inline; background-color: #80ff80"
     value="(noname)"/>
@@ -158,6 +158,22 @@ href="http://moinejf.free.fr">Jean-François Moine</a></p>
         const b1 = blo0.blBtn(tb,tb.id+"b1","b1","lightgray");
         b1.onclick = function(){
             d.v3.innerHTML = bl$("target").innerHTML;
+            var ta = bl$("id4ta");
+            ta.value = bl$("target").innerHTML;
+        }
+        const bt = blo0.blBtn(tb,tb.id+"bt","bt","lightgray");
+        bt.onclick = function(){
+            var ta = bl$("id4ta");
+            d.v3.innerHTML = ta.value;
+        }
+        const b2 = blo0.blBtn(tb,tb.id+"b2","b2","lightgray");
+        b2.onclick = function(){
+            if(!this.md){
+                this.md = blo0.blMDiv(d,d.id+"md",50,50,300,200,"green");
+                const v = blo0.blDiv(this.md,this.md.id+"v","v","lightblue");
+                const ta = blo0.blTextarea(v,"id4ta","ta","lightgray");
+            }
+            _on_off_div(this,this.md);
         }
         d.v1 = blo0.blDiv(d,d.id+"v1","v1",blGrey[0]);
         d.v2 = blo0.blDiv(d,d.id+"v2","v2","lightblue");
