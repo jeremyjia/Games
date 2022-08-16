@@ -1,0 +1,199 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<link href="edit-1.css" rel="stylesheet" type="text/css"/>
+<script src="xdEdit.js" type="text/javascript" async="true"></script>
+<script src="xd_abc2svg.js" type="text/javascript" async="true"></script> 
+<script src="https://littleflute.github.io/Games/js/blclass.js" type="text/javascript" async="true"></script>
+<title>XD4XA</title>
+
+</head>
+<body ontouchstart="" bgcolor="#faf0e6">
+
+<!-- left -->
+<div id="dleft">
+    <!-- menu bar -->
+    <ul id="nav">
+    <li class="dropbutton"><label id="f">File</label>
+        <ul class="droplinks">
+            <li><input type="file" id="abcfile" accept="*"
+                style="display:none" onchange="loadtune()"/>
+            <label id="fl" for="abcfile">Load file</label>
+            </li>
+            <li><label id="saveas">Save file</label></li>
+        </ul>
+    </li>
+    <li class="dropbutton"><label id="pr">Preferences</label>
+        <ul class="droplinks">
+            <li><label id="fs">Font size</label>
+                <input type="number" id="fontsize"
+                min="10" max="20" value="14" onchange="setfont()"/>
+            </li>
+            <li id="playdiv1" style="display: none">
+                <label id="sful">Sound font URL</label>
+                <input id="sfu" type="text" maxlength="120"
+                    size="50"
+                    onblur="set_sfu(this.value)"/>
+            </li>
+            <li id="playdiv3" style="display: none">
+                <label id="gv">Volume</label>
+                <input id="gvol" type="range" min="1" max="10" value="7"
+                    onchange="set_vol(this.value / 10)"/>
+                <label id="gvl">0.70</label>
+            </li>
+            <li id="playdiv4" style="display: none">
+                <label id="sp">Speed</label>
+                <input id="spv" type="range"
+                    min="1" max="20" value="10" step=".5"
+                    onchange="set_speed(this.value)"/>
+                <label id="spvl">1</label>
+            </li>
+        </ul>
+    </li>
+    <li class="dropbutton"><label id="lg">Language</label>
+        <ul class="droplinks">
+        <li onclick="loadlang('de')">Deutsch</li>
+        <li onclick="loadlang('en')">English</li>
+        <li onclick="loadlang('fr')">Français</li>
+        <li onclick="loadlang('it')">Italiano</li>
+        <li onclick="loadlang('pt_BR')">Português do Brasil</li>
+        </ul>
+    </li>
+    <li class="dropbutton"><label id="h">Help</label>
+        <ul class="droplinks">
+            <li id="ha" onclick="popshow('help', true)">Help</li>
+            <li><a id="df" target="_blank"
+    href="http://moinejf.free.fr/abcm2ps-doc/features.html">abc2svg features</a>
+            </li>
+            <li><a id="dp" target="_blank"
+    href="http://moinejf.free.fr/abcm2ps-doc/index.html">abc2svg parameters</a>
+            </li>
+            <li id="a" onclick="popshow('about', true)">About</li>
+        </ul>
+    </li>
+    </ul>
+    <br/>   
+
+    <!-- buttons -->
+    <p>
+        <button onclick = "dbg();">dbg_bv0.13</button>
+    <label id="b">ABC files:</label>
+    <input id="s0" type="button" style="display: inline; background-color: #80ff80"
+    value="(noname)"/>
+    <input id="s1" type="button" style="display: none; background-color: #ffd0d0"
+    value=""/>
+    <label id="er" onclick="popshow('errlist', true)"
+    style="display: none; background: #ff8080">Errors</label>
+
+    <!-- ABC source in textarea (main and include) -->
+    </p>
+    <textarea id="source" rows="40" cols="73" wrap="off" 
+        style="font: 14px monospace" 
+        ondrop="drop(event)" ondragenter="drag_enter(event)" 
+        oninput="src_change()">
+    </textarea>
+    <textarea id="src1" rows="40" cols="73" wrap="off" 
+        style="font: 14px monospace; display: none" 
+        ondrop="drop(event)" ondragenter="drag_enter(event)" 
+        oninput="src_change()">
+    </textarea>
+</div>
+
+<!-- right - needed for the scrollbars -->
+<div id="dright">
+
+<!-- context menu -->
+<div id="ctxMenu" title="Play">
+    <ul class="droplinks">
+    <!-- 'All' does not work anymore
+    <li id="cmpa" onclick="play_tune(-1)" style="display:none">All</li>
+    -->
+    <li id="cmpt" onclick="play_tune(0)">Tune</li>
+    <li id="cmps" onclick="play_tune(1)">Selection</li>
+    <li id="cmpl" onclick="play_tune(2)">Loop</li>
+    <li id="cmpc" onclick="play_tune(3)">Continue</li>
+    </ul>
+</div>
+
+<!-- rendering area -->
+<div id="target" style="border:#80ff80 1px solid;background:#ff8080;">
+<svg xmlns="http://www.w3.org/2000/svg"
+xmlns:xlink="http://www.w3.org/1999/xlink"
+xml:space="preserve"
+width="8.3in" height="2in" viewBox="0 0 595 144">
+<text x="250" y="100" font-family="serif" font-size="12">(void)</text>
+</svg>
+</div>
+</div>
+
+<!-- error popup window -->
+<div id="errlist" class="popup" style="width: 500px">
+<div class="close" onclick="popshow('errlist')">x</div>
+<div id="diverr">
+</div>
+</div>
+
+<!-- help popup window -->
+<div id="help" class="popup" style="width: 550px">
+<div class="close" onclick="popshow('help')">x</div>
+<ul id="hlp">
+<li>(dynamically loaded)</li>
+</ul>
+</div>
+
+<!-- about popup window -->
+<div id="about" class="popup" style="width: 350px">
+<div class="close" onclick="popshow('about')">x</div>
+<p id="abc2svg">abc2svg</p>
+<p>Copyright &#x00A9; 2016-2021 <a
+href="http://moinejf.free.fr">Jean-François Moine</a></p>
+</div>
+<script>
+    function dbg(){
+        var d = blo0.blMD("id_4_dbg", "dbg",    111,55,222,333, "lightgreen"); 
+        const tb = blo0.blDiv(d,d.id+"tb","tb","gray");
+        const b1 = blo0.blBtn(tb,tb.id+"b1","b1","lightgray");
+        b1.onclick = function(){
+            d.v3.innerHTML = bl$("target").innerHTML;
+            var ta = bl$("id4ta");
+            ta.value = bl$("target").innerHTML;
+        }
+        const bt = blo0.blBtn(tb,tb.id+"bt","bt","lightgray");
+        bt.onclick = function(){
+            var ta = bl$("id4ta");
+            d.v3.innerHTML = ta.value;
+        }
+        const b2 = blo0.blBtn(tb,tb.id+"b2","b2","lightgray");
+        b2.onclick = function(){
+            if(!this.md){
+                this.md = blo0.blMDiv(d,d.id+"md",50,50,300,200,"green");
+                const v = blo0.blDiv(this.md,this.md.id+"v","v","lightblue");
+                const ta = blo0.blTextarea(v,"id4ta","ta","lightgray");
+            }
+            _on_off_div(this,this.md);
+        }
+        d.v1 = blo0.blDiv(d,d.id+"v1","v1",blGrey[0]);
+        d.v2 = blo0.blDiv(d,d.id+"v2","v2","lightblue");
+        d.v3 = blo0.blDiv(d,d.id+"v3","v3","lightgreen");
+        d.test = function(txt){
+            d.v1.innerHTML = txt;
+        }
+        d.test2 = function(x,y){
+            d.v2.innerHTML = "("+x+","+y+")";
+        }
+        
+        _on_off_div(this,d);
+    }
+</script>
+<!-- javascript must be enabled -->
+<noscript>
+    <div id="okjs" class="popup" style="width:50%;background:#ff8080;visibility:visible">
+        Please enable Javascript.
+    </div>
+</noscript>
+
+</body>
+</html>
