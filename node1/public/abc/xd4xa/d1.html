@@ -103,30 +103,30 @@
 </div>
 
 <!-- right - needed for the scrollbars -->
-<div id="dright">
+<div id="dright" style="display:none;">
 
 <!-- context menu -->
-<div id="ctxMenu" title="Play">
-    <ul class="droplinks">
-    <!-- 'All' does not work anymore
-    <li id="cmpa" onclick="play_tune(-1)" style="display:none">All</li>
-    -->
-    <li id="cmpt" onclick="play_tune(0)">Tune</li>
-    <li id="cmps" onclick="play_tune(1)">Selection</li>
-    <li id="cmpl" onclick="play_tune(2)">Loop</li>
-    <li id="cmpc" onclick="play_tune(3)">Continue</li>
-    </ul>
-</div>
+    <div id="ctxMenu" title="Play">
+        <ul class="droplinks">
+        <!-- 'All' does not work anymore
+        <li id="cmpa" onclick="play_tune(-1)" style="display:none">All</li>
+        -->
+        <li id="cmpt" onclick="play_tune(0)">Tune</li>
+        <li id="cmps" onclick="play_tune(1)">Selection</li>
+        <li id="cmpl" onclick="play_tune(2)">Loop</li>
+        <li id="cmpc" onclick="play_tune(3)">Continue</li>
+        </ul>
+    </div>
 
 <!-- rendering area -->
-<div id="target" style="border:#80ff80 1px solid;background:#ff8080;">
-<svg xmlns="http://www.w3.org/2000/svg"
-xmlns:xlink="http://www.w3.org/1999/xlink"
-xml:space="preserve"
-width="8.3in" height="2in" viewBox="0 0 595 144">
-<text x="250" y="100" font-family="serif" font-size="12">(void)</text>
-</svg>
-</div>
+    <div id="target" style="border:#80ff80 1px solid;background:#ff8080;display:none;">
+        <svg xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            xml:space="preserve"
+            width="8.3in" height="2in" viewBox="0 0 595 144">
+            <text x="250" y="100" font-family="serif" font-size="12">(void)</text>
+        </svg>
+    </div>
 </div>
 
 <!-- error popup window -->
@@ -175,6 +175,11 @@ href="http://moinejf.free.fr">Jean-François Moine</a></p>
             }
             _on_off_div(this,this.md);
         }
+        const btnPlay1 = blo0.blBtn(tb,tb.id+"btnPlay1","btnPlay1","lightgreen");
+        btnPlay1.onclick = function(){
+            play_tune(0);
+        }
+
         d.v1 = blo0.blDiv(d,d.id+"v1","v1",blGrey[0]);
         d.v2 = blo0.blDiv(d,d.id+"v2","v2","lightblue");
         d.v3 = blo0.blDiv(d,d.id+"v3","v3","lightgreen");
