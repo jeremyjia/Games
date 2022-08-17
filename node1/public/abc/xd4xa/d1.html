@@ -79,7 +79,7 @@
 
     <!-- buttons -->
     <p>
-        <button onclick = "dbg();">dbg_bv0.13</button>
+        <button onclick = "dbg();">dbg_bv0.24</button>
     <label id="b">ABC files:</label>
     <input id="s0" type="button" style="display: inline; background-color: #80ff80"
     value="(noname)"/>
@@ -155,6 +155,20 @@ href="http://moinejf.free.fr">Jean-François Moine</a></p>
     function dbg(){
         var d = blo0.blMD("id_4_dbg", "dbg",    111,55,222,333, "lightgreen"); 
         const tb = blo0.blDiv(d,d.id+"tb","tb","gray");
+        const tb2 = blo0.blDiv(d,d.id+"tb2","tb2","gray");
+        const s1 = blo0.blBtn(tb2,tb2.id+"s1","s1","lightgray");
+        s1.onclick = function(){
+            var s = "X:25 \n";
+            s += "%%maxshrink .9 \n";
+            s += "M:3/4 \n";
+            s += "L:1/4 \n";
+            s += "K:C \n";
+            s += "c c c | c c y c | c c y4 c | c c y20 c |";       
+
+            var ta = bl$("source");
+            ta.value = s;
+        }
+
         const b1 = blo0.blBtn(tb,tb.id+"b1","b1","lightgray");
         b1.onclick = function(){
             d.v3.innerHTML = bl$("target").innerHTML;
@@ -170,8 +184,8 @@ href="http://moinejf.free.fr">Jean-François Moine</a></p>
         b2.onclick = function(){
             if(!this.md){
                 this.md = blo0.blMDiv(d,d.id+"md",50,50,300,200,"green");
-                const tb = blo0.blDiv(this.md,this.md.id+"tb","tb","gray");
-                const v = blo0.blDiv(this.md,this.md.id+"v","v","lightblue");
+                const tb = blo0.blDiv(this.md,this.md.id+"tb","tb-1","gray");
+                const v = blo0.blDiv(this.md,this.md.id+"v","v-1","lightblue");
                 const ta = blo0.blTextarea(v,"id4ta","ta","lightgray");
 
                 const btn1 = blo0.blBtn(tb,tb.id+"btn1","btn1","gray");
@@ -181,7 +195,7 @@ href="http://moinejf.free.fr">Jean-François Moine</a></p>
                     var h0 = ss[0].innerHTML;
                     ss[0].innerHTML = h0 + '<text x="50" y="50">a</text>';
 
-                }
+                } 
             }
             _on_off_div(this,this.md);
         }
