@@ -371,7 +371,7 @@ window.onerror = function(errorMessage, scriptURI, lineNumber,columnNumber,error
 </div>
 	<!-- ------------------------------顶部导航菜单------------------------------ -->
 	<div class="music-header">
-		<div class="music-sys-name">乐谱编辑系统</div>
+		<div class="music-sys-name">乐谱编辑系统-v0.11</div>
 		<ul>
 			<!-- 顶级菜单  -->
 			<li v-for="( menu, m) in menuList" :class="[ menuActive == menu.menuCode ? 'active' : '']" :data-code="menu.menuCode" @click.stop="navClick( menu.menuCode)">{{ menu.menuName }}
@@ -425,9 +425,11 @@ window.onerror = function(errorMessage, scriptURI, lineNumber,columnNumber,error
 		<div id="editor" title="语法编辑框(CTRL+E)"  @click="editorClick" class="tools-li">
 			<img src="v2/images/editor.png">
 		</div>
+		<!-- 
 		<div id="metronomesetting" title="节拍器"  @click="switchMetro()" class="tools-li">
 			<img src="images/jpq.png">
 		</div>
+		-->
 		<div class="sep"></div>
 		<div title="五线谱" onclick="changeStaffType(this,0)"  class="tools-li compute-mode">
 			<img src="v2/images/icon_wxp.png">
@@ -439,6 +441,7 @@ window.onerror = function(errorMessage, scriptURI, lineNumber,columnNumber,error
 			<img src="v2/images/icon_jx.png">
 		</div>
 		<div class="sep"></div>
+		<!-- 
 		<div :title="abcSel.isOpen ? '完成绘制' : '绘制曲式'" @click="startDrawMF" class="tools-li compute-mode">
 			<img src="images/draw-mf.png">
 		</div>
@@ -456,12 +459,14 @@ window.onerror = function(errorMessage, scriptURI, lineNumber,columnNumber,error
 		<div title="缩小" onclick="changeScale(-0.2)" class="tools-li compute-mode">
 			<img src="v2/images/sx.png">
 		</div>
+		-->
 		<!-- <div class="tools-li page-view">
 			<select class="form-control">
 				<option>页面视图</option>
 			</select>
 		</div> -->
 		<div class="sep"></div>
+		<!--
 		<div title="显示小节序号" class="tools-li compute-mode">
 			<img src="v2/images/nodeseq.png" style="width:30px;height:30px;" class="shownodeseq cmenu" draggable="false">
 		</div>
@@ -474,6 +479,7 @@ window.onerror = function(errorMessage, scriptURI, lineNumber,columnNumber,error
 		<div title="简谱do位置" class="tools-li compute-mode">
 			<img src="images/do_chn.png" style="width:30px;height:30px;" id="do_chn" value="DO" data-toggle="modal" data-target="#DO_CHN_div" class="cmenu" draggable="false">
 		</div>
+		-->
 		<!-- <div title="声部下移" class="tools-li compute-mode">
 			<img src="images/direct/staffdown.png" style="width:30px;height:30px;" value="[I:staff +1]" position="before" class="cmenu" draggable="false">
 		</div>
@@ -487,12 +493,14 @@ window.onerror = function(errorMessage, scriptURI, lineNumber,columnNumber,error
 			<img src="images/beijingse.png" style="width:30px;height:30px;" id="notecolorli" value="&quot;-nb-&quot;" position="before" type="notebg" class="operator cmenu notecolorli" draggable="false">
 		</div> -->
 		<div class="sep"></div>
+		<!--
 		<div title="升一个音" class="tools-li compute-mode">
 			<img src="v2/images/shengjiang1.png" style="width:30px;height:30px;" id="up" value="up" class="up cmenu" draggable="false">
 		</div>
 		<div title="降一个音" class="tools-li compute-mode">
 			<img src="v2/images/shengjiang2.png" style="width:30px;height:30px;" id="down" value="down" class="down cmenu" draggable="false">
 		</div>
+		-->
 		<!-- <div title="上升一个八度" class="tools-li compute-mode">
 			<img src="v2/images/up8.png" id="up8" style="width:30px;height:30px;" value="up8" class="up8 cmenu" draggable="false">
 		</div>
@@ -500,40 +508,9 @@ window.onerror = function(errorMessage, scriptURI, lineNumber,columnNumber,error
 			<img src="v2/images/down8.png" style="width:30px;height:30px;" id="down8" value="down8" class="down8 cmenu" draggable="false">
 		</div> -->
 		<div class="sep"></div>
-		<div id="instrument" class="menu-list" title="更换乐器" @click.stop="menuClick('instrument')" style="height:30px;">
-			<img src="v2/images/instrument.png"/>
-			<!-- <span>乐器</span> -->
-			<div class="menu-pulldown-box" :class="{'menu-pulldown-box-2-style-2': headerInBottom}">
-				<input placeholder="请输入搜索关键字" v-model="instrumentKey" />
-				<ul>
-					<li v-show="!instrumentKey || instrumentOption == model.code || model.name.indexOf(instrumentKey) > -1" v-for="(model, index) in instrumentList" @click.stop="instrumentChoose(model.code)" :class="instrumentOption == model.code && 'menu-choose'"><img src="v2/images/ic_tick.png" /><span>{{model.name}}</span></li>
-				</ul>
-			</div>
-		</div>
-		<div class="sep"></div>
-		<div title="显示唱名" class="tools-li compute-mode">
-			<img src="images/doremi.png" style="width:30px;height:30px;" value="showcm" class="showcm cmenu" draggable="false">
-		</div>
-		<div title="显示竖笛谱" class="tools-li compute-mode">
-			<img src="images/sd.png" style="width:30px;height:30px;" value="showsd" class="showsd cmenu" draggable="false">
-		</div>
-		<div title="小节等间距" class="tools-li compute-mode">
-			<img src="images/equalbars.png" style="width:30px;height:30px;" value="equalbars" class="equalbars cmenu" draggable="false">
-		</div>
-		<div title="复制歌词" class="tools-li compute-mode">
-			<img src="images/cplyric.png" style="width:30px;height:30px;" class="cplyric cmenu" draggable="false">
-		</div>
-		<div class="sep"></div>
-		<div v-if="isExe" onclick="typeof (parent.closePop) == 'function' && parent != window  ? parent.closePop() : history.back()" class="back-btn" >
-			<img src="images/back_arrow.png" />
-			<span style="white-space: nowrap;">返回</span>
-		</div>
-		<div v-show="!isJxbz" class="play-btn" onclick="musicFormEdit()">
-			<div class="play-img qs">
-				<img src="v2/images/qs.png"/>
-			</div>
-			<span style="white-space: nowrap;">曲式</span>
-		</div>
+		 
+		<div class="sep"></div> 
+		<div class="sep"></div> 
 		<div class="play-btn" onclick="myplay()">
 			<div class="play-img">
 				<img src="v2/images/play.png" id="playimg"/>
