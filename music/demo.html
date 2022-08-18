@@ -371,7 +371,7 @@ window.onerror = function(errorMessage, scriptURI, lineNumber,columnNumber,error
 </div>
 	<!-- ------------------------------顶部导航菜单------------------------------ -->
 	<div class="music-header">
-		<div class="music-sys-name">乐谱编辑系统-v0.11</div>
+		<div class="music-sys-name">乐谱编辑系统-v0.12</div>
 		<ul>
 			<!-- 顶级菜单  -->
 			<li v-for="( menu, m) in menuList" :class="[ menuActive == menu.menuCode ? 'active' : '']" :data-code="menu.menuCode" @click.stop="navClick( menu.menuCode)">{{ menu.menuName }}
@@ -554,9 +554,7 @@ window.onerror = function(errorMessage, scriptURI, lineNumber,columnNumber,error
 		<div id="graphEditorMenuInsert" title="插入模式" class="tools-li" onclick="switchPrachEditor(this);">
 			<img src="images/bianji.png" style="width:30px;height:30px;"/>
 		</div>
-		<div id="graphEditorMenuUpdate" title="修改模式" class="tools-li menu-pressed" onclick="switchPrachEditor(this);">
-			<img src="images/editor.png" style="width:30px;height:30px;"/>
-		</div>
+		
 		<div id="selectedStatus" title="选择（CTRL+Q）" class="tools-li" onclick="enabledEditor(this);">
 			<img src="images/selected.png" style="width:30px;height:30px;"/>
 		</div>
