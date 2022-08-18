@@ -565,7 +565,8 @@ window.onerror = function(errorMessage, scriptURI, lineNumber,columnNumber,error
 		<img  class="tools-li" v-for="(tImg, idx) in toolsLengthList.imgList" :class="tImg.class" :key="'ti' + idx" :src="tImg.url" :title="tImg.title" @click="toolItemClick(toolsLengthList.code, tImg.id, tImg.value)" 
 		:id="tImg.id" :value="tImg.value" :level="tImg.level" :chord="tImg.chord" :position="tImg.position" 
 		:type="tImg.type" :dur="tImg.dur" :data-toggle="tImg.datatoggle" :data-target="tImg.datatarget"/>
-		<div class="tools-li"><img id="length_swtich" title="切换" src="v2/images/switch.png" style="width:18px;height:18px" class="switch"></div>
+		
+		
 		<div class="sep"></div>
 		<div title="休止符" target>
 			<img  src="images/rest.png" style="width:30px;height:30px;" class="reststatus tools-li"/>
