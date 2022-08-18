@@ -137,7 +137,7 @@ window.onerror = function(errorMessage, scriptURI, lineNumber,columnNumber,error
 		}
     ul.ztree {width:250px;overflow-y:auto;overflow-x:auto;margin-top:5px;margin-left: 2px;}
 	</style>
-	<title>创编制谱系统</title>
+	<title>乐谱编辑系统</title>
 </head>
 <body>
 <input type="text" id="tmpText" style="position: absolute; display: none;z-index: 2;">
@@ -371,7 +371,7 @@ window.onerror = function(errorMessage, scriptURI, lineNumber,columnNumber,error
 </div>
 	<!-- ------------------------------顶部导航菜单------------------------------ -->
 	<div class="music-header">
-		<div class="music-sys-name">创编制谱系统</div>
+		<div class="music-sys-name">乐谱编辑系统</div>
 		<ul>
 			<!-- 顶级菜单  -->
 			<li v-for="( menu, m) in menuList" :class="[ menuActive == menu.menuCode ? 'active' : '']" :data-code="menu.menuCode" @click.stop="navClick( menu.menuCode)">{{ menu.menuName }}
