@@ -33,20 +33,9 @@ var menuList = [
 		      { code: 'newstaff', id: 'newstaff', name: '新建乐谱', classCss: 'newstaff', url: 'v2/images/new.png', checkbox: true, isChecked: false},
 //		      { code: 'plsx', id: 'plsx', name: '谱例属性', classCss: 'plsx', url: 'v2/images/attr.png', checkbox: false, isChecked: false},
 		      { code: 'openfile',  name: '打开文件', classCss: 'openfile', url: 'v2/images/dakai.png', checkbox: true, isChecked: false},
-		      { code: 'saveas', name: '另存文件', classCss: 'saveas', url: 'v2/images/save.png', checkbox: true, isChecked: false},
-		      { code: 'cmsaveas', name: '导出唱名', classCss: 'cmsaveas', url: 'v2/images/xnrs.png', checkbox: true, isChecked: false},
-		      { code: 'exportpic', name: '导出图片', classCss: 'exportpic', url: 'v2/images/exportpng.png', checkbox: true, isChecked: false},
-		      { code: 'exportpdf', name: '导出PDF', classCss: 'exportpdf', url: 'v2/images/pdf.png', checkbox: true, isChecked: false},
-		      { code: 'exportmp3', name: '导出Mp3', classCss: 'exportmp3', url: 'v2/images/mp3.png', checkbox: true, isChecked: false},
-		      { code: 'importmid', name: '导入MIDI', classCss: 'importmid', url: 'v2/images/importmidi.png', checkbox: true, isChecked: false},
-		      { code: 'exportmid', name: '导出MIDI', classCss: 'exportmid', url: 'v2/images/exportmidi.png', checkbox: true, isChecked: false},
-		      { code: 'importxml', name: '导入XML', classCss: 'importxml', url: 'v2/images/impxml.png', checkbox: true, isChecked: false},
-		      { code: 'exportxml', name: '导出XML', classCss: 'exportxml', url: 'v2/images/exportxml.png', checkbox: true, isChecked: false},
-		      { code: 'exportvoicepart', name: '分声部导出', classCss: 'exportvoicepart', url: 'v2/images/voice-export.png', checkbox: true, isChecked: false},
-		      { code: 'exportallvoicepart', name: '一键导出声部', classCss: 'exportallvoicepart', url: 'v2/images/voice-export.png', checkbox: false, isChecked: false},
-		      { code: 'localhistory', name: '本地缓存', classCss: 'localabchistory', url: 'images/history.png', checkbox: false, isChecked: false},
-		      { code: 'serverhistory', name: '历史记录', classCss: 'serverabchistory', url: 'images/history.png', checkbox: false, isChecked: false},
-		      { code: 'mystaff', name: '我的谱例', classCss: 'mystaff', url: 'images/history.png', checkbox: false, isChecked: false}
+		      { code: 'saveas', name: '另存文件', classCss: 'saveas', url: 'v2/images/save.png', checkbox: true, isChecked: false},		      
+			  { code: 'importmid', name: '导入MIDI', classCss: 'importmid', url: 'v2/images/importmidi.png', checkbox: true, isChecked: false},
+		      { code: 'exportmid', name: '导出MIDI', classCss: 'exportmid', url: 'v2/images/exportmidi.png', checkbox: true, isChecked: false}		      
 		] 
 	},
 	{ 
