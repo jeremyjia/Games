@@ -1,4 +1,4 @@
-// in Node.js:
+// in Node.js: 
 var JZZ = require('jzz');
 require('jzz-midi-smf')(JZZ);
 
