@@ -1,8 +1,12 @@
 X:6
-T:note duration 
+T:note duration != note length
 M:C|
 L:1/8
 K:C
 V:1
 c | e2f2g3g | aa ag/f/ gggg |\
- aa ag/f/ gg gg/f/ | e2d2c3:||: 
+ aa ag/f/ gg gg/f/ | e2d2c3:||:
+V:2
+L:  1/8
+C, | C,2D,2 | G,,2G,,C, | F,2F,2 | C,2C,2 |\
+ F,2F,2 | C,2C,E, | F,/G,/A,/F,/ G,G,, | C,3 :||:
