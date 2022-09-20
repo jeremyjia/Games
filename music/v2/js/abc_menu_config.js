@@ -1,4 +1,4 @@
-/**
+/** xdf1_v0.11
  * 菜单参数： {code: '', id: '', name: '', classCss: '', value: '', position: '',
  * type: '', url: '', checkbox: true, isChecked: false}
  * 
