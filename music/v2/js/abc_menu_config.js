@@ -1,4 +1,4 @@
-/** xdf1_v0.11
+/**  
  * 菜单参数： {code: '', id: '', name: '', classCss: '', value: '', position: '',
  * type: '', url: '', checkbox: true, isChecked: false}
  * 
@@ -34,6 +34,7 @@ var menuList = [
 //		      { code: 'plsx', id: 'plsx', name: '谱例属性', classCss: 'plsx', url: 'v2/images/attr.png', checkbox: false, isChecked: false},
 		      { code: 'openfile',  name: '打开文件', classCss: 'openfile', url: 'v2/images/dakai.png', checkbox: true, isChecked: false},
 		      { code: 'saveas', name: '另存文件', classCss: 'saveas', url: 'v2/images/save.png', checkbox: true, isChecked: false},		      
+			  { code: 'save2db', name: 'save2db', classCss: 'save2db', url: 'v2/images/save2db.png', checkbox: false, isChecked: false},		      
 			  { code: 'importmid', name: '导入MIDI', classCss: 'importmid', url: 'v2/images/importmidi.png', checkbox: true, isChecked: false},
 		      { code: 'exportmid', name: '导出MIDI', classCss: 'exportmid', url: 'v2/images/exportmidi.png', checkbox: true, isChecked: false}		      
 		] 

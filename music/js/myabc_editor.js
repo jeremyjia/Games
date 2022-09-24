@@ -6790,6 +6790,12 @@ $(".chord_ins").off('click').on('click',function(){
 	$('.saveas').off('click').on('click',function(){
 		saveas();
 	})
+	
+	// save2db
+	$('.save2db').off('click').on('click',function(){		
+		alert("save2db");
+	})
+	
 	// 导出分声部
 	$('.exportvoicepart').off('click').on('click',function(event){
 		hiddenMenuItem();
