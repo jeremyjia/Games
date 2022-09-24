@@ -320,7 +320,8 @@ $(document).ready(function(){
 		});
 	})
 	    
-	getFileServer();
+	getFileServer();//xdr1
+
 	// 新建乐谱操作类型：create(新建乐谱：重置groupid的值)、reset（重置乐谱：不重置groupid的值）
 	$("#createbuttontype").val(getUrlParameter("cbtype"));
 	if($("#createbuttontype").val()==""){
@@ -2635,7 +2636,7 @@ function saveabc(){
 }
 
 
-function loadxzdsfile(){
+function loadxzdsfile(){ 
 	loadtune();
 	setTimeout(function(){
 		abc_change();
@@ -6793,9 +6794,22 @@ $(".chord_ins").off('click').on('click',function(){
 	
 	// save2db
 	$('.save2db').off('click').on('click',function(){		
-		alert("save2db");
+		var url = "http://localhost:3001/abc2db?time="+(new Date()).getTime();
+		$.ajax({
+		 type: "POST",
+		 url: url,
+		 data: $("#source").val(),
+		 success: function(resData){
+			  alert(JSON.stringify(resData));
+		 },
+		 error: function(response){
+			alert(JSON.stringify(response));
+		 }
+		});
+
+		hiddenMenuItem();
 	})
-	
+
 	// 导出分声部
 	$('.exportvoicepart').off('click').on('click',function(event){
 		hiddenMenuItem();
@@ -7898,7 +7912,7 @@ function savePicData(){
 	$.ajax({
 		 type: "POST",
 		 url: url,
-		 data: $("#voicePartForm").serialize(),
+		 data: $("#savePicData").serialize(),
 		 success: function(data){
 			 console.log(data);
 			 if(data.indexOf("成功")>-1){
