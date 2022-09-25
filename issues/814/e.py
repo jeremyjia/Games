@@ -16,6 +16,10 @@ if __name__ == '__main__':
     print("p1=", args[0])
     print("p2=", args[1])
 
+    from music21 import converter
+    s = converter.parse(args[0])
+    s.write('midi', fp=args[1])
+
 # 使用
 # python3 1_sys.argv.py arg1 arg2
 # 排除运行主文件参数，其他参数列表为: [arg1, arg1]
