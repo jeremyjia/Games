@@ -65,7 +65,7 @@ function _c3(req,res){
     
     const { exec } = require("child_process");
 
-    exec("python e.py", (error, stdout, stderr) => {
+    exec("python app\\abc2db\\e.py", (error, stdout, stderr) => {
         if (error) {
             console.log(`error: ${error.message}`);
             return;
