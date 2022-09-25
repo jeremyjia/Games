@@ -14,7 +14,7 @@
 %%cancelkey 0 
 I:abc-charset utf-8
 X: 1
-T: test1
+T: test2
 C: 作曲
 Q: 1/4=88
 M: 4/4
@@ -26,4 +26,4 @@ V:1 treble
 %%MIDI program 0
 %%vsetting_end
 V:1
-z,8|z,z,2z,4|z,8|z,8|$z,8|z,8|z,8|z,8|%V1line0end
+abc|abc2z,4|z,8|z,8|$z,8|z,8|z,8|z,8| 
