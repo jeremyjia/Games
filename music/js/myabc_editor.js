@@ -6798,7 +6798,7 @@ $(".chord_ins").off('click').on('click',function(){
 		$.ajax({
 		 type: "POST",
 		 url: url,
-		 data: $("#source").val(),
+		 data: {"content":$("#source").val()},
 		 success: function(resData){
 			  alert(JSON.stringify(resData));
 		 },
