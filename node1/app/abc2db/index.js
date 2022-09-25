@@ -8,19 +8,19 @@ var e = {};
 module.exports = e;
 
 e.abc2db = function(req,res){ 
-    _save2file(req,res);
+    _save2file(req,res,"t1");
 }
 
-function _save2file(req,res){
+function _save2file(req,res,abcFileName){
     var fs = require('fs');
     var data = req.body.content;
-    fs.writeFile('app\\abc2db\\t1.txt', data, function (err) 
+    fs.writeFile('app\\abc2db\\' + abcFileName + ".abc", data, function (err) 
     {
         if (err){
             __res(req,res,err);
             throw err;
         } 
-        __res(req,res,"t1.txt");
+        __res(req,res,abcFileName);
         console.log('Saved!');
     });
 }
@@ -65,7 +65,7 @@ function _c3(req,res){
     
     const { exec } = require("child_process");
 
-    exec("dir", (error, stdout, stderr) => {
+    exec("python e.py", (error, stdout, stderr) => {
         if (error) {
             console.log(`error: ${error.message}`);
             return;
