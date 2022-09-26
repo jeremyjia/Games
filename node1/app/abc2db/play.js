@@ -1,8 +1,8 @@
-// in Node.js: 
+// in Node.js:
 var JZZ = require('jzz');
 require('jzz-midi-smf')(JZZ);
 
-var data = require('fs').readFileSync('2.mid', 'binary');
+var data = require('fs').readFileSync('t1.mid', 'binary');
 var smf = new JZZ.MIDI.SMF(data);
 
 var player = smf.player();

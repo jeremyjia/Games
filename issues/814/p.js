@@ -2,7 +2,7 @@
 var JZZ = require('jzz');
 require('jzz-midi-smf')(JZZ);
 
-var data = require('fs').readFileSync('3.mid', 'binary');
+var data = require('fs').readFileSync(process.argv[2], 'binary');
 var smf = new JZZ.MIDI.SMF(data);
 
 var player = smf.player();

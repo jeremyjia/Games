@@ -1,4 +1,4 @@
-const tag = "[expressServer.js_bv0.132]"; 
+const tag = "[expressServer.js_bv0.133]"; 
 const l = require('./logger');
 const path = require('path'); 
 const express = require('express');
@@ -16,6 +16,7 @@ const spider = require('./app/spider/index.js');
 const _51voa = require('./app/spider/51voa/index.js');
 const ScrapingAntClient = require('./app/spider/ScrapingAntClient/index.js');
 const word = require('./app/word/index0.js');
+const abc2db = require('./app/abc2db/index.js');
 const img = require('./app/image/index.js');
 
 l.tag1(tag,"-----------------------expressServer.js------") 
@@ -53,6 +54,7 @@ class ExpressServer {
     });
 
     this.app.post('/word', (req, res) => {    word.word(req,res);    });
+    this.app.post('/abc2db', (req, res) => {    abc2db.abc2db(req,res);    });
     this.app.get('/downloadImage', (req, res) => {    img.download(req,res);    });
     
     this.app.get('/api/data', (req, res) => {
