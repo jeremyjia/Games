@@ -2647,14 +2647,14 @@ function loadxzdsfile(){
 	},1000)
 }
 //上传midi
-function postmidifile(){
+function postmidifile(){ 
 	var formData = new FormData();
 
     formData.append("midifile",$('#midifile')[0].files[0]);
     var pathName=window.document.location.pathname;
     var projectName=pathName.substring(0,pathName.substr(1).indexOf('/')+1); 
     $.ajax({
-        url:projectName + '/midi2abc',
+        url: 'https://abc.ixzds.com/midi2abc',//projectName + '/midi2abc',
         dataType:'json',
         type:'POST',
         async: false,
@@ -2668,8 +2668,10 @@ function postmidifile(){
             	$("#source").val(data.abc);
             	src_change();
                 console.log('midi转abc成功！');
+				alert("good.");
             }else{
             	window.top.alert("midi转abc失败");
+				alert("error.");
             }
 
         },
@@ -6564,7 +6566,7 @@ function bindAllEvent(){
 		}
 	});
 	$(".exportmid").off('click').on('click',function(){
-		
+		alert("xddbg1");
 		// note_lyrics("source")
 		 
 		$("#abcform").attr("action","abcservlet");
@@ -6609,6 +6611,7 @@ function bindAllEvent(){
 	
 	
 	$(".importmid").off('click').on('click',function(){
+		alert("xddbg2: importmid");
 		$('#midifile').click();
 	})
 	// 导出图片
