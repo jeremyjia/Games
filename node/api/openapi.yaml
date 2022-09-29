@@ -8,7 +8,7 @@ info:
     name: AllRightsReserved
     url: https://www.battlecasters.io/
   title: Group 6 Studios API
-  version: 1.0.431
+  version: 1.0.432
 
 servers:
 - url: http://localhost:8080/api
@@ -17,6 +17,35 @@ security:
 - bearerAuth: []
 
 paths:
+  /abc2db:
+    post:
+      description: save *.abc file to database
+      operationId: abc2db
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Save2abcReqInf'
+        description: json
+        required: false
+      security: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResInf'
+          description: item created
+        "400":
+          content: {}
+          description: invalid input, object invalid
+        "409":
+          content: {}
+          description: an existing item already exists
+      summary: api/abc2db
+      x-openapi-router-controller: DefaultController
+      x-openapi-router-service: DefaultService
+
   /NewPlayer:
     post:
       description: Adds a player to the system
@@ -1081,6 +1110,24 @@ components:
         status:
           example: Yes
           type: string
+    
+    Save2abcReqInf:
+      example:
+        abc: abc test ...
+        type: abc 
+
+      properties:
+        abc:
+          example: abc test ...
+          type: string
+        type:
+          example: abc
+          type: string   
+      required:
+      - abc
+      - type  
+      type: object
+
     SignupReqInf:
       example:
         UserName: user
