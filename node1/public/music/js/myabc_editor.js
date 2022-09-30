@@ -2661,16 +2661,12 @@ function postmidifile(){
         data: formData,
         processData : false, // 使数据不做处理
         contentType : false, // 不要设置Content-Type请求头
-        success: function(data){
-			alert("success11:" + JSON.stringify(data));
-
-            console.log(data);
+        success: function(data){ 
             if (data.result == '1') {
             	console.log(data.abc)
             	$("#source").val(data.abc);
             	src_change();
-                console.log('midi转abc成功！');
-				alert("good.");
+                console.log('midi转abc成功！'); 
             }else{
             	$("#source").val("data.abc");
             	window.top.alert("midi转abc失败");
