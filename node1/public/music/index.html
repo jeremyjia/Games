@@ -371,7 +371,7 @@ window.onerror = function(errorMessage, scriptURI, lineNumber,columnNumber,error
 </div>
 	<!-- ------------------------------顶部导航菜单------------------------------ -->
 	<div class="music-header">
-		<div class="music-sys-name">乐谱编辑系统_bv0.12</div>
+		<div class="music-sys-name">乐谱编辑系统_bv0.21</div>
 		<ul>
 			<!-- 顶级菜单  -->
 			<li v-for="( menu, m) in menuList" :class="[ menuActive == menu.menuCode ? 'active' : '']" :data-code="menu.menuCode" @click.stop="navClick( menu.menuCode)">{{ menu.menuName }}
@@ -980,7 +980,7 @@ window.onerror = function(errorMessage, scriptURI, lineNumber,columnNumber,error
 			<input id="s0" type="button" style="display: none; background-color: #80ff80" value="(noname)" />
 			<input id="s1" type="button" style="display: none; background-color: #ffd0d0" value="" /> 
 			<input type="file" id="abcfile" accept=".xzds" style="display: none" onchange="loadxzdsfile()" /> 
-			<input type="file" id="midifile" accept=".mid,.midi" style="display: none" onchange="postmidifile()" /> 
+			<input type="file" id="xd_upload_midi_file" accept=".mid,.midi" style="display: none" onchange="postmidifile()" /> 
 			<input type="file" id="xmlfile" accept=".xml,.musicxml" style="display: none" /> 
 				<div class="panel-name">符号面板<img src="v2/images/close.png" title="关闭" class="plsx-close panel-close"></div>
 				<ul>

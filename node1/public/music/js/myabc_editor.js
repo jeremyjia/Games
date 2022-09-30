@@ -2650,11 +2650,11 @@ function loadxzdsfile(){
 function postmidifile(){ 
 	var formData = new FormData();
 
-    formData.append("midifile",$('#midifile')[0].files[0]);
+    formData.append("midifile",$('#xd_upload_midi_file')[0].files[0]);
     var pathName=window.document.location.pathname;
     var projectName=pathName.substring(0,pathName.substr(1).indexOf('/')+1); 
     $.ajax({
-        url: 'https://abc.ixzds.com/midi2abc',//projectName + '/midi2abc',
+        url: '/midi2abc',//projectName + '/midi2abc',
         dataType:'json',
         type:'POST',
         async: false,
@@ -2662,6 +2662,8 @@ function postmidifile(){
         processData : false, // 使数据不做处理
         contentType : false, // 不要设置Content-Type请求头
         success: function(data){
+			alert("success11:" + JSON.stringify(data));
+
             console.log(data);
             if (data.result == '1') {
             	console.log(data.abc)
@@ -2670,6 +2672,7 @@ function postmidifile(){
                 console.log('midi转abc成功！');
 				alert("good.");
             }else{
+            	$("#source").val("data.abc");
             	window.top.alert("midi转abc失败");
 				alert("error.");
             }
@@ -2677,6 +2680,7 @@ function postmidifile(){
         },
         error:function(response){
             console.log(response);
+			alert("error:" + JSON.stringify(response));
         }
     });
 }
@@ -6610,9 +6614,8 @@ function bindAllEvent(){
 	
 	
 	
-	$(".importmid").off('click').on('click',function(){
-		alert("xddbg2: importmid");
-		$('#midifile').click();
+	$(".importmid").off('click').on('click',function(){ 
+		$('#xd_upload_midi_file').click();
 	})
 	// 导出图片
 	$(".exportpic").off('click').on('click',function(){
