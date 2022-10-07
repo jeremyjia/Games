@@ -1,4 +1,4 @@
-const tag = "[expressServer.js_v0.41]";
+const tag = "[expressServer.js_v0.42]";
 // const { Middleware } = require('swagger-express-middleware');
 const path = require('path');
 const swaggerUI = require('swagger-ui-express');
@@ -30,6 +30,7 @@ class ExpressServer {
 
   setupMiddleware() {
     this.app.use(cors());
+    this.app.use(express.static(path.join(__dirname, 'public')));
     this.app.use(bodyParser.json());
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: false }));
