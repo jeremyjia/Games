@@ -1439,7 +1439,8 @@ function CBlClass ()
 			
 			btnAutoRun.onclick		= function(_this,_v){
 				return function(){ 
-					const r = blo0.C4AutoRun(_v); 
+					const r = blo0.C4AutoRun(); 
+					r.uiBuild(_v);
 					blon(_this,_v,"grey","green");
 				}
 			}(btnAutoRun,div4Parse);
@@ -2260,11 +2261,22 @@ function CBlClass ()
 		return c[0];	
 	}
 
-	this.blCheckURL = function(url,v) {
+	this.blDownload = function(svrAPI,targetURL,saveAsFileName,vRes){			
+		var url = svrAPI + "?url="+ targetURL + "&filename="+ saveAsFileName;  
+		var w = {};
+		w._2do = function(txt){
+			var str = "var a =" +  txt;  
+			eval(str);  
+			vRes.innerHTML =  a.filename; 
+		}
+		blo0.blAjx(w,url);		 
+	}; 	
+	this.blCheckURL = function(url,v,cb) {
 		const xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 		  if (this.readyState == 4 && this.status == 200) {
-			v.innerHTML = "good";//this.responseText;
+			//v.innerHTML = "good";//this.responseText;
+			if(cb) cb(v);
 		  }
 		  else{
 			v.innerHTML = "cannot reach!";        
@@ -2273,21 +2285,33 @@ function CBlClass ()
 		xhttp.open("GET", url);
 		xhttp.send();
 	  }
-	this.C4AutoRun = function(d){	
-		const blco1 = this;
-		d.innerHTML = "";
-		const v8080 = this.blDiv(d,d.id+"v8080","v8080","lightblue");
-		const v3000 = this.blDiv(d,d.id+"v3000","v3000","lightgreen");
-
-		const _checkURL = function(_v,_url){
-			blco1.blTimer(1000,1000,function(_lt){
-				blco1.blCheckURL(_url,_v);
-			}); 
-		}	
-		var r = {};
-		r.v = "blC4AutoRun_v0.13";
-		_checkURL(v8080,"http://localhost:8080");
-		_checkURL(v3000,"http://localhost:3000");
+	this.C4AutoRun = function(){	
+		const blco1 = this; 
+		const ver = "4AutoRun_v0.14";
+		var tb = null,v=null; 
+		var ls = [];
+		var f = function(){
+			var o = {};
+			o.uiBuild = function(d){
+				tb = blco1.blDiv(d,"tb_4_AutoRun","tb","gray");
+				const lv = blco1.blDiv(d,"lv_4_AutoRun","-","green");
+				v = blco1.blDiv(d,"v_4_AutoRun","v","lightgray");	
+				const btnTimer = blco1.blBtn(v,v.id+"btnTimer","btnTimer","yellow");
+				btnTimer.style.float = "left";
+				blco1.blTimer(1000,1000,function(tl){
+					btnTimer.innerHTML = tl;
+				});
+				
+				tb.getObj = function(){return r;}
+			} 
+			o.addTask = function(o){
+				ls.push(o);
+				const btnT = blco1.blBtn(tb,tb.id+ls.length,ls.length,"lightblue");
+				btnT.style.float = "left";
+			}
+			return o;
+		};
+		const r = new f();
 		return r;
 		
 	}
