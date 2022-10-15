@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.251"
+var g_ver_blClass = "CBlClass_bv1.6.253"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -1417,7 +1417,8 @@ function CBlClass ()
 			var d4URL			= blo0.blDiv(v,v.id + "d4URL","d4URL",blColor[4]);	
 			d4URL.innerHTML = blo0.blURL();
 			var div4Parse			= blo0.blDiv(v,v.id + "ShowMe","divShowMe",blColor[6]);
-			var btnParseMe			= blo0.blBtn(tb,tb.id+"btnParseMe","[blo0]",blGrey[0]);
+			var btnParseMe			= blo0.blBtn(tb,tb.id+"btnParseMe","parseMe",blGrey[0]);
+			btnParseMe.style.float = "left";
 			btnParseMe.onclick		= function(_this,_v){
 					return function(){
 						blo0.blShowObj2Div(_v,blo0);blon(_this,_v,"grey","green");
@@ -1425,6 +1426,7 @@ function CBlClass ()
 					}
 			}(btnParseMe,div4Parse);
 			var btnTest			= blo0.blBtn(tb,tb.id+"btnTest","[test]",blGrey[0]);
+			btnTest.style.float = "left";
 			btnTest.onclick		= function(_this,_v){
 				return function(){ 
 						_v.innerHTML = _this.id;						
@@ -1432,6 +1434,15 @@ function CBlClass ()
 						blon(_this,_v,"grey","green");
 				}
 			}(btnTest,div4Parse);
+			var btnAutoRun			= blo0.blBtn(tb,tb.id+"btnAutoRun","autoRun",blGrey[0]);
+			btnAutoRun.style.float = "right";
+			
+			btnAutoRun.onclick		= function(_this,_v){
+				return function(){ 
+					const r = blo0.C4AutoRun(_v); 
+					blon(_this,_v,"grey","green");
+				}
+			}(btnAutoRun,div4Parse);
 			
 		}
 		if(myHandle.n>1){			blon(myHandle,myHandle.m,"grey","green");		}		myHandle.n++;
@@ -2249,6 +2260,37 @@ function CBlClass ()
 		return c[0];	
 	}
 
+	this.blCheckURL = function(url,v) {
+		const xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+		  if (this.readyState == 4 && this.status == 200) {
+			v.innerHTML = "good";//this.responseText;
+		  }
+		  else{
+			v.innerHTML = "cannot reach!";        
+		  }
+		};
+		xhttp.open("GET", url);
+		xhttp.send();
+	  }
+	this.C4AutoRun = function(d){	
+		const blco1 = this;
+		d.innerHTML = "";
+		const v8080 = this.blDiv(d,d.id+"v8080","v8080","lightblue");
+		const v3000 = this.blDiv(d,d.id+"v3000","v3000","lightgreen");
+
+		const _checkURL = function(_v,_url){
+			blco1.blTimer(1000,1000,function(_lt){
+				blco1.blCheckURL(_url,_v);
+			}); 
+		}	
+		var r = {};
+		r.v = "blC4AutoRun_v0.13";
+		_checkURL(v8080,"http://localhost:8080");
+		_checkURL(v3000,"http://localhost:3000");
+		return r;
+		
+	}
 	this.C4Canvas = function(d,w,h,initColor){
 		function _blCanvas(d,w,h){
 			var cvs = document.createElement("canvas");
