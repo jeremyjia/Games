@@ -2284,22 +2284,82 @@ function CBlClass ()
 		};
 		xhttp.open("GET", url);
 		xhttp.send();
-	  }
+	}
+
+	this.blTask = function(){
+		
+		const C4Task = function(){
+			var n = 0;
+			this.getInfo = function(){
+				return n;
+			}
+			this.toLock = function(l){
+				if(l.lock) l.lock();
+			}
+			this.doing = function(l){
+				n++;
+				if(n>3){
+					if(l.unlock) l.unlock();
+				}
+			}
+		}
+		
+		const o = new C4Task();
+		return o;
+	}
+	this.blLock = function(){
+		var b = true;
+		var o = {};
+		o.isLocked = function(){
+			return b;
+		}
+		o.lock = function(){
+			b = true;
+		}
+		o.unlock = function(){
+			b = false;
+		}
+		return o;
+	}
 	this.C4AutoRun = function(){	
 		const blco1 = this; 
 		const ver = "4AutoRun_v0.14";
 		var tb = null,v=null; 
 		var ls = [];
+		var lock4Run 	= blco1.blLock();
+		var curIndex 	= -1;
 		var f = function(){
 			var o = {};
 			o.uiBuild = function(d){
 				tb = blco1.blDiv(d,"tb_4_AutoRun","tb","gray");
 				const lv = blco1.blDiv(d,"lv_4_AutoRun","-","green");
 				v = blco1.blDiv(d,"v_4_AutoRun","v","lightgray");	
+				
+				vTask = blco1.blDiv(d,"vTask","vTask","lightblue");	
 				const btnTimer = blco1.blBtn(v,v.id+"btnTimer","btnTimer","yellow");
 				btnTimer.style.float = "left";
+				const btnCurTask = blco1.blBtn(v,v.id+"btnCurTask","btnCurTask","brown");
+				btnCurTask.style.float = "left";
+				btnCurTask.style.color = "white";
+				btnCurTask.onclick = function(){
+					lock4Run.unlock();
+				}
+
+				lock4Run.unlock();
 				blco1.blTimer(1000,1000,function(tl){
 					btnTimer.innerHTML = tl;
+					btnCurTask.innerHTML = curIndex;
+					if(lock4Run.isLocked()){ 	
+						if(ls[curIndex].doing) ls[curIndex].doing(lock4Run);						
+					}
+					else{
+						if(curIndex<ls.length-1) 
+						{
+							curIndex++;
+							if(ls[curIndex].toLock) ls[curIndex].toLock(lock4Run);
+						}
+					}
+					
 				});
 				
 				tb.getObj = function(){return r;}
@@ -2308,6 +2368,11 @@ function CBlClass ()
 				ls.push(o);
 				const btnT = blco1.blBtn(tb,tb.id+ls.length,ls.length,"lightblue");
 				btnT.style.float = "left";
+				btnT.onclick = function(_v,_this,_oTask){
+					return function(){
+						_v.innerHTML = _this.id + ": n=" + _oTask.getInfo(); ;
+					}
+				}(vTask,btnT,o);
 			}
 			return o;
 		};
