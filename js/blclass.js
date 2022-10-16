@@ -2290,6 +2290,10 @@ function CBlClass ()
 		
 		const C4Task = function(){
 			var n = 0;
+			var btn = null;
+			this.setBtn = function(_btn){
+				btn = _btn;
+			}
 			this.getInfo = function(){
 				return n;
 			}
@@ -2299,7 +2303,14 @@ function CBlClass ()
 			this.doing = function(l){
 				n++;
 				if(n>3){
-					if(l.unlock) l.unlock();
+					if(l.unlock) l.unlock();					
+					if(btn) btn.style.backgroundColor = "gray";
+				}
+				else{
+					if(btn) btn.style.backgroundColor = "yellow";
+				}
+				if(btn) {
+					btn.innerHTML = n;
 				}
 			}
 		}
@@ -2365,14 +2376,15 @@ function CBlClass ()
 				tb.getObj = function(){return r;}
 			} 
 			o.addTask = function(o){
-				ls.push(o);
 				const btnT = blco1.blBtn(tb,tb.id+ls.length,ls.length,"lightblue");
-				btnT.style.float = "left";
+				btnT.style.float = "left";				
 				btnT.onclick = function(_v,_this,_oTask){
 					return function(){
 						_v.innerHTML = _this.id + ": n=" + _oTask.getInfo(); ;
 					}
 				}(vTask,btnT,o);
+				o.setBtn(btnT);				
+				ls.push(o);
 			}
 			return o;
 		};
