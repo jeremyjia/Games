@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.253"
+var g_ver_blClass = "CBlClass_bv1.6.254"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2261,16 +2261,7 @@ function CBlClass ()
 		return c[0];	
 	}
 
-	this.blDownload = function(svrAPI,targetURL,saveAsFileName,vRes){			
-		var url = svrAPI + "?url="+ targetURL + "&filename="+ saveAsFileName;  
-		var w = {};
-		w._2do = function(txt){
-			var str = "var a =" +  txt;  
-			eval(str);  
-			vRes.innerHTML =  a.filename; 
-		}
-		blo0.blAjx(w,url);		 
-	}; 	
+	 	
 	this.blCheckURL = function(url,v,cb) {
 		const xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
@@ -2286,29 +2277,71 @@ function CBlClass ()
 		xhttp.send();
 	}
 
+	this.blDownloadTask = function(_svrAPI,_srcURL,_saveAsFileName,_vRes){		
+		const C4Download = function(_svrAPI,_srcURL,_saveAsFileName,_vRes){
+			const svrAPI = _svrAPI;
+			const srcURL = _srcURL;
+			const fn = _saveAsFileName;
+			const vRes = _vRes;
+			var b = false;
+
+			this.type = blc_4_t_DOWNLOAD;
+			
+			this.done = function(){return b;};
+
+			this.bl2Download = function(){			
+				var url = svrAPI + "?url="+ srcURL + "&filename="+ fn;  
+				var w = {};
+				w._2do = function(txt){
+					var str = "var a =" +  txt;  
+					eval(str);  
+					vRes.innerHTML =  a.filename; 
+					b = true;
+				}
+				blo0.blAjx(w,url);		 
+			};
+		}
+		const o = new C4Download(_svrAPI,_srcURL,_saveAsFileName,_vRes);
+		return o;
+	}
 	this.blTask = function(){
 		
 		const C4Task = function(){
 			var n = 0;
 			var btn = null;
+			var inf = null;
+
 			this.setBtn = function(_btn){
 				btn = _btn;
 			}
+			this.setInfo = function(_inf){
+				inf = _inf;
+			}
 			this.getInfo = function(){
-				return n;
+				var s = "";
+				s += n + "<br>";
+				if(inf){
+					if(blc_4_t_DOWNLOAD==inf.type)	s += "t = DOWNLOAD";
+				}
+				else 	s+= "t = unkown";
+				return s;
 			}
 			this.toLock = function(l){
 				if(l.lock) l.lock();
 			}
 			this.doing = function(l){
 				n++;
-				if(n>3){
+				if(n==1){
+					inf.bl2Download();
+				}
+				if(inf.done()){
 					if(l.unlock) l.unlock();					
 					if(btn) btn.style.backgroundColor = "gray";
 				}
 				else{
 					if(btn) btn.style.backgroundColor = "yellow";
 				}
+
 				if(btn) {
 					btn.innerHTML = n;
 				}
@@ -5832,3 +5865,6 @@ const gc4BLS = function(){
 		return s;	
 	}
 }
+
+
+const 			blc_4_t_DOWNLOAD = 0;
