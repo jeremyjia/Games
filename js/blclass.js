@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.255"
+var g_ver_blClass = "CBlClass_bv1.6.312"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2439,13 +2439,28 @@ function CBlClass ()
 						v.innerHTML = "";
 						const lv1 = blco1.blDiv(v,v.id+"lv1","lv1","blue");
 						const vDate = blco1.blDiv(v,v.id+"vDate","date","lightgreen");
-						const vNew = blco1.blDiv(v,v.id+"vNew","new","lightblue");
-						var a = txt.split('<div class="list">');
-						var b = a[0].split('<div id="righter">');
-						var c = a[1].split('<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>');
+						const vNew = blco1.blDiv(v,"id4vParse","new","lightblue");
+						var a = txt.split('更新时间：');
+						var b = a[1].split('）');
+						var c = b[0].split('-');
+						var d = c[0]+"/"+c[1]+"/"+c[2];
 
-						vDate.innerHTML = b[1];
-						vNew.innerHTML = c[0];
+						var e = a[1].split(d); 
+						const url51voa = "https://51voa.com";
+						var s = "";
+						for(var i=0; i<e.length-1;i++){
+							s += "<br>";
+							var f = e[i].split('href="'); 
+							var sPage = "";
+							for(var j=1; j<f.length;j++){
+								var g = f[j].split("</a>");
+								sPage += '<a href="' +url51voa + g[0]+'</a> * ';
+							}
+							var dPage = blco1.blDiv(vNew,vNew.id+i,sPage,"lightgreen");
+							blco1.blBtn(dPage,dPage.id+"downloadPage","download","gray");
+						}
+
+						vDate.innerHTML = b[0]; 
 					}); 
 					t.setInfo(i);
 					o.addTask(t);
@@ -2468,7 +2483,7 @@ function CBlClass ()
 					
 				});
 				
-				tb.getObj = function(){return r;}
+				tb.getObj = function(){return rAutoRun;}
 			} 
 			o.addTask = function(o){
 				const btnT = blco1.blBtn(tb,tb.id+ls.length,ls.length,"lightblue");
@@ -2483,8 +2498,8 @@ function CBlClass ()
 			}
 			return o;
 		};
-		const r = new f();
-		return r;
+		const rAutoRun = new f();
+		return rAutoRun;
 		
 	}
 	this.C4Canvas = function(d,w,h,initColor){
