@@ -2,16 +2,16 @@ openapi: 3.0.1
 
 info:
   contact:
-    email: littleflute@163.com
+    email: littleflute@163.com 
   description: littleflute nodeJS API
   license:
     name: AllRightsReserved
     url: http://localhost:3001/
   title: Title - littleflute nodeJS API
-  version: 1.0.433
+  version: 1.0.435
 
 servers:
-- url: http://localhost:8080/api
+- url: http://localhost:3001/api
 
 security:
 - bearerAuth: []
