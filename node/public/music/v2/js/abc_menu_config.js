@@ -50,30 +50,12 @@ var menuList = [
 		] 
 	},
 	{ 
-		menuName: '编辑', 
-		menuCode: 'edit', 
-		orderby: 1,
-		subMenuList: [
-		      { code: 'back' , name: '撤销', classCss: 'back', url: 'v2/images/back.png', checkbox: true, isChecked: true},
-		      { code: 'forward' , name: '恢复', classCss: 'forward', url: 'v2/images/forward.png', checkbox: true, isChecked: true},
-//		      { code: 'cut' , name: '剪切', classCss: 'cut', url: 'v2/images/cut.png', checkbox: true, isChecked: false},
-//		      { code: 'copy' , name: '复制', classCss: 'copy', url: 'v2/images/copy.png', checkbox: true, isChecked: false},         
-//		      { code: 'past' , name: '粘贴', classCss: 'past', url: 'v2/images/past.png', checkbox: true, isChecked: false},         
-		      { code: 'del' , name: '删除', classCss: 'del', url: 'v2/images/del.png', checkbox: true, isChecked: true},         
-		      { code: 'selectedStatus2' ,id:'selectedStatus2', name: '定位', classCss: 'selectedStatus2', url: 'images/selected.png', checkbox: true, isChecked: false},         
-//		      { code: 'enterLine' , name: '换行', classCss: 'enterLine', url: 'v2/images/enter.png', checkbox: true, isChecked: false},         
-		] 
-	},
-	{ 
 		menuName: '视图', 
 		menuCode: 'view',
 		orderby: 2,
-		subMenuList: [		      
-  		      { code: 'symbol' , name: '符号面板', classCss: 'symbolPanel', checkbox: true, isChecked: true},
-  		      { code: 'attr' , name: '属性面板', classCss: 'attr', checkbox: true, isChecked: true},
+		subMenuList: [		       
 		      { code: 'edit' , name: '语法编辑(E)', classCss: 'abcEditor', checkbox: true, isChecked: false},
-		      { code: 'keyboard' , name: '钢琴键盘(D)', classCss: 'keyboard', checkbox: true, isChecked: false},
-		      { code: 'chordpanel' , name: '和弦', classCss: 'chordpanel', checkbox: true, isChecked: false},
+		      { code: 'keyboard' , name: '钢琴键盘(D)', classCss: 'keyboard', checkbox: true, isChecked: false}
 	      ] 
 	},
 	{ 
@@ -81,33 +63,10 @@ var menuList = [
 		menuCode: 'music', 
 		orderby: 3,
 		subMenuList: [
-		      { code: 'shiftKey' , name: '移调', classCss: 'shift-key', url: 'v2/images/yd.png', checkbox: true, isChecked: true},
-		      { code: 'changeSpeed' , name: '调速', classCss: 'change-speed', url: 'v2/images/ts.png', checkbox: true, isChecked: true},
+		      { code: 'shiftKey' , name: '移调', classCss: 'shift-key', url: 'v2/images/yd.png', checkbox: true, isChecked: true},		      
 		      { code: 'lyric' , name: '歌词', classCss: 'lyric', url: 'v2/images/edit_lyric.png', checkbox: true, isChecked: true},
-		      { code: 'up8' , name: '升8度', classCss: 'up8', url: 'images/8va.png', checkbox: true, isChecked: true},
-		      { code: 'down8' , name: '降8度', classCss: 'down8', url: 'images/8vb.png', checkbox: true, isChecked: true},
 		] 
-	},
-	{ 
-		menuName: '预览', 
-		menuCode: 'preview', 
-		orderby: 4,
-		subMenuList: [
-              { code: 'pytb' , name: '谱音同步', classCss: 'pytb', 
-            	  subMenuList: [
-    	    		      { code: '0' , name: '谱音同步', classCss: 'symbolPanel'},
-    	    		      { code: '1' , name: '只播图像', classCss: 'abcEditor'},
-    	    		      { code: '2' , name: '只播声音', classCss: 'keyboard'}                                                   
-    	    	  ]
-              },
-              { code: 'openRhythm' , name: '节奏谱子', classCss: 'openRhythm', url: 'v2/images/edit_rhythm.png', checkbox: true, isChecked: false},
-              { code: 'midiset' , name: 'MIDI设置', classCss: 'midiset', url: 'v2/images/midi.png', checkbox: true, isChecked: false},
-              /*{ code: 'showStrongWeak' , name: '强弱记号', classCss: 'showStrongWeak', url: 'v2/images/sw.png', checkbox: true, isChecked: false},*/
-              { code: 'toggleLyric' , name: '显隐歌词', classCss: 'toggleLyric', url: 'images/togglelyric.png', checkbox: true, isChecked: false},
-              { code: 'showKew' , name: '柯尔文记号', classCss: 'toggleKew', url: 'v2/images/kewshow.png', checkbox: true, isChecked: false},
-              { code: 'voisetting' , name: '音量设置', classCss: 'voisetting', url: 'images/vol.png', checkbox: true, isChecked: true},
-        ] 
-	},
+	}, 
 //	{ 
 //		menuName: '添加', 
 //		menuCode: 'add', 
@@ -305,26 +264,26 @@ var menuList = [
 //          	
 //		 ] 
 //	},
-	{ 
-		menuName: '帮助', 
-		classCss:"help",
-		menuCode: 'help', 
-		orderby: 6,
-		subMenuList: [] 
-	},
-	{ 
-		menuName: '快捷键', 
-		classCss:"shortcutKey",
-		menuCode: 'shortcutKey', 
-		orderby: 7,
-		subMenuList: [] 
-	},
-	{ 
-		menuName: '论坛', 
-		classCss:"bbs",
-		menuCode: 'bbs', 
-		orderby: 8,
-		subMenuList: [] 
-	}
+	// { 
+	// 	menuName: '帮助', 
+	// 	classCss:"help",
+	// 	menuCode: 'help', 
+	// 	orderby: 6,
+	// 	subMenuList: [] 
+	// },
+	// { 
+	// 	menuName: '快捷键', 
+	// 	classCss:"shortcutKey",
+	// 	menuCode: 'shortcutKey', 
+	// 	orderby: 7,
+	// 	subMenuList: [] 
+	// },
+	// { 
+	// 	menuName: '论坛', 
+	// 	classCss:"bbs",
+	// 	menuCode: 'bbs', 
+	// 	orderby: 8,
+	// 	subMenuList: [] 
+	// }
 	
 ]

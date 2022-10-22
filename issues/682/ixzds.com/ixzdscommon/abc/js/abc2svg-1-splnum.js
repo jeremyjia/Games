@@ -17913,7 +17913,7 @@ abc2svg = {
                     c: "\ueaa4"
                 }
             };
-        var glyphs = {//xdr 1
+        var glyphs = {
             acc1_1_4: '<g id="acc1_1_4">\n\t<path d="m0 7.8v-15.4" class="stroke"/>\n\t<path class="fill" d="M-1.8 2.7l3.6 -1.1v2.2l-3.6 1.1v-2.2z\n\t\tM-1.8 -3.7l3.6 -1.1v2.2l-3.6 1.1v-2.2"/>\n</g>',
             acc1_3_4: '<g id="acc1_3_4">\n\t<path d="m-2.5 8.7v-15.4M0 7.8v-15.4M2.5 6.9v-15.4" class="stroke"/>\n\t<path class="fill" d="m-3.7 3.1l7.4 -2.2v2.2l-7.4 2.2v-2.2z\n\t\tM-3.7 -3.2l7.4 -2.2v2.2l-7.4 2.2v-2.2"/>\n</g>',
             "acc-1_3_4": '<g id="acc-1_3_4">\n    <path class="fill" d="m0.6 -2.7\n\tc-5.7 -3.1 -5.7 3.6 0 6.7c-3.9 -4 -4 -7.6 0 -5.8\n\tM1 -2.7c5.7 -3.1 5.7 3.6 0 6.7c3.9 -4 4 -7.6 0 -5.8"/>\n    <path d="m1.6 3.5v-13M0 3.5v-13" class="stroke" stroke-width=".6"/>\n</g>',
@@ -18093,7 +18093,7 @@ abc2svg = {
             triangle: '<path id="triangle" class="fill" d="m-3.7 -3.2l7.4 0 -3.7 6.4 -3.7 -6.4"/>',
             diamond: '<path id="diamond" class="fill" d="m0 3.5l-3.7 -3.5 3.7 -3.5 3.7 3.5z"/>',
             oct: '<text id="oct" style="font-family:serif; font-size:12px">8</text>',
-        };//xdr 1e
+        };
         function m_gl(s) {
         	s=s+"";
             return s.replace(/[Cco]\||[co]\.|./g, function(e) {

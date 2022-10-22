@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style> 
+@font-face {
+  font-family: myFirstFont;
+  src: url(sansation_light.woff);
+}
+@font-face {
+  font-family: 'MusiSync';
+  src: url('MusiSync.ttf');
+}
+
+div {
+  font-family: myFirstFont;
+}
+p {
+  font-family: MusiSync;
+  font-size: 115px;
+}
+</style>
+</head>
+<body>
+
+<h1>The @font-face Rule</h1>
+
+<canvas id="myCanvas" width="800" height="600"
+style="border:1px solid #d3d3d3;">
+Your browser does not support the canvas element.
+</canvas>
+
+<div>With CSS, websites can finally use fonts other than the pre selected "web-safe" fonts.
+    <a target = "_blank" href="http://www.fontsaddict.com/font/musisync.html">musisync.html</a>
+</div>
+<p>ABCDEFGHIJKLMNOPQRSTUVWXYZ</p><br>
+<p>1234567890</p><br>
+<p>!@#$%^&*()</p><br>
+<script>
+var canvas = document.getElementById("myCanvas");
+// we need this to load the font
+var myFont = new FontFace('myFont', 'url(MusiSync.ttf)');
+
+myFont.load().then(function(font){
+
+  // with canvas, if this is ommited won't work
+  document.fonts.add(font);
+
+  console.log('Font loaded');
+
+   // set width and height as screen w and h
+    //canvas.width = window.innerWidth;
+	//canvas.height = window.innerHeight;
+
+	console.log(canvas);
+
+  // get canvas context
+	var ctx = canvas.getContext("2d");
+	ctx.font = "50px myFont"; // set font
+	//ctx.textAlign = "center"; // center text
+	ctx.fillText("Hello, World!", canvas.width/2, canvas.height/2); // draw centered text
+	ctx.fillText("1234567890-=", 30,30); 
+	ctx.fillText("!@#$%^&*()_+", 30,111); 
+	ctx.fillText("ABCDEFGHIJKLMNOPQRSTUVWXYZ", 30,155); 
+	ctx.fillText("abcdefghijklmnopqrstuvwxyz", 30,222); 
+});	
+  
+</script>
+
+</body>
+</html>

@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.251"
+var g_ver_blClass = "CBlClass_bv1.6.312"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -1417,7 +1417,8 @@ function CBlClass ()
 			var d4URL			= blo0.blDiv(v,v.id + "d4URL","d4URL",blColor[4]);	
 			d4URL.innerHTML = blo0.blURL();
 			var div4Parse			= blo0.blDiv(v,v.id + "ShowMe","divShowMe",blColor[6]);
-			var btnParseMe			= blo0.blBtn(tb,tb.id+"btnParseMe","[blo0]",blGrey[0]);
+			var btnParseMe			= blo0.blBtn(tb,tb.id+"btnParseMe","parseMe",blGrey[0]);
+			btnParseMe.style.float = "left";
 			btnParseMe.onclick		= function(_this,_v){
 					return function(){
 						blo0.blShowObj2Div(_v,blo0);blon(_this,_v,"grey","green");
@@ -1425,6 +1426,7 @@ function CBlClass ()
 					}
 			}(btnParseMe,div4Parse);
 			var btnTest			= blo0.blBtn(tb,tb.id+"btnTest","[test]",blGrey[0]);
+			btnTest.style.float = "left";
 			btnTest.onclick		= function(_this,_v){
 				return function(){ 
 						_v.innerHTML = _this.id;						
@@ -1432,6 +1434,16 @@ function CBlClass ()
 						blon(_this,_v,"grey","green");
 				}
 			}(btnTest,div4Parse);
+			var btnAutoRun			= blo0.blBtn(tb,tb.id+"btnAutoRun","autoRun",blGrey[0]);
+			btnAutoRun.style.float = "right";
+			
+			btnAutoRun.onclick		= function(_this,_v){
+				return function(){ 
+					const r = blo0.C4AutoRun(); 
+					r.uiBuild(_v);
+					blon(_this,_v,"grey","green");
+				}
+			}(btnAutoRun,div4Parse);
 			
 		}
 		if(myHandle.n>1){			blon(myHandle,myHandle.m,"grey","green");		}		myHandle.n++;
@@ -2249,6 +2261,247 @@ function CBlClass ()
 		return c[0];	
 	}
 
+	 	
+	this.blCheckURL = function(url,v,cb) {
+		const xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+		  if (this.readyState == 4 && this.status == 200) {
+			//v.innerHTML = "good";//this.responseText;
+			if(cb) cb(v);
+		  }
+		  else{
+			v.innerHTML = "cannot reach!";        
+		  }
+		};
+		xhttp.open("GET", url);
+		xhttp.send();
+	}
+	this.blParseTask = function(_srcURL,_vRes,_cbParse){		
+		const C4ParseTask = function(_srcURL,_vRes,_cbParse){ 
+			const srcURL = _srcURL; 
+			const vRes = _vRes;
+			var b = false;
+
+			this.type = blc_4_t_PARSE;
+			
+			this.done = function(){return b;};
+
+			this.bl2Do = function(){			
+				var url = srcURL;  
+				var w = {};
+				w._2do = function(txt){ 
+					_cbParse(vRes,txt);
+					b = true;
+				}
+				blo0.blAjx(w,url);		 
+			};
+		}
+		const o = new C4ParseTask(_srcURL,_vRes,_cbParse);
+		return o;
+	}
+	this.blDownloadTask = function(_svrAPI,_srcURL,_saveAsFileName,_vRes){		
+		const C4Download = function(_svrAPI,_srcURL,_saveAsFileName,_vRes){
+			const svrAPI = _svrAPI;
+			const srcURL = _srcURL;
+			const fn = _saveAsFileName;
+			const vRes = _vRes;
+			var b = false;
+
+			this.type = blc_4_t_DOWNLOAD;
+			
+			this.done = function(){return b;};
+
+			this.bl2Do = function(){			
+				var url = svrAPI + "?url="+ srcURL + "&filename="+ fn;  
+				var w = {};
+				w._2do = function(txt){
+					var str = "var a =" +  txt;  
+					eval(str);  
+					vRes.innerHTML =  a.filename; 
+					b = true;
+				}
+				blo0.blAjx(w,url);		 
+			};
+		}
+		const o = new C4Download(_svrAPI,_srcURL,_saveAsFileName,_vRes);
+		return o;
+	}
+	this.blTask = function(){
+		
+		const C4Task = function(){
+			var n = 0;
+			var btn = null;
+			var inf = null;
+
+			this.setBtn = function(_btn){
+				btn = _btn;
+			}
+			this.setInfo = function(_inf){
+				inf = _inf;
+			}
+			this.getInfo = function(){
+				var s = "";
+				s += n + "<br>";
+				if(inf){
+					if(blc_4_t_DOWNLOAD==inf.type)	s += "t = blc_4_t_DOWNLOAD";
+					if(blc_4_t_PARSE==inf.type)	s += "t = blc_4_t_PARSE";
+				}
+				else 	s+= "t = unkown";
+				return s;
+			}
+			this.toLock = function(l){
+				if(l.lock) l.lock();
+			}
+			this.doing = function(l){
+				n++;
+				if(n==1){
+					inf.bl2Do();
+				}
+				if(inf.done()){
+					if(l.unlock) l.unlock();					
+					if(btn) btn.style.backgroundColor = "gray";
+				}
+				else{
+					if(btn) btn.style.backgroundColor = "yellow";
+				}
+
+				if(btn) {
+					btn.innerHTML = n;
+				}
+			}
+		}
+		
+		const o = new C4Task();
+		return o;
+	}
+	this.blLock = function(){
+		var b = true;
+		var o = {};
+		o.isLocked = function(){
+			return b;
+		}
+		o.lock = function(){
+			b = true;
+		}
+		o.unlock = function(){
+			b = false;
+		}
+		return o;
+	}
+	this.C4AutoRun = function(){	
+		const blco1 = this; 
+		const ver = "4AutoRun_v0.14";
+		var tb = null,v=null; 
+		var ls = [];
+		var lock4Run 	= blco1.blLock();
+		var curIndex 	= -1;
+		var f = function(){
+			var o = {};
+			o.uiBuild = function(d){
+				tb = blco1.blDiv(d,"tb_4_AutoRun","tb","gray");
+				const lv = blco1.blDiv(d,"lv_4_AutoRun","-","green");
+				v = blco1.blDiv(d,"v_4_AutoRun","v","lightgray");	
+				
+				vTask = blco1.blDiv(d,"vTask","vTask","lightblue");	
+				const btnTimer = blco1.blBtn(v,v.id+"btnTimer","btnTimer","yellow");
+				btnTimer.style.float = "left";
+				const btnCurTask = blco1.blBtn(v,v.id+"btnCurTask","btnCurTask","brown");
+				btnCurTask.style.float = "left";
+				btnCurTask.style.color = "white";
+				btnCurTask.onclick = function(){
+					lock4Run.unlock();
+				}
+				const btn_51voaIndex = blco1.blBtn(v,v.id+"btn_51voaIndex","51voaIndex","lightblue");
+				btn_51voaIndex.style.float = "left";
+				btn_51voaIndex.style.color = "white";
+				btn_51voaIndex.onclick = function(){
+					const tb = bl$("tb_4_AutoRun");
+					const v = bl$("vTask");
+					const o = tb.getObj();
+					const t = blo0.blTask();
+					const svrAPI = "http://localhost:8080/download";
+					const srcURL = "https://www.51voa.com/";
+					const fn = "51voa_Index.html";
+					var i = blo0.blDownloadTask(svrAPI ,srcURL,fn,v); 
+					t.setInfo(i);
+					o.addTask(t);
+				}
+				const btn_parse_51voaIndex = blco1.blBtn(v,v.id+"btn_parse_51voaIndex","parse_51voaIndex","lightblue");
+				btn_parse_51voaIndex.style.float = "left";
+				btn_parse_51voaIndex.style.color = "white";
+				btn_parse_51voaIndex.onclick = function(){
+					const tb = bl$("tb_4_AutoRun");
+					const v = bl$("vTask");
+					const o = tb.getObj();
+					const t = blo0.blTask();
+					const srcURL = "http://localhost:8080/51voa_Index.html"; 
+					var i = blo0.blParseTask(srcURL,v,function(v,txt){
+						v.innerHTML = "";
+						const lv1 = blco1.blDiv(v,v.id+"lv1","lv1","blue");
+						const vDate = blco1.blDiv(v,v.id+"vDate","date","lightgreen");
+						const vNew = blco1.blDiv(v,"id4vParse","new","lightblue");
+						var a = txt.split('更新时间：');
+						var b = a[1].split('）');
+						var c = b[0].split('-');
+						var d = c[0]+"/"+c[1]+"/"+c[2];
+
+						var e = a[1].split(d); 
+						const url51voa = "https://51voa.com";
+						var s = "";
+						for(var i=0; i<e.length-1;i++){
+							s += "<br>";
+							var f = e[i].split('href="'); 
+							var sPage = "";
+							for(var j=1; j<f.length;j++){
+								var g = f[j].split("</a>");
+								sPage += '<a href="' +url51voa + g[0]+'</a> * ';
+							}
+							var dPage = blco1.blDiv(vNew,vNew.id+i,sPage,"lightgreen");
+							blco1.blBtn(dPage,dPage.id+"downloadPage","download","gray");
+						}
+
+						vDate.innerHTML = b[0]; 
+					}); 
+					t.setInfo(i);
+					o.addTask(t);
+				}
+
+				lock4Run.unlock();
+				blco1.blTimer(1000,1000,function(tl){
+					btnTimer.innerHTML = tl;
+					btnCurTask.innerHTML = curIndex;
+					if(lock4Run.isLocked()){ 	
+						if(ls[curIndex].doing) ls[curIndex].doing(lock4Run);						
+					}
+					else{
+						if(curIndex<ls.length-1) 
+						{
+							curIndex++;
+							if(ls[curIndex].toLock) ls[curIndex].toLock(lock4Run);
+						}
+					}
+					
+				});
+				
+				tb.getObj = function(){return rAutoRun;}
+			} 
+			o.addTask = function(o){
+				const btnT = blco1.blBtn(tb,tb.id+ls.length,ls.length,"lightblue");
+				btnT.style.float = "left";				
+				btnT.onclick = function(_v,_this,_oTask){
+					return function(){
+						_v.innerHTML = _this.id + ": n=" + _oTask.getInfo(); ;
+					}
+				}(vTask,btnT,o);
+				o.setBtn(btnT);				
+				ls.push(o);
+			}
+			return o;
+		};
+		const rAutoRun = new f();
+		return rAutoRun;
+		
+	}
 	this.C4Canvas = function(d,w,h,initColor){
 		function _blCanvas(d,w,h){
 			var cvs = document.createElement("canvas");
@@ -5689,3 +5942,7 @@ const gc4BLS = function(){
 		return s;	
 	}
 }
+
+
+const 			blc_4_t_DOWNLOAD = 0;
+const 			blc_4_t_PARSE = 0;
