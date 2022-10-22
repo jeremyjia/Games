@@ -2,13 +2,13 @@ openapi: 3.0.1
 
 info:
   contact:
-    email: social@group6.io
-  description: Group 6 Studios API
+    email: littleflute@163.com
+  description: littleflute nodeJS API
   license:
     name: AllRightsReserved
-    url: https://www.battlecasters.io/
-  title: Group 6 Studios API
-  version: 1.0.432
+    url: http://localhost:3001/
+  title: Title - littleflute nodeJS API
+  version: 1.0.433
 
 servers:
 - url: http://localhost:8080/api
