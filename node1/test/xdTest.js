@@ -32,6 +32,6 @@ describe(tag4xdTest, function(){
   });
   
   it('word', function(){     assert.equal("done",'done');  });
-  it('zhipu', function(){     assert.equal("done",'done_zhipu');  });
+  it('abc0', function(){     assert.equal("done",'done_abc0');  });
   
 });
