@@ -32,10 +32,6 @@ describe(tag4xdTest, function(){
   });
   
   it('word', function(){     assert.equal("done",'done');  });
-<<<<<<< HEAD
   it('abc0', function(){     assert.equal("done",'done_abc0');  });
-=======
-  it('zhipu', function(){     assert.equal("done",'done');  });
->>>>>>> upstream/master
   
 });
