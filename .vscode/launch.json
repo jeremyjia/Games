@@ -6,6 +6,12 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch A1",
+            "request": "launch",
+            "mainClass": "A1"
+        },
+        {
+            "type": "java",
             "name": "Launch FirstSwingExample",
             "request": "launch",
             "mainClass": "FirstSwingExample"

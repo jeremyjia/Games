@@ -65,7 +65,7 @@ body {
 
 <div class="topnav" id="myTopnav">
   <a href="../index.html">Home</a>
-  <a href="#"  class="active">spider_bv0.22</a> 
+  <a href="#"  class="active">spider_bv0.31</a> 
   <a href="spider/51voa"  >51voa</a> 
   <a href="spider/ScrapingAntClient"  >ScrapingAntClient</a> 
   <a href="javascript:void(0);" class="icon" onclick="myFunction()">
@@ -76,8 +76,12 @@ body {
 <div style="padding-left:16px">
   <h2>Responsive Topnav Example</h2>
   <p>Resize the browser window to see how it works.</p>
+  <button onclick="downloadTest();">downloadTest</button>
+  <p id="downloadV">dbg</p>
 </div>
 
+<script src="https://littleflute.github.io/JavaScript/w3.js" ></script>
+<script src="https://littleflute.github.io/Games/js/blclass.js" ></script> 
 <script>
 function myFunction() {
   var x = document.getElementById("myTopnav");
@@ -86,6 +90,23 @@ function myFunction() {
   } else {
     x.className = "topnav";
   }
+}
+var gn = 1;
+function _dl(n){
+  
+  var w2 = {};
+  w2._2do = function(txt2){
+    bl$("downloadV").innerHTML = txt2; 
+    gn++;
+    if(gn<=11120) _dl(gn);
+  }   
+  var url2 = "http://localhost:3001/downloadImage?url=";
+  url2 += "https://abc.ixzds.com/abc/js/Scc1t2/"+n+".js";
+  url2 += "&fn=" + "C:\\Users\\13699\\xd\\gitee\\reato\\music-class\\public\\fmusic\\js\\Scc1t2\\"+n+".js";
+  blo0.blAjx(w2,url2);   
+}
+function downloadTest(){
+  _dl(gn);
 }
 </script>
 
