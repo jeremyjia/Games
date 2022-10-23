@@ -1,0 +1,7 @@
+X:6
+T: abc1(test from node1 abc1.txt)
+M:C|
+L:1/8
+K:C
+V:1
+C2 d2 e4 | cB AG FE DC |c8:||: 
