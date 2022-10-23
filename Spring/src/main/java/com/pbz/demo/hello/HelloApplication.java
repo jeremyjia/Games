@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.pbz.demo.hello.util.FileUtil;
+import com.pbz.demo.hello.util.JsonSriptParser;
 import com.pbz.demo.hello.util.NetAccessUtil;
 
 @RestController
@@ -63,7 +64,7 @@ public class HelloApplication {
 			FileUtil.copyDirectory(new File(rescourceFolder), new File(applicationDir));
 			FileUtil.copyDirectory(new File(rescourceFolder + "/" + "plx"), new File(applicationDir));
 		}
-		
+
 		boolean isWindows = System.getProperty("os.name").startsWith("Windows");
 		if (!isWindows) {
 			String scriptPath = applicationDir + "/" + "jpg2video.sh";
@@ -85,9 +86,7 @@ public class HelloApplication {
 	}
 
 	private static void setServerConfig() throws Exception {
-		String updateString = "{\\\"server\\\":\\\"true\\\"}";
-		String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/939628092";
-		NetAccessUtil.doPostOnGitHub(url, "POST", updateString);
+		JsonSriptParser.serverStatusConfig(true);
 	}
 
 }
