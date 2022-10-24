@@ -1,5 +1,5 @@
 //i4c8
-var s = "v0.0.15 ";
+var s = "v0.0.16 ";
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c8.js'"
 s += " style='color:blue;'"; s += ">"; s += "c8.js* ";
 s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c8.js'"
@@ -109,16 +109,21 @@ function _myTaskProcessClass() {
 			d.v.btnServer = blo0.blBtn(d.v1, d.v1.id + "btnServer", "QueryServer", blColor[4]);
 			d.v.btnServer.onclick = function () {
 				function _loadIssue451CommentOfServer(o) {
-					var serverObj = o;
-					var isRunning = serverObj.server;
-					alert(isRunning);
-					if (isRunning == "true") {
+					alert(JSON.stringify(o));
+					var serverObj = o.servers;
+					var isRunning = false;
+					for(var j in serverObj){
+					  if(serverObj[j].isLogin == true){
+						 isRunning = true;
+					  }
+					}
+					if (isRunning == true) {
 						d.v.btnDoTask.disabled = false;
 					} else {
 						d.v.btnDoTask.disabled = true;
 					}
 				}
-				getGitHubComment(939628092, _loadIssue451CommentOfServer);
+				getGitHubComment(1287654931, _loadIssue451CommentOfServer);//old is 939628092
 
 			}
 

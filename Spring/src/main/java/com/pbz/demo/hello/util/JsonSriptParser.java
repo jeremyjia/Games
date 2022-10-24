@@ -31,6 +31,7 @@ import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -911,6 +912,52 @@ public final class JsonSriptParser {
 			}
 		}
 		return null;
+	}
+
+	public static void serverStatusConfig(boolean isLogin) {
+		String serverConfigLink = "https://api.github.com/repos/jeremyjia/Games/issues/comments/1287654931"; // 827
+		String resultString = NetAccessUtil.doGetOnGitHub(serverConfigLink, "");
+		String jsonString = new JSONObject(resultString).getString("body");
+		System.out.println(jsonString);
+
+		JSONObject jsonObj = new JSONObject(jsonString);
+		JSONArray serverArray = (JSONArray) jsonObj.get("servers");
+
+		String hostName = FileUtil.getFQDN();
+		String currentTime = FileUtil.getCurrentTime();
+		boolean bRegistered = false;
+		for (int i = 0; i < serverArray.length(); i++) {
+			JSONObject jsonItem = new JSONObject(serverArray.get(i).toString());
+			if (jsonItem.getString("name").equals(hostName)) {
+				bRegistered = true;
+				jsonItem.put("isLogin", isLogin);
+				if (isLogin) {
+					jsonItem.put("LastloginTime", currentTime);
+				}
+				serverArray.put(i, jsonItem);
+				break;
+			}
+		}
+
+		if (isLogin && !bRegistered) {
+			JSONObject jsonNewItem = new JSONObject();
+			jsonNewItem.put("name", hostName);
+			jsonNewItem.put("isLogin", isLogin);
+			jsonNewItem.put("LastloginTime", currentTime);
+			serverArray.put(jsonNewItem);
+		}
+
+		String newJsonString = jsonObj.toString();
+		newJsonString = StringEscapeUtils.escapeJson(newJsonString);
+		System.out.println(newJsonString);
+		NetAccessUtil.doPostOnGitHub(serverConfigLink, "POST", newJsonString);
+
+	}
+
+	public static void main(String[] args) {
+		System.out.println("UTest begin");
+		serverStatusConfig(true);
+		System.out.println("UTest end");
 	}
 
 }

@@ -4,7 +4,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.pbz.demo.hello.util.NetAccessUtil;
+import com.pbz.demo.hello.util.JsonSriptParser;
 
 @Component
 public class ExitApp implements DisposableBean {
@@ -23,9 +23,7 @@ public class ExitApp implements DisposableBean {
 	}
 
 	private void setServerConfig() throws Exception {
-		String updateString = "{\\\"server\\\":\\\"false\\\"}";
-		String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/939628092";
-		NetAccessUtil.doPostOnGitHub(url, "POST", updateString);
+		JsonSriptParser.serverStatusConfig(false);
 	}
 
 }
