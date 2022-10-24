@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html style="transform: scale(0.75) translate(-200px,-75px);">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link href="js/edit-1.css" rel="stylesheet" type="text/css" />
+<script src="js/jquery.min.js"></script> 
+<script src="js/util.js" type="text/javascript"></script>
+<script src="js/piano.js" type="text/javascript"></script>
+<script src="js/staff2num-splnum.js?v=2019084" type="text/javascript"></script>
+<script src="js/edit-1-splnum.js?v=2019084"  type="text/javascript"></script>
+<script src="js/abc2svg-1-splnum.js?v=2019085" type="text/javascript"></script>
+<script type="text/javascript">
+var notes_pattern = /(\[[\^\_\=A-Ya-y\/1-9,']*\])|(\^){0,1}(\_){0,1}(\=){0,1}[^\[\s\]]{1}[\,\'\/|1-9]*/g;
+document.oncontextmenu=function(){return false;}; 
+//document.onselectstart=function(){return false;};
+var pagewidth = 21;
+var scale = 1.2;
+var isCtrl = false;
+var animation = true;
+var errorcheck = false;
+//实时纠错历史记录（在用户松开按键时记录）
+var liveHistoryArr = new Array();
+function Grab(){}
+function Drag(){}
+function Drop(){}
+function lightoperator(){}
+function playcallback(){}
+function endplaycallbck(){}
+function getSelectText(){}
+$(document).ready(function(){
+	
+});
+
+function setSourceData(content,scale,topmargin,botmargin,leftmargin,rightmargin,pmusicType){
+	musicType=pmusicType;
+	contralPage = 0;
+
+	
+	$("#source").val(content);
+	scale=scale;
+	setMargin(topmargin,botmargin,leftmargin,rightmargin)
+}
+function setPageWidth(){
+	
+}
+function setStaffScale(val){
+	scale = parseFloat(val);
+	src_change();
+}
+function setRate(val){
+	abc.cfmt().pdfrate = val;
+}
+function setMargin(topmargin,botmargin,leftmargin,rightmargin){
+	var content = $("#source").val();
+	
+	var pageWidthPattern = /%%pagewidth\s*([0-9]*)\n/;
+	var pageWidth = "%%pagewidth 1500\n";
+	var pageWidthMatchs = content.match(pageWidthPattern);
+	if(pageWidthMatchs!=null){
+	}else{
+		var content = $("#source").val();
+		content = pageWidth + content;
+	}
+	
+	
+	if(topmargin!=""){
+		if(content.indexOf("topmargin")>-1){
+			content = content.replace(/%%topmargin.*/g,"%%topmargin " + topmargin + "cm");
+		}else{
+			content = "%%topmargin " + topmargin + "cm\n" + content;
+		}
+	}
+	
+	if(botmargin!=""){
+		if(content.indexOf("botmargin")>-1){
+			content = content.replace(/%%botmargin.*/g,"%%botmargin " + topmargin + "cm");
+		}else{
+			content = "%%botmargin " + topmargin + "cm\n" + content;
+		}
+	}
+	if(content.indexOf("%%leftmargin")>-1){
+		content = content.replace(/%%leftmargin.*/g,"%%leftmargin " + leftmargin + "cm");
+	}else{
+		content = "%%leftmargin " + leftmargin + "cm\n" + content;
+	}
+	
+	if(content.indexOf("%%rightmargin")>-1){
+		content = content.replace(/%%rightmargin.*/g,"%%rightmargin " + rightmargin + "cm");
+	}else{
+		content = "%%rightmargin " + rightmargin + "cm\n" + content;
+	}
+	
+	
+	
+	
+	$("#source").val(content);
+	src_change();
+}
+</script>
+</head>
+
+<body ondragstart="return false;" >
+<label id="midi_label"></label>
+<div style="display: none;">
+<ul id="ctxMenu" class="dropdown-menu"></ul>
+	<input id="s0" type="button" style="display: inline; background-color: #80ff80" value="(noname)"/>
+	<input id="s1" type="button" style="display: none; background-color: #ffd0d0" value=""/>
+</div>
+<label id="er" onclick="popshow('errlist', true)" style="display: none; background: #ff8080;cursor: pointer;position: absolute;left: 0;top: 0px;font-size: 14px;">语法有错</label>
+	<li style="display: none;" class="dropbutton"><label id="f">File</label>
+		<ul class="droplinks">
+		    <li><input type="file" id="abcfile" accept="text/*"
+				style="display:none" onchange="loadtune()"/>
+			<label id="fl" for="abcfile">Load file</label>
+		    </li>
+		    <li><label id="saveas">Save file</label></li>
+		</ul>
+	</li>
+	<div id="target">
+
+		<svg  xmlns="http://www.w3.org/2000/svg"
+			xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"
+			width="18.3in" height="2in" viewBox="0 0 595 144" id="svg_pic"> 
+			<text x="250" y="100" font-family="serif" font-size="12"></text> 
+		</svg>
+	</div>
+	
+	<textarea  id="source" name="source" rows="14" cols="73" wrap="off"
+		style="font: 14px monospace;height: 100%;display: none;" ondrop="dropped(event)"
+		ondragenter="drag_over(event)" ondragover="drag_over(event)"
+		oninput="src_change()" onclick="" onmouseup=""></textarea>
+	<textarea id="src1" rows="40" cols="73" wrap="off" style="font: 14px monospace;display: none;" oninput="src_change()"></textarea>
+	<div id="errlist" class="popup" style="width: 500px">
+		<div class="close" onclick="popshow('errlist')">x</div>
+		<div id="diverr" style="font-size: 14px;"></div>
+	</div>
+</body>
+</html>

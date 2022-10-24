@@ -7,7 +7,7 @@ const config = {
   RESET_PASSWORD_PAGE_URL: process.env.RESET_PASSWORD_PAGE_URL ? process.env.RESET_PASSWORD_PAGE_URL : "http://localhost:3000/reset_password",
   
   HOST_PORT: process.env.HOST_PORT ? process.env.HOST_PORT : 3001,
-  PUBLIC_URL: process.env.PUBLIC_URL ? process.env.PUBLIC_URL : 'http://localhost:8080',
+  PUBLIC_URL: process.env.PUBLIC_URL ? process.env.PUBLIC_URL : 'http://localhost:3001',
   WEB_SOCKET_PORT: 9090,
   BASE_VERSION: 'v2',
   CONTROLLER_DIRECTORY: path.join(__dirname, 'controllers'),
