@@ -867,13 +867,12 @@ $(document).ready(function(){
       
       //ctrl + f//blclass debug
       if (event.which === 70 && event.ctrlKey){
-		alert("xddbg");
+		alert(blo0);
 		return false;
 	} 
 
       //ctrl + d//显示隐藏钢琴键盘
-      if (event.which === 68 && event.ctrlKey){
-		alert("xddbg1");
+      if (event.which === 68 && event.ctrlKey){ 
     	  content_vue.keyboardShow = !content_vue.keyboardShow;
   		  setAttrPanelHei();
   		  return false;
@@ -6572,8 +6571,7 @@ function bindAllEvent(){
 			editorV = $(this).attr("value");
 		}
 	});
-	$(".exportmid").off('click').on('click',function(){
-		alert("xddbg1");
+	$(".exportmid").off('click').on('click',function(){ 
 		// note_lyrics("source")
 		 
 		$("#abcform").attr("action","abcservlet");
