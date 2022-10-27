@@ -867,7 +867,7 @@ $(document).ready(function(){
       
       //ctrl + f//blclass debug
       if (event.which === 70 && event.ctrlKey){
-		alert(blo0);
+		oExt.blMD();					 
 		return false;
 	} 
 
@@ -8031,3 +8031,70 @@ function getTransposeByShift(){
 	}
 	return 0;
 }
+
+function C4BlExt(){
+	this.blMD = function(){
+		if(!blo0.dbg){
+			blo0.dbg = blo0.blMD("id_4_UI_blDbg","v0.31",855,100,555,100,"green");
+			_v = blo0.blDiv(blo0.dbg,blo0.dbg.id+"_v","_v","gray");
+		   _SandBox(_v); 
+		} 
+		_on_off(blo0.dbg);
+	} 
+	const _on_off = function(d){
+		if(d.style.display=="block"){
+			d.style.display="none"; 
+		}
+		else
+		{
+			d.style.display="block";
+		}
+	}
+	const _SandBox = function(sbDiv){
+		var d1 = blo0.blDiv(sbDiv,sbDiv.id+"d1","d1",blColor[1]);
+		var ta = blo0.blTextarea(d1,"id_4_ta_blrRunJS","alert(1);",blGrey[3]);
+		ta.style.width="95%"; 
+		ta.style.height="111"+"px"; 
+		d1.ta = ta;
+
+		var tb = blo0.blDiv(d1,d1.id+"tb_4_i21","",blGrey[5]);
+	    var btnRun= blo0.blBtn(tb,tb.id+"btnRun","run",blColor[4]);
+	    btnRun.onclick= function(){	  eval(ta.value);		}
+		_blLoadGithubIssueComments(tb,"https://api.github.com/repos/jeremyjia/Games/issues/21",ta);
+
+		return d1;
+	}
+	const _blMarkBtnInList= function(_btn,_ls,_highlightColor,_darkColor){  
+		for(j in _ls){
+			if(_btn.id==_ls[j].id){
+				_btn.style.backgroundColor = _highlightColor;
+			}
+			else{
+				if(_ls[j].style!=undefined){
+					_ls[j].style.backgroundColor = _darkColor;
+				}
+			}
+		}		
+	}
+	const _blLoadGithubIssueComments = function(tb,icURL,ta){
+		
+		function _loadIssueComments(o) { 
+			var ls = [];
+			for(i in o)
+			{
+				var n=ls.length + 1;
+				var bodyTxt = o[i].body;
+				var btn= blo0.blBtn(tb,tb.id+"btn"+n,n,blGrey[4]);
+				btn.onclick = function(_thisBtn,_n,_curTxt){
+					return function(){
+						ta.value = _curTxt;
+						_blMarkBtnInList(_thisBtn,ls,"yellow","grey");
+					}
+				}(btn,n,bodyTxt);
+				ls.push(btn);
+			}
+		}
+		w3.getHttpObject(icURL + "/comments", _loadIssueComments);	
+	}
+}
+const oExt = new C4BlExt();
