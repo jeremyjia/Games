@@ -5,7 +5,7 @@
 /*  http://javascriptobfuscator.com                                        */
 /*                                                                         */
 /***************************************************************************/
-alert("_xdr_s: abc_select.js");
+ 
 var _xdr_s=["use strict", //[0]
 "selectedCball", //[1]
 "isOk",
@@ -20,7 +20,7 @@ var _xdr_s=["use strict", //[0]
 "isSelNote",
 "$notes","prototype","close",".nobrk svg","svg rect[type=\'note\'], svg rect[type=\'rest\'],svg rect[type=\'splnum_note\'], svg rect[type=\'splnum_rest\']","css","each","length","barline_start","barline_end","line","value","animVal","height","<svg class=\"svg-staff\"><rect data-idx=\"","\" x=\"","\" y=\"","\" width=\"","\" height=\"","\" fill=\"","\" fill-opacity=\"","\"></rect></svg>","append","initMoveEvent","reBuild-","log","changedTouches","getEvt","scrollTop","pageX","pageY","mousedown","touchstart","mousemove","touchmove","mouseup","touchend","isPc","offset","istart","attr","node-index","left","top","outerWidth","outerHeight","push",".svg-staff rect","click","shiftKey","that.cStart:","#0F84F5","rect[node-index=\'","\']","that.cEnd:","on","off","data-idx","fill-opacity",".svg-staff rect[data-idx=\'","[type=\"bar\"]","not","preventDefault","stopPropagation","that.first: ","that.end: ","getPageXy","x1","x","x2","y1","y","y2",".svg-staff rect[fill-opacity=\'0\']","remove",".svg-staff","type","4","8","10","bar_index","beam_end","function","seqStart: ",",",
 "AbcSel"];
-alert("_xdr_s:" + _xdr_s.length);
+
 
 ;;
 (function(_0x113A2,_0x1134A,_0x11376){

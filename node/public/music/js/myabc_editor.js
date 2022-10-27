@@ -865,8 +865,15 @@ $(document).ready(function(){
         	return false;
       }     
       
+      //ctrl + f//blclass debug
+      if (event.which === 70 && event.ctrlKey){
+		alert("xddbg");
+		return false;
+	} 
+
       //ctrl + d//显示隐藏钢琴键盘
       if (event.which === 68 && event.ctrlKey){
+		alert("xddbg1");
     	  content_vue.keyboardShow = !content_vue.keyboardShow;
   		  setAttrPanelHei();
   		  return false;
@@ -890,7 +897,7 @@ $(document).ready(function(){
       if(event.which == 39 && event.ctrlKey){
     	  $("img[dur].selected").removeClass("selected").next().click();
     	  return false;
-      }
+      } 
       
 //      如果当前焦点是文本框或文本域则正常走
       if(obj[0].tagName.toUpperCase()=="TEXTAREA" ||obj[0].tagName.toUpperCase()=="INPUT"){
