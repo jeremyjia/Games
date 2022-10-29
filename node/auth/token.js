@@ -56,6 +56,9 @@ exports.verify = function(req,res, next){
 		else if(a[0]==="/NewPlayer"){
 			next();
 		} 
+		else if(a[0]==="/abc2db"){
+			next();
+		} 
 		else if(a[0]==="/adminSignIn"){
 			next();
 		}

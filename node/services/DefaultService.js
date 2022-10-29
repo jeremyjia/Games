@@ -89,6 +89,26 @@ class DefaultService {
         },
       );
   }
+  static abc2db({body: group6User}) {
+    
+    l.tag1(tag,JSON.stringify(group6User));
+
+    return new Promise(
+        async (resolve) => {
+          try {
+            var r = {};
+            r.v = "abc->db_0.12";
+            resolve(Service.successResponse(r));  
+            
+          } catch (e) {
+            resolve(Service.rejectResponse(
+              e.message || 'Invalid input',
+              e.status || 405,
+            ));
+          }
+        },
+      );
+  }
   static verify(req) {
 
     return new Promise(

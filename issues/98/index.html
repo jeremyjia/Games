@@ -1,87 +1,118 @@
 
-<script src="../../js/blclass.js"></script> 
-
-<div>index.html bv0.14: 
-  <a href="../index.html">[..]</a> 
-</div>
-// copy script below to issue 98#.
-
-
-//called by https://github.com/jeremyjia/Games/issues/96
-//for: id_div_4_User_plx #2 (littleflute) 
-<h3><font color="blue">录音并上传到六号主页试听</font></h3>
-<div class="app">
-        <button class="record-btn">record</button>
-        <audio controls class="audio-player"></audio>
-</div>
-
-
-<script id="id_script"> 
-const recordBtn = document.querySelector(".record-btn");
-const player = document.querySelector(".audio-player");
-
-if (navigator.mediaDevices.getUserMedia) {
-  var chunks = [];
-  const constraints = { audio: true };
-  navigator.mediaDevices.getUserMedia(constraints).then(
-    stream => {
-      console.log("授权成功！");
-
-      const mediaRecorder = new MediaRecorder(stream);
-
-      recordBtn.onclick = () => {
-        if (mediaRecorder.state === "recording") {
-          mediaRecorder.stop();
-          recordBtn.textContent = "record";
-          console.log("录音结束");
-        } else {
-          mediaRecorder.start();
-          console.log("录音中...");
-          recordBtn.textContent = "stop";
-        }
-        console.log("录音器状态：", mediaRecorder.state);
-      };
-
-      mediaRecorder.ondataavailable = e => {
-        chunks.push(e.data);
-      };
-
-      mediaRecorder.onstop = e => {
-        var blob = new Blob(chunks, { type: "audio/ogg; codecs=opus" });
-        chunks = [];
-      
-         let reader= new FileReader();
-         reader.onload = function (e) { 
-             var audioData = e.target.result;
-             alert(audioData);
-             blo0.addNewGitHubComment(550, audioData, 
-                function CallBackSubmit2SixPage(response) {
-                    if (response.readyState == 4) {
-                        if (response.status == 200 || response.status == 201) {
-                            alert("上传到6号成功!");
-                        } else {
-                            alert("Errors, status=" + response.status);
-                        }
-                    }
-                }
-            );
-              console.log(audioData);
-         }
-         reader.readAsDataURL(blob);
-
-        var audioURL = window.URL.createObjectURL(blob);
-        player.src = audioURL;
-        player.play();
-      };
-    },
-    () => {
-      console.error("授权失败！");
-    }
-  );
-} else {
-  console.error("浏览器不支持 getUserMedia");
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+body {
+  font-family: Arial, Helvetica, sans-serif;
 }
 
-        
-</script>
+.mobile-container {
+  max-width: 480px;
+  margin: auto;
+  background-color: #555;
+  height: 500px;
+  color: white;
+  border-radius: 10px;
+}
 
+.topnav {
+  overflow: hidden;
+  background-color: #333;
+  position: relative;
+}
+
+.topnav #myLinks {
+  display: none;
+}
+
+.topnav a {
+  color: white;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+  display: block;
+}
+
+.topnav a.icon {
+  background: black;
+  display: block;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.topnav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.active {
+  background-color: #4CAF50;
+  color: white;
+}
+</style>
+</head>
+<body>
+
+<!-- Simulate a smartphone / tablet -->
+<div class="mobile-container">
+
+<!-- Top Navigation Menu -->
+<div class="topnav">
+  <a href="#home" class="active">c1Test</a>
+  <div id="myLinks">
+    <a href="https://jeremyjia.github.io/Games/" target="_blank">Home Page</a>
+    <a href="https://github.com/jeremyjia/Games" target="_blank">Repo</a> 
+  </div>
+  <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+    <i class="fa fa-bars"></i>
+  </a>
+</div>
+
+<div style="padding-left:16px">
+  <h3>i98 v0.0.22</h3> 
+  <p><button id="index.js">index.js</button></p>
+</div>
+<div id="id_div_4_littleflute_plx"></div>
+<!-- End smartphone / tablet look -->
+</div>
+
+<script>
+function myFunction() {
+  var x = document.getElementById("myLinks");
+  if (x.style.display === "block") {
+    x.style.display = "none";
+  } else {
+    x.style.display = "block";
+  }
+}
+</script>
+  
+<script src="https://littleflute.github.io/JavaScript/w3.js"></script>
+<script src="../../js/blclass.js"></script>
+<script> 
+
+  bl$("index.js").onclick = function(){
+
+    if(!this.n){
+      this.n = 1;
+      blo0.blScript("id_js_index.js", "index.js"); 
+      var b = this;
+      b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];      
+    }
+    else{ 
+      this.n ++;
+      var d = bl$( "id_md_4_littleflute_home_page_plx" );
+        _on_off_div( this ,d);
+        var b = this;
+      b.style.background = b.style.background=="red"?blGrey[5]:blColor[4]; 
+    } 
+    if(this.n==2) this.click();
+    
+  }
+  </script>
+</body>
+</html>

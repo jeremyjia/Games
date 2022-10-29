@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+	<script type="text/javascript" src="js/jquery-1.7.2.js"></script>
+	 <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="ztree/css/zTreeStyle/zTreeStyle.css" type="text/css">
+	<script type="text/javascript" src="ztree/js/jquery.ztree.core.js"></script>
+	<script type="text/javascript" src="ztree/js/jquery.ztree.excheck.js"></script>
+	<script type="text/javascript" src="ztree/js/jquery.ztree.exedit.js"></script>
+</head>
+<body>
+<ul style="display: none;position: absolute;background-color: white;z-index: 99;" id="typeTree2" class="ztree"></ul>
+<table>
+	<tr>
+		<td style="vertical-align: top;width: 250px;"><ul id="typeTree" class="ztree"></ul></td>
+		<td>
+		          谱例名称：<input type="text" id="sStaffName" name="sStaffName">&nbsp;<input type="button" onclick="doSearch()" value="查询">
+		          <input type="hidden" id="staffTypeId" name="staffTypeId">
+			<table id="mystafftab" class="table table-hover" style="width:705px;">
+				<thead>
+					<tr>
+						<th>谱例名称</th>
+						<th>分类</th>
+						<th>创建时间</th>
+						<th>操作</th>
+					</tr>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+		</td>
+	</tr>
+</table>
+
+
+<ul class="pagination" style="float: right;">
+<!--   <li class="page-item"><a class="page-link" href="javascript:prePage()">上一页</a></li> -->
+<!--   <li class="page-item active"><a class="page-link" href="#">1</a></li> -->
+<!--   <li class="page-item"><a class="page-link" href="#">2</a></li> -->
+<!--   <li class="page-item"><a class="page-link" href="#">3</a></li> -->
+<!--   <li class="page-item"><a class="page-link" href="#">下一页</a></li> -->
+</ul>
+</body>
+<script type="text/javascript">
+var zNodes =[];
+$(document).ready(function(){
+	document.oncontextmenu = function (eve) {
+		$("#typeTree2").css("display","none")
+        return false;
+    };
+});
+//加载我的谱子列表
+var currPage = 1;
+var totalPage = 0;
+var pageSize = 8;
+var personId = "";
+var file_server_url = ""
+function doSearch(){
+	listMyAbc(personId,file_server_url);
+}
+function listMyAbc(ppersonId,pfile_server_url){
+	$("#typeTree2").css("display","none")
+	personId = ppersonId;
+	file_server_url = pfile_server_url;
+	
+	var url = file_server_url + "/listAbcByPersonId?time="+new Date();
+	$.ajax({
+      type: "POST",
+      url: url,
+      data: {"personId":personId,"pageSize":8,"pageNumber":currPage,"optype":"listStaff","staffTypeId":$("#staffTypeId").val(),"title":$("#sStaffName").val()},
+      dataType: "json",
+      success: function(data){
+    	  if(data!="" && data!=null){
+    		  $("#mystafftab tbody").html("");
+    		  $("#mystafftab tbody").html("");
+    		  $(".pagination").html("");
+    		  console.log(data);
+    		  //分类数据
+    		  for(var i=0;i<data.Rows.length;i++){
+    			  var tr = "<tr>";
+    			  tr += "<td><a href='javascript:reloadStaff(\""+data.Rows[i].GROUPID+"\")'>"+(data.Rows[i].TITLE==""?"无标题":data.Rows[i].TITLE)+"</a></td>";
+    			  tr += "<td attachid='"+data.Rows[i].ATTACH_ID+"' onclick='showTree(\""+data.Rows[i].ATTACH_ID+"\",event)' style='color:#007bff;cursor:pointer;'>" + getTypeName(data.Rows[i].STAFF_TYPE_ID) + "</td>";
+    			  tr += "<td>"+data.Rows[i].CREATETIME+"</td>";
+    			  tr += "<td><a href='javascript:reloadStaff(\""+data.Rows[i].GROUPID+"\")'>编辑</a></td>";
+    			  tr += "</tr>";
+    			  $("#mystafftab tbody").append($(tr));
+    		  }
+    		  totalPage = data.TotalPage;
+    		  $(".pagination").append("<li class=\"page-item\"><a class=\"page-link\" href=\"javascript:prePage()\">上一页</a></li>");
+    		  var count = 0;
+    		  var start = parseInt(currPage/10)*10;
+    		  for(var i=0;i<totalPage;i++){
+    			  
+    			  if((i+1)>=start && count<10){
+    				  var active = "";
+        			  if(i==(currPage-1)){
+        				  active = "active";
+        			  }
+        			  var p = "<li class=\"page-item "+active+"\"><a class=\"page-link\" href=\"javascript:goPage("+(i+1)+")\">"+(i+1)+"</a></li>";
+        			  $(".pagination").append($(p));
+        			  count++;
+    			  }
+    			 
+    		  }
+    		  $(".pagination").append($("<li class=\"page-item\"><a class=\"page-link\" href=\"javascript:nextPage()\">下一页</a></li>"));
+    	  }
+      },
+      error: function (message) {
+          window.top.alert("加载文件失败");
+      }
+  });
+}
+function reloadStaff(groupid){
+	window.parent.reloadStaff(groupid);
+}
+var currAttachId = "";
+function showTree(attachId,e){
+	$("#typeTree2").html("")
+	initTree2();
+	 currAttachId = attachId;
+	var top = e.y;
+	var left = e.x;
+	console.log("top:",top)
+	$("#typeTree2").css("display","").css("top",top).css("left",left);
+}
+function initTree2(){
+	
+	zNodes = [];
+	var node = new Object();
+	node.id="0";
+	node.pId = "-1";
+	node.name = "我的谱例分类";
+	zNodes.push(node); 
+	var url = file_server_url + "/listAbcByPersonId?time="+new Date();
+	$.ajax({
+      type: "POST",
+      url: url,
+      data: {"personId":personId,"optype":"listType"},
+      dataType: "json",
+      success: function(data){
+    	  if(data!="" && data!=null){
+    		  console.log(data);
+    		  //分类数据
+    		  for(var i=0;i<data.Rows.length;i++){
+    			  var row = data.Rows[i];
+    			  console.log(row);
+    			  //{ id:11, pId:1, name:"父节点11 - 折叠"},
+    			  var node = new Object();
+    			  node.id=row.STAFF_TYPE_ID;
+    			  node.pId = row.PARENT_STAFF_TYPE_ID;
+    			  node.name = row.STAFF_TYPE_NAME;
+    			  zNodes.push(node);
+    		  }
+    			 var setting = {
+    						view: {
+    							selectedMulti: false
+    						},
+    						data: {
+    							simpleData: {
+    								enable: true
+    							}
+    						},
+    						callback: {
+    							onClick: changeType
+    						}
+    					};
+    			$.fn.zTree.init($("#typeTree2"), setting, zNodes);
+    	  }
+      }
+	});
+    	  
+    	  
+
+}
+//修改分类
+function changeType(event, treeId, treeNode) {
+	var typeId = treeNode.id;
+	if(typeId==0){
+		typeId="";
+	}
+	var url = file_server_url + "/staffTypeServlet?time="+new Date();
+	$.ajax({
+      type: "POST",
+      url: url,
+      data: {"OP_TYPE":"updateType","STAFF_TYPE_ID":typeId,"ATTACH_ID":currAttachId},
+      dataType: "json",
+      success: function(data){
+    	  console.log(data);
+    	  
+    	  $("td[attachid='"+currAttachId+"']").html(getTypeName(treeNode.id))
+    	  $("#typeTree2").css("display","none")
+    	  var treeObj = $.fn.zTree.getZTreeObj("typeTree2");
+    	  treeObj.expandAll(false)
+      }
+    });
+}
+function getTypeName(id){
+	if(id==0){
+		return "未分类"
+	}
+	if(zNodes.length>0){
+		for(var i=0;i<zNodes.length;i++){
+			var n = zNodes[i];
+			if(n.id == id){
+				return n.name;
+			}
+		}
+	}
+	return "未分类";
+}
+//获取分类列表
+function listMyAbcTypes(ppersonId,pfile_server_url){
+	personId = ppersonId;
+	file_server_url = pfile_server_url;
+	zNodes = [];
+	var node = new Object();
+	node.id="0";
+	node.pId = "-1";
+	node.name = "我的谱例分类";
+	zNodes.push(node); 
+	var url = file_server_url + "/listAbcByPersonId?time="+new Date();
+	$.ajax({
+      type: "POST",
+      url: url,
+      data: {"personId":personId,"optype":"listType"},
+      dataType: "json",
+      success: function(data){
+    	  if(data!="" && data!=null){
+    		  console.log(data);
+    		  //分类数据
+    		  for(var i=0;i<data.Rows.length;i++){
+    			  var row = data.Rows[i];
+    			  console.log(row);
+    			  //{ id:11, pId:1, name:"父节点11 - 折叠"},
+    			  var node = new Object();
+    			  node.id=row.STAFF_TYPE_ID;
+    			  node.pId = row.PARENT_STAFF_TYPE_ID;
+    			  node.name = row.STAFF_TYPE_NAME;
+    			  zNodes.push(node);
+    		  }
+    	  }
+    	  
+    	  var setting = {
+    				view: {
+    					addHoverDom: addHoverDom,
+    					removeHoverDom: removeHoverDom,
+    					selectedMulti: false
+    				},
+    				edit: {
+    					enable: true,
+    					editNameSelectAll: true,
+    					showRemoveBtn: showRemoveBtn,
+    					showRenameBtn: showRenameBtn
+    				},
+    				data: {
+    					simpleData: {
+    						enable: true
+    					}
+    				},
+    				callback: {
+    					onClick: zTreeOnClick,
+    					beforeDrag: beforeDrag,
+    					beforeEditName: beforeEditName,
+    					beforeRemove: beforeRemove,
+    					beforeRename: beforeRename,
+    					onRemove: onRemove,
+    					onRename: onRename
+    				}
+    			};
+
+    			$.fn.zTree.init($("#typeTree"), setting, zNodes);
+    			listMyAbc(personId,file_server_url);
+    			
+      },
+      error: function (message) {
+          window.top.alert("加载文件失败");
+      }
+  });
+}
+//树点击事件
+function zTreeOnClick(event, treeId, treeNode) {
+    console.log(treeNode.tId + ", " + treeNode);
+    if(treeNode.id==0){
+    	$("#staffTypeId").val("");
+    }else{
+    	$("#staffTypeId").val(treeNode.id);
+    }
+    
+    listMyAbc(personId,file_server_url);
+    
+};
+function beforeDrag(treeId, treeNodes) {
+	return false;
+}
+var log, className = "dark";
+function beforeEditName(treeId, treeNode) {
+	className = (className === "dark" ? "":"dark");
+	showLog("[ "+getTime()+" beforeEditName ]&nbsp;&nbsp;&nbsp;&nbsp; " + treeNode.name);
+	var zTree = $.fn.zTree.getZTreeObj("typeTree");
+	zTree.selectNode(treeNode);
+	zTree.editName(treeNode);
+	/* setTimeout(function() {
+		if (confirm("进入节点 -- " + treeNode.name + " 的编辑状态吗？")) {
+			setTimeout(function() {
+				zTree.editName(treeNode);
+			}, 0);
+		}
+	}, 0); */
+	return false;
+}
+function beforeRemove(treeId, treeNode) {
+	className = (className === "dark" ? "":"dark");
+	showLog("[ "+getTime()+" beforeRemove ]&nbsp;&nbsp;&nbsp;&nbsp; " + treeNode.name);
+	var zTree = $.fn.zTree.getZTreeObj("typeTree");
+	zTree.selectNode(treeNode);
+	return confirm("确认删除吗？");
+}
+//删除分类
+function onRemove(e, treeId, treeNode) {
+	showLog("[ "+getTime()+" onRemove ]&nbsp;&nbsp;&nbsp;&nbsp; " + treeNode.name);
+	var url = file_server_url + "/staffTypeServlet?time="+new Date();
+	$.ajax({
+      type: "POST",
+      url: url,
+      data: {"PERSON_ID":personId,"OP_TYPE":"del","STAFF_TYPE_ID":treeNode.id,"STAFF_TYPE_NAME":treeNode.name,"PARENT_STAFF_TYPE_ID":treeNode.pId},
+      dataType: "json",
+      success: function(data){
+    	  console.log(data);
+    	  initTree2()
+      }
+    });
+}
+function beforeRename(treeId, treeNode, newName, isCancel) {
+	className = (className === "dark" ? "":"dark");
+	showLog((isCancel ? "<span style='color:red'>":"") + "[ "+getTime()+" beforeRename ]&nbsp;&nbsp;&nbsp;&nbsp; " + treeNode.name + (isCancel ? "</span>":""));
+	if (newName.length == 0) {
+		setTimeout(function() {
+			var zTree = $.fn.zTree.getZTreeObj("typeTree");
+			zTree.cancelEditName();
+			alert("节点名称不能为空.");
+		}, 0);
+		return false;
+	}
+	return true;
+}
+function onRename(e, treeId, treeNode, isCancel) {
+	
+	showLog((isCancel ? "<span style='color:red'>":"") + "[ "+getTime()+" onRename ]&nbsp;&nbsp;&nbsp;&nbsp; " + treeNode.name + (isCancel ? "</span>":""));
+	
+	var url = file_server_url + "/staffTypeServlet?time="+new Date();
+	$.ajax({
+      type: "POST",
+      url: url,
+      data: {"PERSON_ID":personId,"OP_TYPE":"update","STAFF_TYPE_ID":treeNode.id,"STAFF_TYPE_NAME":treeNode.name,"PARENT_STAFF_TYPE_ID":treeNode.pId},
+      dataType: "json",
+      success: function(data){
+    	  console.log(data);
+    	  initTree2()
+      }
+    });
+}
+function showRemoveBtn(treeId, treeNode) {
+	console.log(treeNode)
+	return !treeNode.isParent;
+}
+function showRenameBtn(treeId, treeNode) {
+	return true;
+}
+function showLog(str) {
+	console.log(str)
+}
+function getTime() {
+	var now= new Date(),
+	h=now.getHours(),
+	m=now.getMinutes(),
+	s=now.getSeconds(),
+	ms=now.getMilliseconds();
+	return (h+":"+m+":"+s+ " " +ms);
+}
+var newCount = 1;
+function addHoverDom(treeId, treeNode) {
+	var sObj = $("#" + treeNode.tId + "_span");
+	if (treeNode.editNameFlag || $("#addBtn_"+treeNode.tId).length>0) return;
+	var addStr = "<span class='button add' id='addBtn_" + treeNode.tId
+		+ "' title='add node' onfocus='this.blur();'></span>";
+	sObj.after(addStr);
+	var btn = $("#addBtn_"+treeNode.tId);
+	if (btn) btn.bind("click", function(){
+		var zTree = $.fn.zTree.getZTreeObj("typeTree");
+		var newTreeNode = {id:treeNode.id+"-"+(treeNode.children?100+treeNode.children.length:100), pId:treeNode.id, name:"新的分类"};
+		zTree.addNodes(treeNode, newTreeNode);
+		var url = file_server_url + "/staffTypeServlet?time="+new Date();
+		$.ajax({
+	      type: "POST",
+	      url: url,
+	      data: {"PERSON_ID":personId,"OP_TYPE":"add","STAFF_TYPE_ID":newTreeNode.id,"STAFF_TYPE_NAME":newTreeNode.name,"PARENT_STAFF_TYPE_ID":newTreeNode.pId},
+	      dataType: "json",
+	      success: function(data){
+	    	  console.log(data);
+	    	  initTree2()
+	      }
+	    });
+		return false;
+	});
+};
+function removeHoverDom(treeId, treeNode) {
+	$("#addBtn_"+treeNode.tId).unbind().remove();
+};
+
+function goPage(page){
+	if(page!=currPage){
+		if(page>0 && page<=totalPage){
+			currPage = page;
+			listMyAbc(personId,file_server_url);
+		}
+	}
+}
+function prePage(){
+	if(currPage-1>0){
+		currPage--;
+		listMyAbc(personId,file_server_url);
+	}
+}
+function nextPage(){
+	if(currPage+1<=totalPage){
+		currPage++;
+		listMyAbc(personId,file_server_url);
+	}
+}
+</script>
+</html>

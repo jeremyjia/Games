@@ -1,0 +1,9 @@
+X:1
+%%singleline 0
+%%pagewidth 8cm
+%%linebreak <none>
+M:none
+K:C
+CDEF|
+%%text free text inside the music
+GABc|cBAG|FEDC|

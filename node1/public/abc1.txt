@@ -1,0 +1,19 @@
+%%equalbars 0
+X:6
+T: 童年
+M:4/4
+L:1/8
+K:C
+V:1
+D E2 D E2 D2 | D E2 D E3 G |Ac cc BA G(e | e6) zg|
+w:
+ag a2 fe d(c|c3) C G,3 G,|
+w:
+ C2 E D2 C A,G,|C2 EG G3 E |AB2(A A)A AG|c2c2 cA cA| G8|
+w: * * * * * * *池 塘 边 的 榕 树 上 * 知 了 在 声 声 叫 着 夏 * 天 
+z2 EG G3 E | A B2 (A A)A AG|c2c2 cA Ac| d8|
+w: 操 场 边 的 秋 千 上 * 只 有 * 蝴 蝶 停 在 上 * 面
+gg2(g g)g ed|cc2(A A)c Ac| dd dd dc ed | d8|
+w: 黑 板 上 * 老 师 的 粉 笔 还 * 在 拼 命 叽 叽 喳 喳 写 个 不 * 停
+ee2e ed d2 | cc2c dc AG | GG2G AG de| c8|
+w: 等 待 着 下 * 课 等 待 着 放 * 学 * 等 待 游 戏 的 童 *年
