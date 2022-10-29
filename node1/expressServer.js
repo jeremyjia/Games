@@ -17,6 +17,7 @@ const _51voa = require('./app/spider/51voa/index.js');
 const ScrapingAntClient = require('./app/spider/ScrapingAntClient/index.js');
 const word = require('./app/word/index0.js');
 const abc2db = require('./app/abc2db/index.js');
+const midi2abc = require('./app/midi2abc/index.js');
 const img = require('./app/image/index.js');
 
 l.tag1(tag,"-----------------------expressServer.js------") 
@@ -55,6 +56,9 @@ class ExpressServer {
 
     this.app.post('/word', (req, res) => {    word.word(req,res);    });
     this.app.post('/abc2db', (req, res) => {    abc2db.abc2db(req,res);    });
+    
+    this.app.post('/midi2abc', (req, res) => {    midi2abc.midi2abc(req,res);    });
+
     this.app.get('/downloadImage', (req, res) => {    img.download(req,res);    });
     
     this.app.get('/api/data', (req, res) => {
