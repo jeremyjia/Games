@@ -8,7 +8,7 @@
  
 
 
-var _blr_select=["use strict", //[0]
+var _blr_select=["use strict", //[0] x
 "selectedCball", //[1]
 "isOk",//[2]
 "fill",//[3]
@@ -32,15 +32,14 @@ var _blr_select=["use strict", //[0]
 "log",//[37]
 "changedTouches","getEvt","scrollTop","pageX","pageY","mousedown","touchstart","mousemove","touchmove","mouseup","touchend","isPc","offset","istart","attr","node-index","left","top","outerWidth","outerHeight","push",".svg-staff rect","click","shiftKey","that.cStart:","#0F84F5","rect[node-index=\'","\']","that.cEnd:","on","off","data-idx","fill-opacity",".svg-staff rect[data-idx=\'","[type=\"bar\"]","not","preventDefault","stopPropagation","that.first: ","that.end: ","getPageXy","x1","x","x2","y1","y","y2",".svg-staff rect[fill-opacity=\'0\']","remove",".svg-staff","type","4","8","10","bar_index","beam_end","function","seqStart: ",
 ",",//[96]
-"AbcSel"//[97]
+"AbcSel"//[97] x
 ];
 
 
 ;;
-(function(_window,_document,_xdTest){
-    alert(_xdTest);
-    _blr_select[0];
-    var _0x1131E=function(_0x113FA,_0x113CE){
+(function(_window,_document,_xdTest){    
+    "use strict"; 
+    var _fnSelect=function(_0x113FA,_0x113CE){
         this[_blr_select[1]]= _0x113FA?_0x113FA:null;
         this[_blr_select[2]]= true;
         this[_blr_select[3]]= 0.85;
@@ -53,7 +52,7 @@ var _blr_select=["use strict", //[0]
         this[_blr_select[11]]= true;
         this[_blr_select[12]]= null
     };
-    _0x1131E[_blr_select[13]]= {
+    _fnSelect[_blr_select[13]]= { 
         open:function(){
             if(this[_blr_select[6]]){
                 this[_blr_select[14]]();
@@ -209,5 +208,5 @@ var _blr_select=["use strict", //[0]
             })
         }
     };
-     _window[_blr_select[97]]= _0x1131E
+     _window["AbcSel"]= _fnSelect
 }(window,document,_blr_select[35]))

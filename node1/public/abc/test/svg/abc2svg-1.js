@@ -1,3 +1,5 @@
+//abc2svg-1.js: refactor
+
 // abc2svg - ABC to SVG translator
 // @source: https://github.com/moinejf/abc2svg.git
 // Copyright (C) 2014-2017 Jean-Francois Moine - LGPL3+
