@@ -1,5 +1,8 @@
 //xdEdit.js-file used in the abc2svg editor
 
+const v4_xdEdit = "xdEdit.js 0.13";
+document.getElementById("id_4_xdEdit").value = v4_xdEdit;
+
 window.onerror = function(msg,url,line){
     if(typeof msg=='string')
         alert("window error: "+msg+"\nURL: "+url+"\nLine: "+line)
@@ -10,7 +13,11 @@ window.onerror = function(msg,url,line){
     return false
 }
 
-var abc_images,abc_fname=["noname.abc",""],abc_mtime=[],abc,syms,ctxMenu,elt_ref={},selx=[0,0],selx_sav=[],play={},pop,texts={},jsdir=document.currentScript?document.currentScript.src.match(/.*\//):(function(){var s_a=document.getElementsByTagName('script')
+var abc_images,abc_fname=["noname.abc",""],abc_mtime=[],abc;
+var syms,ctxMenu,elt_ref={},selx=[0,0],selx_sav=[];
+var play={},pop,texts={};
+var jsdir=document.currentScript?document.currentScript.src.match(/.*\//):(function(){var s_a=document.getElementsByTagName('script');
+
 for(var k=0;k<s_a.length;k++){if(s_a[k].src.indexOf('edit-')>=0)
 return s_a[k].src.match(/.*\//)||''}
 return""})()
@@ -106,12 +113,23 @@ if(v){elts=document.getElementsByClassName('_'+v+'_');i=elts.length
 while(--i>=0)
 elts[i].style.fillOpacity=0.4}
 selx[idx]=v}
-function do_scroll(elt){var r,dr=elt_ref.target.parentElement,drh=dr.getBoundingClientRect().height,ty=elt_ref.target.getBoundingClientRect().y
-elt=elt.parentNode;r=elt.getBoundingClientRect()
-if(r.y<0)
-dr.scrollTo(0,r.y-ty)
-else if(r.y+r.height>drh)
-dr.scrollTo(0,r.y-ty-drh+r.height)}
+
+function do_scroll(elt){
+    var r,dr=elt_ref.target.parentElement;
+    var drh=dr.getBoundingClientRect().height;
+    var ty=elt_ref.target.getBoundingClientRect().y;
+    elt=elt.parentNode;
+    r=elt.getBoundingClientRect();
+    if(r.y<0){
+        dr.scrollTo(0,r.y-ty);
+    }
+    else{
+        if(r.y+r.height>drh - r.height ){
+            dr.scrollTo(0,r.y-ty-drh+r.height*2);
+        }
+    }
+}
+
 function seltxt(evt){var s,elts,e=0,elt=elt_ref.source,start=elt.selectionStart,end=elt.selectionEnd
 play.loop=false
 if(!start){if(end==elt.value.length)
@@ -139,14 +157,23 @@ storage(true,"sfu",v=="Scc1t2"?0:v)}
 function set_speed(iv){var spvl=document.getElementById("spvl"),v=Math.pow(3,(iv-10)*.1);play.abcplay.set_speed(v);spvl.innerHTML=v}
 function set_vol(v){var gvl=document.getElementById("gvl");gvl.innerHTML=v.toFixed(2);play.abcplay.set_vol(v)
 storage(true,"volume",v==0.7?0:v.toFixed(2))}
-function notehlight(i,on){if(play.stop){if(on)
-return
-if(play.stop<0)
-play.stop=i
-if(i==selx[1])
-return}
-var elts=document.getElementsByClassName('_'+i+'_');if(elts&&elts[0]){if(on)
-do_scroll(elts[0]);elts[0].style.fillOpacity=on?0.4:0}}
+
+function notehlight(i,on){
+
+    if(play.stop){
+        if(on)        return
+        if(play.stop<0) play.stop=i
+        if(i==selx[1]) return
+    }
+    var elts=document.getElementsByClassName('_'+i+'_');
+    if(elts&&elts[0]){
+        if(on){
+            do_scroll(elts[0]); 
+        }
+        elts[0].style.fillOpacity=on?0.4:0
+    }
+}
+
 function endplay(repv){if(play.loop){play.abcplay.play(play.si,play.ei)
 return}
 play.playing=false;play.repv=repv
@@ -296,7 +323,7 @@ function edit_init(){
         setsel(1,selx_sav[1]);
     }
     if(window.AudioContext||window.webkitAudioContext||navigator.requestMIDIAccess){
-        abc2svg.loadjs("snd-1.js",
+        abc2svg.loadjs("xdSnd_1.js",
             function(){
                 play.abcplay=AbcPlay({onend:endplay,onnote:notehlight,});
                 document.getElementById("playdiv1").style.display=document.getElementById("playdiv3").style.display=document.getElementById("playdiv4").style.display="list-item";document.getElementById("sfu").value=play.abcplay.set_sfu();document.getElementById("gvol").setAttribute("value",play.abcplay.set_vol()*10);
