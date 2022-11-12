@@ -2,66 +2,132 @@
 // @source: https://chiselapp.com/user/moinejf/repository/abc2svg
 // Copyright (C) 2014-2022 Jean-Francois Moine - LGPL3+
 //xdSnd_1.js-file to include in html pages with abc2svg-1.js for playing
+const v4_xdSnd_1 = "xdSnd_1.js 0.12";
+document.getElementById("id_4_xdSnd_1_js").value = v4_xdSnd_1;
 
-function AbcPlay(i_conf){var conf=i_conf,init={},audio=ToAudio(),audio5,midi5,current,abcplay={clear:audio.clear,add:audio.add,set_sfu:function(v){if(v==undefined)
-return conf.sfu
-conf.sfu=v},set_speed:function(v){if(v==undefined)
-return conf.speed
-conf.new_speed=v},set_vol:function(v){if(v==undefined)
-return conf.gain;conf.gain=v
-if(current&&current.set_vol)
-current.set_vol(v)},play:play,stop:vf}
-function vf(){}
-function play(istart,i_iend,a_e){init.istart=istart;init.i_iend=i_iend;init.a_e=a_e
-if(midi5)
-midi5.get_outputs(play2)
-else
-play2()}
-function play2(out){var o
-if(!out)
-out=[]
-o=audio5.get_outputs()
-if(o)
-Array.prototype.push.apply(out,o)
-if(out.length==0){if(conf.onend)
-conf.onend()
-return}
-if(out.length==1){o=0}else{o=-1
-var pr="Use"
-for(var i=0;i<out.length;i++)
-pr+="\n "+i+": "+out[i]
-var res=window.prompt(pr,'0')
-if(res){o=Number(res)
-if(isNaN(o)||o<0||o>=out.length)
-o=-1}
-if(!res||o<0){if(conf.onend)
-conf.onend()
-return}}
-current=out[o]=='sf2'?audio5:midi5;abcplay.play=current.play;abcplay.stop=current.stop
-if(current.set_output)
-current.set_output(out[o]);if(abc2svg.pwait){if(typeof abc2svg.pwait=="boolean"){abc2svg.pwait=function(){abcplay.play(init.istart,init.i_iend,init.a_e)}}
-return}
-abcplay.play(init.istart,init.i_iend,init.a_e)}
-conf.gain=0.7;conf.speed=1;(function(){var v
-try{if(!localStorage)
-return}catch(e){return}
-if(!conf.sfu){v=localStorage.getItem("sfu")
-if(v)
-conf.sfu=v}
-v=localStorage.getItem("volume")
-if(v)
-conf.gain=Number(v)})()
-if(typeof Midi5=="function")
-midi5=Midi5(conf)
-if(typeof Audio5=="function")
-audio5=Audio5(conf);
-return abcplay;
+function AbcPlay(i_conf){ 
+    var conf=i_conf,init={},audio=ToAudio(),audio5,midi5,current;
+    var o4Play={
+        clear:audio.clear,
+        add:audio.add,
+        set_sfu:function(v){
+            if(v==undefined){
+                return conf.sfu;
+            }
+            conf.sfu=v
+        },
+        set_speed:function(v){
+            if(v==undefined){
+                return conf.speed;
+            }
+            conf.new_speed=v
+        },
+        set_vol:function(v){
+            if(v==undefined){
+                return conf.gain;
+            }
+            conf.gain=v;
+            if(current&&current.set_vol){
+                current.set_vol(v);
+            }
+        },
+        play:play,
+        stop:vf
+    };
+    
+    function vf(){}
+    
+    function play(istart,i_iend,a_e){
+        init.istart=istart;
+        init.i_iend=i_iend;
+        init.a_e=a_e;
+        if(midi5){
+            midi5.get_outputs(play2);
+        }
+        else{
+            play2();
+        }
+    }
+    
+    function play2(out){
+        var o;
+        if(!out){
+            out=[];
+        }
+        o=audio5.get_outputs();
+        if(o){
+            Array.prototype.push.apply(out,o);
+        }
+        if(out.length==0){
+            if(conf.onend){
+                conf.onend();
+            }
+            return;
+        }
+        if(out.length==1){
+            o=0;
+        }
+        else
+        {
+            o=-1;
+            var pr="Use";
+            for(var i=0;i<out.length;i++){
+                pr+="\n "+i+": "+out[i];
+            }
+            var res=window.prompt(pr,'0');
+            if(res){
+                o=Number(res);
+                if(isNaN(o)||o<0||o>=out.length){
+                    o=-1;
+                }
+            }
+            if(!res||o<0){
+                if(conf.onend){
+                    conf.onend();
+                }
+            return;
+            }
+        }
+        current=out[o]=='sf2'?audio5:midi5;
+        o4Play.play=current.play;
+        o4Play.stop=current.stop;
+        if(current.set_output)current.set_output(out[o]);
+        if(abc2svg.pwait){
+            if(typeof abc2svg.pwait=="boolean"){
+                abc2svg.pwait=function(){
+                    o4Play.play(init.istart,init.i_iend,init.a_e)
+                }
+            }
+            return
+        }
+        o4Play.play(init.istart,init.i_iend,init.a_e)
+    }
+    conf.gain=0.7;
+    conf.speed=1;
+
+    (function(){
+        var v;
+        try{
+            if(!localStorage) return
+        }
+        catch(e){return}
+        if(!conf.sfu){
+            v=localStorage.getItem("sfu")
+            if(v)conf.sfu=v
+        }
+        v=localStorage.getItem("volume")
+        if(v) conf.gain=Number(v)
+    })()
+    
+    if(typeof Midi5=="function") midi5=Midi5(conf)
+    if(typeof Audio5=="function") audio5=Audio5(conf);
+    return o4Play;
 }
 
-if(typeof module=='object'&&typeof exports=='object')
-exports.AbcPlay=AbcPlay
-if(!abc2svg)
-var abc2svg={}
+if(typeof module=='object'&&typeof exports=='object') exports.AbcPlay=AbcPlay
+
+if(!abc2svg) var abc2svg={}
+
 function ToAudio(){return{add:function(first,voice_tb,cfmt){var toaud=this,C=abc2svg.C,p_time=0,abc_time=0,play_fac=C.BLEN/4*120/60,i,n,dt,d,v,c,s=first,rst=s,rst_fac,rsk,b_tim,b_typ,instr=[],chn=[]
 function build_parts(first){var i,j,c,n,v,s=first,p=s.parts,st=[],r=""
 for(i=0;i<p.length;i++){c=p[i]
@@ -576,47 +642,111 @@ modgen[info.type]=info.value}
 return{modgen:modgen}};sf2.Parser.GeneratorEnumeratorTable=['startAddrsOffset','endAddrsOffset','startloopAddrsOffset','endloopAddrsOffset','startAddrsCoarseOffset','modLfoToPitch','vibLfoToPitch','modEnvToPitch','initialFilterFc','initialFilterQ','modLfoToFilterFc','modEnvToFilterFc','endAddrsCoarseOffset','modLfoToVolume',undefined,'chorusEffectsSend','reverbEffectsSend','pan',undefined,undefined,undefined,'delayModLFO','freqModLFO','delayVibLFO','freqVibLFO','delayModEnv','attackModEnv','holdModEnv','decayModEnv','sustainModEnv','releaseModEnv','keynumToModEnvHold','keynumToModEnvDecay','delayVolEnv','attackVolEnv','holdVolEnv','decayVolEnv','sustainVolEnv','releaseVolEnv','keynumToVolEnvHold','keynumToVolEnvDecay','instrument',undefined,'keyRange','velRange','startloopAddrsCoarseOffset','keynum','velocity','initialAttenuation',undefined,'endloopAddrsCoarseOffset','coarseTune','fineTune','sampleID','sampleModes',undefined,'scaleTuning','exclusiveClass','overridingRootKey'];sf2.Riff={};sf2.Riff.Parser=function(input,options){options=options||{};this.input=input;this.ip=options.index||0;this.length=options.length||input.length-this.ip;this.offset=this.ip;this.padding=options.padding!==undefined?options.padding:true;this.bigEndian=options.bigEndian!==undefined?options.bigEndian:false};sf2.Riff.Chunk=function(type,size,offset){this.type=type;this.size=size;this.offset=offset};sf2.Riff.Parser.prototype.parse=function(){var length=this.length+this.offset;this.chunkList=[];while(this.ip<length)
 this.parseChunk()};sf2.Riff.Parser.prototype.parseChunk=function(){var input=this.input,ip=this.ip,size;this.chunkList.push(new sf2.Riff.Chunk(String.fromCharCode(input[ip++],input[ip++],input[ip++],input[ip++]),(size=this.bigEndian?((input[ip++]<<24)|(input[ip++]<<16)|(input[ip++]<<8)|(input[ip++])):((input[ip++])|(input[ip++]<<8)|(input[ip++]<<16)|(input[ip++]<<24))),ip));ip+=size;if(this.padding&&((ip-this.offset)&1)===1)
 ip++;this.ip=ip};sf2.Riff.Parser.prototype.getChunk=function(index){var chunk=this.chunkList[index];if(chunk===undefined)
-return null;return chunk};sf2.Riff.Parser.prototype.getNumberOfChunks=function(){return this.chunkList.length};return sf2}));function Midi5(i_conf){var po,conf=i_conf,empty=function(){},rf,op
-function get_time(po){return window.performance.now()/1000}
-function note_run(po,s,k,t,d){var j,a=(k*100)%100,i=s.instr,c=s.chn
-k|=0
-t*=1000
-d*=1000
-if(i!=po.c_i[c]){if(po.c_i[c]==undefined){po.op.send(new Uint8Array([0xb0+c,121,0]))
-if(s.p_v.midictl){for(j in s.p_v.midictl)
-po.op.send(new Uint8Array([0xb0+c,j,s.p_v.midictl[j]]))}}
-po.c_i[c]=i
-po.op.send(new Uint8Array([0xc0+c,i&0x7f]))}
-if(a&&Midi5.ma.sysexEnabled){po.op.send(new Uint8Array([0xf0,0x7f,0x7f,0x08,0x02,i&0x7f,0x01,k,k,a/.78125,0,0xf7]),t)}
-po.op.send(new Uint8Array([0x90+c,k,127]),t)
-po.op.send(new Uint8Array([0x80+c,k,0]),t+d-20)}
-function midi_ctrl(po,s,t){po.op.send(new Uint8Array([0xb0+s.chn,s.ctrl,s.val]),t*1000)}
-function send_outputs(access){var o,os,out=[]
-Midi5.ma=access
-if(access&&access.outputs.size>0){os=access.outputs.values()
-while(1){o=os.next()
-if(!o||o.done)
-break
-out.push(o.value.name)}}
-rf(out)}
-return{get_outputs:function(f){if(!navigator.requestMIDIAccess){f()
-return}
-rf=f
-navigator.requestMIDIAccess({sysex:true}).then(send_outputs,function(msg){navigator.requestMIDIAccess().then(send_outputs,function(msg){rf()})})},set_output:function(name){var o,os
-if(!Midi5.ma)
-return
-os=Midi5.ma.outputs.values()
-while(1){o=os.next()
-if(!o||o.done)
-break
-if(o.value.name==name){op=o.value
-break}}},play:function(i_start,i_end,i_lvl){po={conf:conf,onend:conf.onend||empty,onnote:conf.onnote||empty,s_end:i_end,s_cur:i_start,repv:i_lvl||0,tgen:2,get_time:get_time,midi_ctrl:midi_ctrl,note_run:note_run,timouts:[],op:op,c_i:[]}
-if(0){op.send(new Uint8Array([0xf0,0x7f,0x7f,0x08,0x02,0x00,0x01,0x69,0x69,0x00,0,0xf7]),t)}
-abc2svg.play_next(po)},stop:function(){po.stop=true
-po.timouts.forEach(function(id){clearTimeout(id)})
-abc2svg.play_next(po)
-if(op&&op.clear)
-op.clear()}}}
+return null;return chunk};sf2.Riff.Parser.prototype.getNumberOfChunks=function(){return this.chunkList.length};return sf2}));
+
+function Midi5(i_conf){
+    var po,conf=i_conf,empty=function(){},rf,op;
+    function get_time(po){return window.performance.now()/1000}
+    function note_run(po,s,k,t,d){
+        var j,a=(k*100)%100,i=s.instr,c=s.chn;
+        k|=0
+        t*=1000
+        d*=1000
+        if(i!=po.c_i[c]){
+            if(po.c_i[c]==undefined){
+                po.op.send(new Uint8Array([0xb0+c,121,0]));
+                if(s.p_v.midictl){
+                    for(j in s.p_v.midictl);
+                    po.op.send(new Uint8Array([0xb0+c,j,s.p_v.midictl[j]]))
+                }
+            }
+            po.c_i[c]=i
+            po.op.send(new Uint8Array([0xc0+c,i&0x7f]))
+        }
+        if(a&&Midi5.ma.sysexEnabled){
+            po.op.send(new Uint8Array([0xf0,0x7f,0x7f,0x08,0x02,i&0x7f,0x01,k,k,a/.78125,0,0xf7]),t)
+        }
+        po.op.send(new Uint8Array([0x90+c,k,127]),t)
+        po.op.send(new Uint8Array([0x80+c,k,0]),t+d-20)
+    }
+    
+    function midi_ctrl(po,s,t){po.op.send(new Uint8Array([0xb0+s.chn,s.ctrl,s.val]),t*1000)}
+    
+    function send_outputs(access){
+        var o,os,out=[];
+        Midi5.ma=access;
+        if(access&&access.outputs.size>0){
+            os=access.outputs.values()
+            while(1){
+                o=os.next();
+                if(!o||o.done)              break
+                out.push(o.value.name)
+            }
+        }
+        rf(out)
+    }
+
+    return {
+        get_outputs:function(f){
+            if(!navigator.requestMIDIAccess){
+                f()
+                return
+            }
+            rf=f
+            navigator.requestMIDIAccess({sysex:true})
+            .then(send_outputs,
+                function(msg){
+                    navigator.requestMIDIAccess().then(
+                        send_outputs,
+                        function(msg){
+                            rf()
+                        }
+                        )
+                }
+            )
+        },
+        set_output:function(name){
+            var o,os;
+            if(!Midi5.ma) return
+            os=Midi5.ma.outputs.values()
+            while(1){
+                o=os.next()
+                if(!o||o.done) break
+                if(o.value.name==name){
+                    op=o.value
+                    break
+                }
+            }
+        },
+        play:function(i_start,i_end,i_lvl){
+            po={conf:conf,
+                onend:conf.onend||empty,
+                onnote:conf.onnote||empty,
+                s_end:i_end,
+                s_cur:i_start,
+                repv:i_lvl||0,
+                tgen:2,
+                get_time:get_time,
+                midi_ctrl:midi_ctrl,
+                note_run:note_run,
+                timouts:[],
+                op:op,
+                c_i:[]
+            }
+            if(0){
+                op.send(new Uint8Array([0xf0,0x7f,0x7f,0x08,0x02,0x00,0x01,0x69,0x69,0x00,0,0xf7]),t)
+            }
+            abc2svg.play_next(po)
+        },
+        stop:function(){
+            po.stop=true
+            po.timouts.forEach(function(id){clearTimeout(id)})
+            abc2svg.play_next(po)
+            if(op&&op.clear) op.clear()
+        }
+    }
+}
+
 function follow(abc,user,playconf){var ref=[],keep_types={note:true,rest:true}
 user.anno_stop=function(type,start,stop,x,y,w,h){if(!keep_types[type])
 return
