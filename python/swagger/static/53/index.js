@@ -46,7 +46,15 @@ function get_post(){
  }
  return posts;
 }
-
+function s2() {
+  var xhttp = new XMLHttpRequest();//异步和后台服务器通信
+  xhttp.open("GET", "http://localhost:5000/request", false);
+  xhttp.send();
+  document.getElementById("demo").innerHTML = xhttp.responseText;
+  if (xhttp.status == 0)
+    alert("Server Not Found");
+  //alert(xhttp.status);  send is sucessful, so returned status is 200     
+}
 var input= document.querySelector('.filter-container').getElementsByTagName('input');
 
 
@@ -126,13 +134,6 @@ function create_new(){
  var card_text=document.createElement('div');
  card_text.classlist.add('post-contents');
  photocard.appendChild (card_text);
-
-
-
-
-
-
-
 
 
  if(!check_empty()){
