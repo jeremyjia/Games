@@ -1,7 +1,9 @@
 package com.pbz.scriptengine;
 
+import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -59,17 +61,26 @@ public class JSGraphEngine {
 		public double angle = 0;
 		public int from;
 		public int to;
+		public Composite oldComp;
 
 		public void fillRect(int x, int y, int width, int height) {
-			applayColor();
+			applayColor(fillStyle);
 			graphics.rotate(Math.toRadians(angle), width / 2, height / 2);
 			graphics.fillRect(x, y, width, height);
+			recoverProperty();
 		}
 
-		public void strokeRect(int x, int y, int width, int height) {
+		private void recoverProperty() {
+            if(oldComp != null) {
+                graphics.setComposite(oldComp); 
+            }
+        }
+
+        public void strokeRect(int x, int y, int width, int height) {
 			applayStrokeColor();
 			graphics.rotate(Math.toRadians(angle), width / 2, height / 2);
 			graphics.drawRect(x, y, width, height);
+			recoverProperty();
 		}
 
 		public void clearRect(int x, int y, int width, int height) {
@@ -82,10 +93,11 @@ public class JSGraphEngine {
 		}
 
 		public void fillText(String text, float x, float y) {
-			applayColor();
+			applayColor(fillStyle);
 			applayFont();
 			graphics.rotate(Math.toRadians(angle), x / 2, y / 2);
 			graphics.drawString(text, x, y);
+			recoverProperty();
 		}
 
 		public void arc(int x, int y, int r, float startfAngle, float endfAngle, boolean b) {
@@ -96,11 +108,13 @@ public class JSGraphEngine {
 				graphics.setStroke(new BasicStroke(lineWidth));
 				applayStrokeColor();
 				graphics.drawArc(x - r, y - r, 2 * r, 2 * r, (int) startAngle, (int) arcAngle); // 绘制圆弧（含整圆）
+				recoverProperty();
 				strokeStyle = "";
 			}
 			if (fillStyle.trim().length() > 0) {
-				applayColor();
+				applayColor(fillStyle);
 				graphics.fillArc(x - r, y - r, 2 * r, 2 * r, (int) startAngle, (int) arcAngle);
+				recoverProperty();
 			}
 			// 记录圆弧终点的坐标, 作为下次调用lineTo的起点
 			from = (int) (r * Math.cos(startfAngle) + x);
@@ -128,6 +142,7 @@ public class JSGraphEngine {
 		public void moveTo(int x, int y) {
 			applayStrokeColor();
 			graphics.setStroke(new BasicStroke(lineWidth));
+			recoverProperty();
 			from = x;
 			to = y;
 		}
@@ -135,6 +150,7 @@ public class JSGraphEngine {
 		public void lineTo(int x, int y) {
 			applayStrokeColor();
 			graphics.drawLine(from, to, x, y);
+			recoverProperty();
 			from = x;
 			to = y;
 		}
@@ -146,7 +162,7 @@ public class JSGraphEngine {
 			graphics.translate(x, y);
 		}
 
-		private void applayColor() {
+		private void applayColor(String fillStyle) {
 			if (fillStyle.trim().length() > 0) {
 				if (fillStyle.startsWith("#")) {
 					int color = Integer.parseInt(fillStyle.substring(1), 16);
@@ -159,6 +175,22 @@ public class JSGraphEngine {
 					int blue = (int) (Math.random() * 255);
 					graphics.setColor(new Color(red, green, blue));
 					return;
+				}
+				
+				if(fillStyle.startsWith("rgba")) {
+			        String fs = fillStyle.substring(5, fillStyle.lastIndexOf(")"));
+			        String fsV[] = fs.split(",");
+			        int r = Integer.parseInt(fsV[0]);
+			        int g = Integer.parseInt(fsV[1]);
+			        int b = Integer.parseInt(fsV[2]);
+			        float a = Float.parseFloat(fsV[3]);
+			        graphics.setColor(new Color(r, g, b));
+			        System.out.println("r="+r+",g="+g+",b="+b+",alpha="+a);
+			        
+			        oldComp = graphics.getComposite();
+			        Composite alphaComp = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, a);
+			        graphics.setComposite(alphaComp);
+				    return;
 				}
 
 				if ("Blue".equalsIgnoreCase(fillStyle)) {
@@ -176,43 +208,13 @@ public class JSGraphEngine {
 				} else if ("lightblue".equalsIgnoreCase(fillStyle)) {
 					graphics.setColor(new Color(193, 210, 240));
 				} else {
-					graphics.setColor(new Color(220, 0, 0));
+					graphics.setColor(new Color(0, 0, 0));
 				}
 			}
 		}
 
 		private void applayStrokeColor() {
-			if (strokeStyle.trim().length() > 0) {
-				if (strokeStyle.startsWith("#")) {
-					int color = Integer.parseInt(strokeStyle.substring(1), 16);
-					graphics.setColor(new Color(color));
-					return;
-				}
-				if (strokeStyle.startsWith("hsl")) {
-					int red = (int) (Math.random() * 255);
-					int green = (int) (Math.random() * 255);
-					int blue = (int) (Math.random() * 255);
-					graphics.setColor(new Color(red, green, blue));
-					return;
-				}
-				if ("Blue".equalsIgnoreCase(strokeStyle)) {
-					graphics.setColor(new Color(0, 0, 255));
-				} else if ("Red".equalsIgnoreCase(strokeStyle)) {
-					graphics.setColor(new Color(255, 0, 0));
-				} else if ("Yellow".equalsIgnoreCase(strokeStyle)) {
-					graphics.setColor(new Color(255, 255, 0));
-				} else if ("Green".equalsIgnoreCase(strokeStyle)) {
-					graphics.setColor(new Color(0, 255, 0));
-				} else if ("White".equalsIgnoreCase(strokeStyle)) {
-					graphics.setColor(new Color(255, 255, 255));
-				} else if ("Black".equalsIgnoreCase(strokeStyle)) {
-					graphics.setColor(new Color(0, 0, 0));
-				} else if ("lightblue".equalsIgnoreCase(strokeStyle)) {
-					graphics.setColor(new Color(193, 210, 240));
-				} else {
-					graphics.setColor(new Color(220, 220, 0));
-				}
-			}
+		    applayColor(strokeStyle);
 		}
 
 		private void applayFont() {
