@@ -3,6 +3,7 @@ var canvasContent;
 var w = 1024;
 var h = 768;
 var bInit = false;
+
 function animateFrame(time) {
     canvas = document.getElementById('myCanvas');
     canvasContent = canvas.getContext('2d'); 
