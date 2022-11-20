@@ -34,8 +34,8 @@ import javax.swing.JPanel;
 
 public class App {
 
-	private final static int w = 800;
-	private final static int h = 600;
+	private final static int w = 1024;
+	private final static int h = 768;
 	private ScriptEngine m_engine = new ScriptEngineManager().getEngineByName("JavaScript");
 	private JFrame jframe;
 	private ImagePanel jp;
