@@ -5,17 +5,25 @@
 </head>
 
 <body>
+  <input id="range" type="range" min="10" max="1000" value="0" oninput="sliderChanged()"/>
   <canvas id="myCanvas" width="2048" height="1536"></canvas>
   <script src="./plxRain.js"></script>
   <script type="text/javascript">
-
-    var time = 0;
-    var fun = function () {
-      animateFrame(time++);
+    var times = 0;
+	var v = 100;
+    var callbackFun = function () {
+      animateFrame(times++);
     }
-    setInterval(fun, 100);
-  </script>
+    var timer = setInterval(callbackFun, v);
+	
+  function sliderChanged() {
+    v = document.getElementById("range").value;
+	console.log(v);
+	clearInterval(timer);
+	timer = setInterval(callbackFun, v);
 
+  }
+  </script>
 </body>
 
 </html>
