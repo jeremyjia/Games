@@ -4,9 +4,24 @@
 <meta charset="UTF-8">
 </head>
 
-<body>
-  <input id="range" type="range" min="10" max="1000" value="0" oninput="sliderChanged()"/>
-  <canvas id="myCanvas" width="2048" height="1536"></canvas>
+<body> 
+  <h2><font color="blue">JS插件管理页面</font></h2> 
+  <div>
+     <tr>
+	  <td><input id="range" type="range" min="10" max="1000" value="0" oninput="sliderChanged()"/><p id="idpVal">Value(ms):100</p></td>
+	  <td><select id="selPlugIns" size=20>
+			 <option value="myplx.js">节拍器</option>
+			 <option value="plugin.js">大嘴</option>
+			 <option value="plugin2.js">曲线</option>
+			 <option value="plxChessBoard.js">棋盘</option>
+			 <option value="plxCloud.js">白云草地</option>
+			 <option value="plxRain.js" selected>雨滴特效</option>
+          </select>
+      </td>
+    </tr>
+  </div>
+  <div><tr><canvas id="myCanvas" width="1024" height="768"></canvas></tr></div>
+  
   <script src="./plxRain.js"></script>
   <script type="text/javascript">
     var times = 0;
@@ -20,9 +35,30 @@
     v = document.getElementById("range").value;
 	console.log(v);
 	clearInterval(timer);
+	document.getElementById("idpVal").innerHTML = "Value(ms):"+v;
 	timer = setInterval(callbackFun, v);
 
   }
+  
+   function loadScript(url) {
+	 var script = document.createElement("script");
+	 script.type = "text/javascript";
+	 script.src = url;
+	 document.body.appendChild(script);
+   }
+   
+   
+   var selectPlxObj = document.getElementById('selPlugIns');
+   selectPlxObj.onchange = function(){
+          var len = selectPlxObj.options.length;
+            for(var i=0;i<len;i++){
+                if (selectPlxObj.options[i].selected) {
+                    var plxToLoad = selectPlxObj.options[i].value;
+					loadScript(plxToLoad);
+                }
+            }
+		}
+
   </script>
 </body>
 
