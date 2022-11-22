@@ -17,20 +17,21 @@
   <h2><font color="blue">JS插件管理页面 v1.0.1</font></h2>
   <div>  
 	  <input id="range" type="range" min="10" max="1000" value="0" oninput="sliderChanged()"/>
-	  <p id="idpVal">Value(ms):100</p>
+	  <p id="idpVal">Timer(ms):100</p>
   </div>
   <div class="box">
       <div class="kid kid1">
       <canvas id="myCanvas" width="1024" height="768" style="border:1px solid #000000;"></canvas>
 	  </div>
 	  <div class="kid kid1">
-	    <select id="selPlugIns" size=20>
+	    <select id="selPlugIns" size=25>
 			 <option value="myplx.js">节拍器</option>
 			 <option value="plugin.js">大嘴</option>
 			 <option value="plugin2.js">曲线</option>
 			 <option value="plxChessBoard.js">棋盘</option>
 			 <option value="plxCloud.js">白云草地</option>
 			 <option value="plxRain.js" selected>雨滴特效</option>
+			 <option value="plxBubble.js">气泡</option>
         </select>
 	  </div>
   </div>
@@ -48,7 +49,7 @@
     v = document.getElementById("range").value;
 	console.log(v);
 	clearInterval(timer);
-	document.getElementById("idpVal").innerHTML = "Value(ms):"+v;
+	document.getElementById("idpVal").innerHTML = "Timer(ms):"+v;
 	timer = setInterval(callbackFun, v);
 
   }
