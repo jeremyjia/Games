@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.312"
+var g_ver_blClass = "CBlClass_bv1.6.313"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2306,19 +2306,33 @@ function CBlClass ()
 			const fn = _saveAsFileName;
 			const vRes = _vRes;
 			var b = false;
+			var n = 0;
 
 			this.type = blc_4_t_DOWNLOAD;
 			
 			this.done = function(){return b;};
+			this.status = function(){return n;};
 
 			this.bl2Do = function(){			
 				var url = svrAPI + "?url="+ srcURL + "&filename="+ fn;  
 				var w = {};
+				n = 0;
 				w._2do = function(txt){
-					var str = "var a =" +  txt;  
+					/*
+					 var str = "var a =" +  txt;  
 					eval(str);  
 					vRes.innerHTML =  a.filename; 
-					b = true;
+					b = true; 
+					//*/
+					n++;
+					if("error xd 11"==txt){
+						vRes.innerHTML = n + " rs: not 4 && not 200. " + Date(); 
+						b = false;
+					}
+					else{
+						vRes.innerHTML =  n + " " + txt; 
+						b = true; 
+					}
 				}
 				blo0.blAjx(w,url);		 
 			};
@@ -2326,8 +2340,7 @@ function CBlClass ()
 		const o = new C4Download(_svrAPI,_srcURL,_saveAsFileName,_vRes);
 		return o;
 	}
-	this.blTask = function(){
-		
+	this.blTask = function(){		
 		const C4Task = function(){
 			var n = 0;
 			var btn = null;
@@ -2366,7 +2379,17 @@ function CBlClass ()
 				}
 
 				if(btn) {
-					btn.innerHTML = n;
+					var s = inf.status; 
+					if(s==undefined){
+						s= "no status function.";
+					}
+					else{
+						s= inf.status(); 
+						if(s==2){
+							inf.bl2Do();
+						}
+					}
+					btn.innerHTML = n + ": s=" + s;
 				}
 			}
 		}
