@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.313"
+var g_ver_blClass = "CBlClass_bv1.6.314"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -154,6 +154,7 @@ function CBlClass ()
 		var d= blo0.blMD(_id, "blPaint-"+_id,_x,_y,_w,_h,blGrey[1]);
 		if(!d.load){
 			d.load = true;	 
+			var xHit = -1, yHit = -1;
 			var items = [];   
 			d.parseTa = function(){ 
 				const x0 = 200, y0 = 100, dx = 30, dy = 33;  
@@ -188,6 +189,35 @@ function CBlClass ()
 
 			}(); 
 
+			d.selectItem = function(x,y){
+				for(i in items){
+					const oi = items[i];
+					if(blo0.blPiR(x,y,oi.x,oi.y,oi.w,oi.y)){						
+						if (typeof oi.selectMe == "function") {
+							oi.selectMe();
+						}
+					} 
+				}
+			}
+			d.turnoverItem = function(x,y){
+				for(i in items){
+					const oi = items[i];
+					if(blo0.blPiR(x,y,oi.x,oi.y,oi.w,oi.y)){						
+						if (typeof oi.turnMeOver == "function") {
+							oi.turnMeOver();
+						}
+					}
+				}
+			}
+			d.hitItems = function(x,y){
+				xHit = x;
+				yHit = y;
+				for(i in items){
+					if (typeof items[i].hitTest == "function") {
+						items[i].hitTest(x,y);
+					}
+				}
+			}
 			d.addImgItem = function(x,y,w,h,src){
 				var i = {};  i.x = x; i.y = y; i.w = w; i.h = h;				
 				var block = new Image(); 
@@ -204,13 +234,29 @@ function CBlClass ()
 			}
 			d.addItem = function(type,x,y,w,h,iHandle){
 				var i = {}; i.type = type; i.x = x; i.y = y; i.w = w; i.h = h;
+				var clrFill = "lightgreen";
+				var bSelect = false;
+				var bTurnover = false;
+
 				i.draw = function(ctx){
 					if(type == "rect"){
-						ctx.fillStyle = "blue"; 
+						ctx.fillStyle = bTurnover?clrFill:"black"; 
 						ctx.fillRect(i.x,i.y,i.w,i.h);
+						if(bSelect){
+							ctx.fillStyle = "brown"; 
+							ctx.fillRect(i.x,i.y,15,15);
+						} 
+					}
+					else if(type == "turn5Items"){
+						ctx.fillStyle = bTurnover?clrFill:"black"; 
+						ctx.fillRect(i.x,i.y,i.w,i.h);
+						if(bSelect){
+							ctx.fillStyle = "brown"; 
+							ctx.fillRect(i.x,i.y,5,5);
+						} 
 					}
 					else if(type == "div"){
-						ctx.fillStyle = "lightgreen"; 
+						ctx.fillStyle = clrFill; 
 						ctx.fillRect(i.x,i.y,i.w,i.h);
 						if(iHandle&&iHandle.drawMe){
 							iHandle.drawMe(ctx,i.x,i.y,i.w,i.h);
@@ -224,9 +270,26 @@ function CBlClass ()
 					}
 				}
 				i._2move = function(dx,dy){ i.x += dx; i.y += dy;}
-				
+				i.hitTest = function(_x,_y){
+					if(blo0.blPiR(_x,_y,i.x,i.y,i.w,i.h)){
+						clrFill = "red";
+					}
+					else{
+						clrFill = "blue";
+					}
+				}
+				i.selectMe = function(){
+					bSelect = !bSelect; 
+				}
+				i.turnMeOver = function(){
+					bTurnover = !bTurnover;
+				}
+				i.selectStatus = function(){
+					return bSelect;
+				}
 				if(iHandle){ iHandle._followMe(i);}
 				items.push(i);
+				return i;
 			}
 			d.getItems = function(){ return items;}
 			d.drawItems = function(ctx){
@@ -238,9 +301,33 @@ function CBlClass ()
 				ctx.fillStyle = "#FF0000";
 				ctx.font = "30px Arial";
 				ctx.fillText("l=" + items.length, 150,50);
+				ctx.fillStyle = "#aa11bb";
+				ctx.fillText("hit at [" + xHit + "," + yHit + "]", 250,50);
 				
 				for(i in items){
 					items[i].draw(ctx);
+				}
+			}
+			d.turn5anonce = function(handle){
+				var n = 0;
+				var si = [];
+				for(i in items){
+					if (typeof items[i].selectStatus == "function") {
+						if(items[i].selectStatus()){
+							n++;
+							si.push(items[i]);
+						}  
+					}
+				}
+				if(5==n){
+					for(j in si){
+						si[j].turnMeOver();
+						si[j].selectMe();
+					}
+					handle.okMsg();
+				}
+				else{
+					handle.errorMsg();
 				}
 			}
 			var x = 0, y = 0;
@@ -334,6 +421,55 @@ function CBlClass ()
 				this.funMU = function(){}
 				this.funMM = function(){}
 			};
+			var CO_Hit = function(){
+				this.getName = function(){return "HitTest";}
+				this.funMD = function(){				 
+					d.hitItems(x,y);
+				}
+				this.funMU = function(){}
+				this.funMM = function(){}
+			};
+			var CO_Select = function(){
+				this.getName = function(){return "toSelect";}
+				this.funMD = function(){				 
+					d.selectItem(x,y);
+				}
+				this.funMU = function(){}
+				this.funMM = function(){}
+			};
+			var CO_Turnover = function(){
+				this.getName = function(){return "toTurnover";}
+				this.funMD = function(){				 
+					d.turnoverItem(x,y);
+				}
+				this.funMU = function(){}
+				this.funMM = function(){}
+			};
+			var CO_Turn5Over = function(){
+				var n = 0;
+				var fs = "gray";
+				const i = d.addItem("turn5Items",666,20,44,33);
+				i.draw = function(ctx){					
+					ctx.fillStyle = fs; 
+					ctx.fillRect(i.x,i.y,i.w,i.h); 
+					ctx.font = "30px Arial";
+					ctx.strokeText(n, i.x, i.y);
+
+				}
+				i.errorMsg = function(){
+					fs = "red";
+				}
+				i.okMsg = function(){
+					fs = "green";
+					n++;
+				}
+				this.getName = function(){return "toTurn5Over";}
+				this.funMD = function(){	
+					d.turn5anonce(i);	
+				}
+				this.funMU = function(){}
+				this.funMM = function(){}
+			};
 			var CO_Rect = function(){
 				this.getName = function(){return "rectangle";}
 				this.funMD = function(){				
@@ -342,7 +478,7 @@ function CBlClass ()
 					ctx.font = "30px Arial";
 					ctx.strokeText(this.getName(), x, y);
 
-					d.addItem("rect",x,y,150,75);
+					d.addItem("rect",x,y,44,33);
 				}
 				this.funMU = function(){}
 				this.funMM = function(){}
@@ -444,9 +580,14 @@ function CBlClass ()
 			};
 			var o1 = new CO_Circle(vc,st);		d.os.push(o1); 
 			var o2 = new CO_Rect();				d.os.push(o2); 
-			var o2 = new CO_FreeDraw();			d.os.push(o2); 
-			var o2 = new CO_Img(vc,st);			d.os.push(o2); 
-			var o2 = new CO_Div(vc,st);			d.os.push(o2); 
+			var o3 = new CO_FreeDraw();			d.os.push(o3); 
+			var o4 = new CO_Img(vc,st);			d.os.push(o4); 
+			var o5 = new CO_Div(vc,st);			d.os.push(o5); 
+			var o6 = new CO_Hit();				d.os.push(o6); 			
+			var o7 = new CO_Select();			d.os.push(o7); 	
+			var o8 = new CO_Turnover();			d.os.push(o8); 
+			var o9 = new CO_Turn5Over();		d.os.push(o9);
+			
 
 			
 			d.btnOs = [];
