@@ -192,7 +192,7 @@ function CBlClass ()
 			d.selectItem = function(x,y){
 				for(i in items){
 					const oi = items[i];
-					if(blo0.blPiR(x,y,oi.x,oi.y,oi.w,oi.y)){						
+					if(blo0.blPiR(x,y,oi.x,oi.y,oi.w,oi.h)){						
 						if (typeof oi.selectMe == "function") {
 							oi.selectMe();
 						}
@@ -2814,6 +2814,11 @@ function CBlClass ()
 				} 
 				else if(curDrawingType==G_MOVE_OBJECT){  	
 					moveObj = null;	
+				}
+				else if(curDrawingType==G_EDIT_OBJECT){		 
+					for(i in lsOs){
+						if(lsOs[i].edit_up) lsOs[i].edit_up(x,y); 
+					}	
 				}
 			}); 
 
@@ -5851,6 +5856,7 @@ const gc4Note = function(){
 const gc4BLS = function(){
 	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,sBlsTitle = "...";
 	var msgDbg = "msgBLS";
+	var xdMsg1 = "xdMsg1";
 	
 
 	this.select = function(b){		s = b;		}
@@ -5881,7 +5887,7 @@ const gc4BLS = function(){
 				"222,0,0"==c  ||
 				"111,0,0"==c  ||
 				"10,0,0"==c  ||
-				"111,0,0"==c  
+				"1,0,0"==c  
 			) c = "rgb(" + c + ")";
 			return c;
 		}(); 
@@ -5893,10 +5899,11 @@ const gc4BLS = function(){
 		ctx.fillText(ss, x1,y1);
 
 		const showObjectsInFrame = function(){
-			ctx.fillStyle = "blue";
-			ctx.font = "10px Arial";
-			var s = _getObjsInFrame(lsFrame,_curF);
-			ctx.fillText(s, x1,y1+10);		
+			//var s = _drawObjectsInFrame(ctx,lsFrame,_curF,x1,y1); 
+			const os = lsFrame[_curF].objects;
+			for(i in os){
+				os[i].selfDraw(ctx,x1,y1);
+			}
 		}();
 		
 		const showDebugMsg4BLS = function(){
@@ -5984,8 +5991,12 @@ const gc4BLS = function(){
 			 newFrame.style.color = "white";
 			 newFrame.onclick = function(){
 				var f = {};
-				f.times = 1;
+				f.time = 5;
 				f.backgroundColor = "gray";
+				var os = [];
+				os.push(_newObject("line",10,20,50,40,5.5,"0,200,0"));
+				os.push(_newObject("line",110,120,50,140,5.5,"222,111,1"));
+				f.objects = os;
 				lsFrame.push(f); 
 				tabFrames.refreshFrames(); 
 			 }
@@ -6021,6 +6032,8 @@ const gc4BLS = function(){
 		}
 		else{
 			e = false;
+			
+			_curFrameObjsStartMove(x,y,x1,y1);
 		}
 	}
 	this.edit_move = function(x,y){
@@ -6041,7 +6054,13 @@ const gc4BLS = function(){
 		}
 		else{
 			msgDbg = "msgDbg2 xy:" + x + "," + y;
+			_curFrameObjsMoving(x,y,x1,y1);
 		}
+
+	}
+	
+	this.edit_up = function(x,y){
+		_curFrameObjsUp(x,y,x1,y1);
 	}
 	this.move_start = function(dx,dy){
 		if(s){ 
@@ -6140,7 +6159,98 @@ const gc4BLS = function(){
 	];
 	var _curF = -1;
 	var _supObjs = [];
-	 
+	const _newObject = function(_graphic,x1,y1,x2,y2,size,color){
+		var o = {};
+		o.graphic = _graphic;
+		var a = {};
+		a.top = y1;
+		a.left = x1;
+		a.right = x2;
+		a.bottom = y2;
+		a.color = color;
+		a.size = size;
+		o.attribute = a;
+		
+		var s = false;
+		var msgO = "msgO";
+		var mxStart = 0;
+		var myStart = 0;
+		var mxStop = 0;
+		var myStop = 0;
+		o.selfDraw = function(ctx,x1,y1){
+			ctx.fillStyle = "purple";
+			ctx.font = "10px Arial";
+			ctx.fillText(JSON.stringify(o) + "s =" +  s + " - " + msgO,a.left+x1,a.top+y1);
+			if("line"==o.graphic){
+				ctx.beginPath(); 				 
+				ctx.moveTo(o.attribute.left + x1,o.attribute.top + y1);
+				ctx.lineTo(o.attribute.right + x1,o.attribute.bottom + y1);		 
+				ctx.strokeStyle = "rgb(" + o.attribute.color + ")";
+				ctx.stroke();
+				if(s){
+					ctx.fillStyle = "yellow"; 
+					ctx.fillRect(o.attribute.left + x1,o.attribute.top + y1,22,22); 
+					ctx.beginPath(); 				 
+					ctx.moveTo(mxStart,myStart);
+					ctx.lineTo(mxStop,myStop);		 
+					ctx.strokeStyle = "green";
+					ctx.stroke();
+				}
+				else{ 
+					ctx.fillStyle = "blue"; 
+					ctx.fillRect(o.attribute.left + x1,o.attribute.top + y1,22,22);
+				}
+			}
+		}
+		o.moveStart = function(x,y,x1,y1){
+			msgO = " xy:[" + x + "," + y + "]";
+			if(blo0.blPiR(x,y,a.left + x1,a.top+y1,22,22)){
+				s = true;
+				mxStart = x;
+				myStart = y;
+				mxStop = x;
+				myStop = y;
+			} 
+		} 
+		o.onMove = function(x,y,x1,y1){
+			mxStop = x;
+			myStop = y;
+		}
+		o.onUp = function(x,y,x1,y1){
+			if(s){
+				s = false;
+				o.attribute.left += mxStop -mxStart;
+				o.attribute.top += myStop -myStart;
+				o.attribute.right += mxStop -mxStart;
+				o.attribute.bottom += myStop -myStart;
+				mxStop = mxStart = myStart = myStop = 0;
+			}
+		}
+		return o;
+	}
+	const _curFrameObjsStartMove = function(x,y,x1,y1){
+		const os = lsFrame[_curF].objects;
+		for(i in os){
+			const o = os[i];
+			if(o.moveStart) o.moveStart(x,y,x1,y1);
+		}
+	}
+	const _curFrameObjsMoving = function(x,y,x1,y1){
+		const os = lsFrame[_curF].objects;
+		for(i in os){
+			const o = os[i];
+			if(o.onMove) o.onMove(x,y,x1,y1);
+		}
+	}
+	
+	const _curFrameObjsUp = function(x,y,x1,y1){
+		const os = lsFrame[_curF].objects;
+		for(i in os){
+			const o = os[i];
+			if(o.onUp) o.onUp(x,y,x1,y1);
+		}
+	}
+	
 	var _makeBLS = function(){
 		var s = {};
 		var r = {};		
@@ -6154,11 +6264,38 @@ const gc4BLS = function(){
 		s.request 		= r;			
 		return s;	
 	}
-	const _getObjsInFrame = function(lsf,i){
-		var r;
-		const os = lsf[i].objects;
-		r = "objects in frame: " +os;
-		return r;
+	const _drawObjectsInFrame = function(ctx,lsf,n,x1,y1){ 
+		const os = lsf[n].objects; 
+
+		ctx.fillStyle = "blue";
+		ctx.font = "10px Arial";
+		ctx.fillText(os, x1,y1+10);	
+		
+		var x = x1, y = y1;
+		
+		for(i in os){
+			const o = os[i];
+			y += 20;
+			ctx.fillText(JSON.stringify(o),x,y);
+			if(o.graphic){
+				if("line"==o.graphic){
+					ctx.beginPath(); 
+					 
+					ctx.moveTo(o.attribute.left + x1,o.attribute.top + y1);
+					ctx.lineTo(o.attribute.right + x1,o.attribute.bottom + y1);		 
+					ctx.strokeStyle = "rgb(" + o.attribute.color + ")";
+					ctx.stroke();
+					if(o.s){
+						ctx.fillStyle = "yellow"; 
+						ctx.fillRect(o.attribute.left + x1,o.attribute.top + y1,22,22);
+					}
+					else{ 
+						ctx.fillStyle = "blue"; 
+						ctx.fillRect(o.attribute.left + x1,o.attribute.top + y1,22,22);
+					}
+				}
+			}
+		}
 	}
 	const _makeDbgMsgInFrame = function(){
 		var r; 
@@ -6214,7 +6351,7 @@ const gc4BLS = function(){
 				const tb = blo0.blDiv(_tb,_tb.id+"tb4Blue","blue","blue");		
 				const v = blo0.blBtn(tb,tb.id+"v","blue","gray");
 			}(tb,val);
-		}();
+		}(); 
 	}
 }
 
