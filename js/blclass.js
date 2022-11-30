@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.314"
+var g_ver_blClass = "CBlClass_bv1.6.315"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -5976,7 +5976,7 @@ const gc4BLS = function(){
 			 tabFrames.refreshFrames = function(){
 				tabFrames.innerHTML = "";
 				for(i in lsFrame){ 
-				   var b = blo0.blBtn(tabFrames,tabFrames.id+i,i,"gray");
+				   var b = blo0.blBtn(tabFrames,tabFrames.id+i,i,"purple");
 				   b.style.float = "left";
 				   b.onclick = function(_btn,_i,_f){
 					   return function(){ 
@@ -5986,7 +5986,7 @@ const gc4BLS = function(){
 				   }(b,i,lsFrame);
 				}
 			 }
-			 const newFrame = blo0.blBtn(tbFrames,tbFrames.id+"newFrame","+","green");
+			 const newFrame = blo0.blBtn(tbFrames,tbFrames.id+"newFrame","+Frame","green");
 			 newFrame.style.float = "left";
 			 newFrame.style.color = "white";
 			 newFrame.onclick = function(){
@@ -6302,9 +6302,38 @@ const gc4BLS = function(){
 		r = msgDbg + " :: v 13 showDebugMsg4BLS: x1y1[" + x1 + ","+ y1 + "]";;
 		return r;
 	}
-	const _ui4curFrame = function(btnBoss,v,f,n){
-		v.innerHTML = "";
-		const fn4settime = function(){
+	const _ui4curFrame = function(curFrameBtn,_v,f,n){
+		_v.innerHTML = "";
+		const ts = [
+			{	
+				"id": "id_4_time",	
+				"name": "time",
+				"fn4click": function(targetV,myBtn){		fn4settime(targetV);	},
+				"bgc":"blue"
+			},
+			{	
+				"id": "id_4_bgc",	
+				"name": "bgc",
+				"fn4click": function(targetV,myBtn){	fn4setbackgroundColor(targetV,myBtn);	},
+				"bgc":"green"
+			},
+		];
+		const splitline1 = blo0.blDiv(_v,_v.id+"splitline1","splitline1","green");	
+		const tb = blo0.blDiv(_v,_v.id+"tb4curFrame","tb4curFrame","lightgreen");	
+		const v = blo0.blDiv(_v,_v.id+"v4curFrame","v4curFrame","gray");	
+		for(i in ts){ 
+			const b = blo0.blBtn(tb,tb.id+ts[i].id,ts[i].name,ts[i].bgc); 
+			b.style.float = "left";
+			b.onclick = function(_b,_ts,_i,_vTarget){
+				return function(){
+					_vTarget.innerHTML = "";
+					_ts[_i].fn4click(_vTarget,_b);
+				}
+			}(b,ts,i,v);
+		}
+
+
+		const fn4settime = function(v){
 			const tb4time = blo0.blDiv(v,v.id+"tb4time","time0.11","brown");		
 			const btn4TimeStatic = blo0.blBtn(tb4time,tb4time.id+"btn4TimeStatic","f.time","gray");
 			btn4TimeStatic.style.float = "left";
@@ -6321,8 +6350,8 @@ const gc4BLS = function(){
 						}
 					}(i);
 			}
-		}();
-		const fn4setbackgroundColor = function(){
+		}
+		const fn4setbackgroundColor = function(v,btnBoss){
 			const tb = blo0.blDiv(v,v.id+"tb4backgroundcolor","backgroundcolor0.11","blue");		
 			const static = blo0.blBtn(tb,tb.id+"Static","f.backgroundColor","gray");
 			static.style.float = "left"; 	
@@ -6351,7 +6380,7 @@ const gc4BLS = function(){
 				const tb = blo0.blDiv(_tb,_tb.id+"tb4Blue","blue","blue");		
 				const v = blo0.blBtn(tb,tb.id+"v","blue","gray");
 			}(tb,val);
-		}(); 
+		} 
 	}
 }
 
