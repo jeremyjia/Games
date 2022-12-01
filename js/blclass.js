@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.315"
+var g_ver_blClass = "CBlClass_bv1.6.321"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -5898,8 +5898,9 @@ const gc4BLS = function(){
 		var ss = sBlsTitle + " : curFrame = " + _curF;
 		ctx.fillText(ss, x1,y1);
 
-		const showObjectsInFrame = function(){
-			//var s = _drawObjectsInFrame(ctx,lsFrame,_curF,x1,y1); 
+		const showCurFrame = function(){ 
+			_objCmd.drawObjCmdUI(ctx,x1+5,y1+5);
+
 			const os = lsFrame[_curF].objects;
 			for(i in os){
 				os[i].selfDraw(ctx,x1,y1);
@@ -6033,7 +6034,7 @@ const gc4BLS = function(){
 		else{
 			e = false;
 			
-			_curFrameObjsStartMove(x,y,x1,y1);
+			_curFrameDown(x,y,x1,y1);
 		}
 	}
 	this.edit_move = function(x,y){
@@ -6054,13 +6055,13 @@ const gc4BLS = function(){
 		}
 		else{
 			msgDbg = "msgDbg2 xy:" + x + "," + y;
-			_curFrameObjsMoving(x,y,x1,y1);
+			_curFrameMove(x,y,x1,y1);
 		}
 
 	}
 	
 	this.edit_up = function(x,y){
-		_curFrameObjsUp(x,y,x1,y1);
+		_curFrameUp(x,y,x1,y1);
 	}
 	this.move_start = function(dx,dy){
 		if(s){ 
@@ -6079,84 +6080,7 @@ const gc4BLS = function(){
 		}
 	}
 
-	var lsFrame = [
-		{
-		"number": "1", 
-		"time": 5, 
-		"objects": [
-			{
-				"graphic": "line", 
-				"attribute": {
-					"left": 100, 
-					"top": 100, 
-					"right": 100, 
-					"bottom": 300, 
-					"size": 5.5, 
-					"color": "255,0,255"
-				}
-			}, 
-			{
-				"graphic": "circle", 
-				"attribute": {
-					"left": 200, 
-					"top": 200, 
-					"width": 200, 
-					"height": 200, 
-					"color": "120,156,20"
-				}
-			}, 
-			{
-				"graphic": "rect", 
-				"attribute": {
-					"left": 500, 
-					"top": 400, 
-					"width": 100, 
-					"height": 150, 
-					"color": "142,28,124"
-				}
-			}
-		], 
-		"backgroundColor": "200,100,200"
-		},
-		{
-		"number": "2", 
-		"time": 5, 
-		"objects": [
-			{
-				"graphic": "line", 
-				"attribute": {
-					"left": 100, 
-					"top": 100, 
-					"right": 100, 
-					"bottom": 300, 
-					"size": 5.5, 
-					"color": "255,0,255"
-				}
-			}, 
-			{
-				"graphic": "circle", 
-				"attribute": {
-					"left": 200, 
-					"top": 200, 
-					"width": 200, 
-					"height": 200, 
-					"color": "120,156,20"
-				}
-			}, 
-			{
-				"graphic": "rect", 
-				"attribute": {
-					"left": 500, 
-					"top": 400, 
-					"width": 100, 
-					"height": 150, 
-					"color": "142,28,124"
-				}
-			}
-		], 
-		"backgroundColor": "100,200,200"
-		}
-	];
+	var lsFrame = [];
 	var _curF = -1;
 	var _supObjs = [];
 	const _newObject = function(_graphic,x1,y1,x2,y2,size,color){
@@ -6228,14 +6152,18 @@ const gc4BLS = function(){
 		}
 		return o;
 	}
-	const _curFrameObjsStartMove = function(x,y,x1,y1){
+	const _curFrameDown = function(x,y,x1,y1){
+		_objCmd.downObjCmd(x,y,x1,y1);
+
 		const os = lsFrame[_curF].objects;
 		for(i in os){
 			const o = os[i];
 			if(o.moveStart) o.moveStart(x,y,x1,y1);
 		}
 	}
-	const _curFrameObjsMoving = function(x,y,x1,y1){
+	const _curFrameMove = function(x,y,x1,y1){
+		_objCmd.moveObjCmd(x,y,x1,y1);
+
 		const os = lsFrame[_curF].objects;
 		for(i in os){
 			const o = os[i];
@@ -6243,7 +6171,9 @@ const gc4BLS = function(){
 		}
 	}
 	
-	const _curFrameObjsUp = function(x,y,x1,y1){
+	const _curFrameUp = function(x,y,x1,y1){
+		_objCmd.upObjCmd(x,y,x1,y1,lsFrame[_curF].objects);
+
 		const os = lsFrame[_curF].objects;
 		for(i in os){
 			const o = os[i];
@@ -6264,39 +6194,7 @@ const gc4BLS = function(){
 		s.request 		= r;			
 		return s;	
 	}
-	const _drawObjectsInFrame = function(ctx,lsf,n,x1,y1){ 
-		const os = lsf[n].objects; 
-
-		ctx.fillStyle = "blue";
-		ctx.font = "10px Arial";
-		ctx.fillText(os, x1,y1+10);	
-		
-		var x = x1, y = y1;
-		
-		for(i in os){
-			const o = os[i];
-			y += 20;
-			ctx.fillText(JSON.stringify(o),x,y);
-			if(o.graphic){
-				if("line"==o.graphic){
-					ctx.beginPath(); 
-					 
-					ctx.moveTo(o.attribute.left + x1,o.attribute.top + y1);
-					ctx.lineTo(o.attribute.right + x1,o.attribute.bottom + y1);		 
-					ctx.strokeStyle = "rgb(" + o.attribute.color + ")";
-					ctx.stroke();
-					if(o.s){
-						ctx.fillStyle = "yellow"; 
-						ctx.fillRect(o.attribute.left + x1,o.attribute.top + y1,22,22);
-					}
-					else{ 
-						ctx.fillStyle = "blue"; 
-						ctx.fillRect(o.attribute.left + x1,o.attribute.top + y1,22,22);
-					}
-				}
-			}
-		}
-	}
+	
 	const _makeDbgMsgInFrame = function(){
 		var r; 
 		r = msgDbg + " :: v 13 showDebugMsg4BLS: x1y1[" + x1 + ","+ y1 + "]";;
@@ -6316,6 +6214,42 @@ const gc4BLS = function(){
 				"name": "bgc",
 				"fn4click": function(targetV,myBtn){	fn4setbackgroundColor(targetV,myBtn);	},
 				"bgc":"green"
+			},
+			{	
+				"id": "id_4_objects",	
+				"name": "os",
+				"fn4click": function(targetV,myBtn){ 
+					const os = [
+						{
+							"id":"id_4_objText",
+							"name":"text",
+							"fn2click":function(targetV,btn){
+								targetV.innerHTML = btn.id;
+							},
+							"bgc":"blue"
+						},
+						{
+							"id":"id_4_objLine",
+							"name":"line",
+							"fn2click":function(targetV,btn){  
+								targetV.innerHTML = btn.id;
+							},
+							"bgc":"green"
+						},
+					];
+					const tb = blo0.blDiv(targetV,targetV.id+"tb","tb","gray");
+					const v = blo0.blDiv(targetV,targetV.id+"v","v","lightblue");
+					for(i in os){
+						const b = blo0.blBtn(tb,tb.id+os[i].id,os[i].name,os[i].bgc);
+						b.onclick = function(_b,_os,_i){
+							return function(){			
+								_objCmd.setObjectType(_os[_i].name);					
+								_os[_i].fn2click(v,_b);
+							}
+						}(b,os,i);
+					}
+				},
+				"bgc":"lightblue"
 			},
 		];
 		const splitline1 = blo0.blDiv(_v,_v.id+"splitline1","splitline1","green");	
@@ -6382,6 +6316,51 @@ const gc4BLS = function(){
 			}(tb,val);
 		} 
 	}
+	const _objCmd = function(){
+		const c = function(){			
+			this.drawObjCmdUI = function(ctx,x,y){
+				ctx.fillStyle = "red";
+				ctx.fillRect(x,y,10,10);
+				var s = "type=" + type + ", [" + x1 + "," + y1 + "] - [" + x2 + "," + y2 + "]";
+				ctx.fillText(s,x+20,y+20);
+
+				if(!b) return;
+				ctx.beginPath(); 				 
+				ctx.moveTo(x1,y1);
+				ctx.lineTo(x2,y2);		 
+				ctx.strokeStyle = "blue";
+				ctx.stroke();
+			};
+			this.setObjectType = function(t,v){
+				type = t;
+				v.innerHTML = t;
+			}
+			this.downObjCmd = function(x,y,x0,y0){
+				x1 = x2 = x;
+				y1 = y2 = y;
+				b = true;
+			}
+			this.upObjCmd = function(x,y,x0,y0,os){
+				if(b){
+					if("line"==type){
+						os.push(_newObject("line",x1-x0,y1-y0,x2-x0,y2-y0,5.5,"0,200,0"));
+					}	
+				}
+				
+				x1 = x2 = y1 = y2 = -1;
+				b = false;
+			}
+			this.moveObjCmd = function(x,y,x0,y0){
+				x2 = x;
+				y2 = y;
+			}
+
+			var type = "null";
+			var x1 = -1, y1 = -1, x2 = -1, y2 = -1;
+			var b = false;
+		};
+		return new c();
+	}();
 }
 
 
