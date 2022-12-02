@@ -173,7 +173,7 @@ public class JSGraphEngine {
         public void quadraticCurveTo(int x1, int y1, int x2, int y2) {
             applayStrokeColor();
             double t = 0.001;
-            double x, y;
+            double x = 0, y = 0;
             for (double k = t; k <= 1 + t; k += t) {
                 double r = 1 - k;
                 x = Math.pow(r, 2) * from + 2 * k * r * x1 + Math.pow(k, 2) * x2;
@@ -181,6 +181,8 @@ public class JSGraphEngine {
                 graphics.drawOval((int) x, (int) y, 1, 1);
                 // graphics.drawLine((int) x, (int) y, (int) x, (int) y);
             }
+            from = (int)x;
+            to = (int)y;
         }
         
 		private void applayColor(String fillStyle) {

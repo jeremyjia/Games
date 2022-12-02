@@ -2,7 +2,7 @@
 var w = 1024;
 var h = 768;
 var dx=300;
-var dy=500;
+var m_dy=500;
 //函数quadraticCurveTo： 第一个点是用于二次贝塞尔计算中的控制点，第二个点是曲线的结束点。曲线的开始点是当前路径中最后一个点
 
 function animateFrame(time) {
@@ -13,7 +13,7 @@ function animateFrame(time) {
 	ctx.lineWidth = 6;	
 	
 	//将坐标原点平移
-	ctx.translate(dx,dy);
+	ctx.translate(dx,m_dy);
     ctx.beginPath();
 	 //起点
     ctx.moveTo(0,0);     
@@ -26,12 +26,12 @@ function animateFrame(time) {
 
     ctx.stroke();
     ctx.closePath();
-	ctx.translate(-dx,-dy);
+	ctx.translate(-dx,-m_dy);
 	
 	var h1 = Math.random()*(0.9*h-0.8*h)+0.8*h;
-	dy += 6;
-	if(dy>=h1){
-	   dy = 300;
+	m_dy += 6;
+	if(m_dy>=h1){
+	   m_dy = 300;
 	}
 	
 	ctx.beginPath();
@@ -48,5 +48,29 @@ function animateFrame(time) {
 	ctx.quadraticCurveTo(200, 50, 300, 200);			
 	ctx.stroke();
 	ctx.closePath();
+	
+	ctx.strokeStyle="#f0f000";
+	createAFlower(ctx,5,350,100,30,80);
+    ctx.stroke();
+	
+	ctx.strokeStyle="#0099CC";
+	createAFlower(ctx,6,500,100,30,80);
+	ctx.stroke();
+ 
 }
+
+    function createAFlower(context,n,dx,dy,size,length){
+        context.beginPath();
+        context.moveTo(dx,dy+size);
+        var dig=2*Math.PI/n;
+        for(var i=1;i<n+1;i++){
+            var ctrlX=Math.sin((i-0.5)*dig)*length+dx;
+            var ctrlY=Math.cos((i-0.5)*dig)*length+dy;
+ 
+            var x=Math.sin(i*dig)*size+dx;
+            var y=Math.cos(i*dig)*size+dy;
+            context.quadraticCurveTo(ctrlX,ctrlY,x,y);
+        }
+        context.closePath();
+    }
    
