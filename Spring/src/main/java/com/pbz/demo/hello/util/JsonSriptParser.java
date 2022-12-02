@@ -200,6 +200,7 @@ public final class JsonSriptParser {
 		}
 		String videoFilePath = requestObj.optString("video");
 		String rate = requestObj.getString("rate");
+		MacroResolver.setProperty(VAR_RATE, rate);
 		String time = requestObj.optString("time");
 		String bgColor = requestObj.optString("backgroundColor");
 
@@ -607,10 +608,17 @@ public final class JsonSriptParser {
 			String e = rangeArray[1].substring(0, rangeArray[1].length() - 1);
 			int sf = Integer.parseInt(s);
 			int ef = Integer.parseInt(e);
-			System.out.println(sf + "," + ef);
-			if (num >= sf && num <= ef) {
-				superObjects.add(jsonObj);
-			}
+            System.out.println(sf + "," + ef);
+            int nFactor = 1;
+            if (jsonObj.has("unit")) {
+                if (jsonObj.getInt("unit") == 1) {
+                    String rate = MacroResolver.getProperty(VAR_RATE);
+                    nFactor = Integer.parseInt(rate);
+                }
+            }
+            if (num >= (sf * nFactor) && num <= (ef * nFactor)) {
+                superObjects.add(jsonObj);
+            }
 		}
 		return superObjects;
 	}
