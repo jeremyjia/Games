@@ -171,6 +171,7 @@ public class JSGraphEngine {
 
 		//二次贝塞尔曲线
         public void quadraticCurveTo(int x1, int y1, int x2, int y2) {
+            applayStrokeColor();
             double t = 0.001;
             double x, y;
             for (double k = t; k <= 1 + t; k += t) {

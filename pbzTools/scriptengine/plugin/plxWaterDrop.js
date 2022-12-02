@@ -33,5 +33,20 @@ function animateFrame(time) {
 	if(dy>=h1){
 	   dy = 300;
 	}
+	
+	ctx.beginPath();
+	ctx.strokeStyle="rgba(0,255,0,0.4)";			
+	ctx.lineWidth=3;	
+	ctx.moveTo(100,180);						
+	ctx.lineTo(200,50);							
+	ctx.lineTo(300,200);						
+	ctx.stroke();
+	ctx.beginPath();							
+	ctx.moveTo(100, 180);
+	ctx.lineWidth = 3;
+	ctx.strokeStyle="rgba(255,135,0,1)";	
+	ctx.quadraticCurveTo(200, 50, 300, 200);			
+	ctx.stroke();
+	ctx.closePath();
 }
    
