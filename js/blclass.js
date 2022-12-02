@@ -6086,6 +6086,7 @@ const gc4BLS = function(){
 				"id": "id_4_line",
 				"type": "line",
 				"makeData": function(r,x1,y1,x2,y2,size,color){
+					var sMouseDown = "sMouseDown";
 					r.graphic 			= "line"; 
 					var a = {};
 					a.left 		= x1;
@@ -6095,24 +6096,32 @@ const gc4BLS = function(){
 					a.size 		= size;
 					a.color 	= color;
 					r.attribute 		= a;
+					r.getMDMsg = function(){ return sMouseDown;} 
+					r.downOnMe = function(x,y,x1,y1){  
+						sMouseDown = "sMouseDown: " + x + "," + y;
+					}
+					r.drawMyself = function(ctx,x,y){
+						var x1 = a.left + x;
+						var y1 = a.top + y;
+						var x2 = a.right + x;
+						var y2 = a.bottom + y;
+						ctx.beginPath(); 				 
+						ctx.moveTo(x1,y1);
+						ctx.lineTo(x2,y2);		 
+						ctx.strokeStyle = "rgb(" + a.color+")";
+						ctx.stroke();	
+					}
 				},
 				"drawObject": function(r,ctx,x,y){										
 					ctx.fillStyle = "red";
 					ctx.font = "10px Arial";
 					
-					ctx.fillText("line",r.attribute.left+x,r.attribute.top+y);			
-					
-					var x1 = r.attribute.left + x;
-					var y1 = r.attribute.top + y;
-					var x2 = r.attribute.right + x;
-					var y2 = r.attribute.bottom + y;
-					ctx.beginPath(); 				 
-					ctx.moveTo(x1,y1);
-					ctx.lineTo(x2,y2);		 
-					ctx.strokeStyle = "rgb(" + r.attribute.color+")";
-					ctx.stroke();		
+					ctx.fillText("line",r.attribute.left+x,r.attribute.top+y);	
+					ctx.fillText(r.getMDMsg(),r.attribute.left+x,r.attribute.top+y -20);			
+					r.drawMyself(ctx,x,y);				
 
 				},
+				
 			},
 			{
 				"id": "id_4_text",
@@ -6186,9 +6195,9 @@ const gc4BLS = function(){
 		return o;
 	}
 	const _curFrameDown = function(x,y,x1,y1){
-		_objCmd.downObjCmd(x,y,x1,y1);
 
 		const os = lsFrame[_curF].objects;
+		_objCmd.downObjCmd(x,y,x1,y1,os);
 		for(i in os){
 			const o = os[i];
 			if(o.moveStart) o.moveStart(x,y,x1,y1);
@@ -6364,7 +6373,7 @@ const gc4BLS = function(){
 			this.drawObjCmdUI = function(ctx,x,y){
 				ctx.fillStyle = "red";
 				ctx.fillRect(x,y,10,10);
-				var s = "type=" + type + ", [" + x1 + "," + y1 + "] - [" + x2 + "," + y2 + "]";
+				var s = mdMsg + " type=" + type + ", [" + x1 + "," + y1 + "] - [" + x2 + "," + y2 + "]";
 				ctx.fillText(s,x+20,y+20);
 
 				if(!b) return;
@@ -6378,7 +6387,21 @@ const gc4BLS = function(){
 				type = t;
 				v.innerHTML = t;
 			}
-			this.downObjCmd = function(x,y,x0,y0){
+			this.downObjCmd = function(x,y,x0,y0,os){
+				if("edit"==type){
+					var n = 0;
+					for(i in os){
+						n++;
+						if(os[i].downOnMe){
+							os[i].downOnMe(x,y,x0,y0);
+						}
+					}
+					mdMsg = "mdMsg: edit n=" + n;
+
+				}
+				else{
+					mdMsg = "mdMsg:xxx";
+				}
 				x1 = x2 = x;
 				y1 = y2 = y;
 				b = true;
@@ -6402,6 +6425,7 @@ const gc4BLS = function(){
 			}
 
 			var type = "null";
+			var mdMsg = "mdMsg";
 			var x1 = -1, y1 = -1, x2 = -1, y2 = -1;
 			var b = false;
 		};
