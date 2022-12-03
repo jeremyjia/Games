@@ -8,6 +8,7 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
@@ -63,7 +64,7 @@ public class JSGraphEngine {
 		public int from;
 		public int to;
 		public Composite oldComp;
-		public GeneralPath genPath = new GeneralPath();  
+		public Path2D m_Path2D = new GeneralPath();  
 
 		public void fillRect(int x, int y, int width, int height) {
 			applayColor(fillStyle);
@@ -152,6 +153,7 @@ public class JSGraphEngine {
 			recoverProperty();
 			from = x;
 			to = y;
+			m_Path2D.moveTo(x, y);
 		}
 
 		public void lineTo(int x, int y) {
@@ -179,10 +181,12 @@ public class JSGraphEngine {
                 x = Math.pow(r, 2) * from + 2 * k * r * x1 + Math.pow(k, 2) * x2;
                 y = Math.pow(r, 2) * to + 2 * k * r * y1 + Math.pow(k, 2) * y2;
                 graphics.drawOval((int) x, (int) y, 1, 1);
+                m_Path2D.lineTo(x, y);
                 //graphics.drawLine((int) x, (int) y, (int) x, (int) y);
             }
             from = (int)x;
             to = (int)y;
+            m_Path2D.lineTo(x, y);
         }
 
 		private void applayColor(String fillStyle) {
@@ -265,12 +269,15 @@ public class JSGraphEngine {
 		}
 
 		public void beginPath() {
+		    m_Path2D.reset();
 		}
 
 		public void closePath() {
 		}
 
 		public void fill() {
+            applayColor(fillStyle);
+		    graphics.fill(m_Path2D);
 		}
 
 		public void save() {
