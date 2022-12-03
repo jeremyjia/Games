@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.314"
+var g_ver_blClass = "CBlClass_bv1.6.322"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -192,7 +192,7 @@ function CBlClass ()
 			d.selectItem = function(x,y){
 				for(i in items){
 					const oi = items[i];
-					if(blo0.blPiR(x,y,oi.x,oi.y,oi.w,oi.y)){						
+					if(blo0.blPiR(x,y,oi.x,oi.y,oi.w,oi.h)){						
 						if (typeof oi.selectMe == "function") {
 							oi.selectMe();
 						}
@@ -2735,7 +2735,7 @@ function CBlClass ()
 				} 
 				
 				else if(curDrawingType==G_EDIT_OBJECT){  	
-					eui = blo0.blMD("id_eui","*",100,100,222,100,"blue");		
+					eui = blo0.blMD("id_eui","uiEditor",100,100,222,100,"blue");		
 					eui.v1 = blo0.blDiv(eui,eui.id+"v1","v1","lightblue");		
 					for(i in lsOs){
 						if(lsOs[i].edit_me) {
@@ -2814,6 +2814,11 @@ function CBlClass ()
 				} 
 				else if(curDrawingType==G_MOVE_OBJECT){  	
 					moveObj = null;	
+				}
+				else if(curDrawingType==G_EDIT_OBJECT){		 
+					for(i in lsOs){
+						if(lsOs[i].edit_up) lsOs[i].edit_up(x,y); 
+					}	
 				}
 			}); 
 
@@ -5850,6 +5855,8 @@ const gc4Note = function(){
 
 const gc4BLS = function(){
 	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,sBlsTitle = "...";
+	var msgDbg = "msgBLS";
+	var xdMsg1 = "xdMsg1";
 	
 
 	this.select = function(b){		s = b;		}
@@ -5873,14 +5880,39 @@ const gc4BLS = function(){
 		}
 		
 		var oldStyle = ctx.fillStyle;
-		ctx.fillStyle = "gray"; 
+		ctx.fillStyle = function(){
+			var c = _curF>-1?lsFrame[_curF].backgroundColor:"yellow";
+			if("200,100,200"==c ||
+				"100,200,200"==c ||
+				"222,0,0"==c  ||
+				"111,0,0"==c  ||
+				"10,0,0"==c  ||
+				"1,0,0"==c  
+			) c = "rgb(" + c + ")";
+			return c;
+		}(); 
 		ctx.fillRect(x1,y1,x2-x1,y2-y1);
 		
-		ctx.fillStyle = "blue";
+		ctx.fillStyle = "rgb(200,111,1)";//"blue";
 		ctx.font = "30px Arial";
 		var ss = sBlsTitle + " : curFrame = " + _curF;
 		ctx.fillText(ss, x1,y1);
 
+		const showCurFrame = function(){ 
+			_objCmd.drawObjCmdUI(ctx,x1+5,y1+5);
+
+			const os = lsFrame[_curF].objects;
+			for(i in os){
+				os[i].selfDraw(ctx,x1,y1);
+			}
+		}();
+		
+		const showDebugMsg4BLS = function(){
+			ctx.fillStyle = "yellow";
+			ctx.font = "10px Arial";
+			var s = _makeDbgMsgInFrame();
+			ctx.fillText(s, x1,y1+30);		
+		}();
 		ctx.fillstyle = oldStyle;
 	}
 	this.select_me = function(x,y){
@@ -5893,12 +5925,12 @@ const gc4BLS = function(){
 			 e = true; 
 			 eui.v1.innerHTML = "";
 			 const tb = blo0.blDiv(eui.v1,eui.v1.id+"tb","tb","gray");
-			 var b1 = blo0.blBtn(tb,tb.id+"b1","setTitle","lightblue");
+			 var b1 = blo0.blBtn(tb,tb.id+"b1","setTitleFromTA","lightblue");
 			 b1.style.float = "left";
 			 b1.onclick = function(){
 				sBlsTitle = blo0.blGetTa().value;	
 			 } 
-			 var b2 = blo0.blBtn(tb,tb.id+"b2","bls","lightgreen");
+			 var b2 = blo0.blBtn(tb,tb.id+"b2","bls2TA","lightgreen");
 			 b2.style.float = "left";
 			 b2.onclick = function(){
 				blo0.blGetTa().value = JSON.stringify(_makeBLS());	
@@ -5907,7 +5939,7 @@ const gc4BLS = function(){
 			 
 			 const split1 = blo0.blDiv(eui.v1,eui.v1.id+"split1","split1","green");
 
-			 const tbW = blo0.blDiv(eui.v1,eui.v1.id+"tbW","W:","gray");
+			 const tbW = blo0.blDiv(eui.v1,eui.v1.id+"tbW","blsWidth:","gray");
 			 
 			 var bw = blo0.blBtn(tbW,tbW.id+"bw",x2-x1,"lightgreen");
 			 const ws = [1,-1,2,-2,5,-5,10,-10,100,-100];
@@ -5921,28 +5953,48 @@ const gc4BLS = function(){
 					}
 				}(i);
 			 }
-			 const split1a = blo0.blDiv(eui.v1,eui.v1.id+"split1a","split1a","green");
+			 const split1w = blo0.blDiv(eui.v1,eui.v1.id+"split1a","split1a","green");
 
-			 const tbFrames = blo0.blDiv(eui.v1,eui.v1.id+"tbFrames","Frames:","gray");
+			 const tbH = blo0.blDiv(eui.v1,eui.v1.id+"tbH","blsHeight:","gray");			 
+			 var bh = blo0.blBtn(tbH,tbH.id+"bh",y2-y1,"lightgreen");
+			 const hs = [1,-1,2,-2,5,-5,10,-10,100,-100];
+			 for(i in hs){
+				var s = hs[i]>0?"+"+hs[i]:hs[i];
+				var b = blo0.blBtn(tbH,tbH.id+i,s,"gray");
+				b.onclick = function(_i){
+					return function(){
+						y2 += hs[_i];
+						bh.innerHTML = y2-y1;
+					}
+				}(i);
+			 }
+			 const split1h = blo0.blDiv(eui.v1,eui.v1.id+"split1h","split1h","green");
+
+			 const tbFrames = blo0.blDiv(eui.v1,eui.v1.id+"tbFrames","blsFrames:","green");
+			 tbFrames.style.color = "white";
 			 const split1b = blo0.blDiv(eui.v1,eui.v1.id+"split1b","split1b","lightgray");
 			 const tabFrames = blo0.blDiv(eui.v1,eui.v1.id+"tabFrames","tabFrames:","lightgray");
 			 tabFrames.refreshFrames = function(){
 				tabFrames.innerHTML = "";
 				for(i in lsFrame){ 
-				   var b = blo0.blBtn(tabFrames,tabFrames.id+i,i,"gray");
+				   var b = blo0.blBtn(tabFrames,tabFrames.id+i,i,"purple");
 				   b.style.float = "left";
-				   b.onclick = function(_i){
+				   b.onclick = function(_btn,_i,_f){
 					   return function(){ 
-						   _curF = _i;
+						   _curF = _i; 
+						   _ui4curFrame(_btn,v4curF,_f,_i);
 					   }
-				   }(i);
+				   }(b,i,lsFrame);
 				}
 			 }
-			 const newFrame = blo0.blBtn(tbFrames,tbFrames.id+"newFrame","+","gray");
+			 const newFrame = blo0.blBtn(tbFrames,tbFrames.id+"newFrame","+Frame","green");
 			 newFrame.style.float = "left";
+			 newFrame.style.color = "white";
 			 newFrame.onclick = function(){
 				var f = {};
-				f.times = 1;
+				f.time = 5;
+				f.backgroundColor = "gray"; 
+				f.objects = [];
 				lsFrame.push(f); 
 				tabFrames.refreshFrames(); 
 			 }
@@ -5950,11 +6002,13 @@ const gc4BLS = function(){
 			 tabFrames.refreshFrames(); 
 			 
 			 const split2 = blo0.blDiv(eui.v1,eui.v1.id+"split2","split2","green");
+			 const v4curF = blo0.blDiv(eui.v1,eui.v1.id+"v4curF","v4curF","gray");
+
 			 const split3= blo0.blDiv(eui.v1,eui.v1.id+"split3","split3","lightblue");
 			 const tbServer = blo0.blDiv(eui.v1,eui.v1.id+"tbServer","tbServer:","gray");
 			 const vServer = blo0.blDiv(eui.v1,eui.v1.id+"vServer","vServer:","lightblue");
 			 
-			 var btnSaveScript = blo0.blBtn(tbServer,tbServer.id+"btnSaveScript","save","lightgreen");
+			 var btnSaveScript = blo0.blBtn(tbServer,tbServer.id+"btnSaveScript","bls2server","lightgreen");
 			 btnSaveScript.style.float = "left"; 
 			 btnSaveScript.onclick = function(){				 
 				var pl = _makeBLS(); 
@@ -5964,7 +6018,7 @@ const gc4BLS = function(){
 					vServer.innerHTML = "<a href ='http://localhost:8080/"+sBlsTitle+".json' target='_blank'>"+sBlsTitle+".json</a>";
 				}); 
 			}
-			var btnMakeMP4 = blo0.blBtn(tbServer,tbServer.id+"btnMakeMP4","mp4","lightblue");
+			var btnMakeMP4 = blo0.blBtn(tbServer,tbServer.id+"btnMakeMP4","makeMP4","lightblue");
 			btnMakeMP4.style.float = "right"; 
 			btnMakeMP4.onclick = function(){	
 					var url = "http://localhost:8080/image/json2video?script=" + sBlsTitle + ".json&video=" + sBlsTitle + ".mp4"; 
@@ -5976,6 +6030,8 @@ const gc4BLS = function(){
 		}
 		else{
 			e = false;
+			
+			_curFrameDown(x,y,x1,y1);
 		}
 	}
 	this.edit_move = function(x,y){
@@ -5992,7 +6048,17 @@ const gc4BLS = function(){
 			ex1 = ex2;
 			ey1 = ey2;
 	
+			msgDbg = "msgDbg1 xy:" + x + "," + y;
 		}
+		else{
+			msgDbg = "msgDbg2 xy:" + x + "," + y;
+			_curFrameMove(x,y,x1,y1);
+		}
+
+	}
+	
+	this.edit_up = function(x,y){
+		_curFrameUp(x,y,x1,y1);
 	}
 	this.move_start = function(dx,dy){
 		if(s){ 
@@ -6011,100 +6077,360 @@ const gc4BLS = function(){
 		}
 	}
 
-	var lsFrame = [
-		{
-		"number": "1", 
-		"time": 5, 
-		"objects": [
-			{
-				"graphic": "line", 
-				"attribute": {
-					"left": 100, 
-					"top": 100, 
-					"right": 100, 
-					"bottom": 300, 
-					"size": 5.5, 
-					"color": "255,0,255"
-				}
-			}, 
-			{
-				"graphic": "circle", 
-				"attribute": {
-					"left": 200, 
-					"top": 200, 
-					"width": 200, 
-					"height": 200, 
-					"color": "120,156,20"
-				}
-			}, 
-			{
-				"graphic": "rect", 
-				"attribute": {
-					"left": 500, 
-					"top": 400, 
-					"width": 100, 
-					"height": 150, 
-					"color": "142,28,124"
-				}
-			}
-		], 
-		"backgroundColor": "100,100,100"
-		},
-		{
-		"number": "2", 
-		"time": 5, 
-		"objects": [
-			{
-				"graphic": "line", 
-				"attribute": {
-					"left": 100, 
-					"top": 100, 
-					"right": 100, 
-					"bottom": 300, 
-					"size": 5.5, 
-					"color": "255,0,255"
-				}
-			}, 
-			{
-				"graphic": "circle", 
-				"attribute": {
-					"left": 200, 
-					"top": 200, 
-					"width": 200, 
-					"height": 200, 
-					"color": "120,156,20"
-				}
-			}, 
-			{
-				"graphic": "rect", 
-				"attribute": {
-					"left": 500, 
-					"top": 400, 
-					"width": 100, 
-					"height": 150, 
-					"color": "142,28,124"
-				}
-			}
-		], 
-		"backgroundColor": "100,100,100"
-		}
-	];
+	var lsFrame = [];
 	var _curF = -1;
 	var _supObjs = [];
-	 
+	const _newObject = function(_oType,x1,y1,x2,y2,size,color){ 
+		const osDefine = [
+			{
+				"id": "id_4_line",
+				"type": "line",
+				"makeData": function(r,x1,y1,x2,y2,size,color){
+					var sMouseDown = "sMouseDown";
+					r.graphic 			= "line"; 
+					var a = {};
+					a.left 		= x1;
+					a.top 		= y1;
+					a.right 	= x2;
+					a.bottom 	= y2;
+					a.size 		= size;
+					a.color 	= color;
+					r.attribute 		= a;
+					r.getMDMsg = function(){ return sMouseDown;} 
+					r.downOnMe = function(x,y,x1,y1){  
+						sMouseDown = "sMouseDown: " + x + "," + y;
+					}
+					r.drawMyself = function(ctx,x,y){
+						var x1 = a.left + x;
+						var y1 = a.top + y;
+						var x2 = a.right + x;
+						var y2 = a.bottom + y;
+						ctx.beginPath(); 				 
+						ctx.moveTo(x1,y1);
+						ctx.lineTo(x2,y2);		 
+						ctx.strokeStyle = "rgb(" + a.color+")";
+						ctx.stroke();	
+					}
+				},
+				"drawObject": function(r,ctx,x,y){										
+					ctx.fillStyle = "red";
+					ctx.font = "10px Arial";
+					
+					ctx.fillText("line",r.attribute.left+x,r.attribute.top+y);	
+					ctx.fillText(r.getMDMsg(),r.attribute.left+x,r.attribute.top+y -20);			
+					r.drawMyself(ctx,x,y);				
+
+				},
+				
+			},
+			{
+				"id": "id_4_text",
+				"type": "text",
+				"makeData": function(r,x1,y1,x2,y2,size,color){
+					r.text = blo0.blGetTa().value;
+					r.x = x1;
+					r.y = y1;
+					r.size = size;
+					r.color = color;
+				},
+				"drawObject": function(r,ctx,x,y){			
+					ctx.fillStyle = "red";
+					ctx.font = "10px Arial";					
+					ctx.fillText(r.text,r.x+x,r.y+y);	
+				},
+			},
+		];
+		var o = function(_t,_x1,_y1){			
+			var left = _x1;
+			var top = _y1;
+			var r = {};
+			r.getLeft = function(){return left;}
+			r.getTop = function(){return top;}
+			const makeData4Object = function(t){
+				var of = null;
+				for(i in osDefine){					
+					if(osDefine[i].type == t){ 
+						of = osDefine[i];
+						break;
+					}
+				}
+				if(of){
+					of.makeData(r,x1,y1,x2,y2,size,color);
+				}
+			}(_t);
+			return r;
+		}(_oType,x1,y1); 
+		
+		var s = false;
+		var msgO = "msgO"; 
+		o.selfDraw = function(ctx,x1,y1){
+			ctx.fillStyle = "purple";
+			ctx.font = "10px Arial";
+			ctx.fillText(JSON.stringify(o) + "s =" +  s + " - " + msgO,o.getLeft()+x1,o.getTop()+y1);
+			const drawThisObject = function(){ 
+				ctx.fillStyle = "green";
+				ctx.font = "10px Arial";
+				ctx.fillRect(o.getLeft()+x1,o.getTop()+y1,5,5);
+				ctx.fillText(_oType,o.getLeft()+x1,o.getTop()+y1+20);
+
+				var of = null;
+				for(i in osDefine){
+					if(osDefine[i].type==_oType){
+						of = osDefine[i];
+						break;
+					}
+				}
+				 
+				if(of.drawObject){ 					of.drawObject(o,ctx,x1,y1);			}
+				
+			}(); 
+		}
+		o.moveStart = function(x,y,x1,y1){
+			msgO = " xy:[" + x + "," + y + "]"; 
+		} 
+		o.onMove = function(x,y,x1,y1){ 
+		}
+		o.onUp = function(x,y,x1,y1){ 
+		}
+		return o;
+	}
+	const _curFrameDown = function(x,y,x1,y1){
+
+		const os = lsFrame[_curF].objects;
+		_objCmd.downObjCmd(x,y,x1,y1,os);
+		for(i in os){
+			const o = os[i];
+			if(o.moveStart) o.moveStart(x,y,x1,y1);
+		}
+	}
+	const _curFrameMove = function(x,y,x1,y1){
+		_objCmd.moveObjCmd(x,y,x1,y1);
+
+		const os = lsFrame[_curF].objects;
+		for(i in os){
+			const o = os[i];
+			if(o.onMove) o.onMove(x,y,x1,y1);
+		}
+	}
+	
+	const _curFrameUp = function(x,y,x1,y1){
+		_objCmd.upObjCmd(x,y,x1,y1,lsFrame[_curF].objects);
+
+		const os = lsFrame[_curF].objects;
+		for(i in os){
+			const o = os[i];
+			if(o.onUp) o.onUp(x,y,x1,y1);
+		}
+	}
+	
 	var _makeBLS = function(){
 		var s = {};
 		var r = {};		
-		r.version 		= "gc4BLS: _makeBLS: bv0.14";
+		r.version 		= "gc4BLS: bv0.15";
 		r.width 		= x2 - x1;
 		r.height 		= y2 - y1;
-		r.music 		= "https://littleflute.github.io/english/NewConceptEnglish/Book2/11.mp3";
+		r.music 		= "1.mp3";//"https://littleflute.github.io/english/NewConceptEnglish/Book2/11.mp3";
 		r.rate 			= "1"; 
 		r.frames 		= lsFrame;		
 		r.superObjects 	= _supObjs;	
 		s.request 		= r;			
 		return s;	
 	}
+	
+	const _makeDbgMsgInFrame = function(){
+		var r; 
+		r = msgDbg + " :: v 13 showDebugMsg4BLS: x1y1[" + x1 + ","+ y1 + "]";;
+		return r;
+	}
+	const _ui4curFrame = function(curFrameBtn,_v,f,n){
+		_v.innerHTML = "";
+		const ts = [
+			{	
+				"id": "id_4_time",	
+				"name": "time",
+				"fn4click": function(targetV,myBtn){		fn4settime(targetV);	},
+				"bgc":"Cornsilk"
+			},
+			{	
+				"id": "id_4_bgc",	
+				"name": "bgc",
+				"fn4click": function(targetV,myBtn){	fn4setbackgroundColor(targetV,myBtn);	},
+				"bgc":"BlanchedAlmond"
+			},
+			{	
+				"id": "id_4_objects",	
+				"name": "os",
+				"fn4click": function(targetV,myBtn){ 
+					const os = [
+						{
+							"id":"id_4_objText",
+							"name":"text",
+							"fn2click":function(targetV,btn){
+								targetV.innerHTML = btn.id;
+							},
+							"bgc":"LightBlue"
+						},
+						{
+							"id":"id_4_objLine",
+							"name":"line",
+							"fn2click":function(targetV,btn){  
+								targetV.innerHTML = btn.id;
+							},
+							"bgc":"PowderBlue"
+						},
+						{
+							"id":"id_4_objEdit",
+							"name":"edit",
+							"fn2click":function(targetV,btn){  
+								targetV.innerHTML = btn.id;
+							},
+							"bgc":"LightSkyBlue"
+						},
+					];
+					const split4CurFrame = blo0.blDiv(targetV,targetV.id+"split4CurFrame","split4CurFrame","lightgreen");
+					const tb = blo0.blDiv(targetV,targetV.id+"tb","tb","gray");
+					const v = blo0.blDiv(targetV,targetV.id+"v","v","lightblue");
+					for(i in os){
+						const b = blo0.blBtn(tb,tb.id+os[i].id,os[i].name,os[i].bgc);
+						b.style.float = "left";
+						b.onclick = function(_b,_os,_i){
+							return function(){			
+								_objCmd.setObjectType(_os[_i].name);					
+								_os[_i].fn2click(v,_b);
+							}
+						}(b,os,i);
+					}
+				},
+				"bgc":"Bisque"
+			},
+		];
+		const splitline1 = blo0.blDiv(_v,_v.id+"splitline1","splitline1","green");	
+		const tb = blo0.blDiv(_v,_v.id+"tb4curFrame","tb4curFrame","lightgreen");	
+		const v = blo0.blDiv(_v,_v.id+"v4curFrame","v4curFrame","gray");	
+		for(i in ts){ 
+			const b = blo0.blBtn(tb,tb.id+ts[i].id,ts[i].name,ts[i].bgc); 
+			b.style.float = "left";
+			b.onclick = function(_b,_ts,_i,_vTarget){
+				return function(){
+					_vTarget.innerHTML = "";
+					_ts[_i].fn4click(_vTarget,_b);
+				}
+			}(b,ts,i,v);
+		}
+
+
+		const fn4settime = function(v){
+			const tb4time = blo0.blDiv(v,v.id+"tb4time","time0.11","brown");		
+			const btn4TimeStatic = blo0.blBtn(tb4time,tb4time.id+"btn4TimeStatic","f.time","gray");
+			btn4TimeStatic.style.float = "left";
+			const btn4TimeVal = blo0.blBtn(tb4time,tb4time.id+"btn4TimeVal",f[n].time,"lightblue");
+			btn4TimeVal.style.float = "left";
+			const ws = [1,-1,2,-2,5,-5,10,-10];
+			for(i in ws){
+					var s = ws[i]>0?"+"+ws[i]:ws[i];
+					var b = blo0.blBtn(tb4time,tb4time.id+i,s,"gray");
+					b.onclick = function(_i){
+						return function(){
+							f[n].time += ws[_i];
+							btn4TimeVal.innerHTML = f[n].time;
+						}
+					}(i);
+			}
+		}
+		const fn4setbackgroundColor = function(v,btnBoss){
+			const tb = blo0.blDiv(v,v.id+"tb4backgroundcolor","backgroundcolor0.11","blue");		
+			const static = blo0.blBtn(tb,tb.id+"Static","f.backgroundColor","gray");
+			static.style.float = "left"; 	
+			const val = blo0.blBtn(tb,tb.id+"val",f[n].backgroundColor,"lightgray");
+			val.style.float = "left"; 
+			const fn4Red = function(_tb,_val){
+				const tb = blo0.blDiv(_tb,_tb.id+"tb4Red","red","red");		
+				const v = blo0.blBtn(tb,tb.id+"v","red","gray");
+				const ws = [1,10,111,222];
+				for(i in ws){						
+						var b = blo0.blBtn(tb,tb.id+i,ws[i],"rgb("+ws[i]+",11,11)");
+						b.onclick = function(_i,_ls){
+							return function(){
+								f[n].backgroundColor = _ls[_i]+",0,0";
+								btnBoss.click();
+							}
+						}(i,ws);
+				}
+				
+			}(tb,val);
+			const fn4Green = function(_tb,_val){
+				const tb = blo0.blDiv(_tb,_tb.id+"tb4Green","green","green");		
+				const v = blo0.blBtn(tb,tb.id+"v","green","gray");
+			}(tb,val);
+			const fn4Blue = function(_tb,_val){
+				const tb = blo0.blDiv(_tb,_tb.id+"tb4Blue","blue","blue");		
+				const v = blo0.blBtn(tb,tb.id+"v","blue","gray");
+			}(tb,val);
+		} 
+	}
+	const _objCmd = function(){
+		const c = function(){			
+			this.drawObjCmdUI = function(ctx,x,y){
+				ctx.fillStyle = "red";
+				ctx.fillRect(x,y,10,10);
+				var s = mdMsg + " type=" + type + ", [" + x1 + "," + y1 + "] - [" + x2 + "," + y2 + "]";
+				ctx.fillText(s,x+20,y+20);
+
+				if(!b) return;
+				ctx.beginPath(); 				 
+				ctx.moveTo(x1,y1);
+				ctx.lineTo(x2,y2);		 
+				ctx.strokeStyle = "blue";
+				ctx.stroke();
+			};
+			this.setObjectType = function(t,v){
+				type = t;
+				v.innerHTML = t;
+			}
+			this.downObjCmd = function(x,y,x0,y0,os){
+				if("edit"==type){
+					var n = 0;
+					for(i in os){
+						n++;
+						if(os[i].downOnMe){
+							os[i].downOnMe(x,y,x0,y0);
+						}
+					}
+					mdMsg = "mdMsg: edit n=" + n;
+
+				}
+				else{
+					mdMsg = "mdMsg:xxx";
+				}
+				x1 = x2 = x;
+				y1 = y2 = y;
+				b = true;
+			}
+			this.upObjCmd = function(x,y,x0,y0,os){
+				if(b){
+					if("line"==type){
+						os.push(_newObject("line",x1-x0,y1-y0,x2-x0,y2-y0,5.5,"0,200,0"));
+					}	
+					if("text"==type){
+						os.push(_newObject("text",x1-x0,y1-y0,x2-x0,y2-y0,25,"0,200,0"));
+					}	
+				}
+				
+				x1 = x2 = y1 = y2 = -1;
+				b = false;
+			}
+			this.moveObjCmd = function(x,y,x0,y0){
+				x2 = x;
+				y2 = y;
+			}
+
+			var type = "null";
+			var mdMsg = "mdMsg";
+			var x1 = -1, y1 = -1, x2 = -1, y2 = -1;
+			var b = false;
+		};
+		return new c();
+	}();
 }
 
 
