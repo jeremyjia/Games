@@ -57,10 +57,12 @@ function animateFrame(time) {
     ctx.stroke();
 	
 	ctx.fillStyle="#FF00FF";//紫色
+	ctx.rotate(30 * Math.PI / 180);//旋转30度
 	createAFlower(ctx,6,500,100,30,80);
 	ctx.stroke();
 	ctx.fill();
 	ctx.closePath();
+	ctx.rotate(-30 * Math.PI / 180);////恢复旋转30度
  
 }
 

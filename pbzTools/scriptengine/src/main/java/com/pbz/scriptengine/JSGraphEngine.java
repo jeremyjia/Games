@@ -93,6 +93,7 @@ public class JSGraphEngine {
 
 		public void rotate(double angle) {
 			this.angle = angle;
+			graphics.rotate(angle,0,0);
 		}
 
 		public void fillText(String text, float x, float y) {
