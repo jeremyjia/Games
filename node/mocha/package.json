@@ -10,7 +10,7 @@
     "test": "./test"
   },
   "devDependencies": {
-    "mocha": "^7.1.1",
+    "mocha": "^10.1.0",
     "supertest": "^4.0.2"
   },
   "engines": {
