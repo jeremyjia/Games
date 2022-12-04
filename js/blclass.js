@@ -632,27 +632,38 @@ function CBlClass ()
 		}
 		return d;
 	}
-	this.blAudioTimer = function(){		
-		var bRun = false;
-		return function() {
-			this.stop = function(){
+	this.blAudioTimer = function(){	
+		const r = function() {	
+			var bRun = false;
+			var n = 0;
+			var fn4Loop = function(){
+				setTimeout(() => {
+					n++;
+					if(bRun) fn4Loop();
+				}, 1000);
+			}
+			var o = {};
+			o.stop = function(){
 				bRun = false;
+				n = 0;
 			}
-			this.start = function(){
+			o.start = function(){
 				bRun = true;
+				fn4Loop();
 			}
-			this.status = function(){
+			o.status = function(){
 				return bRun;
 			}
-			this.draw = function(ctx,x,y){
-				
+			o.draw = function(ctx,x,y){				
 				ctx.fillStyle = "blue";
 				ctx.font = "10px Arial";
 				var s = " Timer: bRun = " + bRun;
+				s += " n = " + n;
 				ctx.fillText(s, x,y + 20);
-
 			}
-		};
+			return o;
+		}();
+		return r;
 	}
 	
 	this.f2do =  function (ctx,_x,_y){
@@ -6023,6 +6034,22 @@ const gc4BLS = function(){
 				lsFrame.push(f); 
 				tabFrames.refreshFrames(); 
 			 }
+			 
+			 const blsPlay = blo0.blBtn(tbFrames,tbFrames.id+"blsPlay","blsPlay","green");
+			 blsPlay.style.float = "right";
+			 blsPlay.style.color = "white";
+			 blsPlay.onclick = function(){
+				const b = blsTimer;
+				if(b.status()){
+					b.stop();
+					this.innerHTML = "blsPlay";
+				}
+				else{
+					b.start();
+					this.innerHTML = "blsStop";
+				} 
+			 }
+
 
 			 tabFrames.refreshFrames(); 
 			 
