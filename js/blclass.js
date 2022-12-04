@@ -672,7 +672,8 @@ function CBlClass ()
 				s += " n = " + n; 
 				s += " t1 = " + t1; 
 				s += " t2 = " + t2;  
-				s += "t2-t1=" + (t2-t1)/1000 + "s";
+				s += " t2-t1 = " + (t2-t1)/1000 + "s";
+				s += " fps = " + fps;
 				ctx.fillText(s, x,y + 20);
 			}
 			return o;
@@ -6049,11 +6050,12 @@ const gc4BLS = function(){
 				tabFrames.refreshFrames(); 
 			 }
 			 
-			 const blsPlay = blo0.blBtn(tbFrames,tbFrames.id+"blsPlay","blsPlay","green");
+			 const blsPlay = blo0.blBtn(tbFrames,"btnBlsPlay","blsPlay","green");
 			 blsPlay.style.float = "right";
 			 blsPlay.style.color = "white";
 			 blsPlay.onclick = function(){
 				const b = blsTimer;
+				this.t = b;
 				if(b.status()){
 					b.stop();
 					this.innerHTML = "blsPlay";
