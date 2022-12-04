@@ -635,6 +635,7 @@ function CBlClass ()
 	this.blAudioTimer = function(){	
 		const r = function() {	
 			var bRun = false;
+			var fps = 1;
 			var n = 0; 
 			var t1 = Date.now();
 			var t2 = Date.now();
@@ -643,7 +644,7 @@ function CBlClass ()
 					n++; 
 					t2 = Date.now();
 					if(bRun) fn4Loop();
-				}, 1000);
+				}, 1000/fps);
 			}
 			var o = {};
 			o.stop = function(){
@@ -657,6 +658,12 @@ function CBlClass ()
 			}
 			o.status = function(){
 				return bRun;
+			}
+			o.setFPS = function(n){
+				fps = n;
+			}
+			o.getFPS = function(){
+				return fps;
 			}
 			o.draw = function(ctx,x,y){				
 				ctx.fillStyle = "blue";
