@@ -635,20 +635,24 @@ function CBlClass ()
 	this.blAudioTimer = function(){	
 		const r = function() {	
 			var bRun = false;
-			var n = 0;
+			var n = 0; 
+			var t1 = Date.now();
+			var t2 = Date.now();
 			var fn4Loop = function(){
 				setTimeout(() => {
-					n++;
+					n++; 
+					t2 = Date.now();
 					if(bRun) fn4Loop();
 				}, 1000);
 			}
 			var o = {};
 			o.stop = function(){
-				bRun = false;
-				n = 0;
+				bRun = false; 
 			}
 			o.start = function(){
 				bRun = true;
+				n = 0; 
+				t1 = Date.now();
 				fn4Loop();
 			}
 			o.status = function(){
@@ -658,7 +662,10 @@ function CBlClass ()
 				ctx.fillStyle = "blue";
 				ctx.font = "10px Arial";
 				var s = " Timer: bRun = " + bRun;
-				s += " n = " + n;
+				s += " n = " + n; 
+				s += " t1 = " + t1; 
+				s += " t2 = " + t2;  
+				s += "t2-t1=" + (t2-t1)/1000 + "s";
 				ctx.fillText(s, x,y + 20);
 			}
 			return o;
