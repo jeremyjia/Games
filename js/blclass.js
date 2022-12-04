@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.322"
+var g_ver_blClass = "CBlClass_bv1.6.323"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -632,6 +632,29 @@ function CBlClass ()
 		}
 		return d;
 	}
+	this.blAudioTimer = function(){		
+		var bRun = false;
+		return function() {
+			this.stop = function(){
+				bRun = false;
+			}
+			this.start = function(){
+				bRun = true;
+			}
+			this.status = function(){
+				return bRun;
+			}
+			this.draw = function(ctx,x,y){
+				
+				ctx.fillStyle = "blue";
+				ctx.font = "10px Arial";
+				var s = " Timer: bRun = " + bRun;
+				ctx.fillText(s, x,y + 20);
+
+			}
+		};
+	}
+	
 	this.f2do =  function (ctx,_x,_y){
 		var x = _x;
 		var y = _y;
@@ -5854,6 +5877,7 @@ const gc4Note = function(){
 
 
 const gc4BLS = function(){
+	const blsTimer = blo0.blAudioTimer();
 	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,sBlsTitle = "...";
 	var msgDbg = "msgBLS";
 	var xdMsg1 = "xdMsg1";
@@ -5897,6 +5921,7 @@ const gc4BLS = function(){
 		ctx.font = "30px Arial";
 		var ss = sBlsTitle + " : curFrame = " + _curF;
 		ctx.fillText(ss, x1,y1);
+		blsTimer.draw(ctx,x1,y1);
 
 		const showCurFrame = function(){ 
 			_objCmd.drawObjCmdUI(ctx,x1+5,y1+5);
