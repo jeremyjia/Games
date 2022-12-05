@@ -6051,11 +6051,17 @@ const gc4BLS = function(){
 							}(); 
 							
 							const tb = blo0.blDiv(v,v.id+"tb","tb","Violet"); 
+							const vSrc = blo0.blDiv(tb,tb.id+"vSrc",t.getVP().src,"lightgreen");
+							const setSrc = blo0.blBtn(tb,tb.id+"setSrc","setFromTA","green");
+							setSrc.onclick = function(){
+								vSrc.innerHTML = blo0.blGetTa().value;
+								t.getVP().src = 	blo0.blGetTa().value;
+							}
 							for(i in ms){
 								const b = blo0.blBtn(tb,tb.id+ms[i].id,ms[i].name,"Fuchsia");
 								b.onclick = function(_i){
 									return function(){
-										t.getVP().src = ms[_i].src;
+										vSrc.innerHTML = t.getVP().src = ms[_i].src;										
 									}
 								}(i);
 							}
