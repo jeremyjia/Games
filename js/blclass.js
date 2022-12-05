@@ -693,7 +693,26 @@ function CBlClass ()
 				return fps;
 			}
 			o.getVP = function(){ return vp;}
-			o.drawOnLoop = function(ctx,_lsFrames,x1,y1,x2,y2){				
+			o.getFrameNo = function(l,nf){
+				var nr = 0;
+				var m = 0;
+				var n = 0;
+				for(i in l){
+					m += l[i].time;
+					if(nf<=m){
+						nr = n;
+						break;
+					}
+					n++;
+				}
+				return nr;
+			}
+			o.drawOnLoop = function(ctx,_lsFrames,x1,y1,x2,y2){			
+				if(bRun){ 	
+					ctx.fillStyle = "lightblue";
+					ctx.fillRect(x1,y1,x2-x1,y2-y1);
+					this.paintCurFrame(ctx,_lsFrames,this.getFrameNo(_lsFrames,n),x1,y1,x2,y2);
+				}	
 				ctx.fillStyle = "blue";
 				ctx.font = "10px Arial";
 				var s = " Timer: bRun = " + bRun;
@@ -703,11 +722,6 @@ function CBlClass ()
 				s += " t2-t1 = " + (t2-t1)/1000 + "s";
 				s += " fps = " + fps;
 				ctx.fillText(s, x1,y1 + 20);
-
-				if(bRun){ 	
-					ctx.fillStyle = "lightblue";
-					ctx.fillRect(x1,y1,x2-x1,y2-y1);
-				}
 			}
 			return o;
 		}();
