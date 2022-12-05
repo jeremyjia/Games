@@ -663,8 +663,28 @@ function CBlClass ()
 				t1 = Date.now();
 				fn4Loop();
 			}
-			o.status = function(){
+			o.isPlaying = function(){
 				return bRun;
+			}
+
+			o.paintCurFrame = function(ctx,_lsf,n,x1,y1,x2,y2){
+				ctx.fillStyle = function(){
+					var c = n>-1?_lsf[n].backgroundColor:"yellow";
+					if("200,100,200"==c ||
+						"100,200,200"==c ||
+						"222,0,0"==c  ||
+						"111,0,0"==c  ||
+						"10,0,0"==c  ||
+						"1,0,0"==c  
+					) c = "rgb(" + c + ")";
+					return c;
+				}(); 
+				ctx.fillRect(x1,y1,x2-x1,y2-y1);
+
+				const os = _lsf[n].objects;
+				for(i in os){
+					os[i].selfDraw(ctx,x1,y1);
+				}
 			}
 			o.setFPS = function(n){
 				fps = n;
@@ -673,7 +693,7 @@ function CBlClass ()
 				return fps;
 			}
 			o.getVP = function(){ return vp;}
-			o.draw = function(ctx,x,y){				
+			o.drawOnLoop = function(ctx,_lsFrames,x1,y1,x2,y2){				
 				ctx.fillStyle = "blue";
 				ctx.font = "10px Arial";
 				var s = " Timer: bRun = " + bRun;
@@ -682,7 +702,12 @@ function CBlClass ()
 				s += " t2 = " + t2;  
 				s += " t2-t1 = " + (t2-t1)/1000 + "s";
 				s += " fps = " + fps;
-				ctx.fillText(s, x,y + 20);
+				ctx.fillText(s, x1,y1 + 20);
+
+				if(bRun){ 	
+					ctx.fillStyle = "lightblue";
+					ctx.fillRect(x1,y1,x2-x1,y2-y1);
+				}
 			}
 			return o;
 		}();
@@ -5915,6 +5940,9 @@ const gc4Note = function(){
 
 const gc4BLS = function(){
 	const blsTimer = blo0.blAudioTimer();
+	var lsFrame = [];
+	var _curF = -1;
+	var _supObjs = [];
 	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,sBlsTitle = "...";
 	var msgDbg = "msgBLS";
 	var xdMsg1 = "xdMsg1";
@@ -5941,34 +5969,19 @@ const gc4BLS = function(){
 		}
 		
 		var oldStyle = ctx.fillStyle;
-		ctx.fillStyle = function(){
-			var c = _curF>-1?lsFrame[_curF].backgroundColor:"yellow";
-			if("200,100,200"==c ||
-				"100,200,200"==c ||
-				"222,0,0"==c  ||
-				"111,0,0"==c  ||
-				"10,0,0"==c  ||
-				"1,0,0"==c  
-			) c = "rgb(" + c + ")";
-			return c;
-		}(); 
-		ctx.fillRect(x1,y1,x2-x1,y2-y1);
 		
+		if(!blsTimer.isPlaying()){
+			blsTimer.paintCurFrame(ctx,lsFrame,_curF,x1,y1,x2,y2);
+			_objCmd.drawObjCmdUI(ctx,x1+5,y1+5); 
+		}
+
 		ctx.fillStyle = "rgb(200,111,1)";//"blue";
 		ctx.font = "30px Arial";
 		var ss = sBlsTitle + " : curFrame = " + _curF;
 		ctx.fillText(ss, x1,y1);
-		blsTimer.draw(ctx,x1,y1);
 
-		const showCurFrame = function(){ 
-			_objCmd.drawObjCmdUI(ctx,x1+5,y1+5);
+		blsTimer.drawOnLoop(ctx,lsFrame,x1,y1,x2,y2);
 
-			const os = lsFrame[_curF].objects;
-			for(i in os){
-				os[i].selfDraw(ctx,x1,y1);
-			}
-		}();
-		
 		const showDebugMsg4BLS = function(){
 			ctx.fillStyle = "yellow";
 			ctx.font = "10px Arial";
@@ -6128,13 +6141,13 @@ const gc4BLS = function(){
 				tabFrames.refreshFrames(); 
 			 }
 			 
-			 const blsPlay = blo0.blBtn(tbFrames,tbFrames.id+"btnBlsPlay",blsTimer.status()?"blsStop":"blsPlay","green");
+			 const blsPlay = blo0.blBtn(tbFrames,tbFrames.id+"btnBlsPlay",blsTimer.isPlaying()?"blsStop":"blsPlay","green");
 			 blsPlay.style.float = "right";
 			 blsPlay.style.color = "white";
 			 blsPlay.onclick = function(){
 				const b = blsTimer;
 				this.t = b; 
-				if(b.status()){
+				if(b.isPlaying()){
 					b.stop();
 					this.innerHTML = "blsPlay";
 				}
@@ -6222,9 +6235,6 @@ const gc4BLS = function(){
 		}
 	}
 
-	var lsFrame = [];
-	var _curF = -1;
-	var _supObjs = [];
 	const _newObject = function(_oType,x1,y1,x2,y2,size,color){ 
 		const osDefine = [
 			{
