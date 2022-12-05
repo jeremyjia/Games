@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.323"
+var g_ver_blClass = "CBlClass_bv1.6.324"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -639,16 +639,23 @@ function CBlClass ()
 			var n = 0; 
 			var t1 = Date.now();
 			var t2 = Date.now();
+			const vp = blo0.blc4Video(t1);
+			var ct = 0;
+
 			var fn4Loop = function(){
+				if(0==n) vp.play();
 				setTimeout(() => {
 					n++; 
 					t2 = Date.now();
+					ct = vp.currentTime;
 					if(bRun) fn4Loop();
 				}, 1000/fps);
 			}
 			var o = {};
 			o.stop = function(){
 				bRun = false; 
+				vp.pause();
+				vp.currentTime = ct = 0;
 			}
 			o.start = function(){
 				bRun = true;
@@ -665,6 +672,7 @@ function CBlClass ()
 			o.getFPS = function(){
 				return fps;
 			}
+			o.getVP = function(){ return vp;}
 			o.draw = function(ctx,x,y){				
 				ctx.fillStyle = "blue";
 				ctx.font = "10px Arial";
@@ -772,16 +780,19 @@ function CBlClass ()
 		};
 	}
 	var _oTest = new CTest();
-	
-	var _blVideo = document.createElement("VIDEO");
-	_blVideo.id = "id_blVideo";
-	if (_blVideo.canPlayType("video/mp4")) {
-		_blVideo.setAttribute("src","https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3");
+	this.blc4Video = function(id){
+		var v = document.createElement("VIDEO");
+		v.id = id;
+		if (v.canPlayType("video/mp4")) {
+			v.setAttribute("src","https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3");
+		}
+		v.setAttribute("width", "1");
+		v.setAttribute("height", "1"); 
+		document.body.appendChild(v);
+		return v;
 	}
-	_blVideo.setAttribute("width", "1");
-	_blVideo.setAttribute("height", "1"); 
-	document.body.appendChild(_blVideo);
-
+	var _blVideo = this.blc4Video("id_4_blc_video");
+	 
 	this.v = g_ver_blClass;
 	this.blrAboutMe= function(b,d){		
 		var s = ""; 
@@ -5987,8 +5998,75 @@ const gc4BLS = function(){
 				blo0.blGetTa().value = JSON.stringify(_makeBLS());	
 			 } 
 
-			 
-			 const split1 = blo0.blDiv(eui.v1,eui.v1.id+"split1","split1","green");
+			 const makeToolbar1 = function(t){
+				
+				const bs1 = [
+					{
+						"name":"version",
+						"fn4ui": function(v){
+							v.innerHTML = this.name ;
+						},
+						"color": "Orchid"
+					},
+					{
+						"name":"music",
+						"fn4ui": function(v){ 
+							const ms = function(){
+								var ls = [];
+								for(var i = 0; i < 10; i++){
+									var o = {};
+									o.id = i;
+									o.name = "nce2-"+(i+1);
+									o.src = "https://littleflute.github.io/english/NewConceptEnglish/Book2/"+(i+1)+".mp3";
+									ls.push(o);
+								}
+								return ls;
+							}(); 
+							
+							const tb = blo0.blDiv(v,v.id+"tb","tb","Violet"); 
+							for(i in ms){
+								const b = blo0.blBtn(tb,tb.id+ms[i].id,ms[i].name,"Fuchsia");
+								b.onclick = function(_i){
+									return function(){
+										t.getVP().src = ms[_i].src;
+									}
+								}(i);
+							}
+						},
+						"color": "Orchid"
+					},
+					{
+						"name":"rate",
+						"fn4ui": function(v){ 
+							const fs = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,25,60];
+							const tb = blo0.blDiv(v,v.id+"tb","tb","Violet"); 
+							for(i in fs){
+								const b = blo0.blBtn(tb,tb.id+i,fs[i],"Fuchsia");
+								b.onclick = function(_i){
+									return function(){
+										t.setFPS(fs[_i]) ;
+									}
+								}(i);
+							}
+						},
+						"color": "Orchid"
+					},
+				 ]
+				const tb1 = blo0.blDiv(eui.v1,eui.v1.id+"tb1","tb1","plum");
+				const v4tb1 = blo0.blDiv(eui.v1,eui.v1.id+"v4tb1","v4tb1","Thistle");
+				
+				for(i in bs1){
+				   const btn = blo0.blBtn(tb1,tb1.id+bs1[i].name,bs1[i].name,bs1[i].color);
+				   btn.onclick = function(_b,_v,_i){
+					   return function(){
+						   _v.innerHTML = "";
+						   bs1[_i].fn4ui(_v);
+					   }
+				   }(btn,v4tb1,i);
+				}
+
+			 }(blsTimer);
+
 
 			 const tbW = blo0.blDiv(eui.v1,eui.v1.id+"tbW","blsWidth:","gray");
 			 
@@ -6050,12 +6128,12 @@ const gc4BLS = function(){
 				tabFrames.refreshFrames(); 
 			 }
 			 
-			 const blsPlay = blo0.blBtn(tbFrames,"btnBlsPlay","blsPlay","green");
+			 const blsPlay = blo0.blBtn(tbFrames,tbFrames.id+"btnBlsPlay",blsTimer.status()?"blsStop":"blsPlay","green");
 			 blsPlay.style.float = "right";
 			 blsPlay.style.color = "white";
 			 blsPlay.onclick = function(){
 				const b = blsTimer;
-				this.t = b;
+				this.t = b; 
 				if(b.status()){
 					b.stop();
 					this.innerHTML = "blsPlay";
@@ -6097,8 +6175,7 @@ const gc4BLS = function(){
 		   ey1 = y;
 		}
 		else{
-			e = false;
-			
+			e = false;			
 			_curFrameDown(x,y,x1,y1);
 		}
 	}
