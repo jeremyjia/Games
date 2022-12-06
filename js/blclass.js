@@ -669,7 +669,7 @@ function CBlClass ()
 
 			o.paintCurFrame = function(ctx,_lsf,n,x1,y1,x2,y2){
 				ctx.fillStyle = function(){
-					var c = n>-1?_lsf[n].backgroundColor:"yellow";
+					var c = n>-1?_lsf[n].backgroundColor:"Khaki";
 					if("200,100,200"==c ||
 						"100,200,200"==c ||
 						"222,0,0"==c  ||
@@ -680,10 +680,12 @@ function CBlClass ()
 					return c;
 				}(); 
 				ctx.fillRect(x1,y1,x2-x1,y2-y1);
-
-				const os = _lsf[n].objects;
-				for(i in os){
-					os[i].selfDraw(ctx,x1,y1);
+				 
+				if(n>-1){
+					const os = _lsf[n].objects;
+					for(i in os){
+						os[i].selfDraw(ctx,x1,y1);
+					}
 				}
 			}
 			o.setFPS = function(n){
@@ -6214,8 +6216,8 @@ const gc4BLS = function(){
 			btnMakeMP4.style.float = "right"; 
 			btnMakeMP4.onclick = function(){	
 					var url = "http://localhost:8080/image/json2video?script=" + sBlsTitle + ".json&video=" + sBlsTitle + ".mp4"; 
-					b._2do = function(txt){vServer.innerHTML = txt};
-					blo0.blAjx(b,url);
+					this._2do = function(txt){vServer.innerHTML = txt};
+					blo0.blAjx(this,url);
 		   }
 		   ex1 = x;
 		   ey1 = y;
