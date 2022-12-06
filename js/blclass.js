@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.324"
+var g_ver_blClass = "CBlClass_bv1.6.325"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -5957,8 +5957,7 @@ const gc4Note = function(){
 const gc4BLS = function(){
 	const blsTimer = blo0.blAudioTimer();
 	var lsFrame = [];
-	var nCurF = -1;
-	var _supObjs = [];
+	var nCurF = -1; 
 	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,sBlsTitle = "...";
 	var msgDbg = "msgBLS"; 
 	
@@ -6449,7 +6448,21 @@ const gc4BLS = function(){
 			return s;
 		}(); 
 		r.frames 		= lsFrame;		
-		r.superObjects 	= _supObjs;	
+		r.superObjects 	= function(){
+			var ls = [];
+			const o = {
+                "type": "javascript",
+                "frameRange": "(1,500)",
+                "attribute": {
+                    "script": "myplx1.js",
+                    "function": "animateFrame",
+                    "start": 1
+                },
+                "layer": 1
+            };
+			ls.push(o);
+			return ls;
+		}();	
 		s.request 		= r;			
 		return s;	
 	}
