@@ -2834,7 +2834,7 @@ function CBlClass ()
 				} 
 				
 				else if(curDrawingType==G_EDIT_OBJECT){  	
-					eui = blo0.blMD("id_eui","uiEditor",100,100,222,100,"blue");		
+					eui = blo0.blMD("id_eui","uiEditor",100,100,255,100,"blue");		
 					eui.v1 = blo0.blDiv(eui,eui.id+"v1","v1","lightblue");		
 					for(i in lsOs){
 						if(lsOs[i].edit_me) {
@@ -6026,10 +6026,11 @@ const gc4BLS = function(){
 			 } 
 
 			 const makeToolbar1 = function(t){
+				const split4tb1 = blo0.blDiv(eui.v1,eui.v1.id+"split4tb1","split4tb1","gray");
 				
 				const bs1 = [
 					{
-						"name":"version",
+						"name":"ver",
 						"fn4ui": function(v){
 							v.innerHTML = this.name ;
 						},
@@ -6084,54 +6085,69 @@ const gc4BLS = function(){
 						},
 						"color": "Orchid"
 					},
+					{
+						"name":"height", 
+						"float": "right",
+						"fnInit": function(){
+							return "h:" + (y2-y1);
+						},
+						"fn4ui": function(_v,_b){
+							const hs = [1,-1,2,-2,5,-5,10,-10,100,-100,200,-200,500,-500];
+							for(i in hs){
+								var s = hs[i]>0?"+"+hs[i]:hs[i];
+								var b = blo0.blBtn(_v,_v.id+i,s,"Indigo");
+								b.onclick = function(_i){
+									return function(){
+										y2 += hs[_i];
+										_b.innerHTML = "h:" + (y2-y1);
+									}
+								}(i);
+							}
+						},
+						"color": "lightgreen"
+					},
+					{
+						"name":"witdh", 
+						"float": "right",
+						"fnInit": function(){
+							return "w:" + (x2-x1);
+						},
+						"fn4ui": function(_v,_b){ 
+							const ws = [1,-1,2,-2,5,-5,10,-10,100,-100,200,-200,500,-500];
+							for(i in ws){
+								var s = ws[i]>0?"+"+ws[i]:ws[i];
+								var b = blo0.blBtn(_v,_v.id+i,s,"purple");
+								b.onclick = function(_i){
+									return function(){
+										x2 += ws[_i];
+										_b.innerHTML = "w:" + (x2-x1);
+									}
+								}(i);
+							}
+						},
+						"color": "lightgreen"
+					},
 				 ]
 				const tb1 = blo0.blDiv(eui.v1,eui.v1.id+"tb1","tb1","plum");
 				const v4tb1 = blo0.blDiv(eui.v1,eui.v1.id+"v4tb1","v4tb1","Thistle");
 				
 				for(i in bs1){
-				   const btn = blo0.blBtn(tb1,tb1.id+bs1[i].name,bs1[i].name,bs1[i].color);
+				   var s = bs1[i].fnInit?bs1[i].fnInit():bs1[i].name;
+				   const btn = blo0.blBtn(tb1,tb1.id+bs1[i].name,s,bs1[i].color);
+				   btn.style.float = bs1[i].float?bs1[i].float:"left";
 				   btn.onclick = function(_b,_v,_i){
 					   return function(){
 						   _v.innerHTML = "";
-						   bs1[_i].fn4ui(_v);
+						   const split4btns = blo0.blDiv(_v,_v.id+"split4btns","split4btns","gray");
+						   bs1[_i].fn4ui(_v,_b);
 					   }
 				   }(btn,v4tb1,i);
 				}
 
 			 }(blsTimer);
 
-
-			 const tbW = blo0.blDiv(eui.v1,eui.v1.id+"tbW","blsWidth:","gray");
-			 
-			 var bw = blo0.blBtn(tbW,tbW.id+"bw",x2-x1,"lightgreen");
-			 const ws = [1,-1,2,-2,5,-5,10,-10,100,-100];
-			 for(i in ws){
-				var s = ws[i]>0?"+"+ws[i]:ws[i];
-				var b = blo0.blBtn(tbW,tbW.id+i,s,"gray");
-				b.onclick = function(_i){
-					return function(){
-						x2 += ws[_i];
-						bw.innerHTML = x2-x1;
-					}
-				}(i);
-			 }
-			 const split1w = blo0.blDiv(eui.v1,eui.v1.id+"split1a","split1a","green");
-
-			 const tbH = blo0.blDiv(eui.v1,eui.v1.id+"tbH","blsHeight:","gray");			 
-			 var bh = blo0.blBtn(tbH,tbH.id+"bh",y2-y1,"lightgreen");
-			 const hs = [1,-1,2,-2,5,-5,10,-10,100,-100];
-			 for(i in hs){
-				var s = hs[i]>0?"+"+hs[i]:hs[i];
-				var b = blo0.blBtn(tbH,tbH.id+i,s,"gray");
-				b.onclick = function(_i){
-					return function(){
-						y2 += hs[_i];
-						bh.innerHTML = y2-y1;
-					}
-				}(i);
-			 }
-			 const split1h = blo0.blDiv(eui.v1,eui.v1.id+"split1h","split1h","green");
-
+ 
+			 const split4tb2 = blo0.blDiv(eui.v1,eui.v1.id+"split4tb2","split4tb2","gray");
 			 const tbFrames = blo0.blDiv(eui.v1,eui.v1.id+"tbFrames","blsFrames:","green");
 			 tbFrames.style.color = "white";
 			 const split1b = blo0.blDiv(eui.v1,eui.v1.id+"split1b","split1b","lightgray");
