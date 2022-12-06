@@ -145,6 +145,22 @@
               to.setDrawType(G_EDIT_OBJECT);
             },
           },
+          {
+            "id":6,
+            "name": "move",
+            "float": "right",
+            "fnClick": function(){
+              to.setDrawType(G_MOVE_OBJECT);
+            },
+          },
+          {
+            "id":7,
+            "name": "select",
+            "float": "right",
+            "fnClick": function(){
+              to.setDrawType(G_SELECT_OBJECT);
+            },
+          },
         ];
         for(i in bs){
           const b = blo0.blBtn(tb,tb.id+bs[i].id,bs[i].name,"lightblue");

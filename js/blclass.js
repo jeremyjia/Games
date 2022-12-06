@@ -5957,7 +5957,7 @@ const gc4Note = function(){
 const gc4BLS = function(){
 	const blsTimer = blo0.blAudioTimer();
 	var lsFrame = [];
-	var _curF = -1;
+	var nCurF = -1;
 	var _supObjs = [];
 	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,sBlsTitle = "...";
 	var msgDbg = "msgBLS"; 
@@ -5984,13 +5984,13 @@ const gc4BLS = function(){
 		var oldStyle = ctx.fillStyle;
 		
 		if(!blsTimer.isPlaying()){
-			blsTimer.paintCurFrame(ctx,lsFrame,_curF,x1,y1,x2,y2);
+			blsTimer.paintCurFrame(ctx,lsFrame,nCurF,x1,y1,x2,y2);
 			_objCmd.drawObjCmdUI(ctx,x1+5,y1-15); 
 		}
 
 		ctx.fillStyle = "rgb(200,111,1)";//"blue";
 		ctx.font = "30px Arial";
-		var ss = sBlsTitle + " : curFrame = " + _curF;
+		var ss = sBlsTitle + " : curFrame = " + nCurF;
 		ctx.fillText(ss, x1,y1);
 
 		blsTimer.drawOnLoop(ctx,lsFrame,x1,y1,x2,y2);
@@ -6158,7 +6158,7 @@ const gc4BLS = function(){
 				   b.style.float = "left";
 				   b.onclick = function(_btn,_i,_f){
 					   return function(){ 
-						   _curF = _i; 
+							nCurF = _i; 
 						   _ui4curFrame(_btn,v4curF,_f,_i);
 					   }
 				   }(b,i,lsFrame);
@@ -6426,14 +6426,14 @@ const gc4BLS = function(){
 		return o;
 	}
 	const _curFrameDown = function(x,y,x1,y1){ 
-		_objCmd.downObjCmd(x,y,x1,y1,lsFrame[_curF].objects); 
+		if(nCurF>-1) 		_objCmd.downObjCmd(x,y,x1,y1,lsFrame[nCurF].objects); 
 	}
 	const _curFrameMove = function(x,y,x1,y1){
-		_objCmd.moveObjCmd(x,y,x1,y1,lsFrame[_curF].objects); 
+		if(nCurF>-1) 		_objCmd.moveObjCmd(x,y,x1,y1,lsFrame[nCurF].objects); 
 	}
 	
 	const _curFrameUp = function(x,y,x1,y1){
-		_objCmd.upObjCmd(x,y,x1,y1,lsFrame[_curF].objects); 
+		if(nCurF>-1) 		_objCmd.upObjCmd(x,y,x1,y1,lsFrame[nCurF].objects); 
 	}
 	
 	var _makeBLS = function(){
@@ -6442,8 +6442,12 @@ const gc4BLS = function(){
 		r.version 		= "gc4BLS: bv0.15";
 		r.width 		= x2 - x1;
 		r.height 		= y2 - y1;
-		r.music 		= "1.mp3";//"https://littleflute.github.io/english/NewConceptEnglish/Book2/11.mp3";
-		r.rate 			= "1"; 
+		r.music 		= blsTimer.getVP().src;
+		r.rate 			= function(){
+			var s = "";
+			s += blsTimer.getFPS();
+			return s;
+		}(); 
 		r.frames 		= lsFrame;		
 		r.superObjects 	= _supObjs;	
 		s.request 		= r;			
