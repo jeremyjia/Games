@@ -5958,8 +5958,7 @@ const gc4BLS = function(){
 	var _curF = -1;
 	var _supObjs = [];
 	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,sBlsTitle = "...";
-	var msgDbg = "msgBLS";
-	var xdMsg1 = "xdMsg1";
+	var msgDbg = "msgBLS"; 
 	
 
 	this.select = function(b){		s = b;		}
@@ -5971,15 +5970,13 @@ const gc4BLS = function(){
 			var oldStyle = ctx.fillStyle;
 			ctx.fillStyle = "red";
 			ctx.fillRect(x1-d,y1-d,d*2,d*2);
-
 			ctx.fillstyle = oldStyle;
 		}
 		if(e){
 			var oldStyle = ctx.fillStyle;
 			ctx.fillStyle = "brown";
 			ctx.fillRect(x2-d,y2-d,d*2,d*2);
-			ctx.fillstyle = oldStyle;
- 
+			ctx.fillstyle = oldStyle; 
 		}
 		
 		var oldStyle = ctx.fillStyle;
