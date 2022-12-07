@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.325"
+var g_ver_blClass = "CBlClass_bv1.6.331"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -709,11 +709,14 @@ function CBlClass ()
 				}
 				return nr;
 			}
-			o.drawOnLoop = function(ctx,_lsFrames,x1,y1,x2,y2){			
+			o.drawOnLoop = function(cvs,_myboss,x1,y1,x2,y2){		
+				var ctx = cvs.getContext("2d");		
 				if(bRun){ 	
+					const _frms = _myboss.getFrames();
 					ctx.fillStyle = "lightblue";
 					ctx.fillRect(x1,y1,x2-x1,y2-y1);
-					this.paintCurFrame(ctx,_lsFrames,this.getFrameNo(_lsFrames,n),x1,y1,x2,y2);
+					this.paintCurFrame(ctx,_frms,this.getFrameNo(_frms,n),x1,y1,x2,y2);
+					_myboss.paintSuperObjects(cvs,n);
 				}	
 				ctx.fillStyle = "blue";
 				ctx.font = "10px Arial";
@@ -2770,6 +2773,7 @@ function CBlClass ()
 	this.C4Canvas = function(d,w,h,initColor){
 		function _blCanvas(d,w,h){
 			var cvs = document.createElement("canvas");
+			cvs.id = d.id + "_C4Canvas";
 			cvs.width = w;
 			cvs.height = h;
 			var bMS = false;
@@ -2817,7 +2821,8 @@ function CBlClass ()
 					const o = {};
 					o.x = x;
 					o.y = y;
-					o.draw_me = function(ctx){
+					o.draw_me = function(cvs){
+						var ctx = cvs.getContext("2d");
 						ctx.fillText(".",o.x,o.y);
 					}
 					lsOs.push(o);
@@ -2867,7 +2872,8 @@ function CBlClass ()
 						const o = {};
 						o.x = x;
 						o.y = y;
-						o.draw_me = function(ctx){
+						o.draw_me = function(cvs){
+							var ctx = cvs.getContext("2d");
 							ctx.fillText(".",o.x,o.y);
 						}
 						lsOs.push(o);
@@ -2994,10 +3000,10 @@ function CBlClass ()
 				ctx.fillText("["+x+","+y+"]", 222, 50);
 				
 				for(i in lsOs){
-					lsOs[i].draw_me(ctx); 
+					lsOs[i].draw_me(cvs); 
 				}
-				if(newObj) newObj.draw_me(ctx);
-				if(moveObj) moveObj.draw_me(ctx);
+				if(newObj) newObj.draw_me(cvs);
+				if(moveObj) moveObj.draw_me(cvs);
 			}
 
 			d.appendChild(cvs);
@@ -5801,7 +5807,8 @@ const gc4Move = function(){
 	}
 	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
 	this.setXY2 = function(x,y){		x2 = x; y2 = y;		}
-	this.draw_me = function(ctx){		
+	this.draw_me = function(cvs){
+		var ctx = cvs.getContext("2d");			
 		const d = 10;  
 		var oldStyle = ctx.fillStyle;
 
@@ -5825,7 +5832,8 @@ const gc4Line = function(){
 	this.select = function(b){		s = b;		}
 	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
 	this.setXY2 = function(x,y){		x2 = x; y2 = y;		}
-	this.draw_me = function(ctx){		
+	this.draw_me = function(cvs){
+		var ctx = cvs.getContext("2d");		
 		const d = 10; 
 		if(s){
 			var oldStyle = ctx.fillStyle;
@@ -5871,7 +5879,8 @@ const gc4Note = function(){
 	this.select = function(b){		s = b;		}
 	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
 	this.setXY2 = function(x,y){		x2 = x; y2 = y;		}
-	this.draw_me = function(ctx){		
+	this.draw_me = function(cvs){		
+		var ctx = cvs.getContext("2d");
 		const d = 10; 
 		if(s){
 			var oldStyle = ctx.fillStyle;
@@ -5957,15 +5966,62 @@ const gc4Note = function(){
 const gc4BLS = function(){
 	const blsTimer = blo0.blAudioTimer();
 	var lsFrame = [];
+	var pt = "";
+
+	const wrapPlx = function(cvs,_pt){
+		var pt2 = _pt.replace("myCanvas",cvs.id);
+		var s = "var CBlsPlx = function(){";
+		s += pt2;
+		s += "this.v = 123;";
+		s += "this.callPlx = function(n){ animateFrame(n); return n;};";
+		s += "}";
+		eval(s);
+		return new CBlsPlx();  
+	}
+	const soDraw = function(cvs,n,x,y){
+		var ctx = cvs.getContext("2d");	
+		var op = wrapPlx(cvs,pt);
+		ctx.fillText("soDraw: n="+n + "byPlx="+op.callPlx (n),x,y-40);	  
+	}
+	  
+	var lsSuperObjects = function(){
+		
+		var w ={};
+		w._2do= function(txt){ pt = txt;};
+		blo0.blAjx(w,"http://localhost:8080/so646a.js");
+		
+		var ls = [];
+		const o = {
+			"type": "javascript",
+			"frameRange": "(1,500)",
+			"attribute": {
+				"script": "http://localhost:8080/so646a.js",
+				"function": "animateFrame",
+				"start": 1
+			},
+			"layer": 1
+		};
+		ls.push(o);
+		return ls;
+	}();	;
 	var nCurF = -1; 
 	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,sBlsTitle = "...";
 	var msgDbg = "msgBLS"; 
 	
-
+	this.paintSuperObjects = function(cvs,n){
+		var ctx = cvs.getContext("2d");	
+		ctx.fillStyle = "blue";
+		ctx.font = "10px Arial";
+		var s = " so: to do ... n = " + n;
+		soDraw(cvs,n,x2,y2); 
+		ctx.fillText(s, x2-20,y2 - 20);
+	}
+	this.getFrames = function(){return lsFrame;}
 	this.select = function(b){		s = b;		}
 	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
 	this.setXY2 = function(x,y){		x2 = x; y2 = y;		}
-	this.draw_me = function(ctx){		
+	this.draw_me = function(cvs){	
+		var ctx = cvs.getContext("2d");	
 		const d = 10; 
 		if(s){
 			var oldStyle = ctx.fillStyle;
@@ -5983,7 +6039,7 @@ const gc4BLS = function(){
 		var oldStyle = ctx.fillStyle;
 		
 		if(!blsTimer.isPlaying()){
-			blsTimer.paintCurFrame(ctx,lsFrame,nCurF,x1,y1,x2,y2);
+			blsTimer.paintCurFrame(ctx,this.getFrames(),nCurF,x1,y1,x2,y2);
 			_objCmd.drawObjCmdUI(ctx,x1+5,y1-15); 
 		}
 
@@ -5992,7 +6048,7 @@ const gc4BLS = function(){
 		var ss = sBlsTitle + " : curFrame = " + nCurF;
 		ctx.fillText(ss, x1,y1);
 
-		blsTimer.drawOnLoop(ctx,lsFrame,x1,y1,x2,y2);
+		blsTimer.drawOnLoop(cvs,this,x1,y1,x2,y2);
 
 		const showDebugMsg4BLS = function(){
 			ctx.fillStyle = "yellow";
@@ -6046,6 +6102,16 @@ const gc4BLS = function(){
 									o.src = "https://littleflute.github.io/english/NewConceptEnglish/Book2/"+(i+1)+".mp3";
 									ls.push(o);
 								}
+								var o = {};
+								o.id = 10;
+								o.name = "1.mp3";
+								o.src = "http://localhost:8080/1.mp3";
+								ls.push(o);
+								var o = {};
+								o.id = 11;
+								o.name = "bzll.mp3";
+								o.src = "http://localhost:8080/bzll.mp3";
+								ls.push(o);
 								return ls;
 							}(); 
 							
@@ -6448,21 +6514,7 @@ const gc4BLS = function(){
 			return s;
 		}(); 
 		r.frames 		= lsFrame;		
-		r.superObjects 	= function(){
-			var ls = [];
-			const o = {
-                "type": "javascript",
-                "frameRange": "(1,500)",
-                "attribute": {
-                    "script": "myplx1.js",
-                    "function": "animateFrame",
-                    "start": 1
-                },
-                "layer": 1
-            };
-			ls.push(o);
-			return ls;
-		}();	
+		r.superObjects 	= lsSuperObjects;
 		s.request 		= r;			
 		return s;	
 	}
@@ -6555,7 +6607,7 @@ const gc4BLS = function(){
 			btn4TimeStatic.style.float = "left";
 			const btn4TimeVal = blo0.blBtn(tb4time,tb4time.id+"btn4TimeVal",f[n].time,"lightblue");
 			btn4TimeVal.style.float = "left";
-			const ws = [1,-1,2,-2,5,-5,10,-10];
+			const ws = [1,-1,2,-2,5,-5,10,-10,20,-10,50,-50,100,-100,200,-200,500,-500,1000,-1000];
 			for(i in ws){
 					var s = ws[i]>0?"+"+ws[i]:ws[i];
 					var b = blo0.blBtn(tb4time,tb4time.id+i,s,"gray");
