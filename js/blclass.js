@@ -5967,7 +5967,7 @@ const gc4BLS = function(){
 	const blsTimer = blo0.blAudioTimer();
 	var lsFrame = [];
 	var pt = "";
-
+    var op = null;
 	const wrapPlx = function(cvs,_pt){
 		var pt2 = _pt.replace("myCanvas",cvs.id);
 		var s = "var CBlsPlx = function(){";
@@ -5980,7 +5980,7 @@ const gc4BLS = function(){
 	}
 	const soDraw = function(cvs,n,x,y){
 		var ctx = cvs.getContext("2d");	
-		var op = wrapPlx(cvs,pt);
+		if(null==op) op = wrapPlx(cvs,pt);
 		ctx.fillText("soDraw: n="+n + "byPlx="+op.callPlx (n),x,y-40);	  
 	}
 	  
@@ -5988,14 +5988,14 @@ const gc4BLS = function(){
 		
 		var w ={};
 		w._2do= function(txt){ pt = txt;};
-		blo0.blAjx(w,"http://localhost:8080/so646a.js");
+		blo0.blAjx(w,"http://localhost:8080/firework.js");
 		
 		var ls = [];
 		const o = {
 			"type": "javascript",
 			"frameRange": "(1,500)",
 			"attribute": {
-				"script": "http://localhost:8080/so646a.js",
+				"script": "http://localhost:8080/firework.js",
 				"function": "animateFrame",
 				"start": 1
 			},
