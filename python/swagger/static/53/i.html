@@ -23,7 +23,7 @@
         <img src="benny.jpg" alt="Benny logo">
       </div>
 
-      <h1 id="demo" class="site-title"><a href="#">Benny's List</a></h1>
+      <h1 id="demo" class="site-title"><a href="#">Benny's Wonderland List</a></h1>
       
 
     </header>
@@ -91,25 +91,39 @@
           </fieldset>
         </div>
 
-        <button id="filter-update-button" class="action-button" onclick='document.getElementById("demo").innerHTML = 5'>Update</button>
-
-      </aside>
+        <button id="filter-update-button" class="action-button" onclick='document.getElementById("demo").innerHTML = no change'>Update</button>
+        <button class="action-button" type='button' 
+        onclick='
+                  var xhttp = new XMLHttpRequest();//waynex
+                  xhttp.open("GET", "http://localhost:5000/request", false);
+                  xhttp.send();
+                  var o = JSON.parse(xhttp.responseText);
+                  //document.getElementById("demo_book1").innerHTML = json_object.length; 
+                  var s = ""; 
+                  for (i in o){s += o[i].title + "; "}
+                  var list = s.split(";");
+                  for (let a = 0; a < 8; a++){ document.getElementById("book_title"+a).innerHTML = list[a];}
+                  '>Request Books
+        </button>
+      </aside> 
 
       <section id="posts">
-
-        <div class="post" data-price="500" data-city="Eugene" data-condition="poor"> //read data from mysql wayne
+        <h1 id="demo_book1" class="modal-body">Benny's Wonderland List</h1>
+        <div class="post" data-price="500" data-city="Eugene" data-condition="poor"> 
           <div class="post-contents">
+            <div class="post-image-container" id="book_title0"></div>              
             <div class="post-image-container">
-              <img src="benny.jpg" alt="Super nice laptop">  //read data from mysql wayne
+              <img src="benny.jpg" alt="book_title">  
             </div>
             <div class="post-info-container">
-              <a href="#" class="post-title">Super nice laptop</a> <span class="post-price">$516</span> <span class="post-city">(Eugene)</span>
+              <a href="#" class="post-title">book_title</a> <span class="post-price">$516</span> <span class="post-city">(Eugene)</span>
             </div>
           </div>
         </div>
 
         <div class="post" data-price="20" data-city="Corvallis" data-condition="excellent">
           <div class="post-contents">
+            <div class="post-image-container" id="book_title1"></div> 
             <div class="post-image-container">
               <img src="benny.jpg" alt="Platypus Trophy">
             </div>
@@ -121,6 +135,7 @@
 
         <div class="post" data-price="100" data-city="Portland" data-condition="new">
           <div class="post-contents">
+            <div class="post-image-container" id="book_title2"></div>
             <div class="post-image-container">
               <img src="http://static-21.sinclairstoryline.com/resources/media/9e359e52-2d79-4aa6-a43b-2ba534b9db0c-large16x9_378b19aa394049a4a9ca7101e4e75be4voodoodoughnutrecord660.jpg?1463527394583" alt="Very large pile of interesting donuts">
             </div>
@@ -132,6 +147,7 @@
 
         <div class="post" data-price="250" data-city="Salem" data-condition="fair">
           <div class="post-contents">
+            <div class="post-image-container" id="book_title3"></div>
             <div class="post-image-container">
               <img src="http://static.legalsolutions.thomsonreuters.com/product_photos/p40307624-141728L.jpg" alt="Oregon laws">
             </div>
@@ -143,6 +159,7 @@
 
         <div class="post" data-price="1" data-city="Bend" data-condition="new">
           <div class="post-contents">
+            <div class="post-image-container" id="book_title4"></div>
             <div class="post-image-container">
               <img src="http://i.huffpost.com/gen/1573833/images/o-SUNSHINE-facebook.jpg" alt="Sunshine">
             </div>
@@ -154,6 +171,7 @@
 
         <div class="post" data-price="99" data-city="Portland" data-condition="fair">
           <div class="post-contents">
+            <div class="post-image-container" id="book_title5"></div>
             <div class="post-image-container">
               <img src="http://www.portlandhipster.com/wp-content/uploads/2015/09/hipsters.jpg" alt="Hipsters">
             </div>
@@ -163,8 +181,9 @@
           </div>
         </div>
 
-        <div class="post" data-price="20000000" data-city="Eugene" data-condition="good">
+        <div class="post" data-price="200000" data-city="Eugene" data-condition="good">
           <div class="post-contents">
+            <div class="post-image-container" id="book_title6"></div>
             <div class="post-image-container">
               <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/102707-Oregon-AutzenStadium-ext.jpg/1200px-102707-Oregon-AutzenStadium-ext.jpg" alt="Football stadium (we kind of want to build a new one)">
             </div>
@@ -176,6 +195,7 @@
 
         <div class="post" data-price="10000" data-city="Corvallis" data-condition="excellent">
           <div class="post-contents">
+            <div class="post-image-container" id="book_title7"></div>
             <div class="post-image-container">
               <img src="https://farm2.staticflickr.com/1258/1366422925_25663f44c8_z.jpg" alt="Very nice farmer's market">
             </div>

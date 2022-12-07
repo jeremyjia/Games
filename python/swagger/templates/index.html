@@ -1,0 +1,18 @@
+<html>
+<body>
+    <button type='button' onclick='s1()'>s1</button>
+    <button type='button' onclick='s2()'>s2</button>
+    <div><p> Please go to the index page: <a href=http://localhost:5000/swagger/>Swagger</a></p></div>
+    <p id='demo'></p>
+    <script>
+    function s1() {
+        document.getElementById('demo').innerHTML = Date();
+    }
+    function s2() {
+        const xhttp = new XMLHttpRequest();
+        document.getElementById('demo').innerHTML = Date();
+    }  
+    </script>
+    <h3>Hello world</h3>
+</body>
+</html>
