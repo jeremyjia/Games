@@ -5988,14 +5988,14 @@ const gc4BLS = function(){
 		
 		var w ={};
 		w._2do= function(txt){ pt = txt;};
-		blo0.blAjx(w,"http://localhost:8080/firework.js");
+		blo0.blAjx(w,"http://localhost:8080/so646a.js");
 		
 		var ls = [];
 		const o = {
 			"type": "javascript",
 			"frameRange": "(1,500)",
 			"attribute": {
-				"script": "http://localhost:8080/firework.js",
+				"script": "http://localhost:8080/so646a.js",
 				"function": "animateFrame",
 				"start": 1
 			},
