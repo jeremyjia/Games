@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.331"
+var g_ver_blClass = "CBlClass_bv1.6.332"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -709,14 +709,14 @@ function CBlClass ()
 				}
 				return nr;
 			}
-			o.drawOnLoop = function(cvs,_myboss,x1,y1,x2,y2){		
+			o.drawOnLoop = function(cvs,_thisBLS,x1,y1,x2,y2){		
 				var ctx = cvs.getContext("2d");		
 				if(bRun){ 	
-					const _frms = _myboss.getFrames();
+					const _frms = _thisBLS.getFrames();
 					ctx.fillStyle = "lightblue";
 					ctx.fillRect(x1,y1,x2-x1,y2-y1);
 					this.paintCurFrame(ctx,_frms,this.getFrameNo(_frms,n),x1,y1,x2,y2);
-					_myboss.paintSuperObjects(cvs,n);
+					_thisBLS.paintSuperObjects(cvs,n);
 				}	
 				ctx.fillStyle = "blue";
 				ctx.font = "10px Arial";
@@ -2835,13 +2835,17 @@ function CBlClass ()
 					newObj = new gc4Note();
 					newObj.setXY1(x,y);					
 				} 
+				else if(curDrawingType==G_DRAW_SO_EDITOR){
+					newObj = new gc4SoEditor();
+					newObj.setXY1(x,y);					
+				}
 				else if(curDrawingType==G_DRAW_BLS){
 					newObj = new gc4BLS();
 					newObj.setXY1(x,y);					
 				} 
 				
 				else if(curDrawingType==G_EDIT_OBJECT){  	
-					eui = blo0.blMD("id_eui","uiEditor",100,100,255,100,"blue");		
+					eui = blo0.blMD("id_eui","uiEditor",100,100,333,100,"blue");		
 					eui.v1 = blo0.blDiv(eui,eui.id+"v1","v1","lightblue");		
 					for(i in lsOs){
 						if(lsOs[i].edit_me) {
@@ -2884,6 +2888,9 @@ function CBlClass ()
 					else if(curDrawingType==G_DRAW_NOTE){						
 						newObj.setXY2(x,y);
 					}			
+					else if(curDrawingType==G_DRAW_SO_EDITOR){
+						newObj.setXY2(x,y);
+					}
 					else if(curDrawingType==G_DRAW_BLS){						
 						newObj.setXY2(x,y);
 					}	
@@ -2915,6 +2922,10 @@ function CBlClass ()
 					lsOs.push(newObj);
 					newObj = null;
 				} 
+				if(curDrawingType==G_DRAW_SO_EDITOR){
+					lsOs.push(newObj);
+					newObj = null;
+				}
 				if(curDrawingType==G_DRAW_BLS){
 					lsOs.push(newObj);
 					newObj = null;
@@ -5787,15 +5798,16 @@ const gBlBeat_NllNld= function(ctx,_x,_y,n1,t1,n2,t2){
     x += 20;
     gBlNote(ctx,x,y,".",0,.5); 
 } 
-const G_DRAW_LINE 		= 2;
-const G_DRAW_NOTE 		= 3;
-const G_DRAW_BLS		= 4;
+const G_DRAW_LINE 				= 2;
+const G_DRAW_NOTE 				= 3;
+const G_DRAW_BLS				= 4;
+const G_DRAW_SO_EDITOR			= 5;
 
-const G_SELECT_OBJECT 	= -2;
-const G_MOVE_OBJECT 	= -3;
-const G_EDIT_OBJECT 	= -4;
+const G_SELECT_OBJECT 			= -2;
+const G_MOVE_OBJECT 			= -3;
+const G_EDIT_OBJECT 			= -4;
 
-const ID_CMD_BLS_UI		= 1;
+const ID_CMD_BLS_UI				= 1;
 
 const gc4Move = function(){
 	var x1,y1,x2,y2;
@@ -5962,6 +5974,111 @@ const gc4Note = function(){
 	}
 }
 
+const gc4SoEditor = function(){
+	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,soName = "SoEditor";
+	var ex1,ey1,ex2,ey2;
+	const _C4SoEditor = function(){ 
+		var nTick = 0;
+		this.ui4Editor = function(v){ 
+			var b1 = blo0.blBtn(v,v.id+"b1","setName","gray");
+			b1.onclick = function(){
+				soName = blo0.blGetTa().value;	
+			}
+		};
+
+		this.drawEffect = function(ctx,x1,y1,x2,y2){
+			nTick++;
+			ctx.fillText("soe1: nTick = " + nTick,x1,y1 + 10);
+			ctx.fillText("soe2",x2,y2);
+		}
+
+	};
+	const osoe = new _C4SoEditor();
+
+	this.select = function(b){		s = b;		}
+	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
+	this.setXY2 = function(x,y){		x2 = x; y2 = y;		}
+	this.draw_me = function(cvs){		
+		var ctx = cvs.getContext("2d");
+		const d = 10; 
+		if(s){
+			var oldStyle = ctx.fillStyle;
+			ctx.fillStyle = "red";
+			ctx.fillRect(x1-d,y1-d,d*2,d*2);
+
+			ctx.fillstyle = oldStyle;
+		}
+		if(e){
+			var oldStyle = ctx.fillStyle;
+			ctx.fillStyle = "brown";
+			ctx.fillRect(x2-d,y2-d,d*2,d*2); 
+
+			ctx.fillstyle = oldStyle;
+		}
+		
+		var oldStyle = ctx.fillStyle;
+		ctx.fillStyle = "turquoise"; 
+		ctx.fillRect(x1,y1,x2-x1,y2-y1);
+		
+		ctx.fillStyle = "blue";
+		ctx.font = "10px Arial";
+		ctx.fillText(soName, x1,y1);
+		ctx.fillstyle = oldStyle;
+
+		osoe.drawEffect(ctx,x1,y1,x2,y2);
+	}
+	this.select_me = function(x,y){
+		if(blo0.blPiR(x,y,x1,y1,10,10)){
+			 s = !s;
+		}
+	} 
+	this.edit_me = function(eui,x,y){
+		if(blo0.blPiR(x,y,x2,y2,10,10)){
+			 e = true; 
+			 eui.v1.innerHTML = "";
+			 osoe.ui4Editor(eui.v1);
+			 ex1 = x;
+			 ey1 = y;
+		}
+		else{
+			e = false;
+		}
+	}
+	this.edit_move = function(x,y){
+		if(e){			
+			ex2 = x;
+			ey2 = y;
+
+			x1 += ex2 -ex1;
+			y1 += ey2 -ey1;
+			x2 += ex2 -ex1;
+			y2 += ey2 -ey1;
+	
+			ex1 = ex2;
+			ey1 = ey2;
+	
+		}
+	}
+	
+	this.move_start = function(dx,dy){
+		if(s){ 
+			mx1 = x1;
+			my1 = y1;
+			mx2 = x2;
+			my2 = y2;
+		}
+	}
+	this.move_me = function(dx,dy){
+		if(s){ 
+			x1 = mx1 + dx;
+			y1 = my1 + dy;
+			x2 = mx2 + dx;
+			y2 = my2 + dy;
+		}
+	}
+}
+
+
 
 const gc4BLS = function(){
 	const blsTimer = blo0.blAudioTimer();
@@ -6026,6 +6143,7 @@ const gc4BLS = function(){
 		ctx.fillText(s, x2-20,y2 - 20);
 	}
 	this.getFrames = function(){return lsFrame;}
+	this.getSOs = function(){return lsSuperObjects;}
 	this.select = function(b){		s = b;		}
 	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
 	this.setXY2 = function(x,y){		x2 = x; y2 = y;		}
@@ -6088,16 +6206,16 @@ const gc4BLS = function(){
 				blo0.blGetTa().value = JSON.stringify(_makeBLS());	
 			 } 
 
-			 const makeToolbar1 = function(t){
+			 const makeToolbar1 = function(t,_thisBLS){
 				const split4tb1 = blo0.blDiv(eui.v1,eui.v1.id+"split4tb1","split4tb1","gray");
 				
 				const bs1 = [
 					{
 						"name":"ver",
 						"fn4ui": function(v){
-							v.innerHTML = this.name ;
+							const tb = blo0.blDiv(v,v.id+"tb",this.name,this.color);
 						},
-						"color": "Orchid"
+						"color": "CadetBlue"
 					},
 					{
 						"name":"music",
@@ -6159,6 +6277,25 @@ const gc4BLS = function(){
 						"color": "Orchid"
 					},
 					{
+						"name":"so",
+						"fn4ui": function(v){ 
+							const tb = blo0.blDiv(v,v.id+"tb","tb",this.color);
+							const vos = blo0.blDiv(v,v.id+"vos","vos","gray");
+							
+							const l = _thisBLS.getSOs();
+							for(i in l){
+								const b = blo0.blBtn(tb,tb.id+i,i,"gray");
+								b.onclick = function(_b,_i,_v){
+									return function(){
+										_v.innerHTML = JSON.stringify(l[_i]);
+									}
+								}(b,i,vos);
+							}
+
+						},
+						"color": "Turquoise"
+					},
+					{
 						"name":"height", 
 						"float": "right",
 						"fnInit": function(){
@@ -6217,7 +6354,7 @@ const gc4BLS = function(){
 				   }(btn,v4tb1,i);
 				}
 
-			 }(blsTimer);
+			 }(blsTimer,this);
 
  
 			 const split4tb2 = blo0.blDiv(eui.v1,eui.v1.id+"split4tb2","split4tb2","gray");

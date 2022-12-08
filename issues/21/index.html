@@ -254,6 +254,11 @@
           btnNote.onclick = function(){
             cvs.setDrawType(G_DRAW_NOTE);
           }
+          var btnSO = blo0.blBtn(tb,tb.id+"btnSO","so","turquoise");
+          btnSO.style.float = "right";
+          btnSO.onclick = function(){
+            cvs.setDrawType(G_DRAW_SO_EDITOR);
+          }
         }
       },
       {
