@@ -5970,32 +5970,41 @@ const gc4BLS = function(){
     var op = null;
 	const wrapPlx = function(cvs,_pt){
 		var pt2 = _pt.replace("myCanvas",cvs.id);
-		var s = "var CBlsPlx = function(){";
-		s += pt2;
-		s += "this.v = 123;";
-		s += "this.callPlx = function(n){ animateFrame(n); return n;};";
-		s += "}";
+		var s = "var CBlsPlx = function(cvs){";
+		s += '       var ctx = cvs.getContext("2d");';
+		s += '       var nc = 0;';
+		s +=         pt2;
+		s += "       this.v = 123;";
+		s += "       this.callPlx = function(n,x,y){";
+		s += '          if(1){'
+		s += '          	nc++;';
+		s += '          	ctx.fillText("nc=" + nc,x,y-60);';
+		s += "          	animateFrame(n);";
+		s += '          }'; 
+		s += '          return n;';
+	    s += '        };';		
+		s += "    }";
 		eval(s);
-		return new CBlsPlx();  
+		return new CBlsPlx(cvs);  
 	}
 	const soDraw = function(cvs,n,x,y){
 		var ctx = cvs.getContext("2d");	
 		if(null==op) op = wrapPlx(cvs,pt);
-		ctx.fillText("soDraw: n="+n + "byPlx="+op.callPlx (n),x,y-40);	  
+		ctx.fillText("soDraw: n="+n + "byPlx="+op.callPlx (n,x,y),x,y-40);	  
 	}
 	  
 	var lsSuperObjects = function(){
 		
 		var w ={};
 		w._2do= function(txt){ pt = txt;};
-		blo0.blAjx(w,"http://localhost:8080/so646a.js");
+		blo0.blAjx(w,"http://localhost:8080/firework.js");
 		
 		var ls = [];
 		const o = {
 			"type": "javascript",
 			"frameRange": "(1,500)",
 			"attribute": {
-				"script": "http://localhost:8080/so646a.js",
+				"script": "http://localhost:8080/firework.js",
 				"function": "animateFrame",
 				"start": 1
 			},
