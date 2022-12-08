@@ -5975,15 +5975,44 @@ const gc4Note = function(){
 }
 
 const gc4SoEditor = function(){
-	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,soName = "SoEditor";
+	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,soName = "so01";
 	var ex1,ey1,ex2,ey2;
 	const _C4SoEditor = function(){ 
 		var nTick = 0;
 		this.ui4Editor = function(v){ 
-			var b1 = blo0.blBtn(v,v.id+"b1","setName","gray");
-			b1.onclick = function(){
-				soName = blo0.blGetTa().value;	
-			}
+			var tb = blo0.blDiv(v,v.id+"tb","tb","gray");
+			var d = blo0.blDiv(v,v.id+"d","d","lightblue");
+			const bs = [
+				{
+					"id":1,
+					"name":"setName",
+					"clickOnMe": function(d){
+						soName = blo0.blGetTa().value;	
+					},
+					"color": "cyan"
+				},
+				{
+					"id":2,
+					"name":"save2server",
+					"clickOnMe": function(d){
+						var pl = blo0.blGetTa().value; 
+						var url = "http://localhost:8080/json?fileName=" + soName + ".js"; 
+
+						blo0.blPOST(url,pl,function(txt){
+							d.innerHTML = "<a href ='http://localhost:8080/"+soName+".js' target='_blank'>"+soName+".js</a>";
+						}); 
+					},
+					"color": "Bisque"
+				},
+			];
+			for(i in bs){
+				const b = blo0.blBtn(tb,tb.id+bs[i].id,bs[i].name,bs[i].color);
+				b.onclick = function(_b,_d,_i){
+					return function(){
+						bs[_i].clickOnMe(_d);
+					}
+				}(b,d,i);
+			} 
 		};
 
 		this.drawEffect = function(ctx,x1,y1,x2,y2){
