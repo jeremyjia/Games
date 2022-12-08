@@ -2439,6 +2439,22 @@ function CBlClass ()
 		xhr.setRequestHeader("Content-Type", "text/plain");
 		xhr.send(JSON.stringify(_jsonData));
 	}	
+	this.blSendTextByPOST = function(_url,txt,_cb){  
+		var xhr = new XMLHttpRequest();
+		xhr.withCredentials = true;
+		xhr.addEventListener("readystatechange", function() {
+			if(this.readyState === 4 && this.status==200) {
+				_cb( this.responseText );
+			}	
+			else{
+				_cb("error: " + this.readyState + "," + this.status);
+			}
+		});
+		xhr.open("POST", _url);
+		xhr.setRequestHeader("Content-Type", "text/plain");
+		xhr.send(txt);
+	}	
+	
 	
 	this.blLoadGithubIssueComments = function(tb,icURL,ta){
 		
@@ -5995,10 +6011,10 @@ const gc4SoEditor = function(){
 					"id":2,
 					"name":"save2server",
 					"clickOnMe": function(d){
-						var pl = blo0.blGetTa().value; 
+						var txt = blo0.blGetTa().value; 
 						var url = "http://localhost:8080/json?fileName=" + soName + ".js"; 
 
-						blo0.blPOST(url,pl,function(txt){
+						blo0.blSendTextByPOST(url,txt,function(resTxt){
 							d.innerHTML = "<a href ='http://localhost:8080/"+soName+".js' target='_blank'>"+soName+".js</a>";
 						}); 
 					},
