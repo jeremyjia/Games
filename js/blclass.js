@@ -5991,7 +5991,10 @@ const gc4Note = function(){
 }
 
 const gc4SoEditor = function(){
-	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,soName = "so01";
+	var x1,y1,x2,y2,s = false,e = false;
+	var mx1=0,my1=0,mx2=0,my2=0,soName = "so01";
+	var mx = 50,my = 50;
+	var nMDown = 0;
 	var ex1,ey1,ex2,ey2;
 	const _C4SoEditor = function(){ 
 		var nTick = 0;
@@ -6031,10 +6034,50 @@ const gc4SoEditor = function(){
 			} 
 		};
 
-		this.drawEffect = function(ctx,x1,y1,x2,y2){
+		this.drawEffect = function(ctx){
 			nTick++;
 			ctx.fillText("soe1: nTick = " + nTick,x1,y1 + 10);
+			ctx.fillText("mx1y1: [" + mx1 + "," + my1 + "]",x1,y1 + 20);
+			ctx.fillText("mx2y2: [" + mx2 + "," + my2 + "]",x1 + 110,y1 + 20);
+			ctx.fillStyle = "purple";
+			ctx.fillRect(mx1+x1,my1+y1,10,10);
+			ctx.fillStyle = "yellow";
+			ctx.fillRect(mx2+x1,my2+y1,20,20);
+			ctx.fillStyle = "green";
 			ctx.fillText("soe2",x2,y2);
+
+			var dx = 0; 
+			if(mx2>mx1) {
+				if(mx>mx2) 	dx = -2;
+				else    	dx = 2;
+			}
+			else if(mx2<mx1){
+				if(mx<mx2) dx = 2;
+				else dx = -2;
+			}
+  
+			mx += dx;
+			my = (my1-my2)/(mx1-mx2)*(mx-mx2) + my2;
+
+			ctx.fillStyle = "blue";
+			ctx.fillRect(mx+x1,my+y1,5,5); 
+			
+		}
+		this.downSOEditor = function(x,y){
+			nMDown++;
+			if(nMDown==1){
+				mx1 = x-x1;
+				my1 = y-y1;
+				mx = mx1;
+				my = my1;
+			}
+			else if(nMDown==2){
+				mx2 = x-x1;
+				my2 = y-y1;
+				nMDown = 0;
+				mx = mx1;
+				my = my1;
+			}
 		}
 
 	};
@@ -6065,12 +6108,14 @@ const gc4SoEditor = function(){
 		ctx.fillStyle = "turquoise"; 
 		ctx.fillRect(x1,y1,x2-x1,y2-y1);
 		
-		ctx.fillStyle = "blue";
+		ctx.fillStyle = "red";
 		ctx.font = "10px Arial";
 		ctx.fillText(soName, x1,y1);
-		ctx.fillstyle = oldStyle;
+		
+		osoe.drawEffect(ctx);
 
-		osoe.drawEffect(ctx,x1,y1,x2,y2);
+		ctx.fillStyle = oldStyle;
+
 	}
 	this.select_me = function(x,y){
 		if(blo0.blPiR(x,y,x1,y1,10,10)){
@@ -6087,6 +6132,7 @@ const gc4SoEditor = function(){
 		}
 		else{
 			e = false;
+			osoe.downSOEditor(x,y);
 		}
 	}
 	this.edit_move = function(x,y){
@@ -6344,7 +6390,7 @@ const gc4BLS = function(){
 											_v.innerHTML = JSON.stringify(l[_i]);
 											const b1 = blo0.blBtn(_v,_v.id+"scriptFromTa","scriptFromTa","green"); 
 											b1.onclick = function(){
-												l[_i].attribute.script = blo0.blGetTa().value;
+												l[_i].attribute.scripttype = blo0.blGetTa().value;
 												_b.click();
 											}
 										}
