@@ -6015,7 +6015,7 @@ const gc4SoEditor = function(){
 						var url = "http://localhost:8080/json?fileName=" + soName + ".js"; 
 
 						blo0.blSendTextByPOST(url,txt,function(resTxt){
-							d.innerHTML = "<a href ='http://localhost:8080/"+soName+".js' target='_blank'>"+soName+".js</a>";
+							d.innerHTML = "<a href ='http://localhost:8080/" + soName+".js' target='_blank'>" + soName+".js</a>";
 						}); 
 					},
 					"color": "Bisque"
@@ -6334,18 +6334,35 @@ const gc4BLS = function(){
 						"name":"so",
 						"fn4ui": function(v){ 
 							const tb = blo0.blDiv(v,v.id+"tb","tb",this.color);
-							const vos = blo0.blDiv(v,v.id+"vos","vos","gray");
-							
+							const vos = blo0.blDiv(v,v.id+"vos","vos","BurlyWood");
+							tb.refreshSOs = function(l){
+								for(i in l){
+									const b = blo0.blBtn(tb,tb.id+i,i,"Lavender"); 
+									newSO.style.float = "right";
+									b.onclick = function(_b,_i,_v){
+										return function(){
+											_v.innerHTML = JSON.stringify(l[_i]);
+										}
+									}(b,i,vos);
+								}
+							}							
 							const l = _thisBLS.getSOs();
-							for(i in l){
-								const b = blo0.blBtn(tb,tb.id+i,i,"gray");
-								b.onclick = function(_b,_i,_v){
-									return function(){
-										_v.innerHTML = JSON.stringify(l[_i]);
-									}
-								}(b,i,vos);
+							const newSO = blo0.blBtn(tb,tb.id+"newSO","+so","Salmon"); 
+							newSO.style.float = "left";
+							newSO.onclick = function(){
+								var o = {};
+								o.type = "javascript";
+								o.frameRange = "(1,1000)";
+								var a = {};
+								a.script = "http://localhost:8080/so646a.js";
+								a.function = "animateFrame";
+								a.start = 1;
+								o.attribute = a;
+								o.layer = 1;
+								l.push(o); 
+								tb.refreshSOs(l); 
 							}
-
+							tb.refreshSOs(l);
 						},
 						"color": "Turquoise"
 					},
