@@ -6126,6 +6126,7 @@ const gc4SoEditor = function(){
 
 
 const gc4BLS = function(){
+	const _thisBLS = this;
 	const blsTimer = blo0.blAudioTimer();
 	var lsFrame = [];
 	var pt = "";
@@ -6188,6 +6189,14 @@ const gc4BLS = function(){
 		ctx.fillText(s, x2-20,y2 - 20);
 	}
 	this.getFrames = function(){return lsFrame;}
+	this._getAllFramesNumber = function(){
+		var n = 0;
+		const l = lsFrame;
+		for(i in l){
+			n += l[i].time;
+		}
+		return n;
+	}
 	this.getSOs = function(){return lsSuperObjects;}
 	this.select = function(b){		s = b;		}
 	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
@@ -6401,11 +6410,11 @@ const gc4BLS = function(){
 
 			 }(blsTimer,this);
 
- 
+			 
 			 const split4tb2 = blo0.blDiv(eui.v1,eui.v1.id+"split4tb2","split4tb2","gray");
 			 const tbFrames = blo0.blDiv(eui.v1,eui.v1.id+"tbFrames","blsFrames:","green");
 			 tbFrames.style.color = "white";
-			 const split1b = blo0.blDiv(eui.v1,eui.v1.id+"split1b","split1b","lightgray");
+			 const dAllFrames = blo0.blDiv(eui.v1,"id_4_all_frames","allFrames","lightgray");
 			 const tabFrames = blo0.blDiv(eui.v1,eui.v1.id+"tabFrames","tabFrames:","lightgray");
 			 tabFrames.refreshFrames = function(){
 				tabFrames.innerHTML = "";
@@ -6415,10 +6424,11 @@ const gc4BLS = function(){
 				   b.onclick = function(_btn,_i,_f){
 					   return function(){ 
 							nCurF = _i; 
-						   _ui4curFrame(_btn,v4curF,_f,_i);
+						   _ui4curFrame(_btn,v4curF,_f,_i,_thisBLS);
 					   }
 				   }(b,i,lsFrame);
 				}
+				dAllFrames.innerHTML = _thisBLS._getAllFramesNumber();
 			 }
 			 const newFrame = blo0.blBtn(tbFrames,tbFrames.id+"newFrame","+Frame","green");
 			 newFrame.style.float = "left";
@@ -6692,6 +6702,7 @@ const gc4BLS = function(){
 		if(nCurF>-1) 		_objCmd.upObjCmd(x,y,x1,y1,lsFrame[nCurF].objects); 
 	}
 	
+	
 	var _makeBLS = function(){
 		var s = {};
 		var r = {};		
@@ -6715,7 +6726,7 @@ const gc4BLS = function(){
 		r = msgDbg + " :: v 13 showDebugMsg4BLS: x1y1[" + x1 + ","+ y1 + "]";;
 		return r;
 	}
-	const _ui4curFrame = function(curFrameBtn,_v,f,n){
+	const _ui4curFrame = function(curFrameBtn,_v,f,n,_thisBLS){
 		_v.innerHTML = "";
 		const ts = [
 			{	
@@ -6806,6 +6817,7 @@ const gc4BLS = function(){
 						return function(){
 							f[n].time += ws[_i];
 							btn4TimeVal.innerHTML = f[n].time;
+							bl$("id_4_all_frames").innerHTML = _thisBLS._getAllFramesNumber();
 						}
 					}(i);
 			}
@@ -6903,6 +6915,7 @@ const gc4BLS = function(){
 		};
 		return new c();
 	}();
+
 }
 
 
