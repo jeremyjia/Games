@@ -6390,7 +6390,7 @@ const gc4BLS = function(){
 											_v.innerHTML = JSON.stringify(l[_i]);
 											const b1 = blo0.blBtn(_v,_v.id+"scriptFromTa","scriptFromTa","green"); 
 											b1.onclick = function(){
-												l[_i].attribute.scripttype = blo0.blGetTa().value;
+												l[_i].attribute.script = blo0.blGetTa().value;
 												_b.click();
 											}
 										}
