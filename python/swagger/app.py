@@ -4,21 +4,23 @@ import argparse
 import os
 from urllib.request import HTTPHandler
 from flask import Flask, jsonify, make_response, render_template
-from flask_cors import CORS
+from flask_cors import CORS #解决Flask跨域问题
 from flask_swagger_ui import get_swaggerui_blueprint
 from routes import request_api
 from datetime import datetime
 
 APP = Flask(__name__)
+CORS(APP, resources=r'/*') #解决Flask跨域问题
 @APP.route('/')
+
 
 def index():
     now = datetime.now()
     dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
     return "<html><body>\
-        <h3>The Current Time: \
+        <h3>version 1.0 The Current Time: \
         <script>var myDate = new Date(); document.write(myDate.toLocaleString())</script></h3>\
-        <div <p>Please go to the index page: <a href=http://localhost:5000/swagger/>Swagger</a>\
+        <div> <p>Please go to the index page: <a href=http://localhost:5000/swagger/>Swagger</a>\
         </p></div></body></html>"
     #return render_template('index.html') 
     #return "<body><div <h3>This is a header</h3> <p>This is a paragraph.</p> </div></body>"
@@ -30,6 +32,24 @@ def index():
     #dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
     #print("date and time =", dt_string)
     
+@APP.route('/test1')
+def test1():
+    now = datetime.now()
+    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+    return render_template('index.html')
+
+@APP.route('/benny')
+def benny():
+    return render_template('/53/i.html')
+
+@APP.route('/style.css')
+def css():
+    return render_template('/53/style.css')
+
+
+@APP.route('/index.js')
+def js():
+    return render_template('/53/index.js')
 
 ### swagger specific ###
 SWAGGER_URL = '/swagger'

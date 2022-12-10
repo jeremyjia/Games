@@ -102,7 +102,7 @@ public class JSGraphEngine {
 			recoverProperty();
 		}
 
-		public void arc(int x, int y, int r, float startfAngle, float endfAngle, boolean b) {
+		public void arc(int x, int y, int r, float startfAngle, float endfAngle, boolean bDir) {
 			double startAngle = (int) Math.toDegrees(startfAngle); // 弧度转为角度
 			double arcAngle = Math.toDegrees(endfAngle - startfAngle);
 			graphics.setStroke(new BasicStroke(r));
@@ -119,8 +119,13 @@ public class JSGraphEngine {
 				recoverProperty();
 			}
 			// 记录圆弧终点的坐标, 作为下次调用lineTo的起点
-			from = (int) (r * Math.cos(startfAngle) + x);
-			to = (int) (r * Math.sin(endfAngle) + y);
+            if (bDir) {
+                from = (int) (r * Math.cos(Math.PI - startfAngle) + x);
+                to = (int) (r * Math.sin(Math.PI - endfAngle) + y);
+            } else {
+                from = (int) (r * Math.cos(startfAngle) + x);
+                to = (int) (r * Math.sin(endfAngle) + y);
+            }
 		}
 
 		public void arc(int x, int y, int r, float startAngle, float arcAngle) {
@@ -164,6 +169,22 @@ public class JSGraphEngine {
 			graphics.translate(x, y);
 		}
 
+		//二次贝塞尔曲线
+        public void quadraticCurveTo(int x1, int y1, int x2, int y2) {
+            applayStrokeColor();
+            double t = 0.001;
+            double x = 0, y = 0;
+            for (double k = t; k <= 1 + t; k += t) {
+                double r = 1 - k;
+                x = Math.pow(r, 2) * from + 2 * k * r * x1 + Math.pow(k, 2) * x2;
+                y = Math.pow(r, 2) * to + 2 * k * r * y1 + Math.pow(k, 2) * y2;
+                graphics.drawOval((int) x, (int) y, 1, 1);
+                // graphics.drawLine((int) x, (int) y, (int) x, (int) y);
+            }
+            from = (int)x;
+            to = (int)y;
+        }
+        
 		private void applayColor(String fillStyle) {
 			if (fillStyle.trim().length() > 0) {
 				if (fillStyle.startsWith("#")) {

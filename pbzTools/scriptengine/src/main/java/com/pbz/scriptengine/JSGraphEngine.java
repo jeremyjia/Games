@@ -7,6 +7,7 @@ import java.awt.Composite;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
@@ -62,6 +63,7 @@ public class JSGraphEngine {
 		public int from;
 		public int to;
 		public Composite oldComp;
+		public GeneralPath genPath = new GeneralPath();  
 
 		public void fillRect(int x, int y, int width, int height) {
 			applayColor(fillStyle);
@@ -100,26 +102,31 @@ public class JSGraphEngine {
 			recoverProperty();
 		}
 
-		public void arc(int x, int y, int r, float startfAngle, float endfAngle, boolean b) {
-			double startAngle = (int) Math.toDegrees(startfAngle); // 弧度转为角度
-			double arcAngle = Math.toDegrees(endfAngle - startfAngle);
-			graphics.setStroke(new BasicStroke(r));
-			if (strokeStyle.trim().length() > 0) {
-				graphics.setStroke(new BasicStroke(lineWidth));
-				applayStrokeColor();
-				graphics.drawArc(x - r, y - r, 2 * r, 2 * r, (int) startAngle, (int) arcAngle); // 绘制圆弧（含整圆）
-				recoverProperty();
-				strokeStyle = "";
-			}
-			if (fillStyle.trim().length() > 0) {
-				applayColor(fillStyle);
-				graphics.fillArc(x - r, y - r, 2 * r, 2 * r, (int) startAngle, (int) arcAngle);
-				recoverProperty();
-			}
-			// 记录圆弧终点的坐标, 作为下次调用lineTo的起点
-			from = (int) (r * Math.cos(startfAngle) + x);
-			to = (int) (r * Math.sin(endfAngle) + y);
-		}
+        public void arc(int x, int y, int r, float startfAngle, float endfAngle, boolean bDir) {
+            double startAngle = (int) Math.toDegrees(startfAngle); // 弧度转为角度
+            double arcAngle = Math.toDegrees(endfAngle - startfAngle);
+            graphics.setStroke(new BasicStroke(r));
+            if (strokeStyle.trim().length() > 0) {
+                graphics.setStroke(new BasicStroke(lineWidth));
+                applayStrokeColor();
+                graphics.drawArc(x - r, y - r, 2 * r, 2 * r, (int) startAngle, (int) arcAngle); // 绘制圆弧（含整圆）
+                recoverProperty();
+                strokeStyle = "";
+            }
+            if (fillStyle.trim().length() > 0) {
+                applayColor(fillStyle);
+                graphics.fillArc(x - r, y - r, 2 * r, 2 * r, (int) startAngle, (int) arcAngle);
+                recoverProperty();
+            }
+            // 记录圆弧终点的坐标, 作为下次调用lineTo的起点
+            if (bDir) {
+                from = (int) (r * Math.cos(Math.PI - startfAngle) + x);
+                to = (int) (r * Math.sin(Math.PI - endfAngle) + y);
+            } else {
+                from = (int) (r * Math.cos(startfAngle) + x);
+                to = (int) (r * Math.sin(endfAngle) + y);
+            }
+        }
 
 		public void arc(int x, int y, int r, float startAngle, float arcAngle) {
 			arc(x, y, r, startAngle, arcAngle, false);
@@ -161,6 +168,22 @@ public class JSGraphEngine {
 		public void translate(int x, int y) {
 			graphics.translate(x, y);
 		}
+
+        public void quadraticCurveTo(int x1, int y1, int x2, int y2) {
+            applayStrokeColor();
+            
+            double t = 0.001;
+            double x = 0, y = 0;
+            for (double k = t; k <= 1 + t; k += t) {
+                double r = 1 - k;
+                x = Math.pow(r, 2) * from + 2 * k * r * x1 + Math.pow(k, 2) * x2;
+                y = Math.pow(r, 2) * to + 2 * k * r * y1 + Math.pow(k, 2) * y2;
+                graphics.drawOval((int) x, (int) y, 1, 1);
+                //graphics.drawLine((int) x, (int) y, (int) x, (int) y);
+            }
+            from = (int)x;
+            to = (int)y;
+        }
 
 		private void applayColor(String fillStyle) {
 			if (fillStyle.trim().length() > 0) {
