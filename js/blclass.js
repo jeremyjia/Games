@@ -5997,6 +5997,9 @@ const gc4SoEditor = function(){
 	var nMDown = 0;
 	var ex1,ey1,ex2,ey2;
 	const _C4SoEditor = function(){ 
+		var soScript = `function animationFrame(time){
+			// hard code.
+		}`;
 		var nTick = 0;
 		this.ui4Editor = function(v){ 
 			var tb = blo0.blDiv(v,v.id+"tb","tb","gray");
@@ -6013,19 +6016,38 @@ const gc4SoEditor = function(){
 				{
 					"id":2,
 					"name":"save2server",
-					"clickOnMe": function(d){
-						var txt = blo0.blGetTa().value; 
+					"clickOnMe": function(d){ 
 						var url = "http://localhost:8080/json?fileName=" + soName + ".js"; 
 
-						blo0.blSendTextByPOST(url,txt,function(resTxt){
+						blo0.blSendTextByPOST(url,soScript,function(resTxt){
 							d.innerHTML = "<a href ='http://localhost:8080/" + soName+".js' target='_blank'>" + soName+".js</a>";
 						}); 
 					},
-					"color": "Bisque"
+					"color": "Bisque",
+					"float": "right"
+				},
+				{
+					"id":3,
+					"name":"2Ta",
+					"clickOnMe": function(d){
+						blo0.blGetTa().value = soScript;
+					},
+					"color": "pink",
+					"float": "left"
+				},
+				{
+					"id":4,
+					"name":"fromTa",
+					"clickOnMe": function(d){
+						soScript = blo0.blGetTa().value;
+					},
+					"color": "pink",
+					"float": "left"
 				},
 			];
 			for(i in bs){
 				const b = blo0.blBtn(tb,tb.id+bs[i].id,bs[i].name,bs[i].color);
+				b.style.float = bs[i].float?bs[i].float:"left";
 				b.onclick = function(_b,_d,_i){
 					return function(){
 						bs[_i].clickOnMe(_d);
@@ -6385,12 +6407,18 @@ const gc4BLS = function(){
 								for(i in l){
 									const b = blo0.blBtn(tb,tb.id+i,i,"Lavender"); 
 									newSO.style.float = "right";
+ 
 									b.onclick = function(_b,_i,_v){
 										return function(){
 											_v.innerHTML = JSON.stringify(l[_i]);
 											const b1 = blo0.blBtn(_v,_v.id+"scriptFromTa","scriptFromTa","green"); 
 											b1.onclick = function(){
 												l[_i].attribute.script = blo0.blGetTa().value;
+												_b.click();
+											}
+											const b2 = blo0.blBtn(_v,_v.id+"funFromTa","funFromTa","brown"); 
+											b2.onclick = function(){
+												l[_i].attribute.function = blo0.blGetTa().value;
 												_b.click();
 											}
 										}
