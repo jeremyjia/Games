@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.332"
+var g_ver_blClass = "CBlClass_bv1.6.333"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -6403,6 +6403,7 @@ const gc4BLS = function(){
 						"fn4ui": function(v){ 
 							const tb = blo0.blDiv(v,v.id+"tb","tb",this.color);
 							const vos = blo0.blDiv(v,v.id+"vos","vos","BurlyWood");
+							const vEndOfOS = blo0.blDiv(v,v.id+"vEndOfOS","vEndOfOS","white");
 							tb.refreshSOs = function(l){
 								for(i in l){
 									const b = blo0.blBtn(tb,tb.id+i,i,"Lavender"); 
@@ -6411,16 +6412,81 @@ const gc4BLS = function(){
 									b.onclick = function(_b,_i,_v){
 										return function(){
 											_v.innerHTML = JSON.stringify(l[_i]);
-											const b1 = blo0.blBtn(_v,_v.id+"scriptFromTa","scriptFromTa","green"); 
-											b1.onclick = function(){
-												l[_i].attribute.script = blo0.blGetTa().value;
-												_b.click();
-											}
-											const b2 = blo0.blBtn(_v,_v.id+"funFromTa","funFromTa","brown"); 
-											b2.onclick = function(){
-												l[_i].attribute.function = blo0.blGetTa().value;
-												_b.click();
-											}
+											const soSet = function(){
+												const ss = [
+													{
+														"id":1,
+														"name": "scriptFromTa",
+														"fnSet": function(l,i){
+															l[i].attribute.script = blo0.blGetTa().value;
+														},
+														"color": "Indigo",
+														"float": "left"
+													},
+													{
+														"id":2,
+														"name": "funFromTa",
+														"fnSet": function(l,i){
+															l[i].attribute.function = blo0.blGetTa().value;
+														},
+														"color": "Crimson",
+														"float": "left"
+													},
+													{
+														"id":3,
+														"name": "AllFromTa",
+														"fnSet": function(l,i){
+															l[i]  = JSON.parse(blo0.blGetTa().value);
+														},
+														"color": "Khaki",
+														"float": "right"
+													},
+													{
+														"id":4,
+														"name": "All2Ta",
+														"fnSet": function(l,i){
+															blo0.blGetTa().value = JSON.stringify(l[i]);
+														},
+														"color": "Teal",
+														"float": "right"
+													},
+													{
+														"id":5,
+														"name": "Text1",
+														"fnSet": function(l,i){ 
+															l[i]  = {
+																"type": "text",
+																"attribute": {
+																	"x1": 50,
+																	"y1": 500,
+																	"x2": -1,
+																	"y2": -1,
+																	"size": 22,
+																	"color": "200,182,193",
+																	"name": "Text test 0.11"
+																},
+																"frameRange": "(2,100)",
+																"action": {
+																	"trace": "y=0*x*x+0*x+55",
+																	"step": 10
+																}
+															};
+														},
+														"color": "Teal",
+														"float": "right"
+													},
+												];
+												for(i in ss){
+													const btn = blo0.blBtn(_v,_v.id+ss[i].id,ss[i].name,ss[i].color);
+													btn.style.float = ss[i].float;
+													btn.onclick = function(_b,_i,_l,_n,btnParent){
+														return function(){
+															ss[_i].fnSet(_l,_n);
+															btnParent.click();
+														}
+													}(btn,i,l,_i,_b);
+												}
+											}();											 
 										}
 									}(b,i,vos);
 								}
@@ -6574,11 +6640,44 @@ const gc4BLS = function(){
 					vServer.innerHTML = "<a href ='http://localhost:8080/"+sBlsTitle+".json' target='_blank'>"+sBlsTitle+".json</a>";
 				}); 
 			}
-			var btnMakeMP4 = blo0.blBtn(tbServer,tbServer.id+"btnMakeMP4","makeMP4","lightblue");
-			btnMakeMP4.style.float = "right"; 
-			btnMakeMP4.onclick = function(){	
+			var btnMakeV = blo0.blBtn(tbServer,tbServer.id+"btnMakeV","makeVideo","lightblue");
+			btnMakeV.style.float = "right"; 
+			btnMakeV.onclick = function(){	
 					var url = "http://localhost:8080/image/json2video?script=" + sBlsTitle + ".json&video=" + sBlsTitle + ".mp4"; 
-					this._2do = function(txt){vServer.innerHTML = txt};
+					this._2do = function(txt){
+						vServer.innerHTML = txt;
+						const refactorPage = function(){
+							var tl = [1.0,2.0,3.0,4.0,5.0,6.0];
+							 
+							function createBtn(dtl,ddbg,id,video) {  
+								var btn = document.createElement("button");
+								btn.id = id;
+								  btn.innerHTML = id;  
+								btn.onclick = function(){ 
+									ddbg.innerHTML = this.id; 
+									video.currentTime = this.id;
+								} 
+								  dtl.appendChild(btn);
+								return btn;
+							}
+							
+							bl$("btnPlay").onclick = function play() {
+								var video = document.getElementById("id_4_video");
+								video.play();
+							} 
+							bl$("btn2createToolbar").onclick = function createToolbar() { 
+								var video = document.getElementById("id_4_video");
+								var dtl = document.getElementById("id4toolbar");
+								var ddbg = document.getElementById("id4Debug");
+								if(!dtl.done){
+								  dtl.done = true;
+								  for(i in tl){
+									createBtn(dtl,ddbg,tl[i],video);     
+								  }     
+								}
+							  } 
+						}();
+					};
 					blo0.blAjx(this,url);
 		   }
 		   ex1 = x;
