@@ -2585,25 +2585,136 @@ function CBlClass ()
 		const o = new C4ParseTask(_srcURL,_vRes,_cbParse);
 		return o;
 	}
-	this.blMp3Lrc2VideoTask = function(mp3URL,lrcURL,v,cbWork){
-		const C4Mp3Lrc2Video = function(mp3URL,lrcURL,v,cbWork){
+	this.blBls2VideoTask = function(src,v,cbWork){
+		const CBls2Video = function(src,v,cbWork){
 			const o = {};
-			o.mp3 = mp3URL; 
-			o.lrc = lrcURL;
+			o.src = src;   
 			var b = false;
-			var s = "mp3 & lrc -> video";
-			this.type = blc_4_t_MP3LRC2VIDEO;
+			var s = "BLS -> video";
+			this.type = blc_4_t_MAKE_VIDEO;
 			
 			this.done = function(){return b;};
 			this.status = function(){return s;};
 			this.bl2Do = function(){	
-				setTimeout(() => {
-					cbWork(v,o);
-					b = true;
-				}, 2222);	 
+				b = true;
+				cbWork(v,o);
 			};
 		}
-		const o = new C4Mp3Lrc2Video(mp3URL,lrcURL,v,cbWork);
+		const o = new CBls2Video(src,v,cbWork);
+		return o;
+	}
+	this.blMakeBlsTask = function(mp3,lrc,v,cbWork){
+		const CMakeBlsTask = function(mp3,lrc,v,cbWork){
+			const o = {};
+			o.mp3 = mp3;  
+			o.lrc = lrc;
+			o.fn  = "bls1.json";
+			var b = false;
+			var s = "mp3 & lrc -> BLS";
+			const blsJSON = function(){
+				const blos = {
+					"request": {
+						"version": "0.0.16",
+						"description":"LRC字幕超级对象",
+						"width": 1024,
+						"height": 768,
+						"music": "${VAR_MUSIC}",
+						"rate": "2",
+						"frames": [
+							{
+								"number": "1",
+								"time": "${VAR_FRAMES}",
+								"objects": [
+									{
+										"text": "${VAR_TITLE}",
+										"x": 80,
+										"y": 320,
+										"size": 60,
+										"color": "160,32,240",
+										"layer": 2
+									}
+								],
+								"backgroundColor": "100,149,237"
+							}
+						],
+						"superObjects": [
+							{
+								"type": "subtitle",
+								"frameRange": "(1,${VAR_FRAMES})",
+								"attribute": {
+									"script": "${VAR_LRC_PATH}",
+									"x1": 20,
+									"y1": 670,
+									"size": 30,
+									"color": "255,255,0",
+									"replace":[
+										 {
+										   "regex":"American",
+										   "target":"美国"
+										 },
+										 {
+										   "regex":"更多听力请访问51VOA.COM",
+										   "target":"漂泊者乐园团队制作"
+										 }
+									]
+								},
+								"layer": 1
+							},
+							{
+								"type": "picture",
+								"attribute": {
+									"x1": 220,
+									"y1": 200,
+									"x2": 510,
+									"y2": 380,
+									"size": -1,
+									"color": "255,0,0",
+									"name": "${VAR_IMG_PATH}"
+								},
+								"frameRange": "(1,${VAR_TIME})",
+								"action": {
+									"trace": "y=0*x*x+0*x+200",
+									"step": 0
+								}
+							} 
+						],
+						"Macros": [
+							{
+								"name": "VAR_TITLE",
+								"value": "LRC字幕超级对象-演示程序"
+							},
+							{
+								"name": "VAR_MUSIC",
+								"value": o.mp3
+							},
+							{
+								"name": "VAR_LRC_PATH",
+								"value": o.lrc
+							},
+							{
+								"name": "VAR_IMG_PATH",
+								"value": "https://img.51voa.cn/1/C501D07B-81C5-462A-89C8-E630C2DD9A1F_w268_r1.jpg"
+							}
+						]
+					}
+				};
+				return blos;
+			}();
+
+			this.type = blc_4_t_MP3LRC2BLS;
+			
+			this.done = function(){return b;};
+			this.status = function(){return s;};
+			this.bl2Do = function(){	
+				var url = "http://localhost:8080/json?fileName=" + o.fn; 
+
+				blo0.blSendTextByPOST(url,JSON.stringify(blsJSON),function(resTxt){
+					b = true;
+					v.innerHTML = "<a href ='http://localhost:8080/" + o.fn+"' target='_blank'>" + o.fn+"</a>";
+				}); 	 
+			};
+		}
+		const o = new CMakeBlsTask(mp3,lrc,v,cbWork);
 		return o;
 	}
 	this.blDownloadTask = function(_svrAPI,_srcURL,_saveAsFileName,_vRes,_cbOK){		
@@ -2679,7 +2790,8 @@ function CBlClass ()
 					if(blc_4_t_DOWNLOAD==inf.type)	s += "t = blc_4_t_DOWNLOAD";
 					if(blc_4_t_PARSE==inf.type)	s += "t = blc_4_t_PARSE";
 					if(blc_4_t_IDLE==inf.type)	s += "t = blc_4_t_IDLE";
-					if(blc_4_t_MP3LRC2VIDEO==inf.type)	s += "t = blc_4_t_MP3LRC2VIDEO";
+					if(blc_4_t_MAKE_VIDEO==inf.type)	s += "t = blc_4_t_MAKE_VIDEO";
+					if(blc_4_t_MP3LRC2BLS==inf.type)	s += "t = blc_4_t_MP3LRC2BLS";
 					
 				}
 				else 	s+= "t = unkown";
@@ -2745,10 +2857,17 @@ function CBlClass ()
 			o.uiBuild = function(d){
 				const makeAutoRunTaskTb = function(){
 					tb = blco1.blDiv(d,"tb_4_AutoRun","tb","gray");
-					tb.createVideo = function(mp3,lrc,v,cb){
+					tb.createBLS = function(mp3,lrc,v,cb){
 						const o = tb.getObj();
 						const t = blco1.blTask();
-						var i = blco1.blMp3Lrc2VideoTask(mp3,lrc,v,cb);
+						var i = blco1.blMakeBlsTask(mp3,lrc,v,cb);
+						t.setInfo(i);
+						o.addTask(t); 
+					}
+					tb.createVideo = function(src,v,cb){
+						const o = tb.getObj();
+						const t = blco1.blTask();
+						var i = blco1.blBls2VideoTask(src,v,cb);
 						t.setInfo(i);
 						o.addTask(t); 
 					}
@@ -2790,16 +2909,30 @@ function CBlClass ()
 				const makeTasks = function(){
 					const tasks = [
 						{
-							"id":-2,
-							"name":"mp3Lrc2Video",
+							"id":-3,
+							"name":"createBLS",
 							"runTask":function(){ 
-								tb.createVideo(
+								tb.createBLS(
 									"https://files.51voa.cn/202212/scientists-study-oldest-known-dna.mp3",
 									"https://www.51voa.com/lrc/202212/scientists-study-oldest-known-dna.lrc",
 									bl$("vTask"),
 									function(_v,_o){
+										//xd2do
+								});		
+							},
+							"color":"skyblue",
+							"float":"right"
+						},
+						{
+							"id":-2,
+							"name":"createVideo",
+							"runTask":function(){ 
+								tb.createVideo(
+									"bls1.json",
+									bl$("vTask"),
+									function(_v,_o){
 										_v.innerHTML = JSON.stringify(_o);
-										var url = "http://localhost:8080/image/json2video?script=video.json&video=xd1.mp4"; 
+										var url = "http://localhost:8080/image/json2video?script="+_o.src+"&video=xd1.mp4"; 
 										_v._2do = function(txt){
 											_v.innerHTML = txt;
 											const refactorPage = function(){
@@ -7355,4 +7488,5 @@ const gc4BLS = function(){
 const 			blc_4_t_IDLE 			= 0;
 const 			blc_4_t_DOWNLOAD 		= 1;
 const 			blc_4_t_PARSE 			= 2;
-const			blc_4_t_MP3LRC2VIDEO 	= 3;
+const			blc_4_t_MAKE_VIDEO 	= 3;
+const			blc_4_t_MP3LRC2BLS		= 4;
