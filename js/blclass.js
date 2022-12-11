@@ -2711,6 +2711,7 @@ function CBlClass ()
 				blo0.blSendTextByPOST(url,JSON.stringify(blsJSON),function(resTxt){
 					b = true;
 					v.innerHTML = "<a href ='http://localhost:8080/" + o.fn+"' target='_blank'>" + o.fn+"</a>";
+					cbWork(v,o);
 				}); 	 
 			};
 		}
@@ -2917,7 +2918,48 @@ function CBlClass ()
 									"https://www.51voa.com/lrc/202212/scientists-study-oldest-known-dna.lrc",
 									bl$("vTask"),
 									function(_v,_o){
-										//xd2do
+										tb.createVideo(
+											_o.fn,
+											bl$("vTask"),
+											function(_v,_o){
+												_v.innerHTML = JSON.stringify(_o);
+												var url = "http://localhost:8080/image/json2video?script="+_o.src+"&video=xd1.mp4"; 
+												_v._2do = function(txt){
+													_v.innerHTML = txt;
+													const refactorPage = function(){
+														var tl = [1.0,2.0,3.0,4.0,5.0,6.0];
+														
+														function createBtn(dtl,ddbg,id,video) {  
+															var btn = document.createElement("button");
+															btn.id = id;
+															btn.innerHTML = id;  
+															btn.onclick = function(){ 
+																ddbg.innerHTML = this.id; 
+																video.currentTime = this.id;
+															} 
+															dtl.appendChild(btn);
+															return btn;
+														}
+														
+														bl$("btnPlay").onclick = function play() {
+															var video = document.getElementById("id_4_video");
+															video.play();
+														} 
+														bl$("btn2createToolbar").onclick = function createToolbar() { 
+															var video = document.getElementById("id_4_video");
+															var dtl = document.getElementById("id4toolbar");
+															var ddbg = document.getElementById("id4Debug");
+															if(!dtl.done){
+															dtl.done = true;
+															for(i in tl){
+																createBtn(dtl,ddbg,tl[i],video);     
+															}     
+															}
+														} 
+													}();
+												};
+												blo0.blAjx(_v,url);
+										});	
 								});		
 							},
 							"color":"skyblue",
@@ -2928,7 +2970,7 @@ function CBlClass ()
 							"name":"createVideo",
 							"runTask":function(){ 
 								tb.createVideo(
-									"bls1.json",
+									"video.json",
 									bl$("vTask"),
 									function(_v,_o){
 										_v.innerHTML = JSON.stringify(_o);
@@ -3052,6 +3094,54 @@ function CBlClass ()
 															}(pageText);
 															
 															v.innerHTML = JSON.stringify(ls);
+															tb.createBLS(
+																ls.mp3,//"https://files.51voa.cn/202212/scientists-study-oldest-known-dna.mp3",
+																ls.lrc,//"https://www.51voa.com/lrc/202212/scientists-study-oldest-known-dna.lrc",
+																v,
+																function(_v,_o){
+																	tb.createVideo(
+																		_o.fn,
+																		bl$("vTask"),
+																		function(_v,_o){
+																			_v.innerHTML = JSON.stringify(_o);
+																			var url = "http://localhost:8080/image/json2video?script="+_o.src+"&video=xd1.mp4"; 
+																			_v._2do = function(txt){
+																				_v.innerHTML = txt;
+																				const refactorPage = function(){
+																					var tl = [1.0,2.0,3.0,4.0,5.0,6.0];
+																					
+																					function createBtn(dtl,ddbg,id,video) {  
+																						var btn = document.createElement("button");
+																						btn.id = id;
+																						btn.innerHTML = id;  
+																						btn.onclick = function(){ 
+																							ddbg.innerHTML = this.id; 
+																							video.currentTime = this.id;
+																						} 
+																						dtl.appendChild(btn);
+																						return btn;
+																					}
+																					
+																					bl$("btnPlay").onclick = function play() {
+																						var video = document.getElementById("id_4_video");
+																						video.play();
+																					} 
+																					bl$("btn2createToolbar").onclick = function createToolbar() { 
+																						var video = document.getElementById("id_4_video");
+																						var dtl = document.getElementById("id4toolbar");
+																						var ddbg = document.getElementById("id4Debug");
+																						if(!dtl.done){
+																						dtl.done = true;
+																						for(i in tl){
+																							createBtn(dtl,ddbg,tl[i],video);     
+																						}     
+																						}
+																					} 
+																				}();
+																			};
+																			blo0.blAjx(_v,url);
+																	});	
+															});	
 														  }); 
 												});												
 											}
