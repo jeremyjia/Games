@@ -2603,13 +2603,7 @@ function CBlClass ()
 				var url = svrAPI + "?url="+ srcURL + "&filename="+ fn;  
 				var w = {};
 				n = 0;
-				w._2do = function(txt){
-					/*
-					 var str = "var a =" +  txt;  
-					eval(str);  
-					vRes.innerHTML =  a.filename; 
-					b = true; 
-					//*/
+				w._2do = function(txt){ 
 					n++;
 					if("error xd 11"==txt){
 						vRes.innerHTML = n + " rs: not 4 && not 200. " + Date(); 
@@ -2624,6 +2618,24 @@ function CBlClass ()
 			};
 		}
 		const o = new C4Download(_svrAPI,_srcURL,_saveAsFileName,_vRes);
+		return o;
+	}
+	this.blIdleTask = function(_time){
+		const C4IdleTask = function(){ 
+			var b = false;
+			var n = 0;
+			var idleTime = _time;
+
+			this.type = blc_4_t_IDLE;
+			this.done = function(){return b;};
+			this.status = function(){return n;};
+			this.bl2Do = function(){
+				setTimeout(() => {
+					b = true;
+				}, idleTime);
+			};
+		};
+		const o = new C4IdleTask();
 		return o;
 	}
 	this.blTask = function(){		
@@ -2644,6 +2656,7 @@ function CBlClass ()
 				if(inf){
 					if(blc_4_t_DOWNLOAD==inf.type)	s += "t = blc_4_t_DOWNLOAD";
 					if(blc_4_t_PARSE==inf.type)	s += "t = blc_4_t_PARSE";
+					if(blc_4_t_IDLE==inf.type)	s += "t = blc_4_t_IDLE";
 				}
 				else 	s+= "t = unkown";
 				return s;
@@ -2707,18 +2720,25 @@ function CBlClass ()
 			var o = {};
 			o.uiBuild = function(d){
 				tb = blco1.blDiv(d,"tb_4_AutoRun","tb","gray");
+				tb.waitSomeTime = function(secTime){
+					const o = tb.getObj();
+					const t = blco1.blTask();
+					var i = blco1.blIdleTask(secTime);
+					t.setInfo(i);
+					o.addTask(t);
+				}
 				tb.downloadPage = function(_url,_filename,_v){ 
 					const o = tb.getObj();
-					const t = blo0.blTask();
+					const t = blco1.blTask();
 					const svrAPI = "http://localhost:8080/download";  
-					var i = blo0.blDownloadTask(svrAPI ,_url,_filename,_v); 
+					var i = blco1.blDownloadTask(svrAPI ,_url,_filename,_v); 
 					t.setInfo(i);
 					o.addTask(t);
 				};
 				tb.parsePage = function(_url,_v,cbfParse){ 
 					const o = tb.getObj();
-					const t = blo0.blTask();
-					var i = blo0.blParseTask(_url,_v,cbfParse);
+					const t = blco1.blTask();
+					var i = blco1.blParseTask(_url,_v,cbfParse);
 					t.setInfo(i);
 					o.addTask(t);
 				};
@@ -2736,6 +2756,16 @@ function CBlClass ()
 				}
 				const makeTasks = function(){
 					const tasks = [
+						{
+							"id":-1,
+							"name":"wait-2s",
+							"runTask":function(){
+								const tb = bl$("tb_4_AutoRun");
+								tb.waitSomeTime(2);		
+							},
+							"color":"gray",
+							"float":"right"
+						},
 						{
 							"id":1,
 							"name":"dl-51voaIndex",
@@ -7215,5 +7245,6 @@ const gc4BLS = function(){
 }
 
 
-const 			blc_4_t_DOWNLOAD = 0;
-const 			blc_4_t_PARSE = 0;
+const 			blc_4_t_IDLE = 0;
+const 			blc_4_t_DOWNLOAD = 1;
+const 			blc_4_t_PARSE = 2;
