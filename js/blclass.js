@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.333"
+var g_ver_blClass = "CBlClass_bv1.6.334"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -732,7 +732,32 @@ function CBlClass ()
 		}();
 		return r;
 	}
-	
+	this.blWrapPlx = function(cvs,_pt,x1,y1){
+		var pt2 = _pt.replace("myCanvas",cvs.id);
+		var s = "var CBlsPlx = function(cvs,x1,y1){";
+		s += '       var x0 = x1, y0 = y1;';
+		s += '       var ctx = cvs.getContext("2d");';
+		s += '       var nc = 0;';
+		s +=         pt2;
+		s += "       this.v = 123;";  
+
+		s += "       this.callPlx = function(n,x,y){";
+		s += '          if(1){'
+		s += '          	nc++;';
+		s += '          	ctx.fillText("nc=" + nc,x+x0,y+y0-60);';
+		s += "          	animateFrame(n);";
+		s += '          }'; 
+		s += '          return n;';
+	    s += '        };';	
+
+		s += "       this.setPlxXY = function(x,y){"; 
+	    s += '            x0 = x; y0 = y;';		
+	    s += '        };';		
+
+		s += "    }";
+		eval(s);
+		return new CBlsPlx(cvs,x1,y1);  
+	}
 	this.f2do =  function (ctx,_x,_y){
 		var x = _x;
 		var y = _y;
@@ -5997,13 +6022,38 @@ const gc4SoEditor = function(){
 	var nMDown = 0;
 	var ex1,ey1,ex2,ey2;
 	const _C4SoEditor = function(){ 
-		var soScript = `function animationFrame(time){
-			// hard code.
-		}`;
+		var soScript = `
+		var C4Plx = function(){
+			this.drawPlx2Frame = function(ctx,time,x0,y0){ 
+			  var x = x0?x0:0;
+			  var y = y0?y0:0
+			  ctx.fillStyle = 'green';
+			  ctx.fillRect(x+0+time%111, y+30, 5, 44);
+			  ctx.font = 11+ "px Consolas";
+			  ctx.fillStyle = "blue";
+			  ctx.fillText("C4Plx v0.14: time="+time ,x+10,y+55);
+			};
+		  } 
+		  function animateFrame(time){
+			  var canvas = document.getElementById('myCanvas');
+			  var ctx = canvas.getContext('2d');  
+					   
+			  var o = new C4Plx();
+			  var x = typeof x0 === "undefined"?0:x0;
+			  var y = typeof y0 === "undefined"?0:y0;
+			  o.drawPlx2Frame (ctx,time,x,y);   
+		  }`;
 		var nTick = 0;
+		var vCanStatus = null;
+		var bRunScript = false; 
+		var op = null;
 		this.ui4Editor = function(v){ 
 			var tb = blo0.blDiv(v,v.id+"tb","tb","gray");
 			var d = blo0.blDiv(v,v.id+"d","d","lightblue");
+			vCanStatus = blo0.blDiv(v,v.id+"vCanStatus","black","white");
+			vCanStatus.updateMsg = function(x,y){
+				vCanStatus.innerHTML =`[${x},${y}]`;
+			}
 			const bs = [
 				{
 					"id":1,
@@ -6039,7 +6089,18 @@ const gc4SoEditor = function(){
 					"id":4,
 					"name":"fromTa",
 					"clickOnMe": function(d){
+						op = null;
 						soScript = blo0.blGetTa().value;
+					},
+					"color": "pink",
+					"float": "left"
+				},
+				{
+					"id":5,
+					"name":"runScript", 
+					"clickOnMe": function(d){
+						bRunScript = bRunScript?false:true;
+						d.innerHTML = bRunScript;
 					},
 					"color": "pink",
 					"float": "left"
@@ -6056,7 +6117,8 @@ const gc4SoEditor = function(){
 			} 
 		};
 
-		this.drawEffect = function(ctx){
+		this.drawEffect = function(cvs){
+			var ctx = cvs.getContext("2d");
 			nTick++;
 			ctx.fillText("soe1: nTick = " + nTick,x1,y1 + 10);
 			ctx.fillText("mx1y1: [" + mx1 + "," + my1 + "]",x1,y1 + 20);
@@ -6068,6 +6130,14 @@ const gc4SoEditor = function(){
 			ctx.fillStyle = "green";
 			ctx.fillText("soe2",x2,y2);
 
+			if(Math.abs(mx-mx2)<0.1){
+				mx = mx2;
+				mx2 = mx1;
+				mx1 = mx;
+				my = my2;
+				my2 = my1;
+				my1 = my;
+			}
 			var dx = 0; 
 			if(mx2>mx1) {
 				if(mx>mx2) 	dx = -2;
@@ -6083,7 +6153,23 @@ const gc4SoEditor = function(){
 
 			ctx.fillStyle = "blue";
 			ctx.fillRect(mx+x1,my+y1,5,5); 
+			if(vCanStatus&&vCanStatus.updateMsg) vCanStatus.updateMsg(mx,my);
+
+			_2RunScript(cvs);
+		}
+		
+		const _2RunScript = function(cvs){
+			if(!bRunScript) return;
+			var ctx = cvs.getContext("2d");
+			ctx.fillStyle = "green";
+			ctx.fillRect(mx+x1+5,my+y1+5,5,5); 
 			
+			if(op==null) op = blo0.blWrapPlx(cvs,soScript,x1,y1);
+			ctx.fillText("_2RunScript: nTick="+nTick + "byPlx="+op.callPlx (nTick,mx,my),mx+x1+10,my+my-40);	 
+
+		}
+		this.setOSXY = function(x,y){
+			if(op) op.setPlxXY(x,y);
 		}
 		this.downSOEditor = function(x,y){
 			nMDown++;
@@ -6101,6 +6187,7 @@ const gc4SoEditor = function(){
 				my = my1;
 			}
 		}
+		
 
 	};
 	const osoe = new _C4SoEditor();
@@ -6134,7 +6221,7 @@ const gc4SoEditor = function(){
 		ctx.font = "10px Arial";
 		ctx.fillText(soName, x1,y1);
 		
-		osoe.drawEffect(ctx);
+		osoe.drawEffect(cvs);
 
 		ctx.fillStyle = oldStyle;
 
@@ -6169,6 +6256,7 @@ const gc4SoEditor = function(){
 	
 			ex1 = ex2;
 			ey1 = ey2;
+			osoe.setOSXY(x1,y1);
 	
 		}
 	}
@@ -6199,28 +6287,10 @@ const gc4BLS = function(){
 	var lsFrame = [];
 	var pt = "";
     var op = null;
-	const wrapPlx = function(cvs,_pt){
-		var pt2 = _pt.replace("myCanvas",cvs.id);
-		var s = "var CBlsPlx = function(cvs){";
-		s += '       var ctx = cvs.getContext("2d");';
-		s += '       var nc = 0;';
-		s +=         pt2;
-		s += "       this.v = 123;";
-		s += "       this.callPlx = function(n,x,y){";
-		s += '          if(1){'
-		s += '          	nc++;';
-		s += '          	ctx.fillText("nc=" + nc,x,y-60);';
-		s += "          	animateFrame(n);";
-		s += '          }'; 
-		s += '          return n;';
-	    s += '        };';		
-		s += "    }";
-		eval(s);
-		return new CBlsPlx(cvs);  
-	}
+	
 	const soDraw = function(cvs,n,x,y){
 		var ctx = cvs.getContext("2d");	
-		if(null==op) op = wrapPlx(cvs,pt);
+		if(null==op) op = blo0.blWrapPlx(cvs,pt);
 		ctx.fillText("soDraw: n="+n + "byPlx="+op.callPlx (n,x,y),x,y-40);	  
 	}
 	  
