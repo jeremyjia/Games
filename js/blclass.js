@@ -2755,18 +2755,40 @@ function CBlClass ()
 						var d = c[0]+"/"+c[1]+"/"+c[2];
 
 						var e = a[1].split(d); 
-						const url51voa = "https://51voa.com";
+						const url51voa = "https://www.51voa.com";
 						var s = "";
 						for(var i=0; i<e.length-1;i++){
 							s += "<br>";
 							var f = e[i].split('href="'); 
 							var sPage = "";
+							var ls = [];
 							for(var j=1; j<f.length;j++){
 								var g = f[j].split("</a>");
-								sPage += '<a href="' +url51voa + g[0]+'</a> * ';
+								sPage += '<a '; 
+								sPage += ' href="' +url51voa + g[0]+'</a> * ';
+								ls.push(url51voa + g[0]);
 							}
-							var dPage = blco1.blDiv(vNew,vNew.id+i,sPage,"lightgreen");
-							blco1.blBtn(dPage,dPage.id+"downloadPage","download","gray");
+							var dPage = blco1.blDiv(vNew,vNew.id+i+"dPage",sPage,"lightgreen"); 
+							var v4dl = blco1.blDiv(vNew,vNew.id+i+"v4dl","v4dl","lightblue"); 
+							var btnDlPage = blco1.blBtn(dPage,dPage.id+"downloadPage","download","green");
+							btnDlPage.onclick = function(_i,_v,_ls){
+								return function(){
+									var a = _ls[_ls.length-1];
+									var b = a.split('" target="_blank"');
+									_v.innerHTML = b[0];
+									blo0.srcPage = b[0];
+									
+									const svrAPI = "http://localhost:8080/download";
+									const srcURL = b[0];
+									const fn = "51voa_page_" + _i +".html";
+									var w = {};
+									w._2do = function(txt){
+										_v.innerHTML = txt;
+									};
+									var url = svrAPI + "?url="+ srcURL + "&filename="+ fn; 
+									blo0.blAjx(w,url);
+								}
+							}(i,v4dl,ls);
 						}
 
 						vDate.innerHTML = b[0]; 
