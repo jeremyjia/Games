@@ -2698,8 +2698,7 @@ function CBlClass ()
 		return o;
 	}
 	this.C4AutoRun = function(){	
-		const blco1 = this; 
-		const ver = "4AutoRun_v0.14";
+		const blco1 = this;  
 		var tb = null,v=null; 
 		var ls = [];
 		var lock4Run 	= blco1.blLock();
@@ -2708,6 +2707,21 @@ function CBlClass ()
 			var o = {};
 			o.uiBuild = function(d){
 				tb = blco1.blDiv(d,"tb_4_AutoRun","tb","gray");
+				tb.downloadPage = function(_url,_filename,_v){ 
+					const o = tb.getObj();
+					const t = blo0.blTask();
+					const svrAPI = "http://localhost:8080/download";  
+					var i = blo0.blDownloadTask(svrAPI ,_url,_filename,_v); 
+					t.setInfo(i);
+					o.addTask(t);
+				};
+				tb.parsePage = function(_url,_v,cbfParse){ 
+					const o = tb.getObj();
+					const t = blo0.blTask();
+					var i = blo0.blParseTask(_url,_v,cbfParse);
+					t.setInfo(i);
+					o.addTask(t);
+				};
 				const lv = blco1.blDiv(d,"lv_4_AutoRun","-","green");
 				v = blco1.blDiv(d,"v_4_AutoRun","v","lightgray");	
 				
@@ -2720,82 +2734,78 @@ function CBlClass ()
 				btnCurTask.onclick = function(){
 					lock4Run.unlock();
 				}
-				const btn_51voaIndex = blco1.blBtn(v,v.id+"btn_51voaIndex","51voaIndex","lightblue");
-				btn_51voaIndex.style.float = "left";
-				btn_51voaIndex.style.color = "white";
-				btn_51voaIndex.onclick = function(){
-					const tb = bl$("tb_4_AutoRun");
-					const v = bl$("vTask");
-					const o = tb.getObj();
-					const t = blo0.blTask();
-					const svrAPI = "http://localhost:8080/download";
-					const srcURL = "https://www.51voa.com/";
-					const fn = "51voa_Index.html";
-					var i = blo0.blDownloadTask(svrAPI ,srcURL,fn,v); 
-					t.setInfo(i);
-					o.addTask(t);
-				}
-				const btn_parse_51voaIndex = blco1.blBtn(v,v.id+"btn_parse_51voaIndex","parse_51voaIndex","lightblue");
-				btn_parse_51voaIndex.style.float = "left";
-				btn_parse_51voaIndex.style.color = "white";
-				btn_parse_51voaIndex.onclick = function(){
-					const tb = bl$("tb_4_AutoRun");
-					const v = bl$("vTask");
-					const o = tb.getObj();
-					const t = blo0.blTask();
-					const srcURL = "http://localhost:8080/51voa_Index.html"; 
-					var i = blo0.blParseTask(srcURL,v,function(v,txt){
-						v.innerHTML = "";
-						const lv1 = blco1.blDiv(v,v.id+"lv1","lv1","blue");
-						const vDate = blco1.blDiv(v,v.id+"vDate","date","lightgreen");
-						const vNew = blco1.blDiv(v,"id4vParse","new","lightblue");
-						var a = txt.split('更新时间：');
-						var b = a[1].split('）');
-						var c = b[0].split('-');
-						var d = c[0]+"/"+c[1]+"/"+c[2];
-
-						var e = a[1].split(d); 
-						const url51voa = "https://www.51voa.com";
-						var s = "";
-						for(var i=0; i<e.length-1;i++){
-							s += "<br>";
-							var f = e[i].split('href="'); 
-							var sPage = "";
-							var ls = [];
-							for(var j=1; j<f.length;j++){
-								var g = f[j].split("</a>");
-								sPage += '<a '; 
-								sPage += ' href="' +url51voa + g[0]+'</a> * ';
-								ls.push(url51voa + g[0]);
+				const makeTasks = function(){
+					const tasks = [
+						{
+							"id":1,
+							"name":"dl-51voaIndex",
+							"runTask":function(){
+								const tb = bl$("tb_4_AutoRun");
+								tb.downloadPage("https://www.51voa.com/","51voa_Index.html",bl$("vTask"));		
+							},
+							"color":"Violet",
+							"float":"right"
+						},
+						{
+							"id":2,
+							"name":"parse-51voaIndex",
+							"runTask":function(){
+								const tb = bl$("tb_4_AutoRun");
+								tb.parsePage("http://localhost:8080/51voa_Index.html",bl$("vTask"),function(v,txt){
+									v.innerHTML = "";
+									const lv1 = blco1.blDiv(v,v.id+"lv1","lv1","blue");
+									const vDate = blco1.blDiv(v,v.id+"vDate","date","lightgreen");
+									const vNew = blco1.blDiv(v,"id4vParse","new","lightblue");
+									var a = txt.split('更新时间：');
+									var b = a[1].split('）');
+									var c = b[0].split('-');
+									var d = c[0]+"/"+c[1]+"/"+c[2];
+	
+									var e = a[1].split(d); 
+									const url51voa = "https://www.51voa.com";
+									var s = "";
+									for(var i=0; i<e.length-1;i++){
+										s += "<br>";
+										var f = e[i].split('href="'); 
+										var sPage = "";
+										var ls = [];
+										for(var j=1; j<f.length;j++){
+											var g = f[j].split("</a>");
+											sPage += '<a '; 
+											sPage += ' href="' +url51voa + g[0]+'</a> * ';
+											ls.push(url51voa + g[0]);
+										}
+										var dPage = blco1.blDiv(vNew,vNew.id+i+"dPage",sPage,"lightgreen"); 
+										var v4dl = blco1.blDiv(vNew,vNew.id+i+"v4dl","v4dl","lightblue"); 
+										var btnDlPage = blco1.blBtn(dPage,dPage.id+"btnDlPage","download","green");
+										btnDlPage.onclick = function(_i,_v,_ls){
+											return function(){
+												var a = _ls[_ls.length-1];
+												var b = a.split('" target="_blank"');
+												_v.innerHTML = b[0]; 
+												const tb = bl$("tb_4_AutoRun");
+												tb.downloadPage(b[0],"51voa_page_" + _i + ".html",_v);	
+												
+											}
+										}(i,v4dl,ls);
+									}
+	
+									vDate.innerHTML = b[0]; 
+								});	
+							},
+							"color":"Purple",
+							"float":"right"
+						},
+					];
+					for(i in tasks){
+						const b = blco1.blBtn(v,v.id+tasks[i].id,tasks[i].name,tasks[i].color);
+						b.onclick = function(_i){
+							return function(){
+								tasks[_i].runTask();
 							}
-							var dPage = blco1.blDiv(vNew,vNew.id+i+"dPage",sPage,"lightgreen"); 
-							var v4dl = blco1.blDiv(vNew,vNew.id+i+"v4dl","v4dl","lightblue"); 
-							var btnDlPage = blco1.blBtn(dPage,dPage.id+"downloadPage","download","green");
-							btnDlPage.onclick = function(_i,_v,_ls){
-								return function(){
-									var a = _ls[_ls.length-1];
-									var b = a.split('" target="_blank"');
-									_v.innerHTML = b[0];
-									blo0.srcPage = b[0];
-									
-									const svrAPI = "http://localhost:8080/download";
-									const srcURL = b[0];
-									const fn = "51voa_page_" + _i +".html";
-									var w = {};
-									w._2do = function(txt){
-										_v.innerHTML = txt;
-									};
-									var url = svrAPI + "?url="+ srcURL + "&filename="+ fn; 
-									blo0.blAjx(w,url);
-								}
-							}(i,v4dl,ls);
-						}
-
-						vDate.innerHTML = b[0]; 
-					}); 
-					t.setInfo(i);
-					o.addTask(t);
-				}
+						}(i);
+					}
+				}(); 
 
 				lock4Run.unlock();
 				blco1.blTimer(1000,1000,function(tl){
@@ -2830,8 +2840,7 @@ function CBlClass ()
 			return o;
 		};
 		const rAutoRun = new f();
-		return rAutoRun;
-		
+		return rAutoRun;		
 	}
 	this.C4Canvas = function(d,w,h,initColor){
 		function _blCanvas(d,w,h){
