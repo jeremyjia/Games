@@ -2585,7 +2585,28 @@ function CBlClass ()
 		const o = new C4ParseTask(_srcURL,_vRes,_cbParse);
 		return o;
 	}
-	this.blDownloadTask = function(_svrAPI,_srcURL,_saveAsFileName,_vRes){		
+	this.blMp3Lrc2VideoTask = function(mp3URL,lrcURL,v,cbWork){
+		const C4Mp3Lrc2Video = function(mp3URL,lrcURL,v,cbWork){
+			const o = {};
+			o.mp3 = mp3URL; 
+			o.lrc = lrcURL;
+			var b = false;
+			var s = "mp3 & lrc -> video";
+			this.type = blc_4_t_MP3LRC2VIDEO;
+			
+			this.done = function(){return b;};
+			this.status = function(){return s;};
+			this.bl2Do = function(){	
+				setTimeout(() => {
+					cbWork(v,o);
+					b = true;
+				}, 2222);	 
+			};
+		}
+		const o = new C4Mp3Lrc2Video(mp3URL,lrcURL,v,cbWork);
+		return o;
+	}
+	this.blDownloadTask = function(_svrAPI,_srcURL,_saveAsFileName,_vRes,_cbOK){		
 		const C4Download = function(_svrAPI,_srcURL,_saveAsFileName,_vRes){
 			const svrAPI = _svrAPI;
 			const srcURL = _srcURL;
@@ -2612,6 +2633,7 @@ function CBlClass ()
 					else{
 						vRes.innerHTML =  n + " " + txt; 
 						b = true; 
+						_cbOK(vRes,txt);
 					}
 				}
 				blo0.blAjx(w,url);		 
@@ -2657,6 +2679,8 @@ function CBlClass ()
 					if(blc_4_t_DOWNLOAD==inf.type)	s += "t = blc_4_t_DOWNLOAD";
 					if(blc_4_t_PARSE==inf.type)	s += "t = blc_4_t_PARSE";
 					if(blc_4_t_IDLE==inf.type)	s += "t = blc_4_t_IDLE";
+					if(blc_4_t_MP3LRC2VIDEO==inf.type)	s += "t = blc_4_t_MP3LRC2VIDEO";
+					
 				}
 				else 	s+= "t = unkown";
 				return s;
@@ -2719,29 +2743,38 @@ function CBlClass ()
 		var f = function(){
 			var o = {};
 			o.uiBuild = function(d){
-				tb = blco1.blDiv(d,"tb_4_AutoRun","tb","gray");
-				tb.waitSomeTime = function(secTime){
-					const o = tb.getObj();
-					const t = blco1.blTask();
-					var i = blco1.blIdleTask(secTime);
-					t.setInfo(i);
-					o.addTask(t);
-				}
-				tb.downloadPage = function(_url,_filename,_v){ 
-					const o = tb.getObj();
-					const t = blco1.blTask();
-					const svrAPI = "http://localhost:8080/download";  
-					var i = blco1.blDownloadTask(svrAPI ,_url,_filename,_v); 
-					t.setInfo(i);
-					o.addTask(t);
-				};
-				tb.parsePage = function(_url,_v,cbfParse){ 
-					const o = tb.getObj();
-					const t = blco1.blTask();
-					var i = blco1.blParseTask(_url,_v,cbfParse);
-					t.setInfo(i);
-					o.addTask(t);
-				};
+				const makeAutoRunTaskTb = function(){
+					tb = blco1.blDiv(d,"tb_4_AutoRun","tb","gray");
+					tb.createVideo = function(mp3,lrc,v,cb){
+						const o = tb.getObj();
+						const t = blco1.blTask();
+						var i = blco1.blMp3Lrc2VideoTask(mp3,lrc,v,cb);
+						t.setInfo(i);
+						o.addTask(t); 
+					}
+					tb.waitSomeTime = function(secTime){
+						const o = tb.getObj();
+						const t = blco1.blTask();
+						var i = blco1.blIdleTask(secTime);
+						t.setInfo(i);
+						o.addTask(t);
+					}
+					tb.downloadPage = function(_url,_filename,_v,_cb){ 
+						const o = tb.getObj();
+						const t = blco1.blTask();
+						const svrAPI = "http://localhost:8080/download";  
+						var i = blco1.blDownloadTask(svrAPI ,_url,_filename,_v,_cb); 
+						t.setInfo(i);
+						o.addTask(t);
+					};
+					tb.parsePage = function(_url,_v,cbfParse){ 
+						const o = tb.getObj();
+						const t = blco1.blTask();
+						var i = blco1.blParseTask(_url,_v,cbfParse);
+						t.setInfo(i);
+						o.addTask(t);
+					};
+				}();
 				const lv = blco1.blDiv(d,"lv_4_AutoRun","-","green");
 				v = blco1.blDiv(d,"v_4_AutoRun","v","lightgray");	
 				
@@ -2757,10 +2790,60 @@ function CBlClass ()
 				const makeTasks = function(){
 					const tasks = [
 						{
+							"id":-2,
+							"name":"mp3Lrc2Video",
+							"runTask":function(){ 
+								tb.createVideo(
+									"https://files.51voa.cn/202212/scientists-study-oldest-known-dna.mp3",
+									"https://www.51voa.com/lrc/202212/scientists-study-oldest-known-dna.lrc",
+									bl$("vTask"),
+									function(_v,_o){
+										_v.innerHTML = JSON.stringify(_o);
+										var url = "http://localhost:8080/image/json2video?script=video.json&video=xd1.mp4"; 
+										_v._2do = function(txt){
+											_v.innerHTML = txt;
+											const refactorPage = function(){
+												var tl = [1.0,2.0,3.0,4.0,5.0,6.0];
+												
+												function createBtn(dtl,ddbg,id,video) {  
+													var btn = document.createElement("button");
+													btn.id = id;
+													btn.innerHTML = id;  
+													btn.onclick = function(){ 
+														ddbg.innerHTML = this.id; 
+														video.currentTime = this.id;
+													} 
+													dtl.appendChild(btn);
+													return btn;
+												}
+												
+												bl$("btnPlay").onclick = function play() {
+													var video = document.getElementById("id_4_video");
+													video.play();
+												} 
+												bl$("btn2createToolbar").onclick = function createToolbar() { 
+													var video = document.getElementById("id_4_video");
+													var dtl = document.getElementById("id4toolbar");
+													var ddbg = document.getElementById("id4Debug");
+													if(!dtl.done){
+													dtl.done = true;
+													for(i in tl){
+														createBtn(dtl,ddbg,tl[i],video);     
+													}     
+													}
+												} 
+											}();
+										};
+										blo0.blAjx(_v,url);
+								});		
+							},
+							"color":"lightgreen",
+							"float":"right"
+						},
+						{
 							"id":-1,
 							"name":"wait-2s",
-							"runTask":function(){
-								const tb = bl$("tb_4_AutoRun");
+							"runTask":function(){ 
 								tb.waitSomeTime(2);		
 							},
 							"color":"gray",
@@ -2769,9 +2852,11 @@ function CBlClass ()
 						{
 							"id":1,
 							"name":"dl-51voaIndex",
-							"runTask":function(){
-								const tb = bl$("tb_4_AutoRun");
-								tb.downloadPage("https://www.51voa.com/","51voa_Index.html",bl$("vTask"));		
+							"runTask":function(){ 
+								tb.downloadPage("https://www.51voa.com/","51voa_Index.html",bl$("vTask"),
+									function(_v,txt){
+										_v.innerHTML = txt;
+								});		
 							},
 							"color":"Violet",
 							"float":"right"
@@ -2779,8 +2864,7 @@ function CBlClass ()
 						{
 							"id":2,
 							"name":"parse-51voaIndex",
-							"runTask":function(){
-								const tb = bl$("tb_4_AutoRun");
+							"runTask":function(){ 
 								tb.parsePage("http://localhost:8080/51voa_Index.html",bl$("vTask"),function(v,txt){
 									v.innerHTML = "";
 									const lv1 = blco1.blDiv(v,v.id+"lv1","lv1","blue");
@@ -2807,15 +2891,36 @@ function CBlClass ()
 										}
 										var dPage = blco1.blDiv(vNew,vNew.id+i+"dPage",sPage,"lightgreen"); 
 										var v4dl = blco1.blDiv(vNew,vNew.id+i+"v4dl","v4dl","lightblue"); 
-										var btnDlPage = blco1.blBtn(dPage,dPage.id+"btnDlPage","download","green");
+										var btnDlPage = blco1.blBtn(dPage,dPage.id+"btnDlPage","DlPage","green");
 										btnDlPage.onclick = function(_i,_v,_ls){
 											return function(){
 												var a = _ls[_ls.length-1];
 												var b = a.split('" target="_blank"');
 												_v.innerHTML = b[0]; 
 												const tb = bl$("tb_4_AutoRun");
-												tb.downloadPage(b[0],"51voa_page_" + _i + ".html",_v);	
-												
+												tb.downloadPage(b[0],"51voa_page_" + _i + ".html",_v,
+													function(_v,txt){
+														_v.innerHTML = "";
+														const r = JSON.parse(txt);
+														tb.parsePage("http://localhost:8080/"+r.filename,_v,
+														  function(v,pageText){
+															v.innerHTML = "";
+															const ls = function(t){
+																const _txt = t;
+																var a = _txt.split('<a id="mp3" href="');
+																var b = a[1].split('"></a>');
+																var s = {};
+																s.mp3 = b[0];
+																  
+																a = _txt.split('<a id="lrc" href="');
+																b = a[1].split('"></a>');
+																s.lrc = "https://www.51voa.com" + b[0];
+																return s;
+															}(pageText);
+															
+															v.innerHTML = JSON.stringify(ls);
+														  }); 
+												});												
 											}
 										}(i,v4dl,ls);
 									}
@@ -2827,8 +2932,10 @@ function CBlClass ()
 							"float":"right"
 						},
 					];
+					const v4Tasks0 = blco1.blDiv(v,v.id+"v4Tasks0","v4Tasks0","white");
+					const v4Tasks1 = blco1.blDiv(v,v.id+"v4Tasks1","v4Tasks1","gray");
 					for(i in tasks){
-						const b = blco1.blBtn(v,v.id+tasks[i].id,tasks[i].name,tasks[i].color);
+						const b = blco1.blBtn(v4Tasks1,v4Tasks1.id+tasks[i].id,tasks[i].name,tasks[i].color);
 						b.onclick = function(_i){
 							return function(){
 								tasks[_i].runTask();
@@ -7245,6 +7352,7 @@ const gc4BLS = function(){
 }
 
 
-const 			blc_4_t_IDLE = 0;
-const 			blc_4_t_DOWNLOAD = 1;
-const 			blc_4_t_PARSE = 2;
+const 			blc_4_t_IDLE 			= 0;
+const 			blc_4_t_DOWNLOAD 		= 1;
+const 			blc_4_t_PARSE 			= 2;
+const			blc_4_t_MP3LRC2VIDEO 	= 3;
