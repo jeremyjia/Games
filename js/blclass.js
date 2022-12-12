@@ -2584,6 +2584,9 @@ function CBlClass ()
 		xhttp.open("GET", url);
 		xhttp.send();
 	}
+	this.blList = function(){//xd2do1
+
+	}
 	this.blParseTask = function(_srcURL,_vRes,_cbParse){		
 		const C4ParseTask = function(_srcURL,_vRes,_cbParse){ 
 			const srcURL = _srcURL; 
@@ -2621,7 +2624,7 @@ function CBlClass ()
 			this.type = blc_4_t_MAKE_VIDEO;
 			
 			this.done = function(){return b;};
-			this.tryTimes = function(){return times2Try;};
+			this.tickLog = function(){return times2Try;};
 			this.bl2Do = function(){	 
 				var url = oi.api + "?url="+ oi.src + "&video="+ oi.fn;  
 				var w = {};
@@ -2746,7 +2749,7 @@ function CBlClass ()
 			this.type = blc_4_t_MP3LRC2BLS;
 			
 			this.done = function(){return b;};
-			this.tryTimes = function(){return nSend;};
+			this.tickLog = function(){return nSend;};
 			this.bl2Do = function(){	
 				var url = "http://localhost:8080/json?fileName=" + o.fn; 
 				nSend = 0;
@@ -2772,7 +2775,7 @@ function CBlClass ()
 			this.type = blc_4_t_DOWNLOAD;
 			
 			this.done = function(){return b;};
-			this.tryTimes = function(){return nTry;};
+			this.tickLog = function(){return nTry;};
 
 			this.bl2Do = function(){			
 				var url = svrAPI + "?url="+ srcURL + "&filename="+ fn;  
@@ -2798,14 +2801,21 @@ function CBlClass ()
 	}
 	this.blIdleTask = function(_time){
 		const C4IdleTask = function(){ 
-			var b = false;
-			var n = 0;
-			var idleTime = _time;
+			var oi = {};
+			oi.name = "Idle_Task";
+			oi.waitTime = _time + "s";
+			oi.innerTick = 0;
+			oi.nDo = 0;
+			var b = false; 
+			var idleTime = _time*1000;
 
 			this.type = blc_4_t_IDLE;
 			this.done = function(){return b;};
-			this.tryTimes = function(){return n;};
+			this.tickLog = function(){oi.innerTick++; return `${JSON.stringify(oi)}`;};
 			this.bl2Do = function(){
+				oi.nDo++;
+				if(oi.innerTick>0) return;
+
 				setTimeout(() => {
 					b = true;
 				}, idleTime);
@@ -2857,12 +2867,12 @@ function CBlClass ()
 				}
 
 				if(btn) {
-					var s = inf.tryTimes; 
+					var s = inf.tickLog; 
 					if(s==undefined){
-						s= "no tryTimes function.";
+						s= "no tickLog function.";
 					}
 					else{
-						s= inf.tryTimes(); 
+						s= inf.tickLog(); 
 						if(nTaskTick>5){
 							nTaskTick = 2;
 							inf.bl2Do();
@@ -2955,6 +2965,24 @@ function CBlClass ()
 				const makeTasks = function(){
 					const tasks = [
 						{
+						"id":-5,
+						"name":"wait_2s",
+						"runTask":function(){ 
+							tb.waitSomeTime(2);		
+						},
+						"color":"gray",
+						"float":"right"
+					},
+					{
+						"id":-4,
+						"name":"wait_5s",
+						"runTask":function(){ 
+							tb.waitSomeTime(5);		
+						},
+						"color":"gray",
+						"float":"right"
+					},
+						{
 							"id":-3,
 							"name":"createBLS",
 							"runTask":function(){ 
@@ -2983,15 +3011,7 @@ function CBlClass ()
 							"color":blco1.c(12),
 							"float":"right"
 						},
-						{
-							"id":-1,
-							"name":"wait-2s",
-							"runTask":function(){ 
-								tb.waitSomeTime(2);		
-							},
-							"color":"gray",
-							"float":"right"
-						},
+						
 						{
 							"id":1,
 							"name":"dl-51voaIndex",
