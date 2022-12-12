@@ -2450,14 +2450,19 @@ function CBlClass ()
 		}
 	}
 	this.blPOST = function(_url,_jsonData,_cb){  
+		var r = {};
 		var xhr = new XMLHttpRequest();
 		xhr.withCredentials = true;
 		xhr.addEventListener("readystatechange", function() {
 			if(this.readyState === 4 && this.status==200) {
-				_cb( this.responseText );
+				r.responseText = this.responseText;
+				r.status = 1;
+				_cb(r);
 			}	
 			else{
-				_cb("error: " + this.readyState + "," + this.status);
+				r.error = "error: " + this.readyState + "," + this.status;
+				r.status = 0;
+				_cb(r);
 			}
 		});
 		xhr.open("POST", _url);
@@ -2465,14 +2470,25 @@ function CBlClass ()
 		xhr.send(JSON.stringify(_jsonData));
 	}	
 	this.blSendTextByPOST = function(_url,txt,_cb){  
+		var r = {};
 		var xhr = new XMLHttpRequest();
 		xhr.withCredentials = true;
 		xhr.addEventListener("readystatechange", function() {
 			if(this.readyState === 4 && this.status==200) {
-				_cb( this.responseText );
+				r.responseText = this.responseText;
+				r.status = 1;
+				_cb(r);
 			}	
+			else if(this.readyState === 4 && this.status==0){ 
+				r.responseText = this.responseText;
+				r.status = 2;
+				r.errorMsg = "xhr: " + this.readyState + "," + this.status;
+				_cb(r);
+			} 
 			else{
-				_cb("error: " + this.readyState + "," + this.status);
+				r.status = 0;
+				r.errorMsg = "xhr: " + this.readyState + "," + this.status;
+				_cb(r);
 			}
 		});
 		xhr.open("POST", _url);
@@ -2603,14 +2619,14 @@ function CBlClass ()
 		const o = new CBls2Video(src,v,cbWork);
 		return o;
 	}
-	this.blMakeBlsTask = function(mp3,lrc,v,cbWork){
-		const CMakeBlsTask = function(mp3,lrc,v,cbWork){
+	this.blMakeBlsTask = function(mp3,lrc,v,cbSendOK){
+		const CMakeBlsTask = function(mp3,lrc,v,cbSendOK){
 			const o = {};
 			o.mp3 = mp3;  
 			o.lrc = lrc;
 			o.fn  = "bls1.json";
 			var b = false;
-			var s = "mp3 & lrc -> BLS";
+			var nSend = 0;
 			const blsJSON = function(){
 				const blos = {
 					"request": {
@@ -2704,18 +2720,18 @@ function CBlClass ()
 			this.type = blc_4_t_MP3LRC2BLS;
 			
 			this.done = function(){return b;};
-			this.status = function(){return s;};
+			this.tryTimes = function(){return nSend;};
 			this.bl2Do = function(){	
 				var url = "http://localhost:8080/json?fileName=" + o.fn; 
-
-				blo0.blSendTextByPOST(url,JSON.stringify(blsJSON),function(resTxt){
-					b = true;
-					v.innerHTML = "<a href ='http://localhost:8080/" + o.fn+"' target='_blank'>" + o.fn+"</a>";
-					cbWork(v,o);
+				nSend = 0;
+				blo0.blPOST(url,blsJSON,function(oReturn){
+					nSend++;
+					 
+					v.innerHTML = `nSend=${nSend}  , oReturn=${JSON.stringify(oReturn)}`; 
 				}); 	 
 			};
 		}
-		const o = new CMakeBlsTask(mp3,lrc,v,cbWork);
+		const o = new CMakeBlsTask(mp3,lrc,v,cbSendOK);
 		return o;
 	}
 	this.blDownloadTask = function(_svrAPI,_srcURL,_saveAsFileName,_vRes,_cbOK){		
@@ -2725,25 +2741,25 @@ function CBlClass ()
 			const fn = _saveAsFileName;
 			const vRes = _vRes;
 			var b = false;
-			var n = 0;
+			var nTry = 0;
 
 			this.type = blc_4_t_DOWNLOAD;
 			
 			this.done = function(){return b;};
-			this.status = function(){return n;};
+			this.tryTimes = function(){return nTry;};
 
 			this.bl2Do = function(){			
 				var url = svrAPI + "?url="+ srcURL + "&filename="+ fn;  
 				var w = {};
-				n = 0;
+				nTry = 0;
 				w._2do = function(txt){ 
-					n++;
+					nTry++;
 					if("error xd 11"==txt){
-						vRes.innerHTML = n + " rs: not 4 && not 200. " + Date(); 
+						vRes.innerHTML = `nTry=${nTry} rs: not 4 && not 200.` ; 
 						b = false;
 					}
 					else{
-						vRes.innerHTML =  n + " " + txt; 
+						vRes.innerHTML = `nTry=${nTry} ${txt}`; 
 						b = true; 
 						_cbOK(vRes,txt);
 					}
@@ -2762,7 +2778,7 @@ function CBlClass ()
 
 			this.type = blc_4_t_IDLE;
 			this.done = function(){return b;};
-			this.status = function(){return n;};
+			this.tryTimes = function(){return n;};
 			this.bl2Do = function(){
 				setTimeout(() => {
 					b = true;
@@ -2774,7 +2790,7 @@ function CBlClass ()
 	}
 	this.blTask = function(){		
 		const C4Task = function(){
-			var n = 0;
+			var nTaskTick = 0;
 			var btn = null;
 			var inf = null;
 
@@ -2786,7 +2802,7 @@ function CBlClass ()
 			}
 			this.getInfo = function(){
 				var s = "";
-				s += n + "<br>";
+				s += nTaskTick + "<br>";
 				if(inf){
 					if(blc_4_t_DOWNLOAD==inf.type)	s += "t = blc_4_t_DOWNLOAD";
 					if(blc_4_t_PARSE==inf.type)	s += "t = blc_4_t_PARSE";
@@ -2802,8 +2818,8 @@ function CBlClass ()
 				if(l.lock) l.lock();
 			}
 			this.doing = function(l){
-				n++;
-				if(n==1){
+				nTaskTick++;
+				if(nTaskTick==1){
 					inf.bl2Do();
 				}
 				if(inf.done()){
@@ -2815,17 +2831,18 @@ function CBlClass ()
 				}
 
 				if(btn) {
-					var s = inf.status; 
+					var s = inf.tryTimes; 
 					if(s==undefined){
-						s= "no status function.";
+						s= "no tryTimes function.";
 					}
 					else{
-						s= inf.status(); 
-						if(s==2){
+						s= inf.tryTimes(); 
+						if(nTaskTick>5){
+							nTaskTick = 2;
 							inf.bl2Do();
 						}
 					}
-					btn.innerHTML = n + ": s=" + s;
+					btn.innerHTML = `nTaskTick=${nTaskTick} nTry=${s}`;
 				}
 			}
 		}
@@ -2895,14 +2912,16 @@ function CBlClass ()
 						o.addTask(t);
 					};
 				}();
-				const lv = blco1.blDiv(d,"lv_4_AutoRun","-","green");
-				v = blco1.blDiv(d,"v_4_AutoRun","v","lightgray");	
+				const lv1 = blco1.blDiv(d,"lv1_4_AutoRun","-","green");
+				const lv2 = blco1.blDiv(d,"lv2_4_AutoRun","-","Plum");
+				v = blco1.blDiv(d,"v_4_AutoRun","v","Pink");	
 				
 				vTask = blco1.blDiv(d,"vTask","vTask","lightblue");	
-				const btnTimer = blco1.blBtn(v,v.id+"btnTimer","btnTimer","yellow");
-				btnTimer.style.float = "left";
+				const btnTimer = blco1.blBtn(v,v.id+"btnTimer","btnTimer","green");
+				btnTimer.style.float = "right";
+				btnTimer.style.color = "white";
 				const btnCurTask = blco1.blBtn(v,v.id+"btnCurTask","btnCurTask","brown");
-				btnCurTask.style.float = "left";
+				btnCurTask.style.float = "right";
 				btnCurTask.style.color = "white";
 				btnCurTask.onclick = function(){
 					lock4Run.unlock();
@@ -2963,7 +2982,7 @@ function CBlClass ()
 								});		
 							},
 							"color":"skyblue",
-							"float":"right"
+							"float":"left"
 						},
 						{
 							"id":-2,
