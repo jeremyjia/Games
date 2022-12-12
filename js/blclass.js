@@ -2607,22 +2607,42 @@ function CBlClass ()
 		const o = new C4ParseTask(_srcURL,_vRes,_cbParse);
 		return o;
 	}
-	this.blBls2VideoTask = function(src,v,cbWork){
-		const CBls2Video = function(src,v,cbWork){
-			const o = {};
-			o.src = src;   
+	this.blBls2VideoTask = function(blsSrc,videoName,v,cbWork){
+		const CBls2Video = function(blsSrc,videoName,v,cbWork){
+			const oi = {};
+			oi.api = "http://localhost:8080/image/json2video?script=";
+			oi.fn = videoName;
+			oi.src = blsSrc;   
+			oi.v = v;
+
 			var b = false;
+
 			var times2Try = 0;
 			this.type = blc_4_t_MAKE_VIDEO;
 			
 			this.done = function(){return b;};
 			this.tryTimes = function(){return times2Try;};
-			this.bl2Do = function(){	
-				times2Try++; 
-				cbWork(v,o);
+			this.bl2Do = function(){	 
+				var url = oi.api + "?url="+ oi.src + "&video="+ oi.fn;  
+				var w = {};
+				times2Try = 0; 
+				w._2do = function(txt){ 
+					times2Try++;
+					if("error xd 11"==txt){
+						oi.v.innerHTML = `times2Try=${times2Try} rs: not 4 && not 200.` ; 
+						b = false;
+					}
+					else{
+						oi.v.innerHTML = `times2Try=${times2Try} ${txt}`; 
+						oi.responseText;
+						cbWork(oi.v,oi);
+						b = true; 
+					}
+				}
+				blo0.blAjx(w,url);	
 			};
 		}
-		const o = new CBls2Video(src,v,cbWork);
+		const o = new CBls2Video(blsSrc,videoName,v,cbWork);
 		return o;
 	}
 	this.blMakeBlsTask = function(mp3,lrc,v,cbSendOK){
@@ -2888,10 +2908,10 @@ function CBlClass ()
 						t.setInfo(i);
 						o.addTask(t); 
 					}
-					tb.createVideo = function(src,v,cb){
+					tb.createVideo = function(blsSrc,fnVideo,v,cb){
 						const o = tb.getObj();
 						const t = blco1.blTask();
-						var i = blco1.blBls2VideoTask(src,v,cb);
+						var i = blco1.blBls2VideoTask(blsSrc,fnVideo,v,cb);
 						t.setInfo(i);
 						o.addTask(t); 
 					}
@@ -2943,48 +2963,7 @@ function CBlClass ()
 									"https://www.51voa.com/lrc/202212/scientists-study-oldest-known-dna.lrc",
 									bl$("vTask"),
 									function(_v,_o){
-										tb.createVideo(
-											_o.fn,
-											bl$("vTask"),
-											function(_v,_o){
-												_v.innerHTML = JSON.stringify(_o);
-												var url = "http://localhost:8080/image/json2video?script="+_o.src+"&video=xd1.mp4"; 
-												_v._2do = function(txt){
-													_v.innerHTML = txt;
-													const refactorPage = function(){
-														var tl = [1.0,2.0,3.0,4.0,5.0,6.0];
-														
-														function createBtn(dtl,ddbg,id,video) {  
-															var btn = document.createElement("button");
-															btn.id = id;
-															btn.innerHTML = id;  
-															btn.onclick = function(){ 
-																ddbg.innerHTML = this.id; 
-																video.currentTime = this.id;
-															} 
-															dtl.appendChild(btn);
-															return btn;
-														}
-														
-														bl$("btnPlay").onclick = function play() {
-															var video = document.getElementById("id_4_video");
-															video.play();
-														} 
-														bl$("btn2createToolbar").onclick = function createToolbar() { 
-															var video = document.getElementById("id_4_video");
-															var dtl = document.getElementById("id4toolbar");
-															var ddbg = document.getElementById("id4Debug");
-															if(!dtl.done){
-															dtl.done = true;
-															for(i in tl){
-																createBtn(dtl,ddbg,tl[i],video);     
-															}     
-															}
-														} 
-													}();
-												};
-												blo0.blAjx(_v,url);
-										});	
+										 //to do...
 								});		
 							},
 							"color":blco1.c(13),
@@ -2992,49 +2971,13 @@ function CBlClass ()
 						},
 						{
 							"id":-2,
-							"name":"createVideo",
+							"name":"bls2MP4",
 							"runTask":function(){ 
 								tb.createVideo(
 									"video.json",
 									bl$("vTask"),
 									function(_v,_o){
-										_v.innerHTML = JSON.stringify(_o);
-										var url = "http://localhost:8080/image/json2video?script="+_o.src+"&video=xd1.mp4"; 
-										_v._2do = function(txt){
-											_v.innerHTML = txt;
-											const refactorPage = function(){
-												var tl = [1.0,2.0,3.0,4.0,5.0,6.0];
-												
-												function createBtn(dtl,ddbg,id,video) {  
-													var btn = document.createElement("button");
-													btn.id = id;
-													btn.innerHTML = id;  
-													btn.onclick = function(){ 
-														ddbg.innerHTML = this.id; 
-														video.currentTime = this.id;
-													} 
-													dtl.appendChild(btn);
-													return btn;
-												}
-												
-												bl$("btnPlay").onclick = function play() {
-													var video = document.getElementById("id_4_video");
-													video.play();
-												} 
-												bl$("btn2createToolbar").onclick = function createToolbar() { 
-													var video = document.getElementById("id_4_video");
-													var dtl = document.getElementById("id4toolbar");
-													var ddbg = document.getElementById("id4Debug");
-													if(!dtl.done){
-													dtl.done = true;
-													for(i in tl){
-														createBtn(dtl,ddbg,tl[i],video);     
-													}     
-													}
-												} 
-											}();
-										};
-										blo0.blAjx(_v,url);
+										//to do...
 								});		
 							},
 							"color":blco1.c(12),
@@ -3090,87 +3033,13 @@ function CBlClass ()
 											ls.push(url51voa + g[0]);
 										}
 										var dPage = blco1.blDiv(vNew,vNew.id+i+"dPage",sPage,"lightgreen"); 
-										var v4dl = blco1.blDiv(vNew,vNew.id+i+"v4dl","v4dl","lightblue"); 
+										var v4dl = blco1.blDiv(vNew,vNew.id+i+"v4dl","v4dl",blco1.c(15)); 
 										var btnDlPage = blco1.blBtn(dPage,dPage.id+"btnDlPage","DlPage","green");
-										btnDlPage.onclick = function(_i,_v,_ls){
+										btnDlPage.onclick =  function(_v,_i){
 											return function(){
-												var a = _ls[_ls.length-1];
-												var b = a.split('" target="_blank"');
-												_v.innerHTML = b[0]; 
-												const tb = bl$("tb_4_AutoRun");
-												tb.downloadPage(b[0],"51voa_page_" + _i + ".html",_v,
-													function(_v,txt){
-														_v.innerHTML = "";
-														const r = JSON.parse(txt);
-														tb.parsePage("http://localhost:8080/"+r.filename,_v,
-														  function(v,pageText){
-															v.innerHTML = "";
-															const ls = function(t){
-																const _txt = t;
-																var a = _txt.split('<a id="mp3" href="');
-																var b = a[1].split('"></a>');
-																var s = {};
-																s.mp3 = b[0];
-																  
-																a = _txt.split('<a id="lrc" href="');
-																b = a[1].split('"></a>');
-																s.lrc = "https://www.51voa.com" + b[0];
-																return s;
-															}(pageText);
-															
-															v.innerHTML = JSON.stringify(ls);
-															tb.createBLS(
-																ls.mp3,//"https://files.51voa.cn/202212/scientists-study-oldest-known-dna.mp3",
-																ls.lrc,//"https://www.51voa.com/lrc/202212/scientists-study-oldest-known-dna.lrc",
-																v,
-																function(_v,_o){
-																	tb.createVideo(
-																		_o.fn,
-																		bl$("vTask"),
-																		function(_v,_o){
-																			_v.innerHTML = JSON.stringify(_o);
-																			var url = "http://localhost:8080/image/json2video?script="+_o.src+"&video=xd1.mp4"; 
-																			_v._2do = function(txt){
-																				_v.innerHTML = txt;
-																				const refactorPage = function(){
-																					var tl = [1.0,2.0,3.0,4.0,5.0,6.0];
-																					
-																					function createBtn(dtl,ddbg,id,video) {  
-																						var btn = document.createElement("button");
-																						btn.id = id;
-																						btn.innerHTML = id;  
-																						btn.onclick = function(){ 
-																							ddbg.innerHTML = this.id; 
-																							video.currentTime = this.id;
-																						} 
-																						dtl.appendChild(btn);
-																						return btn;
-																					}
-																					
-																					bl$("btnPlay").onclick = function play() {
-																						var video = document.getElementById("id_4_video");
-																						video.play();
-																					} 
-																					bl$("btn2createToolbar").onclick = function createToolbar() { 
-																						var video = document.getElementById("id_4_video");
-																						var dtl = document.getElementById("id4toolbar");
-																						var ddbg = document.getElementById("id4Debug");
-																						if(!dtl.done){
-																						dtl.done = true;
-																						for(i in tl){
-																							createBtn(dtl,ddbg,tl[i],video);     
-																						}     
-																						}
-																					} 
-																				}();
-																			};
-																			blo0.blAjx(_v,url);
-																	});	
-															});	
-														  }); 
-												});												
+												_v.innerHTML = ls[_i];
 											}
-										}(i,v4dl,ls);
+										}(v4dl,i)
 									}
 	
 									vDate.innerHTML = b[0]; 
