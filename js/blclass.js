@@ -2570,19 +2570,11 @@ function CBlClass ()
 	}
 
 	 	
-	this.blCheckURL = function(url,v,cb) {
-		const xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
-		  if (this.readyState == 4 && this.status == 200) {
-			//v.innerHTML = "good";//this.responseText;
-			if(cb) cb(v);
-		  }
-		  else{
-			v.innerHTML = "cannot reach!";        
-		  }
-		};
-		xhttp.open("GET", url);
-		xhttp.send();
+	this.blCheckOnline = function(config) {
+		var img = new Image();
+        img.onload = function () { if (typeof config.success == 'function') config.success(config.url); }
+        img.onerror = function () { if (typeof config.error == 'function') config.error(config.url); }
+        img.src = config.url + (config.isImage ? '' : '/favicon.ico');
 	}
 	this.blLog = function(){//xd2do1
 
