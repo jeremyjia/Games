@@ -2584,6 +2584,9 @@ function CBlClass ()
 		xhttp.open("GET", url);
 		xhttp.send();
 	}
+	this.blLog = function(){//xd2do1
+
+	}
 	this.blList = function(){//xd2do1
 
 	}
