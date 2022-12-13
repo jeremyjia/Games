@@ -2043,15 +2043,20 @@ function CBlClass ()
         xmlhttp.send();
     }
 
-	this.blBtns = function(bs,tb,v){
+	this.blBtns = function(bs,tb,v,hc,lc){
+		var ls = [];
 		for(i in bs){
 			const btn = blo0.blBtn(tb,tb.id+bs[i].id,bs[i].name,bs[i].color);
 			btn.style.float = bs[i].float;
 			btn.onclick = function(_btn,_i,_v){
 			  return function(){
 				bs[_i].click(_btn,_v);
+				var bSkip = bs[_i].skip?bs[_i].skip:false;
+				if(!bSkip) blo0.blMarkBtnInList(_btn,ls,hc?hc:"yellow",lc?lc:"grey");
 			  }
 			}(btn,i,v);
+			var bSkip = bs[i].skip?bs[i].skip:false;
+			if(!bSkip) 			ls.push(btn);
 		  }
 	}
     this.blDiv = function (oBoss,id,html,bkClr){
@@ -2862,15 +2867,15 @@ function CBlClass ()
 		const o = new C4Download(_svrAPI,_srcURL,_saveAsFileName,_vRes);
 		return o;
 	}
-	this.blIdleTask = function(_time){
+	this.blIdleTask = function(_second){
 		const C4IdleTask = function(){ 
 			var oi = {};
 			oi.name = "Idle_Task";
-			oi.waitTime = _time + "s";
+			oi.waitTime = _second + "s";
 			oi.innerTick = 0;
 			oi.nDo = 0;
 			var b = false; 
-			var idleTime = _time*1000;
+			var idleTime = _second*1000;
 
 			this.type = blc_4_t_IDLE;
 			this.done = function(){return b;};

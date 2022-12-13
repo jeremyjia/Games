@@ -69,7 +69,7 @@
   <a href="../../index.html">Home</a>
   <a href="../index.html">issues</a>
   <a href="./index.html">index.html</a>
-  <a href="#"  class="active">testC4AutoRun v0.12</a>  
+  <a href="#"  class="active">testC4AutoRun v0.13</a>  
   <a href="javascript:void(0);" class="icon" onclick="myFunction()">
     <i class="fa fa-bars"></i>
   </a>
@@ -93,42 +93,92 @@
 
   <script> 
   bl$("id_4_btn_test").onclick = function(){
-    const CTestJob = function(){ 
-      var mainUI = null;
-      const ar = blo0.C4AutoRun(); 
+    const CTestJob = function(){  
+      const _this = this;
+      var d = null;
+      var mp = null;
+      const oar = blo0.C4AutoRun(); 
       this.showMainUI = function(){ 
-        mainUI = function(){
-            const d = blo0.blMD("id_4_md_autoRunTest","C4AutoRunTest",100,100,333,100,blo0.c(11)); 
+        const fnMainUI = function(){
+            d = blo0.blMD("id_4_md_autoRunTest","C4AutoRunTest",100,100,333,100,blo0.c(11)); 
             d.tb = blo0.blDiv(d,d.id+"tb","tb",blo0.c(12));
-            d.v = blo0.blDiv(d,d.id+"v","v",blo0.c(12)); 
-            blo0.blBtns(bs,d.tb,d.v);
+            d.v = blo0.blDiv(d,d.id+"v","v",blo0.c(12));  
+            d.v.boss = _this;
+            blo0.blBtns(lsBtn,d.tb,d.v);
             
             _on_off_div(null,d);
-          }();
-          return mainUI;
+            return d;
+          }(); 
           //
       } 
+      //
       this.getTestPanel = function(){
-        const testPanel = blo0.blMDiv(mainUI,mainUI.id+"testPanel","testPanel","lightblue");
-        const v = blo0.blDiv(testPanel,testPanel.id+"v","v","lightgreen");
-        
-        return testPanel 
+        if(mp) return mp;
+
+        mp = blo0.blMDiv(d,d.id+"testPanel","testPanel",550,50,500,400,"lightblue");
+        const v0 = blo0.blDiv(mp,mp.id+"v0","v0","gray");
+        const v = blo0.blDiv(mp,mp.id+"v","v","lightgreen");
+        oar.uiBuild(v);
+        mp.addTask = function(t){
+          oar.addTask(t);
+        }
+        return mp; 
       }
+      //
     }
+    //
     const tj = new CTestJob();
     tj.showMainUI();
   };
-  const bs = [
+  const lsWaits = [
     {
       "id":1,
-      "name": "testPanel",
+      "name":"3s",
+      "color":"gray",
+      "float":"left",
+      "click": function(b,v){
+        v.innerHTML = this.name;
+        v.s = 3;
+      }
+    },
+    {
+      "id":2,
+      "name":"4s",
+      "color":"gray",
+      "float":"left",
+      "click": function(b,v){
+        v.innerHTML = this.name;
+        v.s = 4;
+      }
+    },
+    {
+      "id":3,
+      "name":"+",
+      "color":"green",
+      "float":"right",
+      "skip": true, 
+      "click": function(b,v){
+        v.innerHTML = this.name;
+        const dp = v.boss.getTestPanel();
+        const t = blo0.blTask();
+				var i = blo0.blIdleTask(v.s?v.s:3);
+				t.setInfo(i);
+        dp.addTask(t);
+      }
+    },
+  ];
+  const lsBtn = [
+    {
+      "id":1,
+      "name": "waitTask",
       "color": blo0.c(12),
       "float": "left",
       "click": function(b,v){
           v.innerHTML = this.name;
           const tb = blo0.blDiv(v,v.id+"tb","tb","lightblue");
-          const v1 = blo0.blDiv(v,v.id+"v","v","lightgreen");
-          const ta = blo0.blTA(v1,v1.id+"ta","test..."); 
+          const v1 = blo0.blDiv(v,v.id+"v","v","lightgreen"); 
+          v1.boss = v.boss;
+          blo0.blBtns(lsWaits,tb,v1,"lightgreen","darkgreen");
       }
     },
     {
