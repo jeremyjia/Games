@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.334"
+var g_ver_blClass = "CBlClass_bv1.6.335"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2580,7 +2580,64 @@ function CBlClass ()
 
 	}
 	this.blList = function(){//xd2do1
-
+		const C4BlList = function(id){
+			const ghi = "[i5c1]";
+			const ui = blo0.blMD(id,ghi+"_"+id,blo0.c(1));
+			const _thisList = this;
+			this.getUI = function(){ return ui;} 
+			this.addBtn2Tb = function(tb,_v,cbf){
+			  if(!tb.btnList) tb.btnList = [];
+			  var n = tb.btnList.length;
+			  var btn = blo0.blBtn(tb,tb.id+"_btn_"+n,n,"gray");
+			  btn.onclick = function(_btn,_bs){
+				  return function(){
+					 blo0.blMarkBtnInList(_btn,_bs,"yellow","grey");
+					 _v.innerHTML = _btn.id;
+					 tb.curBtn = _btn;
+				  }
+			  }(btn,tb.btnList);
+			  tb.btnList.push(btn);
+			}
+			this.newToolbar = function(d,tbName,color){
+				const bs = [
+		  {"id":1,
+		  "name":"+",
+		  "color":blo0.c(11),
+		  "float":"left",
+		  "clickMe":function(tb,v){
+			  _thisList.addBtn2Tb(tb,v,null); 
+		   }
+		},
+		{"id":2,
+		  "name":"--",
+		  "color":blo0.c(13),
+		  "float":"left",
+		  "clickMe":function(tb,v){
+				tb.innerHTML = "";
+				tb.btnList = [];
+			v.innerHTML = tb.id + ":" + tb.curBtn.id;
+		  }}];
+				const tb = blo0.blDiv(d,d.id+tbName,tbName,color);
+				const tb1 = blo0.blDiv(d,d.id+tbName+"tb1","tb1","purple");
+				const v4tb = blo0.blDiv(d,d.id+tbName+"v","v4tb","gray");
+				for(i in bs){
+					const btn = blo0.blBtn(tb,tb.id+bs[i].id,bs[i].name,bs[i].color);
+					btn.style.float = bs[i].float?bs[i].float:"right";
+					btn.onclick = function(_i){
+						return function(){bs[_i].clickMe(tb1,v4tb);}
+					}(i);
+				}
+				return tb;
+		   };
+		}
+		const l = new C4BlList("bllist 31");  
+		/* //usage:
+		l.newToolbar(l.getUI(),"tb1",blo0.c(12));
+		l.newToolbar(l.getUI(),"tb2",blo0.c(12));
+		l.newToolbar(l.getUI(),"tb3","green");
+		_on_off_div(null,l.getUI ());
+		//*/
+		return l;
 	}
 	this.blParseTask = function(_srcURL,_vRes,_cbParse){		
 		const C4ParseTask = function(_srcURL,_vRes,_cbParse){ 
