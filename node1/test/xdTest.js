@@ -31,6 +31,9 @@ describe(tag4xdTest, function(){
     var done ="";    
 
     done += ` 
+
+    https://mp.weixin.qq.com/s/84W1DtsTRBBZGh87uTsGLw
+
     https://developer.mozilla.org/en-US/docs/Web/API/Touch_events
     https://littleflute.github.io/Games/issues/21/touch.html
      
