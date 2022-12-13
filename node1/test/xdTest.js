@@ -28,7 +28,18 @@ describe(tag4xdTest, function(){
   });    
 
   it('wechat', function(){ 
-    const done = `autoRunPage`;
+    var done ="";    
+
+    done += ` 
+    https://developer.mozilla.org/en-US/docs/Web/API/Touch_events
+
+    
+    https://littleflute.github.io/Games/issues/21/testC4AutoRun.html
+    
+    https://littleflute.github.io/Games/issues/21/testC4Canvas.html
+    https://mp.weixin.qq.com/s/IDtlkjfAIWF-471Wrem42A
+
+    `;
     const doing =`...`;
     assert.equal(done,doing);
   });
