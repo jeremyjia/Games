@@ -2043,6 +2043,17 @@ function CBlClass ()
         xmlhttp.send();
     }
 
+	this.blBtns = function(bs,tb,v){
+		for(i in bs){
+			const btn = blo0.blBtn(tb,tb.id+bs[i].id,bs[i].name,bs[i].color);
+			btn.style.float = bs[i].float;
+			btn.onclick = function(_btn,_i,_v){
+			  return function(){
+				bs[_i].click(_btn,_v);
+			  }
+			}(btn,i,v);
+		  }
+	}
     this.blDiv = function (oBoss,id,html,bkClr){
         var r = document.getElementById(id);
         if(!r){
