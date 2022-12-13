@@ -27,6 +27,12 @@ describe(tag4xdTest, function(){
     }) 
   });    
 
+  it('wechat', function(){ 
+    const done = `autoRunPage`;
+    const doing =`...`;
+    assert.equal(done,doing);
+  });
+
   it('xd dev', function(){ 
     assert.equal(app(),'to test xdApp: done.');
   });
