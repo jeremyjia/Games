@@ -34,6 +34,7 @@ describe(tag4xdTest, function(){
   it('word', function(){     assert.equal("done",'done');  });
   it('abc0', function(){     assert.equal("done",'done');  });
   it('blscript editor', function(){     assert.equal("done",'done');  });
-  it('testC4AutoRun.html', function(){     assert.equal("done",'to do: testC4AutoRun.html');  });;
+  it('testC4AutoRun.html', function(){     assert.equal("done",'to do: testC4AutoRun.html');  }); 
+  it('https://nodejs.dovov.com/node-js-msgwindows-api.html', function(){assert.equal("done",'2do');  });
   
 });
