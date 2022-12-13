@@ -32,7 +32,8 @@ describe(tag4xdTest, function(){
 
     done += ` 
     https://developer.mozilla.org/en-US/docs/Web/API/Touch_events
-
+    https://littleflute.github.io/Games/issues/21/touch.html
+     
     
     https://littleflute.github.io/Games/issues/21/testC4AutoRun.html
     
