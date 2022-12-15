@@ -76,6 +76,7 @@
 </div>
   
 <button id="id_4_btn_test">testC4AutoRun</button>
+<div id="id_div_4_sandbox" style="border: 1px red solid;">sandbox</div>
   <script> 
 
     function myFunction() {
@@ -92,6 +93,8 @@
   <script src="../../js/w3.js"></script>
 
   <script> 
+  blo0.blSandBox(bl$("id_div_4_sandbox"));
+
   bl$("id_4_btn_test").onclick = function(){
     const CTestJob = function(){  
       const _this = this;
@@ -167,6 +170,56 @@
       }
     },
   ];
+  //
+  const lsUserTask = [
+    {
+      "id":1,
+      "name":"51voa_index",
+      "color":blo0.c(15),
+      "float":"left",
+      "description":`
+        1. download: https://www.51voa.com/ as a html file.
+        2. parse the downloaded html file, get new pages links.`,
+      "click": function(b,v){ 
+        v.innerHTML = this.description; 
+      }
+    },
+    {
+      "id":2,
+      "name":"51voa_new_pages",
+      "color":blo0.c(16),
+      "float":"left",
+      "description":`
+        1. download: new pages in 51voa web site.
+        2. parse the new pages and make blscripts.`,
+      "click": function(b,v){ 
+        v.innerHTML = this.description; 
+      }
+    },
+    {
+      "id":3,
+      "name":"+",
+      "color":"green",
+      "float":"right",
+      "skip": true, 
+      "description":`
+        1. create new api in blclass, blUserTask.
+        2. let blo0.blGetTa() work.`,
+      "click": function(b,v){         
+        v.innerHTML = this.description;
+        const dp = v.boss.getTestPanel();
+        const t = blo0.blTask();
+        var oi = {
+          "name": "userTask",
+          "fun2do": blo0.blGetTa().value
+        };
+				var i = blo0.blUserTask(oi);
+				t.setInfo(i);
+        dp.addTask(t);
+      }
+    },
+  ];
+  //
   const lsBtn = [
     {
       "id":1,
@@ -183,11 +236,15 @@
     },
     {
       "id":2,
-      "name": "bs2",
-      "color": blo0.c(13),
+      "name": "userTask",
+      "color": blo0.c(14),
       "float": "left",
       "click": function(b,v){
-        v.innerHTML = this.name;
+          v.innerHTML = this.name;
+          const tb = blo0.blDiv(v,v.id + "tb" + this.name,"tb","lightblue");
+          const v1 = blo0.blDiv(v,v.id + "v"+ this.name,"v","lightgreen"); 
+          v1.boss = v.boss;
+          blo0.blBtns(lsUserTask,tb,v1,"lightgreen","brown");
       }
     },
   ];
