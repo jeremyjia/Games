@@ -49,8 +49,12 @@ describe(tag4xdTest, function(){
     assert.equal(done,doing);
   });
 
-  it('xd dev', function(){ 
-    assert.equal(app(),'to test xdApp: done.');
+  it('superObject', function(){ 
+    var done =`
+    1. load a picture from TA.
+    `;    
+    const doing =`...`;
+    assert.equal(done,doing);
   });
   
   it('word', function(){assert.equal("done",'done');  });
