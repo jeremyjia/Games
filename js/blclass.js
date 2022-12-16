@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.341"
+var g_ver_blClass = "CBlClass_bv1.6.342"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -6405,6 +6405,8 @@ const gc4SoEditor = function(){
 	var ex1,ey1,ex2,ey2;
 	const _C4SoEditor = function(){ 
 		var soScript = `
+		var imgInPlx = new Image(); 
+		imgInPlx.src = "http://localhost:8080/x1.jpg"; 
 		var C4Plx = function(){
 			this.drawPlx2Frame = function(ctx,time,x0,y0){ 
 			  var x = x0?x0:0;
@@ -6414,6 +6416,7 @@ const gc4SoEditor = function(){
 			  ctx.font = 11+ "px Consolas";
 			  ctx.fillStyle = "blue";
 			  ctx.fillText("C4Plx v0.14: time="+time ,x+10,y+55);
+			  ctx.drawImage(imgInPlx,x+22,y+111,240,160);
 			};
 		  } 
 		  function animateFrame(time){
@@ -6429,9 +6432,99 @@ const gc4SoEditor = function(){
 		var vCanStatus = null;
 		var bRunScript = false; 
 		var op = null;
+		const oPics = function(){
+			var lsPic = [];
+			var curPic = null;
+			const btnPics = [
+				{
+					"id":1,
+					"name":"+framePic",
+					"color":blo0.c(17),
+					"float":"left",
+					"description":`
+					  1. add new picture.
+					  `,
+					"click": function(b,v){ 
+					  v.innerHTML = this.description; 
+					  const oNewPic = function(){
+						return {
+							"id":lsPic.length,
+							"name":lsPic.length,
+							"color":"gray",
+							"float": "left",
+							"description":`newpic...`,
+							"click": function(b,v){
+								v.innerHTML = this.description + `	` + this.src;  
+								var img = document.createElement("img"); 
+    							img.src = this.src; 
+    							v.appendChild(img);
+								curPic = this;
+								curPic.img = img;
+							},
+							"src":"http://localhost:8080/"+(lsPic.length+1)+".jpg"
+						}
+					  }();
+					  lsPic.push(oNewPic);
+					  var tb = blo0.blDiv(v,v.id+"tb","tb",blo0.c(1));
+					  var d = blo0.blDiv(v,v.id+"d","d",blo0.c(2));
+					  blo0.blBtns(lsPic,tb,d,"lightgreen","brown");
+					}
+				},
+				{
+					"id":2,
+					"name":"+samplePic",
+					"color":blo0.c(18),
+					"float":"left",
+					"description":`
+					  1. add new sample picture (x1.jpg).
+					  `,
+					"click": function(b,v){ 
+					  v.innerHTML = this.description; 
+					  const oNewPic = function(){
+						return {
+							"id":lsPic.length,
+							"name":lsPic.length,
+							"color":"gray",
+							"float": "left",
+							"description":`newpic...`,
+							"click": function(b,v){
+								v.innerHTML = this.description + `	` + this.src;  
+								var img = document.createElement("img"); 
+    							img.src = this.src; 
+								img.width = 240;
+								img.height = 160;
+    							v.appendChild(img);
+								curPic = this;
+								curPic.img = img;
+							},
+							"src":"http://localhost:8080/x1.jpg"
+						}
+					  }();
+					  lsPic.push(oNewPic);
+					  var tb = blo0.blDiv(v,v.id+"tb","tb",blo0.c(1));
+					  var d = blo0.blDiv(v,v.id+"d","d",blo0.c(2));
+					  blo0.blBtns(lsPic,tb,d,"lightgreen","brown");
+					}
+				},
+			];
+			const _C4Pics = function(){
+				this.ui4Pics = function(v){
+					var tb = blo0.blDiv(v,v.id+"tb4Pics","tb",blo0.c(15));
+					var d = blo0.blDiv(v,v.id+"d4Pics","d",blo0.c(16));
+					blo0.blBtns(btnPics,tb,d,"lightgreen","brown");
+				}
+				this.showPics = function(cvs){
+					var ctx = cvs.getContext("2d");
+					ctx.fillText(`oPics: ${lsPic.length} curPic = ${curPic.src}`,x1,y1 + 55);
+					if(curPic!=null) ctx.drawImage(curPic.img, x1, y1+55,240,160);
+				}
+			}
+			return new _C4Pics();
+		}();
 		this.ui4Editor = function(v){ 
-			var tb = blo0.blDiv(v,v.id+"tb","tb","gray");
-			var d = blo0.blDiv(v,v.id+"d","d","lightblue");
+			var tb = blo0.blDiv(v,v.id+"tb","tb",blo0.c(13));
+			var d = blo0.blDiv(v,v.id+"d","d",blo0.c(14));
+			oPics.ui4Pics(v);
 			vCanStatus = blo0.blDiv(v,v.id+"vCanStatus","black","white");
 			vCanStatus.updateMsg = function(x,y){
 				vCanStatus.innerHTML =`[${x},${y}]`;
@@ -6447,7 +6540,7 @@ const gc4SoEditor = function(){
 				},
 				{
 					"id":2,
-					"name":"save2server",
+					"name":"2server",
 					"clickOnMe": function(d){ 
 						var url = "http://localhost:8080/json?fileName=" + soName + ".js"; 
 
@@ -6500,6 +6593,7 @@ const gc4SoEditor = function(){
 		};
 
 		this.drawEffect = function(cvs){
+			oPics.showPics(cvs);
 			var ctx = cvs.getContext("2d");
 			nTick++;
 			ctx.fillText("soe1: nTick = " + nTick,x1,y1 + 10);
