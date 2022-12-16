@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.335"
+var g_ver_blClass = "CBlClass_bv1.6.341"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -92,7 +92,16 @@ var blon = function(b,d,c1,c2){
 	}
 }
 	var _blMove = function(o,x,y){o.style.left = x;o.style.top = y;};
-	function _on_off_div(b,d){if(d.style.display=="block"){d.style.display="none"; b.style.backgroundColor="red"; }else{d.style.display="block"; b.style.backgroundColor="green"; }};
+	function _on_off_div(b,d){
+		if(d.style.display=="block"){
+			d.style.display="none"; 
+			if(b) b.style.backgroundColor="red"; 
+		}
+		else{
+			d.style.display="block"; 
+			if(b) b.style.backgroundColor="green"; 
+		}
+	};
 	function _on_off_bd_1(b,d){ 
 		if(b.bOnOff){
 			b.bOnOff = false;
