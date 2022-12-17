@@ -134,19 +134,47 @@ public class JSGraphEngine {
 			arc(x, y, r, startAngle, arcAngle, false);
 		}
 
-		public void drawImage(Object o, int x, int y) throws Exception {
-			ImageObj obj = (ImageObj) o;
-			System.out.println(obj.src);
+        public void drawImage(Object o, int sx, int sy, int sw, int sh, int dx, int dy, int dw, int dh)
+                throws Exception {
+            ImageObj obj = (ImageObj) o;
+            System.out.println(obj.src);
 
-			String srcImageFile = obj.src;
-			String fileName = AppUtil.downloadFileIfNeed(srcImageFile);
-			BufferedImage read = ImageIO.read(new File(fileName));
-			int width = (int) (read.getWidth() * 1);
-			int height = (int) (read.getHeight() * 1);
-			Image img = read.getScaledInstance(width, height, Image.SCALE_DEFAULT);
+            String srcImageFile = obj.src;
+            String fileName = AppUtil.downloadFileIfNeed(srcImageFile);
+            BufferedImage read = ImageIO.read(new File(fileName));
+            int w = (int) (read.getWidth() * 1);
+            int h = (int) (read.getHeight() * 1);
+            Image img = read.getScaledInstance(w, h, Image.SCALE_DEFAULT);
 
-			graphics.drawImage(img, x, y, null);
-		}
+            graphics.drawImage(img, dx, dy, dx+dw, dy+dh, sx, sy, sx+sw, sy+sh, null);
+        }
+
+        public void drawImage(Object o, int x, int y, int width, int height) throws Exception {
+            ImageObj obj = (ImageObj) o;
+            System.out.println(obj.src);
+
+            String srcImageFile = obj.src;
+            String fileName = AppUtil.downloadFileIfNeed(srcImageFile);
+            BufferedImage read = ImageIO.read(new File(fileName));
+            int w = (int) (read.getWidth() * 1);
+            int h = (int) (read.getHeight() * 1);
+            Image img = read.getScaledInstance(w, h, Image.SCALE_DEFAULT);
+            graphics.drawImage(img, x, y, width, height, null);
+        }
+		
+	      public void drawImage(Object o, int x, int y) throws Exception {
+	            ImageObj obj = (ImageObj) o;
+	            System.out.println(obj.src);
+
+	            String srcImageFile = obj.src;
+	            String fileName = AppUtil.downloadFileIfNeed(srcImageFile);
+	            BufferedImage read = ImageIO.read(new File(fileName));
+	            int width = (int) (read.getWidth() * 1);
+	            int height = (int) (read.getHeight() * 1);
+	            Image img = read.getScaledInstance(width, height, Image.SCALE_DEFAULT);
+
+	            graphics.drawImage(img, x, y, null);
+	        }
 
 		public void moveTo(int x, int y) {
 			applayStrokeColor();

@@ -16,6 +16,7 @@ import javax.imageio.ImageIO;
 
 import com.pbz.demo.hello.util.FileUtil;
 
+
 public class JSGraphEngine {
 
 	private CanvasObj canvas = new CanvasObj();
@@ -149,8 +150,36 @@ public class JSGraphEngine {
 
 			graphics.drawImage(img, x, y, null);
 		}
+		
+        public void drawImage(Object o, int x, int y, int width, int height) throws Exception {
+            ImageObj obj = (ImageObj) o;
+            System.out.println(obj.src);
 
-		public void moveTo(int x, int y) {
+            String srcImageFile = obj.src;
+            String fileName = FileUtil.downloadFileIfNeed(srcImageFile);
+            BufferedImage read = ImageIO.read(new File(fileName));
+            int w = (int) (read.getWidth() * 1);
+            int h = (int) (read.getHeight() * 1);
+            Image img = read.getScaledInstance(w, h, Image.SCALE_DEFAULT);
+            graphics.drawImage(img, x, y, width, height, null);
+        }
+        
+        public void drawImage(Object o, int sx, int sy, int sw, int sh, int dx, int dy, int dw, int dh)
+                throws Exception {
+            ImageObj obj = (ImageObj) o;
+            System.out.println(obj.src);
+
+            String srcImageFile = obj.src;
+            String fileName = FileUtil.downloadFileIfNeed(srcImageFile);
+            BufferedImage read = ImageIO.read(new File(fileName));
+            int w = (int) (read.getWidth() * 1);
+            int h = (int) (read.getHeight() * 1);
+            Image img = read.getScaledInstance(w, h, Image.SCALE_DEFAULT);
+
+            graphics.drawImage(img, dx, dy, dx+dw, dy+dh, sx, sy, sx+sw, sy+sh, null);
+        }
+        
+        public void moveTo(int x, int y) {
 			applayStrokeColor();
 			graphics.setStroke(new BasicStroke(lineWidth));
 			recoverProperty();
