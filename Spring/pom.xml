@@ -15,7 +15,7 @@
 		<spring.boot.version>2.1.6.RELEASE</spring.boot.version>
 		<junit.jupiter.version>5.6.2</junit.jupiter.version>
 		<junit.platform.version>1.6.2</junit.platform.version>
-		<pbz.server.version>1.0.62</pbz.server.version>
+		<pbz.server.version>1.0.66</pbz.server.version>
 	</properties>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -105,7 +105,7 @@
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
-			<version>1.14.2</version>
+			<version>1.15.3</version>
 	    </dependency>
 		<dependency>
 			<groupId>org</groupId>
@@ -134,6 +134,12 @@
 			<version>1.9.1</version>
 			<type>pom</type>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-text -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.10.0</version>
+        </dependency>
 	</dependencies>
 	<build>
 	    <finalName>pbz-demo-${pbz.server.version}-SNAPSHOT</finalName>

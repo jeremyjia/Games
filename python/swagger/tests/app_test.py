@@ -45,7 +45,7 @@ def test_add_new_record():
     payload = {'title': 'Good & Bad Book', 'email': 'testuser3@test.com'}
     response = requests.post('%s/request' % (BASE_URL), json=payload)
     NewUUID.value = str(response.json()['id'])
-    assert_true(response.status_code == 201)
+    assert_true(response.status_code == 201) # compare with code 204 in line 121.
 
 
 def test_get_new_record():

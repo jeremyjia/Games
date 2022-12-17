@@ -1,3 +1,4 @@
+# transparent a pic in this repository
 from PIL import Image
   
 img = Image.open('skin.png')

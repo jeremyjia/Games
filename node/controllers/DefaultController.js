@@ -51,6 +51,11 @@ class DefaultController {
     //await sqlzCtrler.addPlayer(request,response);
     await Controller.handleRequest(request, response, this.service.addPlayer);
   }
+  async abc2db(request, response) {
+    console.log(tag + " request = " + request );  
+    await Controller.handleRequest(request, response, this.service.abc2db);
+  }
+
 
   async coinAndgem(request, response) {
     await Controller.handleRequest(request, response, this.service.coinAndgem);

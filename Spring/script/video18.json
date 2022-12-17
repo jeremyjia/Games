@@ -1,0 +1,72 @@
+{
+    "request": {
+        "version": "0.0.18",
+        "width": 1024,
+        "height": 768,
+        "music": "rsj.mp3",
+        "rate": "10",
+        "frames": [
+            {
+                "number": "1",
+                "time": "300",
+                "objects": [
+                    {
+                        "text": "${VAR_TITLE}",
+                        "x": 300,
+                        "y": 100,
+                        "size": 50,
+                        "color": "95,35,135",
+                        "layer": 2
+                    }
+                ],
+                "backgroundColor": "10,10,10"
+            }
+        ],
+        "superObjects": [
+            {
+                "type": "javascript",
+                "frameRange": "(1,300)",
+                "attribute": {
+                    "script": "${VAR_JS_PLUGIN}",
+                    "function": "animateFrame",
+                    "start": 1
+                },
+                "layer": 1
+            },
+			{
+                "type": "text",
+                "attribute": {
+                    "x1": 20,
+                    "y1": 550,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 60,
+                    "color": "50,255,50",
+                    "name": "祝你踏过千重浪\n能留在爱人的身旁\n在妈妈老去的时光\n听她把儿时慢慢讲\n也祝你不忘少年样\n也无惧那白发苍苍\n若年华终将被遗忘\n记得你我",
+                    "area": {
+                        "left": 100, 
+                        "top": 300, 
+                        "width": 800, 
+                        "height": 200
+                    }
+                },
+				"layer": 2,
+                "frameRange": "(1,300)",
+                "action": {
+                    "trace": "x=220",
+                    "step": -2
+                }
+            }
+        ],
+        "Macros": [
+            {
+                "name": "VAR_TITLE",
+                "value": "JS插件动画演示"
+            },
+			{
+                "name": "VAR_JS_PLUGIN",
+                "value": "https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxRain.js"
+            },
+        ]
+    }
+}

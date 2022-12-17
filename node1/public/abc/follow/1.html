@@ -1,0 +1,75 @@
+
+<!DOCTYPE html>
+<html>
+<meta charset="UTF-8"/>
+<script src="http://moinejf.free.fr/js/abcweb-1.js"></script>
+<script src="http://moinejf.free.fr/js/snd-1.js"></script>
+<style>svg {display:block}</style>
+<title>abc2svg + play example</title>
+</head>
+<body bgcolor="#faf0e6">
+
+<h3>abc2svg html example + play</h3>
+
+<p>
+This HTML document contains a ABC tune ('J'ai du bon tabac').
+
+<p>
+To display this tune, it includes
+the script <code>abcweb-1.js</code> which loads the <code>abc2svg</code> core,
+scans the document and replaces the ABC sequence(s) by SVG images.
+
+<p>
+And, to play the tune, it includes the script <code>snd-1.js</code>.
+Check this by clicking on the score!
+
+<script type="text/vnd.abc">
+%abc-2.2
+ 
+%%pagewidth 14cm
+%%bgcolor white
+%%topspace 0
+%%composerspace 0
+%%leftmargin 0.8cm
+%%rightmargin 0.8cm
+
+X:1
+T:J'ai du bon tabac
+C:Trad.
+M:2/4
+L:1/8
+Q:1/4=120
+K:C
+CDEC|D2DE|F2F2|E2E2|CDEC|D2DE|F2G2|C4:|
+G2GF|E2DE|F2G2|F2E2|G2GF|E2DE|F2G2|D4|
+CDEC|D2DE|F2F2|E2E2|CDEC|D2DE|F2G2|C4||
+
+</script>
+
+<p>
+If you also want to put music in your pages, you may have a look
+at the source of this file.
+
+<p>
+The <code>abc2svg</code> scripts are loaded by this sequence in the HTML header
+(the relative path <code>../</code> must be replaced by
+<code>http://moinejf.free.fr/</code> in your pages):
+<pre>&lt;script src="http://moinejf.free.fr/js/abcweb-1.js"&gt;&lt;/script&gt;
+&lt;script src="http://moinejf.free.fr/js/snd-1.js"&gt;&lt;/script&gt;</pre>
+
+<p>
+Then, the ABC sequences in the HTML body must start on
+<code>&lt;script type="text/vnd.abc"&gt;</code>
+and stop on <code>&lt;script&gt;</code>.
+
+<p>
+Note that the ABC sequence of this file contains a music font definition
+(<code>%%musicfont</code>) that points to the file
+(<code>../js/abc2svg.woff</code>) of this HTTP server.
+This would not work if this file <code>tabac.html</code> would be put
+in an other server without the abc2svg font at the same relative path.<br>
+Usually, it is safe to have no <code>%%musicfont</code> definition.
+In this case, the internal font is used.
+
+</html>
+

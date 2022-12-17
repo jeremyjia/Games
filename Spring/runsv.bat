@@ -1,0 +1,1 @@
+java -jar -Dgithub.config.active=true -Dfile.encoding=utf-8 ./target/%1
