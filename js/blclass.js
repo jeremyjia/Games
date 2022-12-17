@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.312"
+var g_ver_blClass = "CBlClass_bv1.6.331"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -154,6 +154,7 @@ function CBlClass ()
 		var d= blo0.blMD(_id, "blPaint-"+_id,_x,_y,_w,_h,blGrey[1]);
 		if(!d.load){
 			d.load = true;	 
+			var xHit = -1, yHit = -1;
 			var items = [];   
 			d.parseTa = function(){ 
 				const x0 = 200, y0 = 100, dx = 30, dy = 33;  
@@ -188,6 +189,35 @@ function CBlClass ()
 
 			}(); 
 
+			d.selectItem = function(x,y){
+				for(i in items){
+					const oi = items[i];
+					if(blo0.blPiR(x,y,oi.x,oi.y,oi.w,oi.h)){						
+						if (typeof oi.selectMe == "function") {
+							oi.selectMe();
+						}
+					} 
+				}
+			}
+			d.turnoverItem = function(x,y){
+				for(i in items){
+					const oi = items[i];
+					if(blo0.blPiR(x,y,oi.x,oi.y,oi.w,oi.y)){						
+						if (typeof oi.turnMeOver == "function") {
+							oi.turnMeOver();
+						}
+					}
+				}
+			}
+			d.hitItems = function(x,y){
+				xHit = x;
+				yHit = y;
+				for(i in items){
+					if (typeof items[i].hitTest == "function") {
+						items[i].hitTest(x,y);
+					}
+				}
+			}
 			d.addImgItem = function(x,y,w,h,src){
 				var i = {};  i.x = x; i.y = y; i.w = w; i.h = h;				
 				var block = new Image(); 
@@ -204,13 +234,29 @@ function CBlClass ()
 			}
 			d.addItem = function(type,x,y,w,h,iHandle){
 				var i = {}; i.type = type; i.x = x; i.y = y; i.w = w; i.h = h;
+				var clrFill = "lightgreen";
+				var bSelect = false;
+				var bTurnover = false;
+
 				i.draw = function(ctx){
 					if(type == "rect"){
-						ctx.fillStyle = "blue"; 
+						ctx.fillStyle = bTurnover?clrFill:"black"; 
 						ctx.fillRect(i.x,i.y,i.w,i.h);
+						if(bSelect){
+							ctx.fillStyle = "brown"; 
+							ctx.fillRect(i.x,i.y,15,15);
+						} 
+					}
+					else if(type == "turn5Items"){
+						ctx.fillStyle = bTurnover?clrFill:"black"; 
+						ctx.fillRect(i.x,i.y,i.w,i.h);
+						if(bSelect){
+							ctx.fillStyle = "brown"; 
+							ctx.fillRect(i.x,i.y,5,5);
+						} 
 					}
 					else if(type == "div"){
-						ctx.fillStyle = "lightgreen"; 
+						ctx.fillStyle = clrFill; 
 						ctx.fillRect(i.x,i.y,i.w,i.h);
 						if(iHandle&&iHandle.drawMe){
 							iHandle.drawMe(ctx,i.x,i.y,i.w,i.h);
@@ -224,9 +270,26 @@ function CBlClass ()
 					}
 				}
 				i._2move = function(dx,dy){ i.x += dx; i.y += dy;}
-				
+				i.hitTest = function(_x,_y){
+					if(blo0.blPiR(_x,_y,i.x,i.y,i.w,i.h)){
+						clrFill = "red";
+					}
+					else{
+						clrFill = "blue";
+					}
+				}
+				i.selectMe = function(){
+					bSelect = !bSelect; 
+				}
+				i.turnMeOver = function(){
+					bTurnover = !bTurnover;
+				}
+				i.selectStatus = function(){
+					return bSelect;
+				}
 				if(iHandle){ iHandle._followMe(i);}
 				items.push(i);
+				return i;
 			}
 			d.getItems = function(){ return items;}
 			d.drawItems = function(ctx){
@@ -238,9 +301,33 @@ function CBlClass ()
 				ctx.fillStyle = "#FF0000";
 				ctx.font = "30px Arial";
 				ctx.fillText("l=" + items.length, 150,50);
+				ctx.fillStyle = "#aa11bb";
+				ctx.fillText("hit at [" + xHit + "," + yHit + "]", 250,50);
 				
 				for(i in items){
 					items[i].draw(ctx);
+				}
+			}
+			d.turn5anonce = function(handle){
+				var n = 0;
+				var si = [];
+				for(i in items){
+					if (typeof items[i].selectStatus == "function") {
+						if(items[i].selectStatus()){
+							n++;
+							si.push(items[i]);
+						}  
+					}
+				}
+				if(5==n){
+					for(j in si){
+						si[j].turnMeOver();
+						si[j].selectMe();
+					}
+					handle.okMsg();
+				}
+				else{
+					handle.errorMsg();
 				}
 			}
 			var x = 0, y = 0;
@@ -334,6 +421,55 @@ function CBlClass ()
 				this.funMU = function(){}
 				this.funMM = function(){}
 			};
+			var CO_Hit = function(){
+				this.getName = function(){return "HitTest";}
+				this.funMD = function(){				 
+					d.hitItems(x,y);
+				}
+				this.funMU = function(){}
+				this.funMM = function(){}
+			};
+			var CO_Select = function(){
+				this.getName = function(){return "toSelect";}
+				this.funMD = function(){				 
+					d.selectItem(x,y);
+				}
+				this.funMU = function(){}
+				this.funMM = function(){}
+			};
+			var CO_Turnover = function(){
+				this.getName = function(){return "toTurnover";}
+				this.funMD = function(){				 
+					d.turnoverItem(x,y);
+				}
+				this.funMU = function(){}
+				this.funMM = function(){}
+			};
+			var CO_Turn5Over = function(){
+				var n = 0;
+				var fs = "gray";
+				const i = d.addItem("turn5Items",666,20,44,33);
+				i.draw = function(ctx){					
+					ctx.fillStyle = fs; 
+					ctx.fillRect(i.x,i.y,i.w,i.h); 
+					ctx.font = "30px Arial";
+					ctx.strokeText(n, i.x, i.y);
+
+				}
+				i.errorMsg = function(){
+					fs = "red";
+				}
+				i.okMsg = function(){
+					fs = "green";
+					n++;
+				}
+				this.getName = function(){return "toTurn5Over";}
+				this.funMD = function(){	
+					d.turn5anonce(i);	
+				}
+				this.funMU = function(){}
+				this.funMM = function(){}
+			};
 			var CO_Rect = function(){
 				this.getName = function(){return "rectangle";}
 				this.funMD = function(){				
@@ -342,7 +478,7 @@ function CBlClass ()
 					ctx.font = "30px Arial";
 					ctx.strokeText(this.getName(), x, y);
 
-					d.addItem("rect",x,y,150,75);
+					d.addItem("rect",x,y,44,33);
 				}
 				this.funMU = function(){}
 				this.funMM = function(){}
@@ -444,9 +580,14 @@ function CBlClass ()
 			};
 			var o1 = new CO_Circle(vc,st);		d.os.push(o1); 
 			var o2 = new CO_Rect();				d.os.push(o2); 
-			var o2 = new CO_FreeDraw();			d.os.push(o2); 
-			var o2 = new CO_Img(vc,st);			d.os.push(o2); 
-			var o2 = new CO_Div(vc,st);			d.os.push(o2); 
+			var o3 = new CO_FreeDraw();			d.os.push(o3); 
+			var o4 = new CO_Img(vc,st);			d.os.push(o4); 
+			var o5 = new CO_Div(vc,st);			d.os.push(o5); 
+			var o6 = new CO_Hit();				d.os.push(o6); 			
+			var o7 = new CO_Select();			d.os.push(o7); 	
+			var o8 = new CO_Turnover();			d.os.push(o8); 
+			var o9 = new CO_Turn5Over();		d.os.push(o9);
+			
 
 			
 			d.btnOs = [];
@@ -491,6 +632,107 @@ function CBlClass ()
 		}
 		return d;
 	}
+	this.blAudioTimer = function(){	
+		const r = function() {	
+			var bRun = false;
+			var fps = 1;
+			var n = 0; 
+			var t1 = Date.now();
+			var t2 = Date.now();
+			const vp = blo0.blc4Video(t1);
+			var ct = 0;
+
+			var fn4Loop = function(){
+				if(0==n) vp.play();
+				setTimeout(() => {
+					n++; 
+					t2 = Date.now();
+					ct = vp.currentTime;
+					if(bRun) fn4Loop();
+				}, 1000/fps);
+			}
+			var o = {};
+			o.stop = function(){
+				bRun = false; 
+				vp.pause();
+				vp.currentTime = ct = 0;
+			}
+			o.start = function(){
+				bRun = true;
+				n = 0; 
+				t1 = Date.now();
+				fn4Loop();
+			}
+			o.isPlaying = function(){
+				return bRun;
+			}
+
+			o.paintCurFrame = function(ctx,_lsf,n,x1,y1,x2,y2){
+				ctx.fillStyle = function(){
+					var c = n>-1?_lsf[n].backgroundColor:"Khaki";
+					if("200,100,200"==c ||
+						"100,200,200"==c ||
+						"222,0,0"==c  ||
+						"111,0,0"==c  ||
+						"10,0,0"==c  ||
+						"1,0,0"==c  
+					) c = "rgb(" + c + ")";
+					return c;
+				}(); 
+				ctx.fillRect(x1,y1,x2-x1,y2-y1);
+				 
+				if(n>-1){
+					const os = _lsf[n].objects;
+					for(i in os){
+						os[i].selfDraw(ctx,x1,y1);
+					}
+				}
+			}
+			o.setFPS = function(n){
+				fps = n;
+			}
+			o.getFPS = function(){
+				return fps;
+			}
+			o.getVP = function(){ return vp;}
+			o.getFrameNo = function(l,nf){
+				var nr = 0;
+				var m = 0;
+				var n = 0;
+				for(i in l){
+					m += l[i].time;
+					if(nf<=m){
+						nr = n;
+						break;
+					}
+					n++;
+				}
+				return nr;
+			}
+			o.drawOnLoop = function(cvs,_myboss,x1,y1,x2,y2){		
+				var ctx = cvs.getContext("2d");		
+				if(bRun){ 	
+					const _frms = _myboss.getFrames();
+					ctx.fillStyle = "lightblue";
+					ctx.fillRect(x1,y1,x2-x1,y2-y1);
+					this.paintCurFrame(ctx,_frms,this.getFrameNo(_frms,n),x1,y1,x2,y2);
+					_myboss.paintSuperObjects(cvs,n);
+				}	
+				ctx.fillStyle = "blue";
+				ctx.font = "10px Arial";
+				var s = " Timer: bRun = " + bRun;
+				s += " n = " + n; 
+				s += " t1 = " + t1; 
+				s += " t2 = " + t2;  
+				s += " t2-t1 = " + (t2-t1)/1000 + "s";
+				s += " fps = " + fps;
+				ctx.fillText(s, x1,y1 + 20);
+			}
+			return o;
+		}();
+		return r;
+	}
+	
 	this.f2do =  function (ctx,_x,_y){
 		var x = _x;
 		var y = _y;
@@ -582,16 +824,19 @@ function CBlClass ()
 		};
 	}
 	var _oTest = new CTest();
-	
-	var _blVideo = document.createElement("VIDEO");
-	_blVideo.id = "id_blVideo";
-	if (_blVideo.canPlayType("video/mp4")) {
-		_blVideo.setAttribute("src","https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3");
+	this.blc4Video = function(id){
+		var v = document.createElement("VIDEO");
+		v.id = id;
+		if (v.canPlayType("video/mp4")) {
+			v.setAttribute("src","https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3");
+		}
+		v.setAttribute("width", "1");
+		v.setAttribute("height", "1"); 
+		document.body.appendChild(v);
+		return v;
 	}
-	_blVideo.setAttribute("width", "1");
-	_blVideo.setAttribute("height", "1"); 
-	document.body.appendChild(_blVideo);
-
+	var _blVideo = this.blc4Video("id_4_blc_video");
+	 
 	this.v = g_ver_blClass;
 	this.blrAboutMe= function(b,d){		
 		var s = ""; 
@@ -2306,19 +2551,33 @@ function CBlClass ()
 			const fn = _saveAsFileName;
 			const vRes = _vRes;
 			var b = false;
+			var n = 0;
 
 			this.type = blc_4_t_DOWNLOAD;
 			
 			this.done = function(){return b;};
+			this.status = function(){return n;};
 
 			this.bl2Do = function(){			
 				var url = svrAPI + "?url="+ srcURL + "&filename="+ fn;  
 				var w = {};
+				n = 0;
 				w._2do = function(txt){
-					var str = "var a =" +  txt;  
+					/*
+					 var str = "var a =" +  txt;  
 					eval(str);  
 					vRes.innerHTML =  a.filename; 
-					b = true;
+					b = true; 
+					//*/
+					n++;
+					if("error xd 11"==txt){
+						vRes.innerHTML = n + " rs: not 4 && not 200. " + Date(); 
+						b = false;
+					}
+					else{
+						vRes.innerHTML =  n + " " + txt; 
+						b = true; 
+					}
 				}
 				blo0.blAjx(w,url);		 
 			};
@@ -2326,8 +2585,7 @@ function CBlClass ()
 		const o = new C4Download(_svrAPI,_srcURL,_saveAsFileName,_vRes);
 		return o;
 	}
-	this.blTask = function(){
-		
+	this.blTask = function(){		
 		const C4Task = function(){
 			var n = 0;
 			var btn = null;
@@ -2366,7 +2624,17 @@ function CBlClass ()
 				}
 
 				if(btn) {
-					btn.innerHTML = n;
+					var s = inf.status; 
+					if(s==undefined){
+						s= "no status function.";
+					}
+					else{
+						s= inf.status(); 
+						if(s==2){
+							inf.bl2Do();
+						}
+					}
+					btn.innerHTML = n + ": s=" + s;
 				}
 			}
 		}
@@ -2505,6 +2773,7 @@ function CBlClass ()
 	this.C4Canvas = function(d,w,h,initColor){
 		function _blCanvas(d,w,h){
 			var cvs = document.createElement("canvas");
+			cvs.id = d.id + "_C4Canvas";
 			cvs.width = w;
 			cvs.height = h;
 			var bMS = false;
@@ -2552,7 +2821,8 @@ function CBlClass ()
 					const o = {};
 					o.x = x;
 					o.y = y;
-					o.draw_me = function(ctx){
+					o.draw_me = function(cvs){
+						var ctx = cvs.getContext("2d");
 						ctx.fillText(".",o.x,o.y);
 					}
 					lsOs.push(o);
@@ -2571,7 +2841,7 @@ function CBlClass ()
 				} 
 				
 				else if(curDrawingType==G_EDIT_OBJECT){  	
-					eui = blo0.blMD("id_eui","*",100,100,222,100,"blue");		
+					eui = blo0.blMD("id_eui","uiEditor",100,100,255,100,"blue");		
 					eui.v1 = blo0.blDiv(eui,eui.id+"v1","v1","lightblue");		
 					for(i in lsOs){
 						if(lsOs[i].edit_me) {
@@ -2602,7 +2872,8 @@ function CBlClass ()
 						const o = {};
 						o.x = x;
 						o.y = y;
-						o.draw_me = function(ctx){
+						o.draw_me = function(cvs){
+							var ctx = cvs.getContext("2d");
 							ctx.fillText(".",o.x,o.y);
 						}
 						lsOs.push(o);
@@ -2650,6 +2921,11 @@ function CBlClass ()
 				} 
 				else if(curDrawingType==G_MOVE_OBJECT){  	
 					moveObj = null;	
+				}
+				else if(curDrawingType==G_EDIT_OBJECT){		 
+					for(i in lsOs){
+						if(lsOs[i].edit_up) lsOs[i].edit_up(x,y); 
+					}	
 				}
 			}); 
 
@@ -2724,10 +3000,10 @@ function CBlClass ()
 				ctx.fillText("["+x+","+y+"]", 222, 50);
 				
 				for(i in lsOs){
-					lsOs[i].draw_me(ctx); 
+					lsOs[i].draw_me(cvs); 
 				}
-				if(newObj) newObj.draw_me(ctx);
-				if(moveObj) moveObj.draw_me(ctx);
+				if(newObj) newObj.draw_me(cvs);
+				if(moveObj) moveObj.draw_me(cvs);
 			}
 
 			d.appendChild(cvs);
@@ -5531,7 +5807,8 @@ const gc4Move = function(){
 	}
 	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
 	this.setXY2 = function(x,y){		x2 = x; y2 = y;		}
-	this.draw_me = function(ctx){		
+	this.draw_me = function(cvs){
+		var ctx = cvs.getContext("2d");			
 		const d = 10;  
 		var oldStyle = ctx.fillStyle;
 
@@ -5555,7 +5832,8 @@ const gc4Line = function(){
 	this.select = function(b){		s = b;		}
 	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
 	this.setXY2 = function(x,y){		x2 = x; y2 = y;		}
-	this.draw_me = function(ctx){		
+	this.draw_me = function(cvs){
+		var ctx = cvs.getContext("2d");		
 		const d = 10; 
 		if(s){
 			var oldStyle = ctx.fillStyle;
@@ -5601,7 +5879,8 @@ const gc4Note = function(){
 	this.select = function(b){		s = b;		}
 	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
 	this.setXY2 = function(x,y){		x2 = x; y2 = y;		}
-	this.draw_me = function(ctx){		
+	this.draw_me = function(cvs){		
+		var ctx = cvs.getContext("2d");
 		const d = 10; 
 		if(s){
 			var oldStyle = ctx.fillStyle;
@@ -5685,38 +5964,107 @@ const gc4Note = function(){
 
 
 const gc4BLS = function(){
+	const blsTimer = blo0.blAudioTimer();
+	var lsFrame = [];
+	var pt = "";
+    var op = null;
+	const wrapPlx = function(cvs,_pt){
+		var pt2 = _pt.replace("myCanvas",cvs.id);
+		var s = "var CBlsPlx = function(cvs){";
+		s += '       var ctx = cvs.getContext("2d");';
+		s += '       var nc = 0;';
+		s +=         pt2;
+		s += "       this.v = 123;";
+		s += "       this.callPlx = function(n,x,y){";
+		s += '          if(1){'
+		s += '          	nc++;';
+		s += '          	ctx.fillText("nc=" + nc,x,y-60);';
+		s += "          	animateFrame(n);";
+		s += '          }'; 
+		s += '          return n;';
+	    s += '        };';		
+		s += "    }";
+		eval(s);
+		return new CBlsPlx(cvs);  
+	}
+	const soDraw = function(cvs,n,x,y){
+		var ctx = cvs.getContext("2d");	
+		if(null==op) op = wrapPlx(cvs,pt);
+		ctx.fillText("soDraw: n="+n + "byPlx="+op.callPlx (n,x,y),x,y-40);	  
+	}
+	  
+	var lsSuperObjects = function(){
+		
+		var w ={};
+		w._2do= function(txt){ pt = txt;};
+		blo0.blAjx(w,"http://localhost:8080/firework.js");
+		
+		var ls = [];
+		const o = {
+			"type": "javascript",
+			"frameRange": "(1,500)",
+			"attribute": {
+				"script": "http://localhost:8080/firework.js",
+				"function": "animateFrame",
+				"start": 1
+			},
+			"layer": 1
+		};
+		ls.push(o);
+		return ls;
+	}();	;
+	var nCurF = -1; 
 	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,sBlsTitle = "...";
+	var msgDbg = "msgBLS"; 
 	
-
+	this.paintSuperObjects = function(cvs,n){
+		var ctx = cvs.getContext("2d");	
+		ctx.fillStyle = "blue";
+		ctx.font = "10px Arial";
+		var s = " so: to do ... n = " + n;
+		soDraw(cvs,n,x2,y2); 
+		ctx.fillText(s, x2-20,y2 - 20);
+	}
+	this.getFrames = function(){return lsFrame;}
 	this.select = function(b){		s = b;		}
 	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
 	this.setXY2 = function(x,y){		x2 = x; y2 = y;		}
-	this.draw_me = function(ctx){		
+	this.draw_me = function(cvs){	
+		var ctx = cvs.getContext("2d");	
 		const d = 10; 
 		if(s){
 			var oldStyle = ctx.fillStyle;
 			ctx.fillStyle = "red";
 			ctx.fillRect(x1-d,y1-d,d*2,d*2);
-
 			ctx.fillstyle = oldStyle;
 		}
 		if(e){
 			var oldStyle = ctx.fillStyle;
 			ctx.fillStyle = "brown";
 			ctx.fillRect(x2-d,y2-d,d*2,d*2);
-			ctx.fillstyle = oldStyle;
- 
+			ctx.fillstyle = oldStyle; 
 		}
 		
 		var oldStyle = ctx.fillStyle;
-		ctx.fillStyle = "gray"; 
-		ctx.fillRect(x1,y1,x2-x1,y2-y1);
 		
-		ctx.fillStyle = "blue";
+		if(!blsTimer.isPlaying()){
+			blsTimer.paintCurFrame(ctx,this.getFrames(),nCurF,x1,y1,x2,y2);
+			_objCmd.drawObjCmdUI(ctx,x1+5,y1-15); 
+		}
+
+		ctx.fillStyle = "rgb(200,111,1)";//"blue";
 		ctx.font = "30px Arial";
-		var ss = sBlsTitle + " : curFrame = " + _curF;
+		var ss = sBlsTitle + " : curFrame = " + nCurF;
 		ctx.fillText(ss, x1,y1);
 
+		blsTimer.drawOnLoop(cvs,this,x1,y1,x2,y2);
+
+		const showDebugMsg4BLS = function(){
+			ctx.fillStyle = "yellow";
+			ctx.font = "10px Arial";
+			var s = _makeDbgMsgInFrame();
+			ctx.fillText(s, x1,y1+30);		
+		}();
 		ctx.fillstyle = oldStyle;
 	}
 	this.select_me = function(x,y){
@@ -5729,68 +6077,206 @@ const gc4BLS = function(){
 			 e = true; 
 			 eui.v1.innerHTML = "";
 			 const tb = blo0.blDiv(eui.v1,eui.v1.id+"tb","tb","gray");
-			 var b1 = blo0.blBtn(tb,tb.id+"b1","setTitle","lightblue");
+			 var b1 = blo0.blBtn(tb,tb.id+"b1","setTitleFromTA","lightblue");
 			 b1.style.float = "left";
 			 b1.onclick = function(){
 				sBlsTitle = blo0.blGetTa().value;	
 			 } 
-			 var b2 = blo0.blBtn(tb,tb.id+"b2","bls","lightgreen");
+			 var b2 = blo0.blBtn(tb,tb.id+"b2","bls2TA","lightgreen");
 			 b2.style.float = "left";
 			 b2.onclick = function(){
 				blo0.blGetTa().value = JSON.stringify(_makeBLS());	
 			 } 
 
-			 
-			 const split1 = blo0.blDiv(eui.v1,eui.v1.id+"split1","split1","green");
+			 const makeToolbar1 = function(t){
+				const split4tb1 = blo0.blDiv(eui.v1,eui.v1.id+"split4tb1","split4tb1","gray");
+				
+				const bs1 = [
+					{
+						"name":"ver",
+						"fn4ui": function(v){
+							v.innerHTML = this.name ;
+						},
+						"color": "Orchid"
+					},
+					{
+						"name":"music",
+						"fn4ui": function(v){ 
+							const ms = function(){
+								var ls = [];
+								for(var i = 0; i < 10; i++){
+									var o = {};
+									o.id = i;
+									o.name = "nce2-"+(i+1);
+									o.src = "https://littleflute.github.io/english/NewConceptEnglish/Book2/"+(i+1)+".mp3";
+									ls.push(o);
+								}
+								var o = {};
+								o.id = 10;
+								o.name = "1.mp3";
+								o.src = "http://localhost:8080/1.mp3";
+								ls.push(o);
+								var o = {};
+								o.id = 11;
+								o.name = "bzll.mp3";
+								o.src = "http://localhost:8080/bzll.mp3";
+								ls.push(o);
+								return ls;
+							}(); 
+							
+							const tb = blo0.blDiv(v,v.id+"tb","tb","Violet"); 
+							const vSrc = blo0.blDiv(tb,tb.id+"vSrc",t.getVP().src,"lightgreen");
+							const setSrc = blo0.blBtn(tb,tb.id+"setSrc","setFromTA","green");
+							setSrc.onclick = function(){
+								vSrc.innerHTML = blo0.blGetTa().value;
+								t.getVP().src = 	blo0.blGetTa().value;
+							}
+							for(i in ms){
+								const b = blo0.blBtn(tb,tb.id+ms[i].id,ms[i].name,"Fuchsia");
+								b.onclick = function(_i){
+									return function(){
+										vSrc.innerHTML = t.getVP().src = ms[_i].src;										
+									}
+								}(i);
+							}
+						},
+						"color": "Orchid"
+					},
+					{
+						"name":"rate",
+						"fn4ui": function(v){ 
+							const fs = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,25,60];
+							const tb = blo0.blDiv(v,v.id+"tb","tb","Violet"); 
+							for(i in fs){
+								const b = blo0.blBtn(tb,tb.id+i,fs[i],"Fuchsia");
+								b.onclick = function(_i){
+									return function(){
+										t.setFPS(fs[_i]) ;
+									}
+								}(i);
+							}
+						},
+						"color": "Orchid"
+					},
+					{
+						"name":"height", 
+						"float": "right",
+						"fnInit": function(){
+							return "h:" + (y2-y1);
+						},
+						"fn4ui": function(_v,_b){
+							const hs = [1,-1,2,-2,5,-5,10,-10,100,-100,200,-200,500,-500];
+							for(i in hs){
+								var s = hs[i]>0?"+"+hs[i]:hs[i];
+								var b = blo0.blBtn(_v,_v.id+i,s,"Indigo");
+								b.onclick = function(_i){
+									return function(){
+										y2 += hs[_i];
+										_b.innerHTML = "h:" + (y2-y1);
+									}
+								}(i);
+							}
+						},
+						"color": "lightgreen"
+					},
+					{
+						"name":"witdh", 
+						"float": "right",
+						"fnInit": function(){
+							return "w:" + (x2-x1);
+						},
+						"fn4ui": function(_v,_b){ 
+							const ws = [1,-1,2,-2,5,-5,10,-10,100,-100,200,-200,500,-500];
+							for(i in ws){
+								var s = ws[i]>0?"+"+ws[i]:ws[i];
+								var b = blo0.blBtn(_v,_v.id+i,s,"purple");
+								b.onclick = function(_i){
+									return function(){
+										x2 += ws[_i];
+										_b.innerHTML = "w:" + (x2-x1);
+									}
+								}(i);
+							}
+						},
+						"color": "lightgreen"
+					},
+				 ]
+				const tb1 = blo0.blDiv(eui.v1,eui.v1.id+"tb1","tb1","plum");
+				const v4tb1 = blo0.blDiv(eui.v1,eui.v1.id+"v4tb1","v4tb1","Thistle");
+				
+				for(i in bs1){
+				   var s = bs1[i].fnInit?bs1[i].fnInit():bs1[i].name;
+				   const btn = blo0.blBtn(tb1,tb1.id+bs1[i].name,s,bs1[i].color);
+				   btn.style.float = bs1[i].float?bs1[i].float:"left";
+				   btn.onclick = function(_b,_v,_i){
+					   return function(){
+						   _v.innerHTML = "";
+						   const split4btns = blo0.blDiv(_v,_v.id+"split4btns","split4btns","gray");
+						   bs1[_i].fn4ui(_v,_b);
+					   }
+				   }(btn,v4tb1,i);
+				}
 
-			 const tbW = blo0.blDiv(eui.v1,eui.v1.id+"tbW","W:","gray");
-			 
-			 var bw = blo0.blBtn(tbW,tbW.id+"bw",x2-x1,"lightgreen");
-			 const ws = [1,-1,2,-2,5,-5,10,-10,100,-100];
-			 for(i in ws){
-				var s = ws[i]>0?"+"+ws[i]:ws[i];
-				var b = blo0.blBtn(tbW,tbW.id+i,s,"gray");
-				b.onclick = function(_i){
-					return function(){
-						x2 += ws[_i];
-						bw.innerHTML = x2-x1;
-					}
-				}(i);
-			 }
-			 const split1a = blo0.blDiv(eui.v1,eui.v1.id+"split1a","split1a","green");
+			 }(blsTimer);
 
-			 const tbFrames = blo0.blDiv(eui.v1,eui.v1.id+"tbFrames","Frames:","gray");
+ 
+			 const split4tb2 = blo0.blDiv(eui.v1,eui.v1.id+"split4tb2","split4tb2","gray");
+			 const tbFrames = blo0.blDiv(eui.v1,eui.v1.id+"tbFrames","blsFrames:","green");
+			 tbFrames.style.color = "white";
 			 const split1b = blo0.blDiv(eui.v1,eui.v1.id+"split1b","split1b","lightgray");
 			 const tabFrames = blo0.blDiv(eui.v1,eui.v1.id+"tabFrames","tabFrames:","lightgray");
 			 tabFrames.refreshFrames = function(){
 				tabFrames.innerHTML = "";
 				for(i in lsFrame){ 
-				   var b = blo0.blBtn(tabFrames,tabFrames.id+i,i,"gray");
+				   var b = blo0.blBtn(tabFrames,tabFrames.id+i,i,"purple");
 				   b.style.float = "left";
-				   b.onclick = function(_i){
+				   b.onclick = function(_btn,_i,_f){
 					   return function(){ 
-						   _curF = _i;
+							nCurF = _i; 
+						   _ui4curFrame(_btn,v4curF,_f,_i);
 					   }
-				   }(i);
+				   }(b,i,lsFrame);
 				}
 			 }
-			 const newFrame = blo0.blBtn(tbFrames,tbFrames.id+"newFrame","+","gray");
+			 const newFrame = blo0.blBtn(tbFrames,tbFrames.id+"newFrame","+Frame","green");
 			 newFrame.style.float = "left";
+			 newFrame.style.color = "white";
 			 newFrame.onclick = function(){
 				var f = {};
-				f.times = 1;
+				f.time = 5;
+				f.backgroundColor = "gray"; 
+				f.objects = [];
 				lsFrame.push(f); 
 				tabFrames.refreshFrames(); 
 			 }
+			 
+			 const blsPlay = blo0.blBtn(tbFrames,tbFrames.id+"btnBlsPlay",blsTimer.isPlaying()?"blsStop":"blsPlay","green");
+			 blsPlay.style.float = "right";
+			 blsPlay.style.color = "white";
+			 blsPlay.onclick = function(){
+				const b = blsTimer;
+				this.t = b; 
+				if(b.isPlaying()){
+					b.stop();
+					this.innerHTML = "blsPlay";
+				}
+				else{
+					b.start();
+					this.innerHTML = "blsStop";
+				} 
+			 }
+
 
 			 tabFrames.refreshFrames(); 
 			 
 			 const split2 = blo0.blDiv(eui.v1,eui.v1.id+"split2","split2","green");
+			 const v4curF = blo0.blDiv(eui.v1,eui.v1.id+"v4curF","v4curF","gray");
+
 			 const split3= blo0.blDiv(eui.v1,eui.v1.id+"split3","split3","lightblue");
 			 const tbServer = blo0.blDiv(eui.v1,eui.v1.id+"tbServer","tbServer:","gray");
 			 const vServer = blo0.blDiv(eui.v1,eui.v1.id+"vServer","vServer:","lightblue");
 			 
-			 var btnSaveScript = blo0.blBtn(tbServer,tbServer.id+"btnSaveScript","save","lightgreen");
+			 var btnSaveScript = blo0.blBtn(tbServer,tbServer.id+"btnSaveScript","bls2server","lightgreen");
 			 btnSaveScript.style.float = "left"; 
 			 btnSaveScript.onclick = function(){				 
 				var pl = _makeBLS(); 
@@ -5800,18 +6286,19 @@ const gc4BLS = function(){
 					vServer.innerHTML = "<a href ='http://localhost:8080/"+sBlsTitle+".json' target='_blank'>"+sBlsTitle+".json</a>";
 				}); 
 			}
-			var btnMakeMP4 = blo0.blBtn(tbServer,tbServer.id+"btnMakeMP4","mp4","lightblue");
+			var btnMakeMP4 = blo0.blBtn(tbServer,tbServer.id+"btnMakeMP4","makeMP4","lightblue");
 			btnMakeMP4.style.float = "right"; 
 			btnMakeMP4.onclick = function(){	
 					var url = "http://localhost:8080/image/json2video?script=" + sBlsTitle + ".json&video=" + sBlsTitle + ".mp4"; 
-					b._2do = function(txt){vServer.innerHTML = txt};
-					blo0.blAjx(b,url);
+					this._2do = function(txt){vServer.innerHTML = txt};
+					blo0.blAjx(this,url);
 		   }
 		   ex1 = x;
 		   ey1 = y;
 		}
 		else{
-			e = false;
+			e = false;			
+			_curFrameDown(x,y,x1,y1);
 		}
 	}
 	this.edit_move = function(x,y){
@@ -5828,7 +6315,17 @@ const gc4BLS = function(){
 			ex1 = ex2;
 			ey1 = ey2;
 	
+			msgDbg = "msgDbg1 xy:" + x + "," + y;
 		}
+		else{
+			msgDbg = "msgDbg2 xy:" + x + "," + y;
+			_curFrameMove(x,y,x1,y1);
+		}
+
+	}
+	
+	this.edit_up = function(x,y){
+		_curFrameUp(x,y,x1,y1);
 	}
 	this.move_start = function(dx,dy){
 		if(s){ 
@@ -5847,100 +6344,383 @@ const gc4BLS = function(){
 		}
 	}
 
-	var lsFrame = [
-		{
-		"number": "1", 
-		"time": 5, 
-		"objects": [
+	const _newObject = function(_oType,x1,y1,x2,y2,size,color){ 
+		const osDefine = [
 			{
-				"graphic": "line", 
-				"attribute": {
-					"left": 100, 
-					"top": 100, 
-					"right": 100, 
-					"bottom": 300, 
-					"size": 5.5, 
-					"color": "255,0,255"
-				}
-			}, 
+				"id": "id_4_line",
+				"type": "line",
+				"makeData": function(r,x1,y1,x2,y2,size,color){
+					var mdLine = "mdLine";
+					var bMoveLine = false;
+					var mxLine1 = -1, myLine1 = -1,mxLine2 = -1, myLine2 = -1;
+					var mmx = -1;
+
+					r.graphic 			= "line"; 
+					var a = {};
+					a.left 		= x1;
+					a.top 		= y1;
+					a.right 	= x2;
+					a.bottom 	= y2;
+					a.size 		= size;
+					a.color 	= color;
+					r.attribute 		= a;
+
+					const setPointInLine = function(x,y,x1,y1){
+						if(blo0.blPiR(x,y,a.left+x1,a.top+y1,20,20)){
+							bMoveLine = true;
+							mxLine1 = x;
+							myLine1 = y;
+						}
+						else{
+							bMoveLine = false;
+						}
+					}
+					const toMoveLine = function(x,y,x1,y1){
+						if(bMoveLine){
+							mxLine2 = x;
+							myLine2 = y;
+							a.left += mxLine2 - mxLine1;
+							a.right += mxLine2 - mxLine1;
+							a.top += myLine2 - myLine1;
+							a.bottom += myLine2 - myLine1;
+							mxLine1 = mxLine2;
+							myLine1 = myLine2;
+						}
+					}
+					r.getMDMsg = function(){ return mdLine;} 
+					r.downOnMe = function(x,y,x1,y1){  
+						mdLine = "mdLine: " + x + "," + y;
+						setPointInLine(x,y,x1,y1);
+					}
+					r.upOnMe = function(x,y,x1,y1){
+						toMoveLine(x,y,x1,y1);
+						bMoveLine = false;
+					} 
+					r.drawMyself = function(ctx,x,y){
+						var x1 = a.left + x;
+
+						var y1 = a.top + y;
+						var x2 = a.right + x;
+						var y2 = a.bottom + y;
+						ctx.beginPath(); 				 
+						ctx.moveTo(x1,y1);
+						ctx.lineTo(x2,y2);		 
+						ctx.strokeStyle = "rgb(" + a.color+")";
+						ctx.stroke();	
+
+						if(bMoveLine){
+							ctx.fillStyle = "yellow";
+							ctx.fillRect(x1,y1,20,20);
+						}	
+						ctx.fillStyle = "blue";
+						ctx.font = "10px Arial";
+						var s = "[" + x1 + "," + y1 + "," + x2 + "," + y2 + "]";
+						s += " mxLine1=" + mxLine1;
+						s += " myLine1=" + myLine1;
+						s += " mxLine2=" + mxLine2;
+						s += " myLine2=" + myLine2;
+						s += " bMoveLine =" + bMoveLine;
+						s += " mmx = " + mmx;
+						ctx.fillText(s,x1,y1+20);	
+					}
+				},
+				"drawObject": function(r,ctx,x,y){										
+					ctx.fillStyle = "red";
+					ctx.font = "10px Arial";
+					
+					ctx.fillText("line",r.attribute.left+x,r.attribute.top+y);	
+					ctx.fillText(r.getMDMsg(),r.attribute.left+x,r.attribute.top+y -20);			
+					r.drawMyself(ctx,x,y);				
+
+				},
+				
+			},
 			{
-				"graphic": "circle", 
-				"attribute": {
-					"left": 200, 
-					"top": 200, 
-					"width": 200, 
-					"height": 200, 
-					"color": "120,156,20"
+				"id": "id_4_text",
+				"type": "text",
+				"makeData": function(r,x1,y1,x2,y2,size,color){
+					r.text = blo0.blGetTa().value;
+					r.x = x1;
+					r.y = y1;
+					r.size = size;
+					r.color = color;
+				},
+				"drawObject": function(r,ctx,x,y){			
+					ctx.fillStyle = "red";
+					ctx.font = "10px Arial";					
+					ctx.fillText(r.text,r.x+x,r.y+y);	
+				},
+			},
+		];
+		var o = function(_t,_x1,_y1){			
+			var left = _x1;
+			var top = _y1;
+			var r = {};
+			r.getLeft = function(){return left;}
+			r.getTop = function(){return top;}
+			const makeData4Object = function(t){
+				var of = null;
+				for(i in osDefine){					
+					if(osDefine[i].type == t){ 
+						of = osDefine[i];
+						break;
+					}
 				}
-			}, 
-			{
-				"graphic": "rect", 
-				"attribute": {
-					"left": 500, 
-					"top": 400, 
-					"width": 100, 
-					"height": 150, 
-					"color": "142,28,124"
+				if(of){
+					of.makeData(r,x1,y1,x2,y2,size,color);
 				}
-			}
-		], 
-		"backgroundColor": "100,100,100"
-		},
-		{
-		"number": "2", 
-		"time": 5, 
-		"objects": [
-			{
-				"graphic": "line", 
-				"attribute": {
-					"left": 100, 
-					"top": 100, 
-					"right": 100, 
-					"bottom": 300, 
-					"size": 5.5, 
-					"color": "255,0,255"
+			}(_t);
+			return r;
+		}(_oType,x1,y1); 
+		
+		var s = false;
+		var msgO = "msgO"; 
+		o.selfDraw = function(ctx,x1,y1){
+			ctx.fillStyle = "purple";
+			ctx.font = "10px Arial";
+			ctx.fillText(JSON.stringify(o) + "s =" +  s + " - " + msgO,o.getLeft()+x1,o.getTop()+y1);
+			const drawThisObject = function(){ 
+				ctx.fillStyle = "green";
+				ctx.font = "10px Arial";
+				ctx.fillRect(o.getLeft()+x1,o.getTop()+y1,5,5);
+				ctx.fillText(_oType,o.getLeft()+x1,o.getTop()+y1+20);
+
+				var of = null;
+				for(i in osDefine){
+					if(osDefine[i].type==_oType){
+						of = osDefine[i];
+						break;
+					}
 				}
-			}, 
-			{
-				"graphic": "circle", 
-				"attribute": {
-					"left": 200, 
-					"top": 200, 
-					"width": 200, 
-					"height": 200, 
-					"color": "120,156,20"
-				}
-			}, 
-			{
-				"graphic": "rect", 
-				"attribute": {
-					"left": 500, 
-					"top": 400, 
-					"width": 100, 
-					"height": 150, 
-					"color": "142,28,124"
-				}
-			}
-		], 
-		"backgroundColor": "100,100,100"
-		}
-	];
-	var _curF = -1;
-	var _supObjs = [];
-	 
+				 
+				if(of.drawObject){ 					of.drawObject(o,ctx,x1,y1);			}
+				
+			}(); 
+		}  
+		return o;
+	}
+	const _curFrameDown = function(x,y,x1,y1){ 
+		if(nCurF>-1) 		_objCmd.downObjCmd(x,y,x1,y1,lsFrame[nCurF].objects); 
+	}
+	const _curFrameMove = function(x,y,x1,y1){
+		if(nCurF>-1) 		_objCmd.moveObjCmd(x,y,x1,y1,lsFrame[nCurF].objects); 
+	}
+	
+	const _curFrameUp = function(x,y,x1,y1){
+		if(nCurF>-1) 		_objCmd.upObjCmd(x,y,x1,y1,lsFrame[nCurF].objects); 
+	}
+	
 	var _makeBLS = function(){
 		var s = {};
 		var r = {};		
-		r.version 		= "gc4BLS: _makeBLS: bv0.14";
+		r.version 		= "gc4BLS: bv0.15";
 		r.width 		= x2 - x1;
 		r.height 		= y2 - y1;
-		r.music 		= "https://littleflute.github.io/english/NewConceptEnglish/Book2/11.mp3";
-		r.rate 			= "1"; 
+		r.music 		= blsTimer.getVP().src;
+		r.rate 			= function(){
+			var s = "";
+			s += blsTimer.getFPS();
+			return s;
+		}(); 
 		r.frames 		= lsFrame;		
-		r.superObjects 	= _supObjs;	
+		r.superObjects 	= lsSuperObjects;
 		s.request 		= r;			
 		return s;	
 	}
+	
+	const _makeDbgMsgInFrame = function(){
+		var r; 
+		r = msgDbg + " :: v 13 showDebugMsg4BLS: x1y1[" + x1 + ","+ y1 + "]";;
+		return r;
+	}
+	const _ui4curFrame = function(curFrameBtn,_v,f,n){
+		_v.innerHTML = "";
+		const ts = [
+			{	
+				"id": "id_4_time",	
+				"name": "time",
+				"fn4click": function(targetV,myBtn){		fn4settime(targetV);	},
+				"bgc":"Cornsilk"
+			},
+			{	
+				"id": "id_4_bgc",	
+				"name": "bgc",
+				"fn4click": function(targetV,myBtn){	fn4setbackgroundColor(targetV,myBtn);	},
+				"bgc":"BlanchedAlmond"
+			},
+			{	
+				"id": "id_4_objects",	
+				"name": "os",
+				"fn4click": function(targetV,myBtn){ 
+					const os = [
+						{
+							"id":"id_4_objText",
+							"name":"text",
+							"fn2click":function(_v,btn){ 
+								_v.innerHTML = btn.id;
+							},
+							"bgc":"LightBlue"
+						},
+						{
+							"id":"id_4_objLine",
+							"name":"line",
+							"fn2click":function(_v,btn){  
+								_v.innerHTML = btn.id;
+							},
+							"bgc":"PowderBlue"
+						},
+						{
+							"id":"id_4_objEdit",
+							"name":"oEdit",
+							"fn2click":function(_v,btn){  
+								_v.innerHTML = btn.id;
+							},
+							"bgc":"LightSkyBlue"
+						},
+					];
+					const split4CurFrame = blo0.blDiv(targetV,targetV.id+"split4CurFrame","split4CurFrame","lightgreen");
+					const tb = blo0.blDiv(targetV,targetV.id+"tb","tb","gray");
+					const v = blo0.blDiv(targetV,targetV.id+"v","v","white");
+					for(i in os){
+						const b = blo0.blBtn(tb,tb.id+os[i].id,os[i].name,os[i].bgc);
+						b.style.float = "left";
+						b.onclick = function(_b,_os,_i){
+							return function(){			
+								_objCmd.setObjectType(_os[_i].name);					
+								_os[_i].fn2click(v,_b);
+							}
+						}(b,os,i);
+					}
+				},
+				"bgc":"Bisque"
+			},
+		];
+		const splitline1 = blo0.blDiv(_v,_v.id+"splitline1","splitline1","green");	
+		const tb = blo0.blDiv(_v,_v.id+"tb4curFrame","tb4curFrame","lightgreen");	
+		const v = blo0.blDiv(_v,_v.id+"v4curFrame","v4curFrame","gray");	
+		for(i in ts){ 
+			const b = blo0.blBtn(tb,tb.id+ts[i].id,ts[i].name,ts[i].bgc); 
+			b.style.float = "left";
+			b.onclick = function(_b,_ts,_i,_vTarget){
+				return function(){
+					_vTarget.innerHTML = "";
+					_ts[_i].fn4click(_vTarget,_b);
+				}
+			}(b,ts,i,v);
+		}
+
+
+		const fn4settime = function(v){
+			const tb4time = blo0.blDiv(v,v.id+"tb4time","time0.11","brown");		
+			const btn4TimeStatic = blo0.blBtn(tb4time,tb4time.id+"btn4TimeStatic","f.time","gray");
+			btn4TimeStatic.style.float = "left";
+			const btn4TimeVal = blo0.blBtn(tb4time,tb4time.id+"btn4TimeVal",f[n].time,"lightblue");
+			btn4TimeVal.style.float = "left";
+			const ws = [1,-1,2,-2,5,-5,10,-10,20,-10,50,-50,100,-100,200,-200,500,-500,1000,-1000];
+			for(i in ws){
+					var s = ws[i]>0?"+"+ws[i]:ws[i];
+					var b = blo0.blBtn(tb4time,tb4time.id+i,s,"gray");
+					b.onclick = function(_i){
+						return function(){
+							f[n].time += ws[_i];
+							btn4TimeVal.innerHTML = f[n].time;
+						}
+					}(i);
+			}
+		}
+		const fn4setbackgroundColor = function(v,btnBoss){
+			const tb = blo0.blDiv(v,v.id+"tb4backgroundcolor","backgroundcolor0.11","blue");		
+			const static = blo0.blBtn(tb,tb.id+"Static","f.backgroundColor","gray");
+			static.style.float = "left"; 	
+			const val = blo0.blBtn(tb,tb.id+"val",f[n].backgroundColor,"lightgray");
+			val.style.float = "left"; 
+			const fn4Red = function(_tb,_val){
+				const tb = blo0.blDiv(_tb,_tb.id+"tb4Red","red","red");		
+				const v = blo0.blBtn(tb,tb.id+"v","red","gray");
+				const ws = [1,10,111,222];
+				for(i in ws){						
+						var b = blo0.blBtn(tb,tb.id+i,ws[i],"rgb("+ws[i]+",11,11)");
+						b.onclick = function(_i,_ls){
+							return function(){
+								f[n].backgroundColor = _ls[_i]+",0,0";
+								btnBoss.click();
+							}
+						}(i,ws);
+				}
+				
+			}(tb,val);
+			const fn4Green = function(_tb,_val){
+				const tb = blo0.blDiv(_tb,_tb.id+"tb4Green","green","green");		
+				const v = blo0.blBtn(tb,tb.id+"v","green","gray");
+			}(tb,val);
+			const fn4Blue = function(_tb,_val){
+				const tb = blo0.blDiv(_tb,_tb.id+"tb4Blue","blue","blue");		
+				const v = blo0.blBtn(tb,tb.id+"v","blue","gray");
+			}(tb,val);
+		} 
+	}
+	const _objCmd = function(){
+		const c = function(){	
+			var type = "null";
+			var msgObjCmd = "msgObjCmd";
+			var x1 = -1, y1 = -1, x2 = -1, y2 = -1;
+			var bDownCmd = false;
+
+			this.drawObjCmdUI = function(ctx,x,y){
+				ctx.fillStyle = "red";
+				ctx.fillRect(x,y,10,10);
+				var s = msgObjCmd + " type=" + type + ", [" + x1 + "," + y1 + "] - [" + x2 + "," + y2 + "]";
+				ctx.fillText(s,x+20,y+20);
+
+				if(!bDownCmd) return;
+				ctx.beginPath(); 				 
+				ctx.moveTo(x1,y1);
+				ctx.lineTo(x2,y2);		 
+				ctx.strokeStyle = "blue";
+				ctx.stroke();
+			};
+			this.setObjectType = function(t){
+				type = t; 
+			}
+			this.downObjCmd = function(x,y,x0,y0,os){ 
+				x1 = x2 = x;
+				y1 = y2 = y;
+				bDownCmd = true;
+				if("oEdit"==type){
+					for(i in os){
+						if(os[i].downOnMe) os[i].downOnMe(x,y,x0,y0);
+					}
+				}
+			}
+			this.upObjCmd = function(x,y,x0,y0,os){
+				if(bDownCmd){
+					if("line"==type){
+						os.push(_newObject("line",x1-x0,y1-y0,x2-x0,y2-y0,5.5,"0,200,0"));
+					}	
+					if("text"==type){
+						os.push(_newObject("text",x1-x0,y1-y0,x2-x0,y2-y0,25,"0,200,0"));
+					}	 
+					if("oEdit"==type){
+						for(i in os){
+							if(os[i].upOnMe) os[i].upOnMe(x,y,x0,y0);
+						}
+					}	 
+				}				
+				else{
+					msgObjCmd = "upObjCmd:xxx";
+				}
+				x1 = x2 = y1 = y2 = -1;
+				bDownCmd = false;
+			}
+			this.moveObjCmd = function(x,y,x0,y0,os){
+				 
+				x2 = x;
+				y2 = y;
+			}
+
+		};
+		return new c();
+	}();
 }
 
 
