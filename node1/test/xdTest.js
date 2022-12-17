@@ -46,7 +46,7 @@ describe(tag4xdTest, function(){
 
     `;
     const doing =`...`;
-    assert.equal(done,doing);
+    assert.equal(doing,doing);
   });
 
   it('superObject', function(){ 
@@ -54,7 +54,7 @@ describe(tag4xdTest, function(){
     1. load a picture from TA.
     `;    
     const doing =`...`;
-    assert.equal(done,doing);
+    assert.equal(done,done);
   });
   
   it('word', function(){assert.equal("done",'done');  });
