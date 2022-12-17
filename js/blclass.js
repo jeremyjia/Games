@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.312"
+var g_ver_blClass = "CBlClass_bv1.6.342"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -92,7 +92,16 @@ var blon = function(b,d,c1,c2){
 	}
 }
 	var _blMove = function(o,x,y){o.style.left = x;o.style.top = y;};
-	function _on_off_div(b,d){if(d.style.display=="block"){d.style.display="none"; b.style.backgroundColor="red"; }else{d.style.display="block"; b.style.backgroundColor="green"; }};
+	function _on_off_div(b,d){
+		if(d.style.display=="block"){
+			d.style.display="none"; 
+			if(b) b.style.backgroundColor="red"; 
+		}
+		else{
+			d.style.display="block"; 
+			if(b) b.style.backgroundColor="green"; 
+		}
+	};
 	function _on_off_bd_1(b,d){ 
 		if(b.bOnOff){
 			b.bOnOff = false;
@@ -154,6 +163,7 @@ function CBlClass ()
 		var d= blo0.blMD(_id, "blPaint-"+_id,_x,_y,_w,_h,blGrey[1]);
 		if(!d.load){
 			d.load = true;	 
+			var xHit = -1, yHit = -1;
 			var items = [];   
 			d.parseTa = function(){ 
 				const x0 = 200, y0 = 100, dx = 30, dy = 33;  
@@ -188,6 +198,35 @@ function CBlClass ()
 
 			}(); 
 
+			d.selectItem = function(x,y){
+				for(i in items){
+					const oi = items[i];
+					if(blo0.blPiR(x,y,oi.x,oi.y,oi.w,oi.h)){						
+						if (typeof oi.selectMe == "function") {
+							oi.selectMe();
+						}
+					} 
+				}
+			}
+			d.turnoverItem = function(x,y){
+				for(i in items){
+					const oi = items[i];
+					if(blo0.blPiR(x,y,oi.x,oi.y,oi.w,oi.y)){						
+						if (typeof oi.turnMeOver == "function") {
+							oi.turnMeOver();
+						}
+					}
+				}
+			}
+			d.hitItems = function(x,y){
+				xHit = x;
+				yHit = y;
+				for(i in items){
+					if (typeof items[i].hitTest == "function") {
+						items[i].hitTest(x,y);
+					}
+				}
+			}
 			d.addImgItem = function(x,y,w,h,src){
 				var i = {};  i.x = x; i.y = y; i.w = w; i.h = h;				
 				var block = new Image(); 
@@ -204,13 +243,29 @@ function CBlClass ()
 			}
 			d.addItem = function(type,x,y,w,h,iHandle){
 				var i = {}; i.type = type; i.x = x; i.y = y; i.w = w; i.h = h;
+				var clrFill = "lightgreen";
+				var bSelect = false;
+				var bTurnover = false;
+
 				i.draw = function(ctx){
 					if(type == "rect"){
-						ctx.fillStyle = "blue"; 
+						ctx.fillStyle = bTurnover?clrFill:"black"; 
 						ctx.fillRect(i.x,i.y,i.w,i.h);
+						if(bSelect){
+							ctx.fillStyle = "brown"; 
+							ctx.fillRect(i.x,i.y,15,15);
+						} 
+					}
+					else if(type == "turn5Items"){
+						ctx.fillStyle = bTurnover?clrFill:"black"; 
+						ctx.fillRect(i.x,i.y,i.w,i.h);
+						if(bSelect){
+							ctx.fillStyle = "brown"; 
+							ctx.fillRect(i.x,i.y,5,5);
+						} 
 					}
 					else if(type == "div"){
-						ctx.fillStyle = "lightgreen"; 
+						ctx.fillStyle = clrFill; 
 						ctx.fillRect(i.x,i.y,i.w,i.h);
 						if(iHandle&&iHandle.drawMe){
 							iHandle.drawMe(ctx,i.x,i.y,i.w,i.h);
@@ -224,9 +279,26 @@ function CBlClass ()
 					}
 				}
 				i._2move = function(dx,dy){ i.x += dx; i.y += dy;}
-				
+				i.hitTest = function(_x,_y){
+					if(blo0.blPiR(_x,_y,i.x,i.y,i.w,i.h)){
+						clrFill = "red";
+					}
+					else{
+						clrFill = "blue";
+					}
+				}
+				i.selectMe = function(){
+					bSelect = !bSelect; 
+				}
+				i.turnMeOver = function(){
+					bTurnover = !bTurnover;
+				}
+				i.selectStatus = function(){
+					return bSelect;
+				}
 				if(iHandle){ iHandle._followMe(i);}
 				items.push(i);
+				return i;
 			}
 			d.getItems = function(){ return items;}
 			d.drawItems = function(ctx){
@@ -238,9 +310,33 @@ function CBlClass ()
 				ctx.fillStyle = "#FF0000";
 				ctx.font = "30px Arial";
 				ctx.fillText("l=" + items.length, 150,50);
+				ctx.fillStyle = "#aa11bb";
+				ctx.fillText("hit at [" + xHit + "," + yHit + "]", 250,50);
 				
 				for(i in items){
 					items[i].draw(ctx);
+				}
+			}
+			d.turn5anonce = function(handle){
+				var n = 0;
+				var si = [];
+				for(i in items){
+					if (typeof items[i].selectStatus == "function") {
+						if(items[i].selectStatus()){
+							n++;
+							si.push(items[i]);
+						}  
+					}
+				}
+				if(5==n){
+					for(j in si){
+						si[j].turnMeOver();
+						si[j].selectMe();
+					}
+					handle.okMsg();
+				}
+				else{
+					handle.errorMsg();
 				}
 			}
 			var x = 0, y = 0;
@@ -334,6 +430,55 @@ function CBlClass ()
 				this.funMU = function(){}
 				this.funMM = function(){}
 			};
+			var CO_Hit = function(){
+				this.getName = function(){return "HitTest";}
+				this.funMD = function(){				 
+					d.hitItems(x,y);
+				}
+				this.funMU = function(){}
+				this.funMM = function(){}
+			};
+			var CO_Select = function(){
+				this.getName = function(){return "toSelect";}
+				this.funMD = function(){				 
+					d.selectItem(x,y);
+				}
+				this.funMU = function(){}
+				this.funMM = function(){}
+			};
+			var CO_Turnover = function(){
+				this.getName = function(){return "toTurnover";}
+				this.funMD = function(){				 
+					d.turnoverItem(x,y);
+				}
+				this.funMU = function(){}
+				this.funMM = function(){}
+			};
+			var CO_Turn5Over = function(){
+				var n = 0;
+				var fs = "gray";
+				const i = d.addItem("turn5Items",666,20,44,33);
+				i.draw = function(ctx){					
+					ctx.fillStyle = fs; 
+					ctx.fillRect(i.x,i.y,i.w,i.h); 
+					ctx.font = "30px Arial";
+					ctx.strokeText(n, i.x, i.y);
+
+				}
+				i.errorMsg = function(){
+					fs = "red";
+				}
+				i.okMsg = function(){
+					fs = "green";
+					n++;
+				}
+				this.getName = function(){return "toTurn5Over";}
+				this.funMD = function(){	
+					d.turn5anonce(i);	
+				}
+				this.funMU = function(){}
+				this.funMM = function(){}
+			};
 			var CO_Rect = function(){
 				this.getName = function(){return "rectangle";}
 				this.funMD = function(){				
@@ -342,7 +487,7 @@ function CBlClass ()
 					ctx.font = "30px Arial";
 					ctx.strokeText(this.getName(), x, y);
 
-					d.addItem("rect",x,y,150,75);
+					d.addItem("rect",x,y,44,33);
 				}
 				this.funMU = function(){}
 				this.funMM = function(){}
@@ -444,9 +589,14 @@ function CBlClass ()
 			};
 			var o1 = new CO_Circle(vc,st);		d.os.push(o1); 
 			var o2 = new CO_Rect();				d.os.push(o2); 
-			var o2 = new CO_FreeDraw();			d.os.push(o2); 
-			var o2 = new CO_Img(vc,st);			d.os.push(o2); 
-			var o2 = new CO_Div(vc,st);			d.os.push(o2); 
+			var o3 = new CO_FreeDraw();			d.os.push(o3); 
+			var o4 = new CO_Img(vc,st);			d.os.push(o4); 
+			var o5 = new CO_Div(vc,st);			d.os.push(o5); 
+			var o6 = new CO_Hit();				d.os.push(o6); 			
+			var o7 = new CO_Select();			d.os.push(o7); 	
+			var o8 = new CO_Turnover();			d.os.push(o8); 
+			var o9 = new CO_Turn5Over();		d.os.push(o9);
+			
 
 			
 			d.btnOs = [];
@@ -490,6 +640,138 @@ function CBlClass ()
 			}(d)); 
 		}
 		return d;
+	}
+	this.c = function(n){
+		const cs = ["#00FFFF","#00CCFF","#00CCCC","#00CC99","#009999","#009966","#006666","#006633","#006600","#003300",//0-9
+		"#6666CC","#6633CC","#663399","#660099","#663366","#660066","#663333","#663300","#660033","#660000",//10-19
+	    ];
+		return cs[n];
+	}
+	this.blAudioTimer = function(){	
+		const r = function() {	
+			var bRun = false;
+			var fps = 1;
+			var n = 0; 
+			var t1 = Date.now();
+			var t2 = Date.now();
+			const vp = blo0.blc4Video(t1);
+			var ct = 0;
+
+			var fn4Loop = function(){
+				if(0==n) vp.play();
+				setTimeout(() => {
+					n++; 
+					t2 = Date.now();
+					ct = vp.currentTime;
+					if(bRun) fn4Loop();
+				}, 1000/fps);
+			}
+			var o = {};
+			o.stop = function(){
+				bRun = false; 
+				vp.pause();
+				vp.currentTime = ct = 0;
+			}
+			o.start = function(){
+				bRun = true;
+				n = 0; 
+				t1 = Date.now();
+				fn4Loop();
+			}
+			o.isPlaying = function(){
+				return bRun;
+			}
+
+			o.paintCurFrame = function(ctx,_lsf,n,x1,y1,x2,y2){
+				ctx.fillStyle = function(){
+					var c = n>-1?_lsf[n].backgroundColor:"Khaki";
+					if("200,100,200"==c ||
+						"100,200,200"==c ||
+						"222,0,0"==c  ||
+						"111,0,0"==c  ||
+						"10,0,0"==c  ||
+						"1,0,0"==c  
+					) c = "rgb(" + c + ")";
+					return c;
+				}(); 
+				ctx.fillRect(x1,y1,x2-x1,y2-y1);
+				 
+				if(n>-1){
+					const os = _lsf[n].objects;
+					for(i in os){
+						os[i].selfDraw(ctx,x1,y1);
+					}
+				}
+			}
+			o.setFPS = function(n){
+				fps = n;
+			}
+			o.getFPS = function(){
+				return fps;
+			}
+			o.getVP = function(){ return vp;}
+			o.getFrameNo = function(l,nf){
+				var nr = 0;
+				var m = 0;
+				var n = 0;
+				for(i in l){
+					m += l[i].time;
+					if(nf<=m){
+						nr = n;
+						break;
+					}
+					n++;
+				}
+				return nr;
+			}
+			o.drawOnLoop = function(cvs,_thisBLS,x1,y1,x2,y2){		
+				var ctx = cvs.getContext("2d");		
+				if(bRun){ 	
+					const _frms = _thisBLS.getFrames();
+					ctx.fillStyle = "lightblue";
+					ctx.fillRect(x1,y1,x2-x1,y2-y1);
+					this.paintCurFrame(ctx,_frms,this.getFrameNo(_frms,n),x1,y1,x2,y2);
+					_thisBLS.paintSuperObjects(cvs,n);
+				}	
+				ctx.fillStyle = "blue";
+				ctx.font = "10px Arial";
+				var s = " Timer: bRun = " + bRun;
+				s += " n = " + n; 
+				s += " t1 = " + t1; 
+				s += " t2 = " + t2;  
+				s += " t2-t1 = " + (t2-t1)/1000 + "s";
+				s += " fps = " + fps;
+				ctx.fillText(s, x1,y1 + 20);
+			}
+			return o;
+		}();
+		return r;
+	}
+	this.blWrapPlx = function(cvs,_pt,x1,y1){
+		var pt2 = _pt.replace("myCanvas",cvs.id);
+		var s = "var CBlsPlx = function(cvs,x1,y1){";
+		s += '       var x0 = x1, y0 = y1;';
+		s += '       var ctx = cvs.getContext("2d");';
+		s += '       var nc = 0;';
+		s +=         pt2;
+		s += "       this.v = 123;";  
+
+		s += "       this.callPlx = function(n,x,y){";
+		s += '          if(1){'
+		s += '          	nc++;';
+		s += '          	ctx.fillText("nc=" + nc,x+x0,y+y0-60);';
+		s += "          	animateFrame(n);";
+		s += '          }'; 
+		s += '          return n;';
+	    s += '        };';	
+
+		s += "       this.setPlxXY = function(x,y){"; 
+	    s += '            x0 = x; y0 = y;';		
+	    s += '        };';		
+
+		s += "    }";
+		eval(s);
+		return new CBlsPlx(cvs,x1,y1);  
 	}
 	this.f2do =  function (ctx,_x,_y){
 		var x = _x;
@@ -582,16 +864,19 @@ function CBlClass ()
 		};
 	}
 	var _oTest = new CTest();
-	
-	var _blVideo = document.createElement("VIDEO");
-	_blVideo.id = "id_blVideo";
-	if (_blVideo.canPlayType("video/mp4")) {
-		_blVideo.setAttribute("src","https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3");
+	this.blc4Video = function(id){
+		var v = document.createElement("VIDEO");
+		v.id = id;
+		if (v.canPlayType("video/mp4")) {
+			v.setAttribute("src","https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3");
+		}
+		v.setAttribute("width", "1");
+		v.setAttribute("height", "1"); 
+		document.body.appendChild(v);
+		return v;
 	}
-	_blVideo.setAttribute("width", "1");
-	_blVideo.setAttribute("height", "1"); 
-	document.body.appendChild(_blVideo);
-
+	var _blVideo = this.blc4Video("id_4_blc_video");
+	 
 	this.v = g_ver_blClass;
 	this.blrAboutMe= function(b,d){		
 		var s = ""; 
@@ -1767,6 +2052,22 @@ function CBlClass ()
         xmlhttp.send();
     }
 
+	this.blBtns = function(bs,tb,v,hc,lc){
+		var ls = [];
+		for(i in bs){
+			const btn = blo0.blBtn(tb,tb.id+bs[i].id,bs[i].name,bs[i].color);
+			btn.style.float = bs[i].float;
+			btn.onclick = function(_btn,_i,_v){
+			  return function(){
+				bs[_i].click(_btn,_v);
+				var bSkip = bs[_i].skip?bs[_i].skip:false;
+				if(!bSkip) blo0.blMarkBtnInList(_btn,ls,hc?hc:"yellow",lc?lc:"grey");
+			  }
+			}(btn,i,v);
+			var bSkip = bs[i].skip?bs[i].skip:false;
+			if(!bSkip) 			ls.push(btn);
+		  }
+	}
     this.blDiv = function (oBoss,id,html,bkClr){
         var r = document.getElementById(id);
         if(!r){
@@ -2180,20 +2481,52 @@ function CBlClass ()
 		}
 	}
 	this.blPOST = function(_url,_jsonData,_cb){  
+		var r = {};
 		var xhr = new XMLHttpRequest();
 		xhr.withCredentials = true;
 		xhr.addEventListener("readystatechange", function() {
 			if(this.readyState === 4 && this.status==200) {
-				_cb( this.responseText );
+				r.responseText = this.responseText;
+				r.status = 1;
+				_cb(r);
 			}	
 			else{
-				_cb("error: " + this.readyState + "," + this.status);
+				r.error = "error: " + this.readyState + "," + this.status;
+				r.status = 0;
+				_cb(r);
 			}
 		});
 		xhr.open("POST", _url);
 		xhr.setRequestHeader("Content-Type", "text/plain");
 		xhr.send(JSON.stringify(_jsonData));
 	}	
+	this.blSendTextByPOST = function(_url,txt,_cb){  
+		var r = {};
+		var xhr = new XMLHttpRequest();
+		xhr.withCredentials = true;
+		xhr.addEventListener("readystatechange", function() {
+			if(this.readyState === 4 && this.status==200) {
+				r.responseText = this.responseText;
+				r.status = 1;
+				_cb(r);
+			}	
+			else if(this.readyState === 4 && this.status==0){ 
+				r.responseText = this.responseText;
+				r.status = 2;
+				r.errorMsg = "xhr: " + this.readyState + "," + this.status;
+				_cb(r);
+			} 
+			else{
+				r.status = 0;
+				r.errorMsg = "xhr: " + this.readyState + "," + this.status;
+				_cb(r);
+			}
+		});
+		xhr.open("POST", _url);
+		xhr.setRequestHeader("Content-Type", "text/plain");
+		xhr.send(txt);
+	}	
+	
 	
 	this.blLoadGithubIssueComments = function(tb,icURL,ta){
 		
@@ -2262,19 +2595,74 @@ function CBlClass ()
 	}
 
 	 	
-	this.blCheckURL = function(url,v,cb) {
-		const xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
-		  if (this.readyState == 4 && this.status == 200) {
-			//v.innerHTML = "good";//this.responseText;
-			if(cb) cb(v);
-		  }
-		  else{
-			v.innerHTML = "cannot reach!";        
-		  }
-		};
-		xhttp.open("GET", url);
-		xhttp.send();
+	this.blCheckOnline = function(config) {
+		var img = new Image();
+        img.onload = function () { if (typeof config.success == 'function') config.success(config.url); }
+        img.onerror = function () { if (typeof config.error == 'function') config.error(config.url); }
+        img.src = config.url + (config.isImage ? '' : '/favicon.ico');
+	}
+	this.blLog = function(){//xd2do1
+
+	}
+	this.blList = function(){//xd2do1
+		const C4BlList = function(id){
+			const ghi = "[i5c1]";
+			const ui = blo0.blMD(id,ghi+"_"+id,blo0.c(1));
+			const _thisList = this;
+			this.getUI = function(){ return ui;} 
+			this.addBtn2Tb = function(tb,_v,cbf){
+			  if(!tb.btnList) tb.btnList = [];
+			  var n = tb.btnList.length;
+			  var btn = blo0.blBtn(tb,tb.id+"_btn_"+n,n,"gray");
+			  btn.onclick = function(_btn,_bs){
+				  return function(){
+					 blo0.blMarkBtnInList(_btn,_bs,"yellow","grey");
+					 _v.innerHTML = _btn.id;
+					 tb.curBtn = _btn;
+				  }
+			  }(btn,tb.btnList);
+			  tb.btnList.push(btn);
+			}
+			this.newToolbar = function(d,tbName,color){
+				const bs = [
+		  {"id":1,
+		  "name":"+",
+		  "color":blo0.c(11),
+		  "float":"left",
+		  "clickMe":function(tb,v){
+			  _thisList.addBtn2Tb(tb,v,null); 
+		   }
+		},
+		{"id":2,
+		  "name":"--",
+		  "color":blo0.c(13),
+		  "float":"left",
+		  "clickMe":function(tb,v){
+				tb.innerHTML = "";
+				tb.btnList = [];
+			v.innerHTML = tb.id + ":" + tb.curBtn.id;
+		  }}];
+				const tb = blo0.blDiv(d,d.id+tbName,tbName,color);
+				const tb1 = blo0.blDiv(d,d.id+tbName+"tb1","tb1","purple");
+				const v4tb = blo0.blDiv(d,d.id+tbName+"v","v4tb","gray");
+				for(i in bs){
+					const btn = blo0.blBtn(tb,tb.id+bs[i].id,bs[i].name,bs[i].color);
+					btn.style.float = bs[i].float?bs[i].float:"right";
+					btn.onclick = function(_i){
+						return function(){bs[_i].clickMe(tb1,v4tb);}
+					}(i);
+				}
+				return tb;
+		   };
+		}
+		const l = new C4BlList("bllist 31");  
+		/* //usage:
+		l.newToolbar(l.getUI(),"tb1",blo0.c(12));
+		l.newToolbar(l.getUI(),"tb2",blo0.c(12));
+		l.newToolbar(l.getUI(),"tb3","green");
+		_on_off_div(null,l.getUI ());
+		//*/
+		return l;
 	}
 	this.blParseTask = function(_srcURL,_vRes,_cbParse){		
 		const C4ParseTask = function(_srcURL,_vRes,_cbParse){ 
@@ -2299,26 +2687,188 @@ function CBlClass ()
 		const o = new C4ParseTask(_srcURL,_vRes,_cbParse);
 		return o;
 	}
-	this.blDownloadTask = function(_svrAPI,_srcURL,_saveAsFileName,_vRes){		
+	this.blBls2VideoTask = function(blsSrc,videoName,v,cbWork){
+		const CBls2Video = function(blsSrc,videoName,v,cbWork){
+			const oi = {};
+			oi.api = "http://localhost:8080/image/json2video?script=";
+			oi.fn = videoName;
+			oi.src = blsSrc;   
+			oi.v = v;
+
+			var b = false;
+
+			var times2Try = 0;
+			this.type = blc_4_t_MAKE_VIDEO;
+			
+			this.done = function(){return b;};
+			this.tickLog = function(){return times2Try;};
+			this.bl2Do = function(){	 
+				var url = oi.api + "?url="+ oi.src + "&video="+ oi.fn;  
+				var w = {};
+				times2Try = 0; 
+				w._2do = function(txt){ 
+					times2Try++;
+					if("error xd 11"==txt){
+						oi.v.innerHTML = `times2Try=${times2Try} rs: not 4 && not 200.` ; 
+						b = false;
+					}
+					else{
+						oi.v.innerHTML = `times2Try=${times2Try} ${txt}`; 
+						oi.responseText;
+						cbWork(oi.v,oi);
+						b = true; 
+					}
+				}
+				blo0.blAjx(w,url);	
+			};
+		}
+		const o = new CBls2Video(blsSrc,videoName,v,cbWork);
+		return o;
+	}
+	this.blMakeBlsTask = function(mp3,lrc,v,cbSendOK){
+		const CMakeBlsTask = function(mp3,lrc,v,cbSendOK){
+			const o = {};
+			o.mp3 = mp3;  
+			o.lrc = lrc;
+			o.fn  = "bls1.json";
+			var b = false;
+			var nSend = 0;
+			const blsJSON = function(){
+				const blos = {
+					"request": {
+						"version": "0.0.16",
+						"description":"LRC字幕超级对象",
+						"width": 1024,
+						"height": 768,
+						"music": "${VAR_MUSIC}",
+						"rate": "2",
+						"frames": [
+							{
+								"number": "1",
+								"time": "${VAR_FRAMES}",
+								"objects": [
+									{
+										"text": "${VAR_TITLE}",
+										"x": 80,
+										"y": 320,
+										"size": 60,
+										"color": "160,32,240",
+										"layer": 2
+									}
+								],
+								"backgroundColor": "100,149,237"
+							}
+						],
+						"superObjects": [
+							{
+								"type": "subtitle",
+								"frameRange": "(1,${VAR_FRAMES})",
+								"attribute": {
+									"script": "${VAR_LRC_PATH}",
+									"x1": 20,
+									"y1": 670,
+									"size": 30,
+									"color": "255,255,0",
+									"replace":[
+										 {
+										   "regex":"American",
+										   "target":"美国"
+										 },
+										 {
+										   "regex":"更多听力请访问51VOA.COM",
+										   "target":"漂泊者乐园团队制作"
+										 }
+									]
+								},
+								"layer": 1
+							},
+							{
+								"type": "picture",
+								"attribute": {
+									"x1": 220,
+									"y1": 200,
+									"x2": 510,
+									"y2": 380,
+									"size": -1,
+									"color": "255,0,0",
+									"name": "${VAR_IMG_PATH}"
+								},
+								"frameRange": "(1,${VAR_TIME})",
+								"action": {
+									"trace": "y=0*x*x+0*x+200",
+									"step": 0
+								}
+							} 
+						],
+						"Macros": [
+							{
+								"name": "VAR_TITLE",
+								"value": "LRC字幕超级对象-演示程序"
+							},
+							{
+								"name": "VAR_MUSIC",
+								"value": o.mp3
+							},
+							{
+								"name": "VAR_LRC_PATH",
+								"value": o.lrc
+							},
+							{
+								"name": "VAR_IMG_PATH",
+								"value": "https://img.51voa.cn/1/C501D07B-81C5-462A-89C8-E630C2DD9A1F_w268_r1.jpg"
+							}
+						]
+					}
+				};
+				return blos;
+			}();
+
+			this.type = blc_4_t_MP3LRC2BLS;
+			
+			this.done = function(){return b;};
+			this.tickLog = function(){return nSend;};
+			this.bl2Do = function(){	
+				var url = "http://localhost:8080/json?fileName=" + o.fn; 
+				nSend = 0;
+				blo0.blPOST(url,blsJSON,function(oReturn){
+					nSend++;
+					 
+					v.innerHTML = `nSend=${nSend}  , oReturn=${JSON.stringify(oReturn)}`; 
+				}); 	 
+			};
+		}
+		const o = new CMakeBlsTask(mp3,lrc,v,cbSendOK);
+		return o;
+	}
+	this.blDownloadTask = function(_svrAPI,_srcURL,_saveAsFileName,_vRes,_cbOK){		
 		const C4Download = function(_svrAPI,_srcURL,_saveAsFileName,_vRes){
 			const svrAPI = _svrAPI;
 			const srcURL = _srcURL;
 			const fn = _saveAsFileName;
 			const vRes = _vRes;
 			var b = false;
+			var nTry = 0;
 
 			this.type = blc_4_t_DOWNLOAD;
 			
 			this.done = function(){return b;};
+			this.tickLog = function(){return nTry;};
 
 			this.bl2Do = function(){			
 				var url = svrAPI + "?url="+ srcURL + "&filename="+ fn;  
 				var w = {};
-				w._2do = function(txt){
-					var str = "var a =" +  txt;  
-					eval(str);  
-					vRes.innerHTML =  a.filename; 
-					b = true;
+				nTry = 0;
+				w._2do = function(txt){ 
+					nTry++;
+					if("error xd 11"==txt){
+						vRes.innerHTML = `nTry=${nTry} rs: not 4 && not 200.` ; 
+						b = false;
+					}
+					else{
+						vRes.innerHTML = `nTry=${nTry} ${txt}`; 
+						b = true; 
+						_cbOK(vRes,txt);
+					}
 				}
 				blo0.blAjx(w,url);		 
 			};
@@ -2326,10 +2876,34 @@ function CBlClass ()
 		const o = new C4Download(_svrAPI,_srcURL,_saveAsFileName,_vRes);
 		return o;
 	}
-	this.blTask = function(){
-		
+	this.blIdleTask = function(_second){
+		const C4IdleTask = function(){ 
+			var oi = {};
+			oi.name = "Idle_Task";
+			oi.waitTime = _second + "s";
+			oi.innerTick = 0;
+			oi.nDo = 0;
+			var b = false; 
+			var idleTime = _second*1000;
+
+			this.type = blc_4_t_IDLE;
+			this.done = function(){return b;};
+			this.tickLog = function(){oi.innerTick++; return `${JSON.stringify(oi)}`;};
+			this.bl2Do = function(){
+				oi.nDo++;
+				if(oi.innerTick>0) return;
+
+				setTimeout(() => {
+					b = true;
+				}, idleTime);
+			};
+		};
+		const o = new C4IdleTask();
+		return o;
+	}
+	this.blTask = function(){		
 		const C4Task = function(){
-			var n = 0;
+			var nTaskTick = 0;
 			var btn = null;
 			var inf = null;
 
@@ -2341,10 +2915,14 @@ function CBlClass ()
 			}
 			this.getInfo = function(){
 				var s = "";
-				s += n + "<br>";
+				s += nTaskTick + "<br>";
 				if(inf){
 					if(blc_4_t_DOWNLOAD==inf.type)	s += "t = blc_4_t_DOWNLOAD";
 					if(blc_4_t_PARSE==inf.type)	s += "t = blc_4_t_PARSE";
+					if(blc_4_t_IDLE==inf.type)	s += "t = blc_4_t_IDLE";
+					if(blc_4_t_MAKE_VIDEO==inf.type)	s += "t = blc_4_t_MAKE_VIDEO";
+					if(blc_4_t_MP3LRC2BLS==inf.type)	s += "t = blc_4_t_MP3LRC2BLS";
+					
 				}
 				else 	s+= "t = unkown";
 				return s;
@@ -2353,8 +2931,8 @@ function CBlClass ()
 				if(l.lock) l.lock();
 			}
 			this.doing = function(l){
-				n++;
-				if(n==1){
+				nTaskTick++;
+				if(nTaskTick==1){
 					inf.bl2Do();
 				}
 				if(inf.done()){
@@ -2366,7 +2944,18 @@ function CBlClass ()
 				}
 
 				if(btn) {
-					btn.innerHTML = n;
+					var s = inf.tickLog; 
+					if(s==undefined){
+						s= "no tickLog function.";
+					}
+					else{
+						s= inf.tickLog(); 
+						if(nTaskTick>5){
+							nTaskTick = 2;
+							inf.bl2Do();
+						}
+					}
+					btn.innerHTML = `nTaskTick=${nTaskTick} nTry=${s}`;
 				}
 			}
 		}
@@ -2389,8 +2978,7 @@ function CBlClass ()
 		return o;
 	}
 	this.C4AutoRun = function(){	
-		const blco1 = this; 
-		const ver = "4AutoRun_v0.14";
+		const blco1 = this;  
 		var tb = null,v=null; 
 		var ls = [];
 		var lock4Run 	= blco1.blLock();
@@ -2398,73 +2986,177 @@ function CBlClass ()
 		var f = function(){
 			var o = {};
 			o.uiBuild = function(d){
-				tb = blco1.blDiv(d,"tb_4_AutoRun","tb","gray");
-				const lv = blco1.blDiv(d,"lv_4_AutoRun","-","green");
-				v = blco1.blDiv(d,"v_4_AutoRun","v","lightgray");	
+				const makeAutoRunTaskTb = function(){
+					tb = blco1.blDiv(d,"tb_4_AutoRun","tb","gray");
+					tb.createBLS = function(mp3,lrc,v,cb){
+						const o = tb.getObj();
+						const t = blco1.blTask();
+						var i = blco1.blMakeBlsTask(mp3,lrc,v,cb);
+						t.setInfo(i);
+						o.addTask(t); 
+					}
+					tb.createVideo = function(blsSrc,fnVideo,v,cb){
+						const o = tb.getObj();
+						const t = blco1.blTask();
+						var i = blco1.blBls2VideoTask(blsSrc,fnVideo,v,cb);
+						t.setInfo(i);
+						o.addTask(t); 
+					}
+					tb.waitSomeTime = function(secTime){
+						const o = tb.getObj();
+						const t = blco1.blTask();
+						var i = blco1.blIdleTask(secTime);
+						t.setInfo(i);
+						o.addTask(t);
+					}
+					tb.downloadPage = function(_url,_filename,_v,_cb){ 
+						const o = tb.getObj();
+						const t = blco1.blTask();
+						const svrAPI = "http://localhost:8080/download";  
+						var i = blco1.blDownloadTask(svrAPI ,_url,_filename,_v,_cb); 
+						t.setInfo(i);
+						o.addTask(t);
+					};
+					tb.parsePage = function(_url,_v,cbfParse){ 
+						const o = tb.getObj();
+						const t = blco1.blTask();
+						var i = blco1.blParseTask(_url,_v,cbfParse);
+						t.setInfo(i);
+						o.addTask(t);
+					};
+				}();
+				const lv1 = blco1.blDiv(d,"lv1_4_AutoRun","-","green");
+				const lv2 = blco1.blDiv(d,"lv2_4_AutoRun","-","Plum");
+				v = blco1.blDiv(d,"v_4_AutoRun","v","Pink");	
 				
 				vTask = blco1.blDiv(d,"vTask","vTask","lightblue");	
-				const btnTimer = blco1.blBtn(v,v.id+"btnTimer","btnTimer","yellow");
-				btnTimer.style.float = "left";
+				const btnTimer = blco1.blBtn(v,v.id+"btnTimer","btnTimer","green");
+				btnTimer.style.float = "right";
+				btnTimer.style.color = "white";
 				const btnCurTask = blco1.blBtn(v,v.id+"btnCurTask","btnCurTask","brown");
-				btnCurTask.style.float = "left";
+				btnCurTask.style.float = "right";
 				btnCurTask.style.color = "white";
 				btnCurTask.onclick = function(){
 					lock4Run.unlock();
 				}
-				const btn_51voaIndex = blco1.blBtn(v,v.id+"btn_51voaIndex","51voaIndex","lightblue");
-				btn_51voaIndex.style.float = "left";
-				btn_51voaIndex.style.color = "white";
-				btn_51voaIndex.onclick = function(){
-					const tb = bl$("tb_4_AutoRun");
-					const v = bl$("vTask");
-					const o = tb.getObj();
-					const t = blo0.blTask();
-					const svrAPI = "http://localhost:8080/download";
-					const srcURL = "https://www.51voa.com/";
-					const fn = "51voa_Index.html";
-					var i = blo0.blDownloadTask(svrAPI ,srcURL,fn,v); 
-					t.setInfo(i);
-					o.addTask(t);
-				}
-				const btn_parse_51voaIndex = blco1.blBtn(v,v.id+"btn_parse_51voaIndex","parse_51voaIndex","lightblue");
-				btn_parse_51voaIndex.style.float = "left";
-				btn_parse_51voaIndex.style.color = "white";
-				btn_parse_51voaIndex.onclick = function(){
-					const tb = bl$("tb_4_AutoRun");
-					const v = bl$("vTask");
-					const o = tb.getObj();
-					const t = blo0.blTask();
-					const srcURL = "http://localhost:8080/51voa_Index.html"; 
-					var i = blo0.blParseTask(srcURL,v,function(v,txt){
-						v.innerHTML = "";
-						const lv1 = blco1.blDiv(v,v.id+"lv1","lv1","blue");
-						const vDate = blco1.blDiv(v,v.id+"vDate","date","lightgreen");
-						const vNew = blco1.blDiv(v,"id4vParse","new","lightblue");
-						var a = txt.split('更新时间：');
-						var b = a[1].split('）');
-						var c = b[0].split('-');
-						var d = c[0]+"/"+c[1]+"/"+c[2];
-
-						var e = a[1].split(d); 
-						const url51voa = "https://51voa.com";
-						var s = "";
-						for(var i=0; i<e.length-1;i++){
-							s += "<br>";
-							var f = e[i].split('href="'); 
-							var sPage = "";
-							for(var j=1; j<f.length;j++){
-								var g = f[j].split("</a>");
-								sPage += '<a href="' +url51voa + g[0]+'</a> * ';
+				const makeTasks = function(){
+					const tasks = [
+						{
+						"id":-5,
+						"name":"wait_2s",
+						"runTask":function(){ 
+							tb.waitSomeTime(2);		
+						},
+						"color":"gray",
+						"float":"right"
+					},
+					{
+						"id":-4,
+						"name":"wait_5s",
+						"runTask":function(){ 
+							tb.waitSomeTime(5);		
+						},
+						"color":"gray",
+						"float":"right"
+					},
+						{
+							"id":-3,
+							"name":"createBLS",
+							"runTask":function(){ 
+								tb.createBLS(
+									"https://files.51voa.cn/202212/scientists-study-oldest-known-dna.mp3",
+									"https://www.51voa.com/lrc/202212/scientists-study-oldest-known-dna.lrc",
+									bl$("vTask"),
+									function(_v,_o){
+										 //to do...
+								});		
+							},
+							"color":blco1.c(13),
+							"float":"left"
+						},
+						{
+							"id":-2,
+							"name":"bls2MP4",
+							"runTask":function(){ 
+								tb.createVideo(
+									"video.json",
+									bl$("vTask"),
+									function(_v,_o){
+										//to do...
+								});		
+							},
+							"color":blco1.c(12),
+							"float":"right"
+						},
+						
+						{
+							"id":1,
+							"name":"dl-51voaIndex",
+							"runTask":function(){ 
+								tb.downloadPage("https://www.51voa.com/","51voa_Index.html",bl$("vTask"),
+									function(_v,txt){
+										_v.innerHTML = txt;
+								});		
+							},
+							"color":blco1.c(3),
+							"float":"right"
+						},
+						{
+							"id":2,
+							"name":"parse-51voaIndex",
+							"runTask":function(){ 
+								tb.parsePage("http://localhost:8080/51voa_Index.html",bl$("vTask"),function(v,txt){
+									v.innerHTML = "";
+									const lv1 = blco1.blDiv(v,v.id+"lv1","lv1","blue");
+									const vDate = blco1.blDiv(v,v.id+"vDate","date","lightgreen");
+									const vNew = blco1.blDiv(v,"id4vParse","new","lightblue");
+									var a = txt.split('更新时间：');
+									var b = a[1].split('）');
+									var c = b[0].split('-');
+									var d = c[0]+"/"+c[1]+"/"+c[2];
+	
+									var e = a[1].split(d); 
+									const url51voa = "https://www.51voa.com";
+									var s = "";
+									for(var i=0; i<e.length-1;i++){
+										s += "<br>";
+										var f = e[i].split('href="'); 
+										var sPage = "";
+										var ls = [];
+										for(var j=1; j<f.length;j++){
+											var g = f[j].split("</a>");
+											sPage += '<a '; 
+											sPage += ' href="' +url51voa + g[0]+'</a> * ';
+											ls.push(url51voa + g[0]);
+										}
+										var dPage = blco1.blDiv(vNew,vNew.id+i+"dPage",sPage,"lightgreen"); 
+										var v4dl = blco1.blDiv(vNew,vNew.id+i+"v4dl","v4dl",blco1.c(15)); 
+										var btnDlPage = blco1.blBtn(dPage,dPage.id+"btnDlPage","DlPage","green");
+										btnDlPage.onclick =  function(_v,_i){
+											return function(){
+												_v.innerHTML = ls[_i];
+											}
+										}(v4dl,i)
+									}
+	
+									vDate.innerHTML = b[0]; 
+								});	
+							},
+							"color":blco1.c(14),
+							"float":"right"
+						},
+					];
+					const v4Tasks0 = blco1.blDiv(v,v.id+"v4Tasks0","v4Tasks0","white");
+					const v4Tasks1 = blco1.blDiv(v,v.id+"v4Tasks1","v4Tasks1","gray");
+					for(i in tasks){
+						const b = blco1.blBtn(v4Tasks1,v4Tasks1.id+tasks[i].id,tasks[i].name,tasks[i].color);
+						b.onclick = function(_i){
+							return function(){
+								tasks[_i].runTask();
 							}
-							var dPage = blco1.blDiv(vNew,vNew.id+i,sPage,"lightgreen");
-							blco1.blBtn(dPage,dPage.id+"downloadPage","download","gray");
-						}
-
-						vDate.innerHTML = b[0]; 
-					}); 
-					t.setInfo(i);
-					o.addTask(t);
-				}
+						}(i);
+					}
+				}(); 
 
 				lock4Run.unlock();
 				blco1.blTimer(1000,1000,function(tl){
@@ -2499,12 +3191,12 @@ function CBlClass ()
 			return o;
 		};
 		const rAutoRun = new f();
-		return rAutoRun;
-		
+		return rAutoRun;		
 	}
 	this.C4Canvas = function(d,w,h,initColor){
 		function _blCanvas(d,w,h){
 			var cvs = document.createElement("canvas");
+			cvs.id = d.id + "_C4Canvas";
 			cvs.width = w;
 			cvs.height = h;
 			var bMS = false;
@@ -2552,7 +3244,8 @@ function CBlClass ()
 					const o = {};
 					o.x = x;
 					o.y = y;
-					o.draw_me = function(ctx){
+					o.draw_me = function(cvs){
+						var ctx = cvs.getContext("2d");
 						ctx.fillText(".",o.x,o.y);
 					}
 					lsOs.push(o);
@@ -2565,13 +3258,17 @@ function CBlClass ()
 					newObj = new gc4Note();
 					newObj.setXY1(x,y);					
 				} 
+				else if(curDrawingType==G_DRAW_SO_EDITOR){
+					newObj = new gc4SoEditor();
+					newObj.setXY1(x,y);					
+				}
 				else if(curDrawingType==G_DRAW_BLS){
 					newObj = new gc4BLS();
 					newObj.setXY1(x,y);					
 				} 
 				
 				else if(curDrawingType==G_EDIT_OBJECT){  	
-					eui = blo0.blMD("id_eui","*",100,100,222,100,"blue");		
+					eui = blo0.blMD("id_eui","uiEditor",100,100,333,100,"blue");		
 					eui.v1 = blo0.blDiv(eui,eui.id+"v1","v1","lightblue");		
 					for(i in lsOs){
 						if(lsOs[i].edit_me) {
@@ -2602,7 +3299,8 @@ function CBlClass ()
 						const o = {};
 						o.x = x;
 						o.y = y;
-						o.draw_me = function(ctx){
+						o.draw_me = function(cvs){
+							var ctx = cvs.getContext("2d");
 							ctx.fillText(".",o.x,o.y);
 						}
 						lsOs.push(o);
@@ -2613,6 +3311,9 @@ function CBlClass ()
 					else if(curDrawingType==G_DRAW_NOTE){						
 						newObj.setXY2(x,y);
 					}			
+					else if(curDrawingType==G_DRAW_SO_EDITOR){
+						newObj.setXY2(x,y);
+					}
 					else if(curDrawingType==G_DRAW_BLS){						
 						newObj.setXY2(x,y);
 					}	
@@ -2644,12 +3345,21 @@ function CBlClass ()
 					lsOs.push(newObj);
 					newObj = null;
 				} 
+				if(curDrawingType==G_DRAW_SO_EDITOR){
+					lsOs.push(newObj);
+					newObj = null;
+				}
 				if(curDrawingType==G_DRAW_BLS){
 					lsOs.push(newObj);
 					newObj = null;
 				} 
 				else if(curDrawingType==G_MOVE_OBJECT){  	
 					moveObj = null;	
+				}
+				else if(curDrawingType==G_EDIT_OBJECT){		 
+					for(i in lsOs){
+						if(lsOs[i].edit_up) lsOs[i].edit_up(x,y); 
+					}	
 				}
 			}); 
 
@@ -2724,10 +3434,10 @@ function CBlClass ()
 				ctx.fillText("["+x+","+y+"]", 222, 50);
 				
 				for(i in lsOs){
-					lsOs[i].draw_me(ctx); 
+					lsOs[i].draw_me(cvs); 
 				}
-				if(newObj) newObj.draw_me(ctx);
-				if(moveObj) moveObj.draw_me(ctx);
+				if(newObj) newObj.draw_me(cvs);
+				if(moveObj) moveObj.draw_me(cvs);
 			}
 
 			d.appendChild(cvs);
@@ -5511,15 +6221,16 @@ const gBlBeat_NllNld= function(ctx,_x,_y,n1,t1,n2,t2){
     x += 20;
     gBlNote(ctx,x,y,".",0,.5); 
 } 
-const G_DRAW_LINE 		= 2;
-const G_DRAW_NOTE 		= 3;
-const G_DRAW_BLS		= 4;
+const G_DRAW_LINE 				= 2;
+const G_DRAW_NOTE 				= 3;
+const G_DRAW_BLS				= 4;
+const G_DRAW_SO_EDITOR			= 5;
 
-const G_SELECT_OBJECT 	= -2;
-const G_MOVE_OBJECT 	= -3;
-const G_EDIT_OBJECT 	= -4;
+const G_SELECT_OBJECT 			= -2;
+const G_MOVE_OBJECT 			= -3;
+const G_EDIT_OBJECT 			= -4;
 
-const ID_CMD_BLS_UI		= 1;
+const ID_CMD_BLS_UI				= 1;
 
 const gc4Move = function(){
 	var x1,y1,x2,y2;
@@ -5531,7 +6242,8 @@ const gc4Move = function(){
 	}
 	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
 	this.setXY2 = function(x,y){		x2 = x; y2 = y;		}
-	this.draw_me = function(ctx){		
+	this.draw_me = function(cvs){
+		var ctx = cvs.getContext("2d");			
 		const d = 10;  
 		var oldStyle = ctx.fillStyle;
 
@@ -5555,7 +6267,8 @@ const gc4Line = function(){
 	this.select = function(b){		s = b;		}
 	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
 	this.setXY2 = function(x,y){		x2 = x; y2 = y;		}
-	this.draw_me = function(ctx){		
+	this.draw_me = function(cvs){
+		var ctx = cvs.getContext("2d");		
 		const d = 10; 
 		if(s){
 			var oldStyle = ctx.fillStyle;
@@ -5601,7 +6314,8 @@ const gc4Note = function(){
 	this.select = function(b){		s = b;		}
 	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
 	this.setXY2 = function(x,y){		x2 = x; y2 = y;		}
-	this.draw_me = function(ctx){		
+	this.draw_me = function(cvs){		
+		var ctx = cvs.getContext("2d");
 		const d = 10; 
 		if(s){
 			var oldStyle = ctx.fillStyle;
@@ -5683,15 +6397,282 @@ const gc4Note = function(){
 	}
 }
 
+const gc4SoEditor = function(){
+	var x1,y1,x2,y2,s = false,e = false;
+	var mx1=0,my1=0,mx2=0,my2=0,soName = "so01";
+	var mx = 50,my = 50;
+	var nMDown = 0;
+	var ex1,ey1,ex2,ey2;
+	const _C4SoEditor = function(){ 
+		var soScript = `
+		var imgInPlx = new Image(); 
+		imgInPlx.src = "http://localhost:8080/x1.jpg"; 
+		var C4Plx = function(){
+			this.drawPlx2Frame = function(ctx,time,x0,y0){ 
+			  var x = x0?x0:0;
+			  var y = y0?y0:0
+			  ctx.fillStyle = 'green';
+			  ctx.fillRect(x+0+time%111, y+30, 5, 44);
+			  ctx.font = 11+ "px Consolas";
+			  ctx.fillStyle = "blue";
+			  ctx.fillText("C4Plx v0.14: time="+time ,x+10,y+55);
+			  ctx.drawImage(imgInPlx,x+22,y+111,240,160);
+			};
+		  } 
+		  function animateFrame(time){
+			  var canvas = document.getElementById('myCanvas');
+			  var ctx = canvas.getContext('2d');  
+					   
+			  var o = new C4Plx();
+			  var x = typeof x0 === "undefined"?0:x0;
+			  var y = typeof y0 === "undefined"?0:y0;
+			  o.drawPlx2Frame (ctx,time,x,y);   
+		  }`;
+		var nTick = 0;
+		var vCanStatus = null;
+		var bRunScript = false; 
+		var op = null;
+		const oPics = function(){
+			var lsPic = [];
+			var curPic = null;
+			const btnPics = [
+				{
+					"id":1,
+					"name":"+framePic",
+					"color":blo0.c(17),
+					"float":"left",
+					"description":`
+					  1. add new picture.
+					  `,
+					"click": function(b,v){ 
+					  v.innerHTML = this.description; 
+					  const oNewPic = function(){
+						return {
+							"id":lsPic.length,
+							"name":lsPic.length,
+							"color":"gray",
+							"float": "left",
+							"description":`newpic...`,
+							"click": function(b,v){
+								v.innerHTML = this.description + `	` + this.src;  
+								var img = document.createElement("img"); 
+    							img.src = this.src; 
+    							v.appendChild(img);
+								curPic = this;
+								curPic.img = img;
+							},
+							"src":"http://localhost:8080/"+(lsPic.length+1)+".jpg"
+						}
+					  }();
+					  lsPic.push(oNewPic);
+					  var tb = blo0.blDiv(v,v.id+"tb","tb",blo0.c(1));
+					  var d = blo0.blDiv(v,v.id+"d","d",blo0.c(2));
+					  blo0.blBtns(lsPic,tb,d,"lightgreen","brown");
+					}
+				},
+				{
+					"id":2,
+					"name":"+samplePic",
+					"color":blo0.c(18),
+					"float":"left",
+					"description":`
+					  1. add new sample picture (x1.jpg).
+					  `,
+					"click": function(b,v){ 
+					  v.innerHTML = this.description; 
+					  const oNewPic = function(){
+						return {
+							"id":lsPic.length,
+							"name":lsPic.length,
+							"color":"gray",
+							"float": "left",
+							"description":`newpic...`,
+							"click": function(b,v){
+								v.innerHTML = this.description + `	` + this.src;  
+								var img = document.createElement("img"); 
+    							img.src = this.src; 
+								img.width = 240;
+								img.height = 160;
+    							v.appendChild(img);
+								curPic = this;
+								curPic.img = img;
+							},
+							"src":"http://localhost:8080/x1.jpg"
+						}
+					  }();
+					  lsPic.push(oNewPic);
+					  var tb = blo0.blDiv(v,v.id+"tb","tb",blo0.c(1));
+					  var d = blo0.blDiv(v,v.id+"d","d",blo0.c(2));
+					  blo0.blBtns(lsPic,tb,d,"lightgreen","brown");
+					}
+				},
+			];
+			const _C4Pics = function(){
+				this.ui4Pics = function(v){
+					var tb = blo0.blDiv(v,v.id+"tb4Pics","tb",blo0.c(15));
+					var d = blo0.blDiv(v,v.id+"d4Pics","d",blo0.c(16));
+					blo0.blBtns(btnPics,tb,d,"lightgreen","brown");
+				}
+				this.showPics = function(cvs){
+					var ctx = cvs.getContext("2d");
+					ctx.fillText(`oPics: ${lsPic.length} curPic = ${curPic.src}`,x1,y1 + 55);
+					if(curPic!=null) ctx.drawImage(curPic.img, x1, y1+55,240,160);
+				}
+			}
+			return new _C4Pics();
+		}();
+		this.ui4Editor = function(v){ 
+			var tb = blo0.blDiv(v,v.id+"tb","tb",blo0.c(13));
+			var d = blo0.blDiv(v,v.id+"d","d",blo0.c(14));
+			oPics.ui4Pics(v);
+			vCanStatus = blo0.blDiv(v,v.id+"vCanStatus","black","white");
+			vCanStatus.updateMsg = function(x,y){
+				vCanStatus.innerHTML =`[${x},${y}]`;
+			}
+			const bs = [
+				{
+					"id":1,
+					"name":"setName",
+					"clickOnMe": function(d){
+						soName = blo0.blGetTa().value;	
+					},
+					"color": "cyan"
+				},
+				{
+					"id":2,
+					"name":"2server",
+					"clickOnMe": function(d){ 
+						var url = "http://localhost:8080/json?fileName=" + soName + ".js"; 
 
-const gc4BLS = function(){
-	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,sBlsTitle = "...";
-	
+						blo0.blSendTextByPOST(url,soScript,function(resTxt){
+							d.innerHTML = "<a href ='http://localhost:8080/" + soName+".js' target='_blank'>" + soName+".js</a>";
+						}); 
+					},
+					"color": "Bisque",
+					"float": "right"
+				},
+				{
+					"id":3,
+					"name":"2Ta",
+					"clickOnMe": function(d){
+						blo0.blGetTa().value = soScript;
+					},
+					"color": "pink",
+					"float": "left"
+				},
+				{
+					"id":4,
+					"name":"fromTa",
+					"clickOnMe": function(d){
+						op = null;
+						soScript = blo0.blGetTa().value;
+					},
+					"color": "pink",
+					"float": "left"
+				},
+				{
+					"id":5,
+					"name":"runScript", 
+					"clickOnMe": function(d){
+						bRunScript = bRunScript?false:true;
+						d.innerHTML = bRunScript;
+					},
+					"color": "pink",
+					"float": "left"
+				},
+			];
+			for(i in bs){
+				const b = blo0.blBtn(tb,tb.id+bs[i].id,bs[i].name,bs[i].color);
+				b.style.float = bs[i].float?bs[i].float:"left";
+				b.onclick = function(_b,_d,_i){
+					return function(){
+						bs[_i].clickOnMe(_d);
+					}
+				}(b,d,i);
+			} 
+		};
+
+		this.drawEffect = function(cvs){
+			oPics.showPics(cvs);
+			var ctx = cvs.getContext("2d");
+			nTick++;
+			ctx.fillText("soe1: nTick = " + nTick,x1,y1 + 10);
+			ctx.fillText("mx1y1: [" + mx1 + "," + my1 + "]",x1,y1 + 20);
+			ctx.fillText("mx2y2: [" + mx2 + "," + my2 + "]",x1 + 110,y1 + 20);
+			ctx.fillStyle = "purple";
+			ctx.fillRect(mx1+x1,my1+y1,10,10);
+			ctx.fillStyle = "yellow";
+			ctx.fillRect(mx2+x1,my2+y1,20,20);
+			ctx.fillStyle = "green";
+			ctx.fillText("soe2",x2,y2);
+
+			if(Math.abs(mx-mx2)<0.1){
+				mx = mx2;
+				mx2 = mx1;
+				mx1 = mx;
+				my = my2;
+				my2 = my1;
+				my1 = my;
+			}
+			var dx = 0; 
+			if(mx2>mx1) {
+				if(mx>mx2) 	dx = -2;
+				else    	dx = 2;
+			}
+			else if(mx2<mx1){
+				if(mx<mx2) dx = 2;
+				else dx = -2;
+			}
+  
+			mx += dx;
+			my = (my1-my2)/(mx1-mx2)*(mx-mx2) + my2;
+
+			ctx.fillStyle = "blue";
+			ctx.fillRect(mx+x1,my+y1,5,5); 
+			if(vCanStatus&&vCanStatus.updateMsg) vCanStatus.updateMsg(mx,my);
+
+			_2RunScript(cvs);
+		}
+		
+		const _2RunScript = function(cvs){
+			if(!bRunScript) return;
+			var ctx = cvs.getContext("2d");
+			ctx.fillStyle = "green";
+			ctx.fillRect(mx+x1+5,my+y1+5,5,5); 
+			
+			if(op==null) op = blo0.blWrapPlx(cvs,soScript,x1,y1);
+			ctx.fillText("_2RunScript: nTick="+nTick + "byPlx="+op.callPlx (nTick,mx,my),mx+x1+10,my+my-40);	 
+
+		}
+		this.setOSXY = function(x,y){
+			if(op) op.setPlxXY(x,y);
+		}
+		this.downSOEditor = function(x,y){
+			nMDown++;
+			if(nMDown==1){
+				mx1 = x-x1;
+				my1 = y-y1;
+				mx = mx1;
+				my = my1;
+			}
+			else if(nMDown==2){
+				mx2 = x-x1;
+				my2 = y-y1;
+				nMDown = 0;
+				mx = mx1;
+				my = my1;
+			}
+		}
+		
+
+	};
+	const osoe = new _C4SoEditor();
 
 	this.select = function(b){		s = b;		}
 	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
 	this.setXY2 = function(x,y){		x2 = x; y2 = y;		}
-	this.draw_me = function(ctx){		
+	this.draw_me = function(cvs){		
+		var ctx = cvs.getContext("2d");
 		const d = 10; 
 		if(s){
 			var oldStyle = ctx.fillStyle;
@@ -5703,20 +6684,173 @@ const gc4BLS = function(){
 		if(e){
 			var oldStyle = ctx.fillStyle;
 			ctx.fillStyle = "brown";
-			ctx.fillRect(x2-d,y2-d,d*2,d*2);
+			ctx.fillRect(x2-d,y2-d,d*2,d*2); 
+
 			ctx.fillstyle = oldStyle;
- 
 		}
 		
 		var oldStyle = ctx.fillStyle;
-		ctx.fillStyle = "gray"; 
+		ctx.fillStyle = "turquoise"; 
 		ctx.fillRect(x1,y1,x2-x1,y2-y1);
 		
+		ctx.fillStyle = "red";
+		ctx.font = "10px Arial";
+		ctx.fillText(soName, x1,y1);
+		
+		osoe.drawEffect(cvs);
+
+		ctx.fillStyle = oldStyle;
+
+	}
+	this.select_me = function(x,y){
+		if(blo0.blPiR(x,y,x1,y1,10,10)){
+			 s = !s;
+		}
+	} 
+	this.edit_me = function(eui,x,y){
+		if(blo0.blPiR(x,y,x2,y2,10,10)){
+			 e = true; 
+			 eui.v1.innerHTML = "";
+			 osoe.ui4Editor(eui.v1);
+			 ex1 = x;
+			 ey1 = y;
+		}
+		else{
+			e = false;
+			osoe.downSOEditor(x,y);
+		}
+	}
+	this.edit_move = function(x,y){
+		if(e){			
+			ex2 = x;
+			ey2 = y;
+
+			x1 += ex2 -ex1;
+			y1 += ey2 -ey1;
+			x2 += ex2 -ex1;
+			y2 += ey2 -ey1;
+	
+			ex1 = ex2;
+			ey1 = ey2;
+			osoe.setOSXY(x1,y1);
+	
+		}
+	}
+	
+	this.move_start = function(dx,dy){
+		if(s){ 
+			mx1 = x1;
+			my1 = y1;
+			mx2 = x2;
+			my2 = y2;
+		}
+	}
+	this.move_me = function(dx,dy){
+		if(s){ 
+			x1 = mx1 + dx;
+			y1 = my1 + dy;
+			x2 = mx2 + dx;
+			y2 = my2 + dy;
+		}
+	}
+}
+
+
+
+const gc4BLS = function(){
+	const _thisBLS = this;
+	const blsTimer = blo0.blAudioTimer();
+	var lsFrame = [];
+	var pt = "";
+    var op = null;
+	
+	const soDraw = function(cvs,n,x,y){
+		var ctx = cvs.getContext("2d");	
+		if(null==op) op = blo0.blWrapPlx(cvs,pt);
+		ctx.fillText("soDraw: n="+n + "byPlx="+op.callPlx (n,x,y),x,y-40);	  
+	}
+	  
+	var lsSuperObjects = function(){
+		
+		var w ={};
+		w._2do= function(txt){ pt = txt;};
+		blo0.blAjx(w,"http://localhost:8080/firework.js");
+		
+		var ls = [];
+		const o = {
+			"type": "javascript",
+			"frameRange": "(1,500)",
+			"attribute": {
+				"script": "http://localhost:8080/firework.js",
+				"function": "animateFrame",
+				"start": 1
+			},
+			"layer": 1
+		};
+		ls.push(o);
+		return ls;
+	}();	;
+	var nCurF = -1; 
+	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,sBlsTitle = "...";
+	var msgDbg = "msgBLS"; 
+	
+	this.paintSuperObjects = function(cvs,n){
+		var ctx = cvs.getContext("2d");	
 		ctx.fillStyle = "blue";
+		ctx.font = "10px Arial";
+		var s = " so: to do ... n = " + n;
+		soDraw(cvs,n,x2,y2); 
+		ctx.fillText(s, x2-20,y2 - 20);
+	}
+	this.getFrames = function(){return lsFrame;}
+	this._getAllFramesNumber = function(){
+		var n = 0;
+		const l = lsFrame;
+		for(i in l){
+			n += l[i].time;
+		}
+		return n;
+	}
+	this.getSOs = function(){return lsSuperObjects;}
+	this.select = function(b){		s = b;		}
+	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
+	this.setXY2 = function(x,y){		x2 = x; y2 = y;		}
+	this.draw_me = function(cvs){	
+		var ctx = cvs.getContext("2d");	
+		const d = 10; 
+		if(s){
+			var oldStyle = ctx.fillStyle;
+			ctx.fillStyle = "red";
+			ctx.fillRect(x1-d,y1-d,d*2,d*2);
+			ctx.fillstyle = oldStyle;
+		}
+		if(e){
+			var oldStyle = ctx.fillStyle;
+			ctx.fillStyle = "brown";
+			ctx.fillRect(x2-d,y2-d,d*2,d*2);
+			ctx.fillstyle = oldStyle; 
+		}
+		
+		var oldStyle = ctx.fillStyle;
+		
+		if(!blsTimer.isPlaying()){
+			blsTimer.paintCurFrame(ctx,this.getFrames(),nCurF,x1,y1,x2,y2);
+			_objCmd.drawObjCmdUI(ctx,x1+5,y1-15); 
+		}
+
+		ctx.fillStyle = "rgb(200,111,1)";//"blue";
 		ctx.font = "30px Arial";
-		var ss = sBlsTitle + " : curFrame = " + _curF;
+		var ss = sBlsTitle + " : curFrame = " + nCurF;
 		ctx.fillText(ss, x1,y1);
 
+		blsTimer.drawOnLoop(cvs,this,x1,y1,x2,y2);
+
+		const showDebugMsg4BLS = function(){
+			ctx.fillStyle = "yellow";
+			ctx.font = "10px Arial";
+			var s = _makeDbgMsgInFrame();
+			ctx.fillText(s, x1,y1+30);		
+		}();
 		ctx.fillstyle = oldStyle;
 	}
 	this.select_me = function(x,y){
@@ -5729,68 +6863,320 @@ const gc4BLS = function(){
 			 e = true; 
 			 eui.v1.innerHTML = "";
 			 const tb = blo0.blDiv(eui.v1,eui.v1.id+"tb","tb","gray");
-			 var b1 = blo0.blBtn(tb,tb.id+"b1","setTitle","lightblue");
+			 var b1 = blo0.blBtn(tb,tb.id+"b1","setTitleFromTA","lightblue");
 			 b1.style.float = "left";
 			 b1.onclick = function(){
 				sBlsTitle = blo0.blGetTa().value;	
 			 } 
-			 var b2 = blo0.blBtn(tb,tb.id+"b2","bls","lightgreen");
+			 var b2 = blo0.blBtn(tb,tb.id+"b2","bls2TA","lightgreen");
 			 b2.style.float = "left";
 			 b2.onclick = function(){
 				blo0.blGetTa().value = JSON.stringify(_makeBLS());	
 			 } 
 
-			 
-			 const split1 = blo0.blDiv(eui.v1,eui.v1.id+"split1","split1","green");
+			 const makeToolbar1 = function(t,_thisBLS){
+				const split4tb1 = blo0.blDiv(eui.v1,eui.v1.id+"split4tb1","split4tb1","gray");
+				
+				const bs1 = [
+					{
+						"name":"ver",
+						"fn4ui": function(v){
+							const tb = blo0.blDiv(v,v.id+"tb",this.name,this.color);
+						},
+						"color": "CadetBlue"
+					},
+					{
+						"name":"music",
+						"fn4ui": function(v){ 
+							const ms = function(){
+								var ls = [];
+								for(var i = 0; i < 10; i++){
+									var o = {};
+									o.id = i;
+									o.name = "nce2-"+(i+1);
+									o.src = "https://littleflute.github.io/english/NewConceptEnglish/Book2/"+(i+1)+".mp3";
+									ls.push(o);
+								}
+								var o = {};
+								o.id = 10;
+								o.name = "1.mp3";
+								o.src = "http://localhost:8080/1.mp3";
+								ls.push(o);
+								var o = {};
+								o.id = 11;
+								o.name = "bzll.mp3";
+								o.src = "http://localhost:8080/bzll.mp3";
+								ls.push(o);
+								return ls;
+							}(); 
+							
+							const tb = blo0.blDiv(v,v.id+"tb","tb","Violet"); 
+							const vSrc = blo0.blDiv(tb,tb.id+"vSrc",t.getVP().src,"lightgreen");
+							const setSrc = blo0.blBtn(tb,tb.id+"setSrc","setFromTA","green");
+							setSrc.onclick = function(){
+								vSrc.innerHTML = blo0.blGetTa().value;
+								t.getVP().src = 	blo0.blGetTa().value;
+							}
+							for(i in ms){
+								const b = blo0.blBtn(tb,tb.id+ms[i].id,ms[i].name,"Fuchsia");
+								b.onclick = function(_i){
+									return function(){
+										vSrc.innerHTML = t.getVP().src = ms[_i].src;										
+									}
+								}(i);
+							}
+						},
+						"color": "Orchid"
+					},
+					{
+						"name":"rate",
+						"fn4ui": function(v){ 
+							const fs = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,25,60];
+							const tb = blo0.blDiv(v,v.id+"tb","tb","Violet"); 
+							for(i in fs){
+								const b = blo0.blBtn(tb,tb.id+i,fs[i],"Fuchsia");
+								b.onclick = function(_i){
+									return function(){
+										t.setFPS(fs[_i]) ;
+									}
+								}(i);
+							}
+						},
+						"color": "Orchid"
+					},
+					{
+						"name":"so",
+						"fn4ui": function(v){ 
+							const tb = blo0.blDiv(v,v.id+"tb","tb",this.color);
+							const vos = blo0.blDiv(v,v.id+"vos","vos","BurlyWood");
+							const vEndOfOS = blo0.blDiv(v,v.id+"vEndOfOS","vEndOfOS","white");
+							tb.refreshSOs = function(l){
+								for(i in l){
+									const b = blo0.blBtn(tb,tb.id+i,i,"Lavender"); 
+									newSO.style.float = "right";
+ 
+									b.onclick = function(_b,_i,_v){
+										return function(){
+											_v.innerHTML = JSON.stringify(l[_i]);
+											const soSet = function(){
+												const ss = [
+													{
+														"id":1,
+														"name": "scriptFromTa",
+														"fnSet": function(l,i){
+															l[i].attribute.script = blo0.blGetTa().value;
+														},
+														"color": "Indigo",
+														"float": "left"
+													},
+													{
+														"id":2,
+														"name": "funFromTa",
+														"fnSet": function(l,i){
+															l[i].attribute.function = blo0.blGetTa().value;
+														},
+														"color": "Crimson",
+														"float": "left"
+													},
+													{
+														"id":3,
+														"name": "AllFromTa",
+														"fnSet": function(l,i){
+															l[i]  = JSON.parse(blo0.blGetTa().value);
+														},
+														"color": "Khaki",
+														"float": "right"
+													},
+													{
+														"id":4,
+														"name": "All2Ta",
+														"fnSet": function(l,i){
+															blo0.blGetTa().value = JSON.stringify(l[i]);
+														},
+														"color": "Teal",
+														"float": "right"
+													},
+													{
+														"id":5,
+														"name": "Text1",
+														"fnSet": function(l,i){ 
+															l[i]  = {
+																"type": "text",
+																"attribute": {
+																	"x1": 50,
+																	"y1": 500,
+																	"x2": -1,
+																	"y2": -1,
+																	"size": 22,
+																	"color": "200,182,193",
+																	"name": "Text test 0.11"
+																},
+																"frameRange": "(2,100)",
+																"action": {
+																	"trace": "y=0*x*x+0*x+55",
+																	"step": 10
+																}
+															};
+														},
+														"color": "Teal",
+														"float": "right"
+													},
+												];
+												for(i in ss){
+													const btn = blo0.blBtn(_v,_v.id+ss[i].id,ss[i].name,ss[i].color);
+													btn.style.float = ss[i].float;
+													btn.onclick = function(_b,_i,_l,_n,btnParent){
+														return function(){
+															ss[_i].fnSet(_l,_n);
+															btnParent.click();
+														}
+													}(btn,i,l,_i,_b);
+												}
+											}();											 
+										}
+									}(b,i,vos);
+								}
+							}							
+							const l = _thisBLS.getSOs();
+							const newSO = blo0.blBtn(tb,tb.id+"newSO","+so","Salmon"); 
+							newSO.style.float = "left";
+							newSO.onclick = function(){
+								var o = {};
+								o.type = "javascript";
+								o.frameRange = "(1,1000)";
+								var a = {};
+								a.script = "http://localhost:8080/so646a.js";
+								a.function = "animateFrame";
+								a.start = 1;
+								o.attribute = a;
+								o.layer = 1;
+								l.push(o); 
+								tb.refreshSOs(l); 
+							}
+							tb.refreshSOs(l);
+						},
+						"color": "Turquoise"
+					},
+					{
+						"name":"height", 
+						"float": "right",
+						"fnInit": function(){
+							return "h:" + (y2-y1);
+						},
+						"fn4ui": function(_v,_b){
+							const hs = [1,-1,2,-2,5,-5,10,-10,100,-100,200,-200,500,-500];
+							for(i in hs){
+								var s = hs[i]>0?"+"+hs[i]:hs[i];
+								var b = blo0.blBtn(_v,_v.id+i,s,"Indigo");
+								b.onclick = function(_i){
+									return function(){
+										y2 += hs[_i];
+										_b.innerHTML = "h:" + (y2-y1);
+									}
+								}(i);
+							}
+						},
+						"color": "lightgreen"
+					},
+					{
+						"name":"witdh", 
+						"float": "right",
+						"fnInit": function(){
+							return "w:" + (x2-x1);
+						},
+						"fn4ui": function(_v,_b){ 
+							const ws = [1,-1,2,-2,5,-5,10,-10,100,-100,200,-200,500,-500];
+							for(i in ws){
+								var s = ws[i]>0?"+"+ws[i]:ws[i];
+								var b = blo0.blBtn(_v,_v.id+i,s,"purple");
+								b.onclick = function(_i){
+									return function(){
+										x2 += ws[_i];
+										_b.innerHTML = "w:" + (x2-x1);
+									}
+								}(i);
+							}
+						},
+						"color": "lightgreen"
+					},
+				 ]
+				const tb1 = blo0.blDiv(eui.v1,eui.v1.id+"tb1","tb1","plum");
+				const v4tb1 = blo0.blDiv(eui.v1,eui.v1.id+"v4tb1","v4tb1","Thistle");
+				
+				for(i in bs1){
+				   var s = bs1[i].fnInit?bs1[i].fnInit():bs1[i].name;
+				   const btn = blo0.blBtn(tb1,tb1.id+bs1[i].name,s,bs1[i].color);
+				   btn.style.float = bs1[i].float?bs1[i].float:"left";
+				   btn.onclick = function(_b,_v,_i){
+					   return function(){
+						   _v.innerHTML = "";
+						   const split4btns = blo0.blDiv(_v,_v.id+"split4btns","split4btns","gray");
+						   bs1[_i].fn4ui(_v,_b);
+					   }
+				   }(btn,v4tb1,i);
+				}
 
-			 const tbW = blo0.blDiv(eui.v1,eui.v1.id+"tbW","W:","gray");
-			 
-			 var bw = blo0.blBtn(tbW,tbW.id+"bw",x2-x1,"lightgreen");
-			 const ws = [1,-1,2,-2,5,-5,10,-10,100,-100];
-			 for(i in ws){
-				var s = ws[i]>0?"+"+ws[i]:ws[i];
-				var b = blo0.blBtn(tbW,tbW.id+i,s,"gray");
-				b.onclick = function(_i){
-					return function(){
-						x2 += ws[_i];
-						bw.innerHTML = x2-x1;
-					}
-				}(i);
-			 }
-			 const split1a = blo0.blDiv(eui.v1,eui.v1.id+"split1a","split1a","green");
+			 }(blsTimer,this);
 
-			 const tbFrames = blo0.blDiv(eui.v1,eui.v1.id+"tbFrames","Frames:","gray");
-			 const split1b = blo0.blDiv(eui.v1,eui.v1.id+"split1b","split1b","lightgray");
+			 
+			 const split4tb2 = blo0.blDiv(eui.v1,eui.v1.id+"split4tb2","split4tb2","gray");
+			 const tbFrames = blo0.blDiv(eui.v1,eui.v1.id+"tbFrames","blsFrames:","green");
+			 tbFrames.style.color = "white";
+			 const dAllFrames = blo0.blDiv(eui.v1,"id_4_all_frames","allFrames","lightgray");
 			 const tabFrames = blo0.blDiv(eui.v1,eui.v1.id+"tabFrames","tabFrames:","lightgray");
 			 tabFrames.refreshFrames = function(){
 				tabFrames.innerHTML = "";
 				for(i in lsFrame){ 
-				   var b = blo0.blBtn(tabFrames,tabFrames.id+i,i,"gray");
+				   var b = blo0.blBtn(tabFrames,tabFrames.id+i,i,"purple");
 				   b.style.float = "left";
-				   b.onclick = function(_i){
+				   b.onclick = function(_btn,_i,_f){
 					   return function(){ 
-						   _curF = _i;
+							nCurF = _i; 
+						   _ui4curFrame(_btn,v4curF,_f,_i,_thisBLS);
 					   }
-				   }(i);
+				   }(b,i,lsFrame);
 				}
+				dAllFrames.innerHTML = _thisBLS._getAllFramesNumber();
 			 }
-			 const newFrame = blo0.blBtn(tbFrames,tbFrames.id+"newFrame","+","gray");
+			 const newFrame = blo0.blBtn(tbFrames,tbFrames.id+"newFrame","+Frame","green");
 			 newFrame.style.float = "left";
+			 newFrame.style.color = "white";
 			 newFrame.onclick = function(){
 				var f = {};
-				f.times = 1;
+				f.time = 5;
+				f.backgroundColor = "gray"; 
+				f.objects = [];
 				lsFrame.push(f); 
 				tabFrames.refreshFrames(); 
 			 }
+			 
+			 const blsPlay = blo0.blBtn(tbFrames,tbFrames.id+"btnBlsPlay",blsTimer.isPlaying()?"blsStop":"blsPlay","green");
+			 blsPlay.style.float = "right";
+			 blsPlay.style.color = "white";
+			 blsPlay.onclick = function(){
+				const b = blsTimer;
+				this.t = b; 
+				if(b.isPlaying()){
+					b.stop();
+					this.innerHTML = "blsPlay";
+				}
+				else{
+					b.start();
+					this.innerHTML = "blsStop";
+				} 
+			 }
+
 
 			 tabFrames.refreshFrames(); 
 			 
 			 const split2 = blo0.blDiv(eui.v1,eui.v1.id+"split2","split2","green");
+			 const v4curF = blo0.blDiv(eui.v1,eui.v1.id+"v4curF","v4curF","gray");
+
 			 const split3= blo0.blDiv(eui.v1,eui.v1.id+"split3","split3","lightblue");
 			 const tbServer = blo0.blDiv(eui.v1,eui.v1.id+"tbServer","tbServer:","gray");
 			 const vServer = blo0.blDiv(eui.v1,eui.v1.id+"vServer","vServer:","lightblue");
 			 
-			 var btnSaveScript = blo0.blBtn(tbServer,tbServer.id+"btnSaveScript","save","lightgreen");
+			 var btnSaveScript = blo0.blBtn(tbServer,tbServer.id+"btnSaveScript","bls2server","lightgreen");
 			 btnSaveScript.style.float = "left"; 
 			 btnSaveScript.onclick = function(){				 
 				var pl = _makeBLS(); 
@@ -5800,18 +7186,52 @@ const gc4BLS = function(){
 					vServer.innerHTML = "<a href ='http://localhost:8080/"+sBlsTitle+".json' target='_blank'>"+sBlsTitle+".json</a>";
 				}); 
 			}
-			var btnMakeMP4 = blo0.blBtn(tbServer,tbServer.id+"btnMakeMP4","mp4","lightblue");
-			btnMakeMP4.style.float = "right"; 
-			btnMakeMP4.onclick = function(){	
+			var btnMakeV = blo0.blBtn(tbServer,tbServer.id+"btnMakeV","makeVideo","lightblue");
+			btnMakeV.style.float = "right"; 
+			btnMakeV.onclick = function(){	
 					var url = "http://localhost:8080/image/json2video?script=" + sBlsTitle + ".json&video=" + sBlsTitle + ".mp4"; 
-					b._2do = function(txt){vServer.innerHTML = txt};
-					blo0.blAjx(b,url);
+					this._2do = function(txt){
+						vServer.innerHTML = txt;
+						const refactorPage = function(){
+							var tl = [1.0,2.0,3.0,4.0,5.0,6.0];
+							 
+							function createBtn(dtl,ddbg,id,video) {  
+								var btn = document.createElement("button");
+								btn.id = id;
+								  btn.innerHTML = id;  
+								btn.onclick = function(){ 
+									ddbg.innerHTML = this.id; 
+									video.currentTime = this.id;
+								} 
+								  dtl.appendChild(btn);
+								return btn;
+							}
+							
+							bl$("btnPlay").onclick = function play() {
+								var video = document.getElementById("id_4_video");
+								video.play();
+							} 
+							bl$("btn2createToolbar").onclick = function createToolbar() { 
+								var video = document.getElementById("id_4_video");
+								var dtl = document.getElementById("id4toolbar");
+								var ddbg = document.getElementById("id4Debug");
+								if(!dtl.done){
+								  dtl.done = true;
+								  for(i in tl){
+									createBtn(dtl,ddbg,tl[i],video);     
+								  }     
+								}
+							  } 
+						}();
+					};
+					blo0.blAjx(this,url);
 		   }
 		   ex1 = x;
 		   ey1 = y;
 		}
 		else{
-			e = false;
+			e = false;			
+			_curFrameDown(x,y,x1,y1);
 		}
 	}
 	this.edit_move = function(x,y){
@@ -5828,7 +7248,17 @@ const gc4BLS = function(){
 			ex1 = ex2;
 			ey1 = ey2;
 	
+			msgDbg = "msgDbg1 xy:" + x + "," + y;
 		}
+		else{
+			msgDbg = "msgDbg2 xy:" + x + "," + y;
+			_curFrameMove(x,y,x1,y1);
+		}
+
+	}
+	
+	this.edit_up = function(x,y){
+		_curFrameUp(x,y,x1,y1);
 	}
 	this.move_start = function(dx,dy){
 		if(s){ 
@@ -5847,102 +7277,391 @@ const gc4BLS = function(){
 		}
 	}
 
-	var lsFrame = [
-		{
-		"number": "1", 
-		"time": 5, 
-		"objects": [
+	const _newObject = function(_oType,x1,y1,x2,y2,size,color){ 
+		const osDefine = [
 			{
-				"graphic": "line", 
-				"attribute": {
-					"left": 100, 
-					"top": 100, 
-					"right": 100, 
-					"bottom": 300, 
-					"size": 5.5, 
-					"color": "255,0,255"
-				}
-			}, 
+				"id": "id_4_line",
+				"type": "line",
+				"makeData": function(r,x1,y1,x2,y2,size,color){
+					var mdLine = "mdLine";
+					var bMoveLine = false;
+					var mxLine1 = -1, myLine1 = -1,mxLine2 = -1, myLine2 = -1;
+					var mmx = -1;
+
+					r.graphic 			= "line"; 
+					var a = {};
+					a.left 		= x1;
+					a.top 		= y1;
+					a.right 	= x2;
+					a.bottom 	= y2;
+					a.size 		= size;
+					a.color 	= color;
+					r.attribute 		= a;
+
+					const setPointInLine = function(x,y,x1,y1){
+						if(blo0.blPiR(x,y,a.left+x1,a.top+y1,20,20)){
+							bMoveLine = true;
+							mxLine1 = x;
+							myLine1 = y;
+						}
+						else{
+							bMoveLine = false;
+						}
+					}
+					const toMoveLine = function(x,y,x1,y1){
+						if(bMoveLine){
+							mxLine2 = x;
+							myLine2 = y;
+							a.left += mxLine2 - mxLine1;
+							a.right += mxLine2 - mxLine1;
+							a.top += myLine2 - myLine1;
+							a.bottom += myLine2 - myLine1;
+							mxLine1 = mxLine2;
+							myLine1 = myLine2;
+						}
+					}
+					r.getMDMsg = function(){ return mdLine;} 
+					r.downOnMe = function(x,y,x1,y1){  
+						mdLine = "mdLine: " + x + "," + y;
+						setPointInLine(x,y,x1,y1);
+					}
+					r.upOnMe = function(x,y,x1,y1){
+						toMoveLine(x,y,x1,y1);
+						bMoveLine = false;
+					} 
+					r.drawMyself = function(ctx,x,y){
+						var x1 = a.left + x;
+
+						var y1 = a.top + y;
+						var x2 = a.right + x;
+						var y2 = a.bottom + y;
+						ctx.beginPath(); 				 
+						ctx.moveTo(x1,y1);
+						ctx.lineTo(x2,y2);		 
+						ctx.strokeStyle = "rgb(" + a.color+")";
+						ctx.stroke();	
+
+						if(bMoveLine){
+							ctx.fillStyle = "yellow";
+							ctx.fillRect(x1,y1,20,20);
+						}	
+						ctx.fillStyle = "blue";
+						ctx.font = "10px Arial";
+						var s = "[" + x1 + "," + y1 + "," + x2 + "," + y2 + "]";
+						s += " mxLine1=" + mxLine1;
+						s += " myLine1=" + myLine1;
+						s += " mxLine2=" + mxLine2;
+						s += " myLine2=" + myLine2;
+						s += " bMoveLine =" + bMoveLine;
+						s += " mmx = " + mmx;
+						ctx.fillText(s,x1,y1+20);	
+					}
+				},
+				"drawObject": function(r,ctx,x,y){										
+					ctx.fillStyle = "red";
+					ctx.font = "10px Arial";
+					
+					ctx.fillText("line",r.attribute.left+x,r.attribute.top+y);	
+					ctx.fillText(r.getMDMsg(),r.attribute.left+x,r.attribute.top+y -20);			
+					r.drawMyself(ctx,x,y);				
+
+				},
+				
+			},
 			{
-				"graphic": "circle", 
-				"attribute": {
-					"left": 200, 
-					"top": 200, 
-					"width": 200, 
-					"height": 200, 
-					"color": "120,156,20"
+				"id": "id_4_text",
+				"type": "text",
+				"makeData": function(r,x1,y1,x2,y2,size,color){
+					r.text = blo0.blGetTa().value;
+					r.x = x1;
+					r.y = y1;
+					r.size = size;
+					r.color = color;
+				},
+				"drawObject": function(r,ctx,x,y){			
+					ctx.fillStyle = "red";
+					ctx.font = "10px Arial";					
+					ctx.fillText(r.text,r.x+x,r.y+y);	
+				},
+			},
+		];
+		var o = function(_t,_x1,_y1){			
+			var left = _x1;
+			var top = _y1;
+			var r = {};
+			r.getLeft = function(){return left;}
+			r.getTop = function(){return top;}
+			const makeData4Object = function(t){
+				var of = null;
+				for(i in osDefine){					
+					if(osDefine[i].type == t){ 
+						of = osDefine[i];
+						break;
+					}
 				}
-			}, 
-			{
-				"graphic": "rect", 
-				"attribute": {
-					"left": 500, 
-					"top": 400, 
-					"width": 100, 
-					"height": 150, 
-					"color": "142,28,124"
+				if(of){
+					of.makeData(r,x1,y1,x2,y2,size,color);
 				}
-			}
-		], 
-		"backgroundColor": "100,100,100"
-		},
-		{
-		"number": "2", 
-		"time": 5, 
-		"objects": [
-			{
-				"graphic": "line", 
-				"attribute": {
-					"left": 100, 
-					"top": 100, 
-					"right": 100, 
-					"bottom": 300, 
-					"size": 5.5, 
-					"color": "255,0,255"
+			}(_t);
+			return r;
+		}(_oType,x1,y1); 
+		
+		var s = false;
+		var msgO = "msgO"; 
+		o.selfDraw = function(ctx,x1,y1){
+			ctx.fillStyle = "purple";
+			ctx.font = "10px Arial";
+			ctx.fillText(JSON.stringify(o) + "s =" +  s + " - " + msgO,o.getLeft()+x1,o.getTop()+y1);
+			const drawThisObject = function(){ 
+				ctx.fillStyle = "green";
+				ctx.font = "10px Arial";
+				ctx.fillRect(o.getLeft()+x1,o.getTop()+y1,5,5);
+				ctx.fillText(_oType,o.getLeft()+x1,o.getTop()+y1+20);
+
+				var of = null;
+				for(i in osDefine){
+					if(osDefine[i].type==_oType){
+						of = osDefine[i];
+						break;
+					}
 				}
-			}, 
-			{
-				"graphic": "circle", 
-				"attribute": {
-					"left": 200, 
-					"top": 200, 
-					"width": 200, 
-					"height": 200, 
-					"color": "120,156,20"
-				}
-			}, 
-			{
-				"graphic": "rect", 
-				"attribute": {
-					"left": 500, 
-					"top": 400, 
-					"width": 100, 
-					"height": 150, 
-					"color": "142,28,124"
-				}
-			}
-		], 
-		"backgroundColor": "100,100,100"
-		}
-	];
-	var _curF = -1;
-	var _supObjs = [];
-	 
+				 
+				if(of.drawObject){ 					of.drawObject(o,ctx,x1,y1);			}
+				
+			}(); 
+		}  
+		return o;
+	}
+	const _curFrameDown = function(x,y,x1,y1){ 
+		if(nCurF>-1) 		_objCmd.downObjCmd(x,y,x1,y1,lsFrame[nCurF].objects); 
+	}
+	const _curFrameMove = function(x,y,x1,y1){
+		if(nCurF>-1) 		_objCmd.moveObjCmd(x,y,x1,y1,lsFrame[nCurF].objects); 
+	}
+	
+	const _curFrameUp = function(x,y,x1,y1){
+		if(nCurF>-1) 		_objCmd.upObjCmd(x,y,x1,y1,lsFrame[nCurF].objects); 
+	}
+	
+	
 	var _makeBLS = function(){
 		var s = {};
 		var r = {};		
-		r.version 		= "gc4BLS: _makeBLS: bv0.14";
+		r.version 		= "gc4BLS: bv0.15";
 		r.width 		= x2 - x1;
 		r.height 		= y2 - y1;
-		r.music 		= "https://littleflute.github.io/english/NewConceptEnglish/Book2/11.mp3";
-		r.rate 			= "1"; 
+		r.music 		= blsTimer.getVP().src;
+		r.rate 			= function(){
+			var s = "";
+			s += blsTimer.getFPS();
+			return s;
+		}(); 
 		r.frames 		= lsFrame;		
-		r.superObjects 	= _supObjs;	
+		r.superObjects 	= lsSuperObjects;
 		s.request 		= r;			
 		return s;	
 	}
+	
+	const _makeDbgMsgInFrame = function(){
+		var r; 
+		r = msgDbg + " :: v 13 showDebugMsg4BLS: x1y1[" + x1 + ","+ y1 + "]";;
+		return r;
+	}
+	const _ui4curFrame = function(curFrameBtn,_v,f,n,_thisBLS){
+		_v.innerHTML = "";
+		const ts = [
+			{	
+				"id": "id_4_time",	
+				"name": "time",
+				"fn4click": function(targetV,myBtn){		fn4settime(targetV);	},
+				"bgc":"Cornsilk"
+			},
+			{	
+				"id": "id_4_bgc",	
+				"name": "bgc",
+				"fn4click": function(targetV,myBtn){	fn4setbackgroundColor(targetV,myBtn);	},
+				"bgc":"BlanchedAlmond"
+			},
+			{	
+				"id": "id_4_objects",	
+				"name": "os",
+				"fn4click": function(targetV,myBtn){ 
+					const os = [
+						{
+							"id":"id_4_objText",
+							"name":"text",
+							"fn2click":function(_v,btn){ 
+								_v.innerHTML = btn.id;
+							},
+							"bgc":"LightBlue"
+						},
+						{
+							"id":"id_4_objLine",
+							"name":"line",
+							"fn2click":function(_v,btn){  
+								_v.innerHTML = btn.id;
+							},
+							"bgc":"PowderBlue"
+						},
+						{
+							"id":"id_4_objEdit",
+							"name":"oEdit",
+							"fn2click":function(_v,btn){  
+								_v.innerHTML = btn.id;
+							},
+							"bgc":"LightSkyBlue"
+						},
+					];
+					const split4CurFrame = blo0.blDiv(targetV,targetV.id+"split4CurFrame","split4CurFrame","lightgreen");
+					const tb = blo0.blDiv(targetV,targetV.id+"tb","tb","gray");
+					const v = blo0.blDiv(targetV,targetV.id+"v","v","white");
+					for(i in os){
+						const b = blo0.blBtn(tb,tb.id+os[i].id,os[i].name,os[i].bgc);
+						b.style.float = "left";
+						b.onclick = function(_b,_os,_i){
+							return function(){			
+								_objCmd.setObjectType(_os[_i].name);					
+								_os[_i].fn2click(v,_b);
+							}
+						}(b,os,i);
+					}
+				},
+				"bgc":"Bisque"
+			},
+		];
+		const splitline1 = blo0.blDiv(_v,_v.id+"splitline1","splitline1","green");	
+		const tb = blo0.blDiv(_v,_v.id+"tb4curFrame","tb4curFrame","lightgreen");	
+		const v = blo0.blDiv(_v,_v.id+"v4curFrame","v4curFrame","gray");	
+		for(i in ts){ 
+			const b = blo0.blBtn(tb,tb.id+ts[i].id,ts[i].name,ts[i].bgc); 
+			b.style.float = "left";
+			b.onclick = function(_b,_ts,_i,_vTarget){
+				return function(){
+					_vTarget.innerHTML = "";
+					_ts[_i].fn4click(_vTarget,_b);
+				}
+			}(b,ts,i,v);
+		}
+
+
+		const fn4settime = function(v){
+			const tb4time = blo0.blDiv(v,v.id+"tb4time","time0.11","brown");		
+			const btn4TimeStatic = blo0.blBtn(tb4time,tb4time.id+"btn4TimeStatic","f.time","gray");
+			btn4TimeStatic.style.float = "left";
+			const btn4TimeVal = blo0.blBtn(tb4time,tb4time.id+"btn4TimeVal",f[n].time,"lightblue");
+			btn4TimeVal.style.float = "left";
+			const ws = [1,-1,2,-2,5,-5,10,-10,20,-10,50,-50,100,-100,200,-200,500,-500,1000,-1000];
+			for(i in ws){
+					var s = ws[i]>0?"+"+ws[i]:ws[i];
+					var b = blo0.blBtn(tb4time,tb4time.id+i,s,"gray");
+					b.onclick = function(_i){
+						return function(){
+							f[n].time += ws[_i];
+							btn4TimeVal.innerHTML = f[n].time;
+							bl$("id_4_all_frames").innerHTML = _thisBLS._getAllFramesNumber();
+						}
+					}(i);
+			}
+		}
+		const fn4setbackgroundColor = function(v,btnBoss){
+			const tb = blo0.blDiv(v,v.id+"tb4backgroundcolor","backgroundcolor0.11","blue");		
+			const static = blo0.blBtn(tb,tb.id+"Static","f.backgroundColor","gray");
+			static.style.float = "left"; 	
+			const val = blo0.blBtn(tb,tb.id+"val",f[n].backgroundColor,"lightgray");
+			val.style.float = "left"; 
+			const fn4Red = function(_tb,_val){
+				const tb = blo0.blDiv(_tb,_tb.id+"tb4Red","red","red");		
+				const v = blo0.blBtn(tb,tb.id+"v","red","gray");
+				const ws = [1,10,111,222];
+				for(i in ws){						
+						var b = blo0.blBtn(tb,tb.id+i,ws[i],"rgb("+ws[i]+",11,11)");
+						b.onclick = function(_i,_ls){
+							return function(){
+								f[n].backgroundColor = _ls[_i]+",0,0";
+								btnBoss.click();
+							}
+						}(i,ws);
+				}
+				
+			}(tb,val);
+			const fn4Green = function(_tb,_val){
+				const tb = blo0.blDiv(_tb,_tb.id+"tb4Green","green","green");		
+				const v = blo0.blBtn(tb,tb.id+"v","green","gray");
+			}(tb,val);
+			const fn4Blue = function(_tb,_val){
+				const tb = blo0.blDiv(_tb,_tb.id+"tb4Blue","blue","blue");		
+				const v = blo0.blBtn(tb,tb.id+"v","blue","gray");
+			}(tb,val);
+		} 
+	}
+	const _objCmd = function(){
+		const c = function(){	
+			var type = "null";
+			var msgObjCmd = "msgObjCmd";
+			var x1 = -1, y1 = -1, x2 = -1, y2 = -1;
+			var bDownCmd = false;
+
+			this.drawObjCmdUI = function(ctx,x,y){
+				ctx.fillStyle = "red";
+				ctx.fillRect(x,y,10,10);
+				var s = msgObjCmd + " type=" + type + ", [" + x1 + "," + y1 + "] - [" + x2 + "," + y2 + "]";
+				ctx.fillText(s,x+20,y+20);
+
+				if(!bDownCmd) return;
+				ctx.beginPath(); 				 
+				ctx.moveTo(x1,y1);
+				ctx.lineTo(x2,y2);		 
+				ctx.strokeStyle = "blue";
+				ctx.stroke();
+			};
+			this.setObjectType = function(t){
+				type = t; 
+			}
+			this.downObjCmd = function(x,y,x0,y0,os){ 
+				x1 = x2 = x;
+				y1 = y2 = y;
+				bDownCmd = true;
+				if("oEdit"==type){
+					for(i in os){
+						if(os[i].downOnMe) os[i].downOnMe(x,y,x0,y0);
+					}
+				}
+			}
+			this.upObjCmd = function(x,y,x0,y0,os){
+				if(bDownCmd){
+					if("line"==type){
+						os.push(_newObject("line",x1-x0,y1-y0,x2-x0,y2-y0,5.5,"0,200,0"));
+					}	
+					if("text"==type){
+						os.push(_newObject("text",x1-x0,y1-y0,x2-x0,y2-y0,25,"0,200,0"));
+					}	 
+					if("oEdit"==type){
+						for(i in os){
+							if(os[i].upOnMe) os[i].upOnMe(x,y,x0,y0);
+						}
+					}	 
+				}				
+				else{
+					msgObjCmd = "upObjCmd:xxx";
+				}
+				x1 = x2 = y1 = y2 = -1;
+				bDownCmd = false;
+			}
+			this.moveObjCmd = function(x,y,x0,y0,os){
+				 
+				x2 = x;
+				y2 = y;
+			}
+
+		};
+		return new c();
+	}();
+
 }
 
 
-const 			blc_4_t_DOWNLOAD = 0;
-const 			blc_4_t_PARSE = 0;
+const 			blc_4_t_IDLE 			= 0;
+const 			blc_4_t_DOWNLOAD 		= 1;
+const 			blc_4_t_PARSE 			= 2;
+const			blc_4_t_MAKE_VIDEO 	= 3;
+const			blc_4_t_MP3LRC2BLS		= 4;

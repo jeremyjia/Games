@@ -1,0 +1,70 @@
+{
+    "request": {
+        "version": "0.0.19",
+        "width": 1024,
+        "height": 768,
+        "music": "bzll.mp3",
+        "rate": "3",
+        "frames": [
+            {
+                "number": "1",
+                "time": 120,
+                "objects": [
+                    {
+                        "graphic": "line",
+                        "attribute": {
+                            "left": 100,
+                            "top": 100,
+                            "right": 100,
+                            "bottom": 300,
+                            "size": 8.5,
+                            "color": "255,0,255",
+							"layer": 2
+                        }
+                    },
+                    {
+                        "text": "秒穿越对象demo",
+                        "x": 200,
+                        "y": 220,
+                        "size": 60,
+                        "color": "100,240,120",
+						"layer": 2
+                    }
+                ],
+                "backgroundColor": "100,100,100"
+            }
+        ],
+        "superObjects": [
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 50,
+                    "y1": 500,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 50,
+                    "color": "100,182,193",
+                    "name": "漂泊者乐园"
+                },
+                "frameRange": "(5,15)",
+				"unit":1,
+                "action": {
+                    "trace": "y=0*x*x+0*x+500",
+                    "step": 5
+                },
+				"layer": 1
+            },
+			{
+                "type": "javascript",
+                "frameRange": "(20,30)",
+				"unit":1,
+                "attribute": {
+                    "script": "https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxBubble.js",
+                    "function": "animateFrame",
+                    "start": 1
+                },
+                "layer": 1
+            }
+        ]
+    }
+}

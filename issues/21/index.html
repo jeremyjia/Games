@@ -68,12 +68,17 @@
 <div class="topnav" id="myTopnav">
   <a href="../../index.html">Home</a>
   <a href="../index.html">issues</a>
-  <a href="#"  class="active">i21_bv0.225</a> 
+  <a href="#"  class="active">i21_bv0.235</a> 
   <a href="c1/index.html">c1</a>
   <a href="c2/index.html">c2</a>
   <a href="c4/index.html">c4</a>
   <a href="c6/index.html">c6</a>
   <a href="c9/index.html">c9</a>
+  <a href="testC4Canvas.html">testC4Canvas</a>
+  <a href="test_blList.html">test_blList</a>
+  <a href="testC4AutoRun.html">testC4AutoRun</a> 
+  <a href="touch.html">touch</a> 
+
   <a href="javascript:void(0);" class="icon" onclick="myFunction()">
     <i class="fa fa-bars"></i>
   </a>
@@ -252,6 +257,11 @@
           btnNote.style.float = "right";
           btnNote.onclick = function(){
             cvs.setDrawType(G_DRAW_NOTE);
+          }
+          var btnSO = blo0.blBtn(tb,tb.id+"btnSO","so","turquoise");
+          btnSO.style.float = "right";
+          btnSO.onclick = function(){
+            cvs.setDrawType(G_DRAW_SO_EDITOR);
           }
         }
       },

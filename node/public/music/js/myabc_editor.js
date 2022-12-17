@@ -877,6 +877,11 @@ $(document).ready(function(){
   		  setAttrPanelHei();
   		  return false;
       } 
+	  if (event.which === 70 && event.ctrlKey){
+		abc();
+		alert('heljahdlkfjhalkjdhflakjdhflkajdhflkjah');
+		return false;
+	} 
       //ctrl + e//显示隐藏语法框
       if (event.which === 69 && event.ctrlKey){
     	  $("#editor").click();
