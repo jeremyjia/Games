@@ -7,12 +7,15 @@ import java.awt.Composite;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
 import javax.imageio.ImageIO;
 
 import com.pbz.demo.hello.util.FileUtil;
+
 
 public class JSGraphEngine {
 
@@ -64,6 +67,7 @@ public class JSGraphEngine {
 		public int from;
 		public int to;
 		public Composite oldComp;//for rgba
+		public Path2D m_Path2D = new GeneralPath();
 
 		public void fillRect(int x, int y, int width, int height) {
 			applayColor(fillStyle);
@@ -92,6 +96,7 @@ public class JSGraphEngine {
 
 		public void rotate(double angle) {
 			this.angle = angle;
+			graphics.rotate(angle, 0, 0);
 		}
 
 		public void fillText(String text, float x, float y) {
@@ -145,13 +150,42 @@ public class JSGraphEngine {
 
 			graphics.drawImage(img, x, y, null);
 		}
+		
+        public void drawImage(Object o, int x, int y, int width, int height) throws Exception {
+            ImageObj obj = (ImageObj) o;
+            System.out.println(obj.src);
 
-		public void moveTo(int x, int y) {
+            String srcImageFile = obj.src;
+            String fileName = FileUtil.downloadFileIfNeed(srcImageFile);
+            BufferedImage read = ImageIO.read(new File(fileName));
+            int w = (int) (read.getWidth() * 1);
+            int h = (int) (read.getHeight() * 1);
+            Image img = read.getScaledInstance(w, h, Image.SCALE_DEFAULT);
+            graphics.drawImage(img, x, y, width, height, null);
+        }
+        
+        public void drawImage(Object o, int sx, int sy, int sw, int sh, int dx, int dy, int dw, int dh)
+                throws Exception {
+            ImageObj obj = (ImageObj) o;
+            System.out.println(obj.src);
+
+            String srcImageFile = obj.src;
+            String fileName = FileUtil.downloadFileIfNeed(srcImageFile);
+            BufferedImage read = ImageIO.read(new File(fileName));
+            int w = (int) (read.getWidth() * 1);
+            int h = (int) (read.getHeight() * 1);
+            Image img = read.getScaledInstance(w, h, Image.SCALE_DEFAULT);
+
+            graphics.drawImage(img, dx, dy, dx+dw, dy+dh, sx, sy, sx+sw, sy+sh, null);
+        }
+        
+        public void moveTo(int x, int y) {
 			applayStrokeColor();
 			graphics.setStroke(new BasicStroke(lineWidth));
 			recoverProperty();
 			from = x;
 			to = y;
+			m_Path2D.moveTo(x, y);
 		}
 
 		public void lineTo(int x, int y) {
@@ -179,10 +213,12 @@ public class JSGraphEngine {
                 x = Math.pow(r, 2) * from + 2 * k * r * x1 + Math.pow(k, 2) * x2;
                 y = Math.pow(r, 2) * to + 2 * k * r * y1 + Math.pow(k, 2) * y2;
                 graphics.drawOval((int) x, (int) y, 1, 1);
+                m_Path2D.lineTo(x, y);
                 // graphics.drawLine((int) x, (int) y, (int) x, (int) y);
             }
             from = (int)x;
             to = (int)y;
+            m_Path2D.lineTo(x, y);
         }
         
 		private void applayColor(String fillStyle) {
@@ -265,12 +301,15 @@ public class JSGraphEngine {
 		}
 
 		public void beginPath() {
+		    m_Path2D.reset();
 		}
 
 		public void closePath() {
 		}
 
 		public void fill() {
+            applayColor(fillStyle);
+            graphics.fill(m_Path2D);
 		}
 
 		public void save() {
