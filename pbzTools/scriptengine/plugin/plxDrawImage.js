@@ -23,6 +23,6 @@ function drawPicture(ctx) {
 	ctx.drawImage(imgObj, 0, 0);
 	ctx.drawImage(imgObj, d_x, 50, 100,100);//缩放
 	ctx.fillText("缩放",d_x, 50);
-	ctx.drawImage(imgObj, 10, 10, 100,100, d_x,200,100,100);//裁剪
-	ctx.fillText("裁剪",d_x, 200);
+	ctx.drawImage(imgObj, 10, 10, 100,100, d_x,300,100,100);//裁剪
+	ctx.fillText("裁剪",d_x, 300);
 }
