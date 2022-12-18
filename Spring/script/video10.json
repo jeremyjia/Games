@@ -27,7 +27,7 @@
                 "type": "javascript",
                 "frameRange": "(1,50)",
                 "attribute": {
-                    "script": "plugin.js",
+                    "script": "https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxWaterDrop.js",
                     "function": "animateFrame",
                     "start": 1
                 },
