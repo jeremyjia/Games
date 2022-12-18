@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <style type="text/css">
+ .clsBody{background:red; }
     .box{ background:white; 
 	  overflow: hidden;
 	  zoom:1;
@@ -13,25 +14,28 @@
 </style>
 </head>
 
-<body> 
+<body class="clsBody"> 
   <h2><font color="blue">JS插件管理页面 v1.0.5</font></h2>
   <div>  
 	  <input id="range" type="range" min="10" max="1000" value="0" oninput="sliderChanged()"/>
 	  <p id="idpVal">Timer(ms):100</p>
+      <button id="btn4ShowBody">showBody</button>
+      <button id="btn4ShowHead">showHead</button>
+      <button id="btn4SetHead">setHead</button>
   </div>
+  <div id="div4Dbg" style="border:1px solid red;">dbg</div>
   <div class="box">
       <div class="kid kid1">
-      <canvas id="myCanvas" width="1024" height="768" style="border:1px solid #000000;"></canvas>
+      <canvas id="myCanvas" width="555" height="444" style="border:1px solid #000000;"></canvas>
 	  </div>
 	  <div class="kid kid1">
 	    <select id="selPlugIns" size=25>
 			 <option value="myplx.js">节拍器</option>
-			 <option value="plugin.js">大嘴</option>
+			 <option value="https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plugin.js">大嘴</option>
 			 <option value="plugin2.js">曲线</option>
-			 <option value="f1.js">f1</option>
 			 <option value="plxChessBoard.js">棋盘</option>
 			 <option value="plxCloud.js">白云草地</option>
-			 <option value="plxRain.js">雨滴特效</option>
+			 <option value="https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxRain.js">雨滴特效</option>
 			 <option value="plxBubble.js">气泡</option>
 			 <option value="plxWaterDrop.js">水滴</option>
 			 <option value="plxDrawImage.js" selected>绘图</option>
@@ -39,8 +43,9 @@
 	  </div>
   </div>
 
-  <script src="./plxDrawImage.js"></script>
+  <script src="https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxDrawImage.js"></script>
   <script type="text/javascript">
+  
     var times = 0;
 	var v = 100;
     var callbackFun = function () {
@@ -75,6 +80,33 @@
             }
 		}
 
+const btnSetHead  = document.getElementById("btn4SetHead");
+btnSetHead.onclick = function(){
+   const htmlBody = document.body.innerHTML;
+   document.head.innerHTML = document.getElementById("id4Ta").value;
+  // document.body.innerHTML = htmlBody;
+}
+const btnShowHead  = document.getElementById("btn4ShowHead");
+btnShowHead.onclick = function(){
+   const v = document.getElementById("div4Dbg");
+   v.innerHTML = Date();
+   const ta  = document.createElement("textarea");
+   ta.id = "id4Ta";
+   ta.style.width = "95%";
+   ta.style.height = "333"+"px";
+   v.appendChild(ta);
+   ta.value = document.head.innerHTML;
+}
+const btn4ShowBody  = document.getElementById("btn4ShowBody");
+btn4ShowBody.onclick = function(){
+   const v = document.getElementById("div4Dbg");
+   v.innerHTML = Date();
+   const ta  = document.createElement("textarea");
+   ta.style.width = "95%";
+   ta.style.height = "333"+"px";
+   v.appendChild(ta);
+   ta.value = document.body.innerHTML;
+}
   </script>
 </body>
 
