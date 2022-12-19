@@ -15,13 +15,15 @@
 </head>
 
 <body class="clsBody"> 
-  <h2><font color="blue">JS插件管理页面 v1.0.5</font></h2>
+  <script src="../../../js/blclass.js"></script>
+  <h2><font color="blue">JS插件管理页面 bv1.1.5</font></h2>
   <div>  
 	  <input id="range" type="range" min="10" max="1000" value="0" oninput="sliderChanged()"/>
 	  <p id="idpVal">Timer(ms):100</p>
       <button id="btn4ShowBody">showBody</button>
       <button id="btn4ShowHead">showHead</button>
       <button id="btn4SetHead">setHead</button>
+      <button id="btn4WrapCVS" style="border:1px solid green;">btn4WrapCVS</button>
   </div>
   <div id="div4Dbg" style="border:1px solid red;">dbg</div>
   <div class="box">
@@ -50,6 +52,7 @@
 	var v = 100;
     var callbackFun = function () {
       animateFrame(times++);
+      if(btn4WrapCVS.drawWrap) btn4WrapCVS.drawWrap(); 
     }
     var timer = setInterval(callbackFun, v);
 	
@@ -97,6 +100,7 @@ btnShowHead.onclick = function(){
    v.appendChild(ta);
    ta.value = document.head.innerHTML;
 }
+
 const btn4ShowBody  = document.getElementById("btn4ShowBody");
 btn4ShowBody.onclick = function(){
    const v = document.getElementById("div4Dbg");
@@ -106,6 +110,57 @@ btn4ShowBody.onclick = function(){
    ta.style.height = "333"+"px";
    v.appendChild(ta);
    ta.value = document.body.innerHTML;
+}
+
+
+const btn4WrapCVS  = document.getElementById("btn4WrapCVS");
+btn4WrapCVS.onclick = function(){ 
+   const cvs = bl$("myCanvas");
+   var mx1 = -1, my1 = -1, mx2 = -1, my2 = -1;
+   var bmd = false;
+
+   if(!this.bWrap){
+    this.bWrap = true;
+
+    this.style.backgroundColor = "green";
+
+    this.drawWrap = function(){ 
+      blo0.blText(cvs,`[${mx1},${my1}] - [${mx2},${my2}]`,mx1+30,my1+30,30,"blue"); 
+      if(bmd){
+        ctx.fillStyle = "red";
+          
+        ctx.beginPath();
+        ctx.moveTo(mx1, my1);
+        ctx.lineTo(mx2, my2);
+        ctx.stroke();
+      }
+    }
+    const oi = {
+      "mdCVS": function(x,y){ 
+          mx1 = x;
+          my1 = y;
+          mx2 = x;
+          my2 = y;
+          bmd = true;
+      },
+      "mmCVS": function(x,y){ 
+        if(bmd){
+          mx2 = x;
+          my2 = y;
+        }
+      },
+      "muCVS": function(x,y){ 
+        if(bmd){
+          bmd = false;
+          mx1 = -1;
+          my1 = -1; 
+          mx2 = -1;
+          my2 = -1; 
+        }
+      }
+    };
+    blo0.blWrapCVS(cvs,oi);
+   }
 }
   </script>
 </body>
