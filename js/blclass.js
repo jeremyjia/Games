@@ -1685,6 +1685,25 @@ function CBlClass ()
 			}
 		}		
 	}
+	this.blWrapCVS = function(cvs,oi){
+		if(cvs){
+			cvs.addEventListener('mousedown', function (e) {
+				var x = e.offsetX;
+				var y = e.offsetY;
+				if(oi.mdCVS) oi.mdCVS(x,y);
+			});
+			cvs.addEventListener('mousemove', function (e) {
+				var x = e.offsetX;
+				var y = e.offsetY;
+				if(oi.mmCVS) oi.mmCVS(x,y);
+			});
+			cvs.addEventListener('mouseup', function (e) {
+				var x = e.offsetX;
+				var y = e.offsetY;
+				if(oi.muCVS) oi.muCVS(x,y);
+			});
+		}
+	}
 	
 	this.blParseText = function(_2ParseTxt,_oCfg){  
 		_oCfg.toParseTxt = _2ParseTxt; 
@@ -5185,25 +5204,6 @@ blo0.initDraw = function(cvs,_x,_y,_c){
 	for(i in blPink){blo0.blRect(cvs,_x+i*20,_y+55,10,10,blPink[i]);}
 }
 
-blo0.blWrapCVS = function(cvs,oi){
-	if(cvs){
-		cvs.addEventListener('mousedown', function (e) {
-			var x = e.offsetX;
-			var y = e.offsetY;
-			if(oi.mdCVS) oi.mdCVS(x,y);
-		});
-		cvs.addEventListener('mousemove', function (e) {
-			var x = e.offsetX;
-			var y = e.offsetY;
-			if(oi.mmCVS) oi.mmCVS(x,y);
-		});
-		cvs.addEventListener('mouseup', function (e) {
-			var x = e.offsetX;
-			var y = e.offsetY;
-			if(oi.muCVS) oi.muCVS(x,y);
-		});
-	}
-}
 
 blo0.blCanvas2 = function(d,w,h){
 	var cvs = document.createElement("canvas");
