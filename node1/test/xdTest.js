@@ -27,12 +27,41 @@ describe(tag4xdTest, function(){
     }) 
   });    
 
-  it('xd dev', function(){ 
-    assert.equal(app(),'to test xdApp: done.');
+  it('wechat', function(){ 
+    var done ="";    
+
+    done += ` 
+
+    9分！封杀26年回归，震撼到失语，真是最伟大的禁片…
+    https://mp.weixin.qq.com/s/84W1DtsTRBBZGh87uTsGLw
+
+    https://developer.mozilla.org/en-US/docs/Web/API/Touch_events
+    https://littleflute.github.io/Games/issues/21/touch.html
+     
+    
+    https://littleflute.github.io/Games/issues/21/testC4AutoRun.html
+    
+    https://littleflute.github.io/Games/issues/21/testC4Canvas.html
+    https://mp.weixin.qq.com/s/IDtlkjfAIWF-471Wrem42A
+
+    `;
+    const doing =`...`;
+    assert.equal(doing,doing);
+  });
+
+  it('superObject', function(){ 
+    var done =`
+    1. load a picture from TA.
+    `;    
+    const doing =`...`;
+    assert.equal(done,done);
   });
   
-  it('word', function(){     assert.equal("done",'done');  });
-  it('abc0', function(){     assert.equal("done",'done');  });
-  it('blscript editor', function(){     assert.equal("done",'done');  });
+  it('word', function(){assert.equal("done",'done');  });
+  it('abc0', function(){assert.equal("done",'done');  });
+  it('blscript editor', function(){assert.equal("done",'done');  });
+  it('https://littleflute.github.io/Games/issues/21/testC4AutoRun.html',function(){assert.equal("done",'done');}); 
+  it('https://littleflute.github.io/Games/issues/21/testC4Canvas.html', function(){assert.equal("done",'done');});
+  it('https://nodejs.dovov.com/node-js-msgwindows-api.html', function(){assert.equal("2do",'2do');  }); 
   
 });
