@@ -3212,6 +3212,64 @@ function CBlClass ()
 		const rAutoRun = new f();
 		return rAutoRun;		
 	}
+	this.blAOI = function(){
+		var x1 = 0,x2 = 0,y1 = 0,y2 = 0;
+		var bSelect = false;
+		var lsX1Y1 = [];
+		var lsX2Y2 = [];
+		const _aoi = function(){
+			this.setTargetXY = function(_x1,_y1,_x2,_y2){
+				x1 = _x1; y1 = _y1; x2 = _x2; y2 = _y2;
+			}
+			this.drawAOI = function(ctx,c){ 
+				const oldStyle = ctx.fillStyle;
+				const oldStrokeStyle = ctx.strokeStyle;
+				ctx.fillStyle = c; 	
+				ctx.strokeStyle = c;
+				ctx.fillText(`blAOI: nlsX2Y2=${lsX2Y2.length}`, x1,y1-10);
+				ctx.beginPath();
+				ctx.moveTo(x1, y1);
+				ctx.lineTo(x2, y1);
+				ctx.lineTo(x2, y2);
+				ctx.lineTo(x1, y2);
+				ctx.lineTo(x1, y1);
+				ctx.stroke();
+				if(bSelect) ctx.fillStyle = "brown";
+				for(i in lsX1Y1){
+					ctx.fillRect(x1+lsX1Y1[i].x,y1+lsX1Y1[i].y,lsX1Y1[i].w,lsX1Y1[i].h);
+				}
+				for(i in lsX2Y2){
+					ctx.fillRect(x2+lsX2Y2[i].x,y2+lsX2Y2[i].y,lsX2Y2[i].w,lsX2Y2[i].h);
+				}
+				ctx.fillStyle = oldStyle;
+				ctx.strokeStyle = oldStrokeStyle;
+			}
+			this.addX1Y1AOI = function(x,y,w,h){
+				var o = {};
+				o.x = x; o.y = y; o.w = w; o.h = h;
+				lsX1Y1.push(o);
+			}
+			this.addX2Y2AOI = function(x,y,w,h){
+				var o = {};
+				o.x = x; o.y = y; o.w = w; o.h = h;
+				lsX2Y2.push(o);
+			}
+			this.inAOI = function(x,y){
+				var b = false;
+				for(i in lsX1Y1){ 
+					if(blo0.blPiR(x,y,x1+lsX1Y1[i].x,y1+lsX1Y1[i].y,lsX1Y1[i].w,lsX1Y1[i].h)) 
+					{b = true;break;}
+				}
+				for(i in lsX2Y2){ 
+					if(blo0.blPiR(x,y,x2+lsX2Y2[i].x,y2+lsX2Y2[i].y,lsX2Y2[i].w,lsX2Y2[i].h)) 
+					{b = true;break;}
+				}
+				return b;
+			}
+			this.setSelected = function(b){bSelect = b;}
+		}
+		return new _aoi();
+	}
 	this.C4Canvas = function(d,w,h,initColor){
 		function _blCanvas(d,w,h){
 			var cvs = document.createElement("canvas");
@@ -6417,14 +6475,7 @@ const gc4Note = function(){
 	}
 }
 
-const gc4SoEditor = function(){
-	var x1,y1,x2,y2,s = false,e = false;
-	var mx1=0,my1=0,mx2=0,my2=0,soName = "so01";
-	var mx = 50,my = 50;
-	var nMDown = 0;
-	var ex1,ey1,ex2,ey2;
-	const _C4SoEditor = function(){ 
-		var soScript = `
+var soScript = `
 		var imgInPlx = new Image(); 
 		imgInPlx.src = "http://localhost:8080/x1.jpg"; 
 		var C4Plx = function(){
@@ -6436,7 +6487,7 @@ const gc4SoEditor = function(){
 			  ctx.font = 11+ "px Consolas";
 			  ctx.fillStyle = "blue";
 			  ctx.fillText("C4Plx v0.14: time="+time ,x+10,y+55);
-			  ctx.drawImage(imgInPlx,x+22,y+111,240,160);
+			 // ctx.drawImage(imgInPlx,x+22,y+111,240,160);
 			};
 		  } 
 		  function animateFrame(time){
@@ -6448,6 +6499,14 @@ const gc4SoEditor = function(){
 			  var y = typeof y0 === "undefined"?0:y0;
 			  o.drawPlx2Frame (ctx,time,x,y);   
 		  }`;
+const gc4SoEditor = function(){
+	var x1,y1,x2,y2,s = false,e = false;
+	var mx1=0,my1=0,mx2=0,my2=0,soName = "so01";
+	var mx = 50,my = 50;
+	var nMDown = 0;
+	var ex1,ey1,ex2,ey2;
+	const _C4SoEditor = function(){ 
+		
 		var nTick = 0;
 		var vCanStatus = null;
 		var bRunScript = false; 
@@ -6613,7 +6672,7 @@ const gc4SoEditor = function(){
 		};
 
 		this.drawEffect = function(cvs){
-			oPics.showPics(cvs);
+			//oPics.showPics(cvs);
 			var ctx = cvs.getContext("2d");
 			nTick++;
 			ctx.fillText("soe1: nTick = " + nTick,x1,y1 + 10);
@@ -6778,16 +6837,27 @@ const gc4SoEditor = function(){
 
 
 const gc4BLS = function(){
+
 	const _thisBLS = this;
 	const blsTimer = blo0.blAudioTimer();
-	var lsFrame = [];
-	var pt = "";
-    var op = null;
+	var lsFrame = [];  
+	var op = null;
+	var nCurF = -1; 
+	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,sBlsTitle = "...";
+	var msgDbg = "msgBLS"; 
+	const blsAOI = blo0.blAOI();
+	blsAOI.addX1Y1AOI(-10,-10,10,10);
+	blsAOI.addX2Y2AOI(10,10,10,10);
+	blsAOI.addX2Y2AOI(22,22,10,10);
 	
-	const soDraw = function(cvs,n,x,y){
+	const soDraw = function(cvs,n,x1,y1,x2,y2){
 		var ctx = cvs.getContext("2d");	
-		if(null==op) op = blo0.blWrapPlx(cvs,pt);
-		ctx.fillText("soDraw: n="+n + "byPlx="+op.callPlx (n,x,y),x,y-40);	  
+		
+		ctx.fillText(`soDraw: `,x2,y2-40);	  
+		//*
+		if(op==null) op = blo0.blWrapPlx(cvs,soScript,x1,y1);
+		ctx.fillText("_2RunScript: n="+n + "byPlx="+op.callPlx (n,0,0),x2+10,y2-40);	
+		//*/
 	}
 	  
 	var lsSuperObjects = function(){
@@ -6809,18 +6879,16 @@ const gc4BLS = function(){
 		};
 		ls.push(o);
 		return ls;
-	}();	;
-	var nCurF = -1; 
-	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,sBlsTitle = "...";
-	var msgDbg = "msgBLS"; 
+	}();	 
 	
 	this.paintSuperObjects = function(cvs,n){
+		const l = _thisBLS.getSOs();
 		var ctx = cvs.getContext("2d");	
 		ctx.fillStyle = "blue";
 		ctx.font = "10px Arial";
-		var s = " so: to do ... n = " + n;
-		//soDraw(cvs,n,x2,y2); 
+		var s = `so: nFrame=${n} os = ${l.length}`;
 		ctx.fillText(s, x2-20,y2 - 20);
+		soDraw(cvs,n,x1,y1,x2,y2); 
 	}
 	this.getFrames = function(){return lsFrame;}
 	this._getAllFramesNumber = function(){
@@ -6843,14 +6911,7 @@ const gc4BLS = function(){
 			ctx.fillStyle = "red";
 			ctx.fillRect(x1-d,y1-d,d*2,d*2);
 			ctx.fillstyle = oldStyle;
-		}
-		if(e){
-			var oldStyle = ctx.fillStyle;
-			ctx.fillStyle = "brown";
-			ctx.fillRect(x2-d,y2-d,d*2,d*2);
-			ctx.fillstyle = oldStyle; 
-		}
-		
+		} 
 		var oldStyle = ctx.fillStyle;
 		
 		if(!blsTimer.isPlaying()){
@@ -6871,7 +6932,9 @@ const gc4BLS = function(){
 			var s = _makeDbgMsgInFrame();
 			ctx.fillText(s, x1,y1+30);		
 		}();
-		ctx.fillstyle = oldStyle;
+		ctx.fillStyle = oldStyle;
+		blsAOI.setTargetXY(x1,y1,x2,y2);
+		blsAOI.drawAOI(ctx,"green");
 	}
 	this.select_me = function(x,y){
 		if(blo0.blPiR(x,y,x1,y1,10,10)){
@@ -6879,7 +6942,8 @@ const gc4BLS = function(){
 		}
 	} 
 	this.edit_me = function(eui,x,y){
-		if(blo0.blPiR(x,y,x2,y2,10,10)){
+		if(blsAOI.inAOI(x,y)){
+			 blsAOI.setSelected(true);
 			 e = true; 
 			 eui.v1.innerHTML = "";
 			 const tb = blo0.blDiv(eui.v1,eui.v1.id+"tb","tb","gray");
@@ -7250,6 +7314,7 @@ const gc4BLS = function(){
 		   ey1 = y;
 		}
 		else{
+			blsAOI.setSelected(false);
 			e = false;			
 			_curFrameDown(x,y,x1,y1);
 		}
@@ -7293,7 +7358,7 @@ const gc4BLS = function(){
 			x1 = mx1 + dx;
 			y1 = my1 + dy;
 			x2 = mx2 + dx;
-			y2 = my2 + dy;
+			y2 = my2 + dy; 
 		}
 	}
 
