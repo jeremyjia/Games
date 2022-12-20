@@ -1,5 +1,5 @@
-const oPlx = function(fwV){ 
-	const c4Plx = function(){
+var oPlx = function(fwV){ 
+	var c4Plx = function(){
 		
 		var fs = []; 
 		var gravity = new CVector(0, 0.01);
@@ -206,7 +206,7 @@ const oPlx = function(fwV){
 		
 	}
 	return new c4Plx();
-}("[fireworks.js]_v0.141");
+}("[fireworks.js]_v0.142");
 
 function animateFrame(time) {    
 	oPlx.loop(time);
