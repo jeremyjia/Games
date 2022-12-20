@@ -6727,6 +6727,9 @@ const gc4SoEditor = function(){
 			if(op) op.setPlxXY(x,y);
 		}
 		this.downSOEditor = function(x,y){
+			if(!blo0.blPiR(x,y,x1,y1,x2-x1,y2-y1)){
+				return;
+			}
 			nMDown++;
 			if(nMDown==1){
 				mx1 = x-x1;
@@ -6741,9 +6744,7 @@ const gc4SoEditor = function(){
 				mx = mx1;
 				my = my1;
 			}
-		}
-		
-
+		} 
 	};
 	const osoe = new _C4SoEditor();
 
@@ -6840,8 +6841,7 @@ const gc4BLS = function(){
 
 	const _thisBLS = this;
 	const blsTimer = blo0.blAudioTimer();
-	var lsFrame = [];  
-	var op = null;
+	var lsFrame = [];   
 	var nCurF = -1; 
 	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,sBlsTitle = "...";
 	var msgDbg = "msgBLS"; 
@@ -6855,8 +6855,8 @@ const gc4BLS = function(){
 		
 		ctx.fillText(`soDraw: `,x2,y2-40);	  
 		//*
-		if(op==null) op = blo0.blWrapPlx(cvs,soScript,x1,y1);
-		ctx.fillText("_2RunScript: n="+n + "byPlx="+op.callPlx (n,0,0),x2+10,y2-40);	
+		const op = blo0.blWrapPlx(cvs,soScript,x1,y1);
+		ctx.fillText("_2RunScript: n="+n + "byPlx="+op.callPlx (n,x1,y1),x2+10,y2-40);	
 		//*/
 	}
 	  
@@ -7256,60 +7256,117 @@ const gc4BLS = function(){
 			 const split2 = blo0.blDiv(eui.v1,eui.v1.id+"split2","split2","green");
 			 const v4curF = blo0.blDiv(eui.v1,eui.v1.id+"v4curF","v4curF","gray");
 
-			 const split3= blo0.blDiv(eui.v1,eui.v1.id+"split3","split3","lightblue");
-			 const tbServer = blo0.blDiv(eui.v1,eui.v1.id+"tbServer","tbServer:","gray");
-			 const vServer = blo0.blDiv(eui.v1,eui.v1.id+"vServer","vServer:","lightblue");
-			 
-			 var btnSaveScript = blo0.blBtn(tbServer,tbServer.id+"btnSaveScript","bls2server","lightgreen");
-			 btnSaveScript.style.float = "left"; 
-			 btnSaveScript.onclick = function(){				 
-				var pl = _makeBLS(); 
-				var url = "http://localhost:8080/json?fileName=" + sBlsTitle + ".json"; 
+			 const fnMakeServerTb = function(){
+				const split3= blo0.blDiv(eui.v1,eui.v1.id+"split3","split3","lightblue");
+			 	const tbServer = blo0.blDiv(eui.v1,eui.v1.id+"tbServer","tbServer:","gray");
+				const vServer = blo0.blDiv(eui.v1,eui.v1.id+"vServer","vServer:","lightblue");
+				const bs = [
+					{
+						"id":1,
+						"name":"bls2svr",
+						"fn2server": function(b,v){
+							var pl = _makeBLS(); 
+							var url = "http://localhost:8080/json?fileName=" + sBlsTitle + ".json"; 
 
-				blo0.blPOST(url,pl,function(txt){
-					vServer.innerHTML = "<a href ='http://localhost:8080/"+sBlsTitle+".json' target='_blank'>"+sBlsTitle+".json</a>";
-				}); 
-			}
-			var btnMakeV = blo0.blBtn(tbServer,tbServer.id+"btnMakeV","makeVideo","lightblue");
-			btnMakeV.style.float = "right"; 
-			btnMakeV.onclick = function(){	
-					var url = "http://localhost:8080/image/json2video?script=" + sBlsTitle + ".json&video=" + sBlsTitle + ".mp4"; 
-					this._2do = function(txt){
-						vServer.innerHTML = txt;
-						const refactorPage = function(){
-							var tl = [1.0,2.0,3.0,4.0,5.0,6.0];
-							 
-							function createBtn(dtl,ddbg,id,video) {  
-								var btn = document.createElement("button");
-								btn.id = id;
-								  btn.innerHTML = id;  
-								btn.onclick = function(){ 
-									ddbg.innerHTML = this.id; 
-									video.currentTime = this.id;
-								} 
-								  dtl.appendChild(btn);
-								return btn;
-							}
-							
-							bl$("btnPlay").onclick = function play() {
-								var video = document.getElementById("id_4_video");
-								video.play();
-							} 
-							bl$("btn2createToolbar").onclick = function createToolbar() { 
-								var video = document.getElementById("id_4_video");
-								var dtl = document.getElementById("id4toolbar");
-								var ddbg = document.getElementById("id4Debug");
-								if(!dtl.done){
-								  dtl.done = true;
-								  for(i in tl){
-									createBtn(dtl,ddbg,tl[i],video);     
-								  }     
-								}
-							  } 
-						}();
-					};
-					blo0.blAjx(this,url);
-		   }
+							blo0.blPOST(url,pl,function(txt){
+								v.innerHTML = "<a href ='http://localhost:8080/"+sBlsTitle+".json' target='_blank'>"+sBlsTitle+".json</a>";
+							}); 
+						},
+						"color": "gray",
+						"float": "left",
+					},
+					{
+						"id":2,
+						"name":"mkMP4",
+						"fn2server": function(b,v){
+							var url = "http://localhost:8080/image/json2video?script=" + sBlsTitle + ".json&video=" + sBlsTitle + ".mp4"; 
+							b._2do = function(txt){
+								v.innerHTML = txt;
+								const refactorPage = function(){
+									var tl = [1.0,2.0,3.0,4.0,5.0,6.0];
+									
+									function createBtn(dtl,ddbg,id,video) {  
+										var btn = document.createElement("button");
+										btn.id = id;
+										btn.innerHTML = id;  
+										btn.onclick = function(){ 
+											ddbg.innerHTML = this.id; 
+											video.currentTime = this.id;
+										} 
+										dtl.appendChild(btn);
+										return btn;
+									}
+									
+									bl$("btnPlay").onclick = function play() {
+										var video = document.getElementById("id_4_video");
+										video.play();
+									} 
+									bl$("btn2createToolbar").onclick = function createToolbar() { 
+										var video = document.getElementById("id_4_video");
+										var dtl = document.getElementById("id4toolbar");
+										var ddbg = document.getElementById("id4Debug");
+										if(!dtl.done){
+										dtl.done = true;
+										for(i in tl){
+											createBtn(dtl,ddbg,tl[i],video);     
+										}     
+										}
+									} 
+								}();
+							};
+							blo0.blAjx(b,url);
+						},
+						"color": "gray",
+						"float": "left",
+					},
+					{
+						"id":3,
+						"name":"dl-51voa-index",
+						"fn2server": function(b,v){
+							v.innerHTML = this.name; 
+						},
+						"color": "gray",
+						"float": "right",
+					},
+					{
+						"id":4,
+						"name":"parse-51voa-index",
+						"fn2server": function(b,v){
+							v.innerHTML = this.name; 
+						},
+						"color": "gray",
+						"float": "right",
+					},
+					{
+						"id":5,
+						"name":"dl-p1-51voa",
+						"fn2server": function(b,v){
+							v.innerHTML = this.name; 
+						},
+						"color": "gray",
+						"float": "right",
+					},
+					{
+						"id":6,
+						"name":"parse-p1-51voa",
+						"fn2server": function(b,v){
+							v.innerHTML = this.name; 
+						},
+						"color": "gray",
+						"float": "right",
+					},
+				];
+				for(i in bs){
+					const btn = blo0.blBtn(tbServer,tbServer.id+bs[i].id,bs[i].name,bs[i].color);
+					btn.style.float = bs[i].float;
+					btn.onclick = function(_btn,_v,_i){
+						return function(){
+							bs[_i].fn2server(_btn,_v);
+						}
+					}(btn,vServer,i);
+				}  
+			 }();
+			 
 		   ex1 = x;
 		   ey1 = y;
 		}

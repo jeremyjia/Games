@@ -1,4 +1,4 @@
-var fwV = "[fireworks.js]_v0.121";
+var fwV = "[fireworks.js]_v0.122";
 
 function _gRandom(min, max) {
 	min = Math.ceil(min);
@@ -97,8 +97,8 @@ function CParticle(x, y, vel, color, explodeLifespan){
 } 
 
 
-function CFirework(_x,_y){
-	var _w = 1200, _h = 600;
+function CFirework(_width,_height){
+	var _w = _width, _h = _height;
 	var vel = new CVector(
 		_gRandom(0, 15) * (_gRandom(0, 1) ? -1 : 1),
 		_gRandom(-18, -10)
@@ -192,7 +192,9 @@ function animateFrame(time) {
     ctx.fillText( d.toLocaleString(), 110, 88);
  
 	if (0==fs.length) {
-		fs.push(new CFirework()); 
+		fs.push(new CFirework(800,600)); 
+		fs.push(new CFirework(444,333)); 
+		fs.push(new CFirework(555,222)); 
 	}  
     for (i in fs) {
 		fs[i].applyForce(gravity);
