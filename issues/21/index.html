@@ -103,8 +103,9 @@
     
     
 
-    function fnPlx(){        
+    function fnPlx(){      
       if(!this.md){ 
+         
         this.md = blo0.blMD("id_4_plx","blclass unit test",55,255,600,400,"green");
         var tb = blo0.blDiv(this.md,this.md.id+"tb4Plx","tb","gray");
         var v1 = blo0.blDiv(this.md,this.md.id+"v1","v1","lightgray");
@@ -134,7 +135,7 @@
  
       }
       else{
-        var b = this, d = this.md;
+        var b = bl$("btn4Plx"), d = this.md;
         _on_off_div(b,d);
         b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
       }       

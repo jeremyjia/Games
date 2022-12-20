@@ -99,7 +99,7 @@ var blon = function(b,d,c1,c2){
 		}
 		else{
 			d.style.display="block"; 
-			if(b) b.style.backgroundColor="green"; 
+			if(b!=null) b.style.background="green"; 
 		}
 	};
 	function _on_off_bd_1(b,d){ 
@@ -6819,7 +6819,7 @@ const gc4BLS = function(){
 		ctx.fillStyle = "blue";
 		ctx.font = "10px Arial";
 		var s = " so: to do ... n = " + n;
-		soDraw(cvs,n,x2,y2); 
+		//soDraw(cvs,n,x2,y2); 
 		ctx.fillText(s, x2-20,y2 - 20);
 	}
 	this.getFrames = function(){return lsFrame;}
