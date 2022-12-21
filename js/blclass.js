@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.343"
+var g_ver_blClass = "CBlClass_bv1.6.345"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -746,6 +746,301 @@ function CBlClass ()
 			return o;
 		}();
 		return r;
+	}
+	this.blSoScripts = function(){
+		var mysos = [
+			`
+		var imgInPlx = new Image(); 
+		imgInPlx.src = "http://localhost:8080/x1.jpg"; 
+		var C4Plx = function(){
+			this.drawPlx2Frame = function(ctx,time,x0,y0){ 
+			  var x = x0?x0:0;
+			  var y = y0?y0:0
+			  ctx.fillStyle = 'red';
+			  ctx.fillRect(x+0+time%111, y+30, 5, 44);
+			  ctx.font = 11+ "px Consolas";
+			  ctx.fillStyle = "blue";
+			  ctx.fillText("C4Plx v0.14: time="+time ,x+10,y+55);
+			 // ctx.drawImage(imgInPlx,x+22,y+111,240,160);
+			};
+		  } 
+		  function animateFrame(time){
+			  var canvas = document.getElementById('myCanvas');
+			  var ctx = canvas.getContext('2d');  
+					   
+			  var o = new C4Plx();
+			  var x = typeof x0 === "undefined"?0:x0;
+			  var y = typeof y0 === "undefined"?0:y0;
+			  o.drawPlx2Frame (ctx,time,x,y);   
+		  }`,`
+		  var imgInPlx = new Image(); 
+		  imgInPlx.src = "http://localhost:8080/x1.jpg"; 
+		  var C4Plx = function(){
+			  this.drawPlx2Frame = function(ctx,time,x0,y0){ 
+				var x = x0?x0:0;
+				var y = y0?y0:0
+				ctx.fillStyle = 'blue';
+				ctx.fillRect(x+0+time%155, y+55, 5, 44);
+				ctx.font = 11+ "px Consolas";
+				ctx.fillStyle = "blue";
+				ctx.fillText("C4Plx v0.14: time="+time ,x+10,y+55);
+			   // ctx.drawImage(imgInPlx,x+22,y+111,240,160);
+			  };
+			} 
+			function animateFrame(time){
+				var canvas = document.getElementById('myCanvas');
+				var ctx = canvas.getContext('2d');  
+						 
+				var o = new C4Plx();
+				var x = typeof x0 === "undefined"?0:x0;
+				var y = typeof y0 === "undefined"?0:y0;
+				o.drawPlx2Frame (ctx,time,x,y);   
+			}`,
+			`var oPlx = function(fwV){ 
+				var c4Plx = function(){
+					
+					var fs = []; 
+					var gravity = new CVector(0, 0.01);
+					this.loop = function(nTick){
+						var n = fs.length;
+				
+						var canvas = document.getElementById('myCanvas');
+						var ctx = canvas.getContext('2d');  
+						ctx.fillStyle = 'red';
+						ctx.font = "30px Verdana";
+						ctx.fillText( fwV + " n=" + n + " time=" + nTick, 110, 44);
+						var d = new Date(); 
+						ctx.fillText( d.toLocaleString(), 110, 88);
+					
+						if (0==fs.length) {
+							fs.push(new CFirework(800,600)); 
+							fs.push(new CFirework(444,333)); 
+							fs.push(new CFirework(555,222)); 
+						}  
+						for (i in fs) {
+							fs[i].applyForce(gravity);
+							fs[i].update();
+							fs[i].render(ctx);
+						} 
+						for (var i = 0; i < fs.length; i++) {
+							if (fs[i].wasDone()) {
+								fs.splice(i, 1);
+							}
+						}
+					}
+					function CParticle(x, y, vel, color, explodeLifespan){
+						this.r = 3;
+						this.loc = new CVector(x, y);
+						this.vel = vel || new CVector(0, 0);
+						this.acc = new CVector(0, 0);
+						this.explodeLifespan = explodeLifespan;
+						this.explodeCurrentLs = 0;
+						this.color = color;
+						
+						this.update = function() {
+							this.vel.add(this.acc);
+							this.loc.add(this.vel);
+							if (this.explodeLifespan) {
+								this.explodeCurrentLs++;
+								var progress = this.explodeCurrentLs / this.explodeLifespan;
+								if (progress > 0.7 && progress < 1.0) {
+									this.color.a = 1 - (progress - 0.7) / 0.3;
+								}
+							}
+						}
+						
+						this.render = function(ctx) {
+							//ctx.save();
+							ctx.beginPath();
+							ctx.arc(this.loc.x, this.loc.y, this.r, 0, Math.PI * 2);
+							ctx.fillStyle = this.color.toString();
+							ctx.fill();
+							//ctx.restore();
+						}
+					
+						this.applyForce = function(force) {
+							this.acc.add(force);
+						}
+					
+						this.wasDoneExploding = function() {
+							return this.explodeCurrentLs > this.explodeLifespan;
+						}
+					}  
+					
+					function CFirework(_width,_height){
+						var _w = _width, _h = _height;
+						var vel = new CVector(
+							_gRandom(0, 15) * (_gRandom(0, 1) ? -1 : 1),
+							_gRandom(-18, -10)
+						);
+						this.color = _gColor();
+						this.color.s = 100;
+						this.color.l = 70;
+						this.exploder = new CParticle(_w / 2, _h, vel, this.color);
+						this.explodeParticles = [];
+						this.nOfParticles = _gRandom(30, 40);
+						this.isExploded = false;
+					
+						this.update = function() {
+							if (this.exploder.vel.y > 0 && !this.isExploded) {
+								this.isExploded = true;
+								this.initExplodeParticles();
+							}
+							if (!this.isExploded) {
+								this.exploder.update();
+							} else {
+								for (i in this.explodeParticles) {
+									if (!this.explodeParticles[i].wasDoneExploding()) {
+										this.explodeParticles[i].update();
+									}
+								}
+							}
+						}
+					
+						this.render = function(ctx) {
+							if (!this.isExploded) {
+								this.exploder.render(ctx);
+							} else if (!this.done) {
+								for (i in this.explodeParticles) {
+									if (!this.explodeParticles[i].wasDoneExploding()) {
+										this.explodeParticles[i].render(ctx);
+									}
+								}
+							}
+						}
+					
+						this.applyForce = function(force) {
+							if (!this.isExploded) {
+								this.exploder.applyForce(force);
+							} else if (!this.done) {
+								for (i in this.explodeParticles) {
+									if (!this.explodeParticles[i].wasDoneExploding()) {
+										this.explodeParticles[i].applyForce(force);
+									}
+								}
+							}
+						}
+					
+						this.initExplodeParticles = function() {
+							for (var i = 0; i < this.nOfParticles; i++) {
+								var particle = new CParticle(
+									this.exploder.loc.x, 
+									this.exploder.loc.y,
+									_gNewVector(),
+									this.color,
+									50
+								);
+								this.explodeParticles.push(particle);
+							}
+						}
+					
+						this.wasDone = function() {
+							if (this.explodeParticles.length === 0) return false;
+					
+							for (i in this.explodeParticles) {
+								if (!this.explodeParticles[i].wasDoneExploding()) {
+									return false;
+								}
+							}
+							return true;
+						}
+					}
+					function CVector(_x,_y){
+						this.x = _x;
+						this.y = _y;
+						this.add = function(vec){
+							this.x += vec.x;
+							this.y += vec.y;
+						}
+					}
+					
+					var _gNewVector = function(){
+						var angle = _gRandom(0, 360) * Math.PI / 180;
+						var len = _gRandom(1, 5);
+						var x = Math.cos(angle) * len;
+						var y = Math.sin(angle) * len;
+						return new CVector(x, y);
+					}
+					var _gColor = function(){
+						var c = new CColor();
+						c.h = _gRandom(0, 360);
+						c.s = _gRandom(0, 100);
+						c.l = _gRandom(0, 100);
+						return c;
+					}
+					
+					function _gRandom(min, max) {
+						min = Math.ceil(min);
+						max = Math.floor(max);
+						return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive 
+					}
+				 
+					function CColor(){
+						this.h = 0;
+						this.s = 0;
+						this.l = 0;
+						this.a = 0;
+						this.toString = function(){
+							var s1 = 'hsla(';
+							s1 += this.h;
+							s1 += ',';
+							s1 += this.s;
+							s1 += '%,';
+							s1 += this.l;
+							s1 += '%,';
+							s1 += this.a;
+							s1 += ')';
+							var s2 = 'hsla(';
+							s2 += this.h;
+							s2 += ',';
+							s2 += this.s;
+							s2 += '%,';
+							s2 += this.l;
+							s2 += '%)';  
+							return this.a ? s1 : s2;
+						}
+					}
+				
+					
+				}
+				return new c4Plx();
+			}("[fireworks.js]_v0.142");
+			
+			function animateFrame(time) {    
+				oPlx.loop(time);
+			}`,
+			 
+
+		];
+		const C4SoScripts = function(){
+			this.updateIdx = function(l,i){ 
+				var url = l[i].attribute.script;  
+				var w = {}; 
+				w._2do = function(txt){
+					if("error xd 11"==txt) return; 
+					mysos[i]=txt;
+				}
+				blo0.blAjx(w,url)
+			}
+			this.sosUpdate = function(l){
+				mysos = [];
+				for(i in l){
+					var url = "http://localhost:8080/" + l[i].srcipt; 
+					var w = {};
+					w._2do = function(txt){
+						mysos.push(txt);
+					}
+					blo0.blAjx(w,url);
+				}
+			}
+			this.soDraw = function(cvs,n,x1,y1,x2,y2){
+				for(i in mysos){ 
+					var op = blo0.blWrapPlx(cvs,mysos[i],x1,y1);
+					op.callPlx (n,x1,y1);
+				} 
+			} 
+		}
+		return new C4SoScripts();
 	}
 	this.blWrapPlx = function(cvs,_pt,x1,y1){
 		var pt2 = _pt.replace("myCanvas",cvs.id);
@@ -6850,16 +7145,7 @@ const gc4BLS = function(){
 	blsAOI.addX2Y2AOI(10,10,10,10);
 	blsAOI.addX2Y2AOI(22,22,10,10);
 	
-	const soDraw = function(cvs,n,x1,y1,x2,y2){
-		var ctx = cvs.getContext("2d");	
-		
-		ctx.fillText(`soDraw: `,x2,y2-40);	  
-		//*
-		const op = blo0.blWrapPlx(cvs,soScript,x1,y1);
-		ctx.fillText("_2RunScript: n="+n + "byPlx="+op.callPlx (n,x1,y1),x2+10,y2-40);	
-		//*/
-	}
-	  
+	
 	var lsSuperObjects = function(){
 		
 		var w ={};
@@ -6880,7 +7166,7 @@ const gc4BLS = function(){
 		ls.push(o);
 		return ls;
 	}();	 
-	
+	const lsso = blo0.blSoScripts();
 	this.paintSuperObjects = function(cvs,n){
 		const l = _thisBLS.getSOs();
 		var ctx = cvs.getContext("2d");	
@@ -6888,7 +7174,7 @@ const gc4BLS = function(){
 		ctx.font = "10px Arial";
 		var s = `so: nFrame=${n} os = ${l.length}`;
 		ctx.fillText(s, x2-20,y2 - 20);
-		soDraw(cvs,n,x1,y1,x2,y2); 
+		lsso.soDraw(cvs,n,x1,y1,x2,y2); 
 	}
 	this.getFrames = function(){return lsFrame;}
 	this._getAllFramesNumber = function(){
@@ -7034,7 +7320,7 @@ const gc4BLS = function(){
 							const tb = blo0.blDiv(v,v.id+"tb","tb",this.color);
 							const vos = blo0.blDiv(v,v.id+"vos","vos","BurlyWood");
 							const vEndOfOS = blo0.blDiv(v,v.id+"vEndOfOS","vEndOfOS","white");
-							tb.refreshSOs = function(l){
+							tb.refreshSOs = function(l){ 
 								for(i in l){
 									const b = blo0.blBtn(tb,tb.id+i,i,"Lavender"); 
 									newSO.style.float = "right";
@@ -7105,6 +7391,15 @@ const gc4BLS = function(){
 														"color": "Teal",
 														"float": "right"
 													},
+													{
+														"id":6,
+														"name": "updateIdx",
+														"fnSet": function(l,i){
+															lsso.updateIdx(l,i);
+														},
+														"color": "Teal",
+														"float": "right"
+													},
 												];
 												for(i in ss){
 													const btn = blo0.blBtn(_v,_v.id+ss[i].id,ss[i].name,ss[i].color);
@@ -7122,14 +7417,14 @@ const gc4BLS = function(){
 								}
 							}							
 							const l = _thisBLS.getSOs();
-							const newSO = blo0.blBtn(tb,tb.id+"newSO","+so","Salmon"); 
+							const newSO = blo0.blBtn(tb,tb.id+"newSO","newSO","Salmon"); 
 							newSO.style.float = "left";
 							newSO.onclick = function(){
 								var o = {};
 								o.type = "javascript";
 								o.frameRange = "(1,1000)";
 								var a = {};
-								a.script = "http://localhost:8080/so646a.js";
+								a.script = "http://localhost:8080/so01.js";
 								a.function = "animateFrame";
 								a.start = 1;
 								o.attribute = a;
