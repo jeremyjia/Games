@@ -7456,8 +7456,7 @@ const gc4BLS = function(){
 							fetch (file)
 							.then(x => x.text())
 							.then(y => {
-								var a = y.split("VOA");
-								alert(a.length);
+								blo0.txt = y; 
 							});
 							 
 						},
@@ -7483,8 +7482,8 @@ const gc4BLS = function(){
 						"fn2server": function(b,v,_bs,_i){
 							v.innerHTML = this.name + ` ${_i}`; 
 							setTimeout(() => {
-								var n = parseInt(_i) + 1;
-								_bs[n].fn2server(b,v,_bs,n);
+								var a = blo0.txt.split("VOA美国之音听力最近更新");
+								alert(a.length);	
 							}, 3000);
 						},
 						"color": "gray",
@@ -7500,16 +7499,10 @@ const gc4BLS = function(){
 						}
 					}(btn,vServer,bs,i);
 				}  
-				var btn51voaNews = blo0.blBtn(tbServer,tbServer.id+"51voaNews","51voaNews","blue");
+				var btn51voaNews = blo0.blBtn(tbServer, "btn51voaNews","51voaNews","blue");
 				btn51voaNews.onclick = function(){
-					let file = "http://localhost:8080/51voaIndex.html"
-
-							fetch (file)
-							.then(x => x.text())
-							.then(y => {
-								var a = y.split("VOA美国之音听力最近更新");
-								alert(a.length);
-							});
+					var a = blo0.txt.split("VOA美国之音听力最近更新");
+  					alert(a.length);
 				}
 			 }();
 			 
