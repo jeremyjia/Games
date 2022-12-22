@@ -7532,10 +7532,18 @@ const gc4BLS = function(){
 							.then(y => { 
 								var a = y.split('<a id="mp3" href="');
 								var b = a[1].split('"></a>');
-								var mp3url = b[0];
-								v.p1PostParse = `post parse... ${mp3url}`;
+								var mp3url = b[0]; 
 								if(!blo0.ls51voaMp3) blo0.ls51voaMp3 = [];
 								blo0.ls51voaMp3[0] = mp3url;
+
+								
+								var a = y.split('<a id="lrc" href="');
+								var b = a[1].split('"></a>');
+								var lrcUrl = `https://www.51voa.com/${b[0]}`; 
+								if(!blo0.ls51voaLrc) blo0.ls51voaLrc = [];
+								blo0.ls51voaLrc[0] = lrcUrl;
+
+								v.infBls = {"mp3":mp3url,"lrc":lrcUrl};
 								var n = parseInt(_i) + 1;
 								_bs[n].fn2server(b,v,_bs,n);
 							});
@@ -7547,7 +7555,148 @@ const gc4BLS = function(){
 						"id":7,
 						"name":"p1bls",
 						"fn2server": function(b,v,_bs,_i){
-							v.innerHTML = this.name + ` ${_i} ${v.p1PostParse} `;
+							v.innerHTML = this.name + ` ${_i} ${JSON.stringify(v.infBls)} `;
+							const blsP1 = "p1voa.json";
+							var pl = {
+								"request": {
+									"version": "0.0.16",
+									"description": `VOA慢速英语听力 ${blo0.blDate()}`,
+									"width": 1920,
+									"height": 1080,
+									"music": "${VAR_MUSIC}",
+									"rate": "2",
+									"frames": [
+										{
+											"number": "1",
+											"time": "${VAR_FRAMES}",
+											"objects": [
+												{
+													"text": "${VAR_TITLE}",
+													"x": 80,
+													"y": 320,
+													"size": 60,
+													"color": "160,32,240",
+													"layer": 2
+												}
+											],
+											"backgroundColor": "100,149,237"
+										}
+									],
+									"superObjects": [
+										{
+											"type": "subtitle",
+											"frameRange": "(1,${VAR_FRAMES})",
+											"attribute": {
+												"script": "${VAR_LRC_PATH}",
+												"x1": 20,
+												"y1": 670,
+												"size": 44,
+												"color": "255,255,0",
+												"replace":[
+													 {
+													   "regex":"American",
+													   "target":"美国"
+													 },
+													 {
+													   "regex":"更多听力请访问51VOA.COM",
+													   "target":"漂泊者乐园团队制作"
+													 }
+												]
+											},
+											"layer": 1
+										},
+										{
+											"type": "picture",
+											"attribute": {
+												"x1": 220,
+												"y1": 200,
+												"x2": 510,
+												"y2": 380,
+												"size": -1,
+												"color": "255,0,0",
+												"name": "${VAR_IMG_PATH}"
+											},
+											"frameRange": "(1,${VAR_TIME})",
+											"action": {
+												"trace": "y=0*x*x+0*x+200",
+												"step": 0
+											}
+										} 
+									],
+									"Macros": [
+										{
+											"name": "VAR_TITLE",
+											"value": `VOA慢速英语听力 ${blo0.blDate()}`
+										},
+										{
+											"name": "VAR_MUSIC",
+											"value": v.infBls.mp3
+										},
+										{
+											"name": "VAR_LRC_PATH",
+											"value": v.infBls.lrc
+										},
+										{
+											"name": "VAR_IMG_PATH",
+											"value": "https://img.51voa.cn/1/022a0000-0aff-0242-008a-08dae3bd0580_cx0_cy1_cw0_w268_r1.jpg"
+										}
+									]
+								}
+							}; 
+							var url = "http://localhost:8080/json?fileName=" + blsP1 ; 
+
+							blo0.blPOST(url,pl,function(txt){
+								v.innerHTML = "<a href ='http://localhost:8080/"+blsP1+"' target='_blank'>"+blsP1+"</a>";
+								
+								v.infMp4 = {"json":blsP1,"date":Date()};
+								var n = parseInt(_i) + 1;
+								_bs[n].fn2server(b,v,_bs,n);
+							}); 
+						},
+						"color": "gray",
+						"float": "right",
+					},
+					{
+						"id":8,
+						"name":"p1Mp4",
+						"fn2server": function(b,v,_bs,_i){
+							v.innerHTML = this.name + ` ${_i} ${JSON.stringify(v.infMp4)} `;  
+							var url = "http://localhost:8080/image/json2video?script=" + v.infMp4.json + "&video=p1v51voa.mp4"; 
+							b._2do = function(txt){
+								v.innerHTML = txt;
+								const refactorPage = function(){
+									var tl = [1.0,2.0,3.0,4.0,5.0,6.0];
+									
+									function createBtn(dtl,ddbg,id,video) {  
+										var btn = document.createElement("button");
+										btn.id = id;
+										btn.innerHTML = id;  
+										btn.onclick = function(){ 
+											ddbg.innerHTML = this.id; 
+											video.currentTime = this.id;
+										} 
+										dtl.appendChild(btn);
+										return btn;
+									}
+									
+									bl$("btnPlay").onclick = function play() {
+										var video = document.getElementById("id_4_video");
+										video.play();
+									} 
+									bl$("btn2createToolbar").onclick = function createToolbar() { 
+										var video = document.getElementById("id_4_video");
+										var dtl = document.getElementById("id4toolbar");
+										var ddbg = document.getElementById("id4Debug");
+										if(!dtl.done){
+										dtl.done = true;
+										for(i in tl){
+											createBtn(dtl,ddbg,tl[i],video);     
+										}     
+										}
+									} 
+								}();
+							};
+							blo0.blAjx(b,url);
 						},
 						"color": "gray",
 						"float": "right",
