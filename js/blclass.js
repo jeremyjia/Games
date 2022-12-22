@@ -7458,38 +7458,26 @@ const gc4BLS = function(){
 							.then(y => { 
 								const blco1 = blo0;
 								const lv1 = blco1.blDiv(v,v.id+"lv1","lv1","blue");
-									const vDate = blco1.blDiv(v,v.id+"vDate","date","lightgreen");
-									const vNew = blco1.blDiv(v,"id4vParse","new","lightblue");
-									var a = y.split('更新时间：');
-									var b = a[1].split('）');
-									var c = b[0].split('-');
-									var d = c[0]+"/"+c[1]+"/"+c[2];
+								const vDate = blco1.blDiv(v,v.id+"vDate","date","lightgreen");
+								const vNew = blco1.blDiv(v,"id4vParse","new","lightblue");
+								var a = y.split('更新时间：');
+								var b = a[1].split('）');
+								var c = b[0].split('-');
+								var d = "(" + c[0]+"/"+c[1]+"/"+c[2];
 	
-									var e = a[1].split(d); 
-									const url51voa = "https://www.51voa.com";
-									var s = "";
-									for(var i=0; i<e.length-1;i++){
-										s += "<br>";
-										var f = e[i].split('href="'); 
-										var sPage = "";
-										var ls = [];
-										for(var j=1; j<f.length;j++){
-											var g = f[j].split("</a>");
-											sPage += '<a '; 
-											sPage += ' href="' +url51voa + g[0]+'</a> * ';
-											ls.push(url51voa + g[0]);
-										}
-										var dPage = blco1.blDiv(vNew,vNew.id+i+"dPage",sPage,"lightgreen"); 
-										var v4dl = blco1.blDiv(vNew,vNew.id+i+"v4dl","v4dl",blco1.c(15)); 
-										var btnDlPage = blco1.blBtn(dPage,dPage.id+"btnDlPage","DlPage","green");
-										btnDlPage.onclick =  function(_v,_i){
-											return function(){
-												_v.innerHTML = ls[_i];
-											}
-										}(v4dl,i)
-									}
+								var e = a[1].split(d); 
+								const url51voa = "https://www.51voa.com";
+								var s = "";
+								for(var i=0; i<e.length-1;i++){
+									var f = e[i].split('" target="_blank">');
+									var g = f[f.length-2].split('<a href="');
+									var h = g[g.length-1];
+									var s = `<a href="${url51voa}${h}" target="_blank">${f[f.length-1]}</a>`;
+									const page = blco1.blDiv(vNew,vNew.id+i,s,blo0.c(i));
+										 
+								}
 	
-									vDate.innerHTML = b[0]; 
+								vDate.innerHTML = b[0]; 
 							});
 							 
 						},
