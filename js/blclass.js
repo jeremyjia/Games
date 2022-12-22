@@ -2801,8 +2801,15 @@ function CBlClass ()
 				var url = srcURL;  
 				var w = {};
 				w._2do = function(txt){ 
-					_cbParse(vRes,txt);
-					b = true;
+					if("error xd 11"==txt){
+						vRes.innerHTML = `txt=${txt} ` ; 
+						b = false;
+					}
+					else{
+						vRes.innerHTML = `txt=${txt} ` ; 
+						b = true; 
+						_cbParse(vRes,txt);
+					} 
 				}
 				blo0.blAjx(w,url);		 
 			};
@@ -3228,7 +3235,8 @@ function CBlClass ()
 							"id":2,
 							"name":"parse-51voaIndex",
 							"runTask":function(){ 
-								tb.parsePage("http://localhost:8080/51voa_Index.html",bl$("vTask"),function(v,txt){
+								tb.parsePage("http://localhost:8080/51voa_Index.html",bl$("vTask"),
+								function(v,txt){
 									v.innerHTML = "";
 									const lv1 = blco1.blDiv(v,v.id+"lv1","lv1","blue");
 									const vDate = blco1.blDiv(v,v.id+"vDate","date","lightgreen");
@@ -7425,10 +7433,15 @@ const gc4BLS = function(){
 						"name":"dl-51voa-index",
 						"fn2server": function(b,v,_bs,_i){
 							v.innerHTML = this.name + ` ${_i}`; 
-							setTimeout(() => {
-								var n = parseInt(_i) + 1;
-								_bs[n].fn2server(b,v,_bs,n);
-							}, 3000);
+							const svrAPI = "http://localhost:8080/download";  
+							var i = blo0.blDownloadTask(svrAPI ,
+								"https://www.51voa.com/","51voaIndex.html",v,
+								function afterDL51voaIndex(){
+									var n = parseInt(_i) + 1;
+									_bs[n].fn2server(b,v,_bs,n);
+								}
+							);  
+							i.bl2Do();
 						},
 						"color": "gray",
 						"float": "right",
@@ -7438,10 +7451,15 @@ const gc4BLS = function(){
 						"name":"parse-51voa-index",
 						"fn2server": function(b,v,_bs,_i){
 							v.innerHTML = this.name + ` ${_i}`; 
-							setTimeout(() => {
-								var n = parseInt(_i) + 1;
-								_bs[n].fn2server(b,v,_bs,n);
-							}, 3000);
+							let file = "http://localhost:8080/51voaIndex.html"
+
+							fetch (file)
+							.then(x => x.text())
+							.then(y => {
+								var a = y.split("VOA");
+								alert(a.length);
+							});
+							 
 						},
 						"color": "gray",
 						"float": "right",
@@ -7474,7 +7492,7 @@ const gc4BLS = function(){
 					},
 				];
 				for(i in bs){
-					const btn = blo0.blBtn(tbServer,tbServer.id+bs[i].id,bs[i].name,bs[i].color);
+					var btn = blo0.blBtn(tbServer,tbServer.id+bs[i].id,bs[i].name,bs[i].color);
 					btn.style.float = bs[i].float;
 					btn.onclick = function(_btn,_v,_bs,_i){
 						return function(){
@@ -7482,6 +7500,17 @@ const gc4BLS = function(){
 						}
 					}(btn,vServer,bs,i);
 				}  
+				var btn51voaNews = blo0.blBtn(tbServer,tbServer.id+"51voaNews","51voaNews","blue");
+				btn51voaNews.onclick = function(){
+					let file = "http://localhost:8080/51voaIndex.html"
+
+							fetch (file)
+							.then(x => x.text())
+							.then(y => {
+								var a = y.split("VOA美国之音听力最近更新");
+								alert(a.length);
+							});
+				}
 			 }();
 			 
 		   ex1 = x;
