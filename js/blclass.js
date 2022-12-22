@@ -7109,6 +7109,18 @@ const gc4BLS = function(){
 									}
 								}(i);
 							}
+
+							if(blo0.ls51voaMp3){
+								const tb51voaMp3 = blo0.blDiv(tb,tb.id+"tb51voaMp3","tb51voaMp3","lightblue"); 
+								for(i in blo0.ls51voaMp3){
+									const btn = blo0.blBtn(tb51voaMp3,tb51voaMp3.id+i,i,"gray");
+									btn.onclick = function(_b,_l,_i){
+										return function(){
+											vSrc.innerHTML = t.getVP().src = _l[_i];	
+										}
+									}(btn,blo0.ls51voaMp3,i);
+								}
+							}
 						},
 						"color": "Orchid"
 					},
@@ -7450,6 +7462,7 @@ const gc4BLS = function(){
 						"id":4,
 						"name":"parse-51voa-index",
 						"fn2server": function(b,v,_bs,_i){
+							v.ps = [];
 							v.innerHTML = this.name + ` ${_i}`; 
 							let file = "http://localhost:8080/51voaIndex.html"
 
@@ -7474,10 +7487,13 @@ const gc4BLS = function(){
 									var h = g[g.length-1];
 									var s = `<a href="${url51voa}${h}" target="_blank">${f[f.length-1]}</a>`;
 									const page = blco1.blDiv(vNew,vNew.id+i,s,blo0.c(i));
-										 
+									v.ps.push({"href":`${url51voa}${h}`,"txt":f[f.length-1]})	 
 								}
 	
 								vDate.innerHTML = b[0]; 
+
+								var n = parseInt(_i) + 1;
+								_bs[n].fn2server(b,v,_bs,n);
 							});
 							 
 						},
@@ -7486,26 +7502,52 @@ const gc4BLS = function(){
 					},
 					{
 						"id":5,
-						"name":"dl-p1-51voa",
+						"name":"p1dl",
 						"fn2server": function(b,v,_bs,_i){
-							v.innerHTML = this.name + ` ${_i}`; 
-							setTimeout(() => {
-								var n = parseInt(_i) + 1;
-								_bs[n].fn2server(b,v,_bs,n);
-							}, 3000);
+							v.innerHTML = this.name + ` ${_i} ${v.ps[0].href}`; 
+							const svrAPI = "http://localhost:8080/download";  
+							const pageName = "p1In51voa.html";
+							var i = blo0.blDownloadTask(svrAPI ,
+								v.ps[0].href,pageName,v,
+								function afterDLP1In51voa(){
+									v.nextStep = pageName;
+									var n = parseInt(_i) + 1;
+									_bs[n].fn2server(b,v,_bs,n);
+								}
+							);  
+							i.bl2Do();
 						},
 						"color": "gray",
 						"float": "right",
 					},
 					{
 						"id":6,
-						"name":"parse-p1-51voa",
+						"name":"p1Parse",
 						"fn2server": function(b,v,_bs,_i){
-							v.innerHTML = this.name + ` ${_i}`; 
-							setTimeout(() => {
-								var a = blo0.txt.split("VOA美国之音听力最近更新");
-								alert(a.length);	
-							}, 3000);
+							v.innerHTML = this.name + ` ${_i}  <a href="http://localhost:8080/${v.nextStep}" target="_blank">${v.nextStep}</a>`;  
+							let file = `http://localhost:8080/${v.nextStep}`;
+
+							fetch (file)
+							.then(x => x.text())
+							.then(y => { 
+								var a = y.split('<a id="mp3" href="');
+								var b = a[1].split('"></a>');
+								var mp3url = b[0];
+								v.p1PostParse = `post parse... ${mp3url}`;
+								if(!blo0.ls51voaMp3) blo0.ls51voaMp3 = [];
+								blo0.ls51voaMp3[0] = mp3url;
+								var n = parseInt(_i) + 1;
+								_bs[n].fn2server(b,v,_bs,n);
+							});
+						},
+						"color": "gray",
+						"float": "right",
+					},
+					{
+						"id":7,
+						"name":"p1bls",
+						"fn2server": function(b,v,_bs,_i){
+							v.innerHTML = this.name + ` ${_i} ${v.p1PostParse} `;
 						},
 						"color": "gray",
 						"float": "right",
