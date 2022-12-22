@@ -7365,7 +7365,7 @@ const gc4BLS = function(){
 					{
 						"id":1,
 						"name":"bls2svr",
-						"fn2server": function(b,v){
+						"fn2server": function(b,v,_bs,_i){
 							var pl = _makeBLS(); 
 							var url = "http://localhost:8080/json?fileName=" + sBlsTitle + ".json"; 
 
@@ -7379,7 +7379,7 @@ const gc4BLS = function(){
 					{
 						"id":2,
 						"name":"mkMP4",
-						"fn2server": function(b,v){
+						"fn2server": function(b,v,_bs,_i){
 							var url = "http://localhost:8080/image/json2video?script=" + sBlsTitle + ".json&video=" + sBlsTitle + ".mp4"; 
 							b._2do = function(txt){
 								v.innerHTML = txt;
@@ -7423,8 +7423,12 @@ const gc4BLS = function(){
 					{
 						"id":3,
 						"name":"dl-51voa-index",
-						"fn2server": function(b,v){
-							v.innerHTML = this.name; 
+						"fn2server": function(b,v,_bs,_i){
+							v.innerHTML = this.name + ` ${_i}`; 
+							setTimeout(() => {
+								var n = parseInt(_i) + 1;
+								_bs[n].fn2server(b,v,_bs,n);
+							}, 3000);
 						},
 						"color": "gray",
 						"float": "right",
@@ -7432,8 +7436,12 @@ const gc4BLS = function(){
 					{
 						"id":4,
 						"name":"parse-51voa-index",
-						"fn2server": function(b,v){
-							v.innerHTML = this.name; 
+						"fn2server": function(b,v,_bs,_i){
+							v.innerHTML = this.name + ` ${_i}`; 
+							setTimeout(() => {
+								var n = parseInt(_i) + 1;
+								_bs[n].fn2server(b,v,_bs,n);
+							}, 3000);
 						},
 						"color": "gray",
 						"float": "right",
@@ -7441,8 +7449,12 @@ const gc4BLS = function(){
 					{
 						"id":5,
 						"name":"dl-p1-51voa",
-						"fn2server": function(b,v){
-							v.innerHTML = this.name; 
+						"fn2server": function(b,v,_bs,_i){
+							v.innerHTML = this.name + ` ${_i}`; 
+							setTimeout(() => {
+								var n = parseInt(_i) + 1;
+								_bs[n].fn2server(b,v,_bs,n);
+							}, 3000);
 						},
 						"color": "gray",
 						"float": "right",
@@ -7450,8 +7462,12 @@ const gc4BLS = function(){
 					{
 						"id":6,
 						"name":"parse-p1-51voa",
-						"fn2server": function(b,v){
-							v.innerHTML = this.name; 
+						"fn2server": function(b,v,_bs,_i){
+							v.innerHTML = this.name + ` ${_i}`; 
+							setTimeout(() => {
+								var n = parseInt(_i) + 1;
+								_bs[n].fn2server(b,v,_bs,n);
+							}, 3000);
 						},
 						"color": "gray",
 						"float": "right",
@@ -7460,11 +7476,11 @@ const gc4BLS = function(){
 				for(i in bs){
 					const btn = blo0.blBtn(tbServer,tbServer.id+bs[i].id,bs[i].name,bs[i].color);
 					btn.style.float = bs[i].float;
-					btn.onclick = function(_btn,_v,_i){
+					btn.onclick = function(_btn,_v,_bs,_i){
 						return function(){
-							bs[_i].fn2server(_btn,_v);
+							bs[_i].fn2server(_btn,_v,_bs,_i);
 						}
-					}(btn,vServer,i);
+					}(btn,vServer,bs,i);
 				}  
 			 }();
 			 
