@@ -9,8 +9,9 @@ function animateFrame(time) {
     var canvas = document.getElementById('myCanvas');
     var ctx = canvas.getContext('2d'); 
     ctx.clearRect(0, 0, 2048, 1536);
-	ctx.strokeStyle="Blue";
+	ctx.strokeStyle="#0099CC";
 	ctx.lineWidth = 6;	
+    ctx.fillStyle="#0099CC";
 	
 	//将坐标原点平移
 	ctx.translate(dx,m_dy);
@@ -24,7 +25,7 @@ function animateFrame(time) {
     //左边二次贝塞尔曲线
     ctx.quadraticCurveTo(-100,-100,0,0);
 
-    ctx.stroke();
+	ctx.fill();
     ctx.closePath();
 	ctx.translate(-dx,-m_dy);
 	
@@ -41,6 +42,7 @@ function animateFrame(time) {
 	ctx.lineTo(200,50);							
 	ctx.lineTo(300,200);						
 	ctx.stroke();
+	
 	ctx.beginPath();							
 	ctx.moveTo(100, 180);
 	ctx.lineWidth = 3;
@@ -49,13 +51,18 @@ function animateFrame(time) {
 	ctx.stroke();
 	ctx.closePath();
 	
+	//Draw flower
 	ctx.strokeStyle="#f0f000";
 	createAFlower(ctx,5,350,100,30,80);
     ctx.stroke();
 	
-	ctx.strokeStyle="#0099CC";
+	ctx.fillStyle="#FF00FF";//紫色
+	ctx.rotate(30 * Math.PI / 180);//旋转30度
 	createAFlower(ctx,6,500,100,30,80);
 	ctx.stroke();
+	ctx.fill();
+	ctx.closePath();
+	ctx.rotate(-30 * Math.PI / 180);////恢复旋转30度
  
 }
 
