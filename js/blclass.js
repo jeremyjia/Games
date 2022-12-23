@@ -4715,10 +4715,10 @@ function CBlClass ()
 			} 
 
 			
-			const btnBody = blo0.blBtn(d.tb,d.tb.id+"btnBody","body","gray");
-			btnBody.style.float = "right";
-			btnBody.onclick = function(){
-				d.v1.innerHTML = btnBody.id;
+			const btnDetail = blo0.blBtn(d.tb,d.tb.id+"btnDetail","body","gray");
+			btnDetail.style.float = "right";
+			btnDetail.onclick = function(){
+				d.v1.innerHTML = btnDetail.id;
 				var tb = blo0.blDiv(d.v1,d.v1.id+"tb","tb","lightgray"); 
 				var v = blo0.blDiv(d.v1,d.v1.id+"v","v","gray");
 				const btnCs = blo0.blBtn(tb,tb.id+"btnCs","Cs","lightblue");
@@ -4784,6 +4784,25 @@ function CBlClass ()
 						}
 					});
 				}
+				const btnShowBody = blo0.blBtn(tb,tb.id+"btnShowBody","showBody","lightgreen");
+				btnShowBody.style.float = "right";
+				btnShowBody.onclick = function(){
+					blo0.blGetTa().value = d.o.body;
+				}
+				const btnSetBody = blo0.blBtn(tb,tb.id+"btnSetBody","setBody","lightblue");
+				btnSetBody.style.float = "right";
+				btnSetBody.onclick = function(){
+					blo0.blGetTa().value = d.o.body;
+					var url = "https://api.github.com/repos/jeremyjia/Games/issues/" + i;
+					var bodyData = Date();
+					var data = {
+					  "body": bodyData
+					};
+				  
+					myAjaxCmd('PATCH', url, data, function (res) {
+					});
+				}
+
 			}
 		}
 		_on_off_div(b,d.v1);
