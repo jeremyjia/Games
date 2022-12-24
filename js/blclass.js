@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.342"
+var g_ver_blClass = "CBlClass_bv1.6.345"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -99,7 +99,7 @@ var blon = function(b,d,c1,c2){
 		}
 		else{
 			d.style.display="block"; 
-			if(b) b.style.backgroundColor="green"; 
+			if(b!=null) b.style.background="green"; 
 		}
 	};
 	function _on_off_bd_1(b,d){ 
@@ -746,6 +746,110 @@ function CBlClass ()
 			return o;
 		}();
 		return r;
+	}
+	this.blSoScripts = function(){
+		var mysos = [
+			` 
+		var C4Plx = function(){
+			this.drawPlx2Frame = function(ctx,time,x0,y0){ 
+			  var x = x0?x0:0;
+			  var y = y0?y0:0
+			  ctx.fillStyle = 'red';
+			  ctx.fillRect(x+0+time%111, y+30, 5, 44);
+			  ctx.font = 11+ "px Consolas";
+			  ctx.fillStyle = "blue";
+			  ctx.fillText("C4Plx v0.14: time="+time ,x+10,y+55); 
+			};
+		  } 
+		  function animateFrame(time){
+			  var canvas = document.getElementById('myCanvas');
+			  var ctx = canvas.getContext('2d');  
+					   
+			  var o = new C4Plx();
+			  var x = typeof x0 === "undefined"?0:x0;
+			  var y = typeof y0 === "undefined"?0:y0;
+			  o.drawPlx2Frame (ctx,time,x,y);   
+		  }`,
+		  ` 
+		  var C4Plx = function(){
+			  this.drawPlx2Frame = function(ctx,time,x0,y0){ 
+				var x = x0?x0:0;
+				var y = y0?y0:0
+				ctx.fillStyle = 'blue';
+				ctx.fillRect(x+0+time%155, y+55, 5, 44);
+				ctx.font = 11+ "px Consolas";
+				ctx.fillStyle = "blue";
+				ctx.fillText("C4Plx v0.14: time="+time ,x+10,y+55); 
+			  };
+			} 
+			function animateFrame(time){
+				var canvas = document.getElementById('myCanvas');
+				var ctx = canvas.getContext('2d');  
+						 
+				var o = new C4Plx();
+				var x = typeof x0 === "undefined"?0:x0;
+				var y = typeof y0 === "undefined"?0:y0;
+				o.drawPlx2Frame (ctx,time,x,y);   
+			}`,
+			` 
+			var imgObj = new Image();
+	
+			imgObj.src = "https://img-blog.csdnimg.cn/90e2883e5d4241d78aa282a0e7d963f0.jpeg";
+			var C4Plx = function(){
+				this.drawPlx2Frame = function(ctx,time,x0,y0){  
+				  var x = x0?x0:0;
+				  var y = y0?y0:0
+				  ctx.fillStyle = 'green';
+				  ctx.fillRect(x+0+time%111, y+30, 5, 44);
+				  ctx.font = 11+ "px Consolas";
+				  ctx.fillStyle = "blue";
+				  ctx.fillText("C4Plx v0.14: time="+time ,x+10,y+55);
+				 	
+				  var index = time%7; 
+				  ctx.drawImage(imgObj, index * 185, 0, 180, 325, x+55, y+20, 18.0, 32.5);
+				};
+			  } 
+			  function animateFrame(time){
+				  var canvas = document.getElementById('myCanvas');
+				  var ctx = canvas.getContext('2d');  
+						   
+				  var o = new C4Plx();
+				  var x = typeof x0 === "undefined"?0:x0;
+				  var y = typeof y0 === "undefined"?0:y0;
+				  o.drawPlx2Frame (ctx,time,x,y);   
+			  }`,
+			 
+
+		];
+		const C4SoScripts = function(){
+			this.updateIdx = function(l,i){ 
+				var url = l[i].attribute.script;  
+				var w = {}; 
+				w._2do = function(txt){
+					if("error xd 11"==txt) return; 
+					mysos[i]=txt;
+				}
+				blo0.blAjx(w,url)
+			}
+			this.sosUpdate = function(l){
+				mysos = [];
+				for(i in l){
+					var url = "http://localhost:8080/" + l[i].srcipt; 
+					var w = {};
+					w._2do = function(txt){
+						mysos.push(txt);
+					}
+					blo0.blAjx(w,url);
+				}
+			}
+			this.soDraw = function(cvs,n,x1,y1,x2,y2){
+				for(i in mysos){ 
+					var op = blo0.blWrapPlx(cvs,mysos[i],x1,y1);
+					op.callPlx (n,x1,y1);
+				} 
+			} 
+		}
+		return new C4SoScripts();
 	}
 	this.blWrapPlx = function(cvs,_pt,x1,y1){
 		var pt2 = _pt.replace("myCanvas",cvs.id);
@@ -1684,6 +1788,25 @@ function CBlClass ()
 				_ls[j].style.backgroundColor = _darkColor;
 			}
 		}		
+	}
+	this.blWrapCVS = function(cvs,oi){
+		if(cvs){
+			cvs.addEventListener('mousedown', function (e) {
+				var x = e.offsetX;
+				var y = e.offsetY;
+				if(oi.mdCVS) oi.mdCVS(x,y);
+			});
+			cvs.addEventListener('mousemove', function (e) {
+				var x = e.offsetX;
+				var y = e.offsetY;
+				if(oi.mmCVS) oi.mmCVS(x,y);
+			});
+			cvs.addEventListener('mouseup', function (e) {
+				var x = e.offsetX;
+				var y = e.offsetY;
+				if(oi.muCVS) oi.muCVS(x,y);
+			});
+		}
 	}
 	
 	this.blParseText = function(_2ParseTxt,_oCfg){  
@@ -2678,8 +2801,15 @@ function CBlClass ()
 				var url = srcURL;  
 				var w = {};
 				w._2do = function(txt){ 
-					_cbParse(vRes,txt);
-					b = true;
+					if("error xd 11"==txt){
+						vRes.innerHTML = `txt=${txt} ` ; 
+						b = false;
+					}
+					else{
+						vRes.innerHTML = `txt=${txt} ` ; 
+						b = true; 
+						_cbParse(vRes,txt);
+					} 
 				}
 				blo0.blAjx(w,url);		 
 			};
@@ -3105,7 +3235,8 @@ function CBlClass ()
 							"id":2,
 							"name":"parse-51voaIndex",
 							"runTask":function(){ 
-								tb.parsePage("http://localhost:8080/51voa_Index.html",bl$("vTask"),function(v,txt){
+								tb.parsePage("http://localhost:8080/51voa_Index.html",bl$("vTask"),
+								function(v,txt){
 									v.innerHTML = "";
 									const lv1 = blco1.blDiv(v,v.id+"lv1","lv1","blue");
 									const vDate = blco1.blDiv(v,v.id+"vDate","date","lightgreen");
@@ -3192,6 +3323,64 @@ function CBlClass ()
 		};
 		const rAutoRun = new f();
 		return rAutoRun;		
+	}
+	this.blAOI = function(){
+		var x1 = 0,x2 = 0,y1 = 0,y2 = 0;
+		var bSelect = false;
+		var lsX1Y1 = [];
+		var lsX2Y2 = [];
+		const _aoi = function(){
+			this.setTargetXY = function(_x1,_y1,_x2,_y2){
+				x1 = _x1; y1 = _y1; x2 = _x2; y2 = _y2;
+			}
+			this.drawAOI = function(ctx,c){ 
+				const oldStyle = ctx.fillStyle;
+				const oldStrokeStyle = ctx.strokeStyle;
+				ctx.fillStyle = c; 	
+				ctx.strokeStyle = c;
+				ctx.fillText(`blAOI: nlsX2Y2=${lsX2Y2.length}`, x1,y1-10);
+				ctx.beginPath();
+				ctx.moveTo(x1, y1);
+				ctx.lineTo(x2, y1);
+				ctx.lineTo(x2, y2);
+				ctx.lineTo(x1, y2);
+				ctx.lineTo(x1, y1);
+				ctx.stroke();
+				if(bSelect) ctx.fillStyle = "brown";
+				for(i in lsX1Y1){
+					ctx.fillRect(x1+lsX1Y1[i].x,y1+lsX1Y1[i].y,lsX1Y1[i].w,lsX1Y1[i].h);
+				}
+				for(i in lsX2Y2){
+					ctx.fillRect(x2+lsX2Y2[i].x,y2+lsX2Y2[i].y,lsX2Y2[i].w,lsX2Y2[i].h);
+				}
+				ctx.fillStyle = oldStyle;
+				ctx.strokeStyle = oldStrokeStyle;
+			}
+			this.addX1Y1AOI = function(x,y,w,h){
+				var o = {};
+				o.x = x; o.y = y; o.w = w; o.h = h;
+				lsX1Y1.push(o);
+			}
+			this.addX2Y2AOI = function(x,y,w,h){
+				var o = {};
+				o.x = x; o.y = y; o.w = w; o.h = h;
+				lsX2Y2.push(o);
+			}
+			this.inAOI = function(x,y){
+				var b = false;
+				for(i in lsX1Y1){ 
+					if(blo0.blPiR(x,y,x1+lsX1Y1[i].x,y1+lsX1Y1[i].y,lsX1Y1[i].w,lsX1Y1[i].h)) 
+					{b = true;break;}
+				}
+				for(i in lsX2Y2){ 
+					if(blo0.blPiR(x,y,x2+lsX2Y2[i].x,y2+lsX2Y2[i].y,lsX2Y2[i].w,lsX2Y2[i].h)) 
+					{b = true;break;}
+				}
+				return b;
+			}
+			this.setSelected = function(b){bSelect = b;}
+		}
+		return new _aoi();
 	}
 	this.C4Canvas = function(d,w,h,initColor){
 		function _blCanvas(d,w,h){
@@ -5185,6 +5374,7 @@ blo0.initDraw = function(cvs,_x,_y,_c){
 	for(i in blPink){blo0.blRect(cvs,_x+i*20,_y+55,10,10,blPink[i]);}
 }
 
+
 blo0.blCanvas2 = function(d,w,h){
 	var cvs = document.createElement("canvas");
 	cvs.width = w;
@@ -6397,16 +6587,7 @@ const gc4Note = function(){
 	}
 }
 
-const gc4SoEditor = function(){
-	var x1,y1,x2,y2,s = false,e = false;
-	var mx1=0,my1=0,mx2=0,my2=0,soName = "so01";
-	var mx = 50,my = 50;
-	var nMDown = 0;
-	var ex1,ey1,ex2,ey2;
-	const _C4SoEditor = function(){ 
-		var soScript = `
-		var imgInPlx = new Image(); 
-		imgInPlx.src = "http://localhost:8080/x1.jpg"; 
+var soScript = ` 
 		var C4Plx = function(){
 			this.drawPlx2Frame = function(ctx,time,x0,y0){ 
 			  var x = x0?x0:0;
@@ -6415,8 +6596,7 @@ const gc4SoEditor = function(){
 			  ctx.fillRect(x+0+time%111, y+30, 5, 44);
 			  ctx.font = 11+ "px Consolas";
 			  ctx.fillStyle = "blue";
-			  ctx.fillText("C4Plx v0.14: time="+time ,x+10,y+55);
-			  ctx.drawImage(imgInPlx,x+22,y+111,240,160);
+			  ctx.fillText("C4Plx v0.14: time="+time ,x+10,y+55); 
 			};
 		  } 
 		  function animateFrame(time){
@@ -6428,6 +6608,14 @@ const gc4SoEditor = function(){
 			  var y = typeof y0 === "undefined"?0:y0;
 			  o.drawPlx2Frame (ctx,time,x,y);   
 		  }`;
+const gc4SoEditor = function(){
+	var x1,y1,x2,y2,s = false,e = false;
+	var mx1=0,my1=0,mx2=0,my2=0,soName = "so01";
+	var mx = 50,my = 50;
+	var nMDown = 0;
+	var ex1,ey1,ex2,ey2;
+	const _C4SoEditor = function(){ 
+		
 		var nTick = 0;
 		var vCanStatus = null;
 		var bRunScript = false; 
@@ -6593,7 +6781,7 @@ const gc4SoEditor = function(){
 		};
 
 		this.drawEffect = function(cvs){
-			oPics.showPics(cvs);
+			//oPics.showPics(cvs);
 			var ctx = cvs.getContext("2d");
 			nTick++;
 			ctx.fillText("soe1: nTick = " + nTick,x1,y1 + 10);
@@ -6648,6 +6836,9 @@ const gc4SoEditor = function(){
 			if(op) op.setPlxXY(x,y);
 		}
 		this.downSOEditor = function(x,y){
+			if(!blo0.blPiR(x,y,x1,y1,x2-x1,y2-y1)){
+				return;
+			}
 			nMDown++;
 			if(nMDown==1){
 				mx1 = x-x1;
@@ -6662,9 +6853,7 @@ const gc4SoEditor = function(){
 				mx = mx1;
 				my = my1;
 			}
-		}
-		
-
+		} 
 	};
 	const osoe = new _C4SoEditor();
 
@@ -6758,18 +6947,19 @@ const gc4SoEditor = function(){
 
 
 const gc4BLS = function(){
+
 	const _thisBLS = this;
 	const blsTimer = blo0.blAudioTimer();
-	var lsFrame = [];
-	var pt = "";
-    var op = null;
+	var lsFrame = [];   
+	var nCurF = -1; 
+	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,sBlsTitle = "...";
+	var msgDbg = "msgBLS"; 
+	const blsAOI = blo0.blAOI();
+	blsAOI.addX1Y1AOI(-10,-10,10,10);
+	blsAOI.addX2Y2AOI(10,10,10,10);
+	blsAOI.addX2Y2AOI(22,22,10,10);
 	
-	const soDraw = function(cvs,n,x,y){
-		var ctx = cvs.getContext("2d");	
-		if(null==op) op = blo0.blWrapPlx(cvs,pt);
-		ctx.fillText("soDraw: n="+n + "byPlx="+op.callPlx (n,x,y),x,y-40);	  
-	}
-	  
+	
 	var lsSuperObjects = function(){
 		
 		var w ={};
@@ -6789,18 +6979,16 @@ const gc4BLS = function(){
 		};
 		ls.push(o);
 		return ls;
-	}();	;
-	var nCurF = -1; 
-	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,sBlsTitle = "...";
-	var msgDbg = "msgBLS"; 
-	
+	}();	 
+	const lsso = blo0.blSoScripts();
 	this.paintSuperObjects = function(cvs,n){
+		const l = _thisBLS.getSOs();
 		var ctx = cvs.getContext("2d");	
 		ctx.fillStyle = "blue";
 		ctx.font = "10px Arial";
-		var s = " so: to do ... n = " + n;
-		soDraw(cvs,n,x2,y2); 
+		var s = `so: nFrame=${n} os = ${l.length}`;
 		ctx.fillText(s, x2-20,y2 - 20);
+		lsso.soDraw(cvs,n,x1,y1,x2,y2); 
 	}
 	this.getFrames = function(){return lsFrame;}
 	this._getAllFramesNumber = function(){
@@ -6823,14 +7011,7 @@ const gc4BLS = function(){
 			ctx.fillStyle = "red";
 			ctx.fillRect(x1-d,y1-d,d*2,d*2);
 			ctx.fillstyle = oldStyle;
-		}
-		if(e){
-			var oldStyle = ctx.fillStyle;
-			ctx.fillStyle = "brown";
-			ctx.fillRect(x2-d,y2-d,d*2,d*2);
-			ctx.fillstyle = oldStyle; 
-		}
-		
+		} 
 		var oldStyle = ctx.fillStyle;
 		
 		if(!blsTimer.isPlaying()){
@@ -6851,7 +7032,9 @@ const gc4BLS = function(){
 			var s = _makeDbgMsgInFrame();
 			ctx.fillText(s, x1,y1+30);		
 		}();
-		ctx.fillstyle = oldStyle;
+		ctx.fillStyle = oldStyle;
+		blsAOI.setTargetXY(x1,y1,x2,y2);
+		blsAOI.drawAOI(ctx,"green");
 	}
 	this.select_me = function(x,y){
 		if(blo0.blPiR(x,y,x1,y1,10,10)){
@@ -6859,7 +7042,8 @@ const gc4BLS = function(){
 		}
 	} 
 	this.edit_me = function(eui,x,y){
-		if(blo0.blPiR(x,y,x2,y2,10,10)){
+		if(blsAOI.inAOI(x,y)){
+			 blsAOI.setSelected(true);
 			 e = true; 
 			 eui.v1.innerHTML = "";
 			 const tb = blo0.blDiv(eui.v1,eui.v1.id+"tb","tb","gray");
@@ -6925,6 +7109,18 @@ const gc4BLS = function(){
 									}
 								}(i);
 							}
+
+							if(blo0.ls51voaMp3){
+								const tb51voaMp3 = blo0.blDiv(tb,tb.id+"tb51voaMp3","tb51voaMp3","lightblue"); 
+								for(i in blo0.ls51voaMp3){
+									const btn = blo0.blBtn(tb51voaMp3,tb51voaMp3.id+i,i,"gray");
+									btn.onclick = function(_b,_l,_i){
+										return function(){
+											vSrc.innerHTML = t.getVP().src = _l[_i];	
+										}
+									}(btn,blo0.ls51voaMp3,i);
+								}
+							}
 						},
 						"color": "Orchid"
 					},
@@ -6950,7 +7146,7 @@ const gc4BLS = function(){
 							const tb = blo0.blDiv(v,v.id+"tb","tb",this.color);
 							const vos = blo0.blDiv(v,v.id+"vos","vos","BurlyWood");
 							const vEndOfOS = blo0.blDiv(v,v.id+"vEndOfOS","vEndOfOS","white");
-							tb.refreshSOs = function(l){
+							tb.refreshSOs = function(l){ 
 								for(i in l){
 									const b = blo0.blBtn(tb,tb.id+i,i,"Lavender"); 
 									newSO.style.float = "right";
@@ -7021,6 +7217,15 @@ const gc4BLS = function(){
 														"color": "Teal",
 														"float": "right"
 													},
+													{
+														"id":6,
+														"name": "updateIdx",
+														"fnSet": function(l,i){
+															lsso.updateIdx(l,i);
+														},
+														"color": "Teal",
+														"float": "right"
+													},
 												];
 												for(i in ss){
 													const btn = blo0.blBtn(_v,_v.id+ss[i].id,ss[i].name,ss[i].color);
@@ -7038,14 +7243,14 @@ const gc4BLS = function(){
 								}
 							}							
 							const l = _thisBLS.getSOs();
-							const newSO = blo0.blBtn(tb,tb.id+"newSO","+so","Salmon"); 
+							const newSO = blo0.blBtn(tb,tb.id+"newSO","newSO","Salmon"); 
 							newSO.style.float = "left";
 							newSO.onclick = function(){
 								var o = {};
 								o.type = "javascript";
 								o.frameRange = "(1,1000)";
 								var a = {};
-								a.script = "http://localhost:8080/so646a.js";
+								a.script = "http://localhost:8080/so01.js";
 								a.function = "animateFrame";
 								a.start = 1;
 								o.attribute = a;
@@ -7172,64 +7377,352 @@ const gc4BLS = function(){
 			 const split2 = blo0.blDiv(eui.v1,eui.v1.id+"split2","split2","green");
 			 const v4curF = blo0.blDiv(eui.v1,eui.v1.id+"v4curF","v4curF","gray");
 
-			 const split3= blo0.blDiv(eui.v1,eui.v1.id+"split3","split3","lightblue");
-			 const tbServer = blo0.blDiv(eui.v1,eui.v1.id+"tbServer","tbServer:","gray");
-			 const vServer = blo0.blDiv(eui.v1,eui.v1.id+"vServer","vServer:","lightblue");
-			 
-			 var btnSaveScript = blo0.blBtn(tbServer,tbServer.id+"btnSaveScript","bls2server","lightgreen");
-			 btnSaveScript.style.float = "left"; 
-			 btnSaveScript.onclick = function(){				 
-				var pl = _makeBLS(); 
-				var url = "http://localhost:8080/json?fileName=" + sBlsTitle + ".json"; 
+			 const fnMakeServerTb = function(){
+				const split3= blo0.blDiv(eui.v1,eui.v1.id+"split3","split3","lightblue");
+			 	const tbServer = blo0.blDiv(eui.v1,eui.v1.id+"tbServer","tbServer:","gray");
+				const vServer = blo0.blDiv(eui.v1,eui.v1.id+"vServer","vServer:","lightblue");
+				const bs = [
+					{
+						"id":1,
+						"name":"bls2svr",
+						"fn2server": function(b,v,_bs,_i){
+							var pl = _makeBLS(); 
+							var url = "http://localhost:8080/json?fileName=" + sBlsTitle + ".json"; 
 
-				blo0.blPOST(url,pl,function(txt){
-					vServer.innerHTML = "<a href ='http://localhost:8080/"+sBlsTitle+".json' target='_blank'>"+sBlsTitle+".json</a>";
-				}); 
-			}
-			var btnMakeV = blo0.blBtn(tbServer,tbServer.id+"btnMakeV","makeVideo","lightblue");
-			btnMakeV.style.float = "right"; 
-			btnMakeV.onclick = function(){	
-					var url = "http://localhost:8080/image/json2video?script=" + sBlsTitle + ".json&video=" + sBlsTitle + ".mp4"; 
-					this._2do = function(txt){
-						vServer.innerHTML = txt;
-						const refactorPage = function(){
-							var tl = [1.0,2.0,3.0,4.0,5.0,6.0];
-							 
-							function createBtn(dtl,ddbg,id,video) {  
-								var btn = document.createElement("button");
-								btn.id = id;
-								  btn.innerHTML = id;  
-								btn.onclick = function(){ 
-									ddbg.innerHTML = this.id; 
-									video.currentTime = this.id;
-								} 
-								  dtl.appendChild(btn);
-								return btn;
-							}
-							
-							bl$("btnPlay").onclick = function play() {
-								var video = document.getElementById("id_4_video");
-								video.play();
-							} 
-							bl$("btn2createToolbar").onclick = function createToolbar() { 
-								var video = document.getElementById("id_4_video");
-								var dtl = document.getElementById("id4toolbar");
-								var ddbg = document.getElementById("id4Debug");
-								if(!dtl.done){
-								  dtl.done = true;
-								  for(i in tl){
-									createBtn(dtl,ddbg,tl[i],video);     
-								  }     
+							blo0.blPOST(url,pl,function(txt){
+								v.innerHTML = "<a href ='http://localhost:8080/"+sBlsTitle+".json' target='_blank'>"+sBlsTitle+".json</a>";
+							}); 
+						},
+						"color": "gray",
+						"float": "left",
+					},
+					{
+						"id":2,
+						"name":"mkMP4",
+						"fn2server": function(b,v,_bs,_i){
+							var url = "http://localhost:8080/image/json2video?script=" + sBlsTitle + ".json&video=" + sBlsTitle + ".mp4"; 
+							b._2do = function(txt){
+								v.innerHTML = txt;
+								const refactorPage = function(){
+									var tl = [1.0,2.0,3.0,4.0,5.0,6.0];
+									
+									function createBtn(dtl,ddbg,id,video) {  
+										var btn = document.createElement("button");
+										btn.id = id;
+										btn.innerHTML = id;  
+										btn.onclick = function(){ 
+											ddbg.innerHTML = this.id; 
+											video.currentTime = this.id;
+										} 
+										dtl.appendChild(btn);
+										return btn;
+									}
+									
+									bl$("btnPlay").onclick = function play() {
+										var video = document.getElementById("id_4_video");
+										video.play();
+									} 
+									bl$("btn2createToolbar").onclick = function createToolbar() { 
+										var video = document.getElementById("id_4_video");
+										var dtl = document.getElementById("id4toolbar");
+										var ddbg = document.getElementById("id4Debug");
+										if(!dtl.done){
+										dtl.done = true;
+										for(i in tl){
+											createBtn(dtl,ddbg,tl[i],video);     
+										}     
+										}
+									} 
+								}();
+							};
+							blo0.blAjx(b,url);
+						},
+						"color": "gray",
+						"float": "left",
+					},
+					{
+						"id":3,
+						"name":"dl-51voa-index",
+						"fn2server": function(b,v,_bs,_i){
+							v.innerHTML = this.name + ` ${_i}`; 
+							const svrAPI = "http://localhost:8080/download";  
+							var i = blo0.blDownloadTask(svrAPI ,
+								"https://www.51voa.com/","51voaIndex.html",v,
+								function afterDL51voaIndex(){
+									var n = parseInt(_i) + 1;
+									_bs[n].fn2server(b,v,_bs,n);
 								}
-							  } 
-						}();
-					};
-					blo0.blAjx(this,url);
-		   }
+							);  
+							i.bl2Do();
+						},
+						"color": "gray",
+						"float": "right",
+					},
+					{
+						"id":4,
+						"name":"parse-51voa-index",
+						"fn2server": function(b,v,_bs,_i){
+							v.ps = [];
+							v.innerHTML = this.name + ` ${_i}`; 
+							let file = "http://localhost:8080/51voaIndex.html"
+
+							fetch (file)
+							.then(x => x.text())
+							.then(y => { 
+								const blco1 = blo0;
+								const lv1 = blco1.blDiv(v,v.id+"lv1","lv1","blue");
+								const vDate = blco1.blDiv(v,v.id+"vDate","date","lightgreen");
+								const vNew = blco1.blDiv(v,"id4vParse","new","lightblue");
+								var a = y.split('更新时间：');
+								var b = a[1].split('）');
+								var c = b[0].split('-');
+								var d = "(" + c[0]+"/"+c[1]+"/"+c[2];
+	
+								var e = a[1].split(d); 
+								const url51voa = "https://www.51voa.com";
+								var s = "";
+								for(var i=0; i<e.length-1;i++){
+									var f = e[i].split('" target="_blank">');
+									var g = f[f.length-2].split('<a href="');
+									var h = g[g.length-1];
+									var s = `<a href="${url51voa}${h}" target="_blank">${f[f.length-1]}</a>`;
+									const page = blco1.blDiv(vNew,vNew.id+i,s,blo0.c(i));
+									v.ps.push({"href":`${url51voa}${h}`,"txt":f[f.length-1]})	 
+								}
+	
+								vDate.innerHTML = b[0]; 
+
+								var n = parseInt(_i) + 1;
+								_bs[n].fn2server(b,v,_bs,n);
+							});
+							 
+						},
+						"color": "gray",
+						"float": "right",
+					},
+					{
+						"id":5,
+						"name":"p1dl",
+						"fn2server": function(b,v,_bs,_i){
+							v.innerHTML = this.name + ` ${_i} ${v.ps[0].href}`; 
+							const svrAPI = "http://localhost:8080/download";  
+							const pageName = "p1In51voa.html";
+							var i = blo0.blDownloadTask(svrAPI ,
+								v.ps[0].href,pageName,v,
+								function afterDLP1In51voa(){
+									v.nextStep = pageName;
+									var n = parseInt(_i) + 1;
+									_bs[n].fn2server(b,v,_bs,n);
+								}
+							);  
+							i.bl2Do();
+						},
+						"color": "gray",
+						"float": "right",
+					},
+					{
+						"id":6,
+						"name":"p1Parse",
+						"fn2server": function(b,v,_bs,_i){
+							v.innerHTML = this.name + ` ${_i}  <a href="http://localhost:8080/${v.nextStep}" target="_blank">${v.nextStep}</a>`;  
+							let file = `http://localhost:8080/${v.nextStep}`;
+
+							fetch (file)
+							.then(x => x.text())
+							.then(y => { 
+								var a = y.split('<a id="mp3" href="');
+								var b = a[1].split('"></a>');
+								var mp3url = b[0]; 
+								if(!blo0.ls51voaMp3) blo0.ls51voaMp3 = [];
+								blo0.ls51voaMp3[0] = mp3url;
+
+								
+								var a = y.split('<a id="lrc" href="');
+								var b = a[1].split('"></a>');
+								var lrcUrl = `https://www.51voa.com/${b[0]}`; 
+								if(!blo0.ls51voaLrc) blo0.ls51voaLrc = [];
+								blo0.ls51voaLrc[0] = lrcUrl;
+
+								v.infBls = {"mp3":mp3url,"lrc":lrcUrl};
+								var n = parseInt(_i) + 1;
+								_bs[n].fn2server(b,v,_bs,n);
+							});
+						},
+						"color": "gray",
+						"float": "right",
+					},
+					{
+						"id":7,
+						"name":"p1bls",
+						"fn2server": function(b,v,_bs,_i){
+							v.innerHTML = this.name + ` ${_i} ${JSON.stringify(v.infBls)} `;
+							const blsP1 = "p1voa.json";
+							var pl = {
+								"request": {
+									"version": "0.0.16",
+									"description": `VOA慢速英语听力 ${blo0.blDate()}`,
+									"width": 1920,
+									"height": 1080,
+									"music": "${VAR_MUSIC}",
+									"rate": "2",
+									"frames": [
+										{
+											"number": "1",
+											"time": "${VAR_FRAMES}",
+											"objects": [
+												{
+													"text": "${VAR_TITLE}",
+													"x": 80,
+													"y": 320,
+													"size": 60,
+													"color": "160,32,240",
+													"layer": 2
+												}
+											],
+											"backgroundColor": "100,149,237"
+										}
+									],
+									"superObjects": [
+										{
+											"type": "subtitle",
+											"frameRange": "(1,${VAR_FRAMES})",
+											"attribute": {
+												"script": "${VAR_LRC_PATH}",
+												"x1": 20,
+												"y1": 670,
+												"size": 44,
+												"color": "255,255,0",
+												"replace":[
+													 {
+													   "regex":"American",
+													   "target":"美国"
+													 },
+													 {
+													   "regex":"更多听力请访问51VOA.COM",
+													   "target":"漂泊者乐园团队制作"
+													 }
+												]
+											},
+											"layer": 1
+										},
+										{
+											"type": "picture",
+											"attribute": {
+												"x1": 220,
+												"y1": 200,
+												"x2": 510,
+												"y2": 380,
+												"size": -1,
+												"color": "255,0,0",
+												"name": "${VAR_IMG_PATH}"
+											},
+											"frameRange": "(1,${VAR_TIME})",
+											"action": {
+												"trace": "y=0*x*x+0*x+200",
+												"step": 0
+											}
+										} 
+									],
+									"Macros": [
+										{
+											"name": "VAR_TITLE",
+											"value": `VOA慢速英语听力 ${blo0.blDate()}`
+										},
+										{
+											"name": "VAR_MUSIC",
+											"value": v.infBls.mp3
+										},
+										{
+											"name": "VAR_LRC_PATH",
+											"value": v.infBls.lrc
+										},
+										{
+											"name": "VAR_IMG_PATH",
+											"value": "https://img.51voa.cn/1/022a0000-0aff-0242-008a-08dae3bd0580_cx0_cy1_cw0_w268_r1.jpg"
+										}
+									]
+								}
+							}; 
+							var url = "http://localhost:8080/json?fileName=" + blsP1 ; 
+
+							blo0.blPOST(url,pl,function(txt){
+								v.innerHTML = "<a href ='http://localhost:8080/"+blsP1+"' target='_blank'>"+blsP1+"</a>";
+								
+								v.infMp4 = {"json":blsP1,"date":Date()};
+								var n = parseInt(_i) + 1;
+								_bs[n].fn2server(b,v,_bs,n);
+							}); 
+						},
+						"color": "gray",
+						"float": "right",
+					},
+					{
+						"id":8,
+						"name":"p1Mp4",
+						"fn2server": function(b,v,_bs,_i){
+							v.innerHTML = this.name + ` ${_i} ${JSON.stringify(v.infMp4)} `;  
+							var url = "http://localhost:8080/image/json2video?script=" + v.infMp4.json + "&video=p1v51voa.mp4"; 
+							b._2do = function(txt){
+								v.innerHTML = txt;
+								const refactorPage = function(){
+									var tl = [1.0,2.0,3.0,4.0,5.0,6.0];
+									
+									function createBtn(dtl,ddbg,id,video) {  
+										var btn = document.createElement("button");
+										btn.id = id;
+										btn.innerHTML = id;  
+										btn.onclick = function(){ 
+											ddbg.innerHTML = this.id; 
+											video.currentTime = this.id;
+										} 
+										dtl.appendChild(btn);
+										return btn;
+									}
+									
+									bl$("btnPlay").onclick = function play() {
+										var video = document.getElementById("id_4_video");
+										video.play();
+									} 
+									bl$("btn2createToolbar").onclick = function createToolbar() { 
+										var video = document.getElementById("id_4_video");
+										var dtl = document.getElementById("id4toolbar");
+										var ddbg = document.getElementById("id4Debug");
+										if(!dtl.done){
+										dtl.done = true;
+										for(i in tl){
+											createBtn(dtl,ddbg,tl[i],video);     
+										}     
+										}
+									} 
+								}();
+							};
+							blo0.blAjx(b,url);
+						},
+						"color": "gray",
+						"float": "right",
+					},
+				];
+				for(i in bs){
+					var btn = blo0.blBtn(tbServer,tbServer.id+bs[i].id,bs[i].name,bs[i].color);
+					btn.style.float = bs[i].float;
+					btn.onclick = function(_btn,_v,_bs,_i){
+						return function(){
+							bs[_i].fn2server(_btn,_v,_bs,_i);
+						}
+					}(btn,vServer,bs,i);
+				}  
+				var btn51voaNews = blo0.blBtn(tbServer, "btn51voaNews","51voaNews","blue");
+				btn51voaNews.onclick = function(){
+					var a = blo0.txt.split("VOA美国之音听力最近更新");
+  					alert(a.length);
+				}
+			 }();
+			 
 		   ex1 = x;
 		   ey1 = y;
 		}
 		else{
+			blsAOI.setSelected(false);
 			e = false;			
 			_curFrameDown(x,y,x1,y1);
 		}
@@ -7273,7 +7766,7 @@ const gc4BLS = function(){
 			x1 = mx1 + dx;
 			y1 = my1 + dy;
 			x2 = mx2 + dx;
-			y2 = my2 + dy;
+			y2 = my2 + dy; 
 		}
 	}
 

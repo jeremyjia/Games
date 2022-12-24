@@ -52,6 +52,8 @@ describe(tag4xdTest, function(){
   it('superObject', function(){ 
     var done =`
     1. load a picture from TA.
+    2. blWrapCVS
+    3. play superObjects when play blscript.
     `;    
     const doing =`...`;
     assert.equal(done,done);

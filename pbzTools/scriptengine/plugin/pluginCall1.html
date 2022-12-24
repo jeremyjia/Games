@@ -1,0 +1,168 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="UTF-8">
+<style type="text/css">
+ .clsBody{background:red; }
+    .box{ background:white; 
+	  overflow: hidden;
+	  zoom:1;
+        }
+    .kid{ width: 1024;height: 770px; float:left;}
+    .kid1{ background: white; }
+    .wrap{ width: 300px; height: 150px; background: white; color: white; }
+</style>
+</head>
+
+<body class="clsBody"> 
+  <script src="../../../js/blclass.js"></script>
+  <h2><font color="blue">JS插件管理页面 bv1.1.5</font></h2>
+  <div>  
+	  <input id="range" type="range" min="10" max="1000" value="0" oninput="sliderChanged()"/>
+	  <p id="idpVal">Timer(ms):100</p>
+      <button id="btn4ShowBody">showBody</button>
+      <button id="btn4ShowHead">showHead</button>
+      <button id="btn4SetHead">setHead</button>
+      <button id="btn4WrapCVS" style="border:1px solid green;">btn4WrapCVS</button>
+  </div>
+  <div id="div4Dbg" style="border:1px solid red;">dbg</div>
+  <div class="box">
+      <div class="kid kid1">
+      <canvas id="myCanvas" width="555" height="444" style="border:1px solid #000000;"></canvas>
+	  </div>
+	  <div class="kid kid1">
+	    <select id="selPlugIns" size=25>
+			 <option value="myplx.js">节拍器</option>
+			 <option value="https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plugin.js">大嘴</option>
+			 <option value="plugin2.js">曲线</option>
+			 <option value="plxChessBoard.js">棋盘</option>
+			 <option value="plxCloud.js">白云草地</option>
+			 <option value="https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxRain.js">雨滴特效</option>
+			 <option value="plxBubble.js">气泡</option>
+			 <option value="plxWaterDrop.js">水滴</option>
+			 <option value="plxDrawImage.js" selected>绘图</option>
+        </select>
+	  </div>
+  </div>
+
+  <script src="https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxDrawImage.js"></script>
+  <script type="text/javascript">
+  
+    var times = 0;
+	var v = 100;
+    var callbackFun = function () {
+      animateFrame(times++);
+      if(btn4WrapCVS.drawWrap) btn4WrapCVS.drawWrap(); 
+    }
+    var timer = setInterval(callbackFun, v);
+	
+  function sliderChanged() {
+    v = document.getElementById("range").value;
+	console.log(v);
+	clearInterval(timer);
+	document.getElementById("idpVal").innerHTML = "Timer(ms):"+v;
+	timer = setInterval(callbackFun, v);
+
+  }
+  
+   function loadScript(url) {
+	 var script = document.createElement("script");
+	 script.type = "text/javascript";
+	 script.src = url;
+	 document.body.appendChild(script);
+   }
+    
+   var selectPlxObj = document.getElementById('selPlugIns');
+   selectPlxObj.onchange = function(){
+          var len = selectPlxObj.options.length;
+            for(var i=0;i<len;i++){
+                if (selectPlxObj.options[i].selected) {
+                    var plxToLoad = selectPlxObj.options[i].value;
+					loadScript(plxToLoad);
+                }
+            }
+		}
+
+const btnSetHead  = document.getElementById("btn4SetHead");
+btnSetHead.onclick = function(){
+   const htmlBody = document.body.innerHTML;
+   document.head.innerHTML = document.getElementById("id4Ta").value;
+  // document.body.innerHTML = htmlBody;
+}
+const btnShowHead  = document.getElementById("btn4ShowHead");
+btnShowHead.onclick = function(){
+   const v = document.getElementById("div4Dbg");
+   v.innerHTML = Date();
+   const ta  = document.createElement("textarea");
+   ta.id = "id4Ta";
+   ta.style.width = "95%";
+   ta.style.height = "333"+"px";
+   v.appendChild(ta);
+   ta.value = document.head.innerHTML;
+}
+
+const btn4ShowBody  = document.getElementById("btn4ShowBody");
+btn4ShowBody.onclick = function(){
+   const v = document.getElementById("div4Dbg");
+   v.innerHTML = Date();
+   const ta  = document.createElement("textarea");
+   ta.style.width = "95%";
+   ta.style.height = "333"+"px";
+   v.appendChild(ta);
+   ta.value = document.body.innerHTML;
+}
+
+
+const btn4WrapCVS  = document.getElementById("btn4WrapCVS");
+btn4WrapCVS.onclick = function(){ 
+   const cvs = bl$("myCanvas");
+   var mx1 = -1, my1 = -1, mx2 = -1, my2 = -1;
+   var bmd = false;
+
+   if(!this.bWrap){
+    this.bWrap = true;
+
+    this.style.backgroundColor = "green";
+
+    this.drawWrap = function(){ 
+      blo0.blText(cvs,`[${mx1},${my1}] - [${mx2},${my2}]`,mx1+30,my1+30,30,"blue"); 
+      if(bmd){
+        ctx.fillStyle = "red";
+          
+        ctx.beginPath();
+        ctx.moveTo(mx1, my1);
+        ctx.lineTo(mx2, my2);
+        ctx.stroke();
+      }
+    }
+    const oi = {
+      "mdCVS": function(x,y){ 
+          mx1 = x;
+          my1 = y;
+          mx2 = x;
+          my2 = y;
+          bmd = true;
+      },
+      "mmCVS": function(x,y){ 
+        if(bmd){
+          mx2 = x;
+          my2 = y;
+        }
+      },
+      "muCVS": function(x,y){ 
+        if(bmd){
+          bmd = false;
+          mx1 = -1;
+          my1 = -1; 
+          mx2 = -1;
+          my2 = -1; 
+        }
+      }
+    };
+    blo0.blWrapCVS(cvs,oi);
+   }
+}
+  </script>
+</body>
+
+</html>
