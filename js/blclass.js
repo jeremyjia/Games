@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.345"
+var g_ver_blClass = "CBlClass_bv1.6.351"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -18,7 +18,7 @@ function myAjaxCmd(method, url, data, callback){
 	if(method == "PATCH" || method == "POST"){
 		xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());
-		xmlHttpReg.send(data);
+		xmlHttpReg.send(JSON.stringify(data));
 	}else if(method == "GET"){
 		xmlHttpReg.setRequestHeader('If-Modified-Since', '0');
 		xmlHttpReg.send(null);
@@ -4981,9 +4981,9 @@ function CBlClass ()
 				const btnSetBody = blo0.blBtn(tb,tb.id+"btnSetBody","setBody","lightblue");
 				btnSetBody.style.float = "right";
 				btnSetBody.onclick = function(){
-					blo0.blGetTa().value = d.o.body;
+					blo0.blGetTa().value = blo0.blDate();
 					var url = "https://api.github.com/repos/jeremyjia/Games/issues/" + i;
-					var bodyData = Date();
+					var bodyData = blo0.blGetTa().value ;
 					var data = {
 					  "body": bodyData
 					};
