@@ -2728,7 +2728,7 @@ function CBlClass ()
 
 	}
 	this.blList = function(){//xd2do1
-		const C4BlList = function(id){
+		const C4List = function(id){
 			const ghi = "[i5c1]";
 			const ui = blo0.blMD(id,ghi+"_"+id,blo0.c(1));
 			const _thisList = this;
@@ -2748,23 +2748,24 @@ function CBlClass ()
 			}
 			this.newToolbar = function(d,tbName,color){
 				const bs = [
-		  {"id":1,
-		  "name":"+",
-		  "color":blo0.c(11),
-		  "float":"left",
-		  "clickMe":function(tb,v){
-			  _thisList.addBtn2Tb(tb,v,null); 
-		   }
-		},
-		{"id":2,
-		  "name":"--",
-		  "color":blo0.c(13),
-		  "float":"left",
-		  "clickMe":function(tb,v){
-				tb.innerHTML = "";
-				tb.btnList = [];
-			v.innerHTML = tb.id + ":" + tb.curBtn.id;
-		  }}];
+					{"id":1,
+					"name":"+",
+					"color":blo0.c(11),
+					"float":"left",
+					"clickMe":function(tb,v){
+						_thisList.addBtn2Tb(tb,v,null); 
+					}
+					},
+					{"id":2,
+					"name":"--",
+					"color":blo0.c(13),
+					"float":"left",
+					"clickMe":function(tb,v){
+							tb.innerHTML = "";
+							tb.btnList = [];
+						v.innerHTML = tb.id + ":" + tb.curBtn.id;
+					}}
+				];
 				const tb = blo0.blDiv(d,d.id+tbName,tbName,color);
 				const tb1 = blo0.blDiv(d,d.id+tbName+"tb1","tb1","purple");
 				const v4tb = blo0.blDiv(d,d.id+tbName+"v","v4tb","gray");
@@ -2778,7 +2779,7 @@ function CBlClass ()
 				return tb;
 		   };
 		}
-		const l = new C4BlList("bllist 31");  
+		const l = new C4List("bllist 31");  
 		/* //usage:
 		l.newToolbar(l.getUI(),"tb1",blo0.c(12));
 		l.newToolbar(l.getUI(),"tb2",blo0.c(12));
@@ -6606,7 +6607,7 @@ const gc4Note = function(){
 	}
 }
 
-var soScript = ` 
+var soText = ` 
 		var C4Plx = function(){
 			this.drawPlx2Frame = function(ctx,time,x0,y0){ 
 			  var x = x0?x0:0;
@@ -6629,7 +6630,7 @@ var soScript = `
 		  }`;
 const gc4SoEditor = function(){
 	var x1,y1,x2,y2,s = false,e = false;
-	var mx1=0,my1=0,mx2=0,my2=0,soName = "so01";
+	var mx1=0,my1=0,mx2=0,my2=0,soName = "so01", lsPoint = [], curFocus = null;
 	var mx = 50,my = 50;
 	var nMDown = 0;
 	var ex1,ey1,ex2,ey2;
@@ -6746,12 +6747,20 @@ const gc4SoEditor = function(){
 					"color": "cyan"
 				},
 				{
+					"id":1.1,
+					"name":"addPoint",
+					"clickOnMe": function(d){
+						lsPoint.push({"x":0,"y":0});	
+					},
+					"color": blo0.c(11)
+				},
+				{
 					"id":2,
 					"name":"2server",
 					"clickOnMe": function(d){ 
 						var url = "http://localhost:8080/json?fileName=" + soName + ".js"; 
 
-						blo0.blSendTextByPOST(url,soScript,function(resTxt){
+						blo0.blSendTextByPOST(url,soText,function(resTxt){
 							d.innerHTML = "<a href ='http://localhost:8080/" + soName+".js' target='_blank'>" + soName+".js</a>";
 						}); 
 					},
@@ -6762,7 +6771,7 @@ const gc4SoEditor = function(){
 					"id":3,
 					"name":"2Ta",
 					"clickOnMe": function(d){
-						blo0.blGetTa().value = soScript;
+						blo0.blGetTa().value = soText;
 					},
 					"color": "pink",
 					"float": "left"
@@ -6772,7 +6781,7 @@ const gc4SoEditor = function(){
 					"name":"fromTa",
 					"clickOnMe": function(d){
 						op = null;
-						soScript = blo0.blGetTa().value;
+						soText = blo0.blGetTa().value;
 					},
 					"color": "pink",
 					"float": "left"
@@ -6784,7 +6793,7 @@ const gc4SoEditor = function(){
 						bRunScript = bRunScript?false:true;
 						d.innerHTML = bRunScript;
 					},
-					"color": "pink",
+					"color": "green",
 					"float": "left"
 				},
 			];
@@ -6847,7 +6856,7 @@ const gc4SoEditor = function(){
 			ctx.fillStyle = "green";
 			ctx.fillRect(mx+x1+5,my+y1+5,5,5); 
 			
-			if(op==null) op = blo0.blWrapPlx(cvs,soScript,x1,y1);
+			if(op==null) op = blo0.blWrapPlx(cvs,soText,x1,y1);
 			ctx.fillText("_2RunScript: nTick="+nTick + "byPlx="+op.callPlx (nTick,mx,my),mx+x1+10,my+my-40);	 
 
 		}
