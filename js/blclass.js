@@ -1740,7 +1740,31 @@ function CBlClass ()
 		t.color = color;
 		return t;		
 	}
-	
+	this.blMakePlxJS = function(oi){
+		var sJS = `
+		var C4Plx = function(){
+			var s = '${oi.compile()}';
+			this.drawPlx2Frame = function(ctx,time,x0,y0){ 
+			  var x = x0?x0:0;
+			  var y = y0?y0:0;
+
+			  ctx.fillStyle = 'red';
+			  ctx.font = 11+ "px Consolas";			  
+			  ctx.fillText("blMakePlxJS C4Plx v0.21: time="+time ,x+10,y+33); 
+			  ctx.fillText(s,x+10,y+44); 
+			};
+		} 
+		function animateFrame(time){
+			var canvas = document.getElementById('myCanvas');
+			var ctx = canvas.getContext('2d');  
+					 
+			var o = new C4Plx();
+			var x = typeof x0 === "undefined"?0:x0;
+			var y = typeof y0 === "undefined"?0:y0;
+			o.drawPlx2Frame (ctx,time,x,y);   
+		}`;
+		return sJS;
+	}
 	this.blGetTa = function(){ return bl$("id_4_ta_blrRunJS");}
 	this.blSetPS = function(ps){		_ps = ps;	}
 	this.setScriptName = function(_scriptName){
@@ -6630,9 +6654,8 @@ var soText = `
 		  }`;
 const gc4SoEditor = function(){
 	var x1,y1,x2,y2,s = false,e = false;
-	var mx1=0,my1=0,mx2=0,my2=0,soName = "so01", lsPoint = [], curFocus = null;
-	var mx = 50,my = 50;
-	var nMDown = 0;
+	var mx1=0,my1=0,mx2=0,my2=0,soName = "so01";
+	var mx = 50,my = 50; 
 	var ex1,ey1,ex2,ey2;
 	const _C4SoEditor = function(){ 
 		
@@ -6640,103 +6663,97 @@ const gc4SoEditor = function(){
 		var vCanStatus = null;
 		var bRunScript = false; 
 		var op = null;
-		const oPics = function(){
-			var lsPic = [];
-			var curPic = null;
-			const btnPics = [
+		const osubo = function(){
+			var lsSubList = [];
+			var curSubId = -1;
+			const makeBtnList = function(ls,o,v){
+				ls.push(o);
+				var tb = blo0.blDiv(v,v.id+"tb","tb",blo0.c(1));
+				var d = blo0.blDiv(v,v.id+"d","d",blo0.c(2));
+				blo0.blBtns(ls,tb,d,"lightgreen","brown");
+			};
+			const btnSubOs = [
 				{
 					"id":1,
-					"name":"+framePic",
+					"name":"point",
 					"color":blo0.c(17),
+					"float":"left",
+					"description":`
+					  1. add new point.
+					  `,
+					"click": function(b,v){   
+						const ls = this.getSubList();
+						v.innerHTML = this.description;
+						curSubId = this.id;
+					},
+					"getSubList": function(){ return lsSubList;}
+				},
+				{
+					"id":2,
+					"name":"pic",
+					"color":blo0.c(18),
 					"float":"left",
 					"description":`
 					  1. add new picture.
 					  `,
 					"click": function(b,v){ 
-					  v.innerHTML = this.description; 
-					  const oNewPic = function(){
-						return {
-							"id":lsPic.length,
-							"name":lsPic.length,
-							"color":"gray",
-							"float": "left",
-							"description":`newpic...`,
-							"click": function(b,v){
-								v.innerHTML = this.description + `	` + this.src;  
-								var img = document.createElement("img"); 
-    							img.src = this.src; 
-    							v.appendChild(img);
-								curPic = this;
-								curPic.img = img;
-							},
-							"src":"http://localhost:8080/"+(lsPic.length+1)+".jpg"
-						}
-					  }();
-					  lsPic.push(oNewPic);
-					  var tb = blo0.blDiv(v,v.id+"tb","tb",blo0.c(1));
-					  var d = blo0.blDiv(v,v.id+"d","d",blo0.c(2));
-					  blo0.blBtns(lsPic,tb,d,"lightgreen","brown");
-					}
-				},
-				{
-					"id":2,
-					"name":"+samplePic",
-					"color":blo0.c(18),
-					"float":"left",
-					"description":`
-					  1. add new sample picture (x1.jpg).
-					  `,
-					"click": function(b,v){ 
-					  v.innerHTML = this.description; 
-					  const oNewPic = function(){
-						return {
-							"id":lsPic.length,
-							"name":lsPic.length,
-							"color":"gray",
-							"float": "left",
-							"description":`newpic...`,
-							"click": function(b,v){
-								v.innerHTML = this.description + `	` + this.src;  
-								var img = document.createElement("img"); 
-    							img.src = this.src; 
-								img.width = 240;
-								img.height = 160;
-    							v.appendChild(img);
-								curPic = this;
-								curPic.img = img;
-							},
-							"src":"http://localhost:8080/x1.jpg"
-						}
-					  }();
-					  lsPic.push(oNewPic);
-					  var tb = blo0.blDiv(v,v.id+"tb","tb",blo0.c(1));
-					  var d = blo0.blDiv(v,v.id+"d","d",blo0.c(2));
-					  blo0.blBtns(lsPic,tb,d,"lightgreen","brown");
-					}
+						curSubId = this.id;
+						const ls = this.getSubList();
+					  	v.innerHTML = this.description; 
+						const oNewPic = function(){
+							return {
+								"id":ls.length,
+								"name":"pic",
+								"color":"gray",
+								"float": "left",
+								"description":`new pic ...`,
+								"click": function(b,v){
+									v.innerHTML = this.description;   
+								},
+								"src":"http://localhost:8080/x1.jpg"
+							}
+						}();
+					  	makeBtnList(ls,oNewPic,v);
+					},
+					"getSubList": function(){ return lsSubList;}
 				},
 			];
-			const _C4Pics = function(){
-				this.ui4Pics = function(v){
+			const _C4SubObjects = function(){
+				var lsPoint = [];
+				this.mDown = function(x,y){
+					if(curSubId==1)	lsPoint.push({"x":x-x1,"y":y-y1});
+				}
+				this.ui4SubObjects = function(v){
 					var tb = blo0.blDiv(v,v.id+"tb4Pics","tb",blo0.c(15));
 					var d = blo0.blDiv(v,v.id+"d4Pics","d",blo0.c(16));
-					blo0.blBtns(btnPics,tb,d,"lightgreen","brown");
+					blo0.blBtns(btnSubOs,tb,d,"lightgreen","brown");
 				}
-				this.showPics = function(cvs){
+				this.showSubObjects = function(cvs){
 					var ctx = cvs.getContext("2d");
-					ctx.fillText(`oPics: ${lsPic.length} curPic = ${curPic.src}`,x1,y1 + 55);
-					if(curPic!=null) ctx.drawImage(curPic.img, x1, y1+55,240,160);
+					ctx.fillText(`suObjects`,x1,y1 + 55); 
+					const showPoints = function(_ls){
+						for(i in _ls){
+							ctx.fillRect(_ls[i].x + x1, _ls[i].y + y1,2,2);
+						}
+					}(lsPoint);
+				}
+				this.compile = function(){
+					var o = {};
+					o.lsPoint = lsPoint;
+					return JSON.stringify(o);
 				}
 			}
-			return new _C4Pics();
+			return new _C4SubObjects();
 		}();
 		this.ui4Editor = function(v){ 
 			var tb = blo0.blDiv(v,v.id+"tb","tb",blo0.c(13));
 			var d = blo0.blDiv(v,v.id+"d","d",blo0.c(14));
-			oPics.ui4Pics(v);
+			osubo.ui4SubObjects(v);
 			vCanStatus = blo0.blDiv(v,v.id+"vCanStatus","black","white");
 			vCanStatus.updateMsg = function(x,y){
 				vCanStatus.innerHTML =`[${x},${y}]`;
 			}
+			 
 			const bs = [
 				{
 					"id":1,
@@ -6745,15 +6762,7 @@ const gc4SoEditor = function(){
 						soName = blo0.blGetTa().value;	
 					},
 					"color": "cyan"
-				},
-				{
-					"id":1.1,
-					"name":"addPoint",
-					"clickOnMe": function(d){
-						lsPoint.push({"x":0,"y":0});	
-					},
-					"color": blo0.c(11)
-				},
+				}, 
 				{
 					"id":2,
 					"name":"2server",
@@ -6769,26 +6778,35 @@ const gc4SoEditor = function(){
 				},
 				{
 					"id":3,
-					"name":"2Ta",
+					"name":"init",
 					"clickOnMe": function(d){
 						blo0.blGetTa().value = soText;
+					},
+					"color": "white",
+					"float": "left"
+				},
+				{
+					"id":3.1,
+					"name":"F5",
+					"clickOnMe": function(d){
+						blo0.blGetTa().value = blo0.blMakePlxJS(osubo);
 					},
 					"color": "pink",
 					"float": "left"
 				},
 				{
 					"id":4,
-					"name":"fromTa",
+					"name":"frmTa",
 					"clickOnMe": function(d){
 						op = null;
 						soText = blo0.blGetTa().value;
 					},
-					"color": "pink",
+					"color": blo0.c(15),
 					"float": "left"
 				},
 				{
 					"id":5,
-					"name":"runScript", 
+					"name":"run", 
 					"clickOnMe": function(d){
 						bRunScript = bRunScript?false:true;
 						d.innerHTML = bRunScript;
@@ -6809,44 +6827,14 @@ const gc4SoEditor = function(){
 		};
 
 		this.drawEffect = function(cvs){
-			//oPics.showPics(cvs);
+			osubo.showSubObjects(cvs);
 			var ctx = cvs.getContext("2d");
 			nTick++;
-			ctx.fillText("soe1: nTick = " + nTick,x1,y1 + 10);
-			ctx.fillText("mx1y1: [" + mx1 + "," + my1 + "]",x1,y1 + 20);
-			ctx.fillText("mx2y2: [" + mx2 + "," + my2 + "]",x1 + 110,y1 + 20);
-			ctx.fillStyle = "purple";
-			ctx.fillRect(mx1+x1,my1+y1,10,10);
-			ctx.fillStyle = "yellow";
-			ctx.fillRect(mx2+x1,my2+y1,20,20);
+			ctx.fillText("soe1: nTick = " + nTick,x1,y1 + 10); 
+			
 			ctx.fillStyle = "green";
 			ctx.fillText("soe2",x2,y2);
-
-			if(Math.abs(mx-mx2)<0.1){
-				mx = mx2;
-				mx2 = mx1;
-				mx1 = mx;
-				my = my2;
-				my2 = my1;
-				my1 = my;
-			}
-			var dx = 0; 
-			if(mx2>mx1) {
-				if(mx>mx2) 	dx = -2;
-				else    	dx = 2;
-			}
-			else if(mx2<mx1){
-				if(mx<mx2) dx = 2;
-				else dx = -2;
-			}
-  
-			mx += dx;
-			my = (my1-my2)/(mx1-mx2)*(mx-mx2) + my2;
-
-			ctx.fillStyle = "blue";
-			ctx.fillRect(mx+x1,my+y1,5,5); 
-			if(vCanStatus&&vCanStatus.updateMsg) vCanStatus.updateMsg(mx,my);
-
+ 
 			_2RunScript(cvs);
 		}
 		
@@ -6866,21 +6854,8 @@ const gc4SoEditor = function(){
 		this.downSOEditor = function(x,y){
 			if(!blo0.blPiR(x,y,x1,y1,x2-x1,y2-y1)){
 				return;
-			}
-			nMDown++;
-			if(nMDown==1){
-				mx1 = x-x1;
-				my1 = y-y1;
-				mx = mx1;
-				my = my1;
-			}
-			else if(nMDown==2){
-				mx2 = x-x1;
-				my2 = y-y1;
-				nMDown = 0;
-				mx = mx1;
-				my = my1;
-			}
+			} 
+			osubo.mDown(x,y);
 		} 
 	};
 	const osoe = new _C4SoEditor();
