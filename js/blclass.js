@@ -647,6 +647,76 @@ function CBlClass ()
 	    ];
 		return cs[n];
 	}
+	this.blPoints = function(){
+		const c4Points = function(){
+			var ptsCMD = -1;
+			var x1,y1,x2,y2,iSel = -1 ;
+			var ls = [];
+			this.mkUI = function(d){
+				const bs = [
+					{
+						"id":1,
+						"name":"new",
+						"click":function(b,v){
+							v.innerHTML = this.name;
+							ptsCMD = this.id;
+						}
+					},
+					{
+						"id":2,
+						"name":"name2",
+						"click":function(b,v){
+							v.innerHTML = this.name;
+							ptsCMD = this.id;
+						}
+					},
+				];
+				
+				var v = blo0.blDiv(d,d.id+"v","v",blo0.c(12));
+				v.innerHTML = "";
+				var tb = blo0.blDiv(v,v.id+"tb","tb",blo0.c(1));
+				var d = blo0.blDiv(v,v.id+"d","d",blo0.c(2));
+				blo0.blBtns(bs,tb,d,"lightgreen","brown");
+			};
+			
+			this.mdFun = function(x,y){
+				if(ptsCMD==1) ls.push({"x":x-x1,"y":y-y1});
+				if(ptsCMD==2) {
+					if(iSel==-1){
+						for(i in ls){
+							if(blo0.blPiR(x,y,x1+ls[i].x,y1+ls[i].y,5,5)){ 
+								iSel = i;
+								break;
+							}
+						}
+					}
+					else{
+						ls[iSel].x = x-x1;
+						ls[iSel].y = y-y1;
+						iSel = -1;
+					}
+				}
+			};
+			this.drawPoints = function(cvs,_x1,_y1,_x2,_y2){
+				x1 = _x1; y1 = _y1; x2 = _x2; y2 = _y2;
+				var ctx = cvs.getContext("2d");		
+				var oldFillStyle = ctx.fillStyle;
+				ctx.fillStyle = "grey"; 
+				ctx.fillRect(x1+10,y1+10,20,20);
+				ctx.fillText(`n=${ls.length}`,x1+50,y1+50);
+				for(i in ls){
+					ctx.fillRect(ls[i].x+x1,ls[i].y+y1,5,5);
+				}
+				if(iSel!=-1){
+					ctx.fillStyle = "red"; 
+					ctx.fillRect(ls[iSel].x+x1,ls[iSel].y+y1,5,5);
+				}
+				ctx.fillStyle = oldFillStyle;
+
+			};
+		};
+		return new c4Points();
+	}
 	this.blAudioTimer = function(){	
 		const r = function() {	
 			var bRun = false;
@@ -6664,7 +6734,8 @@ const gc4SoEditor = function(){
 		var bRunScript = false; 
 		var op = null;
 		const osubo = function(){
-			var lsSubList = [];
+			var blPts = null;
+			var lsPic = [];
 			var curSubId = -1;
 			const makeBtnList = function(ls,o,v){
 				ls.push(o);
@@ -6679,14 +6750,14 @@ const gc4SoEditor = function(){
 					"color":blo0.c(17),
 					"float":"left",
 					"description":`
-					  1. add new point.
+					  1. blPoints.
 					  `,
-					"click": function(b,v){   
-						const ls = this.getSubList();
+					"click": function(b,v){    
 						v.innerHTML = this.description;
+						if(null==blPts) blPts = blo0.blPoints();
 						curSubId = this.id;
-					},
-					"getSubList": function(){ return lsSubList;}
+						blPts.mkUI(v);
+					}, 
 				},
 				{
 					"id":2,
@@ -6715,13 +6786,13 @@ const gc4SoEditor = function(){
 						}();
 					  	makeBtnList(ls,oNewPic,v);
 					},
-					"getSubList": function(){ return lsSubList;}
+					"getSubList": function(){ return lsPic;}
 				},
 			];
 			const _C4SubObjects = function(){
-				var lsPoint = [];
+				
 				this.mDown = function(x,y){
-					if(curSubId==1)	lsPoint.push({"x":x-x1,"y":y-y1});
+					if(curSubId==1)	blPts.mdFun(x,y);
 				}
 				this.ui4SubObjects = function(v){
 					var tb = blo0.blDiv(v,v.id+"tb4Pics","tb",blo0.c(15));
@@ -6730,16 +6801,13 @@ const gc4SoEditor = function(){
 				}
 				this.showSubObjects = function(cvs){
 					var ctx = cvs.getContext("2d");
-					ctx.fillText(`suObjects`,x1,y1 + 55); 
-					const showPoints = function(_ls){
-						for(i in _ls){
-							ctx.fillRect(_ls[i].x + x1, _ls[i].y + y1,2,2);
-						}
-					}(lsPoint);
+					ctx.fillText(`suObjects`,x1,y1 + 55);  
+
+					if(blPts) blPts.drawPoints(cvs,x1,y1,x2,y2);
+
 				}
 				this.compile = function(){
-					var o = {};
-					o.lsPoint = lsPoint;
+					var o = {}; 
 					return JSON.stringify(o);
 				}
 			}
