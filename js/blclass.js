@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.351"
+var g_ver_blClass = "CBlClass_bv1.6.352"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -697,6 +697,21 @@ function CBlClass ()
 					}
 				}
 			};
+			this.data2Plx = function(){
+				const o = {};
+				o.ver = "0.12";
+				o.ls = ls;
+				return o;
+			}
+			this.fun2Plx = function(){
+				return `
+				var o = JSON.parse(s);
+				for(i in o.ls){
+					ctx.fillRect(o.ls[i].x+x,o.ls[i].y+y,5,5);
+				}
+
+				`;
+			}
 			this.drawPoints = function(cvs,_x1,_y1,_x2,_y2){
 				x1 = _x1; y1 = _y1; x2 = _x2; y2 = _y2;
 				var ctx = cvs.getContext("2d");		
@@ -1813,15 +1828,15 @@ function CBlClass ()
 	this.blMakePlxJS = function(oi){
 		var sJS = `
 		var C4Plx = function(){
-			var s = '${oi.compile()}';
+			var s = '${oi.compileData()}';
 			this.drawPlx2Frame = function(ctx,time,x0,y0){ 
 			  var x = x0?x0:0;
 			  var y = y0?y0:0;
 
 			  ctx.fillStyle = 'red';
 			  ctx.font = 11+ "px Consolas";			  
-			  ctx.fillText("blMakePlxJS C4Plx v0.21: time="+time ,x+10,y+33); 
-			  ctx.fillText(s,x+10,y+44); 
+			  ctx.fillText("blMakePlxJS C4Plx v0.21: time="+time ,x+10,y+33);  
+			  ${oi.compileFrameFun()}
 			};
 		} 
 		function animateFrame(time){
@@ -6806,9 +6821,14 @@ const gc4SoEditor = function(){
 					if(blPts) blPts.drawPoints(cvs,x1,y1,x2,y2);
 
 				}
-				this.compile = function(){
-					var o = {}; 
+				this.compileData = function(){
+					var o = blPts?blPts.data2Plx():{};
 					return JSON.stringify(o);
+				}
+				this.compileFrameFun = function(){
+					return blPts?blPts.fun2Plx():`
+					ctx.fillText('xd try: s= '+ s,x+10,y+55); 
+					`;
 				}
 			}
 			return new _C4SubObjects();
