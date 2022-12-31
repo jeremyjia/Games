@@ -106,23 +106,11 @@
                   '>Request Books
         </button>
         <button id="filter-update-button" class="action-button" 
-        onclick='
-                 var xhttp = new XMLHttpRequest();//waynex
-                  xhttp.open("GET", "http://localhost:5000/request", false);
-                  xhttp.send();
-                 var o = JSON.parse(xhttp.responseText);
-                 var k = 0;
-                   for (i in o){
-                    document.getElementById("book_title"+k).innerHTML = o[i].title;
-                    document.getElementById("book_price"+k).innerHTML = o[i].email;
-                    document.getElementById("book_pic"+k).innerHTML = o[i].timestamp;
-                    k++;
-                   }
+        onclick='loadDoc();      
                                 
                  '>New UI        
         </button>
-        <button type="button" onclick="loadDoc()">Change Content</button>
-
+        
       </aside> 
       <section id="posts"> 
         <h1 id="demo_book" class="model-body">Benny Wonderland List</h1>";
