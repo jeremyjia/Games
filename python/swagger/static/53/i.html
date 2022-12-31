@@ -110,6 +110,11 @@
                                 
                  '>New UI        
         </button>
+        <button id="filter-update-button" class="action-button" 
+        onclick='loadDoc1();      
+                                
+                 '>video json        
+        </button>
         
       </aside> 
       <section id="posts"> 
@@ -204,6 +209,15 @@
         xhttp.open("GET", "http://localhost:5000/request");
         xhttp.send();
       }
+      function loadDoc1() {
+        const xhttp = new XMLHttpRequest();
+        xhttp.onload = function() {
+          document.getElementById("posts").innerHTML = this.responseText;
+        }
+        xhttp.open("GET", "http://localhost:8080/video.json");
+        xhttp.send();
+      }
+
       </script>
   </body>
 </html>
