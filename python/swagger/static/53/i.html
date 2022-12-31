@@ -106,12 +106,12 @@
                   '>Request Books
         </button>
         <button id="filter-update-button" class="action-button" 
-        onclick='loadDoc();      
+        onclick='loadDoc("http://localhost:5000/request");      
                                 
                  '>New UI        
         </button>
         <button id="filter-update-button" class="action-button" 
-        onclick='loadDoc1();      
+        onclick='loadDoc("http://localhost:8080/video.json");      
                                 
                  '>video json        
         </button>
@@ -201,23 +201,15 @@
       </div>
     </div>
     <script>
-      function loadDoc() {
+      function loadDoc(a) {
         const xhttp = new XMLHttpRequest();
         xhttp.onload = function() {
           document.getElementById("posts").innerHTML = this.responseText;
         }
-        xhttp.open("GET", "http://localhost:5000/request");
+        xhttp.open("GET", a);
         xhttp.send();
       }
-      function loadDoc1() {
-        const xhttp = new XMLHttpRequest();
-        xhttp.onload = function() {
-          document.getElementById("posts").innerHTML = this.responseText;
-        }
-        xhttp.open("GET", "http://localhost:8080/video.json");
-        xhttp.send();
-      }
-
+  
       </script>
   </body>
 </html>
