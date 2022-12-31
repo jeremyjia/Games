@@ -121,9 +121,11 @@
                                 
                  '>New UI        
         </button>
+        <button type="button" onclick="loadDoc()">Change Content</button>
+
       </aside> 
       <section id="posts"> 
-        var s = "<h1 id="demo_book" class="model-body">Benny Wonderland List</h1>";
+        <h1 id="demo_book" class="model-body">Benny Wonderland List</h1>";
         for (n = 0; n < k; n++){
         s += "<div class="post-info-container" id="book_title"
         s += n + ></div>"
@@ -205,6 +207,15 @@
 
       </div>
     </div>
-
+    <script>
+      function loadDoc() {
+        const xhttp = new XMLHttpRequest();
+        xhttp.onload = function() {
+          document.getElementById("posts").innerHTML = this.responseText;
+        }
+        xhttp.open("GET", "http://localhost:5000/request");
+        xhttp.send();
+      }
+      </script>
   </body>
 </html>
