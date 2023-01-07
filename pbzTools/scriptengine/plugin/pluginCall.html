@@ -14,11 +14,13 @@
 </head>
 
 <body> 
-  <h2><font color="blue">JS插件管理页面 v1.0.6</font></h2>
+  <h2><font color="blue">JS Canvas插件管理页面 v1.0.8</font></h2>
   <div>  
 	  <input id="range" type="range" min="10" max="1000" value="0" oninput="sliderChanged()"/>
 	  <p id="idpVal">Timer(ms):100</p>
   </div>
+  <a href="https://github.com/jeremyjia/Games/issues/901" target="_blank">#901 插件数据库</a></div>
+  <br/><br/>
   <div class="box">
       <div class="kid kid1">
       <canvas id="myCanvas" width="1024" height="768" style="border:1px solid #000000;"></canvas>
@@ -41,10 +43,14 @@
   </div>
 
   <script src="./plxRunning.js"></script>
+  <script src="https://littleflute.github.io/JavaScript/w3.js"></script>
   <script type="text/javascript">
     var times = 0;
 	var v = 100;
     var callbackFun = function () {
+	  var canvas = document.getElementById('myCanvas');
+      var ctx = canvas.getContext('2d');            
+      ctx.clearRect(0, 0, 2048, 1536);
       animateFrame(times++);
     }
     var timer = setInterval(callbackFun, v);
@@ -76,6 +82,11 @@
             }
 		}
 
+   function _loadIssue901(o) {	
+       eval(o.body); 
+    }
+   w3.getHttpObject("https://api.github.com/repos/jeremyjia/Games/issues/901", _loadIssue901);
+   
   </script>
 </body>
 
