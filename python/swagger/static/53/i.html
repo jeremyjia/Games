@@ -91,8 +91,8 @@
           </fieldset>
         </div>
 
-        <button id="filter-update-button" class="action-button" onclick='document.getElementById("demo").innerHTML = no change'>Update</button>
-        <button class="action-button" type='button' 
+        <button id="filter-update-button" class="action-button" onclick='document.getElementById("demo").innerHTML = no'>Update</button>
+        <button id="filter-update-button" class="action-button"  
         onclick='
                   var xhttp = new XMLHttpRequest();//waynex
                   xhttp.open("GET", "http://localhost:5000/request", false);
@@ -105,8 +105,18 @@
                   for (let a = 0; a < 8; a++){ document.getElementById("book_title"+a).innerHTML = list[a];}
                   '>Request Books
         </button>
+        <button id="filter-update-button" class="action-button" 
+        onclick='loadDoc("http://localhost:5000/request");      
+                                
+                 '>New UI        
+        </button>
+        <button id="filter-vj-button" class="action-button" 
+        onclick='loadDoc("http://localhost:8080/video.json");      
+                               
+                 '>Video Json in Jeremy's Repository        
+        </button>
+        
       </aside> 
-
       <section id="posts">
         <h1 id="demo_book1" class="modal-body">Benny's Wonderland List</h1>
         <div class="post" data-price="500" data-city="Eugene" data-condition="poor"> 
@@ -277,6 +287,16 @@
 
       </div>
     </div>
-
+    <script>
+      function loadDoc(a) {
+        const xhttp = new XMLHttpRequest();
+        xhttp.onload = function() {
+          document.getElementById("posts").innerHTML = this.responseText;
+        }
+        xhttp.open("GET", a);
+        xhttp.send();
+      }
+  
+      </script>
   </body>
 </html>
