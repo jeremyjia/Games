@@ -139,6 +139,17 @@ function updateGitHubComment(commentId, jsonAll) {
   });
 }
 
+function updateIssueBody(issueNumber, bodyString) {
+  var url = "https://api.github.com/repos/jeremyjia/Games/issues/" + issueNumber;
+  var bodyData = bodyString;
+  var data = {
+    "body": bodyData
+  };
+
+  myAjaxCmd('PATCH', url, data, function (res) {
+  });
+}
+
 function addNewGitHubIssue(issueTitle, jsonAll, callbackFun) {
   var url = "https://api.github.com/repos/jeremyjia/Games/issues";
   var data = {

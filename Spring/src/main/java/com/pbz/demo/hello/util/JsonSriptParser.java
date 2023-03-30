@@ -965,6 +965,14 @@ public final class JsonSriptParser {
 	public static void main(String[] args) {
 		System.out.println("UTest begin");
 		serverStatusConfig(true);
+		
+		String s = "tts:欢迎来到漂泊者乐园";
+		if(s.startsWith("tts:")) {
+		   s = s.substring(4);
+		}
+		String url = "https://tts.baidu.com/text2audio?tex="+s+"&cuid=xincibaike&lan=ZH&ctp=1&pdt=301&vol=10&rate=4&spd=5";
+		FileUtil.downloadFile(url, FileUtil.randomFileName()+".mp3");
+		
 		System.out.println("UTest end");
 	}
 

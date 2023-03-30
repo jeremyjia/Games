@@ -27,7 +27,7 @@
                 "type": "javascript",
                 "frameRange": "(1,50)",
                 "attribute": {
-                    "script": "plugin.js",
+                    "script": "https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxRunning.js",
                     "function": "animateFrame",
                     "start": 1
                 },
@@ -37,7 +37,7 @@
         "Macros": [
             {
                 "name": "VAR_TITLE",
-                "value": "JavaScript插件动画演示"
+                "value": "JavaScript插件动画演示1"
             }
         ]
     }

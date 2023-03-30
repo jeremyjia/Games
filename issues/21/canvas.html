@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>canvas处理视频</title>
+</head>
+<body>
+<canvas id="canvas" width="300" height="168"></canvas>
+<video width="300" height="168" controls src="http://localhost:8080/aa.mp4" id="video" muted></video>
+<video width="300" height="168" controls id="vr" muted></video>
+<script>
+        var canvas = document.getElementById("canvas");
+        var context = canvas.getContext("2d");
+        var video = document.getElementById("video");
+        // 开始录制
+        var stream = canvas.captureStream();
+        var recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+        var data = [];
+        recorder.ondataavailable = function (event) {
+            console.log(event)
+            if (event.data && event.data.size) {
+                data.push(event.data);
+            }
+        };
+        recorder.onstop = () => {
+            var url = URL.createObjectURL(new Blob(data, { type: 'video/webm' }));
+            var vr = document.querySelector("#vr");
+            vr.src = url;
+            vr.play();
+        };
+        recorder.start();
+        //订阅视频可播放事件
+        video.oncanplay = function () {
+            video.play();
+            switchToCanvas();
+        }
+        context.font = "20px Verdana";
+        // 用渐变填色
+        context.fillStyle =  "rgba(255,255,255,1)";
+        var index = 0;
+        function switchToCanvas() {
+            if (video.ended) {
+                recorder.stop();
+                return;
+            }
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            context.fillText("w3dev.cn-" + index, 10, 20);//绘制文字，其他操作自己增加
+            index++
+            window.requestAnimationFrame(switchToCanvas);
+        }
+    </script>
+</body>
+</html>

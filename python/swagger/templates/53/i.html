@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Benny's List</title>
+
+    <!-- This 3rd-party stylesheet makes available the font families to be used for this page ("Roboto" and "Roboto Slab"). -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Slab:100" rel="stylesheet">
+
+    <!-- This 3rd-party stylesheet incorporates SVG icons from Font Awesome: http://fontawesome.com/ -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src='/53/index_ori.js' charset="utf-8" defer></script>
+
+  </head>
+  <body>
+
+    <header>
+
+      <div class="header-image-container">
+        <img src='/53/benny.jpg' alt="Benny logo">
+      </div>
+
+      <h1 id="demo" class="site-title"><a href="#">Benny's List</a></h1>
+      
+
+    </header>
+
+    <main class="content">
+      <aside class="filter-container">
+
+        <h2>Filters</h2>
+
+        <div class="filter-input-container">
+          <label for="filter-text" class="filter-input-label">Text</label>
+          <div class="filter-input-element">
+            <input type="text" name="filter-text" id="filter-text" class="filter-input">
+          </div>
+        </div>
+
+        <div class="filter-input-container">
+          <label for="filter-min-price" class="filter-input-label">Price</label>
+          <div class="filter-input-element">
+            <input type="text" name="filter-min-price" id="filter-min-price" class="filter-input" placeholder="min">
+          </div>
+          <div class="filter-input-element">
+            <input type="text" name="filter-max-price" id="filter-max-price" class="filter-input" placeholder="max">
+          </div>
+        </div>
+
+        <div class="filter-input-container">
+          <label for="filter-city">City</label>
+          <div class="filter-input-element">
+            <select id="filter-city" class="filter-input" name="filter-city">
+              <option selected value="">Any</option>
+              <option>Corvallis</option>
+              <option>Albany</option>
+              <option>Eugene</option>
+              <option>Portland</option>
+              <option>Salem</option>
+              <option>Bend</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="filter-input-container">
+          <fieldset id="filter-condition" class="filter-fieldset">
+            <legend>Condition</legend>
+            <div>
+              <input type="checkbox" name="filter-condition" id="filter-condition-new" value="new">
+              <label for="filter-condition-new">New</label>
+            </div>
+            <div>
+              <input type="checkbox" name="filter-condition" id="filter-condition-excellent" value="excellent">
+              <label for="filter-condition-excellent">Excellent</label>
+            </div>
+            <div>
+              <input type="checkbox" name="filter-condition" id="filter-condition-good" value="good">
+              <label for="filter-condition-good">Good</label>
+            </div>
+            <div>
+              <input type="checkbox" name="filter-condition" id="filter-condition-fair" value="fair">
+              <label for="filter-condition-fair">Fair</label>
+            </div>
+            <div>
+              <input type="checkbox" name="filter-condition" id="filter-condition-poor" value="poor">
+              <label for="filter-condition-poor">Poor</label>
+            </div>
+          </fieldset>
+        </div>
+
+        <button id="filter-update-button" class="action-button" onclick='document.getElementById("demo").innerHTML = 5'>Update</button>
+
+      </aside>
+
+      <section id="posts">
+
+        <div class="post" data-price="500" data-city="Eugene" data-condition="poor"> //read data from mysql wayne
+          <div class="post-contents">
+            <div class="post-image-container">
+              <img src="benny.jpg" alt="Super nice laptop">  //read data from mysql wayne
+            </div>
+            <div class="post-info-container">
+              <a href="#" class="post-title">Super nice laptop</a> <span class="post-price">$516</span> <span class="post-city">(Eugene)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="post" data-price="20" data-city="Corvallis" data-condition="excellent">
+          <div class="post-contents">
+            <div class="post-image-container">
+              <img src="benny.jpg" alt="Platypus Trophy">
+            </div>
+            <div class="post-info-container">
+              <a href="#" class="post-title">Platypus Trophy</a> <span class="post-price">$20</span> <span class="post-city">(Corvallis)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="post" data-price="100" data-city="Portland" data-condition="new">
+          <div class="post-contents">
+            <div class="post-image-container">
+              <img src="http://static-21.sinclairstoryline.com/resources/media/9e359e52-2d79-4aa6-a43b-2ba534b9db0c-large16x9_378b19aa394049a4a9ca7101e4e75be4voodoodoughnutrecord660.jpg?1463527394583" alt="Very large pile of interesting donuts">
+            </div>
+            <div class="post-info-container">
+              <a href="#" class="post-title">Very large pile of interesting donuts</a> <span class="post-price">$100</span> <span class="post-city">(Portland)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="post" data-price="250" data-city="Salem" data-condition="fair">
+          <div class="post-contents">
+            <div class="post-image-container">
+              <img src="http://static.legalsolutions.thomsonreuters.com/product_photos/p40307624-141728L.jpg" alt="Oregon laws">
+            </div>
+            <div class="post-info-container">
+              <a href="#" class="post-title">Oregon laws</a> <span class="post-price">$250</span> <span class="post-city">(Salem)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="post" data-price="1" data-city="Bend" data-condition="new">
+          <div class="post-contents">
+            <div class="post-image-container">
+              <img src="http://i.huffpost.com/gen/1573833/images/o-SUNSHINE-facebook.jpg" alt="Sunshine">
+            </div>
+            <div class="post-info-container">
+              <a href="#" class="post-title">Sunshine</a> <span class="post-price">$1</span> <span class="post-city">(Bend)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="post" data-price="99" data-city="Portland" data-condition="fair">
+          <div class="post-contents">
+            <div class="post-image-container">
+              <img src="http://www.portlandhipster.com/wp-content/uploads/2015/09/hipsters.jpg" alt="Hipsters">
+            </div>
+            <div class="post-info-container">
+              <a href="#" class="post-title">Hipsters</a> <span class="post-price">$99</span> <span class="post-city">(Portland)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="post" data-price="20000000" data-city="Eugene" data-condition="good">
+          <div class="post-contents">
+            <div class="post-image-container">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/102707-Oregon-AutzenStadium-ext.jpg/1200px-102707-Oregon-AutzenStadium-ext.jpg" alt="Football stadium (we kind of want to build a new one)">
+            </div>
+            <div class="post-info-container">
+              <a href="#" class="post-title">Football stadium (we kind of want to build a new one)</a> <span class="post-price">$20000000</span> <span class="post-city">(Eugene)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="post" data-price="10000" data-city="Corvallis" data-condition="excellent">
+          <div class="post-contents">
+            <div class="post-image-container">
+              <img src="https://farm2.staticflickr.com/1258/1366422925_25663f44c8_z.jpg" alt="Very nice farmer's market">
+            </div>
+            <div class="post-info-container">
+              <a href="#" class="post-title">Very nice farmer's market</a> <span class="post-price">$10000</span> <span class="post-city">(Corvallis)</span>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <button type="button" id="sell-something-button"><i class="fas fa-plus"></i></button>
+
+    <div id="modal-backdrop" class="hidden"></div>
+    <div id="sell-something-modal" class="hidden">
+      <div class="modal-dialog">
+
+        <div class="modal-header">
+          <h3>Sell something on Benny's List</h3>
+          <button type="button" id="modal-close" class="modal-hide-button">&times;</button>
+        </div>
+
+        <div class="modal-body">
+
+          <div class="post-input-element">
+            <label for="post-text-input">Item description</label>
+            <input type="text" id="post-text-input"></input>
+          </div>
+
+          <div class="post-input-element">
+            <label for="post-photo-input">Photo URL</label>
+            <input type="text" id="post-photo-input">
+          </div>
+
+          <div class="post-input-element">
+            <label for="post-price-input">Selling price ($)</label>
+            <input type="number" id="post-price-input">
+          </div>
+
+          <div class="post-input-element">
+            <label for="post-city-input">City</label>
+            <input type="text" id="post-city-input">
+          </div>
+
+          <div class="post-input-element">
+            <fieldset id="post-condition-fieldset" class="post-fieldset">
+              <legend>Condition</legend>
+              <div>
+                <input type="radio" name="post-condition" id="post-condition-new" value="new" checked>
+                <label for="post-condition-new">New</label>
+              </div>
+              <div>
+                <input type="radio" name="post-condition" id="post-condition-excellent" value="excellent">
+                <label for="post-condition-excellent">Excellent</label>
+              </div>
+              <div>
+                <input type="radio" name="post-condition" id="post-condition-good" value="good">
+                <label for="post-condition-good">Good</label>
+              </div>
+              <div>
+                <input type="radio" name="post-condition" id="post-condition-fair" value="fair">
+                <label for="post-condition-fair">Fair</label>
+              </div>
+              <div>
+                <input type="radio" name="post-condition" id="post-condition-poor" value="poor">
+                <label for="post-condition-poor">Poor</label>
+              </div>
+            </fieldset>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="modal-cancel" class="modal-hide-button action-button">Cancel</button>
+          <button type="button" id="modal-accept" class="action-button">Create Post</button>
+        </div>
+
+      </div>
+    </div>
+
+  </body>
+</html>

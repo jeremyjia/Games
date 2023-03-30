@@ -31,6 +31,9 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 public class App {
 
@@ -42,8 +45,9 @@ public class App {
 	private BufferedImage image;
 	private Graphics2D g2;
 	private boolean bStartPlay;
-	private boolean bIsSelected = true;
+	private boolean bIsSelected = false;
 	private int iframe = 0;
+	private int sleepValue = 40;
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
@@ -55,11 +59,12 @@ public class App {
 		jp = new ImagePanel();
 		JLabel label = new JLabel("插件列表");
 		JComboBox<String> combo = new JComboBox<String>();
-		combo.addItem("--请选择插件--");
+		combo.addItem("---请选择插件---");
 		List<File> plugins = AppUtil.getPluginFiles();
 		for (File plugin : plugins) {
 			combo.addItem(plugin.getName());
 		}
+		combo.setPreferredSize(new Dimension(150,30));
 		combo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String plugin = (String) combo.getSelectedItem();
@@ -84,7 +89,7 @@ public class App {
 						while (bStartPlay) {
 							try {
 								invokePluginFunction(iframe++);
-								Thread.sleep(40);
+								Thread.sleep(sleepValue);
 							} catch (Exception e1) {
 								e1.printStackTrace();
 							}
@@ -97,6 +102,19 @@ public class App {
 				}
 			}
 		});
+		
+        JSlider slider = new JSlider(10, 1000, 40);
+        slider.setPaintLabels(true);
+        slider.setPaintTicks(true);
+        
+        slider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+              System.out.println("Sleep Value: " + slider.getValue());
+              sleepValue = slider.getValue();
+            }
+          });
+
 		JCheckBox checkBox = new JCheckBox("去除底色");
 		checkBox.setSelected(bIsSelected);
 		checkBox.addItemListener(new ItemListener() {
@@ -111,6 +129,7 @@ public class App {
 		jp.add(label);
 		jp.add(combo);
 		jp.add(button);
+		jp.add(slider);
 		jp.add(checkBox);
 		jframe.add(jp);
 		jframe.setVisible(true);
@@ -179,7 +198,7 @@ public class App {
 		g2.setFont(font);
 		g2.setColor(new Color(0, 220, 200));
 		String index = Integer.toString(frameNumber);
-		g2.drawString(index, w / 10 * 9, 40);
+		g2.drawString(index, w / 10 * 9, 80);
 
 		if (bIsSelected) {
 			AppUtil.convertToTransparencyImage(image);
