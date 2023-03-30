@@ -44,7 +44,7 @@
     "openapi-sampler": "^1.0.0-beta.15",
     "redis": "^3.1.2",
     "request": "^2.88.2",
-    "sequelize": "^6.6.2",
+    "sequelize": "^6.29.0",
     "sqlstring": "^2.3.2",
     "supertest": "^4.0.2",
     "swagger-express-middleware": "^2.0.2",
@@ -64,7 +64,7 @@
     "test": "./test"
   },
   "devDependencies": {
-    "mocha": "^7.1.1",
+    "mocha": "^10.2.0",
     "supertest": "^4.0.2"
   }
 }
