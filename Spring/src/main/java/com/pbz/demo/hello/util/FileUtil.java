@@ -278,21 +278,33 @@ public class FileUtil {
 		return Integer.toString(len);
 	}
 
-	public static String downloadFileIfNeed(String file) throws IOException {
-		String fileName = file;
-		if (fileName.contains("/")) {
-			fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
-		}
-		String saveFile = System.getProperty("user.dir") + "/" + fileName;
-		if (!new File(saveFile).exists()) {
-			long begintime = System.currentTimeMillis();
-			System.out.println("Downloading file: " + file);
-			FileUtil.downloadFile(file, saveFile);
-			long endtime = System.currentTimeMillis();
-			System.out.println("Download file Time:" + (endtime - begintime));
-		}
-		return fileName;
-	}
+    public static String downloadFileIfNeed(String file) throws IOException {
+
+        if (file.startsWith("tts:")) {
+            String text = file.substring(4);
+            String url = "https://tts.baidu.com/text2audio?tex=" + text;
+            if (url.indexOf("ctp=1") == -1) {
+                url += "&cuid=xincibaike&lan=ZH&ctp=1&pdt=301&vol=10&rate=4&spd=5"; //Default parameters
+            }
+            String downloadFileName = FileUtil.randomFileName() + ".mp3";
+            FileUtil.downloadFile(url, downloadFileName);
+            return downloadFileName;
+        }
+
+        String fileName = file;
+        if (fileName.contains("/")) {
+            fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
+        }
+        String saveFile = System.getProperty("user.dir") + "/" + fileName;
+        if (!new File(saveFile).exists()) {
+            long begintime = System.currentTimeMillis();
+            System.out.println("Downloading file: " + file);
+            FileUtil.downloadFile(file, saveFile);
+            long endtime = System.currentTimeMillis();
+            System.out.println("Download file Time:" + (endtime - begintime));
+        }
+        return fileName;
+    }
 
 	public static String downloadFile(String fileUrl) throws Exception {
 		if (!fileUrl.startsWith("http")) {
@@ -543,6 +555,13 @@ public class FileUtil {
 		return true;
 	}
 
+
+    public static String randomFileName() {
+        Date date = new Date(System.currentTimeMillis());
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+        String fileName = simpleDateFormat.format(date);
+        return fileName;
+    }
 	public static void main(String[] args) {
 
 		String path = "C:\\jiaGameAll\\Games\\Spring\\target";

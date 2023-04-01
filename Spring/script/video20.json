@@ -1,0 +1,62 @@
+{
+    "request": {
+        "version": "0.0.20",
+        "width": 1024,
+        "height": 768,
+        "music": "1.mp3",
+        "rate": "25",
+        "frames": [
+            {
+                "number": "1",
+                "time": "300",
+                "objects": [
+                    {
+                        "text": "${VAR_TITLE}",
+                        "x": 50,
+                        "y": 600,
+                        "size": 50,
+                        "color": "0,200,120",
+                        "layer": 2
+                    }
+                ],
+                "backgroundColor": "200,200,222"
+            }
+        ],
+        "superObjects": [
+            {
+                "type": "javascript",
+                "frameRange": "(1,500)",
+                "attribute": {
+                    "script": "https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxRunning.js",
+                    "function": "animateFrame",
+                    "start": 1
+                },
+                "layer": 1
+            }
+        ],
+		"audioObjects": [
+			{
+                "start": "0",
+                "audioFile": "tts:欢迎光临",
+			},       
+            {
+                "start": "2",
+                "audioFile": "tts:我们的网站",
+            },
+			{
+                "start": "4",
+                "audioFile": "tts:我是Jeremy",
+            },
+			{
+                "start": "6",
+                "audioFile": "tts:测试百度文本转语音API，并测试与我们的剧本集成&cuid=xincibaike&lan=ZH&ctp=1&pdt=301&vol=10&rate=4&spd=8",
+            }
+        ],
+        "Macros": [
+            {
+                "name": "VAR_TITLE",
+                "value": "百度文本转语音集成测试"
+            }
+        ]
+    }
+}
