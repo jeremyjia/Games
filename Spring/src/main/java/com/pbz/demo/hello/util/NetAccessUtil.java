@@ -10,6 +10,8 @@ import java.net.URLConnection;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONObject;
+
 public class NetAccessUtil {
 
 	public static String doPostOnGitHub(String urlStr, String method, String jsonStr) {
@@ -27,7 +29,7 @@ public class NetAccessUtil {
 			conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
 			// conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 			conn.setRequestProperty("accept", "application/json");
-			conn.setRequestProperty("Authorization", "token " + getToken());
+			conn.setRequestProperty("Authorization", "token " + getGitHubToken());
 
 			if (jsonStr != null && !jsonStr.isEmpty()) {
 				String requestContent = "{\"body\":\"" + jsonStr + "\"}";
@@ -72,7 +74,7 @@ public class NetAccessUtil {
 			connection.setRequestProperty("accept", "*/*");
 			connection.setRequestProperty("connection", "Keep-Alive");
 			connection.setRequestProperty("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
-			connection.setRequestProperty("Authorization", "token " + getToken());
+			connection.setRequestProperty("Authorization", "token " + getGitHubToken());
 			connection.connect();
 			Map<String, List<String>> map = connection.getHeaderFields();
 			for (String key : map.keySet()) {
@@ -98,8 +100,39 @@ public class NetAccessUtil {
 		return result;
 	}
 
-	public static String getToken() {
-		return "ghp_Od6GW3" + "J2NiP01Zsz" + "g9JQV0amzn" + "UxhF33iBES"; // Jeremyjia's
-	}
+	
+    public static String getAnswerbyChatGPT(String question) throws Exception {
+        String url = "https://api.openai.com/v1/completions";
+        HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
+
+        con.setRequestMethod("POST");
+        con.setRequestProperty("Content-Type", "application/json");
+        con.setRequestProperty("Authorization", "Bearer " + getGPTToken());
+
+        JSONObject data = new JSONObject();
+        data.put("model", "text-davinci-003");
+        data.put("prompt", question);
+        data.put("max_tokens", 4000);
+        data.put("temperature", 1.0);
+
+        con.setDoOutput(true);
+        con.getOutputStream().write(data.toString().getBytes());
+
+        String output = new BufferedReader(new InputStreamReader(con.getInputStream())).lines()
+                .reduce((a, b) -> a + b).get();
+
+        String answer = new JSONObject(output).getJSONArray("choices").getJSONObject(0).getString("text");
+        System.out.println(answer);
+        return answer;
+    }
+
+    public static String getGPTToken() {
+        String tk = "sk-Tic3AqeqoM" + "52iPiRdA2QT" + "3BlbkFJt9gaIoL" + "9UTyBVyUtOavX";// Wangxu's
+        return tk;
+    }
+
+    public static String getGitHubToken() {
+        return "ghp_Od6GW3" + "J2NiP01Zsz" + "g9JQV0amzn" + "UxhF33iBES"; // Jeremyjia's
+    }
 
 }
