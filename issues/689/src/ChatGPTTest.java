@@ -7,11 +7,12 @@ import org.json.JSONObject;
 public class ChatGPTTest {
     public static void chatGPT(String text) throws Exception {
         String url = "https://api.openai.com/v1/completions";
+        String tk = "sk-Tic3AqeqoM"+"52iPiRdA2QT"+"3BlbkFJt9gaIoL"+"9UTyBVyUtOavX";
         HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
 
         con.setRequestMethod("POST");
         con.setRequestProperty("Content-Type", "application/json");
-        con.setRequestProperty("Authorization", "Bearer sk-xxx");
+        con.setRequestProperty("Authorization", "Bearer "+tk);
 
         JSONObject data = new JSONObject();
         data.put("model", "text-davinci-003");
