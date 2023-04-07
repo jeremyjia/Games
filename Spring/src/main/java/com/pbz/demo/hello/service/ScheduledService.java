@@ -121,7 +121,7 @@ public class ScheduledService {
             //Ask ChatGPT to answer: 
             String q = jsonStr.substring(2);
             String a = NetAccessUtil.getAnswerbyChatGPT(q).trim();
-            a = a.replaceAll("\\s*|\r|\n|\t","");
+            a = a.replaceAll("\r|\n|\t","");
             MacroResolver.setProperty("VAR_MP3", "1.mp3");
             MacroResolver.setProperty("VAR_TITLE", q);
             MacroResolver.setProperty("VAR_TEXT", a);
