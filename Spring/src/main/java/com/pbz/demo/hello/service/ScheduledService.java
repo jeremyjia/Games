@@ -120,8 +120,10 @@ public class ScheduledService {
         }else if(jsonStr.toLowerCase().startsWith("q:")) {
             //Ask ChatGPT to answer: 
             String q = jsonStr.substring(2);
+            q = FileUtil.addLinefeeds(q, 20);
             String a = NetAccessUtil.getAnswerbyChatGPT(q).trim();
             a = a.replaceAll("\r|\n|\t","");
+            a = FileUtil.addLinefeeds(a, 40);
             MacroResolver.setProperty("VAR_MP3", "1.mp3");
             MacroResolver.setProperty("VAR_TITLE", q);
             MacroResolver.setProperty("VAR_TEXT", a);
