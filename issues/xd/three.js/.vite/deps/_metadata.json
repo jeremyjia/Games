@@ -1,35 +1,47 @@
 {
-  "hash": "6464de0d",
-  "browserHash": "f8341e83",
+  "hash": "6440b952",
+  "browserHash": "30d3101a",
   "optimized": {
     "three": {
       "src": "../../node_modules/three/build/three.module.js",
       "file": "three.js",
-      "fileHash": "798323d0",
+      "fileHash": "d8abf7cc",
       "needsInterop": false
     },
     "three/addons/libs/stats.module.js": {
       "src": "../../node_modules/three/examples/jsm/libs/stats.module.js",
       "file": "three_addons_libs_stats__module__js.js",
-      "fileHash": "747b7ebe",
+      "fileHash": "f88dbb0c",
       "needsInterop": false
     },
     "three/addons/libs/lil-gui.module.min.js": {
       "src": "../../node_modules/three/examples/jsm/libs/lil-gui.module.min.js",
       "file": "three_addons_libs_lil-gui__module__min__js.js",
-      "fileHash": "ff6c39bc",
+      "fileHash": "7597471e",
       "needsInterop": false
     },
     "three/addons/controls/OrbitControls.js": {
       "src": "../../node_modules/three/examples/jsm/controls/OrbitControls.js",
       "file": "three_addons_controls_OrbitControls__js.js",
-      "fileHash": "8cf50ce7",
+      "fileHash": "9d9279e4",
       "needsInterop": false
     },
     "three/addons/loaders/GLTFLoader.js": {
       "src": "../../node_modules/three/examples/jsm/loaders/GLTFLoader.js",
       "file": "three_addons_loaders_GLTFLoader__js.js",
-      "fileHash": "4e5fd3f5",
+      "fileHash": "30c6f1d5",
+      "needsInterop": false
+    },
+    "three/addons/environments/RoomEnvironment.js": {
+      "src": "../../node_modules/three/examples/jsm/environments/RoomEnvironment.js",
+      "file": "three_addons_environments_RoomEnvironment__js.js",
+      "fileHash": "103715c7",
+      "needsInterop": false
+    },
+    "three/addons/loaders/DRACOLoader.js": {
+      "src": "../../node_modules/three/examples/jsm/loaders/DRACOLoader.js",
+      "file": "three_addons_loaders_DRACOLoader__js.js",
+      "fileHash": "74774cf8",
       "needsInterop": false
     }
   },
