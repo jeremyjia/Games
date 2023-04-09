@@ -10,7 +10,19 @@ document.body.appendChild( renderer.domElement );
 const geometry = new THREE.BoxGeometry( 1, 1, 1 );
 const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
 const cube = new THREE.Mesh( geometry, material );
+
+
 scene.add( cube );
+
+//create a blue LineBasicMaterial
+const material1 = new THREE.LineBasicMaterial( { color: 0x0000ff } );
+const points = [];
+points.push( new THREE.Vector3( - 10, 0, 0 ) );
+points.push( new THREE.Vector3( 0, 10, 0 ) );
+points.push( new THREE.Vector3( 10, 0, 0 ) );
+const geometry1 = new THREE.BufferGeometry().setFromPoints( points );
+const line = new THREE.Line( geometry1, material1 );
+scene.add( line );
 
 camera.position.z = 5;
 

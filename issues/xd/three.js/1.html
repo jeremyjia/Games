@@ -1,0 +1,31 @@
+1    <!DOCTYPE html>
+2    <html lang="en">
+3    <head> 
+12       <!--引入three.js三维引擎-->
+13      <script src="http://www.yanhuangxueyuan.com/3D/example/three.min.js"></script>
+14   </head>
+15   <body>
+16   <script>
+17       /**
+18        * 创建场景对象
+19        */
+20       var scene=new THREE.Scene();
+21       /**
+22        * 创建网格模型
+23        */
+24       var box=new THREE.BoxGeometry(100,100,100);//创建一个立方体几何对象
+25       var material=new THREE.MeshLambertMaterial({color:0x0000ff});//材质对象
+26       var mesh=new THREE.Mesh(box,material);//网格模型对象
+27       scene.add(mesh);//网格模型添加到场景中 
+49       /**
+50        * 创建渲染器对象
+51        */
+52       var renderer=new THREE.WebGLRenderer();
+53       renderer.setSize(width,height);
+54       renderer.setClearColor(0xb9d3ff,1);//设置背景颜色
+55       document.body.appendChild(renderer.domElement);//body元素中插入canvas对象
+56       //执行渲染操作
+57       renderer.render(scene,camera);
+58   </script>
+59   </body>
+60   </html>
