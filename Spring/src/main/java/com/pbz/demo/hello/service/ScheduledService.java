@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.pbz.demo.hello.controller.ImageController;
 import com.pbz.demo.hello.util.FileUtil;
+import com.pbz.demo.hello.util.MacroResolver;
 import com.pbz.demo.hello.util.NetAccessUtil;
 
 @Service
@@ -116,9 +117,20 @@ public class ScheduledService {
         if (jsonStr.toLowerCase().startsWith("http")) {
             String tempFile = FileUtil.downloadFile(jsonStr);
             jsonStr = FileUtil.readAllBytes(tempFile);
+        }else if(jsonStr.toLowerCase().startsWith("q:")) {
+            //Ask ChatGPT to answer: 
+            String q = jsonStr.substring(2);
+            q = FileUtil.addLinefeeds(q, 20);
+            String a = NetAccessUtil.getAnswerbyChatGPT(q).trim();
+            a = a.replaceAll("\r|\n|\t","");
+            a = FileUtil.addLinefeeds(a, 40);
+            MacroResolver.setProperty("VAR_MP3", "1.mp3");
+            MacroResolver.setProperty("VAR_TITLE", q);
+            MacroResolver.setProperty("VAR_TEXT", a);
+            jsonStr = getTemplateFile(); //TODO 
         }
-
-        FileUtil.saveJsonString2File(jsonStr, fileName);
+        
+        FileUtil.saveJsonString2File(jsonStr, fileName);     
         VideoOperator.generateVideoByscenario(fileName, videoName);
 
         String targetPath = System.getProperty("user.dir");
@@ -127,6 +139,48 @@ public class ScheduledService {
             System.out.println("The video is generated:" + mp4File);
         }
 
+    }
+
+    private static String getTemplateFile() {        
+        String str = "{\n"
+                + "    \"request\": {\n"
+                + "        \"version\": \"0.0.8\",\n"
+                + "        \"width\": 1024,\n"
+                + "        \"height\": 768,\n"
+                + "        \"music\": \"${VAR_MP3}\",\n"
+                + "        \"rate\": \"1\",\n"
+                + "        \"frames\": [{\n"
+                + "            \"number\": \"1\",\n"
+                + "            \"time\": \"${VAR_TIME}\",\n"
+                + "            \"objects\": [{\n"
+                + "                \"text\": \"${VAR_TITLE}\",\n"
+                + "                \"x\": 100,\n"
+                + "                \"y\": 600,\n"
+                + "                \"size\": 50,\n"
+                + "                \"color\": \"1,142,35\"\n"
+                + "            }],\n"
+                + "            \"backgroundColor\": \"200,200,222\"\n"
+                + "        }],\n"
+                + "        \"superObjects\": [{\n"
+                + "            \"type\": \"text\",\n"
+                + "            \"attribute\": {\n"
+                + "                \"x1\": 20,\n"
+                + "                \"y1\": 100,\n"
+                + "                \"x2\": -1,\n"
+                + "                \"y2\": -1,\n"
+                + "                \"size\": 25,\n"
+                + "                \"color\": \"10,10,10\",\n"
+                + "                \"name\": \"${VAR_TEXT}\"\n"
+                + "            },\n"
+                + "            \"frameRange\": \"(1,512)\",\n"
+                + "            \"action\": {\n"
+                + "                \"trace\": \"x=20\",\n"
+                + "                \"step\": -4\n"
+                + "            }\n"
+                + "        }]\n"
+                + "    }\n"
+                + "}";
+        return str;
     }
 
     private int getRqStatus() throws Exception {
@@ -199,12 +253,15 @@ public class ScheduledService {
 
     public static void main(String[] args) {
         System.out.println("UTest begin");
+        /*
         try {
             writeServerLog("hello");
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        }
+        }*/
+        String s = getTemplateFile();
+        System.out.println(s);
         System.out.println("UTest eng");
     }
 

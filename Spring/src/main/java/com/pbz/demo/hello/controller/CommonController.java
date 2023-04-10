@@ -218,6 +218,14 @@ public class CommonController {
 		return resultString;
 	}
 
+    @RequestMapping(value = "/chatGPT/q", method = RequestMethod.GET)
+    @ResponseBody
+    public String getAnswerData(@RequestParam(name = "question", defaultValue = "who are you") String question)
+            throws Exception {
+        String answerString = NetAccessUtil.getAnswerbyChatGPT(question);
+        return answerString;
+    }
+	   
 	@ApiOperation(value = "获取版本信息", notes = "获取应用版本、服务器等信息")
 	@RequestMapping(value = "/getServerInfo", method = RequestMethod.GET)
 	@ResponseBody
