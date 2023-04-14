@@ -286,6 +286,8 @@ public class FileUtil {
             if (url.indexOf("ctp=1") == -1) {
                 url += "&cuid=baike&lan=ZH&ctp=1&pdt=301&vol=10&rate=4&spd=5"; //Default parameters
             }
+            //Fixed url, use sogou instead of baidu.
+            url = "https://fanyi.sogou.com/reventondc/synthesis?text="+text+"&speed=1&lang=zh-CHS&from=translateweb&speaker=6";
             String downloadFileName = FileUtil.randomFileName() + ".mp3";
             FileUtil.downloadFile(url, downloadFileName);
             return downloadFileName;
