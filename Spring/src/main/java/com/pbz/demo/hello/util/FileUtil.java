@@ -284,7 +284,7 @@ public class FileUtil {
             String text = file.substring(4);
             String url = "https://tts.baidu.com/text2audio?tex=" + text;
             if (url.indexOf("ctp=1") == -1) {
-                url += "&cuid=xincibaike&lan=ZH&ctp=1&pdt=301&vol=10&rate=4&spd=5"; //Default parameters
+                url += "&cuid=baike&lan=ZH&ctp=1&pdt=301&vol=10&rate=4&spd=5"; //Default parameters
             }
             String downloadFileName = FileUtil.randomFileName() + ".mp3";
             FileUtil.downloadFile(url, downloadFileName);

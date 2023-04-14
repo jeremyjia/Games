@@ -124,7 +124,7 @@ public class ScheduledService {
             String a = NetAccessUtil.getAnswerbyChatGPT(q).trim();
             a = a.replaceAll("\r|\n|\t","");
             a = FileUtil.addLinefeeds(a, 40);
-            MacroResolver.setProperty("VAR_MP3", "1.mp3");
+            MacroResolver.setProperty("VAR_MP3", "tts:"+a);
             MacroResolver.setProperty("VAR_TITLE", q);
             MacroResolver.setProperty("VAR_TEXT", a);
             jsonStr = getTemplateFile(); //TODO 
@@ -168,7 +168,7 @@ public class ScheduledService {
                 + "                \"y1\": 100,\n"
                 + "                \"x2\": -1,\n"
                 + "                \"y2\": -1,\n"
-                + "                \"size\": 25,\n"
+                + "                \"size\": 30,\n"
                 + "                \"color\": \"10,10,10\",\n"
                 + "                \"name\": \"${VAR_TEXT}\"\n"
                 + "            },\n"
