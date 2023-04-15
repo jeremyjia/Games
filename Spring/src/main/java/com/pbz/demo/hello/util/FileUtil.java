@@ -291,6 +291,13 @@ public class FileUtil {
             url = "https://fanyi.sogou.com/reventondc/synthesis?text=" + textOfAudio + "&speed=1&lang=zh-CHS&from=translateweb&speaker=6";
             String downloadFileName = FileUtil.randomFileName() + ".mp3";
             FileUtil.downloadFile(url, downloadFileName);
+
+			String targetPath = System.getProperty("user.dir");
+            File mp3File = new File(targetPath + "/" + downloadFileName);
+            if (!mp3File.exists()) {
+                System.out.println("The map3 file is NOT generated:" + mp3File);
+                return "bzll.mp3";
+            }
             return downloadFileName;
         }
 
