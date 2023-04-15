@@ -287,7 +287,8 @@ public class FileUtil {
                 url += "&cuid=baike&lan=ZH&ctp=1&pdt=301&vol=10&rate=4&spd=5"; //Default parameters
             }
             //Fixed url, use sogou instead of baidu.
-            url = "https://fanyi.sogou.com/reventondc/synthesis?text="+text+"&speed=1&lang=zh-CHS&from=translateweb&speaker=6";
+            String textOfAudio = URLEncoder.encode(text, "UTF-8");
+            url = "https://fanyi.sogou.com/reventondc/synthesis?text=" + textOfAudio + "&speed=1&lang=zh-CHS&from=translateweb&speaker=6";
             String downloadFileName = FileUtil.randomFileName() + ".mp3";
             FileUtil.downloadFile(url, downloadFileName);
             return downloadFileName;

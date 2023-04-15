@@ -125,7 +125,7 @@ public class ScheduledService {
             a = a.replaceAll("\r|\n|\t","");
             a = FileUtil.addLinefeeds(a, 27);
 
-            MacroResolver.setProperty("VAR_MP3", "1.mp3");
+            MacroResolver.setProperty("VAR_MP3", "tts:"+a);
             MacroResolver.setProperty("VAR_TITLE", q);
             MacroResolver.setProperty("VAR_TEXT", a);
             jsonStr = getTemplateFile(); //TODO 

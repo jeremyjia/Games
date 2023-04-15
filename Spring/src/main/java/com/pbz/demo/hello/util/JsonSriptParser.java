@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -964,13 +966,20 @@ public final class JsonSriptParser {
 
 	public static void main(String[] args) {
 		System.out.println("UTest begin");
-		serverStatusConfig(true);
+		serverStatusConfig(false);
 		
-		String s = "tts:欢迎来到漂泊者乐园";
+		String s = "tts:I am a student, who are you,欢迎来到这里，请给出指导建议";
+		try {
+            s = URLEncoder.encode(s, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
 		if(s.startsWith("tts:")) {
 		   s = s.substring(4);
 		}
-		String url = "https://tts.baidu.com/text2audio?tex="+s+"&cuid=xincibaike&lan=ZH&ctp=1&pdt=301&vol=10&rate=4&spd=5";
+		String url = "https://tts.baidu.com/text2audio?tex="+s+"&cuid=baike&lan=ZH&ctp=1&pdt=301&vol=10&rate=4&spd=5";
+		//Use SouGo instead
+		url = "https://fanyi.sogou.com/reventondc/synthesis?text="+s+"&speed=1&lang=zh-CHS&from=translateweb&speaker=6";
 		FileUtil.downloadFile(url, FileUtil.randomFileName()+".mp3");
 		
 		System.out.println("UTest end");
