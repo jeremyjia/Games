@@ -405,15 +405,16 @@ public class FileUtil {
 		}
 	}
 
-	// 将文本分割为多行
+	// 将文本分割为多行,考虑中文文章没有空格的情况也会强制分行
 	public static String addLinefeeds(String text, int number) {
 		StringBuffer buffer = new StringBuffer();
 		int index = 0;
 		for (int i = 0; i < text.length(); i++) {
 			char p = text.charAt(i);
-			if (index == number) {
-				if (p != ' ') {
+			if (index >= number) {
+				if (p != ' ' && (index-number)<=3) {
 					buffer.append(p);
+					index++;
 					continue;
 				}
 				buffer.append("\\n");
