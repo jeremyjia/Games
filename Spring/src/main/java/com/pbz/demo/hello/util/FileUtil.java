@@ -284,10 +284,20 @@ public class FileUtil {
             String text = file.substring(4);
             String url = "https://tts.baidu.com/text2audio?tex=" + text;
             if (url.indexOf("ctp=1") == -1) {
-                url += "&cuid=xincibaike&lan=ZH&ctp=1&pdt=301&vol=10&rate=4&spd=5"; //Default parameters
+                url += "&cuid=baike&lan=ZH&ctp=1&pdt=301&vol=10&rate=4&spd=5"; //Default parameters
             }
+            //Fixed url, use sogou instead of baidu.
+            String textOfAudio = URLEncoder.encode(text, "UTF-8");
+            url = "https://fanyi.sogou.com/reventondc/synthesis?text=" + textOfAudio + "&speed=1&lang=zh-CHS&from=translateweb&speaker=6";
             String downloadFileName = FileUtil.randomFileName() + ".mp3";
             FileUtil.downloadFile(url, downloadFileName);
+
+			String targetPath = System.getProperty("user.dir");
+            File mp3File = new File(targetPath + "/" + downloadFileName);
+            if (!mp3File.exists()) {
+                System.out.println("The map3 file is NOT generated:" + mp3File);
+                return "bzll.mp3";
+            }
             return downloadFileName;
         }
 
@@ -403,15 +413,16 @@ public class FileUtil {
 		}
 	}
 
-	// 将文本分割为多行
+	// 将文本分割为多行,考虑中文文章没有空格的情况也会强制分行
 	public static String addLinefeeds(String text, int number) {
 		StringBuffer buffer = new StringBuffer();
 		int index = 0;
 		for (int i = 0; i < text.length(); i++) {
 			char p = text.charAt(i);
-			if (index == number) {
-				if (p != ' ') {
+			if (index >= number) {
+				if (p != ' ' && (index-number)<=3) {
 					buffer.append(p);
+					index++;
 					continue;
 				}
 				buffer.append("\\n");

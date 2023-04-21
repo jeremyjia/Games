@@ -49,7 +49,7 @@
             },
 			{
                 "start": "6",
-                "audioFile": "tts:测试百度文本转语音API，并测试与我们的剧本集成&cuid=xincibaike&lan=ZH&ctp=1&pdt=301&vol=10&rate=4&spd=8",
+                "audioFile": "tts:测试百度文本转语音API，并测试与我们的剧本集成",
             }
         ],
         "Macros": [
