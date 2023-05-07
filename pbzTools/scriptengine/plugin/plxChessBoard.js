@@ -383,7 +383,7 @@ function CPlxCChessBoard(){
 				var item = _cheer_arr_R[i];
 				if((item.text == a || item.alias == a) && item.x == nX)
 				{
-					console.log("find red:"+item.text);
+					//console.log("find red:"+item.text);
 					return item.y;
 				}
 			}
@@ -394,7 +394,7 @@ function CPlxCChessBoard(){
 				var item = _cheer_arr_B[i];
 				if((item.text == a || item.alias == a) && item.x == nX)
 				{
-					console.log("find black:"+item.text);
+					//console.log("find black:"+item.text);
 					return item.y;
 				}
 			}
