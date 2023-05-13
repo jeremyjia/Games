@@ -580,6 +580,8 @@ function CPlxCChessBoard(){
 	
 	this.setChessLog = function (strChessLog){ 
 		global_ChessLog = strChessLog.split(" "); //将棋谱字符串转化为棋谱组
+		_index = 0;
+		_time = 0;
 	}
 	
 	var global_ChessLog; //象棋棋谱数组, var global_ChessLog = ["马八进七","卒3进１","炮二平四", "炮8平４", "马二进一","马８进７", "炮八进7"];
