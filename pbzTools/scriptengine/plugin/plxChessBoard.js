@@ -4,7 +4,7 @@ var tag = "[plxChessBoard.js_v0.200] ";
 var nTest = 0;
 
 function animateFrame(time) {
-    o.makeFrame(time);
+    oPlxChess.makeFrame(time);
 }
 
 
@@ -36,10 +36,11 @@ function CPlxCChessBoard(){
 	var Soldier_b3 = { x: 5, y: 4, text: "卒","alive":true }
 	var Soldier_b4 = { x: 7, y: 4, text: "卒","alive":true }
 	var Soldier_b5 = { x: 9, y: 4, text: "卒","alive":true }
+
 	var Car_r1 = { x: 1, y: 10, text: "車", alias:"车" ,"alive":true}
 	var Horse_r1 = { x: 2, y: 10, text: "馬", alias:"马","alive":true }
 	var Elephant_r1 = { x: 3, y: 10, text: "相","alive":true }
-	var Scholar_r1 = { x: 4, y: 10, text: "仕" ,"alive":true}
+	var Scholar_r1 = { x: 4, y: 10, text: "仕" , alias:"士", "alive":true}
 	var Boss_r = { x: 5, y: 10, text: "帅","alive":true }
 	var Scholar_r2 = { x: 6, y: 10, text: "仕","alive":true }
 	var Elephant_r2 = { x: 7, y: 10, text: "相","alive":true }
@@ -287,8 +288,53 @@ function CPlxCChessBoard(){
 	//Parsing functions below:
 	//
 
+	var _findShiNextPos = function(startPoint, c, d, type){
+		var curX = startPoint.x;
+		var curY = startPoint.y;
+		var destX = _getBXPosition(d);
+		if((type==0 && c=="进") || (type==1 && c=="退")){
+			if(curX-1 == destX){
+				return {x:destX, y:curY-1};
+			}
+			if(curX+1 == destX){
+				return {x:destX, y:curY-1};
+			}
+		}else {
+			if(curX-1 == destX){
+				return {x:destX, y:curY+1};
+			}
+			if(curX+1 == destX){
+				return {x:destX, y:curY+1};
+			}
+		}
+		return {x:-1,y:-1};
+	}
+
+	var _findXiangNextPos = function(startPoint, c, d, type){
+		var curX = startPoint.x;
+		var curY = startPoint.y;
+		var destX = _getBXPosition(d);
+		//红方的进，与黑方的退等价
+		if((type==0 && c=="进") || (type==1 && c=="退")){
+			if(curX-2 == destX){
+				return {x:destX, y:curY-2};
+			}
+			if(curX+2 == destX){
+				return {x:destX, y:curY-2};
+			}
+		}else {
+			if(curX-2 == destX){
+				return {x:destX, y:curY+2};
+			}
+			if(curX+2 == destX){
+				return {x:destX, y:curY+2};
+			}
+		}
+		return {x:-1,y:-1};
+	}
+
 	var _findeBingOrZuNextPos = function(startPoint, c, d, type){
-		var dValue = _getXOrUpdateYPosition(d);
+		var dValue = _getDYPosition(d);
 		var destPos = null;
 		if(c=="平"){
 		   destPos = {x:dValue, y:startPoint.y};
@@ -303,9 +349,10 @@ function CPlxCChessBoard(){
 	}
 
 	var _findePaoOrCheNextPos = function(startPoint, c, d, type){
-		var dValue = _getXOrUpdateYPosition(d);
+		var dValue = _getDYPosition(d);
 		var destPos = null;
 		if(c=="平"){
+		   var dValue = _getBXPosition(d);
 		   destPos = {x:dValue, y:startPoint.y};
 		}else if(c=="进"){
 			if(type == 0){
@@ -326,7 +373,7 @@ function CPlxCChessBoard(){
 	var _findeHorseNextPos = function(startPoint, c, d, type){
 		var curX = startPoint.x;
 		var curY = startPoint.y;
-		var destX = _getXOrUpdateYPosition(d);
+		var destX = _getBXPosition(d);
 		//红方的进，与黑方的退等价
 		if((type==0 && c=="进") || (type==1 && c=="退")){
 			if(curX-2 == destX){
@@ -361,16 +408,22 @@ function CPlxCChessBoard(){
 	var _findChessObjectbyPos = function(X,Y){
 
 		for(var i=0; i< _cheer_arr_B.length; i++){
-			var cheerObj = _cheer_arr_B[i];
-			if(cheerObj.x == X && cheerObj.y == Y){
-                 return cheerObj;
+			var chessObj = _cheer_arr_B[i];
+			if(!chessObj.alive){
+				continue;
+			}
+			if(chessObj.x == X && chessObj.y == Y){
+                 return chessObj;
 			}
 		}
 	
 		for(i=0; i< _cheer_arr_R.length; i++){
-			var cheerObj = _cheer_arr_R[i];
-			if(cheerObj.x == X && cheerObj.y == Y){
-				return cheerObj;
+			var chessObj = _cheer_arr_R[i];
+			if(!chessObj.alive){
+				continue;
+			}
+			if(chessObj.x == X && chessObj.y == Y){
+				return chessObj;
 		   }
 		}
         return null;
@@ -403,15 +456,13 @@ function CPlxCChessBoard(){
         return -1;
 	}
 
-	var _getXOrUpdateYPosition = function(b){
+	var _getBXPosition = function(b){
 		var table = {"一":1, "二":2, "三":3, "四":4,"五":5, "六":6,"七":7, "八":8,"九":9};
 		for(var key in  table){
             if(key == b){
                return 9 - table[key] + 1;
 			}
 		}
-
-		//TODO 2兵
 		//BUG-fix, 注意网站中的数字可能是特殊的字符(下面的转换中的key,并非真正键盘录入的数字)
 		var table2 = {"１":1, "２":2, "３":3, "４":4,"５":5, "６":6,"７":7, "８":8,"９":9};
 		for(var key2 in  table2){
@@ -419,10 +470,45 @@ function CPlxCChessBoard(){
                return table2[key2];
 			}
 		}
+
+		//普通的数字
+		var table3 = {"1":1, "2":2, "3":3, "4":4,"5":5, "6":6,"7":7, "8":8,"9":9};
+		for(var key3 in  table3){
+            if(key3 == b){
+               return table3[key3];
+			}
+		}
+
+		//TODO: 特殊位置的特殊走法，如2兵
+
        return b;
 	}
+
+	var _getDYPosition = function(d){
+		var table = {"一":1, "二":2, "三":3, "四":4,"五":5, "六":6,"七":7, "八":8,"九":9};
+		for(var key in  table){
+            if(key == d){
+               return table[key];
+			}
+		}
+		var table2 = {"１":1, "２":2, "３":3, "４":4,"５":5, "６":6,"７":7, "８":8,"９":9};
+		for(var key2 in  table2){
+            if(key2 == d){
+               return table2[key2];
+			}
+		}
+
+		var table3 = {"1":1, "2":2, "3":3, "4":4,"5":5, "6":6,"7":7, "8":8,"9":9};
+		for(var key3 in  table3){
+            if(key3 == d){
+               return table3[key3];
+			}
+		}	
+       return d;
+	}
+
 	var _getStartPositoin = function(a,b, type){
-		var nX = _getXOrUpdateYPosition(b);
+		var nX = _getBXPosition(b);
 		var nY = _getYPosition(a, nX, type);
 		return {x:nX, y:nY};       
 	}
@@ -449,19 +535,32 @@ function CPlxCChessBoard(){
 		}else if( a == "卒" || a == "兵"){
 			destPos = _findeBingOrZuNextPos(startPoint,c,d, type);
 			_ctx.fillText(a+" "+destPos.x+","+destPos.y, 10,81);
+		}else if( a == "象" || a == "相"){
+			destPos = _findXiangNextPos(startPoint,c,d, type);
+			_ctx.fillText(a+" "+destPos.x+","+destPos.y, 10,81);
+		}else if(a == "士" || a == "仕"){
+			destPos = _findShiNextPos(startPoint,c,d, type);
+			_ctx.fillText(a+" "+destPos.x+","+destPos.y, 10,81);
+		}else if(a == "帅" || a == "将"){
+			destPos = _findePaoOrCheNextPos(startPoint,c,d, type);
+			 _ctx.fillText(a+" "+destPos.x+","+destPos.y, 10,81);
 		}
 
-		var o1 = _findChessObjectbyPos(startPoint.x, startPoint.y);
+		var o1 = _findChessObjectbyPos(startPoint.x, startPoint.y);  //寻找原始位置的棋子
 		if(o1 == null){
 			return;
 		}
 		_ctx.fillText(o1.text, 10,51);
 		_ctx.fillText(o1.x+","+o1.y, 10,61);
 		if(destPos !=null){
+			var o2 = _findChessObjectbyPos(destPos.x, destPos.y);   //寻找目标位置的棋子
+			if(o2 != null){
+				o2.alive = false;// 目标位置已有棋子，则吃子
+			}
+			//更新棋子的坐标
 	         o1.x = destPos.x;
 		     o1.y = destPos.y;
 		}
-	
 	}
 
     this.makeFrame = function (time){ 
@@ -477,12 +576,20 @@ function CPlxCChessBoard(){
 			_time++;
 		}
         _init_chess();
-    }
-}
+	}
+	
+	this.setChessLog = function (strChessLog){ 
+		global_ChessLog = strChessLog.split(" "); //将棋谱字符串转化为棋谱组
+		_index = 0;
+		_time = 0;
+	}
+	
+	var global_ChessLog; //象棋棋谱数组, var global_ChessLog = ["马八进七","卒3进１","炮二平四", "炮8平４", "马二进一","马８进７", "炮八进7"];
 
-var o = new CPlxCChessBoard();
+}//End of CPlxCChessBoard defination
 
-var global_ChessLog = ["马八进七","卒3进１","炮二平四", "炮8平４", "马二进一","马８进７"];
- 
-
+var oPlxChess = new CPlxCChessBoard();
+//https://www.xqbase.com/xqbase/?gameid=1575  许银川VS吕钦
+var strLog = "相三进五 卒７进１ 马八进七 马８进７ 炮八平九 马２进３ 车九平八 车１平２ 兵七进一 车９进１ 马二进三 炮２进５ 兵三进一 卒７进１ 相五进三 象３进５ 马七进六 炮２平８ 车八进九 马3退2 炮九平二 车９平４ 炮二进二 车４进３ 仕四进五 马７进６ 马六进四 车４平６ 车一平四 车６进５ 帅五平四 卒３进１ 兵七进一 象５进３ 马三进四 马２进４ 炮二退二 炮８平９";
+oPlxChess.setChessLog(strLog);
 
