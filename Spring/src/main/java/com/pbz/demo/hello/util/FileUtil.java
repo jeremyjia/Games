@@ -48,6 +48,7 @@ import org.jaudiotagger.audio.mp3.MP3File;
 public class FileUtil {
 
 	private static String zhPattern = "[\\u4e00-\\u9fa5]";
+	public static final String delString = "1234567890.黑胜红和局()";
 	private static final String replaceString = "raw.githubusercontent.com";
 
 	public static void copyDirectory(File sourceDir, File targetDir) throws IOException {
@@ -419,7 +420,7 @@ public class FileUtil {
 		int index = 0;
 		for (int i = 0; i < text.length(); i++) {
 			char p = text.charAt(i);
-			if (index >= number) {
+			if (index >= number && number>0) {
 				if (p != ' ' && (index-number)<=3) {
 					buffer.append(p);
 					index++;
@@ -436,6 +437,39 @@ public class FileUtil {
 		return buffer.toString().trim();
 	}
 
+    public static String getChessLog(String strFromWeb) {
+        String str = removeNoNeedChar(strFromWeb, delString);
+        String array[] = str.split(" ");
+        StringBuffer sbf = new StringBuffer("");
+        for (String s : array) {
+            if (s != " " && !s.isEmpty()) {
+                sbf.append(s).append(" ");
+            }
+        }
+        str = sbf.toString();
+        str = str.replaceAll("\r|\n|\t", "");
+        str = str.replace("\\n", "");
+        return str;
+    }
+
+    public static String removeNoNeedChar(String str, String delString) {
+        StringBuffer sbf = new StringBuffer("");
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            boolean bFind = false;
+            for (int j = 0; j < delString.length(); j++) {
+                char delChar = delString.charAt(j);
+                if (c == delChar) {
+                    bFind = true;
+                }
+            }
+            if (!bFind) {
+                sbf.append(c);
+            }
+        }
+        return sbf.toString().trim();
+    }
+	    
 	public static String saveJsonString2File(String jsonString, String fileName) throws Exception {
 		jsonString = URLEncoder.encode(jsonString, "UTF-8");
 		jsonString = URLDecoder.decode(jsonString, "UTF-8");

@@ -65,6 +65,10 @@ public final class JsonSriptParser {
 	private static String VAR_TIME = "VAR_TIME";// s
 	private static String VAR_FRAMES = "VAR_FRAMES";
 	private static String VAR_RATE = "VAR_RATE";
+	
+	private static String VAR_CHESS_LOG_TEXT = "VAR_CHESS_LOG_TEXT";
+	private static String VAR_CHESS_LOG_TEXT_FIXED = "VAR_CHESS_LOG_TEXT_FIXED";
+	private static String VAR_CHESS_LOG_FRAME_NUMBER = "VAR_CHESS_LOG_FRAME_NUMBER";
 
 	public static void setMacros(String scriptFilePath) throws Exception {
 		String jsonString = getJsonString(scriptFilePath);
@@ -91,6 +95,7 @@ public final class JsonSriptParser {
 					Object obj = macroObj.get("value");
 					if (obj instanceof JSONObject) {
 						varValue = parseVariableValue(obj);
+						filterSpecificVariable(varName, varValue, rate);
 					} else {
 						varValue = (String) obj;
 					}
@@ -113,7 +118,22 @@ public final class JsonSriptParser {
 
 	}
 
-	private static String parseVariableValue(Object obj) throws Exception {
+    private static String filterSpecificVariable(String varName, String varValue, String rate) {
+        String filteredValue = varValue;
+        
+        if (VAR_CHESS_LOG_TEXT.equalsIgnoreCase(varName)) {
+            filteredValue = FileUtil.getChessLog(varValue);
+            System.out.println("filtered chesslog value:" + filteredValue);
+            MacroResolver.setProperty(varName + "_FIXED", filteredValue);
+            
+            int nStep = filteredValue.split(" ").length;  //总共下了多少步棋
+            int num = nStep * 10;
+            MacroResolver.setProperty(VAR_CHESS_LOG_FRAME_NUMBER, Integer.toString(num));        
+        }
+        return filteredValue;
+    }
+
+    private static String parseVariableValue(Object obj) throws Exception {
 		String strValue = "";
 		JSONObject valObj = (JSONObject) obj;
 		String type = valObj.optString("type");
@@ -840,7 +860,16 @@ public final class JsonSriptParser {
 			File f = new File(striptFile);
 			Reader r = new InputStreamReader(new FileInputStream(f));
 			engine.eval(r);
+			
+		     //Only for ChessLog used:
+	        if(attributeObj.has("chess")) {
+	            String setChesslogFunName = attributeObj.getString("chess");
+	            Invocable invoke = (Invocable) engine;
+	            String filteredChessLog = MacroResolver.getProperty(VAR_CHESS_LOG_TEXT_FIXED);//"炮二平六 马8进7";
+	            invoke.invokeFunction(setChesslogFunName, new Object[] { filteredChessLog });
+	        }
 		}
+		
 		Invocable invoke = (Invocable) engine;
 		invoke.invokeFunction(functionName, new Object[] { number - start });
 	}
