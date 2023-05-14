@@ -1,0 +1,81 @@
+{
+    "request": {
+        "version": "0.0.21",
+        "width": 1024,
+        "height": 768,
+        "music": "${VAR_MP3}",
+        "rate": "2",
+        "frames": [
+            {
+                "number": "1",
+                "time": "${VAR_CHESS_LOG_FRAME_NUMBER}",
+                "objects": [
+                    {
+                        "text": "${VAR_TITLE}",
+                        "x": 50,
+                        "y": 650,
+                        "size": 40,
+                        "color": "1,142,35",
+                        "layer": 2
+                    }
+                ],
+                "backgroundColor": "200,200,222",
+            }
+        ],
+        "superObjects": [
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 20,
+                    "y1": 100,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 20,
+                    "color": "10,10,10",
+                    "name": "${VAR_CHESS_LOG_TEXT}"
+                },
+                "frameRange": "(1,${VAR_CHESS_LOG_FRAME_NUMBER})",
+                "action": {
+                    "trace": "x=720",
+                    "step": -2
+                },
+                "layer": 2
+            },
+            {
+                "type": "javascript",
+                "frameRange": "(1,${VAR_CHESS_LOG_FRAME_NUMBER})",
+                "attribute": {
+                    "script": "https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxChessBoard.js",
+                    "function": "animateFrame",
+                    "start": 1,
+                    "chess":"setChessLogWrapper"
+                },
+                "layer": 1
+            }
+        ],
+        "Macros": [
+            {
+                "name": "VAR_MP3",
+                "value": "bzll.mp3"
+            },
+            {
+                "name": "VAR_TITLE",
+                "value": {
+                    "href": "https://www.xqbase.com/xqbase/?gameid=6571",
+                    "rule": "title",
+                    "charset": "GBK",
+                    "number": "20"
+                }
+            },
+            {
+                "name": "VAR_CHESS_LOG_TEXT",
+                "value": {
+                    "href": "https://www.xqbase.com/xqbase/?gameid=6571",
+                    "rule": "pre",
+                    "charset": "GBK",
+                    "number": "-1"
+                }
+            }
+        ]
+    }
+}

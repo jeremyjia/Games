@@ -1,6 +1,6 @@
 // https://www.jb51.net/article/105958.htm
 
-var tag = "[plxChessBoard.js_v0.200] ";
+var tag = "[plxChessBoard.js_v0.201] ";
 var nTest = 0;
 
 function animateFrame(time) {
@@ -236,7 +236,7 @@ function CPlxCChessBoard(){
         _ctx.fillRect(0,0,_w,_h);
 
         var s = tag;
-        s += " nTest = " + nTest;
+        s += " _index = " + _index;
 		s += " time = " + time;
 		s += " -----NextStep = " + global_ChessLog[_index];
 
@@ -592,4 +592,9 @@ var oPlxChess = new CPlxCChessBoard();
 //https://www.xqbase.com/xqbase/?gameid=1575  许银川VS吕钦
 var strLog = "相三进五 卒７进１ 马八进七 马８进７ 炮八平九 马２进３ 车九平八 车１平２ 兵七进一 车９进１ 马二进三 炮２进５ 兵三进一 卒７进１ 相五进三 象３进５ 马七进六 炮２平８ 车八进九 马3退2 炮九平二 车９平４ 炮二进二 车４进３ 仕四进五 马７进６ 马六进四 车４平６ 车一平四 车６进５ 帅五平四 卒３进１ 兵七进一 象５进３ 马三进四 马２进４ 炮二退二 炮８平９";
 oPlxChess.setChessLog(strLog);
+
+//此接口用于给上层Java调用程序设置棋谱
+function setChessLogWrapper(strlog) {
+    oPlxChess.setChessLog(strlog);
+}
 

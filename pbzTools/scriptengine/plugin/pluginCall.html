@@ -1,44 +1,64 @@
 <!DOCTYPE HTML>
 <html>
+
 <head>
-<meta charset="UTF-8">
-<style type="text/css">
-    .box{ background:white; 
-	  overflow: hidden;
-	  zoom:1;
-        }
-    .kid{ width: 1024;height: 770px; float:left;}
-    .kid1{ background: white; }
-    .wrap{ width: 300px; height: 150px; background: white; color: white; }
-</style>
+  <meta charset="UTF-8">
+  <style type="text/css">
+    .box {
+      background: white;
+      overflow: hidden;
+      zoom: 1;
+    }
+
+    .kid {
+      width: 1024;
+      height: 770px;
+      float: left;
+    }
+
+    .kid1 {
+      background: white;
+    }
+
+    .wrap {
+      width: 300px;
+      height: 150px;
+      background: white;
+      color: white;
+    }
+  </style>
 </head>
 
-<body> 
-  <h2><font color="blue">JS Canvas插件管理页面 v1.0.10</font></h2>
-  <div>  
-	  <input id="range" type="range" min="10" max="1000" value="0" oninput="sliderChanged()"/>
-	  <p id="idpVal">Timer(ms):100</p>
+<body>
+  <h2>
+    <font color="blue">JS Canvas插件管理页面 v1.0.11</font>
+  </h2>
+  <div>
+    <input id="range" type="range" min="10" max="1000" value="0" oninput="sliderChanged()" />
+    <p id="idpVal">Timer(ms):100</p>
   </div>
   <a href="https://github.com/jeremyjia/Games/issues/901" target="_blank">#901 插件数据库</a></div>
-  <br/><br/>
+  <br />
+  <div id="pluginLinkId"></div>
+  <br />
   <div class="box">
-      <div class="kid kid1">
+    <div class="kid kid1">
       <canvas id="myCanvas" width="1024" height="768" style="border:1px solid #000000;"></canvas>
-	  </div>
-	  <div class="kid kid1">
-	    <select id="selPlugIns" size=25>
-			 <option value="myplx.js">节拍器</option>
-			 <option value="plugin.js">大嘴</option>
-			 <option value="plugin2.js">曲线</option>
-			 <option value="f1.js">f1</option>
-			 <option value="plxChessBoard.js">象棋棋局</option>
-			 <option value="plxCloud.js">白云草地</option>
-			 <option value="plxRain.js">雨滴特效</option>
-			 <option value="plxBubble.js">气泡</option>
-			 <option value="plxWaterDrop.js">水滴</option>
-			 <option value="plxDrawImage.js">绘图</option>
-			 <option value="plxRunning.js" selected>奔跑</option>
-        </select>
+    </div>
+    <div class="kid kid1">
+      <select id="selPlugIns" size=25>
+        <option value="myplx.js">节拍器</option>
+        <option value="plugin.js">大嘴</option>
+        <option value="plugin2.js">曲线</option>
+        <option value="f1.js">f1</option>
+        <option value="plxChessBoard.js">象棋棋局</option>
+        <option value="plxCloud.js">白云草地</option>
+        <option value="plxRain.js">雨滴特效</option>
+        <option value="plxBubble.js">气泡</option>
+        <option value="plxWaterDrop.js">水滴</option>
+        <option value="plxDrawImage.js">绘图</option>
+        <option value="plxRunning.js" selected>奔跑</option>
+      </select>
     </div>
     <div>
       <textarea name="ChessLog" id="chessLogArea" rows="6" cols="50" placeholder="输入象棋棋谱, 马八进七 卒3进１"></textarea>
@@ -50,59 +70,59 @@
   <script src="https://littleflute.github.io/JavaScript/w3.js"></script>
   <script type="text/javascript">
     var times = 0;
-	var v = 100;
+    var sliderValue = 100;
     var callbackFun = function () {
-	  var canvas = document.getElementById('myCanvas');
-      var ctx = canvas.getContext('2d');            
+      var canvas = document.getElementById('myCanvas');
+      var ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, 2048, 1536);
       animateFrame(times++);
     }
-    var timer = setInterval(callbackFun, v);
-	
-  function sliderChanged() {
-    v = document.getElementById("range").value;
-	console.log(v);
-  clearInterval(timer);
+    var timer = setInterval(callbackFun, sliderValue);
 
-	document.getElementById("idpVal").innerHTML = "Timer(ms):"+v;
-	timer = setInterval(callbackFun, v);
+    function sliderChanged() {
+      sliderValue = document.getElementById("range").value;
+      console.log(sliderValue);
+      clearInterval(timer);
 
-  }
-  
-   function loadScript(url) {
-	 var script = document.createElement("script");
-	 script.type = "text/javascript";
-	 script.src = url;
-   document.body.appendChild(script);
-   }
-    
-   var selectPlxObj = document.getElementById('selPlugIns');
-   selectPlxObj.onchange = function(){
-          var len = selectPlxObj.options.length;
-            for(var i=0;i<len;i++){
-                if (selectPlxObj.options[i].selected) {
-                    var plxToLoad = selectPlxObj.options[i].value;
-                    loadScript(plxToLoad);
-                }
-            }
-		}
+      document.getElementById("idpVal").innerHTML = "Timer(ms):" + sliderValue;
+      timer = setInterval(callbackFun, sliderValue);
 
-   function _loadIssue901(o) {	
-       eval(o.body); 
     }
-   w3.getHttpObject("https://api.github.com/repos/jeremyjia/Games/issues/901", _loadIssue901);
-   
-   function applayChessLog()
-   {
-     var s = document.getElementById('chessLogArea').value;
-     s = s.replace(/[\r\n]/g, " "); //替换掉换行符
-     if("undefined" == typeof oPlxChess)
-     {
-       alert("oPlxChess对象未定义, 请先加载象棋棋局插件!");
-     }else{
-      oPlxChess.setChessLog(s); //oPlxChess为插件plxChessBoard.js中定义的全局对象
-     }
-  }
+
+    function loadScript(url) {
+      var script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src = url;
+      document.body.appendChild(script);
+    }
+
+    var selectPlxObj = document.getElementById('selPlugIns');
+    selectPlxObj.onchange = function () {
+      var len = selectPlxObj.options.length;
+      for (var i = 0; i < len; i++) {
+        if (selectPlxObj.options[i].selected) {
+          var plxToLoad = selectPlxObj.options[i].value;
+          var plxName = selectPlxObj.options[i].text;
+          loadScript(plxToLoad);
+          document.getElementById('pluginLinkId').innerHTML = "插件代码： "+ "<a href=\"" + plxToLoad + "\" target=\"_blank\">" +plxName + "</a>";
+        }
+      }
+    }
+
+    function _loadIssue901(o) {
+      eval(o.body);
+    }
+    w3.getHttpObject("https://api.github.com/repos/jeremyjia/Games/issues/901", _loadIssue901);
+
+    function applayChessLog() {
+      var s = document.getElementById('chessLogArea').value;
+      s = s.replace(/[\r\n]/g, " "); //替换掉换行符
+      if ("undefined" == typeof oPlxChess) {
+        alert("oPlxChess对象未定义, 请先加载象棋棋局插件!");
+      } else {
+        oPlxChess.setChessLog(s); //oPlxChess为插件plxChessBoard.js中定义的全局对象
+      }
+    }
   </script>
 </body>
 
