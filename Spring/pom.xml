@@ -15,7 +15,11 @@
 		<spring.boot.version>2.1.6.RELEASE</spring.boot.version>
 		<junit.jupiter.version>5.6.2</junit.jupiter.version>
 		<junit.platform.version>1.6.2</junit.platform.version>
+<<<<<<< HEAD
 		<pbz.server.version>1.0.69</pbz.server.version>
+=======
+		<pbz.server.version>1.0.70</pbz.server.version>
+>>>>>>> upstream/python
 	</properties>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -37,7 +41,7 @@
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20180813</version>
+			<version>20230227</version>
 		</dependency>
 	   <dependency>
 		   <groupId>org.springframework.boot</groupId>
