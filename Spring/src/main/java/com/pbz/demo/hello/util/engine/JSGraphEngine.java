@@ -21,7 +21,7 @@ public class JSGraphEngine {
 
 	private CanvasObj canvas = new CanvasObj();
 	private Graphics2D graphics = null;
-	private static final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
+	private static final boolean isMacOS = System.getProperty("os.name").startsWith("Mac OS");
 
 	public Graphics2D getGraphics() {
 		return graphics;
@@ -288,10 +288,10 @@ public class JSGraphEngine {
 				fontSize = fontSize.substring(0, index);
 				float fSzie = Float.parseFloat(fontSize);
 				Font font = null;
-				if (isWindows) {
-					font = new Font("黑体", Font.BOLD, (int) fSzie);
-				} else {
+				if (isMacOS) {
 					font = new Font(fontName, Font.BOLD, (int) fSzie);
+				} else {
+					font = new Font("黑体", Font.BOLD, (int) fSzie);
 				}
 				graphics.setFont(font);
 			} else {
