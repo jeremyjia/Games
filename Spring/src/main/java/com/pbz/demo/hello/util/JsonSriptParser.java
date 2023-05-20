@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -63,6 +65,10 @@ public final class JsonSriptParser {
 	private static String VAR_TIME = "VAR_TIME";// s
 	private static String VAR_FRAMES = "VAR_FRAMES";
 	private static String VAR_RATE = "VAR_RATE";
+	
+	private static String VAR_CHESS_LOG_TEXT = "VAR_CHESS_LOG_TEXT";
+	private static String VAR_CHESS_LOG_TEXT_FIXED = "VAR_CHESS_LOG_TEXT_FIXED";
+	private static String VAR_CHESS_LOG_FRAME_NUMBER = "VAR_CHESS_LOG_FRAME_NUMBER";
 
 	public static void setMacros(String scriptFilePath) throws Exception {
 		String jsonString = getJsonString(scriptFilePath);
@@ -89,6 +95,7 @@ public final class JsonSriptParser {
 					Object obj = macroObj.get("value");
 					if (obj instanceof JSONObject) {
 						varValue = parseVariableValue(obj);
+						filterSpecificVariable(varName, varValue, rate);
 					} else {
 						varValue = (String) obj;
 					}
@@ -111,7 +118,22 @@ public final class JsonSriptParser {
 
 	}
 
-	private static String parseVariableValue(Object obj) throws Exception {
+    private static String filterSpecificVariable(String varName, String varValue, String rate) {
+        String filteredValue = varValue;
+        
+        if (VAR_CHESS_LOG_TEXT.equalsIgnoreCase(varName)) {
+            filteredValue = FileUtil.getChessLog(varValue);
+            System.out.println("filtered chesslog value:" + filteredValue);
+            MacroResolver.setProperty(varName + "_FIXED", filteredValue);
+            
+            int nStep = filteredValue.split(" ").length;  //总共下了多少步棋
+            int num = nStep * 10;
+            MacroResolver.setProperty(VAR_CHESS_LOG_FRAME_NUMBER, Integer.toString(num));        
+        }
+        return filteredValue;
+    }
+
+    private static String parseVariableValue(Object obj) throws Exception {
 		String strValue = "";
 		JSONObject valObj = (JSONObject) obj;
 		String type = valObj.optString("type");
@@ -838,7 +860,16 @@ public final class JsonSriptParser {
 			File f = new File(striptFile);
 			Reader r = new InputStreamReader(new FileInputStream(f));
 			engine.eval(r);
+			
+		     //Only for ChessLog used:
+	        if(attributeObj.has("chess")) {
+	            String setChesslogFunName = attributeObj.getString("chess");
+	            Invocable invoke = (Invocable) engine;
+	            String filteredChessLog = MacroResolver.getProperty(VAR_CHESS_LOG_TEXT_FIXED);//"炮二平六 马8进7";
+	            invoke.invokeFunction(setChesslogFunName, new Object[] { filteredChessLog });
+	        }
 		}
+		
 		Invocable invoke = (Invocable) engine;
 		invoke.invokeFunction(functionName, new Object[] { number - start });
 	}
@@ -964,13 +995,20 @@ public final class JsonSriptParser {
 
 	public static void main(String[] args) {
 		System.out.println("UTest begin");
-		serverStatusConfig(true);
+		serverStatusConfig(false);
 		
-		String s = "tts:欢迎来到漂泊者乐园";
+		String s = "tts:I am a student, who are you,欢迎来到这里，请给出指导建议";
+		try {
+            s = URLEncoder.encode(s, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
 		if(s.startsWith("tts:")) {
 		   s = s.substring(4);
 		}
-		String url = "https://tts.baidu.com/text2audio?tex="+s+"&cuid=xincibaike&lan=ZH&ctp=1&pdt=301&vol=10&rate=4&spd=5";
+		String url = "https://tts.baidu.com/text2audio?tex="+s+"&cuid=baike&lan=ZH&ctp=1&pdt=301&vol=10&rate=4&spd=5";
+		//Use SouGo instead
+		url = "https://fanyi.sogou.com/reventondc/synthesis?text="+s+"&speed=1&lang=zh-CHS&from=translateweb&speaker=6";
 		FileUtil.downloadFile(url, FileUtil.randomFileName()+".mp3");
 		
 		System.out.println("UTest end");

@@ -120,11 +120,12 @@ public class ScheduledService {
         }else if(jsonStr.toLowerCase().startsWith("q:")) {
             //Ask ChatGPT to answer: 
             String q = jsonStr.substring(2);
-            q = FileUtil.addLinefeeds(q, 20);
+            q = FileUtil.addLinefeeds(q, 18);
             String a = NetAccessUtil.getAnswerbyChatGPT(q).trim();
             a = a.replaceAll("\r|\n|\t","");
-            a = FileUtil.addLinefeeds(a, 40);
-            MacroResolver.setProperty("VAR_MP3", "1.mp3");
+            a = FileUtil.addLinefeeds(a, 27);
+
+            MacroResolver.setProperty("VAR_MP3", "tts:"+a);
             MacroResolver.setProperty("VAR_TITLE", q);
             MacroResolver.setProperty("VAR_TEXT", a);
             jsonStr = getTemplateFile(); //TODO 
@@ -154,17 +155,17 @@ public class ScheduledService {
                 + "            \"time\": \"${VAR_TIME}\",\n"
                 + "            \"objects\": [{\n"
                 + "                \"text\": \"${VAR_TITLE}\",\n"
-                + "                \"x\": 100,\n"
-                + "                \"y\": 600,\n"
-                + "                \"size\": 50,\n"
-                + "                \"color\": \"1,142,35\"\n"
+                + "                \"x\": 60,\n"
+                + "                \"y\": 550,\n"
+                + "                \"size\": 40,\n"
+                + "                \"color\": \"128,0,128\"\n"
                 + "            }],\n"
                 + "            \"backgroundColor\": \"200,200,222\"\n"
                 + "        }],\n"
                 + "        \"superObjects\": [{\n"
                 + "            \"type\": \"text\",\n"
                 + "            \"attribute\": {\n"
-                + "                \"x1\": 20,\n"
+                + "                \"x1\": 25,\n"
                 + "                \"y1\": 100,\n"
                 + "                \"x2\": -1,\n"
                 + "                \"y2\": -1,\n"
@@ -174,7 +175,7 @@ public class ScheduledService {
                 + "            },\n"
                 + "            \"frameRange\": \"(1,512)\",\n"
                 + "            \"action\": {\n"
-                + "                \"trace\": \"x=20\",\n"
+                + "                \"trace\": \"x=25\",\n"
                 + "                \"step\": -4\n"
                 + "            }\n"
                 + "        }]\n"

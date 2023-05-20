@@ -48,6 +48,7 @@ import org.jaudiotagger.audio.mp3.MP3File;
 public class FileUtil {
 
 	private static String zhPattern = "[\\u4e00-\\u9fa5]";
+	public static final String delString = "1234567890.黑胜红和局()";
 	private static final String replaceString = "raw.githubusercontent.com";
 
 	public static void copyDirectory(File sourceDir, File targetDir) throws IOException {
@@ -284,10 +285,20 @@ public class FileUtil {
             String text = file.substring(4);
             String url = "https://tts.baidu.com/text2audio?tex=" + text;
             if (url.indexOf("ctp=1") == -1) {
-                url += "&cuid=xincibaike&lan=ZH&ctp=1&pdt=301&vol=10&rate=4&spd=5"; //Default parameters
+                url += "&cuid=baike&lan=ZH&ctp=1&pdt=301&vol=10&rate=4&spd=5"; //Default parameters
             }
+            //Fixed url, use sogou instead of baidu.
+            String textOfAudio = URLEncoder.encode(text, "UTF-8");
+            url = "https://fanyi.sogou.com/reventondc/synthesis?text=" + textOfAudio + "&speed=1&lang=zh-CHS&from=translateweb&speaker=6";
             String downloadFileName = FileUtil.randomFileName() + ".mp3";
             FileUtil.downloadFile(url, downloadFileName);
+
+			String targetPath = System.getProperty("user.dir");
+            File mp3File = new File(targetPath + "/" + downloadFileName);
+            if (!mp3File.exists()) {
+                System.out.println("The map3 file is NOT generated:" + mp3File);
+                return "bzll.mp3";
+            }
             return downloadFileName;
         }
 
@@ -403,15 +414,16 @@ public class FileUtil {
 		}
 	}
 
-	// 将文本分割为多行
+	// 将文本分割为多行,考虑中文文章没有空格的情况也会强制分行
 	public static String addLinefeeds(String text, int number) {
 		StringBuffer buffer = new StringBuffer();
 		int index = 0;
 		for (int i = 0; i < text.length(); i++) {
 			char p = text.charAt(i);
-			if (index == number) {
-				if (p != ' ') {
+			if (index >= number && number>0) {
+				if (p != ' ' && (index-number)<=3) {
 					buffer.append(p);
+					index++;
 					continue;
 				}
 				buffer.append("\\n");
@@ -425,6 +437,39 @@ public class FileUtil {
 		return buffer.toString().trim();
 	}
 
+    public static String getChessLog(String strFromWeb) {
+        String str = removeNoNeedChar(strFromWeb, delString);
+        String array[] = str.split(" ");
+        StringBuffer sbf = new StringBuffer("");
+        for (String s : array) {
+            if (s != " " && !s.isEmpty()) {
+                sbf.append(s).append(" ");
+            }
+        }
+        str = sbf.toString();
+        str = str.replaceAll("\r|\n|\t", "");
+        str = str.replace("\\n", "");
+        return str;
+    }
+
+    public static String removeNoNeedChar(String str, String delString) {
+        StringBuffer sbf = new StringBuffer("");
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            boolean bFind = false;
+            for (int j = 0; j < delString.length(); j++) {
+                char delChar = delString.charAt(j);
+                if (c == delChar) {
+                    bFind = true;
+                }
+            }
+            if (!bFind) {
+                sbf.append(c);
+            }
+        }
+        return sbf.toString().trim();
+    }
+	    
 	public static String saveJsonString2File(String jsonString, String fileName) throws Exception {
 		jsonString = URLEncoder.encode(jsonString, "UTF-8");
 		jsonString = URLDecoder.decode(jsonString, "UTF-8");
