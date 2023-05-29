@@ -1,21 +1,8 @@
-import urllib.request
-import urllib.parse
-import json
 import easygui as g
 import sys
-import time
 import random 
 import os
 
-
-text ="""
- 静夜思
-  李白
-窗前明月光，
-疑是地上霜。
-举头望明月，
-低头思故乡。
-"""
 def getProperties(file_name):
     try:
         pro_file = open(file_name, 'r', encoding='utf-8')
@@ -43,14 +30,18 @@ while True:
     while 1:  
         ret = g.choicebox("请选择要检测的古诗：",'诗词背诵测试',chose)
         if ret == None :
-            print(ret)   # 点Cancle按钮,返回None
-            break
+            print(ret)   #点Cancle按钮,返回None
+            sys.exit()
         else :
-            print(ret)  # 选择目标，点 OK 按钮返回选择目标
+            print(ret)  #选择目标，点 OK 按钮返回选择目标
             break
 
     pro = getProperties(ret+'.txt')
+    
     content = pro['内容']
+    poetryName = pro['诗名']
+    auther = pro['作者']
+    dy = pro['朝代']
     
     fullPoetry = []
     fieldNames = []
@@ -65,7 +56,8 @@ while True:
             poetry.append(fullPoetry[i])
     
     fieldValues = []
-    fieldValues = g.multenterbox(msg='请填写缺少的诗句', title='', fields=fieldNames,values=poetry)
+    message = poetryName+" ["+dy+"] "+ auther+", 请填写缺少的诗句"
+    fieldValues = g.multenterbox(msg=message, title='诗词背诵测试', fields=fieldNames,values=poetry)
     print(fieldValues)
 
     # make sure that none of the fields was left blank
@@ -77,7 +69,7 @@ while True:
                 errmsg += ('"%s" 没有填写.\n\n' % fieldNames[i])
         if errmsg == "":
             break # no problems found
-        fieldValues = g.multenterbox(errmsg, '', fieldNames, fieldValues)
+        fieldValues = g.multenterbox(errmsg, '诗词背诵测试', fieldNames, fieldValues)
 
     print("Reply was: %s" % str(fieldValues))
 
@@ -86,15 +78,18 @@ while True:
             if fieldValues[k].strip() != fullPoetry[k]:
                 errmsg += ('"%s" 不正确. "%s"\n\n' % (fieldNames[k], fieldValues[k]))
 
+    info=poetryName + "\n"+auther+" ["+dy+"] "+"\n\n"
+    for item in fullPoetry:
+        info+=item+"\n"
     if errmsg == "":
-        info=""
-        for item in fullPoetry:
-            info+=item+"\n"
-        ret = g.textbox("太棒了，你全部回答正确！",'',info)
+        ret = g.textbox("太棒了，您全部回答正确！", '诗词背诵测试', info)
     else:
-        ret = g.textbox("还要继续加油！",'',errmsg)
+        ret = g.textbox("还要继续加油！", '诗词背诵测试', errmsg+"\n\n"+info)
 
-    if g.ccbox('要重新开始吗','确认'):
+    if ret == None:
+        sys.exit()
+
+    if g.ccbox('重新开始测试吗？','确认'):
         pass
     else:
         sys.exit()
