@@ -31,7 +31,7 @@
 
 <body>
   <h2>
-    <font color="blue">JS Canvas插件管理页面 v1.0.11</font>
+    <font color="blue">JS Canvas插件管理页面 v1.0.12</font>
   </h2>
   <div>
     <input id="range" type="range" min="10" max="1000" value="0" oninput="sliderChanged()" />
@@ -92,11 +92,17 @@
     function loadScript(url) {
       var script = document.createElement("script");
       script.type = "text/javascript";
-      script.src = url;
+      if (url.startsWith("//code")) {
+        script.text = url; //url为源代码级别的插件
+      } else {
+        script.src = url;
+      }
       document.body.appendChild(script);
+
     }
 
     var selectPlxObj = document.getElementById('selPlugIns');
+    var gplxCode;
     selectPlxObj.onchange = function () {
       var len = selectPlxObj.options.length;
       for (var i = 0; i < len; i++) {
@@ -104,11 +110,19 @@
           var plxToLoad = selectPlxObj.options[i].value;
           var plxName = selectPlxObj.options[i].text;
           loadScript(plxToLoad);
-          document.getElementById('pluginLinkId').innerHTML = "插件代码： "+ "<a href=\"" + plxToLoad + "\" target=\"_blank\">" +plxName + "</a>";
+          if (plxToLoad.startsWith("//code")) {
+            gplxCode = plxToLoad;
+            document.getElementById('pluginLinkId').innerHTML = "<button type=\"button\" onclick=\"ClickMe()\">查看插件代码</button>";
+          } else {
+            document.getElementById('pluginLinkId').innerHTML = "插件代码: " + "<a href=\"" + plxToLoad + "\" target=\"_blank\">" + plxName + "</a>";
+          }
         }
       }
     }
 
+    function ClickMe() {
+      alert(gplxCode);
+    }
     function _loadIssue901(o) {
       eval(o.body);
     }
