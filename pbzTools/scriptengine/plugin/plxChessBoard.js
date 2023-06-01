@@ -1,6 +1,6 @@
 // https://www.jb51.net/article/105958.htm
 
-var tag = "[plxChessBoard.js_v0.201] ";
+var tag = "[plxChessBoard.js_v0.202] ";
 var nTest = 0;
 
 function animateFrame(time) {
@@ -16,6 +16,7 @@ function CPlxCChessBoard(){
     var _h = 800;
     var _radius = 23;
 	var _chunk = 50;
+	var _dy = 4;
 
 	var _time = 0;
 	var _index = 0;
@@ -155,7 +156,7 @@ function CPlxCChessBoard(){
 		_ctx.font = "12px Courier New";
 		var text_arr = ["九", "八", "七", "六", "五", "四", "三", "二", "一"];
 		for (var i = 0; i < 9; i++) {
-			_ctx.fillText((i + 1).toString(), _x + _chunk * (i + 1) - 5, 20);
+			_ctx.fillText((i + 1).toString(), _x + _chunk * (i + 1) - 5, 20+_dy);
 			_ctx.fillText(text_arr[i],_x + _chunk * (i + 1) - 5, _chunk * 10 + 30 + 10);
 		}
 	}
@@ -578,6 +579,10 @@ function CPlxCChessBoard(){
         _init_chess();
 	}
 	
+	this.getCurrentStepLog = function(){
+		return global_ChessLog[_index];
+	}
+
 	this.setChessLog = function (strChessLog){ 
 		global_ChessLog = strChessLog.split(" "); //将棋谱字符串转化为棋谱组
 		_index = 0;
