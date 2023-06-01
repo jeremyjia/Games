@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -69,6 +70,7 @@ public final class JsonSriptParser {
 	private static String VAR_CHESS_LOG_TEXT = "VAR_CHESS_LOG_TEXT";
 	private static String VAR_CHESS_LOG_TEXT_FIXED = "VAR_CHESS_LOG_TEXT_FIXED";
 	private static String VAR_CHESS_LOG_FRAME_NUMBER = "VAR_CHESS_LOG_FRAME_NUMBER";
+	private static String VAR_CHESS_LOG_AUDIO_OBJECTS = "VAR_CHESS_LOG_AUDIO_OBJECTS";
 
 	public static void setMacros(String scriptFilePath) throws Exception {
 		String jsonString = getJsonString(scriptFilePath);
@@ -125,12 +127,40 @@ public final class JsonSriptParser {
             filteredValue = FileUtil.getChessLog(varValue);
             System.out.println("filtered chesslog value:" + filteredValue);
             MacroResolver.setProperty(varName + "_FIXED", filteredValue);
-            
-            int nStep = filteredValue.split(" ").length;  //总共下了多少步棋
+
+            int nStep = filteredValue.split(" ").length; // 总共下了多少步棋
             int num = nStep * 10;
-            MacroResolver.setProperty(VAR_CHESS_LOG_FRAME_NUMBER, Integer.toString(num));        
+            MacroResolver.setProperty(VAR_CHESS_LOG_FRAME_NUMBER, Integer.toString(num));
+            // Chess Audio objects
+            String strChessAudio = getChessAudioObjString(rate);
+            MacroResolver.setProperty(VAR_CHESS_LOG_AUDIO_OBJECTS, strChessAudio);
         }
         return filteredValue;
+    }
+
+    private static String getChessAudioObjString(String rate) {
+        String strAudioObjects = "";
+        String sChessLog = MacroResolver.getProperty(VAR_CHESS_LOG_TEXT_FIXED);
+        if (sChessLog == null || sChessLog.trim().length() == 0) {
+            return "{\"start\": \"5\", \"audioFile\": \"tts:bzll.mp3}";
+        }
+        int r = Integer.parseInt(rate);
+        int interval = 10 / r;
+        if (interval == 0) {
+            interval = 25;
+        }
+        String chessLogAttr[] = sChessLog.split(" ");
+        int iSt = 0;
+        for (int i = 0; i < chessLogAttr.length; i++) {
+            String sText = chessLogAttr[i].trim();
+            String oAudio = "{\"start\": \"" + iSt + "\","+"\"audioFile\": \"tts:" + sText + "\"}";
+            oAudio = StringEscapeUtils.escapeJson(oAudio);
+            strAudioObjects += oAudio+",";
+            iSt += interval;
+        }
+        strAudioObjects = strAudioObjects.substring(0, strAudioObjects.length() - 1);
+
+        return strAudioObjects;
     }
 
     private static String parseVariableValue(Object obj) throws Exception {
@@ -608,6 +638,11 @@ public final class JsonSriptParser {
 				JSONArray audioArray = (JSONArray) requestObj.get(key);
 				for (Object audio : audioArray) {
 					if (!(audio instanceof JSONObject)) {
+					    if(audio instanceof String) {
+					        String s = audio.toString();
+					        parseAudioSubObjects(s);
+					        System.out.println("audioSubObjects:"+s);
+					    }
 						continue;
 					}
 					JSONObject audioObj = (JSONObject) audio;
@@ -620,7 +655,28 @@ public final class JsonSriptParser {
 		}
 	}
 
-	private static List<JSONObject> getSuperObjectsByframeNumber(int num) {
+    private static void parseAudioSubObjects(String s) {
+        String updateString = "";
+        try {
+            updateString = URLEncoder.encode(s, "UTF-8");
+            updateString = URLDecoder.decode(updateString, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        JSONObject jsonObject = new JSONObject(updateString);
+        JSONArray audioArray = (JSONArray) jsonObject.get("audioSubObjects");
+        for (Object audio : audioArray) {
+            if (!(audio instanceof JSONObject)) {
+                continue;
+            }
+            JSONObject audioObj = (JSONObject) audio;
+            String startTime = audioObj.getString("start");
+            String audioFile = audioObj.getString("audioFile");
+            AudioParam audioParam = new AudioParam(startTime, audioFile);
+            audioList.add(audioParam);
+        }
+    }
+    private static List<JSONObject> getSuperObjectsByframeNumber(int num) {
 		List<JSONObject> superObjects = new ArrayList<JSONObject>();
 		for (Map<String, Object> map : supperObjectsMapList) {
 			JSONObject jsonObj = new JSONObject(map);

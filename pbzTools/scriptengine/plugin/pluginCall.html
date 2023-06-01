@@ -31,7 +31,7 @@
 
 <body>
   <h2>
-    <font color="blue">JS Canvas插件管理页面 v1.0.11</font>
+    <font color="blue">JS Canvas插件管理页面 v1.0.13</font>
   </h2>
   <div>
     <input id="range" type="range" min="10" max="1000" value="0" oninput="sliderChanged()" />
@@ -76,6 +76,7 @@
       var ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, 2048, 1536);
       animateFrame(times++);
+      playChessLog();
     }
     var timer = setInterval(callbackFun, sliderValue);
 
@@ -92,28 +93,45 @@
     function loadScript(url) {
       var script = document.createElement("script");
       script.type = "text/javascript";
-      script.src = url;
+      if (url.startsWith("//code")) {
+        script.text = url; //url为源代码级别的插件
+      } else {
+        script.src = url;
+      }
       document.body.appendChild(script);
+
     }
 
     var selectPlxObj = document.getElementById('selPlugIns');
+    var gplxCode;
+    var gplxUrl;
     selectPlxObj.onchange = function () {
       var len = selectPlxObj.options.length;
       for (var i = 0; i < len; i++) {
         if (selectPlxObj.options[i].selected) {
           var plxToLoad = selectPlxObj.options[i].value;
           var plxName = selectPlxObj.options[i].text;
+          gplxUrl = plxToLoad;
           loadScript(plxToLoad);
-          document.getElementById('pluginLinkId').innerHTML = "插件代码： "+ "<a href=\"" + plxToLoad + "\" target=\"_blank\">" +plxName + "</a>";
+          if (plxToLoad.startsWith("//code")) {
+            gplxCode = plxToLoad;
+            document.getElementById('pluginLinkId').innerHTML = "<button type=\"button\" onclick=\"ClickMe()\">查看插件代码</button>";
+          } else {
+            document.getElementById('pluginLinkId').innerHTML = "插件代码: " + "<a href=\"" + plxToLoad + "\" target=\"_blank\">" + plxName + "</a>";
+          }
         }
       }
     }
 
+    function ClickMe() {
+      alert(gplxCode);
+    }
     function _loadIssue901(o) {
       eval(o.body);
     }
     w3.getHttpObject("https://api.github.com/repos/jeremyjia/Games/issues/901", _loadIssue901);
 
+    //设置象棋棋谱
     function applayChessLog() {
       var s = document.getElementById('chessLogArea').value;
       s = s.replace(/[\r\n]/g, " "); //替换掉换行符
@@ -123,6 +141,32 @@
         oPlxChess.setChessLog(s); //oPlxChess为插件plxChessBoard.js中定义的全局对象
       }
     }
+
+    var gLastStepLog = "";
+    var utterThis = new window.SpeechSynthesisUtterance();
+    //播放象棋棋谱
+    function playChessLog() {
+      //当前插件是象棋棋谱的时候才播放
+      if ("undefined" == typeof oPlxChess || gplxUrl.indexOf("plxChessBoard.js") < 0) {
+        console.log(gplxUrl);
+      } else {
+        var step = oPlxChess.getCurrentStepLog();     
+        if (step != gLastStepLog) {
+          console.log(step);
+          utterThis.text = step;
+          if (sliderValue <= 100) {
+            utterThis.rate = 3;
+          } else if (sliderValue > 100 && sliderValue <= 200) {
+            utterThis.rate = 2;
+          } else {
+            utterThis.rate = 1; //正常语速
+          }
+          window.speechSynthesis.speak(utterThis);
+          gLastStepLog = step;
+        }
+      }
+    }
+
   </script>
 </body>
 
