@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.353"
+var g_ver_blClass = "CBlClass_bv1.6.355"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -1140,7 +1140,7 @@ function CBlClass ()
 								obtn.onclick = function(_fos,_i,_obtn){
 									return function(){
 										blo0.blMarkBtnInList(_obtn,lsobtn,"green","grey");
-										_blShowObj2Div(ov,_fos[_i]);
+										blo0.blEditObjInDiv(ov,_fos[_i]);
 									}
 								}(fos,i,obtn);
 								lsobtn.push(obtn);
@@ -1161,15 +1161,17 @@ function CBlClass ()
 		this.setSuperObjects = function(_ls){_sos = _ls;};
 		this.getSuperObjects = function(){ return _sos;};
 		this.drawCurFrame = function(ctx){
-			var xF = 444, yF = 111, wF = 200, hF= 200;
+			var xF = 44, yF = 111, wF = 200, hF= 200;
 			var c = "#347B98"; 
 			ctx.fillStyle = c;
 			ctx.fillRect(xF,yF,wF,hF);		
-			if(_frames.FrameIndex) { 				_frames[_frames.FrameIndex].draw_Frame(ctx,xF,yF,wF,hF);			}
+			if(_frames.FrameIndex) { 				
+				_frames[_frames.FrameIndex].draw_Frame(ctx,xF,yF,wF,hF);			
+			}
 		}
 		this.drawSuperObjects = function(ctx){
 			ctx.fillStyle = "#11f100"; 
-			ctx.fillRect(111,111,222,222);
+			ctx.fillRect(333,211,111,222);
 		}
 		this.blrAdd_1_Frame = function(_div,r,g,b){
 			var n = _frames.length;
@@ -1338,7 +1340,7 @@ function CBlClass ()
 
 					var btnFramesUpdateTxt = blo0.blBtn(tb,tb.id+"btnFramesUpdateTxt","updateTxt",blGrey[1]);
 					btnFramesUpdateTxt.onclick = function(){_thisOBlScript.blrUpdateFramesTxt();	}
-					var btnUI = blo0.blBtn(tb,tb.id+"btnUI","ui",blGrey[1]);
+					var btnUI = blo0.blBtn(tb,tb.id+"btnUI","uiFrame",blGrey[1]);
 					btnUI.onclick = function(){
 						if(!d.ui){
 							var w = 555, h = 444;
@@ -1588,7 +1590,9 @@ function CBlClass ()
 		_oScript.blrLoacalScript = function(b,d){
 			if(!d.tb){
 				d.tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
-				var v = blo0.blDiv(d,d.id+"v","v",blGrey[4]);
+				var v1 = blo0.blDiv(d,d.id+"v1","v1",blGrey[4]);
+				var v2 = blo0.blDiv(d,d.id+"v2","v2",blGrey[5]);
+				var v3 = blo0.blDiv(d,d.id+"v3","v3",blGrey[6]);
 				var btnMakeScript = blo0.blBtn(d.tb,d.tb.id+"btnMakeScript","makeScript",blGrey[1]);				
 				var btnSaveScript = blo0.blBtn(d.tb,d.tb.id+"btnSaveScript","saveScript",blGrey[1]);
 				var btnMakeMp4 = blo0.blBtn(d.tb,d.tb.id+"btnMakeMp4","MakeMp4",blGrey[1]);
@@ -1596,7 +1600,7 @@ function CBlClass ()
 						
 				btnMakeMp4.onclick = function(b,d){ 			
 					var url = "http://localhost:8080/image/json2video?script=" + blScriptName + ".json&video=" + blScriptName + ".mp4"; 
-					b._2do = function(txt){v.innerHTML = txt};
+					b._2do = function(txt){v3.innerHTML = txt};
 					blo0.blAjx(b,url);
 				}		 
 				btnSaveScript.onclick = function(){
@@ -1605,14 +1609,14 @@ function CBlClass ()
 					var url = "http://localhost:8080/json?fileName=" + blScriptName + ".json"; 
    
 					blo0.blPOST(url,pl,function(txt){
-						v.innerHTML = "<a href ='http://localhost:8080/"+blScriptName+".json' target='_blank'>"+blScriptName+".json</a>";
+						v2.innerHTML = "<a href ='http://localhost:8080/"+blScriptName+".json' target='_blank'>"+blScriptName+".json</a>";
 					}); 
 				}
 				btnMakeScript.onclick = function(){
 					var os = _bl2MakeScript(_oScript,_frames,_sos);
 					var txt = JSON.stringify(os); 
-					v.innerHTML = "";
-					var ta	= blo0.blTextarea(v,v.id+"ta","ta...","grey");
+					v1.innerHTML = "";
+					var ta	= blo0.blTextarea(v1,v1.id+"ta","ta...","grey");
 					ta.style.width="95%"; 
 					ta.style.height="130px"; 
 					ta.value = txt;
@@ -2299,6 +2303,13 @@ function CBlClass ()
 			var bSkip = bs[i].skip?bs[i].skip:false;
 			if(!bSkip) 			ls.push(btn);
 		  }
+	}
+	this.blEditObjInDiv = function(oDiv,obj){		
+		oDiv.innerHTML = "";
+		for(i in obj)
+		{
+			const b = blo0.blBtn(oDiv,oDiv.id+i,i+":"+obj[i],blGrey[4]);
+		}
 	}
     this.blDiv = function (oBoss,id,html,bkClr){
         var r = document.getElementById(id);
