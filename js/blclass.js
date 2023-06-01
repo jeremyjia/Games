@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.355"
+var g_ver_blClass = "CBlClass_bv1.6.411"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -1160,13 +1160,14 @@ function CBlClass ()
 		this.getFrameNumber = function(){return _frames.length;};
 		this.setSuperObjects = function(_ls){_sos = _ls;};
 		this.getSuperObjects = function(){ return _sos;};
-		this.drawCurFrame = function(ctx){
+		this.drawCurFrame = function(cvs){
+			var ctx = cvs.getContext("2d");
 			var xF = 44, yF = 111, wF = 200, hF= 200;
 			var c = "#347B98"; 
 			ctx.fillStyle = c;
 			ctx.fillRect(xF,yF,wF,hF);		
 			if(_frames.FrameIndex) { 				
-				_frames[_frames.FrameIndex].draw_Frame(ctx,xF,yF,wF,hF);			
+				_frames[_frames.FrameIndex].draw_Frame(cvs,xF,yF,wF,hF);			
 			}
 		}
 		this.drawSuperObjects = function(ctx){
@@ -1356,12 +1357,15 @@ function CBlClass ()
 								 
 								ctx.fillStyle = "grey"; 
 								ctx.fillRect(0,0,w,h);
-								_thisOBlScript.drawCurFrame(ctx);
+								_thisOBlScript.drawCurFrame(fCVS);
 								_thisOBlScript.drawSuperObjects(ctx);
  
 								ctx.font = 12 + "px Consolas";
 								ctx.fillStyle = "yellow";
 								ctx.fillText(ls.length + "_ " + fCVS.ms + "_ " + fCVS.n + " " + Date(), 11, 22);
+
+								ctx.fillStyle = "green";
+								ctx.fillText("mouseStatus:[" + fCVS.x + "," + fCVS.y + "]" , 11, 44);
 
 								
 								ctx.font = 22 + "px Consolas";
@@ -1493,8 +1497,20 @@ function CBlClass ()
 			this.backgroundColor = _backgroundColor;
 			this.objects = []; 
 
+			this.editObj = function(_this){
+				return function(cvs,os){
+					if(!cvs.ms) return;
+					var n = 0;
+					for(i in os){
+						n++;
+						os[i].text = n + ":" + blo0.blTime(0);
+					}
+				}
+			}(this);
+
 			this.draw_Frame = function(_this,_time){
-				return function(ctx,x,y,w,h){
+				return function(cvs,x,y,w,h){
+					var ctx = cvs.getContext("2d");
 					var oldFillStyle = ctx.fillStyle;				
 				
 					ctx.font = 22 + "px Consolas";
@@ -1507,10 +1523,13 @@ function CBlClass ()
 					ctx.fillText("Frame.backgroundColor = " + _this.backgroundColor, x, y+50); 
 					ctx.fillText("objects.length = " + _this.objects.length, x, y+80); 
 					var os = _this.objects;
-					
+					_this.editObj(cvs,os);
 					for(i in os){
 						ctx.fillText("o"+i + ":" + os[i].x +","+ os[i].y, x+30, y + i*30 + 110); 
 
+						ctx.fillStyle = "brown";
+						ctx.fillRect(os[i].x,os[i].y,15,15);	
+						ctx.fillText(os[i].text, os[i].x, os[i].y); 
 					}
 					ctx.fillStyle = oldFillStyle;
 				}
@@ -5520,14 +5539,22 @@ blo0.blCanvas2 = function(d,w,h){
 	cvs.width = w;
 	cvs.height = h;
 	cvs.ms = false;
+	cvs.x = -1;
+	cvs.y = -1;
 	cvs.addEventListener('mousedown', function (e) {
-		var x = e.offsetX;
-		var y = e.offsetY;
+		cvs.x = e.offsetX;
+		cvs.y = e.offsetY;
 		cvs.ms = true;
 	});
+	cvs.addEventListener('mousemove', function (e) {
+		if(cvs.ms){
+			cvs.x = e.offsetX;
+			cvs.y = e.offsetY;
+		}		
+	});
 	cvs.addEventListener('mouseup', function (e) {
-		var x = e.offsetX;
-		var y = e.offsetY;
+		cvs.x = -1;
+		cvs.y = -1;
 		cvs.ms = false;
 	});
 	
