@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.411"
+var g_ver_blClass = "CBlClass_bv1.6.412"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -1104,6 +1104,22 @@ function CBlClass ()
 						_blVideo.currentTime = _fs[_i].number;
 
 						v.innerHTML = _fs[_i].number;
+						var btnFrameTime = blo0.blBtn(v,"btnFrameTime","frame_time:"+_fs[_i].time,"lightblue");
+						btnFrameTime.style.float = "right";
+						const lsFrameTime = [1,-1,5,-5,10,-10];
+						for(j in lsFrameTime){
+							var a = lsFrameTime[j]>0?"+"+lsFrameTime[j]:lsFrameTime[j];
+							var b = blo0.blBtn(v,"lsFrameTime"+j,a,blGrey[3]);
+							b.style.float = "right";
+							b.onclick = function(_thisBtn,_ls,_j){
+								return function(){
+									_fs[_i].time = Number(_fs[_i].time)+_ls[_j];
+									btnFrameTime.innerHTML ="frame_time:"+_fs[_i].time;
+								}
+							}(b,lsFrameTime,j)
+
+						}
+
 						_fs.FrameIndex = _i;
 						v.tb = blo0.blDiv(v,v.id+"tb","tb",blGrey[0]);
 						v.v = blo0.blDiv(v,v.id+"v","v",blGrey[2]);
@@ -1140,7 +1156,7 @@ function CBlClass ()
 								obtn.onclick = function(_fos,_i,_obtn){
 									return function(){
 										blo0.blMarkBtnInList(_obtn,lsobtn,"green","grey");
-										blo0.blEditObjInDiv(ov,_fos[_i]);
+										blo0.blEditObjInDiv(_obtn,ov,_fos[_i]);
 									}
 								}(fos,i,obtn);
 								lsobtn.push(obtn);
@@ -1188,7 +1204,7 @@ function CBlClass ()
 				var t1 = {
 					"text": i + ": by Littleflute", 
 					"x": 100,
-					"y": 955,
+					"y": 252,
 					"size": 111,
 					"color": "80,151,255"
 				};
@@ -1496,17 +1512,24 @@ function CBlClass ()
 			this.time = _time;
 			this.backgroundColor = _backgroundColor;
 			this.objects = []; 
+ 
+			this.try2Move = function(os,cvs){
+				var ctx = cvs.getContext("2d");
+				var old = ctx.fillStyle;
 
-			this.editObj = function(_this){
-				return function(cvs,os){
-					if(!cvs.ms) return;
-					var n = 0;
-					for(i in os){
-						n++;
-						os[i].text = n + ":" + blo0.blTime(0);
-					}
+				for(i in os){
+					if(blo0.blPiR(cvs.x,cvs.y,os[i].x,os[i].y,15,15)){
+						ctx.fillStyle = "blue";
+						ctx.fillRect(cvs.x,cvs.y,15,15);
+						os[i].x = cvs.x-5;
+						os[i].y = cvs.y-5;
+						break;
+
+					}	
+					
 				}
-			}(this);
+				ctx.fillStyle = old;
+			}
 
 			this.draw_Frame = function(_this,_time){
 				return function(cvs,x,y,w,h){
@@ -1523,7 +1546,7 @@ function CBlClass ()
 					ctx.fillText("Frame.backgroundColor = " + _this.backgroundColor, x, y+50); 
 					ctx.fillText("objects.length = " + _this.objects.length, x, y+80); 
 					var os = _this.objects;
-					_this.editObj(cvs,os);
+					_this.try2Move(os,cvs);
 					for(i in os){
 						ctx.fillText("o"+i + ":" + os[i].x +","+ os[i].y, x+30, y + i*30 + 110); 
 
@@ -2323,11 +2346,20 @@ function CBlClass ()
 			if(!bSkip) 			ls.push(btn);
 		  }
 	}
-	this.blEditObjInDiv = function(oDiv,obj){		
+	this.blEditObjInDiv = function(btn4Obj,oDiv,obj){		
 		oDiv.innerHTML = "";
 		for(i in obj)
 		{
 			const b = blo0.blBtn(oDiv,oDiv.id+i,i+":"+obj[i],blGrey[4]);
+			b.onclick = function(_btn,_obj,_i){
+				return function(){
+					if(_i=="text")
+					{
+						_obj[_i] = blo0.blGetTa().value;
+						btn4Obj.click();
+					}
+				}
+			}(b,obj,i);
 		}
 	}
     this.blDiv = function (oBoss,id,html,bkClr){
