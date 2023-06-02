@@ -61,9 +61,9 @@ describe(tag4xdTest, function(){
   
   it('music', function(){
     var done =`
-    1.
+    1. blrMakeFrames
     `;    
-    const doing =`...`;
+    const doing =done;//`...`;
     assert.equal(done,doing);
   });
   it('word', function(){assert.equal("done",'done');  });
