@@ -371,7 +371,7 @@ window.onerror = function(errorMessage, scriptURI, lineNumber,columnNumber,error
 </div>
 	<!-- ------------------------------顶部导航菜单------------------------------ -->
 	<div class="music-header">
-		<div class="music-sys-name">乐谱编辑系统_bv0.21</div>
+		<div class="music-sys-name">乐谱编辑系统_bv0.23</div>
 		<ul>
 			<!-- 顶级菜单  -->
 			<li v-for="( menu, m) in menuList" :class="[ menuActive == menu.menuCode ? 'active' : '']" :data-code="menu.menuCode" @click.stop="navClick( menu.menuCode)">{{ menu.menuName }}
@@ -3079,5 +3079,9 @@ function getAbcContent(){
 <script type="text/javascript" src="https://imusic.ixzds.com/ixzdscommon/ossupload/lib/base64.js"></script>
 <script type="text/javascript" src="https://imusic.ixzds.com/ixzdscommon/ossupload/lib/plupload-2.1.2/js/plupload.full.min.js"></script>
 <script type="text/javascript" src="https://imusic.ixzds.com/ixzdscommon/ossupload/upload.js"></script>
+
+
+<script src="https://littleflute.github.io/JavaScript/w3.js" ></script>
+<script type="text/javascript" src="https://littleflute.github.io/Games/js/blclass.js"></script>
 
 <!-- <script src="soundfont-player-master/dist/soundfont-player.js"></script> -->

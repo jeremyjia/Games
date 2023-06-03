@@ -1,3 +1,4 @@
+//abc_select.js: refactor
 
 //工具栏的所有样本数据
 var toolTemp = {

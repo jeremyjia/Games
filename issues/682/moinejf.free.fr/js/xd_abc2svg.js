@@ -1,7 +1,11 @@
 // abc2svg - ABC to SVG translator
 // @source: https://chiselapp.com/user/moinejf/repository/abc2svg
 // Copyright (C) 2014-2022 Jean-Francois Moine - LGPL3+
-//abc2svg-abc2svg.js
+//xd_abc2svg.js
+
+const v4_xd_abc2svg = "xd_abc2svg.js 0.12";
+document.getElementById("id_4_v4_xd_abc2svg").value = v4_xd_abc2svg;
+
 if(typeof abc2svg=="undefined")
     var abc2svg={};
 

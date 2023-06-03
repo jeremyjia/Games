@@ -36,6 +36,7 @@ if(btn4p1){
         b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];   
     } 
     btn4p1.onclick();
+    btn4p1.onclick();
 }
  
 function CServer(parentDiv){

@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.345"
+var g_ver_blClass = "CBlClass_bv1.6.412"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -18,7 +18,7 @@ function myAjaxCmd(method, url, data, callback){
 	if(method == "PATCH" || method == "POST"){
 		xmlHttpReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		xmlHttpReg.setRequestHeader("Authorization", "token " + getToken());
-		xmlHttpReg.send(data);
+		xmlHttpReg.send(JSON.stringify(data));
 	}else if(method == "GET"){
 		xmlHttpReg.setRequestHeader('If-Modified-Since', '0');
 		xmlHttpReg.send(null);
@@ -647,6 +647,91 @@ function CBlClass ()
 	    ];
 		return cs[n];
 	}
+	this.blPoints = function(){
+		const c4Points = function(){
+			var ptsCMD = -1;
+			var x1,y1,x2,y2,iSel = -1 ;
+			var ls = [];
+			this.mkUI = function(d){
+				const bs = [
+					{
+						"id":1,
+						"name":"new",
+						"click":function(b,v){
+							v.innerHTML = this.name;
+							ptsCMD = this.id;
+						}
+					},
+					{
+						"id":2,
+						"name":"name2",
+						"click":function(b,v){
+							v.innerHTML = this.name;
+							ptsCMD = this.id;
+						}
+					},
+				];
+				
+				var v = blo0.blDiv(d,d.id+"v","v",blo0.c(12));
+				v.innerHTML = "";
+				var tb = blo0.blDiv(v,v.id+"tb","tb",blo0.c(1));
+				var d = blo0.blDiv(v,v.id+"d","d",blo0.c(2));
+				blo0.blBtns(bs,tb,d,"lightgreen","brown");
+			};
+			
+			this.mdFun = function(x,y){
+				if(ptsCMD==1) ls.push({"x":x-x1,"y":y-y1});
+				if(ptsCMD==2) {
+					if(iSel==-1){
+						for(i in ls){
+							if(blo0.blPiR(x,y,x1+ls[i].x,y1+ls[i].y,5,5)){ 
+								iSel = i;
+								break;
+							}
+						}
+					}
+					else{
+						ls[iSel].x = x-x1;
+						ls[iSel].y = y-y1;
+						iSel = -1;
+					}
+				}
+			};
+			this.data2Plx = function(){
+				const o = {};
+				o.ver = "0.12";
+				o.ls = ls;
+				return o;
+			}
+			this.fun2Plx = function(){
+				return `
+				var o = JSON.parse(s);
+				for(i in o.ls){
+					ctx.fillRect(o.ls[i].x+x,o.ls[i].y+y,5,5);
+				}
+
+				`;
+			}
+			this.drawPoints = function(cvs,_x1,_y1,_x2,_y2){
+				x1 = _x1; y1 = _y1; x2 = _x2; y2 = _y2;
+				var ctx = cvs.getContext("2d");		
+				var oldFillStyle = ctx.fillStyle;
+				ctx.fillStyle = "grey"; 
+				ctx.fillRect(x1+10,y1+10,20,20);
+				ctx.fillText(`n=${ls.length}`,x1+50,y1+50);
+				for(i in ls){
+					ctx.fillRect(ls[i].x+x1,ls[i].y+y1,5,5);
+				}
+				if(iSel!=-1){
+					ctx.fillStyle = "red"; 
+					ctx.fillRect(ls[iSel].x+x1,ls[iSel].y+y1,5,5);
+				}
+				ctx.fillStyle = oldFillStyle;
+
+			};
+		};
+		return new c4Points();
+	}
 	this.blAudioTimer = function(){	
 		const r = function() {	
 			var bRun = false;
@@ -1019,6 +1104,22 @@ function CBlClass ()
 						_blVideo.currentTime = _fs[_i].number;
 
 						v.innerHTML = _fs[_i].number;
+						var btnFrameTime = blo0.blBtn(v,"btnFrameTime","frame_time:"+_fs[_i].time,"lightblue");
+						btnFrameTime.style.float = "right";
+						const lsFrameTime = [1,-1,5,-5,10,-10];
+						for(j in lsFrameTime){
+							var a = lsFrameTime[j]>0?"+"+lsFrameTime[j]:lsFrameTime[j];
+							var b = blo0.blBtn(v,"lsFrameTime"+j,a,blGrey[3]);
+							b.style.float = "right";
+							b.onclick = function(_thisBtn,_ls,_j){
+								return function(){
+									_fs[_i].time = Number(_fs[_i].time)+_ls[_j];
+									btnFrameTime.innerHTML ="frame_time:"+_fs[_i].time;
+								}
+							}(b,lsFrameTime,j)
+
+						}
+
 						_fs.FrameIndex = _i;
 						v.tb = blo0.blDiv(v,v.id+"tb","tb",blGrey[0]);
 						v.v = blo0.blDiv(v,v.id+"v","v",blGrey[2]);
@@ -1055,7 +1156,7 @@ function CBlClass ()
 								obtn.onclick = function(_fos,_i,_obtn){
 									return function(){
 										blo0.blMarkBtnInList(_obtn,lsobtn,"green","grey");
-										_blShowObj2Div(ov,_fos[_i]);
+										blo0.blEditObjInDiv(_obtn,ov,_fos[_i]);
 									}
 								}(fos,i,obtn);
 								lsobtn.push(obtn);
@@ -1075,16 +1176,19 @@ function CBlClass ()
 		this.getFrameNumber = function(){return _frames.length;};
 		this.setSuperObjects = function(_ls){_sos = _ls;};
 		this.getSuperObjects = function(){ return _sos;};
-		this.drawCurFrame = function(ctx){
-			var xF = 444, yF = 111, wF = 200, hF= 200;
+		this.drawCurFrame = function(cvs){
+			var ctx = cvs.getContext("2d");
+			var xF = 44, yF = 111, wF = 200, hF= 200;
 			var c = "#347B98"; 
 			ctx.fillStyle = c;
 			ctx.fillRect(xF,yF,wF,hF);		
-			if(_frames.FrameIndex) { 				_frames[_frames.FrameIndex].draw_Frame(ctx,xF,yF,wF,hF);			}
+			if(_frames.FrameIndex) { 				
+				_frames[_frames.FrameIndex].draw_Frame(cvs,xF,yF,wF,hF);			
+			}
 		}
 		this.drawSuperObjects = function(ctx){
 			ctx.fillStyle = "#11f100"; 
-			ctx.fillRect(111,111,222,222);
+			ctx.fillRect(333,211,111,222);
 		}
 		this.blrAdd_1_Frame = function(_div,r,g,b){
 			var n = _frames.length;
@@ -1100,7 +1204,7 @@ function CBlClass ()
 				var t1 = {
 					"text": i + ": by Littleflute", 
 					"x": 100,
-					"y": 955,
+					"y": 252,
 					"size": 111,
 					"color": "80,151,255"
 				};
@@ -1253,7 +1357,7 @@ function CBlClass ()
 
 					var btnFramesUpdateTxt = blo0.blBtn(tb,tb.id+"btnFramesUpdateTxt","updateTxt",blGrey[1]);
 					btnFramesUpdateTxt.onclick = function(){_thisOBlScript.blrUpdateFramesTxt();	}
-					var btnUI = blo0.blBtn(tb,tb.id+"btnUI","ui",blGrey[1]);
+					var btnUI = blo0.blBtn(tb,tb.id+"btnUI","uiFrame",blGrey[1]);
 					btnUI.onclick = function(){
 						if(!d.ui){
 							var w = 555, h = 444;
@@ -1269,12 +1373,15 @@ function CBlClass ()
 								 
 								ctx.fillStyle = "grey"; 
 								ctx.fillRect(0,0,w,h);
-								_thisOBlScript.drawCurFrame(ctx);
+								_thisOBlScript.drawCurFrame(fCVS);
 								_thisOBlScript.drawSuperObjects(ctx);
  
 								ctx.font = 12 + "px Consolas";
 								ctx.fillStyle = "yellow";
 								ctx.fillText(ls.length + "_ " + fCVS.ms + "_ " + fCVS.n + " " + Date(), 11, 22);
+
+								ctx.fillStyle = "green";
+								ctx.fillText("mouseStatus:[" + fCVS.x + "," + fCVS.y + "]" , 11, 44);
 
 								
 								ctx.font = 22 + "px Consolas";
@@ -1405,9 +1512,28 @@ function CBlClass ()
 			this.time = _time;
 			this.backgroundColor = _backgroundColor;
 			this.objects = []; 
+ 
+			this.try2Move = function(os,cvs){
+				var ctx = cvs.getContext("2d");
+				var old = ctx.fillStyle;
+
+				for(i in os){
+					if(blo0.blPiR(cvs.x,cvs.y,os[i].x,os[i].y,15,15)){
+						ctx.fillStyle = "blue";
+						ctx.fillRect(cvs.x,cvs.y,15,15);
+						os[i].x = cvs.x-5;
+						os[i].y = cvs.y-5;
+						break;
+
+					}	
+					
+				}
+				ctx.fillStyle = old;
+			}
 
 			this.draw_Frame = function(_this,_time){
-				return function(ctx,x,y,w,h){
+				return function(cvs,x,y,w,h){
+					var ctx = cvs.getContext("2d");
 					var oldFillStyle = ctx.fillStyle;				
 				
 					ctx.font = 22 + "px Consolas";
@@ -1420,10 +1546,13 @@ function CBlClass ()
 					ctx.fillText("Frame.backgroundColor = " + _this.backgroundColor, x, y+50); 
 					ctx.fillText("objects.length = " + _this.objects.length, x, y+80); 
 					var os = _this.objects;
-					
+					_this.try2Move(os,cvs);
 					for(i in os){
 						ctx.fillText("o"+i + ":" + os[i].x +","+ os[i].y, x+30, y + i*30 + 110); 
 
+						ctx.fillStyle = "brown";
+						ctx.fillRect(os[i].x,os[i].y,15,15);	
+						ctx.fillText(os[i].text, os[i].x, os[i].y); 
 					}
 					ctx.fillStyle = oldFillStyle;
 				}
@@ -1503,7 +1632,9 @@ function CBlClass ()
 		_oScript.blrLoacalScript = function(b,d){
 			if(!d.tb){
 				d.tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]);
-				var v = blo0.blDiv(d,d.id+"v","v",blGrey[4]);
+				var v1 = blo0.blDiv(d,d.id+"v1","v1",blGrey[4]);
+				var v2 = blo0.blDiv(d,d.id+"v2","v2",blGrey[5]);
+				var v3 = blo0.blDiv(d,d.id+"v3","v3",blGrey[6]);
 				var btnMakeScript = blo0.blBtn(d.tb,d.tb.id+"btnMakeScript","makeScript",blGrey[1]);				
 				var btnSaveScript = blo0.blBtn(d.tb,d.tb.id+"btnSaveScript","saveScript",blGrey[1]);
 				var btnMakeMp4 = blo0.blBtn(d.tb,d.tb.id+"btnMakeMp4","MakeMp4",blGrey[1]);
@@ -1511,7 +1642,7 @@ function CBlClass ()
 						
 				btnMakeMp4.onclick = function(b,d){ 			
 					var url = "http://localhost:8080/image/json2video?script=" + blScriptName + ".json&video=" + blScriptName + ".mp4"; 
-					b._2do = function(txt){v.innerHTML = txt};
+					b._2do = function(txt){v3.innerHTML = txt};
 					blo0.blAjx(b,url);
 				}		 
 				btnSaveScript.onclick = function(){
@@ -1520,14 +1651,14 @@ function CBlClass ()
 					var url = "http://localhost:8080/json?fileName=" + blScriptName + ".json"; 
    
 					blo0.blPOST(url,pl,function(txt){
-						v.innerHTML = "<a href ='http://localhost:8080/"+blScriptName+".json' target='_blank'>"+blScriptName+".json</a>";
+						v2.innerHTML = "<a href ='http://localhost:8080/"+blScriptName+".json' target='_blank'>"+blScriptName+".json</a>";
 					}); 
 				}
 				btnMakeScript.onclick = function(){
 					var os = _bl2MakeScript(_oScript,_frames,_sos);
 					var txt = JSON.stringify(os); 
-					v.innerHTML = "";
-					var ta	= blo0.blTextarea(v,v.id+"ta","ta...","grey");
+					v1.innerHTML = "";
+					var ta	= blo0.blTextarea(v1,v1.id+"ta","ta...","grey");
 					ta.style.width="95%"; 
 					ta.style.height="130px"; 
 					ta.value = txt;
@@ -1740,7 +1871,31 @@ function CBlClass ()
 		t.color = color;
 		return t;		
 	}
-	
+	this.blMakePlxJS = function(oi){
+		var sJS = `
+		var C4Plx = function(){
+			var s = '${oi.compileData()}';
+			this.drawPlx2Frame = function(ctx,time,x0,y0){ 
+			  var x = x0?x0:0;
+			  var y = y0?y0:0;
+
+			  ctx.fillStyle = 'red';
+			  ctx.font = 11+ "px Consolas";			  
+			  ctx.fillText("blMakePlxJS C4Plx v0.21: time="+time ,x+10,y+33);  
+			  ${oi.compileFrameFun()}
+			};
+		} 
+		function animateFrame(time){
+			var canvas = document.getElementById('myCanvas');
+			var ctx = canvas.getContext('2d');  
+					 
+			var o = new C4Plx();
+			var x = typeof x0 === "undefined"?0:x0;
+			var y = typeof y0 === "undefined"?0:y0;
+			o.drawPlx2Frame (ctx,time,x,y);   
+		}`;
+		return sJS;
+	}
 	this.blGetTa = function(){ return bl$("id_4_ta_blrRunJS");}
 	this.blSetPS = function(ps){		_ps = ps;	}
 	this.setScriptName = function(_scriptName){
@@ -2190,6 +2345,22 @@ function CBlClass ()
 			var bSkip = bs[i].skip?bs[i].skip:false;
 			if(!bSkip) 			ls.push(btn);
 		  }
+	}
+	this.blEditObjInDiv = function(btn4Obj,oDiv,obj){		
+		oDiv.innerHTML = "";
+		for(i in obj)
+		{
+			const b = blo0.blBtn(oDiv,oDiv.id+i,i+":"+obj[i],blGrey[4]);
+			b.onclick = function(_btn,_obj,_i){
+				return function(){
+					if(_i=="text")
+					{
+						_obj[_i] = blo0.blGetTa().value;
+						btn4Obj.click();
+					}
+				}
+			}(b,obj,i);
+		}
 	}
     this.blDiv = function (oBoss,id,html,bkClr){
         var r = document.getElementById(id);
@@ -2728,7 +2899,7 @@ function CBlClass ()
 
 	}
 	this.blList = function(){//xd2do1
-		const C4BlList = function(id){
+		const C4List = function(id){
 			const ghi = "[i5c1]";
 			const ui = blo0.blMD(id,ghi+"_"+id,blo0.c(1));
 			const _thisList = this;
@@ -2748,23 +2919,24 @@ function CBlClass ()
 			}
 			this.newToolbar = function(d,tbName,color){
 				const bs = [
-		  {"id":1,
-		  "name":"+",
-		  "color":blo0.c(11),
-		  "float":"left",
-		  "clickMe":function(tb,v){
-			  _thisList.addBtn2Tb(tb,v,null); 
-		   }
-		},
-		{"id":2,
-		  "name":"--",
-		  "color":blo0.c(13),
-		  "float":"left",
-		  "clickMe":function(tb,v){
-				tb.innerHTML = "";
-				tb.btnList = [];
-			v.innerHTML = tb.id + ":" + tb.curBtn.id;
-		  }}];
+					{"id":1,
+					"name":"+",
+					"color":blo0.c(11),
+					"float":"left",
+					"clickMe":function(tb,v){
+						_thisList.addBtn2Tb(tb,v,null); 
+					}
+					},
+					{"id":2,
+					"name":"--",
+					"color":blo0.c(13),
+					"float":"left",
+					"clickMe":function(tb,v){
+							tb.innerHTML = "";
+							tb.btnList = [];
+						v.innerHTML = tb.id + ":" + tb.curBtn.id;
+					}}
+				];
 				const tb = blo0.blDiv(d,d.id+tbName,tbName,color);
 				const tb1 = blo0.blDiv(d,d.id+tbName+"tb1","tb1","purple");
 				const v4tb = blo0.blDiv(d,d.id+tbName+"v","v4tb","gray");
@@ -2778,7 +2950,7 @@ function CBlClass ()
 				return tb;
 		   };
 		}
-		const l = new C4BlList("bllist 31");  
+		const l = new C4List("bllist 31");  
 		/* //usage:
 		l.newToolbar(l.getUI(),"tb1",blo0.c(12));
 		l.newToolbar(l.getUI(),"tb2",blo0.c(12));
@@ -3443,8 +3615,8 @@ function CBlClass ()
 					newObj = new gc4Line();
 					newObj.setXY1(x,y);					
 				} 
-				else if(curDrawingType==G_DRAW_NOTE){
-					newObj = new gc4Note();
+				else if(curDrawingType==G_DRAW_AUTORUN){
+					newObj = new gc4AutoRun();
 					newObj.setXY1(x,y);					
 				} 
 				else if(curDrawingType==G_DRAW_SO_EDITOR){
@@ -3497,7 +3669,7 @@ function CBlClass ()
 					else if(curDrawingType==G_DRAW_LINE){						
 						newObj.setXY2(x,y);
 					}					
-					else if(curDrawingType==G_DRAW_NOTE){						
+					else if(curDrawingType==G_DRAW_AUTORUN){						
 						newObj.setXY2(x,y);
 					}			
 					else if(curDrawingType==G_DRAW_SO_EDITOR){
@@ -3530,7 +3702,7 @@ function CBlClass ()
 					newObj = null;
 				} 
 				
-				if(curDrawingType==G_DRAW_NOTE){
+				if(curDrawingType==G_DRAW_AUTORUN){
 					lsOs.push(newObj);
 					newObj = null;
 				} 
@@ -4904,10 +5076,10 @@ function CBlClass ()
 			} 
 
 			
-			const btnBody = blo0.blBtn(d.tb,d.tb.id+"btnBody","body","gray");
-			btnBody.style.float = "right";
-			btnBody.onclick = function(){
-				d.v1.innerHTML = btnBody.id;
+			const btnDetail = blo0.blBtn(d.tb,d.tb.id+"btnDetail","body","gray");
+			btnDetail.style.float = "right";
+			btnDetail.onclick = function(){
+				d.v1.innerHTML = btnDetail.id;
 				var tb = blo0.blDiv(d.v1,d.v1.id+"tb","tb","lightgray"); 
 				var v = blo0.blDiv(d.v1,d.v1.id+"v","v","gray");
 				const btnCs = blo0.blBtn(tb,tb.id+"btnCs","Cs","lightblue");
@@ -4973,6 +5145,25 @@ function CBlClass ()
 						}
 					});
 				}
+				const btnShowBody = blo0.blBtn(tb,tb.id+"btnShowBody","showBody","lightgreen");
+				btnShowBody.style.float = "right";
+				btnShowBody.onclick = function(){
+					blo0.blGetTa().value = d.o.body;
+				}
+				const btnSetBody = blo0.blBtn(tb,tb.id+"btnSetBody","setBody","lightblue");
+				btnSetBody.style.float = "right";
+				btnSetBody.onclick = function(){
+					blo0.blGetTa().value = blo0.blDate();
+					var url = "https://api.github.com/repos/jeremyjia/Games/issues/" + i;
+					var bodyData = blo0.blGetTa().value ;
+					var data = {
+					  "body": bodyData
+					};
+				  
+					myAjaxCmd('PATCH', url, data, function (res) {
+					});
+				}
+
 			}
 		}
 		_on_off_div(b,d.v1);
@@ -5380,14 +5571,22 @@ blo0.blCanvas2 = function(d,w,h){
 	cvs.width = w;
 	cvs.height = h;
 	cvs.ms = false;
+	cvs.x = -1;
+	cvs.y = -1;
 	cvs.addEventListener('mousedown', function (e) {
-		var x = e.offsetX;
-		var y = e.offsetY;
+		cvs.x = e.offsetX;
+		cvs.y = e.offsetY;
 		cvs.ms = true;
 	});
+	cvs.addEventListener('mousemove', function (e) {
+		if(cvs.ms){
+			cvs.x = e.offsetX;
+			cvs.y = e.offsetY;
+		}		
+	});
 	cvs.addEventListener('mouseup', function (e) {
-		var x = e.offsetX;
-		var y = e.offsetY;
+		cvs.x = -1;
+		cvs.y = -1;
 		cvs.ms = false;
 	});
 	
@@ -6412,7 +6611,7 @@ const gBlBeat_NllNld= function(ctx,_x,_y,n1,t1,n2,t2){
     gBlNote(ctx,x,y,".",0,.5); 
 } 
 const G_DRAW_LINE 				= 2;
-const G_DRAW_NOTE 				= 3;
+const G_DRAW_AUTORUN			= 3;
 const G_DRAW_BLS				= 4;
 const G_DRAW_SO_EDITOR			= 5;
 
@@ -6497,9 +6696,70 @@ const gc4Line = function(){
 }
 
 
-const gc4Note = function(){
+const gc4AutoRun = function(){
 	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,txt = "...";
 	var ex1,ey1,ex2,ey2;
+
+	const c_4_autoRun = function(){
+		this.uiAutoRun = function(v){
+			var tb = blo0.blDiv(v,v.id+"tb","tb",blo0.c(1));
+			var d = blo0.blDiv(v,v.id+"d","d",blo0.c(2));
+			const bs = [
+				{
+					"id":1,
+					"name":"new",
+					"float":"left",
+					"skip": true,
+					"color": "brown",
+					"click":function(b,v){
+						v.innerHTML = this.name; 
+					}
+				},
+				{
+					"id":2,
+					"name":"name2",
+					"float":"right",
+					"click":function(b,v){
+						v.innerHTML = this.name;  
+						if(1){
+							v.v = blo0.blDiv(v,v.id+"v","v",blGrey[0]);
+							var blse = new CBlOnlineEditor();
+							blo0.blShowObj2Div(d.v,blse);                
+							bl$("blrI1").click();             
+							bl$("blrI2").click();
+						} 
+
+						function CBlOnlineEditor(){
+							this.blrI1 = function(b,d){blo0.blLoadGhIssue("jeremyjia","Games",1,b,d);}
+							this.blrI2 = function(b,d){blo0.blLoadGhIssue("jeremyjia","Games",2,b,d);}
+							this.blrI3 = function(b,d){blo0.blLoadGhIssue("jeremyjia","Games",3,b,d);} 
+						}
+					}
+				},
+				{
+					"id":3,
+					"name":"name3",
+					"float":"right",
+					"click":function(b,v){
+						v.innerHTML = this.name; 
+					}
+				},
+			];
+			blo0.blBtns(bs,tb,d,"lightgreen","brown"); 
+		}
+		this.drawAutoRun = function(ctx){
+			var oldStyle = ctx.fillStyle;
+			ctx.fillStyle = "yellow"; 
+			ctx.fillRect(x1,y1,x2-x1,y2-y1);
+			
+			ctx.fillStyle = "blue";
+			ctx.font = "30px Arial";
+			ctx.fillText(txt, x1,y1);
+	
+			ctx.fillstyle = oldStyle;
+		}
+	};
+	const oAutoRun = new c_4_autoRun();
 
 	this.select = function(b){		s = b;		}
 	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
@@ -6521,16 +6781,7 @@ const gc4Note = function(){
 
 			ctx.fillstyle = oldStyle;
 		}
-		
-		var oldStyle = ctx.fillStyle;
-		ctx.fillStyle = "yellow"; 
-		ctx.fillRect(x1,y1,x2-x1,y2-y1);
-		
-		ctx.fillStyle = "blue";
-		ctx.font = "30px Arial";
-		ctx.fillText(txt, x1,y1);
-
-		ctx.fillstyle = oldStyle;
+		oAutoRun.drawAutoRun(ctx);		
 	}
 	this.select_me = function(x,y){
 		if(blo0.blPiR(x,y,x1,y1,10,10)){
@@ -6541,10 +6792,7 @@ const gc4Note = function(){
 		if(blo0.blPiR(x,y,x2,y2,10,10)){
 			 e = true; 
 			 eui.v1.innerHTML = "";
-			 var b1 = blo0.blBtn(eui.v1,eui.v1.id+"b1","b1","gray");
-			 b1.onclick = function(){
-				txt = blo0.blGetTa().value;	
-			 }
+			 oAutoRun.uiAutoRun(eui.v1);
 			 ex1 = x;
 			 ey1 = y;
 		}
@@ -6587,7 +6835,7 @@ const gc4Note = function(){
 	}
 }
 
-var soScript = ` 
+var soText = ` 
 		var C4Plx = function(){
 			this.drawPlx2Frame = function(ctx,time,x0,y0){ 
 			  var x = x0?x0:0;
@@ -6611,8 +6859,7 @@ var soScript = `
 const gc4SoEditor = function(){
 	var x1,y1,x2,y2,s = false,e = false;
 	var mx1=0,my1=0,mx2=0,my2=0,soName = "so01";
-	var mx = 50,my = 50;
-	var nMDown = 0;
+	var mx = 50,my = 50; 
 	var ex1,ey1,ex2,ey2;
 	const _C4SoEditor = function(){ 
 		
@@ -6620,103 +6867,100 @@ const gc4SoEditor = function(){
 		var vCanStatus = null;
 		var bRunScript = false; 
 		var op = null;
-		const oPics = function(){
+		const osubo = function(){
+			var blPts = null;
 			var lsPic = [];
-			var curPic = null;
-			const btnPics = [
+			var curSubId = -1;
+			const makeBtnList = function(ls,o,v){
+				ls.push(o);
+				var tb = blo0.blDiv(v,v.id+"tb","tb",blo0.c(1));
+				var d = blo0.blDiv(v,v.id+"d","d",blo0.c(2));
+				blo0.blBtns(ls,tb,d,"lightgreen","brown");
+			};
+			const btnSubOs = [
 				{
 					"id":1,
-					"name":"+framePic",
+					"name":"point",
 					"color":blo0.c(17),
+					"float":"left",
+					"description":`
+					  1. blPoints.
+					  `,
+					"click": function(b,v){    
+						v.innerHTML = this.description;
+						if(null==blPts) blPts = blo0.blPoints();
+						curSubId = this.id;
+						blPts.mkUI(v);
+					}, 
+				},
+				{
+					"id":2,
+					"name":"pic",
+					"color":blo0.c(18),
 					"float":"left",
 					"description":`
 					  1. add new picture.
 					  `,
 					"click": function(b,v){ 
-					  v.innerHTML = this.description; 
-					  const oNewPic = function(){
-						return {
-							"id":lsPic.length,
-							"name":lsPic.length,
-							"color":"gray",
-							"float": "left",
-							"description":`newpic...`,
-							"click": function(b,v){
-								v.innerHTML = this.description + `	` + this.src;  
-								var img = document.createElement("img"); 
-    							img.src = this.src; 
-    							v.appendChild(img);
-								curPic = this;
-								curPic.img = img;
-							},
-							"src":"http://localhost:8080/"+(lsPic.length+1)+".jpg"
-						}
-					  }();
-					  lsPic.push(oNewPic);
-					  var tb = blo0.blDiv(v,v.id+"tb","tb",blo0.c(1));
-					  var d = blo0.blDiv(v,v.id+"d","d",blo0.c(2));
-					  blo0.blBtns(lsPic,tb,d,"lightgreen","brown");
-					}
-				},
-				{
-					"id":2,
-					"name":"+samplePic",
-					"color":blo0.c(18),
-					"float":"left",
-					"description":`
-					  1. add new sample picture (x1.jpg).
-					  `,
-					"click": function(b,v){ 
-					  v.innerHTML = this.description; 
-					  const oNewPic = function(){
-						return {
-							"id":lsPic.length,
-							"name":lsPic.length,
-							"color":"gray",
-							"float": "left",
-							"description":`newpic...`,
-							"click": function(b,v){
-								v.innerHTML = this.description + `	` + this.src;  
-								var img = document.createElement("img"); 
-    							img.src = this.src; 
-								img.width = 240;
-								img.height = 160;
-    							v.appendChild(img);
-								curPic = this;
-								curPic.img = img;
-							},
-							"src":"http://localhost:8080/x1.jpg"
-						}
-					  }();
-					  lsPic.push(oNewPic);
-					  var tb = blo0.blDiv(v,v.id+"tb","tb",blo0.c(1));
-					  var d = blo0.blDiv(v,v.id+"d","d",blo0.c(2));
-					  blo0.blBtns(lsPic,tb,d,"lightgreen","brown");
-					}
+						curSubId = this.id;
+						const ls = this.getSubList();
+					  	v.innerHTML = this.description; 
+						const oNewPic = function(){
+							return {
+								"id":ls.length,
+								"name":"pic",
+								"color":"gray",
+								"float": "left",
+								"description":`new pic ...`,
+								"click": function(b,v){
+									v.innerHTML = this.description;   
+								},
+								"src":"http://localhost:8080/x1.jpg"
+							}
+						}();
+					  	makeBtnList(ls,oNewPic,v);
+					},
+					"getSubList": function(){ return lsPic;}
 				},
 			];
-			const _C4Pics = function(){
-				this.ui4Pics = function(v){
+			const _C4SubObjects = function(){
+				
+				this.mDown = function(x,y){
+					if(curSubId==1)	blPts.mdFun(x,y);
+				}
+				this.ui4SubObjects = function(v){
 					var tb = blo0.blDiv(v,v.id+"tb4Pics","tb",blo0.c(15));
 					var d = blo0.blDiv(v,v.id+"d4Pics","d",blo0.c(16));
-					blo0.blBtns(btnPics,tb,d,"lightgreen","brown");
+					blo0.blBtns(btnSubOs,tb,d,"lightgreen","brown");
 				}
-				this.showPics = function(cvs){
+				this.showSubObjects = function(cvs){
 					var ctx = cvs.getContext("2d");
-					ctx.fillText(`oPics: ${lsPic.length} curPic = ${curPic.src}`,x1,y1 + 55);
-					if(curPic!=null) ctx.drawImage(curPic.img, x1, y1+55,240,160);
+					ctx.fillText(`suObjects`,x1,y1 + 55);  
+
+					if(blPts) blPts.drawPoints(cvs,x1,y1,x2,y2);
+
+				}
+				this.compileData = function(){
+					var o = blPts?blPts.data2Plx():{};
+					return JSON.stringify(o);
+				}
+				this.compileFrameFun = function(){
+					return blPts?blPts.fun2Plx():`
+					ctx.fillText('xd try: s= '+ s,x+10,y+55); 
+					`;
 				}
 			}
-			return new _C4Pics();
+			return new _C4SubObjects();
 		}();
 		this.ui4Editor = function(v){ 
 			var tb = blo0.blDiv(v,v.id+"tb","tb",blo0.c(13));
 			var d = blo0.blDiv(v,v.id+"d","d",blo0.c(14));
-			oPics.ui4Pics(v);
+			osubo.ui4SubObjects(v);
 			vCanStatus = blo0.blDiv(v,v.id+"vCanStatus","black","white");
 			vCanStatus.updateMsg = function(x,y){
 				vCanStatus.innerHTML =`[${x},${y}]`;
 			}
+			 
 			const bs = [
 				{
 					"id":1,
@@ -6725,14 +6969,14 @@ const gc4SoEditor = function(){
 						soName = blo0.blGetTa().value;	
 					},
 					"color": "cyan"
-				},
+				}, 
 				{
 					"id":2,
 					"name":"2server",
 					"clickOnMe": function(d){ 
 						var url = "http://localhost:8080/json?fileName=" + soName + ".js"; 
 
-						blo0.blSendTextByPOST(url,soScript,function(resTxt){
+						blo0.blSendTextByPOST(url,soText,function(resTxt){
 							d.innerHTML = "<a href ='http://localhost:8080/" + soName+".js' target='_blank'>" + soName+".js</a>";
 						}); 
 					},
@@ -6741,31 +6985,40 @@ const gc4SoEditor = function(){
 				},
 				{
 					"id":3,
-					"name":"2Ta",
+					"name":"init",
 					"clickOnMe": function(d){
-						blo0.blGetTa().value = soScript;
+						blo0.blGetTa().value = soText;
+					},
+					"color": "white",
+					"float": "left"
+				},
+				{
+					"id":3.1,
+					"name":"F5",
+					"clickOnMe": function(d){
+						blo0.blGetTa().value = blo0.blMakePlxJS(osubo);
 					},
 					"color": "pink",
 					"float": "left"
 				},
 				{
 					"id":4,
-					"name":"fromTa",
+					"name":"frmTa",
 					"clickOnMe": function(d){
 						op = null;
-						soScript = blo0.blGetTa().value;
+						soText = blo0.blGetTa().value;
 					},
-					"color": "pink",
+					"color": blo0.c(15),
 					"float": "left"
 				},
 				{
 					"id":5,
-					"name":"runScript", 
+					"name":"run", 
 					"clickOnMe": function(d){
 						bRunScript = bRunScript?false:true;
 						d.innerHTML = bRunScript;
 					},
-					"color": "pink",
+					"color": "green",
 					"float": "left"
 				},
 			];
@@ -6781,44 +7034,14 @@ const gc4SoEditor = function(){
 		};
 
 		this.drawEffect = function(cvs){
-			//oPics.showPics(cvs);
+			osubo.showSubObjects(cvs);
 			var ctx = cvs.getContext("2d");
 			nTick++;
-			ctx.fillText("soe1: nTick = " + nTick,x1,y1 + 10);
-			ctx.fillText("mx1y1: [" + mx1 + "," + my1 + "]",x1,y1 + 20);
-			ctx.fillText("mx2y2: [" + mx2 + "," + my2 + "]",x1 + 110,y1 + 20);
-			ctx.fillStyle = "purple";
-			ctx.fillRect(mx1+x1,my1+y1,10,10);
-			ctx.fillStyle = "yellow";
-			ctx.fillRect(mx2+x1,my2+y1,20,20);
+			ctx.fillText("soe1: nTick = " + nTick,x1,y1 + 10); 
+			
 			ctx.fillStyle = "green";
 			ctx.fillText("soe2",x2,y2);
-
-			if(Math.abs(mx-mx2)<0.1){
-				mx = mx2;
-				mx2 = mx1;
-				mx1 = mx;
-				my = my2;
-				my2 = my1;
-				my1 = my;
-			}
-			var dx = 0; 
-			if(mx2>mx1) {
-				if(mx>mx2) 	dx = -2;
-				else    	dx = 2;
-			}
-			else if(mx2<mx1){
-				if(mx<mx2) dx = 2;
-				else dx = -2;
-			}
-  
-			mx += dx;
-			my = (my1-my2)/(mx1-mx2)*(mx-mx2) + my2;
-
-			ctx.fillStyle = "blue";
-			ctx.fillRect(mx+x1,my+y1,5,5); 
-			if(vCanStatus&&vCanStatus.updateMsg) vCanStatus.updateMsg(mx,my);
-
+ 
 			_2RunScript(cvs);
 		}
 		
@@ -6828,7 +7051,7 @@ const gc4SoEditor = function(){
 			ctx.fillStyle = "green";
 			ctx.fillRect(mx+x1+5,my+y1+5,5,5); 
 			
-			if(op==null) op = blo0.blWrapPlx(cvs,soScript,x1,y1);
+			if(op==null) op = blo0.blWrapPlx(cvs,soText,x1,y1);
 			ctx.fillText("_2RunScript: nTick="+nTick + "byPlx="+op.callPlx (nTick,mx,my),mx+x1+10,my+my-40);	 
 
 		}
@@ -6838,21 +7061,8 @@ const gc4SoEditor = function(){
 		this.downSOEditor = function(x,y){
 			if(!blo0.blPiR(x,y,x1,y1,x2-x1,y2-y1)){
 				return;
-			}
-			nMDown++;
-			if(nMDown==1){
-				mx1 = x-x1;
-				my1 = y-y1;
-				mx = mx1;
-				my = my1;
-			}
-			else if(nMDown==2){
-				mx2 = x-x1;
-				my2 = y-y1;
-				nMDown = 0;
-				mx = mx1;
-				my = my1;
-			}
+			} 
+			osubo.mDown(x,y);
 		} 
 	};
 	const osoe = new _C4SoEditor();

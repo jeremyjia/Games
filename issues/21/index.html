@@ -69,7 +69,7 @@
 <div class="topnav" id="myTopnav">
   <a href="../../index.html">Home</a>
   <a href="../index.html">issues</a>
-  <a href="#"  class="active">i21_bv0.235</a> 
+  <a href="#"  class="active">i21_bv0.241</a> 
   <a href="c1/index.html">c1</a>
   <a href="c2/index.html">c2</a>
   <a href="c4/index.html">c4</a>
@@ -255,10 +255,10 @@
           btnLine.onclick = function(){
             cvs.setDrawType(G_DRAW_LINE);
           }
-          var btnNote = blo0.blBtn(tb,tb.id+"btnNote","note","yellow");
-          btnNote.style.float = "right";
-          btnNote.onclick = function(){
-            cvs.setDrawType(G_DRAW_NOTE);
+          var btnAutoRun = blo0.blBtn(tb,tb.id+"btnAutoRun","autoRun","yellow");
+          btnAutoRun.style.float = "right";
+          btnAutoRun.onclick = function(){
+            cvs.setDrawType(G_DRAW_AUTORUN);
           }
           var btnSO = blo0.blBtn(tb,tb.id+"btnSO","so","turquoise");
           btnSO.style.float = "right";

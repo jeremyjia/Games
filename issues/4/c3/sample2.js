@@ -1,3 +1,4 @@
+// ...1
 var v = bl$("id_4_div_i4_c3_blrTest1");
 var _ss = new CVoa2Video(); 
 var _btn = v.getBtn(1);
