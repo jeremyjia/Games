@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.412"
+var g_ver_blClass = "CBlClass_bv1.6.413"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -4906,6 +4906,28 @@ function CBlClass ()
 			b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
 		}
 		return _o;		
+	}
+	this.blObject = function(_x,_y,_w,_h){
+		var o = {};
+		var x = _x,y=_y,w=_w,h=_h;
+		o.square = function(){
+			return w*h;
+		}
+		return o;
+	}
+	this.blObjectList = function(){
+		var l = [];
+		var ol = {};
+		ol.addObject = function(o){
+			l.push(o);
+		}
+		ol.sumSquare = function(){
+			var s = 0;
+			for(i in l){
+				s += l[i].square;
+			}
+		}
+		return ol;
 	}
 	this.C4Music = function(){
 		const _CMusic = function(){
