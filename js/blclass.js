@@ -4907,11 +4907,24 @@ function CBlClass ()
 		}
 		return _o;		
 	}
-	this.blObject = function(_x,_y,_w,_h){
+	this.blObject = function(_txt,_x,_y,_w,_h,_c){
 		var o = {};
-		var x = _x,y=_y,w=_w,h=_h;
+		var txt = _txt,x = _x,y=_y,w=_w,h=_h,c = _c;
 		o.square = function(){
 			return w*h;
+		}
+		o.renderMe = function(cvs,mode,x0,y0,scale){
+			switch (mode){
+				case 0:
+					blo0.blRect(cvs,x0 + x*scale, y0 + y*scale,w*scale,h*scale,c);
+					blo0.blText(cvs,txt,x0 + x*scale + 2, y0 + y*scale + 20,12,"green");
+					blo0.blText(cvs,"东西长度：" + w + " 米",x0 + x*scale + 2, y0 + y*scale + 33,12,"green");
+					blo0.blText(cvs,"南北长度：" + h + " 米",x0 + x*scale + 2, y0 + y*scale + 45,12,"green");
+					blo0.blText(cvs,"面积：" + o.square().toFixed(2) + " 平方米",x0 + x*scale + 2, y0 + y*scale + 58,12,"green");
+					break;
+				default:
+					break;
+			}
 		}
 		return o;
 	}
@@ -4924,8 +4937,23 @@ function CBlClass ()
 		ol.sumSquare = function(){
 			var s = 0;
 			for(i in l){
-				s += l[i].square;
+				s += l[i].square();
 			}
+			return s;
+		}
+		ol.drawAllObjects = function(cvs,x0,y0,scale){
+			
+			var ctx = cvs.getContext("2d");								 
+			var old = ctx.fillStyle; 
+
+			ctx.fillStyle = "green"; 
+			ctx.fillRect(x0,y0,15,15);	
+			ctx.fillText( "总面积 = " + ol.sumSquare()+ " 平方米" , 111, 111);	  
+
+			for(i in l){ 
+				l[i].renderMe(cvs,0,x0,y0,scale);
+			}
+			ctx.fillStyle = old;
 		}
 		return ol;
 	}
