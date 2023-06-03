@@ -96,18 +96,82 @@
   function fnPlx(){      
       if(!this.md){ 
          
-        this.md = blo0.blMD("id_4_plx","blclass unit test",55,255,600,400,"green");
+        this.md = blo0.blMD("id_4_plx","blclass unit test",55,111,600,400,"green");
         var tb = blo0.blDiv(this.md,this.md.id+"tb4Plx","tb","gray");
         var v1 = blo0.blDiv(this.md,this.md.id+"v1","v1","lightgray");
 				var w = 555, h = 444;
+        var s = 10;
+        w *=s;
+        h *=s;
+          
         var fCVS = blo0.blCanvas2(v1,w,h); fCVS.n = 0;
 
         var btnPlay = blo0.blBtn(tb,tb.id+"play","play","grey"); btnPlay.isRunning = false;
-				function uiFnTimer() {   
+				function uiFnTimer() {  
+          fCVS.n++; 
           var ctx = fCVS.getContext("2d");
 								 
-          ctx.fillStyle = "lightblue"; 
-          ctx.fillRect(0,0,w,h);		   
+          ctx.fillStyle = "lightgreen"; 
+          ctx.fillRect(0,0,w,h);	
+          
+          ctx.font = 12 + "px Consolas";
+					ctx.fillStyle = "yellow";
+					ctx.fillText("xddbug: " + fCVS.ms + "_ " + fCVS.n + " " + Date(), 11, 22);
+
+					ctx.fillStyle = "green";
+					ctx.fillText("mouseStatus:[" + fCVS.x + "," + fCVS.y + "]" , 11, 44);	   
+
+          var x0 = 100;
+          var y0 = 100;
+          var x = x0;
+          var y = y0;
+
+          var rw = 7.24;
+          var rh = 24;
+          blo0.blRect(fCVS,x,y,rw*s,rh*s,"blue");
+
+          x += 11*s;
+          rw = 31;
+          rh = 24;
+          blo0.blRect(fCVS,x,y,rw*s,rh*s,"brown");
+
+          x = x0;
+          y = x0 + 25*s;
+          rw = 7;
+          rh = 17.55;
+          blo0.blRect(fCVS,x,y,rw*s,rh*s,"lightblue");
+
+          x = x0 + 11*s;
+          y = x0 + 25*s;
+          rw = 25.1;
+          rh = 18;
+          blo0.blRect(fCVS,x,y,rw*s,rh*s,"gray");
+
+          x = x0;
+          y = y0 + 51*s;
+          rw = 40;
+          rh = 8;
+          blo0.blRect(fCVS,x,y,rw*s,rh*s,"skyblue");
+          
+          x = x0;
+          y = y0 + 59*s;
+          rw = 40;
+          rh = 8;
+          blo0.blRect(fCVS,x,y,rw*s,rh*s,"lightgray");
+
+          //power house & water room
+          x = x0 + 45 * s;
+          y = y0 + 43*s;
+          rw = 5;
+          rh = 8;
+          blo0.blRect(fCVS,x,y,rw*s,rh*s,"white");
+          
+          //wc
+          x = x0 + 45 * s;
+          y = y0 + 52*s;
+          rw = 5;
+          rh = 6.2;
+          blo0.blRect(fCVS,x,y,rw*s,rh*s,"white");
 				}
 				btnPlay.onclick = function(){
 					if(false ==this.isRunning){
