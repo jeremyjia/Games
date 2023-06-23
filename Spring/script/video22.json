@@ -1,0 +1,49 @@
+{
+    "request": {
+        "version": "0.0.22",
+        "width": 1024,
+        "height": 768,
+        "music": "${VAR_MP3}",
+        "rate": "5",
+        "frames": [
+            {
+                "number": "1",
+                "time": "100",
+                "objects": [
+                    {
+                        "text": "${VAR_TITLE}",
+                        "x": 50,
+                        "y": 200,
+                        "size": 40,
+                        "color": "200,100,155",
+                        "layer": 2
+                    }
+                ],
+                "backgroundColor": "200,200,200",
+            }
+        ],
+        "superObjects": [
+            {
+                "type": "javascript",
+                "frameRange": "(1,100)",
+                "attribute": {
+                    "script": "plxTextEffects.js",
+                    "function": "animateFrame",
+                    "start": 1
+                },
+                "layer": 1
+            }
+        ],
+
+        "Macros": [
+            {
+                "name": "VAR_MP3",
+                "value": "bzll.mp3"
+            },
+            {
+                "name": "VAR_TITLE",
+                "value": "卡拉OK字幕特效插件演示"
+            }
+        ]
+    }
+}
