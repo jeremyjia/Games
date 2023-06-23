@@ -297,6 +297,11 @@ public class JSGraphEngine {
 			}
 		}
 
+        public TextObj measureText(String strText) {
+            int w = graphics.getFontMetrics().getHeight();
+            System.out.println("measureText:" + w);
+            return new TextObj(w);
+        }
 		public void beginPath() {
 		    m_Path2D.reset();
 		}
@@ -320,7 +325,14 @@ public class JSGraphEngine {
 
 	}
 
-	public class ImageObj {
-		public String src = "";
-	}
+    public class ImageObj {
+        public String src = "";
+    }
+
+    public class TextObj {
+        public TextObj(int w) {
+            width = w;
+        }
+        public int width = 30;
+    }
 }

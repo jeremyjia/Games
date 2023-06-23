@@ -127,7 +127,7 @@ public class NetAccessUtil {
     }
 
     public static String getGPTToken() {
-        String tk = "sk-Tic3AqeqoM" + "52iPiRdA2QT" + "3BlbkFJt9gaIoL" + "9UTyBVyUtOavX";// Wangxu's
+        String tk = "sk-yeesop6IW7" + "cwfnyfIXogT" + "3BlbkFJMiDuqpZ" + "ncO2f94F6NMuT";// Wangxu's
         return tk;
     }
 
