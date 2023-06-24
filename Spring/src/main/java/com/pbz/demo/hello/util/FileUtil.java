@@ -290,7 +290,9 @@ public class FileUtil {
             //Fixed url, use sogou instead of baidu.
             String textOfAudio = URLEncoder.encode(text, "UTF-8");
             url = "https://fanyi.sogou.com/reventondc/synthesis?text=" + textOfAudio + "&speed=1&lang=zh-CHS&from=translateweb&speaker=6";
-            String downloadFileName = FileUtil.randomFileName() + ".mp3";
+			 //Fixed url, use google instead of sogou.
+			url = "https://translate.google.com/translate_tts?ie=UTF-8&total=1&idx=0&textlen=32&client=tw-ob&q="+textOfAudio+"&tl=zh-CN";
+			String downloadFileName = FileUtil.randomFileName() + ".mp3";
             FileUtil.downloadFile(url, downloadFileName);
 
 			String targetPath = System.getProperty("user.dir");
