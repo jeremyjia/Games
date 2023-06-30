@@ -8,7 +8,7 @@
         "frames": [
             {
                 "number": "1",
-                "time": "100",
+                "time": "150",
                 "objects": [
                     {
                         "text": "${VAR_TITLE}",
@@ -25,11 +25,97 @@
         "superObjects": [
             {
                 "type": "javascript",
-                "frameRange": "(1,100)",
+                "frameRange": "(8,12)",
+                "unit":1,
                 "attribute": {
                     "script": "plxTextEffects.js",
                     "function": "animateFrame",
-                    "start": 1
+                    "start": 1,
+                    "initArgs":{
+                        "function": "setPlxArguments",
+                        "args": ["许多许多年以前"]
+                    },
+                    "refreshArgs":"true"
+                },
+                "layer": 1
+            },
+            {
+                "type": "javascript",
+                "frameRange": "(13,16)",
+                "unit":1,
+                "attribute": {
+                    "script": "plxTextEffects.js",
+                    "function": "animateFrame",
+                    "start": 1,
+                    "initArgs":{
+                        "function": "setPlxArguments",
+                        "args": ["我带着无奈去流浪"]
+                    },
+                    "refreshArgs":"true"
+                },
+                "layer": 1
+            },
+            {
+                "type": "javascript",
+                "frameRange": "(17,20)",
+                "unit":1,
+                "attribute": {
+                    "script": "plxTextEffects.js",
+                    "function": "animateFrame",
+                    "start": 1,
+                    "initArgs":{
+                        "function": "setPlxArguments",
+                        "args": ["经过多少的风霜"]
+                    },
+                    "refreshArgs":"true"
+                },
+                "layer": 1
+            },
+            {
+                "type": "javascript",
+                "frameRange": "(21,25)",
+                "unit":1,
+                "attribute": {
+                    "script": "plxTextEffects.js",
+                    "function": "animateFrame",
+                    "start": 1,
+                    "initArgs":{
+                        "function": "setPlxArguments",
+                        "args": ["我独自漂泊在他乡"]
+                    },
+                    "refreshArgs":"true"
+                },
+                "layer": 1
+            },
+            {
+                "type": "javascript",
+                "frameRange": "(26,29)",
+                "unit":1,
+                "attribute": {
+                    "script": "plxTextEffects.js",
+                    "function": "animateFrame",
+                    "start": 1,
+                    "initArgs":{
+                        "function": "setPlxArguments",
+                        "args": ["多少次夜里"]
+                    },
+                    "refreshArgs":"true"
+                },
+                "layer": 1
+            },
+            {
+                "type": "javascript",
+                "frameRange": "(30,34)",
+                "unit":1,
+                "attribute": {
+                    "script": "plxTextEffects.js",
+                    "function": "animateFrame",
+                    "start": 1,
+                    "initArgs":{
+                        "function": "setPlxArguments",
+                        "args": ["盼望星星，盼月亮"]
+                    },
+                    "refreshArgs":"true"
                 },
                 "layer": 1
             }
