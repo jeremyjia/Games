@@ -33,7 +33,7 @@
                     "start": 1,
                     "initArgs":{
                         "function": "setPlxArguments",
-                        "args": ["许多许多年以前"]
+                        "args": ["许多许多年以前", "50px Arial"]
                     },
                     "refreshArgs":"true"
                 },
@@ -49,7 +49,7 @@
                     "start": 1,
                     "initArgs":{
                         "function": "setPlxArguments",
-                        "args": ["我带着无奈去流浪"]
+                        "args": ["我带着无奈去流浪","36px Arial"]
                     },
                     "refreshArgs":"true"
                 },
@@ -65,7 +65,7 @@
                     "start": 1,
                     "initArgs":{
                         "function": "setPlxArguments",
-                        "args": ["经过多少的风霜"]
+                        "args": ["经过多少的风霜","50px Arial"]
                     },
                     "refreshArgs":"true"
                 },
@@ -81,7 +81,7 @@
                     "start": 1,
                     "initArgs":{
                         "function": "setPlxArguments",
-                        "args": ["我独自漂泊在他乡"]
+                        "args": ["我独自漂泊在他乡","36px Arial"]
                     },
                     "refreshArgs":"true"
                 },
@@ -97,7 +97,7 @@
                     "start": 1,
                     "initArgs":{
                         "function": "setPlxArguments",
-                        "args": ["多少次夜里"]
+                        "args": ["多少次夜里","100px Arial"]
                     },
                     "refreshArgs":"true"
                 },
@@ -113,7 +113,7 @@
                     "start": 1,
                     "initArgs":{
                         "function": "setPlxArguments",
-                        "args": ["盼望星星，盼月亮"]
+                        "args": ["盼望星星，盼月亮","50px Arial"]
                     },
                     "refreshArgs":"true"
                 },

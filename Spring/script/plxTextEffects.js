@@ -50,7 +50,11 @@ function drawOverlay(time) {
 
   // 插件统一的对外接口, 用于设置可变参数，参数个数任意，类型是String
 function setPlxArguments() {
-    if(arguments.length > 0){
-      text = arguments[0]; 
-    } 
+      for(var i=0; i<arguments.length; i++){
+        if(i==0){
+          text = arguments[0]; 
+        }else if(i==1){
+          font = arguments[1];
+        }
+      }
 }
