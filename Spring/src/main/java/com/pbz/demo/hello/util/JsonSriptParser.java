@@ -29,6 +29,7 @@ import javax.imageio.ImageIO;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
@@ -904,7 +905,14 @@ public final class JsonSriptParser {
 		}
 		striptFile = FileUtil.downloadFileIfNeed(striptFile);
 		String functionName = attributeObj.getString("function");
-		int start = attributeObj.getInt("start");
+		int start = attributeObj.getInt("start");    
+		boolean bRefreshArgs=false;
+		if(attributeObj.has("refreshArgs")) {
+		    if("true".equalsIgnoreCase(attributeObj.getString("refreshArgs"))) {
+		        bRefreshArgs = true; 
+		    }
+        }
+		
 		graphEngine.setGraphics(gp2d);
 		engine.put("document", graphEngine);
 
@@ -917,20 +925,41 @@ public final class JsonSriptParser {
 			Reader r = new InputStreamReader(new FileInputStream(f));
 			engine.eval(r);
 			
-		     //Only for ChessLog used:
+		     //Only for ChessLog used，TODO:废除这段临时代码
 	        if(attributeObj.has("chess")) {
 	            String setChesslogFunName = attributeObj.getString("chess");
 	            Invocable invoke = (Invocable) engine;
 	            String filteredChessLog = MacroResolver.getProperty(VAR_CHESS_LOG_TEXT_FIXED);//"炮二平六 马8进7";
 	            invoke.invokeFunction(setChesslogFunName, new Object[] { filteredChessLog });
 	        }
+            // Initialize parameters for JS Plug-in      
+            setPlugInArgs(attributeObj);            
+		}
+		
+		if(bRefreshArgs) {
+		    setPlugInArgs(attributeObj);  
 		}
 		
 		Invocable invoke = (Invocable) engine;
 		invoke.invokeFunction(functionName, new Object[] { number - start });
 	}
 
-	private static void drawGraphic(JSONObject jObj, Graphics2D gp2d) {
+	private static void setPlugInArgs(JSONObject attributeObj) throws Exception{     
+	    if (attributeObj!=null && attributeObj.has("initArgs")) {
+            JSONObject argObj = attributeObj.getJSONObject("initArgs");
+            String argsFunName = argObj.getString("function");
+            JSONArray argsArray = argObj.getJSONArray("args");
+            List<String> objs = new ArrayList<>();
+            for (Object object : argsArray) {
+                objs.add((String) object);
+            }
+            Object[] objectAttry = objs.toArray(new String[]{});
+            Invocable invoke = (Invocable) engine;
+            invoke.invokeFunction(argsFunName, objectAttry);
+        }       
+    }
+
+    private static void drawGraphic(JSONObject jObj, Graphics2D gp2d) {
 		String graphicType = jObj.getString("graphic");
 		JSONObject attrObj = jObj.getJSONObject("attribute");
 		int left = attrObj.getInt("left");

@@ -1,0 +1,135 @@
+{
+    "request": {
+        "version": "0.0.22",
+        "width": 1024,
+        "height": 768,
+        "music": "${VAR_MP3}",
+        "rate": "5",
+        "frames": [
+            {
+                "number": "1",
+                "time": "150",
+                "objects": [
+                    {
+                        "text": "${VAR_TITLE}",
+                        "x": 50,
+                        "y": 200,
+                        "size": 40,
+                        "color": "200,100,155",
+                        "layer": 2
+                    }
+                ],
+                "backgroundColor": "200,200,200",
+            }
+        ],
+        "superObjects": [
+            {
+                "type": "javascript",
+                "frameRange": "(8,12)",
+                "unit":1,
+                "attribute": {
+                    "script": "plxTextEffects.js",
+                    "function": "animateFrame",
+                    "start": 1,
+                    "initArgs":{
+                        "function": "setPlxArguments",
+                        "args": ["许多许多年以前", "50px Arial"]
+                    },
+                    "refreshArgs":"true"
+                },
+                "layer": 1
+            },
+            {
+                "type": "javascript",
+                "frameRange": "(13,16)",
+                "unit":1,
+                "attribute": {
+                    "script": "plxTextEffects.js",
+                    "function": "animateFrame",
+                    "start": 1,
+                    "initArgs":{
+                        "function": "setPlxArguments",
+                        "args": ["我带着无奈去流浪","36px Arial"]
+                    },
+                    "refreshArgs":"true"
+                },
+                "layer": 1
+            },
+            {
+                "type": "javascript",
+                "frameRange": "(17,20)",
+                "unit":1,
+                "attribute": {
+                    "script": "plxTextEffects.js",
+                    "function": "animateFrame",
+                    "start": 1,
+                    "initArgs":{
+                        "function": "setPlxArguments",
+                        "args": ["经过多少的风霜","50px Arial"]
+                    },
+                    "refreshArgs":"true"
+                },
+                "layer": 1
+            },
+            {
+                "type": "javascript",
+                "frameRange": "(21,25)",
+                "unit":1,
+                "attribute": {
+                    "script": "plxTextEffects.js",
+                    "function": "animateFrame",
+                    "start": 1,
+                    "initArgs":{
+                        "function": "setPlxArguments",
+                        "args": ["我独自漂泊在他乡","36px Arial"]
+                    },
+                    "refreshArgs":"true"
+                },
+                "layer": 1
+            },
+            {
+                "type": "javascript",
+                "frameRange": "(26,29)",
+                "unit":1,
+                "attribute": {
+                    "script": "plxTextEffects.js",
+                    "function": "animateFrame",
+                    "start": 1,
+                    "initArgs":{
+                        "function": "setPlxArguments",
+                        "args": ["多少次夜里","100px Arial"]
+                    },
+                    "refreshArgs":"true"
+                },
+                "layer": 1
+            },
+            {
+                "type": "javascript",
+                "frameRange": "(30,34)",
+                "unit":1,
+                "attribute": {
+                    "script": "plxTextEffects.js",
+                    "function": "animateFrame",
+                    "start": 1,
+                    "initArgs":{
+                        "function": "setPlxArguments",
+                        "args": ["盼望星星，盼月亮","50px Arial"]
+                    },
+                    "refreshArgs":"true"
+                },
+                "layer": 1
+            }
+        ],
+
+        "Macros": [
+            {
+                "name": "VAR_MP3",
+                "value": "bzll.mp3"
+            },
+            {
+                "name": "VAR_TITLE",
+                "value": "卡拉OK字幕特效插件演示"
+            }
+        ]
+    }
+}
