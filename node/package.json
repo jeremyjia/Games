@@ -39,7 +39,7 @@
     "jwt-redis": "^6.0.0",
     "mysql": "^2.18.1",
     "mysql2": "^2.1.0",
-    "nodemon": "^2.0.20",
+    "nodemon": "^3.0.1",
     "ono": "^5.0.1",
     "openapi-sampler": "^1.0.0-beta.15",
     "redis": "^3.1.2",
