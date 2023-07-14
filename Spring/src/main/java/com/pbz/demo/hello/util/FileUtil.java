@@ -1,8 +1,10 @@
 package com.pbz.demo.hello.util;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -44,6 +46,7 @@ import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.jaudiotagger.audio.mp3.MP3AudioHeader;
 import org.jaudiotagger.audio.mp3.MP3File;
+import org.json.JSONObject;
 
 public class FileUtil {
 
@@ -281,27 +284,12 @@ public class FileUtil {
 
     public static String downloadFileIfNeed(String file) throws IOException {
 
+        if (file.startsWith("commentID:")) {
+            return savePlugInToJSFile(file);
+        }
+        
         if (file.startsWith("tts:")) {
-            String text = file.substring(4);
-            String url = "https://tts.baidu.com/text2audio?tex=" + text;
-            if (url.indexOf("ctp=1") == -1) {
-                url += "&cuid=baike&lan=ZH&ctp=1&pdt=301&vol=10&rate=4&spd=5"; //Default parameters
-            }
-            //Fixed url, use sogou instead of baidu.
-            String textOfAudio = URLEncoder.encode(text, "UTF-8");
-            url = "https://fanyi.sogou.com/reventondc/synthesis?text=" + textOfAudio + "&speed=1&lang=zh-CHS&from=translateweb&speaker=6";
-			 //Fixed url, use google instead of sogou.
-			url = "https://translate.google.com/translate_tts?ie=UTF-8&total=1&idx=0&textlen=32&client=tw-ob&q="+textOfAudio+"&tl=zh-CN";
-			String downloadFileName = FileUtil.randomFileName() + ".mp3";
-            FileUtil.downloadFile(url, downloadFileName);
-
-			String targetPath = System.getProperty("user.dir");
-            File mp3File = new File(targetPath + "/" + downloadFileName);
-            if (!mp3File.exists()) {
-                System.out.println("The map3 file is NOT generated:" + mp3File);
-                return "A_Sax.wav";
-            }
-            return downloadFileName;
+            return saveTextToAudioFile(file);
         }
 
         String fileName = file;
@@ -319,7 +307,58 @@ public class FileUtil {
         return fileName;
     }
 
-	public static String downloadFile(String fileUrl) throws Exception {
+    private static String saveTextToAudioFile(String file) throws IOException {
+        // tts:hello
+        String text = file.substring(4);
+        String textOfAudio = URLEncoder.encode(text, "UTF-8");
+
+        String url = "https://tts.baidu.com/text2audio?tex=" + text;
+        if (url.indexOf("ctp=1") == -1) {
+            url += "&cuid=baike&lan=ZH&ctp=1&pdt=301&vol=10&rate=4&spd=5"; // Default parameters
+        }
+        // Fixed url, use sogou instead of baidu.
+        url = "https://fanyi.sogou.com/reventondc/synthesis?text=" + textOfAudio
+                + "&speed=1&lang=zh-CHS&from=translateweb&speaker=6";
+        // Fixed url, use google instead of sogou.
+        url = "https://translate.google.com/translate_tts?ie=UTF-8&total=1&idx=0&textlen=32&client=tw-ob&q="
+                + textOfAudio + "&tl=zh-CN";
+
+        String downloadFileName = FileUtil.randomFileName() + ".mp3";
+        FileUtil.downloadFile(url, downloadFileName);
+
+        String targetPath = System.getProperty("user.dir");
+        File mp3File = new File(targetPath + "/" + downloadFileName);
+        if (!mp3File.exists()) {
+            System.out.println("The map3 file is NOT generated:" + mp3File);
+            return "A_Sax.wav";
+        }
+        return downloadFileName;
+    }
+
+    private static String savePlugInToJSFile(String strInput) throws IOException {
+        // commentID:1234
+        String commentID = strInput.substring(strInput.indexOf(":") + 1);
+        String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentID;
+        String resultString = NetAccessUtil.doGetOnGitHub(url, "");
+        int s = resultString.indexOf("body");
+        int e = resultString.indexOf("reactions");
+        String plugInContentStr = resultString.substring(s + 7, e - 3);
+
+        String fileName = "plx_"+commentID + ".js";
+        String fullPath = System.getProperty("user.dir") + "/" + fileName;
+               
+        FileWriter fw2 = new FileWriter(fullPath);
+        BufferedWriter bw = new BufferedWriter(fw2);    
+        plugInContentStr = plugInContentStr.replace("\\r\\n", "\r\n");
+        plugInContentStr = plugInContentStr.replace("\\", "");
+        bw.write(plugInContentStr); 
+        bw.close();
+
+        System.out.println(plugInContentStr);
+        return fileName;
+    }
+
+    public static String downloadFile(String fileUrl) throws Exception {
 		if (!fileUrl.startsWith("http")) {
 			throw new Exception("The file url is not correct!");
 		}
