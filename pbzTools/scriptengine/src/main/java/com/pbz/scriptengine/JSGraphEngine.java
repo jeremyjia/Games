@@ -92,7 +92,7 @@ public class JSGraphEngine {
 		}
 
 		public void rotate(double angle) {
-			this.angle = angle;
+			this.angle += angle;
 			graphics.rotate(angle,0,0);
 		}
 
