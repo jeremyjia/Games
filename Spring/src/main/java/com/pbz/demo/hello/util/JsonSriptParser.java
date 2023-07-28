@@ -740,19 +740,22 @@ public final class JsonSriptParser {
 		String startFrameNumber = rangeArray[0].substring(1);
 		int sfNum = Integer.parseInt(startFrameNumber);
 
-		float X = 0, a = 0, b = 0, c = 0, Y = 0;
-		if (actionTrace.toLowerCase().startsWith("x")) {
-			String xValue = actionTrace.substring(2);
-			X = Integer.parseInt(xValue);
-			Y = y1 + (number - sfNum) * step;
-		} else {
-			X = x1 + (number - sfNum) * step;
-			String parm[] = actionTrace.split("\\+");
-			a = Float.parseFloat(parm[0].substring(2, parm[0].indexOf("*")));
-			b = Float.parseFloat(parm[1].substring(0, parm[1].indexOf("*")));
-			c = Float.parseFloat(parm[2]);
-			Y = (float) (a * X * X + b * X + c);
-		}
+        float X = 0, a = 0, b = 0, c = 0, Y = 0;
+        if (actionTrace.toLowerCase().startsWith("function")) {
+            X = x1 + (number - sfNum) * step; // 得到对象的起始X坐标
+            Y = calTraceByJS(X, actionTrace);
+        } else if (actionTrace.toLowerCase().startsWith("x")) {
+            String xValue = actionTrace.substring(2);
+            X = Integer.parseInt(xValue);
+            Y = y1 + (number - sfNum) * step;
+        } else {
+            X = x1 + (number - sfNum) * step;
+            String parm[] = actionTrace.split("\\+");
+            a = Float.parseFloat(parm[0].substring(2, parm[0].indexOf("*")));
+            b = Float.parseFloat(parm[1].substring(0, parm[1].indexOf("*")));
+            c = Float.parseFloat(parm[2]);
+            Y = (float) (a * X * X + b * X + c);
+        }
 
 		if (name != null && !name.trim().isEmpty()) {
 			if (!"text".equalsIgnoreCase(type) && !"picture".equalsIgnoreCase(type)) {
@@ -825,7 +828,15 @@ public final class JsonSriptParser {
 		}
 	}
 
-	private static void drawSubtitleObject(JSONObject jObj, Graphics2D gp2d, int number) throws Exception {
+    private static float calTraceByJS(float x, String actionTrace) throws Exception {
+        engine.eval(actionTrace);
+        Invocable invocable = (Invocable) engine;
+        Object result = invocable.invokeFunction("trace", x);
+        float y = Float.parseFloat(result.toString());
+        return y;
+    }
+
+    private static void drawSubtitleObject(JSONObject jObj, Graphics2D gp2d, int number) throws Exception {
 		JSONObject attributeObj = jObj.getJSONObject("attribute");
 		String subtitleFile = attributeObj.getString("script");
 		boolean isReLoadScript = false;
