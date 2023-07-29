@@ -29,7 +29,6 @@ import javax.imageio.ImageIO;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
@@ -757,6 +756,32 @@ public final class JsonSriptParser {
             Y = (float) (a * X * X + b * X + c);
         }
 
+        boolean bPrint = false;
+        if (actionObj.has("print")) {
+            bPrint = actionObj.getBoolean("print");
+        }
+        if (bPrint) {
+            // 绘制超级对象的脚印
+            for (int i = sfNum; i <= number; i++) {
+                float printX = x1 + (i - sfNum) * step;
+                float printY;
+                if (actionTrace.toLowerCase().startsWith("function")) {
+                    printY = calTraceByJS(printX, actionTrace);
+                } else if (actionTrace.toLowerCase().startsWith("x")) {
+                    String xValue = actionTrace.substring(2);
+                    printX = Integer.parseInt(xValue);
+                    printY = y1 + (i - sfNum) * step;
+                } else {
+                    String parm[] = actionTrace.split("\\+");
+                    float a1 = Float.parseFloat(parm[0].substring(2, parm[0].indexOf("*")));
+                    float b1 = Float.parseFloat(parm[1].substring(0, parm[1].indexOf("*")));
+                    float c1 = Float.parseFloat(parm[2]);
+                    printY = (float) (a1 * printX * printX + b1 * printX + c1);
+                }
+                gp2d.fillOval((int) printX, (int) printY, 6, 6);
+            }
+        }
+  
 		if (name != null && !name.trim().isEmpty()) {
 			if (!"text".equalsIgnoreCase(type) && !"picture".equalsIgnoreCase(type)) {
 				gp2d.drawString(name, X, Y);
