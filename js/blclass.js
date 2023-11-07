@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.431"
+var g_ver_blClass = "CBlClass_bv1.6.433"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -8100,27 +8100,11 @@ const gc4BLS = function(){
 						if(bMoveLine){
 							ctx.fillStyle = "yellow";
 							ctx.fillRect(x1,y1,20,20);
-						}	
-						ctx.fillStyle = "blue";
-						ctx.font = "10px Arial";
-						var s = "[" + x1 + "," + y1 + "," + x2 + "," + y2 + "]";
-						s += " mxLine1=" + mxLine1;
-						s += " myLine1=" + myLine1;
-						s += " mxLine2=" + mxLine2;
-						s += " myLine2=" + myLine2;
-						s += " bMoveLine =" + bMoveLine;
-						s += " mmx = " + mmx;
-						ctx.fillText(s,x1,y1+20);	
+						}	 
 					}
 				},
-				"drawObject": function(r,ctx,x,y){										
-					ctx.fillStyle = "red";
-					ctx.font = "10px Arial";
-					
-					ctx.fillText("line",r.attribute.left+x,r.attribute.top+y);	
-					ctx.fillText(r.getMDMsg(),r.attribute.left+x,r.attribute.top+y -20);			
+				"drawObject": function(r,ctx,x,y){												
 					r.drawMyself(ctx,x,y);				
-
 				},
 				
 			},
@@ -8128,16 +8112,56 @@ const gc4BLS = function(){
 				"id": "id_4_text",
 				"type": "text",
 				"makeData": function(r,x1,y1,x2,y2,size,color){
+					var bMoveText = false;
+					var mxLine1 = -1, myLine1 = -1,mxLine2 = -1, myLine2 = -1;
+
 					r.text = blo0.blGetTa().value;
 					r.x = x1;
 					r.y = y1;
 					r.size = size;
 					r.color = color;
+					r.drawMyself = function(ctx,x,y){
+						ctx.fillStyle = "red";
+						ctx.font = "10px Arial";					
+						ctx.fillText(r.text,r.x+x,r.y+y);	 
+						if(bMoveText){
+							ctx.fillStyle = "red";
+							ctx.fillRect(r.x+x,r.y+y,20,20);
+						} 
+					}
+					r.downOnMe = function(x,y,x1,y1){   
+						setPointInText(x,y,x1,y1);
+					}
+					r.upOnMe = function(x,y,x1,y1){
+						toMoveText(x,y,x1,y1);
+						bMoveText = false;
+					} 
+
+					const setPointInText = function(x,y,x1,y1){
+						if(blo0.blPiR(x,y,r.x+x1,r.y+y1,20,20)){
+							bMoveText = true; 
+							mxLine1 = x;
+							myLine1 = y;
+						}
+						else{
+							bMoveText = false;
+						}
+					}
+					const toMoveText = function(x,y,x1,y1){
+						if(bMoveText){
+							mxLine2 = x;
+							myLine2 = y;
+
+							r.x += mxLine2 - mxLine1;
+							r.y += myLine2 - myLine1; 
+
+							mxLine1 = mxLine2;
+							myLine1 = myLine2;
+						}
+					}
 				},
 				"drawObject": function(r,ctx,x,y){			
-					ctx.fillStyle = "red";
-					ctx.font = "10px Arial";					
-					ctx.fillText(r.text,r.x+x,r.y+y);	
+					r.drawMyself(ctx,x,y);	
 				},
 			},
 		];
@@ -8164,16 +8188,9 @@ const gc4BLS = function(){
 		
 		var s = false;
 		var msgO = "msgO"; 
-		o.selfDraw = function(ctx,x1,y1){
-			ctx.fillStyle = "purple";
-			ctx.font = "10px Arial";
-			ctx.fillText(JSON.stringify(o) + "s =" +  s + " - " + msgO,o.getLeft()+x1,o.getTop()+y1);
+		o.selfDraw = function(ctx,x1,y1){ 
 			const drawThisObject = function(){ 
-				ctx.fillStyle = "green";
-				ctx.font = "10px Arial";
-				ctx.fillRect(o.getLeft()+x1,o.getTop()+y1,5,5);
-				ctx.fillText(_oType,o.getLeft()+x1,o.getTop()+y1+20);
-
+				
 				var of = null;
 				for(i in osDefine){
 					if(osDefine[i].type==_oType){
