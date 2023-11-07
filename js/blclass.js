@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.413"
+var g_ver_blClass = "CBlClass_bv1.6.421"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -7591,15 +7591,18 @@ const gc4BLS = function(){
 			 const tabFrames = blo0.blDiv(eui.v1,eui.v1.id+"tabFrames","tabFrames:","lightgray");
 			 tabFrames.refreshFrames = function(){
 				tabFrames.innerHTML = "";
+				var lsBtnFrame = [];
 				for(i in lsFrame){ 
 				   var b = blo0.blBtn(tabFrames,tabFrames.id+i,i,"purple");
 				   b.style.float = "left";
-				   b.onclick = function(_btn,_i,_f){
+				   b.onclick = function(_btn4CurFrame,_i,_lsFrame){
 					   return function(){ 
 							nCurF = _i; 
-						   _ui4curFrame(_btn,v4curF,_f,_i,_thisBLS);
+						   _ui4curFrame(_btn4CurFrame,v4curF,_lsFrame,_i,_thisBLS);
+						   blo0.blMarkBtnInList(_btn4CurFrame,lsBtnFrame,"yellow","grey");
 					   }
 				   }(b,i,lsFrame);
+				   lsBtnFrame.push(b);
 				}
 				dAllFrames.innerHTML = _thisBLS._getAllFramesNumber();
 			 }
