@@ -1024,11 +1024,12 @@ public final class JsonSriptParser {
 			String note = attrObj.getString("note");
 			gp2d.drawString(note,left, top); 
 			
+			int dx = 50;
 			int time = attrObj.getInt("time");
-			gp2d.drawString("time:" + time,left+30, top); 
+			gp2d.drawString("time:" + time,left+dx, top); 
 			
 			int tone = attrObj.getInt("tone");
-			gp2d.drawString("tone:" + tone,left+30*2, top); 
+			gp2d.drawString("tone:" + tone,left+dx*2, top); 
 		}
 	}
 
