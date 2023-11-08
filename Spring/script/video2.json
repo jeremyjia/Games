@@ -1,6 +1,6 @@
 {
     "request": {
-        "version": "0.0.11", 
+        "version": "0.0.12", 
         "width": 1024, 
         "height": 768, 
         "music": "1.mp3", 
@@ -10,6 +10,13 @@
                 "number": "1", 
                 "time": 5, 
                 "objects": [
+                    {
+                        "text": "video2.json", 
+                        "x": 200,
+                        "y": 200,
+                        "size": 50,
+                        "color": "0,255,0"
+                    },
                     {
                         "graphic": "line", 
                         "attribute": {
