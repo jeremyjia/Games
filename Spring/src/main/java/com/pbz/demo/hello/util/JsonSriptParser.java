@@ -1018,6 +1018,10 @@ public final class JsonSriptParser {
 			}
 			gp2d.setColor(color);
 			gp2d.fill3DRect(left, top, width, height, false);
+
+			gp2d.setColor(new Color(255, 169, 0));
+			gp2d.setFont(new Font("黑体", Font.BOLD, 50));
+			gp2d.drawString("musicNote-debug",left, top); 
 		}
 	}
 

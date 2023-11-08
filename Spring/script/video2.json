@@ -1,6 +1,6 @@
 {
     "request": {
-        "version": "0.0.13", 
+        "version": "0.0.14", 
         "width": 1024, 
         "height": 768, 
         "music": "1.mp3", 
@@ -13,7 +13,7 @@
                     {
                         "text": "video2.json", 
                         "x": 200,
-                        "y": 22,
+                        "y": 33,
                         "size": 50,
                         "color": "0,255,255"
                     },
@@ -52,7 +52,7 @@
                         "graphic": "musicNote", 
                         "attribute": {
                             "left": 100, 
-                            "top": 400, 
+                            "top": 111, 
                             "width": 100, 
                             "height": 150, 
                             "color": "255,1,1"
