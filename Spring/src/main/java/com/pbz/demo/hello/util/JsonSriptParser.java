@@ -1004,6 +1004,20 @@ public final class JsonSriptParser {
 			}
 			gp2d.setColor(color);
 			gp2d.fill3DRect(left, top, width, height, false);
+		}else if ("musicNote".equalsIgnoreCase(graphicType)) {
+			int width = 10;
+			int height = 10;
+			if (attrObj.has("width") && attrObj.has("height")) {
+				width = attrObj.getInt("width");
+				height = attrObj.getInt("height");
+			} else {
+				int right = attrObj.getInt("right");
+				int bottom = attrObj.getInt("bottom");
+				width = right - left;
+				height = bottom - top;
+			}
+			gp2d.setColor(color);
+			gp2d.fill3DRect(left, top, width, height, false);
 		}
 	}
 
