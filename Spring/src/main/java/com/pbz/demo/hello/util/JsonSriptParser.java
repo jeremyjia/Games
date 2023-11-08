@@ -1038,7 +1038,7 @@ public final class JsonSriptParser {
 
 
 			
-			mNote.draw_1_note(gp2d,left,top);
+			mNote.draw_1_note(gp2d,left,top,note,time,tone);
 		}
 	}
 
