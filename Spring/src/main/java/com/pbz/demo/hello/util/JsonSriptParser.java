@@ -1026,10 +1026,10 @@ public final class JsonSriptParser {
 			
 			int dx = 111;
 			int time = attrObj.getInt("time");
-			gp2d.drawString("time:" + time,left+dx, top); 
+			gp2d.drawString("tm:" + time,left+dx, top); 
 			
 			int tone = attrObj.getInt("tone");
-			gp2d.drawString("tone:" + tone,left+dx*2, top); 
+			gp2d.drawString("tn:" + tone,left+dx*2, top); 
 		}
 	}
 
