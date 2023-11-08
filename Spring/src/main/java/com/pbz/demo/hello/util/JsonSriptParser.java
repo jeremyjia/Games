@@ -1024,7 +1024,7 @@ public final class JsonSriptParser {
 			String note = attrObj.getString("note");
 			gp2d.drawString(note,left, top); 
 			
-			int dx = 50;
+			int dx = 111;
 			int time = attrObj.getInt("time");
 			gp2d.drawString("time:" + time,left+dx, top); 
 			
