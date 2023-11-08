@@ -1021,7 +1021,8 @@ public final class JsonSriptParser {
 
 			gp2d.setColor(new Color(255, 169, 0));
 			gp2d.setFont(new Font("黑体", Font.BOLD, 50));
-			gp2d.drawString("musicNote-debug",left, top); 
+			String note = attrObj.getString("note");
+			gp2d.drawString(note,left, top); 
 		}
 	}
 
