@@ -1,6 +1,6 @@
 {
     "request": {
-        "version": "0.0.21", 
+        "version": "0.0.22", 
         "width": 1024, 
         "height": 768, 
         "music": "1.mp3", 
@@ -56,7 +56,9 @@
                             "width": 100, 
                             "height": 150, 
                             "color": "255,1,1",
-                            "note":"7"
+                            "note":"7",
+                            "time":0.5,
+                            "tone":-1
                         }
                     }
                 ], 

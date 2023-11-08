@@ -1023,6 +1023,12 @@ public final class JsonSriptParser {
 			gp2d.setFont(new Font("黑体", Font.BOLD, 50));
 			String note = attrObj.getString("note");
 			gp2d.drawString(note,left, top); 
+			
+			int time = attrObj.getInt("time");
+			gp2d.drawString("time:" + time,left+30, top); 
+			
+			int tone = attrObj.getInt("tone");
+			gp2d.drawString("tone:" + tone,left+30*2, top); 
 		}
 	}
 
