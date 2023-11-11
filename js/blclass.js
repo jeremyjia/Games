@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.445"
+var g_ver_blClass = "CBlClass_bv1.6.452"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -8163,7 +8163,63 @@ const gc4BLS = function(){
 				"drawObject": function(r,ctx,x,y){			
 					r.drawMyself(ctx,x,y);	
 				},
-			},
+			}, 
+			{
+				"id": "id_4_musicNote",
+				"type": "musicNote",
+				"makeData": function(r,x1,y1,x2,y2,size,color){
+					var bMoveText = false;
+					var mxLine1 = -1, myLine1 = -1,mxLine2 = -1, myLine2 = -1;
+
+					r.text = blo0.blGetTa().value;
+					r.x = x1;
+					r.y = y1;
+					r.size = size;
+					r.color = color;
+					r.drawMyself = function(ctx,x,y){
+						ctx.fillStyle = "white";
+						ctx.font = "10px Arial";					
+						ctx.fillText(r.text,r.x+x,r.y+y);	 
+						if(bMoveText){
+							ctx.fillStyle = "red";
+							ctx.fillRect(r.x+x,r.y+y,20,20);
+						} 
+					}
+					r.downOnMe = function(x,y,x1,y1){   
+						setPointInText(x,y,x1,y1);
+					}
+					r.upOnMe = function(x,y,x1,y1){
+						toMoveText(x,y,x1,y1);
+						bMoveText = false;
+					} 
+
+					const setPointInText = function(x,y,x1,y1){
+						if(blo0.blPiR(x,y,r.x+x1,r.y+y1,20,20)){
+							bMoveText = true; 
+							mxLine1 = x;
+							myLine1 = y;
+						}
+						else{
+							bMoveText = false;
+						}
+					}
+					const toMoveText = function(x,y,x1,y1){
+						if(bMoveText){
+							mxLine2 = x;
+							myLine2 = y;
+
+							r.x += mxLine2 - mxLine1;
+							r.y += myLine2 - myLine1; 
+
+							mxLine1 = mxLine2;
+							myLine1 = myLine2;
+						}
+					}
+				},
+				"drawObject": function(r,ctx,x,y){			
+					r.drawMyself(ctx,x,y);	
+				},
+			}, 
 		];
 		var o = function(_t,_x1,_y1){			
 			var left = _x1;
@@ -8260,6 +8316,14 @@ const gc4BLS = function(){
 				"name": "os",
 				"fn4click": function(targetV,myBtn){ 
 					const btns4ObjectsInCurFrame = [
+						{
+							"id":"id_4_objMusicNote",
+							"name":"musicNote",
+							"fn2click":function(_v,btn){ 
+								_v.innerHTML = btn.id;
+							},
+							"bgc":"white"
+						},
 						{
 							"id":"id_4_objText",
 							"name":"text",
@@ -8412,6 +8476,9 @@ const gc4BLS = function(){
 					if("id_4_objText"==type){
 						os.push(_newObject("text",x1-x0,y1-y0,x2-x0,y2-y0,25,"0,200,0"));
 					}	 
+					if("id_4_objMusicNote"==type){
+						os.push(_newObject("musicNote",x1-x0,y1-y0,x2-x0,y2-y0,25,"0,200,0"));
+					}	
 					if("id_4_objEdit"==type){
 						for(i in os){
 							if(os[i].upOnMe) os[i].upOnMe(x,y,x0,y0);
