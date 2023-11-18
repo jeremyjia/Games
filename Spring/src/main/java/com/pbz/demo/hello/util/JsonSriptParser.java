@@ -44,6 +44,7 @@ import com.pbz.demo.hello.model.SubtitleModel;
 import com.pbz.demo.hello.service.SubtitleImageService;
 import com.pbz.demo.hello.service.VOAService;
 import com.pbz.demo.hello.util.engine.JSGraphEngine;
+import com.pbz.demo.hello.util.music.MusicNote;
 
 public final class JsonSriptParser {
 	private static final String subtitle_video_name = "vSubtitle.mp4";
@@ -57,6 +58,7 @@ public final class JsonSriptParser {
 	private static ScriptEngineManager mgr = new ScriptEngineManager();
 	private static ScriptEngine engine = mgr.getEngineByName("JavaScript");
 	private static JSGraphEngine graphEngine = new JSGraphEngine();
+	private static MusicNote mNote = new MusicNote();
 	private static final String currentScript = "VAR_CURRENT_SCRIPT";
 	public static final String current_Subtitle_Script = "VAR_CURRENT_SUBTITLE_SCRIPT";
 
@@ -1040,6 +1042,39 @@ public final class JsonSriptParser {
 			}
 			gp2d.setColor(color);
 			gp2d.fill3DRect(left, top, width, height, false);
+		}else if ("musicNote".equalsIgnoreCase(graphicType)) {
+
+			int width = 10;
+			int height = 10;
+			if (attrObj.has("width") && attrObj.has("height")) {
+				width = attrObj.getInt("width");
+				height = attrObj.getInt("height");
+			} else {
+				int right = attrObj.getInt("right");
+				int bottom = attrObj.getInt("bottom");
+				width = right - left;
+				height = bottom - top;
+			}
+			gp2d.setColor(color);
+			gp2d.fill3DRect(left, top, width, height, false);
+
+			gp2d.setColor(new Color(255, 169, 0));
+			gp2d.setFont(new Font("黑体", Font.BOLD, 50));
+			String note = attrObj.getString("note");
+			gp2d.drawString(note,left, top); 
+			
+			int dx = 111;
+			int time = attrObj.getInt("time");
+			gp2d.drawString("tm:" + time,left+dx, top); 
+
+			
+			
+			int tone = attrObj.getInt("tone");
+			gp2d.drawString("tn:" + tone,left+dx*2, top); 
+
+
+			
+			mNote.draw_1_note(gp2d,left,top,note,time,tone);
 		}
 	}
 
