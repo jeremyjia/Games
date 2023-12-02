@@ -95,7 +95,7 @@ public class JSGraphEngine {
         }
 
 		public void rotate(double angle) {
-			this.angle = angle;
+		    this.angle += angle;//Bug fix
 			graphics.rotate(angle, 0, 0);
 		}
 

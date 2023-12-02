@@ -29,7 +29,6 @@ import javax.imageio.ImageIO;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
@@ -742,20 +741,49 @@ public final class JsonSriptParser {
 		String startFrameNumber = rangeArray[0].substring(1);
 		int sfNum = Integer.parseInt(startFrameNumber);
 
-		float X = 0, a = 0, b = 0, c = 0, Y = 0;
-		if (actionTrace.toLowerCase().startsWith("x")) {
-			String xValue = actionTrace.substring(2);
-			X = Integer.parseInt(xValue);
-			Y = y1 + (number - sfNum) * step;
-		} else {
-			X = x1 + (number - sfNum) * step;
-			String parm[] = actionTrace.split("\\+");
-			a = Float.parseFloat(parm[0].substring(2, parm[0].indexOf("*")));
-			b = Float.parseFloat(parm[1].substring(0, parm[1].indexOf("*")));
-			c = Float.parseFloat(parm[2]);
-			Y = (float) (a * X * X + b * X + c);
-		}
+        float X = 0, a = 0, b = 0, c = 0, Y = 0;
+        if (actionTrace.toLowerCase().startsWith("function")) {
+            X = x1 + (number - sfNum) * step; // 得到对象的起始X坐标
+            Y = calTraceByJS(X, actionTrace);
+        } else if (actionTrace.toLowerCase().startsWith("x")) {
+            String xValue = actionTrace.substring(2);
+            X = Integer.parseInt(xValue);
+            Y = y1 + (number - sfNum) * step;
+        } else {
+            X = x1 + (number - sfNum) * step;
+            String parm[] = actionTrace.split("\\+");
+            a = Float.parseFloat(parm[0].substring(2, parm[0].indexOf("*")));
+            b = Float.parseFloat(parm[1].substring(0, parm[1].indexOf("*")));
+            c = Float.parseFloat(parm[2]);
+            Y = (float) (a * X * X + b * X + c);
+        }
 
+        boolean bPrint = false;
+        if (actionObj.has("print")) {
+            bPrint = actionObj.getBoolean("print");
+        }
+        if (bPrint) {
+            // 绘制超级对象的脚印
+            for (int i = sfNum; i <= number; i++) {
+                float printX = x1 + (i - sfNum) * step;
+                float printY;
+                if (actionTrace.toLowerCase().startsWith("function")) {
+                    printY = calTraceByJS(printX, actionTrace);
+                } else if (actionTrace.toLowerCase().startsWith("x")) {
+                    String xValue = actionTrace.substring(2);
+                    printX = Integer.parseInt(xValue);
+                    printY = y1 + (i - sfNum) * step;
+                } else {
+                    String parm[] = actionTrace.split("\\+");
+                    float a1 = Float.parseFloat(parm[0].substring(2, parm[0].indexOf("*")));
+                    float b1 = Float.parseFloat(parm[1].substring(0, parm[1].indexOf("*")));
+                    float c1 = Float.parseFloat(parm[2]);
+                    printY = (float) (a1 * printX * printX + b1 * printX + c1);
+                }
+                gp2d.fillOval((int) printX, (int) printY, 6, 6);
+            }
+        }
+  
 		if (name != null && !name.trim().isEmpty()) {
 			if (!"text".equalsIgnoreCase(type) && !"picture".equalsIgnoreCase(type)) {
 				gp2d.drawString(name, X, Y);
@@ -827,7 +855,15 @@ public final class JsonSriptParser {
 		}
 	}
 
-	private static void drawSubtitleObject(JSONObject jObj, Graphics2D gp2d, int number) throws Exception {
+    private static float calTraceByJS(float x, String actionTrace) throws Exception {
+        engine.eval(actionTrace);
+        Invocable invocable = (Invocable) engine;
+        Object result = invocable.invokeFunction("trace", x);
+        float y = Float.parseFloat(result.toString());
+        return y;
+    }
+
+    private static void drawSubtitleObject(JSONObject jObj, Graphics2D gp2d, int number) throws Exception {
 		JSONObject attributeObj = jObj.getJSONObject("attribute");
 		String subtitleFile = attributeObj.getString("script");
 		boolean isReLoadScript = false;
@@ -1007,37 +1043,12 @@ public final class JsonSriptParser {
 			gp2d.setColor(color);
 			gp2d.fill3DRect(left, top, width, height, false);
 		}else if ("musicNote".equalsIgnoreCase(graphicType)) {
-
-			int width = 10;
-			int height = 10;
-			if (attrObj.has("width") && attrObj.has("height")) {
-				width = attrObj.getInt("width");
-				height = attrObj.getInt("height");
-			} else {
-				int right = attrObj.getInt("right");
-				int bottom = attrObj.getInt("bottom");
-				width = right - left;
-				height = bottom - top;
-			}
 			gp2d.setColor(color);
-			gp2d.fill3DRect(left, top, width, height, false);
-
-			gp2d.setColor(new Color(255, 169, 0));
-			gp2d.setFont(new Font("黑体", Font.BOLD, 50));
+			gp2d.setFont(new Font("黑体", Font.BOLD, 30));
+			
 			String note = attrObj.getString("note");
-			gp2d.drawString(note,left, top); 
-			
-			int dx = 111;
-			int time = attrObj.getInt("time");
-			gp2d.drawString("tm:" + time,left+dx, top); 
-
-			
-			
-			int tone = attrObj.getInt("tone");
-			gp2d.drawString("tn:" + tone,left+dx*2, top); 
-
-
-			
+			float time = attrObj.getFloat("time");		 
+            int tone = attrObj.getInt("tone");		
 			mNote.draw_1_note(gp2d,left,top,note,time,tone);
 		}
 	}
