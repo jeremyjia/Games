@@ -13,16 +13,16 @@
                     {
                         "text": "video2.json", 
                         "x": 200,
-                        "y": 33,
+                        "y": 40,
                         "size": 50,
                         "color": "0,255,255"
                     },
                     {
                         "graphic": "line", 
                         "attribute": {
-                            "left": 100, 
+                            "left": 20, 
                             "top": 100, 
-                            "right": 100, 
+                            "right": 20, 
                             "bottom": 300, 
                             "size": 5.5, 
                             "color": "255,0,255"
@@ -31,8 +31,8 @@
                     {
                         "graphic": "circle", 
                         "attribute": {
-                            "left": 200, 
-                            "top": 200, 
+                            "left": 100, 
+                            "top": 500, 
                             "width": 200, 
                             "height": 200, 
                             "color": "120,156,20"
@@ -42,7 +42,7 @@
                         "graphic": "rect", 
                         "attribute": {
                             "left": 500, 
-                            "top": 400, 
+                            "top": 500, 
                             "width": 100, 
                             "height": 150, 
                             "color": "142,28,124"
@@ -56,11 +56,201 @@
                             "width": 100, 
                             "height": 150, 
                             "color": "255,169,0",
-                            "note":"7",
+                            "note":"5",
+                            "time":0.5,
+                            "tone":0
+                        }
+                    },
+                    {
+                        "graphic": "musicNote", 
+                        "attribute": {
+                            "left": 130, 
+                            "top": 111, 
+                            "width": 100, 
+                            "height": 150, 
+                            "color": "255,169,0",
+                            "note":"5",
+                            "time":0.25,
+                            "tone":0
+                        }
+                    },
+                    {
+                        "graphic": "musicNote", 
+                        "attribute": {
+                            "left": 150, 
+                            "top": 111, 
+                            "width": 100, 
+                            "height": 150, 
+                            "color": "255,169,0",
+                            "note":"5",
+                            "time":0.25,
+                            "tone":0
+                        }
+                    },
+                    {
+                        "graphic": "musicNote", 
+                        "attribute": {
+                            "left": 180, 
+                            "top": 111, 
+                            "width": 100, 
+                            "height": 150, 
+                            "color": "255,169,0",
+                            "note":"6",
+                            "time":0.5,
+                            "tone":0
+                        }
+                    },
+                    {
+                        "graphic": "musicNote", 
+                        "attribute": {
+                            "left": 210, 
+                            "top": 111, 
+                            "width": 100, 
+                            "height": 150, 
+                            "color": "255,169,0",
+                            "note":"1",
+                            "time":0.5,
+                            "tone":1
+                        }
+                    },
+                    {
+                        "graphic": "line", 
+                        "attribute": {
+                            "left": 240, 
+                            "top": 70, 
+                            "right": 240, 
+                            "bottom": 130, 
+                            "size": 4.5, 
+                            "color": "0,255,0"
+                        }
+                    },
+                    {
+                        "graphic": "musicNote", 
+                        "attribute": {
+                            "left": 260, 
+                            "top": 111, 
+                            "width": 100, 
+                            "height": 150, 
+                            "color": "255,169,0",
+                            "note":"3",
+                            "time":0.75,
+                            "tone":0
+                        }
+                    },
+                    {
+                        "graphic": "musicNote", 
+                        "attribute": {
+                            "left": 310, 
+                            "top": 111, 
+                            "width": 100, 
+                            "height": 150, 
+                            "color": "255,169,0",
+                            "note":"2",
+                            "time":0.25,
+                            "tone":0
+                        }
+                    },
+                    {
+                        "graphic": "musicNote", 
+                        "attribute": {
+                            "left": 340, 
+                            "top": 111, 
+                            "width": 100, 
+                            "height": 150, 
+                            "color": "255,169,0",
+                            "note":"1",
+                            "time":0.5,
+                            "tone":0
+                        }
+                    },
+                    {
+                        "graphic": "musicNote", 
+                        "attribute": {
+                            "left": 370, 
+                            "top": 111, 
+                            "width": 100, 
+                            "height": 150, 
+                            "color": "255,169,0",
+                            "note":"6",
                             "time":0.5,
                             "tone":-1
                         }
+                    },
+                    {
+                        "graphic": "line", 
+                        "attribute": {
+                            "left": 400, 
+                            "top": 70, 
+                            "right": 400, 
+                            "bottom": 130, 
+                            "size": 4.5, 
+                            "color": "0,255,0"
+                        }
+                    },
+                    {
+                        "graphic": "musicNote", 
+                        "attribute": {
+                            "left": 100, 
+                            "top": 211, 
+                            "width": 100, 
+                            "height": 150, 
+                            "color": "255,169,0",
+                            "note":"1",
+                            "time":0.5,
+                            "tone":0
+                        }
+                    },
+                    {
+                        "graphic": "musicNote", 
+                        "attribute": {
+                            "left": 130, 
+                            "top": 211, 
+                            "width": 100, 
+                            "height": 150, 
+                            "color": "255,169,0",
+                            "note":"6",
+                            "time":0,
+                            "tone":-1
+                        }
+                    },
+                    {
+                        "graphic": "musicNote", 
+                        "attribute": {
+                            "left": 160, 
+                            "top": 211, 
+                            "width": 100, 
+                            "height": 150, 
+                            "color": "255,169,0",
+                            "note":"3",
+                            "time":0.5,
+                            "tone":0
+                        }
+                    },
+                    {
+                        "graphic": "line", 
+                        "attribute": {
+                            "left": 190, 
+                            "top": 170, 
+                            "right": 190, 
+                            "bottom": 230, 
+                            "size": 4.5, 
+                            "color": "0,255,0"
+                        }
+                    },
+                    {
+                        "graphic": "musicNote", 
+                        "attribute": {
+                            "left": 200, 
+                            "top": 211, 
+                            "width": 100, 
+                            "height": 150, 
+                            "color": "255,169,0",
+                            "note":"2",
+                            "time":2,
+                            "tone":0
+                        }
                     }
+
                 ], 
                 "backgroundColor": "100,100,100"
             }
