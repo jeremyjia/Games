@@ -16,7 +16,7 @@ module.exports = e;
   })
   */
 e.makeP = function(docx,o){   
-  
+  let p = docx.createP(); 
 
   // Use pattern in the background.
   p.addText('坚持1个月后，')
