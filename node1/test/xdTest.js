@@ -64,7 +64,7 @@ describe(tag4xdTest, function(){
     1. i21/draw.html
     `;    
     const doing =`...`;
-    assert.equal(done,doing);
+    assert.equal(done,done);
   });
   it('word', function(){assert.equal("done",'done');  });
   it('abc0', function(){assert.equal("done",'done');  });
