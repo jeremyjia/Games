@@ -1043,37 +1043,12 @@ public final class JsonSriptParser {
 			gp2d.setColor(color);
 			gp2d.fill3DRect(left, top, width, height, false);
 		}else if ("musicNote".equalsIgnoreCase(graphicType)) {
-
-			int width = 10;
-			int height = 10;
-			if (attrObj.has("width") && attrObj.has("height")) {
-				width = attrObj.getInt("width");
-				height = attrObj.getInt("height");
-			} else {
-				int right = attrObj.getInt("right");
-				int bottom = attrObj.getInt("bottom");
-				width = right - left;
-				height = bottom - top;
-			}
 			gp2d.setColor(color);
-			gp2d.fill3DRect(left, top, width, height, false);
-
-			gp2d.setColor(new Color(255, 169, 0));
-			gp2d.setFont(new Font("黑体", Font.BOLD, 50));
+			gp2d.setFont(new Font("黑体", Font.BOLD, 30));
+			
 			String note = attrObj.getString("note");
-			gp2d.drawString(note,left, top); 
-			
-			int dx = 111;
-			int time = attrObj.getInt("time");
-			gp2d.drawString("tm:" + time,left+dx, top); 
-
-			
-			
-			int tone = attrObj.getInt("tone");
-			gp2d.drawString("tn:" + tone,left+dx*2, top); 
-
-
-			
+			float time = attrObj.getFloat("time");		 
+            int tone = attrObj.getInt("tone");		
 			mNote.draw_1_note(gp2d,left,top,note,time,tone);
 		}
 	}
