@@ -249,6 +249,18 @@
                             "time":2,
                             "tone":0
                         }
+                    },
+                    {
+                        "graphic": "arc", 
+                        "attribute": {
+                            "left": 260, 
+                            "top": 111, 
+                            "right": 370, 
+                            "bottom": 111, 
+                            "color": "200,200,0",
+                             "dy":30,
+                             "dh":30
+                        }
                     }
 
                 ], 
