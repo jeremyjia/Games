@@ -35,7 +35,7 @@ public class MusicNote {
         for (int i = 0; i < Nm; i++) {
             g.drawLine(left - 5, top + dy + i * 10, left + nDLine, top + dy + i * 10);
         }
-        //绘制音符右侧的- - -
+        // 绘制音符右侧的- - -
         for (int i = 1; i <= Nm1; i++) {
             g.drawLine(left + i * 30, top - dy, left + i * 30 + 10, top - dy);
         }
@@ -55,6 +55,17 @@ public class MusicNote {
                 g.fillOval(left + 5, top - 35 - i * 15, 5, 5);
             }
         }
+    }
+
+    public void draw_1_arc(Graphics2D gp2d, int x1, int y1, int x2, int y2, int dh, int dy) {
+        // 在两个音符之间，绘制一条弧线     
+        gp2d.getFontMetrics().getHeight();    
+        int d = x2 - x1; // (x1,y1) (x2,y2)的距离
+        int X = x1 + 10;
+        int Y = y1 - dy - dh;
+        int w = d;
+        int h = 2 * dy;
+        gp2d.drawArc(X, Y, w, h, 0, 180);  //API
     }
 
 }
