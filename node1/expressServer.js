@@ -12,10 +12,11 @@ const d3 = import('d3');
 const { OpenApiValidator } = require('express-openapi-validator'); 
 const config = require('./config');
  
+const songs = require('./app/songs/index.js');
 const spider = require('./app/spider/index.js');
 const _51voa = require('./app/spider/51voa/index.js');
 const ScrapingAntClient = require('./app/spider/ScrapingAntClient/index.js');
-const word = require('./app/word/index0.js');
+const word = require('./app/word/index.js');
 const abc2db = require('./app/abc2db/index.js');
 const midi2abc = require('./app/midi2abc/index.js');
 const img = require('./app/image/index.js');
@@ -41,6 +42,10 @@ class ExpressServer {
       res.end('Hello index2.js.' + this.openApiYaml);
     });
     
+
+    this.app.get('/songs', (req, res) => {      
+      songs.songs(req,res); 
+    });
 
     this.app.get('/spider', (req, res) => {      
       spider.spider(req,res); 

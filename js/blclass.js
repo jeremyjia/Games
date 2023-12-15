@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.452"
+var g_ver_blClass = "CBlClass_bv1.6.453"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -8171,15 +8171,28 @@ const gc4BLS = function(){
 					var bMoveText = false;
 					var mxLine1 = -1, myLine1 = -1,mxLine2 = -1, myLine2 = -1;
 
-					r.text = blo0.blGetTa().value;
-					r.x = x1;
-					r.y = y1;
-					r.size = size;
-					r.color = color;
+					var v = blo0.blGetTa().value.split(',');
+
+					
+
+					r.graphic 			= "musicNote"; 
+					var a = {};
+					a.left 		= x1;
+					a.top 		= y1;
+					a.right 	= x2;
+					a.bottom 	= y2;
+					a.size 		= size;
+					a.color 	= color;
+					a.note = v[0];
+					a.time = parseInt(v[1]);
+					a.tone = parseInt(v[2]);
+
+					r.attribute 		= a;
+
 					r.drawMyself = function(ctx,x,y){
 						ctx.fillStyle = "white";
 						ctx.font = "10px Arial";					
-						ctx.fillText(r.text,r.x+x,r.y+y);	 
+						ctx.fillText(r.attribute.note+"-"+r.attribute.time+"-"+r.attribute.tone,r.attribute.left+x,r.attribute.top+y);	 
 						if(bMoveText){
 							ctx.fillStyle = "red";
 							ctx.fillRect(r.x+x,r.y+y,20,20);
