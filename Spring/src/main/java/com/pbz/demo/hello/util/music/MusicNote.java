@@ -6,6 +6,11 @@ import java.awt.Graphics2D;
 public class MusicNote {
     // 音符名称，音符的时间、音调属性
     public void draw_1_note(Graphics2D g, int left, int top, String note, float time, int tone) {
+
+        if (time == 0) {
+            System.out.println("The time is zero so don't draw anything");
+            return;
+        }
         int x = left;
         int y = top;
         int dy = 10;
@@ -30,7 +35,7 @@ public class MusicNote {
             g.drawLine(left - 5, top + dy, left + 40, top + dy);
             g.fillOval(left + 30, top - dy, 5, 5);
         } else if (time == 1 || time == 2 || time == 3 || time == 4) {
-            Nm1 = (int) time;
+            Nm1 = (int) time - 1;
         }
         for (int i = 0; i < Nm; i++) {
             g.drawLine(left - 5, top + dy + i * 10, left + nDLine, top + dy + i * 10);
