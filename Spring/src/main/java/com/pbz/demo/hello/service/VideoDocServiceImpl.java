@@ -51,12 +51,13 @@ public class VideoDocServiceImpl implements VideoDocService {
 					String videoLink = "http://localhost:" + app_port + "/" + fileName;
 					String videoPage = "http://localhost:" + app_port + "/image/json2video?script=" + fileName
 							+ "&video=" + videoName;
+					String commentUrl = jsonObj.getString("url");
 
 					String des = getDescription(jsonStr);
 					if (des == null || des.length() == 0) {
 						des = baseName;
 					}
-					VideoDoc vDoc = new VideoDoc(index, des, jsonStr, videoLink, videoPage);
+					VideoDoc vDoc = new VideoDoc(index, des, jsonStr, videoLink, videoPage, commentUrl);
 					videoDocList.add(vDoc);
 				}
 			}
