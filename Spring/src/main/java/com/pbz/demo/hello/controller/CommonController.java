@@ -1,6 +1,7 @@
 package com.pbz.demo.hello.controller;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -11,8 +12,10 @@ import java.util.concurrent.Semaphore;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -174,6 +177,19 @@ public class CommonController {
 		return resultString;
 	}
 
+    @PostMapping("/videodocs/modify")
+    public ModelAndView docModify(@RequestParam("scriptContent") String scriptContent, @RequestParam("url") String url,
+            @RequestParam("issueID") String issueID) throws Exception {
+
+        String id = issueID.substring(1); // remove #
+        String res = StringEscapeUtils.escapeJson(scriptContent);
+        System.out.println("*****/videodocs/modify*****" + res);
+        NetAccessUtil.doPostOnGitHub(url, "POST", res);
+
+        ModelAndView mv = new ModelAndView("redirect:/videodocs/findAll?issueId=" + id);// 跳转回文档页面
+        return mv;
+    }
+	
 	@RequestMapping(value = "/videodocs/findAll", method = RequestMethod.GET)
 	public ModelAndView findAllDocsOnGithub(@RequestParam(name = "issueId", defaultValue = "525") String issueId) {
 		ModelAndView mv = new ModelAndView();
