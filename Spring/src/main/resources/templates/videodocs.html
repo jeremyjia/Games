@@ -77,6 +77,7 @@
 
 <script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
 <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js"></script>
 <script> 
 $("#myModalDlg").modal("hide");
  
@@ -84,7 +85,13 @@ $("#myModalDlg").modal("hide");
      $("#scriptID").val(cs);
      $("#url").val(url);
      $("#issueID").val(issueID);
- }   
+ } 
+
+     $(document).ready(function(){
+
+        $("#myModalDlg").draggable();//为模态对话框添加拖拽
+
+    })  
 </script>
 
 </html>
