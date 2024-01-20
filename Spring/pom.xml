@@ -15,7 +15,7 @@
 		<spring.boot.version>2.1.6.RELEASE</spring.boot.version>
 		<junit.jupiter.version>5.6.2</junit.jupiter.version>
 		<junit.platform.version>1.6.2</junit.platform.version>
-		<pbz.server.version>1.0.81</pbz.server.version>
+		<pbz.server.version>1.0.82</pbz.server.version>
 	</properties>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -112,11 +112,6 @@
 			<artifactId>jaudiotagger</artifactId>
 			<version>2.0.3</version>
 		</dependency>
-       <dependency>
-           <groupId>org.apache.poi</groupId>
-           <artifactId>poi-ooxml</artifactId>
-           <version>3.8</version>
-        </dependency>
         <dependency>
            <groupId>org.apache.poi</groupId>
            <artifactId>poi-scratchpad</artifactId>
@@ -139,7 +134,38 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
             <version>1.10.0</version>
-        </dependency>
+		</dependency>
+
+		<dependency>
+			<groupId>com.deepoove</groupId>
+			<artifactId>poi-tl</artifactId>
+			<version>1.12.0</version>
+		  </dependency>
+		<dependency>
+			<groupId>fr.opensagres.xdocreport</groupId>
+			<artifactId>xdocreport</artifactId>
+			<version>2.0.2</version>
+		</dependency>		
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>ooxml-schemas</artifactId>
+			<version>1.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-to-slf4j</artifactId>
+			<version>2.17.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>2.17.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.xmlbeans</groupId>
+			<artifactId>xmlbeans</artifactId>
+			<version>5.2.0</version>
+		</dependency>		  
 	</dependencies>
 	<build>
 	    <finalName>pbz-demo-${pbz.server.version}-SNAPSHOT</finalName>
@@ -154,7 +180,22 @@
 					</jvmArguments>
 				</configuration>
 			</plugin>
-
+			<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+			</plugin>
 		</plugins>
 	</build>
 </project>
