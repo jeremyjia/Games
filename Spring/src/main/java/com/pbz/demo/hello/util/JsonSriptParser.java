@@ -38,6 +38,10 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.deepoove.poi.data.FilePictureRenderData;
+import com.deepoove.poi.data.HyperlinkTextRenderData;
+import com.deepoove.poi.data.TextRenderData;
+import com.deepoove.poi.data.Texts;
 import com.pbz.demo.hello.model.AOIArea;
 import com.pbz.demo.hello.model.AudioParam;
 import com.pbz.demo.hello.model.SubtitleModel;
@@ -1134,6 +1138,63 @@ public final class JsonSriptParser {
         System.out.println(newJsonString);
         NetAccessUtil.doPostOnGitHub(serverConfigLink, "POST", newJsonString);
 
+    }
+
+    // 根据剧本, 调用POI-TLd的API生成Word文档
+    public static Map<String, Object> createDataMapforDocTemplate(String scriptFile) throws Exception {
+
+        String jsonString = getJsonString(scriptFile);
+        JSONObject jsonObj = new JSONObject(jsonString);
+        JSONObject requestObj = JsonSriptParser.getJsonObjectbyName(jsonObj, "request");
+        int width = requestObj.getInt("width");
+        int height = requestObj.getInt("height");
+
+        Map<String, Object> dataMap = new HashMap<>();
+        dataMap.put("version", new TextRenderData("8A2BE2", "v1.0.0.1"));
+        dataMap.put("address", new HyperlinkTextRenderData("website", "https://jeremyjia.github.io/Games"));
+        dataMap.put("width", width);
+        dataMap.put("height", height);
+
+        JSONArray frameArray = (JSONArray) requestObj.get("frames");
+        List<Map<String, Object>> dataList = new ArrayList<>();
+
+        for (Object frame : frameArray) {
+            if (!(frame instanceof JSONObject)) {
+                continue;
+            }
+            JSONObject frameObj = (JSONObject) frame;
+            if (frameObj != null) {
+                JSONArray objectArray = frameObj.getJSONArray("objects");
+                for (Object object : objectArray) {
+                    JSONObject obj = (JSONObject) object;
+                    if (obj.has("text")) {
+                        String text = obj.getString("text");
+                        float fontSize = obj.getFloat("size");
+                        String c = obj.getString("color");
+                        Color color = getColor(c);
+                        c = ImageUtil.convertToColorCode(color);
+                        Map<String, Object> data = new HashMap<>();
+                        data.put("textTag", Texts.of(text).color(c).fontSize(fontSize).create()); 
+                        dataList.add(data);
+                    }
+                    if (obj.has("picture")) {
+                        String picFile = obj.getString("picture");
+                        picFile = FileUtil.downloadFileIfNeed(picFile);
+                        File imgFile = new File(picFile);
+                        if (imgFile.exists()) {
+                            int w = obj.getInt("width");
+                            int h = obj.getInt("heigth");
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("pictureTag", new FilePictureRenderData(w, h, picFile));
+                            dataList.add(data);
+                        }
+                    }
+                }
+            }
+        }
+
+        dataMap.put("itemTags", dataList); // 区块对LOOP
+        return dataMap;
     }
 
     public static void main(String[] args) {

@@ -15,7 +15,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,8 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.deepoove.poi.XWPFTemplate;
-import com.deepoove.poi.data.HyperlinkTextRenderData;
-import com.deepoove.poi.data.TextRenderData;
 import com.pbz.demo.hello.exception.HtmlRequestException;
 import com.pbz.demo.hello.service.ClockImageService;
 import com.pbz.demo.hello.service.SubtitleImageService;
@@ -294,23 +291,10 @@ public class ImageController {
             if (!file.exists()) {
                 status.put("Json2Word", "The file " + scriptFile + " is not exist!");
                 return status; 
-            }
-            
-            String jsonString = JsonSriptParser.getJsonString(scriptFile);
-            JSONObject jsonObj = new JSONObject(jsonString);
-            JSONObject requestObj = JsonSriptParser.getJsonObjectbyName(jsonObj, "request");
-            int width = requestObj.getInt("width");
-            int height = requestObj.getInt("height");
-            msg += ". The width is " + width + ",height is " + height;
-            
+            }                  
             //Save to a word file
+            Map<String, Object> map = JsonSriptParser.createDataMapforDocTemplate(scriptFile);        
             File fileTemplate = new File("./template.docx");
-            Map<String, Object> map = new HashMap<>();
-            map.put("version", new TextRenderData("8A2BE2", "v1.0.0.1"));
-            map.put("address", new HyperlinkTextRenderData("website", "https://jeremyjia.github.io/Games")); 
-            
-            map.put("width", width);
-            map.put("height", height);
             XWPFTemplate template = XWPFTemplate.compile(fileTemplate).render(map);
             FileOutputStream out = new FileOutputStream(new File("./"+docName));
             template.write(out);
@@ -321,7 +305,7 @@ public class ImageController {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        msg = "Success";
         status.put("Json2Word", msg);
         return status;
     }

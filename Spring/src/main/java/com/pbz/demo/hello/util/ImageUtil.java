@@ -77,5 +77,28 @@ public class ImageUtil {
 		}
 		return new Color(200, 200, 200);
 	}
+	
+    public static String convertToColorCode(Color color) {
+        int r = color.getRed();
+        int g = color.getGreen();
+        int b = color.getBlue();
+        return convertToColorCode(r, g, b);
+    }
+
+    public static String convertToColorCode(int red, int green, int blue) {
+        String redHex = Integer.toHexString(red);
+        String greenHex = Integer.toHexString(green);
+        String blueHex = Integer.toHexString(blue);
+        if (redHex.length() < 2) {
+            redHex = "0" + redHex;
+        }
+        if (greenHex.length() < 2) {
+            greenHex = "0" + greenHex;
+        }
+        if (blueHex.length() < 2) {
+            blueHex = "0" + blueHex;
+        }
+        return redHex + greenHex + blueHex;
+    }
 
 }
