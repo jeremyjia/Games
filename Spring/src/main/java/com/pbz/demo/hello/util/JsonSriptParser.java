@@ -1148,9 +1148,10 @@ public final class JsonSriptParser {
         JSONObject requestObj = JsonSriptParser.getJsonObjectbyName(jsonObj, "request");
         int width = requestObj.getInt("width");
         int height = requestObj.getInt("height");
+        String version = requestObj.getString("version");
 
         Map<String, Object> dataMap = new HashMap<>();
-        dataMap.put("version", new TextRenderData("8A2BE2", "v1.0.0.1"));
+        dataMap.put("version", new TextRenderData("8A2BE2", version));
         dataMap.put("address", new HyperlinkTextRenderData("website", "https://jeremyjia.github.io/Games"));
         dataMap.put("width", width);
         dataMap.put("height", height);
