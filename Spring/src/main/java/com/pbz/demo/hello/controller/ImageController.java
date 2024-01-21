@@ -4,8 +4,11 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.deepoove.poi.XWPFTemplate;
 import com.pbz.demo.hello.exception.HtmlRequestException;
 import com.pbz.demo.hello.service.ClockImageService;
 import com.pbz.demo.hello.service.SubtitleImageService;
@@ -37,7 +41,7 @@ import io.swagger.annotations.ApiOperation;
 import springfox.documentation.annotations.ApiIgnore;
 
 @RestController
-@Api(tags = "视频操作接口")
+@Api(tags = "视频及文档制作接口")
 @RequestMapping(value = "/image")
 public class ImageController {
 
@@ -60,6 +64,7 @@ public class ImageController {
 	private static int IMAGE_HEIGHT = 390;
 	private static final String subtitle_video_name = "vSubtitle.mp4";
 	private static final String final_video_name = "vFinal.mp4";
+	private static final String final_word_name = "vFinal.docx";
 
 	private static final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
 
@@ -266,6 +271,45 @@ public class ImageController {
 		return generateVideoByscenario("voa.json", final_video_name);
 	}
 
+	
+    @ApiOperation(value = "通过剧本协议生成Word", notes = "通过剧本协议生成Word")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "script", value = "script file (*.json)", paramType = "query", required = true, dataType = "string", defaultValue = "video.json"),
+            @ApiImplicitParam(name = "word", value = "word name (*.doc, *.docx)", paramType = "query", required = false, dataType = "string", defaultValue = final_word_name) })
+
+    @RequestMapping(value = "/json2word", method = RequestMethod.GET)
+    public Map<String, Object> generateWordByscenario(@RequestParam(name = "script") String scriptFile,
+            @RequestParam(name = "word", defaultValue = final_video_name) String docName)
+            throws HtmlRequestException {
+        Map<String, Object> status = new HashMap<String, Object>();
+        String msg = "The input file is " + scriptFile;
+        try {         
+            if (scriptFile.toLowerCase().startsWith("http")) {
+                scriptFile = FileUtil.downloadFile(scriptFile);
+            }
+            File file = new File(scriptFile);
+            if (!file.exists()) {
+                status.put("Json2Word", "The file " + scriptFile + " is not exist!");
+                return status; 
+            }                  
+            //Save to a word file
+            Map<String, Object> map = JsonSriptParser.createDataMapforDocTemplate(scriptFile);        
+            File fileTemplate = new File("./template.docx");
+            XWPFTemplate template = XWPFTemplate.compile(fileTemplate).render(map);
+            FileOutputStream out = new FileOutputStream(new File("./"+docName));
+            template.write(out);
+            out.flush();
+            out.close();
+            template.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        msg = "Success";
+        status.put("Json2Word", msg);
+        return status;
+    }
+	   
 	private void verifyParameter(String time) throws Exception {
 		if (time == null || time.trim().length() == 0) {
 			throw new Exception("The time parameter is not specified.");
