@@ -35,6 +35,7 @@ import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.poi.xwpf.usermodel.UnderlinePatterns;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -1159,10 +1160,17 @@ public final class JsonSriptParser {
         JSONArray frameArray = (JSONArray) requestObj.get("frames");
         List<Map<String, Object>> dataList = new ArrayList<>();
 
+        int i = 0;
         for (Object frame : frameArray) {
             if (!(frame instanceof JSONObject)) {
                 continue;
             }
+            i++;
+            String s = "This is scenario "+i;
+            Map<String, Object> scenario = new HashMap<>();
+            scenario.put("textTag", Texts.of(s).create());
+            dataList.add(scenario);
+
             JSONObject frameObj = (JSONObject) frame;
             if (frameObj != null) {
                 JSONArray objectArray = frameObj.getJSONArray("objects");
