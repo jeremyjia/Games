@@ -43,6 +43,7 @@ import com.deepoove.poi.data.FilePictureRenderData;
 import com.deepoove.poi.data.HyperlinkTextRenderData;
 import com.deepoove.poi.data.TextRenderData;
 import com.deepoove.poi.data.Texts;
+import com.deepoove.poi.data.style.Style;
 import com.pbz.demo.hello.model.AOIArea;
 import com.pbz.demo.hello.model.AudioParam;
 import com.pbz.demo.hello.model.SubtitleModel;
@@ -584,6 +585,19 @@ public final class JsonSriptParser {
                 g.drawString(aLine, x, nY);
                 nY += g.getFontMetrics().getHeight();
             }
+        } else if (obj.has("hyperlink")) {
+            String text = obj.getString("hyperlink");
+            int x = obj.getInt("x");
+            int y = obj.getInt("y");
+            int size = obj.getInt("size");
+            String c = obj.getString("color");
+            Color color = getColor(c);
+            System.out.println(text);
+            g.setColor(color);
+            Font font = new Font("黑体", Font.BOLD, size);
+            g.setFont(font);
+            g.drawString(text, x, y);
+            g.drawLine(x, y + 2, x + g.getFontMetrics(font).stringWidth(text), y + 2); // Underlined text
         }
         // Graphic
         if (obj.has("graphic")) {
@@ -1166,7 +1180,7 @@ public final class JsonSriptParser {
                 continue;
             }
             i++;
-            String s = "This is scenario "+i;
+            String s = "This is scenario " + i;
             Map<String, Object> scenario = new HashMap<>();
             scenario.put("textTag", Texts.of(s).create());
             dataList.add(scenario);
@@ -1183,10 +1197,21 @@ public final class JsonSriptParser {
                         Color color = getColor(c);
                         c = ImageUtil.convertToColorCode(color);
                         Map<String, Object> data = new HashMap<>();
-                        data.put("textTag", Texts.of(text).color(c).fontSize(fontSize).create()); 
+                        data.put("textTag", Texts.of(text).color(c).fontSize(fontSize).create());
                         dataList.add(data);
-                    }
-                    if (obj.has("picture")) {
+                    } else if (obj.has("hyperlink")) {
+                        String text = obj.getString("hyperlink");
+                        String link = obj.optString("link");
+                        float fontSize = obj.getFloat("size");
+                        String c = obj.getString("color");
+                        Color color = getColor(c);
+                        c = ImageUtil.convertToColorCode(color);
+                        Map<String, Object> data = new HashMap<>();
+                        Style style = Style.builder().buildColor(c).buildUnderlinePatterns(UnderlinePatterns.SINGLE)
+                                .build();
+                        data.put("textTag", Texts.of(text).style(style).fontSize(fontSize).link(link).create());
+                        dataList.add(data);
+                    } else if (obj.has("picture")) {
                         String picFile = obj.getString("picture");
                         picFile = FileUtil.downloadFileIfNeed(picFile);
                         File imgFile = new File(picFile);
