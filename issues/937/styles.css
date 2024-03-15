@@ -1,0 +1,28 @@
+.sequencer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+.step {
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+    border: 1px solid #000;
+    background-color: green;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.active {
+    background-color: red;
+}
+
+
+button {
+    margin-top: 20px;
+    padding: 10px 20px;
+}
