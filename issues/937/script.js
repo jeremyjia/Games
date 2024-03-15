@@ -31,6 +31,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 如果到达最后一个步骤，停止播放
                 clearInterval(intervalId);
                 isPlaying = false;
+                
+                steps[currentStep-1].classList.remove('active');
+                currentStep = 0;
                 console.log('Sequence finished.');
                 return;
             }
@@ -40,9 +43,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // 模拟等待一段时间（比如节拍）
             setTimeout(function() {
-                steps[currentStep].classList.remove('active');
+                if(currentStep>0) 
+                    steps[currentStep-1].classList.remove('active');
                 currentStep++;
-            }, 500); // 假设每个节拍是500毫秒
-        }, 500); // 每个步骤之间的间隔也是500毫秒（这里简化了逻辑，实际中可能需要根据BPM来计算）
+            }, 555); // 假设每个节拍是500毫秒
+        }, 555); // 每个步骤之间的间隔也是500毫秒（这里简化了逻辑，实际中可能需要根据BPM来计算）
     }
 });
