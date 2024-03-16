@@ -16,10 +16,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (isPlaying) {
             // 如果已经在播放，则停止播放
             isPlaying = false;
+            playButton.innerHTML = "Play"; 
             console.log('Stopped playing.');
         } else {
             // 开始播放
             isPlaying = true;
+            playButton.innerHTML = "Stop"; 
+            playButton.disabled = true;
+            currentStep = 0; //Jeremy fixed.
+            console.log('playSequence');
             playSequence();
         }
     });
@@ -31,10 +36,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 如果到达最后一个步骤，停止播放
                 clearInterval(intervalId);
                 isPlaying = false;
-                
-                steps[currentStep-1].classList.remove('active');
-                currentStep = 0;
-                console.log('Sequence finished.');
+                playButton.innerHTML = "Play"; 
+                playButton.disabled = false;
+                console.log('Sequence finished.'); //这句之后，setTimeout会被执行一次
                 return;
             }
 
@@ -43,6 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // 模拟等待一段时间（比如节拍）
             setTimeout(function() {
+                console.log('setTimeout, currentStep='+currentStep);
                 if(currentStep>0) 
                     steps[currentStep-1].classList.remove('active');
                 currentStep++;
