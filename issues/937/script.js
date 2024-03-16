@@ -1,8 +1,13 @@
 document.addEventListener('DOMContentLoaded', function() {
     const steps = document.querySelectorAll('.step');
     const playButton = document.getElementById('play-button');
+    const btnTest = document.getElementById('test');
     let isPlaying = false;
     let currentStep = 0;
+
+    btnTest.onclick = function(){ 
+        blo0.blMDiv(document.body,"div4Test","divShowMe_divMove_blClass",550,150,500,200,blColor[8]);
+    }
 
     // 添加点击事件到每个步骤上，用于切换步骤状态
     steps.forEach(step => {
