@@ -1,10 +1,19 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {    
+    document.title+="~jsv0.23";
     const steps = document.querySelectorAll('.step');
     const playButton = document.getElementById('play-button');
     const btnTest = document.getElementById('test');
+    const a1 = document.getElementById('audio1');
+    const status = document.getElementById('status');
+
     let isPlaying = false;
     let currentStep = 0;
-
+    let turns = 0;
+    let beatTime = 1111;
+    
+    a1.addEventListener('error',function(e){
+        status.textContent = "error:" + e.message;
+    })
     btnTest.onclick = function(){ 
         blo0.blMDiv(document.body,"div4Test","divShowMe_divMove_blClass",550,150,500,200,blColor[8]);
     }
@@ -39,12 +48,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const intervalId = setInterval(function() {
             if (currentStep >= steps.length) {
                 // 如果到达最后一个步骤，停止播放
-                clearInterval(intervalId);
-                isPlaying = false;
-                playButton.innerHTML = "Play"; 
-                playButton.disabled = false;
-                console.log('Sequence finished.'); //这句之后，setTimeout会被执行一次
-                return;
+               // clearInterval(intervalId);
+               // isPlaying = false;
+               // playButton.innerHTML = "Play"; 
+               // playButton.disabled = false; 
+               turns++;
+               currentStep = 0;
+               // return;
             }
 
             // 切换当前步骤的状态
@@ -53,10 +63,15 @@ document.addEventListener('DOMContentLoaded', function() {
             // 模拟等待一段时间（比如节拍）
             setTimeout(function() {
                 console.log('setTimeout, currentStep='+currentStep);
-                if(currentStep>0) 
+                if(currentStep>0){
                     steps[currentStep-1].classList.remove('active');
+                }
+                
+                if(currentStep==0&&turns>0){
+                    steps[steps.length-1].classList.remove('active');
+                }
                 currentStep++;
-            }, 555); // 假设每个节拍是500毫秒
-        }, 555); // 每个步骤之间的间隔也是500毫秒（这里简化了逻辑，实际中可能需要根据BPM来计算）
+            }, beatTime); // 假设每个节拍是500毫秒
+        }, beatTime); // 每个步骤之间的间隔也是500毫秒（这里简化了逻辑，实际中可能需要根据BPM来计算）
     }
 });
