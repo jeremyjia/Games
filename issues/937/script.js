@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {    
-    document.title+="~jsv0.31";
+    document.title+="~jsv0.32";
     const steps = document.querySelectorAll('.step');
     const playButton = document.getElementById('play-button');
     const btnTest = document.getElementById('test');
@@ -22,7 +22,33 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     
     btnTest.onclick = function(){ 
-        blo0.blMDiv(document.body,"div4Test","divShowMe_divMove_blClass",550,150,500,200,blColor[8]);
+        //blo0.blMDiv(document.body,"div4Test","divShowMe_divMove_blClass",550,150,500,200,blColor[8]);// 创建一个AudioContext
+        var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // 创建一个音频源
+        var source = audioContext.createBufferSource();
+        
+        // 加载音频文件
+        fetch('1.mp3')
+          .then(response => response.arrayBuffer())
+          .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer, buffer => {
+            // 设置音频源
+            source.buffer = buffer;
+            
+            // 创建一个音量控制节点
+            var volume = audioContext.createGain();
+            
+            // 设置音量，范围从0（静音）到1（最大音量）
+            volume.gain.value = 0.5; // 例如，设置为50%的音量
+            
+            // 连接音频源到音量控制节点，然后连接到音频上下文的目的地（通常是扬声器）
+            source.connect(volume);
+            volume.connect(audioContext.destination);
+            
+            // 开始播放音频
+            source.start(0);
+          }));
+
     }
 
     // 添加点击事件到每个步骤上，用于切换步骤状态
