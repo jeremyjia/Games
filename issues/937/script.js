@@ -1,11 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {    
-    document.title+="~jsv0.34";
+    document.title+="~jsv0.33";
     const steps = document.querySelectorAll('.step');
     const playButton = document.getElementById('play-button');
     const btnTest = document.getElementById('test');
-    
     const btnTest2 = document.getElementById('test2');
-
     const a1 = document.getElementById('audio1');
     const status = document.getElementById('status');
 
@@ -56,52 +54,51 @@ document.addEventListener('DOMContentLoaded', function() {
 
     btnTest2.onclick = function(){
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const canvas = document.getElementById('audioCanvas');
-        const ctx = canvas.getContext('2d');
+const canvas = document.getElementById('audioCanvas');
+const ctx = canvas.getContext('2d');
 
-        // 加载音频文件
-        function loadAudio(url) {
-        return fetch(url)
-            .then(response => response.arrayBuffer())
-            .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
-            .then(audioBuffer => audioBuffer);
-        }
+// 加载音频文件
+function loadAudio(url) {
+  return fetch(url)
+    .then(response => response.arrayBuffer())
+    .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
+    .then(audioBuffer => audioBuffer);
+}
 
-        // 绘制波形图
-        function drawWaveform(audioBuffer) {
-        const { length } = audioBuffer;
-        const sampleRate = audioContext.sampleRate;
-        const data = audioBuffer.getChannelData(0); // 获取单声道数据，如果是立体声则需要处理两个通道
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
-        const step = Math.ceil(length / canvasWidth); // 计算每个像素点对应的样本数
-        const halfHeight = canvasHeight / 2;
+// 绘制波形图
+function drawWaveform(audioBuffer) {
+  const { length } = audioBuffer;
+  const sampleRate = audioContext.sampleRate;
+  const data = audioBuffer.getChannelData(0); // 获取单声道数据，如果是立体声则需要处理两个通道
+  const canvasWidth = canvas.width;
+  const canvasHeight = canvas.height;
+  const step = Math.ceil(length / canvasWidth); // 计算每个像素点对应的样本数
+  const halfHeight = canvasHeight / 2;
 
-        ctx.clearRect(0, 0, canvasWidth, canvasHeight); // 清除画布
-        ctx.beginPath();
-        ctx.moveTo(0, halfHeight); // 从画布中心开始绘制
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight); // 清除画布
+  ctx.beginPath();
+  ctx.moveTo(0, halfHeight); // 从画布中心开始绘制
 
-        for (let i = 0; i < length; i += step) {
-            const value = data[i];
-            const x = Math.round((i / length) * canvasWidth);
-            const y = halfHeight + value * halfHeight; // 将样本值映射到画布高度
-            if (i === 0) {
-            ctx.moveTo(x, y); // 第一个点
-            } else {
-            ctx.lineTo(x, y); // 连接点
-            }
-        }
-
-        ctx.lineTo(canvasWidth, halfHeight); // 连接画布末尾到中心线
-        ctx.stroke(); // 完成绘制
-        }
-
-        // 加载并绘制波形图
-        loadAudio('1.mp3') // 替换为你的音频文件路径
-        .then(audioBuffer => drawWaveform(audioBuffer))
-        .catch(error => console.error('Error loading audio:', error));
+  for (let i = 0; i < length; i += step) {
+    const value = data[i];
+    const x = Math.round((i / length) * canvasWidth);
+    const y = halfHeight + value * halfHeight; // 将样本值映射到画布高度
+    if (i === 0) {
+      ctx.moveTo(x, y); // 第一个点
+    } else {
+      ctx.lineTo(x, y); // 连接点
     }
+  }
 
+  ctx.lineTo(canvasWidth, halfHeight); // 连接画布末尾到中心线
+  ctx.stroke(); // 完成绘制
+}
+
+// 加载并绘制波形图
+loadAudio('path_to_your_audio_file.mp3') // 替换为你的音频文件路径
+  .then(audioBuffer => drawWaveform(audioBuffer))
+  .catch(error => console.error('Error loading audio:', error));
+    }
     // 添加点击事件到每个步骤上，用于切换步骤状态
     steps.forEach(step => {
         step.addEventListener('click', function() {
