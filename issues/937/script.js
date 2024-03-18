@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {    
-    document.title+="~jsv0.23";
+    document.title+="~jsv0.31";
     const steps = document.querySelectorAll('.step');
     const playButton = document.getElementById('play-button');
     const btnTest = document.getElementById('test');
@@ -13,7 +13,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     a1.addEventListener('error',function(e){
         status.textContent = "error:" + e.message;
+    })    
+    a1.addEventListener('loadedmetadata',function(){
+        status.textContent = "loadedmetadata: duration=" + a1.duration;
     })
+    a1.addEventListener('play',function(){
+        status.textContent = "playing";
+    })
+    
     btnTest.onclick = function(){ 
         blo0.blMDiv(document.body,"div4Test","divShowMe_divMove_blClass",550,150,500,200,blColor[8]);
     }
@@ -60,6 +67,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // 切换当前步骤的状态
             steps[currentStep].classList.add('active');
 
+            a1.play();
+
             // 模拟等待一段时间（比如节拍）
             setTimeout(function() {
                 console.log('setTimeout, currentStep='+currentStep);
@@ -72,6 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 currentStep++;
             }, beatTime); // 假设每个节拍是500毫秒
+
         }, beatTime); // 每个步骤之间的间隔也是500毫秒（这里简化了逻辑，实际中可能需要根据BPM来计算）
     }
 });
