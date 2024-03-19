@@ -2,8 +2,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.title+="~jsv0.44";
     const oui = function(){
         let o = {};
-        o.stepUI = function(pd,innerHTML,x,y,w,h,c){
+        o.stepUI = function(pd,id,innerHTML,x,y,w,h,c){
             let d = document.createElement("div");
+            d.id = id;
             d.innerHTML = innerHTML;
               
             d.style.left		= x+"px";
@@ -15,7 +16,14 @@ document.addEventListener('DOMContentLoaded', function() {
             return d;
         };
         o.mkUI = function(){            
-            let d = this.stepUI(document.getElementById('id4sequencer'),"1",111,111,50,50);
+            let d = null;
+            d = this.stepUI(document.getElementById('id4sequencer'),"step-1","1",50,111,50,50);
+            d.classList.add("step");
+            d = this.stepUI(document.getElementById('id4sequencer'),"step-2","2",100,111,50,50);
+            d.classList.add("step");
+            d = this.stepUI(document.getElementById('id4sequencer'),"step-3","3",150,111,50,50);
+            d.classList.add("step");
+            d = this.stepUI(document.getElementById('id4sequencer'),"step-4","4",200,111,50,50);
             d.classList.add("step");
         };
         return o;
