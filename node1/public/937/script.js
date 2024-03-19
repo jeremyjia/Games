@@ -1,5 +1,27 @@
 document.addEventListener('DOMContentLoaded', function() {    
-    document.title+="~jsv0.34";
+    document.title+="~jsv0.44";
+    const oui = function(){
+        let o = {};
+        o.stepUI = function(pd,innerHTML,x,y,w,h,c){
+            let d = document.createElement("div");
+            d.innerHTML = innerHTML;
+              
+            d.style.left		= x+"px";
+            d.style.top			= y+"px";
+            d.style.width		= w+"px";
+            d.style.height		= h+"px";
+    
+            if(pd!=null)pd.appendChild(d);
+            return d;
+        };
+        o.mkUI = function(){            
+            let d = this.stepUI(document.getElementById('id4sequencer'),"1",111,111,50,50);
+            d.classList.add("step");
+        };
+        return o;
+    }();    
+    oui.mkUI();
+
     const steps = document.querySelectorAll('.step');
     const playButton = document.getElementById('play-button');
     const btnTest = document.getElementById('test');
