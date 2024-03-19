@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {    
-    document.title+="~jsv0.44";
+    document.title+="~jsv0.45";
     const oui = function(){
         let o = {};
         o.stepUI = function(pd,id,innerHTML,x,y,w,h,c){
@@ -17,14 +17,10 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         o.mkUI = function(){            
             let d = null;
-            d = this.stepUI(document.getElementById('id4sequencer'),"step-1","1",50,111,50,50);
-            d.classList.add("step");
-            d = this.stepUI(document.getElementById('id4sequencer'),"step-2","2",100,111,50,50);
-            d.classList.add("step");
-            d = this.stepUI(document.getElementById('id4sequencer'),"step-3","3",150,111,50,50);
-            d.classList.add("step");
-            d = this.stepUI(document.getElementById('id4sequencer'),"step-4","4",200,111,50,50);
-            d.classList.add("step");
+            for(var i = 1; i<=4;i++){
+                d = this.stepUI(document.getElementById('id4sequencer'),"step-"+i,i,i*50,111,50,50);
+                d.classList.add("step");
+            }
         };
         return o;
     }();    
