@@ -283,9 +283,9 @@ public class FileUtil {
 	}
 
     public static String downloadFileIfNeed(String file) throws IOException {
-
-        if (file.startsWith("commentID:")) {
-            return savePlugInToJSFile(file);
+        
+        if (file.startsWith("commentID:") || file.startsWith("phthon_commentID:")) {
+            return savePlugInToPlugInFile(file);
         }
         
         if (file.startsWith("tts:")) {
@@ -335,8 +335,8 @@ public class FileUtil {
         return downloadFileName;
     }
 
-    private static String savePlugInToJSFile(String strInput) throws IOException {
-        // commentID:1234
+    private static String savePlugInToPlugInFile(String strInput) throws IOException {
+        // commentID:1234, or phthon_commentID:1234
         String commentID = strInput.substring(strInput.indexOf(":") + 1);
         String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentID;
         String resultString = NetAccessUtil.doGetOnGitHub(url, "");
@@ -345,6 +345,9 @@ public class FileUtil {
         String plugInContentStr = resultString.substring(s + 7, e - 3);
 
         String fileName = "plx_"+commentID + ".js";
+        if(strInput.startsWith("phthon")) {
+            fileName =  "plx_"+commentID + ".py";
+        }
         String fullPath = System.getProperty("user.dir") + "/" + fileName;
                
         FileWriter fw2 = new FileWriter(fullPath);

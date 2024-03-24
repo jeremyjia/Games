@@ -1,0 +1,46 @@
+{
+    "request": {
+        "version": "0.0.24",
+        "description": "Python plugin test",
+        "width": 1024,
+        "height": 768,
+        "music": "1.mp3",
+        "rate": "1",
+        "frames": [
+            {
+                "time": 5,
+                "objects": [
+                    {
+                        "text": "调用Python插件生成音频波形图演示程序",
+                        "x": 60,
+                        "y": 150,
+                        "size": 40,
+                        "color": "110,120,180"
+                    },
+                    {
+                        "text": "生成波形图",
+                        "x": 300,
+                        "y": 600,
+                        "size": 30,
+                        "color": "156,85,166"
+                    }
+                ],
+                "backgroundPicture": "${VAR_WAVE_PIC}"
+            }
+        ],
+        "Macros": [
+            {
+                "name": "VAR_WAVE_PIC",
+                "value": {
+                    "type": "python",
+                    "attribute": {
+                        "script": "phthon_commentID:2016673710",
+                        "input": "https://jeremyjia.github.io/Games/Spring/script/1.mp3",
+                        "output": "cat.png",
+                        "opts": ""
+                    }
+                }
+            }
+        ]
+    }
+}
