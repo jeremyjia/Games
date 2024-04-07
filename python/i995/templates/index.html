@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Cloud Generator</title>
+</head>
+<body>
+    <h1>Word Cloud Generator</h1>
+    <form action="/generate" method="post">
+        <label for="words">Words (comma-separated):</label><br>
+        <textarea id="words" name="words" rows="4" cols="50"></textarea><br>
+        <label for="weights">Weights (comma-separated):</label><br>
+        <textarea id="weights" name="weights" rows="4" cols="50"></textarea><br>
+        <input type="submit" value="Generate Word Cloud">
+    </form>
+    <div id="wordcloud"></div>
+    <script>
+        document.querySelector('form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const response = await fetch('/generate', {
+                method: 'POST',
+                body: formData
+            });
+            const image = await response.text();
+            document.getElementById('wordcloud').innerHTML = image;
+        });
+    </script>
+</body>
+</html>
