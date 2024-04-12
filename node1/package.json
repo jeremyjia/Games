@@ -21,7 +21,7 @@
     "jsdom": "^19.0.0",
     "jzz": "^1.5.2",
     "jzz-midi-smf": "^1.6.9",
-    "mysql2": "^2.2.5",
+    "mysql2": "^3.9.4",
     "officegen": "^0.6.5",
     "puppeteer": "^14.1.0",
     "request": "^2.88.2",
