@@ -10,12 +10,19 @@
     <h1>Word Cloud Generator</h1>
     <form action="/generate" method="post">
         <label for="words">Words (comma-separated):</label><br>
-        <textarea id="words" name="words" rows="4" cols="50"></textarea><br>
+        <textarea id="words" name="words" rows="2" cols="50">jeremy,wangxu,littleflute</textarea><br>
         <label for="weights">Weights (comma-separated):</label><br>
-        <textarea id="weights" name="weights" rows="4" cols="50"></textarea><br>
+        <textarea id="weights" name="weights" rows="2" cols="50">1,2,3</textarea><br>
         <input type="submit" value="Generate Word Cloud">
     </form>
-    <div id="wordcloud"></div>
+    <div class="slider-container">
+        <input type="button" id=myBtn value="get_image_test">
+        <input type="range" min="0" max="2" step="0.1" id="mySlider" class="slider" value="0">
+        <textarea id="light" name="light" rows="1" cols="15" placeholder="Slider value...">0.96</textarea>
+        <input type="button" id=myBtnAutoTest value="BeginAutoTest">
+    </div>
+    <br>
+    <div id="imageShowDivId"></div>
     <script>
         document.querySelector('form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -25,8 +32,52 @@
                 body: formData
             });
             const image = await response.text();
-            document.getElementById('wordcloud').innerHTML = image;
+            document.getElementById('imageShowDivId').innerHTML = image;
         });
+
+        //added by jeremyjia.
+        document.getElementById("myBtn").addEventListener("click", function(){
+            const params = new URLSearchParams();
+            var lightText = document.getElementById('light').value;
+            params.append('param1', lightText);
+            fetch('/get_data?' + params.toString())
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('imageShowDivId').innerHTML = data;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() 
+        {
+            var slider = document.getElementById('mySlider');
+            var textarea = document.getElementById('light');
+            slider.addEventListener('input', function() {
+             textarea.value = this.value;
+             });
+         });
+
+         let isPlaying=false;
+         const btnAutoTest = document.getElementById("myBtnAutoTest");
+         var intervalID;
+         btnAutoTest.addEventListener("click", function(){
+             if(isPlaying == false){
+                isPlaying = true;
+                btnAutoTest.value = "StopAutoTest";
+                intervalID = setInterval(function() {
+                    var button = document.getElementById('myBtn');
+                    button.click();
+                }, 200);
+
+             }else{
+                isPlaying = false;
+                btnAutoTest.value = "BeginAutoTest";
+                clearInterval(intervalID);
+             }
+        });
+
     </script>
 </body>
 </html>
