@@ -38,7 +38,7 @@
     "jstoxml": "^1.5.0",
     "jwt-redis": "^6.0.0",
     "mysql": "^2.18.1",
-    "mysql2": "^2.1.0",
+    "mysql2": "^3.9.4",
     "nodemon": "^3.0.1",
     "ono": "^5.0.1",
     "openapi-sampler": "^1.0.0-beta.15",
