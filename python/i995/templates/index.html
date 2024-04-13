@@ -10,11 +10,13 @@
     <h1>Word Cloud Generator</h1>
     <form action="/generate" method="post">
         <label for="words">Words (comma-separated):</label><br>
-        <textarea id="words" name="words" rows="4" cols="50"></textarea><br>
+        <textarea id="words" name="words" rows="2" cols="50">jeremy,wangxu,littleflute</textarea><br>
         <label for="weights">Weights (comma-separated):</label><br>
-        <textarea id="weights" name="weights" rows="4" cols="50"></textarea><br>
+        <textarea id="weights" name="weights" rows="2" cols="50">1,2,3</textarea><br>
         <input type="submit" value="Generate Word Cloud">
     </form>
+    <input type="button" id=myBtn value="test image">
+    <textarea id="light" name="light" rows="1" cols="10">0.9</textarea><br>
     <div id="wordcloud"></div>
     <script>
         document.querySelector('form').addEventListener('submit', async (e) => {
@@ -26,6 +28,21 @@
             });
             const image = await response.text();
             document.getElementById('wordcloud').innerHTML = image;
+        });
+
+        //added by jeremyjia.
+        document.getElementById("myBtn").addEventListener("click", function(){
+            const params = new URLSearchParams();
+            var lightText = document.getElementById('light').value;
+            params.append('param1', lightText);
+            fetch('/get_data?' + params.toString())
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('wordcloud').innerHTML = data;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
         });
     </script>
 </body>
