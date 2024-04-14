@@ -20,6 +20,8 @@
         <input type="range" min="0" max="2" step="0.1" id="mySlider" class="slider" value="0">
         <textarea id="light" name="light" rows="1" cols="15" placeholder="Slider value...">0.96</textarea>
         <input type="button" id=myBtnAutoTest value="BeginAutoTest">
+        <label for="fps">fps:</label>
+        <textarea id="fps" name="fps" rows="1" cols="15" placeholder="fps value...">0</textarea>
     </div>
     <br>
     <div id="imageShowDivId"></div>
@@ -40,9 +42,11 @@
             const params = new URLSearchParams();
             var lightText = document.getElementById('light').value;
             params.append('param1', lightText);
+  
             fetch('/get_data?' + params.toString())
                 .then(response => response.text())
                 .then(data => {
+                    updatefps();
                     document.getElementById('imageShowDivId').innerHTML = data;
                 })
                 .catch(error => {
@@ -60,6 +64,7 @@
          });
 
          let isPlaying=false;
+         //自动化测试按钮
          const btnAutoTest = document.getElementById("myBtnAutoTest");
          var intervalID;
          btnAutoTest.addEventListener("click", function(){
@@ -69,14 +74,32 @@
                 intervalID = setInterval(function() {
                     var button = document.getElementById('myBtn');
                     button.click();
-                }, 200);
+                }, 100);
 
              }else{
                 isPlaying = false;
                 btnAutoTest.value = "BeginAutoTest";
                 clearInterval(intervalID);
+                document.getElementById('fps').innerHTML = '0';
              }
         });
+
+        let lastTime = performance.now();;
+        let frames = 0;
+        let fps = 0;        
+        function updatefps() {
+            const now = performance.now(); // 获取当前时间（以毫秒为单位）
+            const deltaTime = now - lastTime; // 计算时间差       
+            frames++; // 增加帧数          
+            // 如果已经过了1秒，则计算并显示帧率
+            if (deltaTime >= 1000) {
+                fps = (frames * 1000) / deltaTime; // 计算帧率
+                document.getElementById('fps').innerHTML = fps.toFixed(2);
+                console.log(`Frames per second: ${fps.toFixed(2)}`); // 显示帧率
+                frames = 0; // 重置帧数
+                lastTime = now; // 更新上一个时间为当前时间，为下一次计算做准备
+            }
+        }
 
     </script>
 </body>
