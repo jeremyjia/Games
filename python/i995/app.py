@@ -42,16 +42,23 @@ def get_message():
     return jsonify(data)
 
 
-@app.route('/get_data', methods=['GET'])
+@app.route('/get_image_data', methods=['GET'])
 def get_data():
     param1 = request.args.get('param1', '0.8')
-    print(param1)
+    param2 = request.args.get('param2', '100') #blue
+    print(param1+'_'+param2)
     filename='test.jpg'
     image_path = os.path.join(app.static_folder, filename)
     img = cv2.imread(image_path)
     image = np.power(img, float(param1))
-    cv2.imwrite(r"1_"+filename, image)
-    img_str = numpy_to_base64(image)
+    #将图片转换为NumPy数组
+    image_array = np.array(image)
+    #增加所有像素的蓝色分量
+    image_array[:, :, 0] += int(param2)  #蓝色分量在索引0， R:2 G:1 B:0
+    #确保RGB值在0-255的范围内
+    image_array = np.clip(image_array, 0, 255)
+    #cv2.imwrite(r"1_"+filename, image)
+    img_str = numpy_to_base64(image_array)
     print(img_str)
     return f'<img src="data:image/png;base64,{img_str}">'
 
