@@ -7,21 +7,31 @@
     <title>Word Cloud Generator</title>
 </head>
 <body>
-    <h1>Word Cloud Generator</h1>
+    <h1>Image Process-v1.0.0.1</h1>
     <form action="/generate" method="post">
         <label for="words">Words (comma-separated):</label><br>
         <textarea id="words" name="words" rows="2" cols="50">jeremy,wangxu,littleflute</textarea><br>
         <label for="weights">Weights (comma-separated):</label><br>
         <textarea id="weights" name="weights" rows="2" cols="50">1,2,3</textarea><br>
-        <input type="submit" value="Generate Word Cloud">
+        <input type="submit" id="submit" value="Generate Word Cloud">
     </form>
+    <br>
     <div class="slider-container">
-        <input type="button" id=myBtn value="get_image_test">
+        <label for="light">light:</label>
         <input type="range" min="0" max="2" step="0.1" id="mySlider" class="slider" value="0">
-        <textarea id="light" name="light" rows="1" cols="15" placeholder="Slider value...">0.96</textarea>
-        <input type="button" id=myBtnAutoTest value="BeginAutoTest">
+        <textarea id="light" name="light" rows="1" cols="6" placeholder="Slider value...">0.96</textarea>
+        <input type="button" id=myBtn value="SnapShot">
+        <input type="button" id=myBtnAutoTest value="SnapContinue">
         <label for="fps">fps:</label>
-        <textarea id="fps" name="fps" rows="1" cols="15" placeholder="fps value...">0</textarea>
+        <textarea id="fps" name="fps" rows="1" cols="6" placeholder="fps value...">0</textarea>
+        <label for="timer">timer:</label>
+        <input type="range" min="10" max="1000" step="1" id="mySliderTimer" class="slider" value="100">
+        <textarea id="timer" name="timer" rows="1" cols="6" placeholder="Slider value...">100</textarea>
+    </div>
+    <div class="slider-container">
+        <label for="blue">blue:</label>
+        <input type="range" min="0" max="255" step="1" id="mySliderBlue" class="slider" value="0">
+        <textarea id="blue" name="blue" rows="1" cols="6" placeholder="Slider value...">100</textarea>
     </div>
     <br>
     <div id="imageShowDivId"></div>
@@ -37,44 +47,67 @@
             document.getElementById('imageShowDivId').innerHTML = image;
         });
 
-        //added by jeremyjia.
+        //added by jeremyjia. click SnapShot button
         document.getElementById("myBtn").addEventListener("click", function(){
             const params = new URLSearchParams();
             var lightText = document.getElementById('light').value;
+            var blueText = document.getElementById('blue').value;
+            
+            //给后端endpoint传递参数
             params.append('param1', lightText);
+            params.append('param2', blueText);
   
-            fetch('/get_data?' + params.toString())
+            //发起后端请求API
+            fetch('/get_image_data?' + params.toString())
                 .then(response => response.text())
                 .then(data => {
                     updatefps();
-                    document.getElementById('imageShowDivId').innerHTML = data;
+                    document.getElementById('imageShowDivId').innerHTML = data; //显示获取的数据到DIV上
                 })
                 .catch(error => {
                     console.error('Error:', error);
                 });
         });
 
+        //Slider Setting
         document.addEventListener('DOMContentLoaded', function() 
         {
+            //亮度调节
             var slider = document.getElementById('mySlider');
             var textarea = document.getElementById('light');
             slider.addEventListener('input', function() {
              textarea.value = this.value;
              });
+
+            //蓝通道调节
+             var sliderBlue = document.getElementById('mySliderBlue');
+             var taBlue = document.getElementById('blue');
+             sliderBlue.addEventListener('input', function() {
+                taBlue.value = this.value;
+             });
+
+            //定时器调节
+             var sliderTimer = document.getElementById('mySliderTimer');
+             var taTimer = document.getElementById('timer');
+             sliderTimer.addEventListener('input', function() {
+                taTimer.value = this.value;
+             });
          });
 
+         //自动化测试按钮, 模拟连续采集
          let isPlaying=false;
-         //自动化测试按钮
          const btnAutoTest = document.getElementById("myBtnAutoTest");
          var intervalID;
          btnAutoTest.addEventListener("click", function(){
              if(isPlaying == false){
                 isPlaying = true;
                 btnAutoTest.value = "StopAutoTest";
+                var timerText = document.getElementById('timer').value;
+
                 intervalID = setInterval(function() {
                     var button = document.getElementById('myBtn');
                     button.click();
-                }, 100);
+                }, timerText);
 
              }else{
                 isPlaying = false;
@@ -84,20 +117,21 @@
              }
         });
 
+        //帧率计算
         let lastTime = performance.now();;
         let frames = 0;
         let fps = 0;        
         function updatefps() {
-            const now = performance.now(); // 获取当前时间（以毫秒为单位）
-            const deltaTime = now - lastTime; // 计算时间差       
-            frames++; // 增加帧数          
-            // 如果已经过了1秒，则计算并显示帧率
+            const now = performance.now(); //获取当前时间（以毫秒为单位）
+            const deltaTime = now - lastTime; //计算时间差       
+            frames++; //增加帧数          
+            //如果已经过了1秒，则计算并显示帧率
             if (deltaTime >= 1000) {
-                fps = (frames * 1000) / deltaTime; // 计算帧率
+                fps = (frames * 1000) / deltaTime; //计算帧率
                 document.getElementById('fps').innerHTML = fps.toFixed(2);
-                console.log(`Frames per second: ${fps.toFixed(2)}`); // 显示帧率
-                frames = 0; // 重置帧数
-                lastTime = now; // 更新上一个时间为当前时间，为下一次计算做准备
+                console.log(`Frames per second: ${fps.toFixed(2)}`); //显示帧率
+                frames = 0; //重置帧数
+                lastTime = now; //更新上一个时间为当前时间，为下一次计算做准备
             }
         }
 
