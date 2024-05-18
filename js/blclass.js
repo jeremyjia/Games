@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.454"
+var g_ver_blClass = "CBlClass_bv1.6.511"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -8190,9 +8190,16 @@ const gc4BLS = function(){
 					r.attribute 		= a;
 
 					r.drawMyself = function(ctx,x,y){
-						ctx.fillStyle = "white";
+						ctx.fillStyle = "green";
 						ctx.font = "10px Arial";					
-						ctx.fillText(r.attribute.note+"-"+r.attribute.time+"-"+r.attribute.tone,r.attribute.left+x,r.attribute.top+y);	 
+						 
+						
+						var aNote = function (c,n,tm,tn,_x,_y){
+							//ctx.fillText(n+tm+tn,_x,_y);	
+							gBlNote(c,_x,_y,n,tn,tm);
+						}(ctx,r.attribute.note,r.attribute.time,+r.attribute.tone,
+						r.attribute.left+x,r.attribute.top+y);
+						
 						if(bMoveText){
 							ctx.fillStyle = "red";
 							ctx.fillRect(r.x+x,r.y+y,20,20);
