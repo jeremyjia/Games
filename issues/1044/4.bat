@@ -1,0 +1,1 @@
+ffmpeg -i v1.mp4 -i v2.mp4 -filter _complex "[1:v]scale=iw*0.2:-1[pip];[0:v][pip]overlay=W-w-10:H-h-10[out]" -map "[out]" -map 0:a -c:v libx264 -c:a copy o1.mp4
