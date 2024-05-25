@@ -1,0 +1,1 @@
+ffmpeg -i v1.mp4 -i v2.mp4 -filter_complex "[1:v]trim=start=0:end=5,setpts=PTS-STARTPTS[v1];  [1:v]trim=start =5:end=10,setpts=PTS-STARTPTS-5[v2];  [0:v][v1]concat=n=2:v=1:a=0[bg];   [bg][v2]overlay=W-w-10:H-h-10:enable='between(t,5,10)'" -c:v libx264 -preset veryfast -crf 23 output.mp4
