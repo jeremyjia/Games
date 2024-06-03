@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.511"
+var g_ver_blClass = "CBlClass_bv1.6.513"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -8368,6 +8368,14 @@ const gc4BLS = function(){
 							},
 							"bgc":"LightSkyBlue"
 						},
+						{
+							"id":"id_4_objUndo",
+							"name":"undo",
+							"fn2click":function(_v,btn){  
+								_v.innerHTML = btn.id;
+							},
+							"bgc":"lightgray"
+						},
 					];
 					const split4CurFrame = blo0.blDiv(targetV,targetV.id+"split4CurFrame","split4CurFrame","lightgreen");
 					const tb = blo0.blDiv(targetV,targetV.id+"tb","tb","gray");
@@ -8503,6 +8511,10 @@ const gc4BLS = function(){
 						for(i in os){
 							if(os[i].upOnMe) os[i].upOnMe(x,y,x0,y0);
 						}
+					}	
+					 
+					if("id_4_objUndo"==type){ 
+						os.pop();
 					}	 
 				}				
 				else{
