@@ -1,0 +1,40 @@
+{
+    "request": {
+        "version": "0.0.25",
+        "description": "overlay video demo",
+        "width": 1024,
+        "height": 768,
+        "music": "https://littleflute.github.io/english/NewConceptEnglish/Book2/2.mp3",
+        "rate": "5",
+        "frames": [
+            {
+                "time": 100,
+                "objects": [
+                    {
+                        "text": "调用Python插件实现画中画的特效",
+                        "x": 100,
+                        "y": 150,
+                        "size": 40,
+                        "color": "110,100,200"
+                    },
+                    {
+                        "text": "画中画实现",
+                        "x": 300,
+                        "y": 600,
+                        "size": 60,
+                        "color": "146,85,156"
+                    }
+                ],
+                "backgroundColor": "180,180,180"
+            }
+        ],
+        "overlay":{
+          "script": "overlayVideo.py",
+          "video": "https://littleflute.github.io/blog/mp4/%E6%BC%82%E6%B3%8A%E8%80%85%E4%B9%90%E5%9B%AD_20180321_131927.mp4",
+          "left": "100",
+          "top": "200",
+          "start": "1",
+          "end": "15"
+        }
+    }
+}

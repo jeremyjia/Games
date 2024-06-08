@@ -403,6 +403,10 @@ public final class JsonSriptParser {
         }
 
         boolean bRunScript = false;
+        boolean hasOverlayVideo = false;        
+        if(requestObj.has("overlay")) {
+            hasOverlayVideo = true;
+        }
         String final_video_name = MacroResolver.getProperty("video_name");
         if (!new File(audioFile).exists()) {
             if (index == 0) {
@@ -420,11 +424,17 @@ public final class JsonSriptParser {
                     tmpAudioFile };
             ExecuteCommand.executeCommand(cutAudioCmd, null, new File("."), null);
 
+            String videoName = hasOverlayVideo? "TMP_"+final_video_name:final_video_name;
             // Combine silent video and audio to a final video
-            String[] cmds = { ffmpegPath, "-y", "-i", subtitle_video_name, "-i", tmpAudioFile, final_video_name };
+            String[] cmds = { ffmpegPath, "-y", "-i", subtitle_video_name, "-i", tmpAudioFile, videoName };
             bRunScript = ExecuteCommand.executeCommand(cmds, null, new File("."), null);
+            
+            //实现画中画效果
+            if(requestObj.has("overlay")) {
+                overlayVideo(requestObj.getJSONObject("overlay"), videoName, final_video_name);
+            }                        
         }
-
+        
         boolean bGif = true; // TODO
         if (bGif) {
             String[] createGifCmd = { ffmpegPath, "-y", "-i", final_video_name, "vFinal.gif" };
@@ -432,6 +442,52 @@ public final class JsonSriptParser {
             MacroResolver.setProperty("VAR_GIF_ENABLED", "true");
         }
         return bRunScript;
+    }
+
+    //画中画API
+    private static void overlayVideo(JSONObject overlayObj, String sourceVideo, String outputVideo) throws Exception {
+        //python3 overlayVideo.py -i source.mp4 -v ov.mp4 -s 3 -e 18 -o out.mp4     
+        String script = overlayObj.getString("script"); //Python脚本     
+        String inputFile = sourceVideo; //背景视频    
+        String outputFile = outputVideo; //最终视频
+        String ov = overlayObj.getString("video");; //要叠加的小视频       
+        String left = overlayObj.getString("left");
+        String top = overlayObj.getString("top");
+        String start = overlayObj.getString("start");
+        String end = overlayObj.getString("end");
+        
+        script = FileUtil.downloadFileIfNeed(script);
+        List<String> cmds = new ArrayList<String>();
+        if (isWindows) {
+            cmds.add("python");
+        } else {
+            cmds.add("python3");
+        }
+        cmds.add(script);
+        cmds.add("-i");
+        cmds.add(inputFile);
+        
+        cmds.add("-v");
+        cmds.add(ov);
+        cmds.add("-s");
+        cmds.add(start);
+        cmds.add("-e");
+        cmds.add(end);
+        
+        if(!left.equalsIgnoreCase("-1")) {
+            cmds.add("-l");
+            cmds.add(left);    
+        }
+        if(!top.equalsIgnoreCase("-1")) {
+            cmds.add("-t");
+            cmds.add(top);    
+        }
+        
+        cmds.add("-o");
+        cmds.add(outputFile);
+
+        String[] commands = cmds.toArray(new String[] {});
+        ExecuteCommand.executeCommandOnServer(commands);       
     }
 
     private static void createDefaultVideo(int width, int height, String time, String rate, String bgColor)
