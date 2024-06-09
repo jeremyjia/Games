@@ -27,7 +27,7 @@ public class VideoDocServiceImpl implements VideoDocService {
 	public List<VideoDoc> findAll(String issueId) {
 		try {
 			long start = System.currentTimeMillis();
-			String gitUrl = "https://api.github.com/repos/jeremyjia/Games/issues/" + issueId + "/comments";
+			String gitUrl = "https://api.github.com/repos/jeremyjia/Games/issues/" + issueId + "/comments?per_page=50";//default is 30
 			String allComments = NetAccessUtil.doGetOnGitHub(gitUrl, "");
 
 			JSONArray jsonObjArray = new JSONArray(allComments);
