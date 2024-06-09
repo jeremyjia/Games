@@ -64,7 +64,7 @@ function nextGeneration() {
 }
 
 // 初始绘制滑翔机
-drawGrid();
+//drawGrid();
 
 // 每秒更新一次
 setInterval(nextGeneration, 111);
