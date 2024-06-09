@@ -6,6 +6,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,6 +25,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import javax.imageio.ImageIO;
 import javax.script.Invocable;
@@ -65,6 +67,8 @@ public final class JsonSriptParser {
     private static ScriptEngine engine = mgr.getEngineByName("JavaScript");
     private static JSGraphEngine graphEngine = new JSGraphEngine();
     private static MusicNote mNote = new MusicNote();
+    private static Random random = new Random();
+    private static final Color[] COLORS = {Color.RED, Color.GREEN, Color.BLUE, Color.MAGENTA, Color.ORANGE, Color.PINK, Color.CYAN, Color.YELLOW};
     private static final String currentScript = "VAR_CURRENT_SCRIPT";
     public static final String current_Subtitle_Script = "VAR_CURRENT_SUBTITLE_SCRIPT";
 
@@ -254,6 +258,9 @@ public final class JsonSriptParser {
         System.out.println("剧本版本:" + version);
         int width = requestObj.getInt("width");
         int height = requestObj.getInt("height");
+        MacroResolver.setProperty("VIDEO_WIDTH", String.valueOf(width));
+        MacroResolver.setProperty("VIDEO_HEIGHT", String.valueOf(height));
+        
         String audioFilePath = requestObj.optString("audio");
         if (audioFilePath == null || audioFilePath.trim().length() == 0) {
             audioFilePath = requestObj.optString("music");
@@ -970,7 +977,8 @@ public final class JsonSriptParser {
                 strSubtitle = FileUtil.ReplaceString(strSubtitle, regex, target);
             }
         }
-
+        
+        //绘制歌曲标题，如果LRC中有定义的话
         if (titleOfLRC.trim().length() > 0) {
             gp2d.setColor(new Color(255, 169, 0));
             gp2d.setFont(new Font("黑体", Font.BOLD, 50));
@@ -980,6 +988,14 @@ public final class JsonSriptParser {
                 y += gp2d.getFontMetrics().getHeight();
             }
         }
+        
+        //随机绘制字幕文字
+        if (attributeObj.has("random") && "true".equalsIgnoreCase(attributeObj.getString("random"))) {
+            for(int i=0; i<10;i++) {
+                drawRandomWord(gp2d, strSubtitle);   
+            }
+        } 
+        //固定的位置绘制字幕
         int x1 = attributeObj.getInt("x1");
         int y1 = attributeObj.getInt("y1");
         float fSize = attributeObj.getFloat("size");
@@ -993,6 +1009,7 @@ public final class JsonSriptParser {
         Font font = new Font("黑体", Font.BOLD, (int) fSize);
         gp2d.setFont(font);
         gp2d.drawString(strSubtitle, x1, y1);
+
     }
 
     private static String getSubTitleByFrame(List<SubtitleModel> ls, int number) {
@@ -1211,6 +1228,25 @@ public final class JsonSriptParser {
 
     }
 
+    private static void drawRandomWord(Graphics2D g2d, String word) {
+        int fontSize = random.nextInt(20) + 20; // 随机字体大小，范围 20-40        
+        int width = Integer.parseInt(MacroResolver.getProperty("VIDEO_WIDTH"));
+        int height = Integer.parseInt(MacroResolver.getProperty("VIDEO_HEIGHT"));
+        int x = random.nextInt(width);
+        int y = random.nextInt(height);
+        Color color = COLORS[random.nextInt(COLORS.length)];
+        int rotationDegree = random.nextInt(360); // 随机旋转角度，范围 0-360
+
+        Font font = new Font("Arial", Font.BOLD, fontSize);//黑体，Arial
+        g2d.setFont(font);
+        g2d.setColor(color);
+        AffineTransform originalTransform = g2d.getTransform();
+        AffineTransform transform = new AffineTransform();
+        transform.rotate(Math.toRadians(rotationDegree), x, y);
+        g2d.setTransform(transform);
+        g2d.drawString(word, x, y);
+        g2d.setTransform(originalTransform); // 恢复原始变换
+    }
     // 根据剧本, 调用POI-TLd的API生成Word文档
     public static Map<String, Object> createDataMapforDocTemplate(String scriptFile) throws Exception {
 

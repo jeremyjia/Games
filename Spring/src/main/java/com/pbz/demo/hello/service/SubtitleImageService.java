@@ -32,7 +32,7 @@ public class SubtitleImageService {
 	private final static Font font = new Font("微软雅黑", Font.BOLD, 30);
 	private final static Color colorBackground = new Color(0xDCDCDC);
 	private final static String regexExpressofSRT = "\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d --> \\d\\d:\\d\\d:\\d\\d,\\d\\d\\d";
-	private final static String regexExpressofLRC = "\\[(\\d{1,2}):(\\d{1,2}).(\\d{1,2})\\]";
+	private final static String regexExpressofLRC = "\\[(\\d{1,2}):(\\d{1,2}).(\\d{1,3})\\]";  //d{1,3}匹配1到三位
 
 	public int saveSubtitleToImageFile(String filePath, int width, int height, String strImgFile) throws IOException {
 		List<SubtitleModel> ls = readLocalFile(filePath);
@@ -154,31 +154,34 @@ public class SubtitleImageService {
 				System.out.println("Can't find the file: " + filePath);
 				return null;
 			}
-			InputStreamReader read = new InputStreamReader(new FileInputStream(file), "GBK");
+			InputStreamReader read = new InputStreamReader(new FileInputStream(file), "UTF-8");//GBK导致中文歌词乱码，改用UTF-8
 			BufferedReader bufferedReader = new BufferedReader(read);
 			Pattern pattern = Pattern.compile(regexExpressofLRC);
 			String lineStr = null;
 			SubtitleModel lastObj = null;
 			while ((lineStr = bufferedReader.readLine()) != null) {
 				Matcher matcher = pattern.matcher(lineStr);
-				if (matcher.find()) {
-					// [01:20.76]He said such vehicles are expected
-					String min = matcher.group(1);
-					String sec = matcher.group(2);
-					String mill = matcher.group(3);
-					long time = getLongTime(min, sec, mill + "0");
-					String text = lineStr.substring(matcher.end());
-
-					SubtitleModel curObj = new SubtitleModel();
-					curObj.star = (int) time;
-					curObj.contextEng = text;
-					curObj.contextCh = text;
-					curObj.num = subtitleList.size() + 1;
-					subtitleList.add(curObj);
-					if (lastObj != null) {
-						lastObj.end = (int) time;
-					}
-					lastObj = curObj;
+                if (matcher.find()) {
+                    // [01:20.76]He said such vehicles are expected
+                    String min = matcher.group(1);
+                    String sec = matcher.group(2);
+                    String mill = matcher.group(3);
+                    long time = getLongTime(min, sec, mill + "0");
+                    if (mill.length() == 3)
+                        time = getLongTime(min, sec, mill); // [01:22.220]年轻时为你写的歌恐怕你早已忘了吧
+                    String text = lineStr.substring(matcher.end());
+                    SubtitleModel curObj = new SubtitleModel();
+                    curObj.star = (int) time;
+                    curObj.contextEng = text;
+                    curObj.contextCh = text;
+                    curObj.num = subtitleList.size() + 1;
+                    subtitleList.add(curObj);
+                    if (lastObj != null) {
+                        lastObj.end = (int) time;
+                    }
+                    lastObj = curObj;
+                }else {
+				    System.out.println("Not match time format:"+lineStr);
 				}
 			}
 			if (lastObj != null) {
