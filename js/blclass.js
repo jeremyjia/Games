@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.513"
+var g_ver_blClass = "CBlClass_bv1.6.515"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -8240,6 +8240,31 @@ const gc4BLS = function(){
 					r.drawMyself(ctx,x,y);	
 				},
 			}, 
+			{
+				"id": "id_4_sprite",
+				"type": "sprite",
+				"makeData": function(r,x1,y1,x2,y2,size,color){
+					 
+					r.graphic 			= "sprite"; 
+					var a = {};
+					a.left 		= x1;
+					a.top 		= y1;
+					a.right 	= x2;
+					a.bottom 	= y2;
+					a.size 		= size; 
+
+					r.attribute 		= a;
+
+					r.drawMyself = function(ctx,x,y){
+						 
+						ctx.fillStyle = color;
+						ctx.fillRect(r.attribute.left+x,r.attribute.top+y,20,20);
+					} 
+				},
+				"drawObject": function(r,ctx,x,y){			
+					r.drawMyself(ctx,x,y);	
+				},
+			}, 
 		];
 		var o = function(_t,_x1,_y1){			
 			var left = _x1;
@@ -8336,6 +8361,14 @@ const gc4BLS = function(){
 				"name": "os",
 				"fn4click": function(targetV,myBtn){ 
 					const btns4ObjectsInCurFrame = [
+						{
+							"id":"id_4_objSprite",
+							"name":"sprite",
+							"fn2click":function(_v,btn){ 
+								_v.innerHTML = btn.id;
+							},
+							"bgc":"lightgreen"
+						},
 						{
 							"id":"id_4_objMusicNote",
 							"name":"musicNote",
@@ -8506,6 +8539,9 @@ const gc4BLS = function(){
 					}	 
 					if("id_4_objMusicNote"==type){
 						os.push(_newObject("musicNote",x1-x0,y1-y0,x2-x0,y2-y0,25,"0,200,0"));
+					}	
+					if("id_4_objSprite"==type){
+						os.push(_newObject("sprite",x1-x0,y1-y0,x2-x0,y2-y0,25,"210,200,0"));
 					}	
 					if("id_4_objEdit"==type){
 						for(i in os){
