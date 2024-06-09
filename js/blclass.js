@@ -8252,14 +8252,22 @@ const gc4BLS = function(){
 					a.right 	= x2;
 					a.bottom 	= y2;
 					a.size 		= size; 
+					a.color 	= color;
 
 					r.attribute 		= a;
 
-					r.drawMyself = function(ctx,x,y){
-						 
-						ctx.fillStyle = color;
-						ctx.fillRect(r.attribute.left+x,r.attribute.top+y,20,20);
-					} 
+					r.drawMyself = function(){
+						let t = 0;
+						return function(_ctx,_x,_y){
+							t++;
+							_ctx.fillStyle = r.attribute.color;
+							_ctx.fillRect(r.attribute.left+_x,r.attribute.top+_y,20,20);
+							
+							_ctx.fillStyle = "white";
+							_ctx.fillText("spr" + t,r.attribute.left+_x,r.attribute.top+_y);
+
+						}
+					}();
 				},
 				"drawObject": function(r,ctx,x,y){			
 					r.drawMyself(ctx,x,y);	
