@@ -1,0 +1,1 @@
+ffmpeg -i v1.mp4 -i v2.mp4 -filter_complex "[1:v]scale=iw*0.5:-1[pip];[0:v][pip]overlay=W-w-10:H-h-10" o1.mp4

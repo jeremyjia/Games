@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.511"
+var g_ver_blClass = "CBlClass_bv1.6.515"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -8240,6 +8240,101 @@ const gc4BLS = function(){
 					r.drawMyself(ctx,x,y);	
 				},
 			}, 
+			{
+				"id": "id_4_sprite",
+				"type": "sprite",
+				"makeData": function(r,x1,y1,x2,y2,size,color){
+					 
+					r.graphic 			= "sprite"; 
+					var a = {};
+					a.left 		= x1;
+					a.top 		= y1;
+					a.right 	= x2;
+					a.bottom 	= y2;
+					a.size 		= size; 
+					a.color 	= color;
+
+					r.attribute 		= a;
+
+					r.drawMyself = function(){
+						let t = 0;
+						const gridSize = 5; // 每个格子的大小
+						const gridWidth = 100;
+						const gridHeight = 100;
+
+						// 初始化滑翔机模式
+						let grid = Array.from({ length: gridHeight }, () => Array(gridWidth).fill(false));
+						grid[2][3] = true;
+						grid[3][4] = true;
+						grid[4][2] = true;
+						grid[4][3] = true;
+						grid[4][4] = true;
+
+						function drawGrid(ctx) { 
+							for (let y = 0; y < gridHeight; y++) {
+								for (let x = 0; x < gridWidth; x++) {
+									if (grid[y][x]) {
+										ctx.fillStyle = 'black';
+										ctx.fillRect(x * gridSize, y * gridSize, gridSize, gridSize);
+									}
+								}
+							}
+						}
+
+						function countNeighbors(x, y) {
+							let count = 0;
+							for (let i = -1; i <= 1; i++) {
+								for (let j = -1; j <= 1; j++) {
+									const nx = x + i;
+									const ny = y + j;
+									if (
+										nx >= 0 && nx < gridWidth &&
+										ny >= 0 && ny < gridHeight &&
+										!(i === 0 && j === 0) &&
+										grid[ny][nx]
+									) {
+										count++;
+									}
+								}
+							}
+							return count;
+						}
+
+						function nextGeneration(ctx) {
+							const nextGrid = Array.from(grid, row => row.slice());
+							for (let y = 0; y < gridHeight; y++) {
+								for (let x = 0; x < gridWidth; x++) {
+									const neighbors = countNeighbors(x, y);
+									if (grid[y][x]) {
+										if (neighbors < 2 || neighbors > 3) {
+											nextGrid[y][x] = false; // 死亡
+										}
+									} else {
+										if (neighbors === 3) {
+											nextGrid[y][x] = true; // 诞生
+										}
+									s}
+								}
+							}
+							grid = nextGrid;
+							drawGrid(ctx);
+						}
+
+						return function(_ctx,_x,_y){
+							t++;
+							_ctx.fillStyle = r.attribute.color;
+							_ctx.fillRect(r.attribute.left+_x,r.attribute.top+_y,20,20);
+							
+							_ctx.fillStyle = "white";
+							_ctx.fillText("spr" + t,r.attribute.left+_x,r.attribute.top+_y);
+							nextGeneration(_ctx);
+						}
+					}();
+				},
+				"drawObject": function(r,ctx,x,y){			
+					r.drawMyself(ctx,x,y);	
+				},
+			}, 
 		];
 		var o = function(_t,_x1,_y1){			
 			var left = _x1;
@@ -8337,6 +8432,14 @@ const gc4BLS = function(){
 				"fn4click": function(targetV,myBtn){ 
 					const btns4ObjectsInCurFrame = [
 						{
+							"id":"id_4_objSprite",
+							"name":"sprite",
+							"fn2click":function(_v,btn){ 
+								_v.innerHTML = btn.id;
+							},
+							"bgc":"lightgreen"
+						},
+						{
 							"id":"id_4_objMusicNote",
 							"name":"musicNote",
 							"fn2click":function(_v,btn){ 
@@ -8367,6 +8470,14 @@ const gc4BLS = function(){
 								_v.innerHTML = btn.id;
 							},
 							"bgc":"LightSkyBlue"
+						},
+						{
+							"id":"id_4_objUndo",
+							"name":"undo",
+							"fn2click":function(_v,btn){  
+								_v.innerHTML = btn.id;
+							},
+							"bgc":"lightgray"
 						},
 					];
 					const split4CurFrame = blo0.blDiv(targetV,targetV.id+"split4CurFrame","split4CurFrame","lightgreen");
@@ -8499,10 +8610,17 @@ const gc4BLS = function(){
 					if("id_4_objMusicNote"==type){
 						os.push(_newObject("musicNote",x1-x0,y1-y0,x2-x0,y2-y0,25,"0,200,0"));
 					}	
+					if("id_4_objSprite"==type){
+						os.push(_newObject("sprite",x1-x0,y1-y0,x2-x0,y2-y0,25,"210,200,0"));
+					}	
 					if("id_4_objEdit"==type){
 						for(i in os){
 							if(os[i].upOnMe) os[i].upOnMe(x,y,x0,y0);
 						}
+					}	
+					 
+					if("id_4_objUndo"==type){ 
+						os.pop();
 					}	 
 				}				
 				else{
