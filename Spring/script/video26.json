@@ -1,0 +1,40 @@
+{
+    "request": {
+        "version": "0.0.26",
+        "description":"sprite-test",
+        "width": 1024,
+        "height": 768,
+        "music": "1.mp3",
+        "rate": "1",
+        "frames": [
+            {
+                "number": "1",
+                "time": "100",
+                "objects": [
+                    {
+                        "text": "${VAR_TITLE}",
+                        "x": 200,
+                        "y": 300,
+                        "size": 70,
+                        "color": "105,55,25",
+                       "layer": 2
+                    },
+                    {
+                        "graphic": "sprite",
+                        "attribute": {
+                            "script": "commentID:2169344009",
+                            "function": "animateFrame2"
+                        }
+                    }
+                ],
+                "backgroundColor": "180,180,180"
+            }
+        ],
+        "Macros": [
+            {
+                "name": "VAR_TITLE",
+                "value": "精灵对象测试1063"
+            }       
+        ]
+    }
+}
