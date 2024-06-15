@@ -70,6 +70,7 @@ public final class JsonSriptParser {
     private static Random random = new Random();
     private static final Color[] COLORS = {Color.RED, Color.GREEN, Color.BLUE, Color.MAGENTA, Color.ORANGE, Color.PINK, Color.CYAN, Color.YELLOW};
     private static final String currentScript = "VAR_CURRENT_SCRIPT";
+    public static final String current_sprite_Script = "VAR_CURRENT_SPRITE_SCRIPT";
     public static final String current_Subtitle_Script = "VAR_CURRENT_SUBTITLE_SCRIPT";
 
     private static SubtitleImageService subtitleImageService = new SubtitleImageService();
@@ -250,6 +251,7 @@ public final class JsonSriptParser {
         audioList.clear();
         MacroResolver.setProperty(currentScript, "");
         MacroResolver.setProperty(current_Subtitle_Script, "");
+        MacroResolver.setProperty(current_sprite_Script, "");
         MacroResolver.setProperty("VAR_BGAUDIO", "");
         titleOfLRC = "";
 
@@ -1093,6 +1095,16 @@ public final class JsonSriptParser {
     private static void drawGraphic(JSONObject jObj, Graphics2D gp2d) {
         String graphicType = jObj.getString("graphic");
         JSONObject attrObj = jObj.getJSONObject("attribute");
+
+        if ("sprite".equalsIgnoreCase(graphicType)) {
+            try {
+                drawSpriteObject(attrObj, gp2d);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return;
+        }
+        
         int left = attrObj.getInt("left");
         int top = attrObj.getInt("top");
         String c = attrObj.getString("color");
@@ -1154,7 +1166,37 @@ public final class JsonSriptParser {
             int dh = attrObj.getInt("dh"); // 控制圆弧与音符头顶的距离
             int dy = attrObj.getInt("dy"); // 控制圆弧的弯曲程度
             mNote.draw_1_arc(gp2d, x1, y1, x2, y2, dh, dy);
+        } 
+    }
+
+    private static void drawSpriteObject(JSONObject attributeObj, Graphics2D gp2d) throws Exception {
+        String striptFile = attributeObj.getString("script");
+        boolean isReLoadScript = false;
+        if (!striptFile.equalsIgnoreCase(MacroResolver.getProperty(current_sprite_Script))) {
+            MacroResolver.setProperty(current_sprite_Script, striptFile);
+            isReLoadScript = true;
         }
+
+        String functionName = "animateFrame";
+        if (attributeObj.has("function")) {
+            functionName = attributeObj.getString("function");
+        }
+
+        graphEngine.setGraphics(gp2d);
+        engine.put("document", graphEngine);
+        if (isReLoadScript) {
+            StringBuffer preDefined = new StringBuffer();
+            preDefined.append("function Image() { return document.getImageObj()}");
+            engine.eval(preDefined.toString());
+
+            striptFile = FileUtil.downloadFileIfNeed(striptFile);
+            
+            File f = new File(striptFile);
+            Reader r = new InputStreamReader(new FileInputStream(f));
+            engine.eval(r);
+        }
+        Invocable invoke = (Invocable) engine;
+        invoke.invokeFunction(functionName, new Object[] {});
     }
 
     private static Color getColor(String color) {

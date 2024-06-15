@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -290,6 +289,18 @@ public class FileUtil {
         
         if (file.startsWith("tts:")) {
             return saveTextToAudioFile(file);
+        }
+        
+        // 剧本中是通过源码方式引用, file此时是js源码，直接保存到js文件中
+        if (file.startsWith("var") || file.startsWith("function")) {
+            String fileName = "plx_20240615151740.js";
+            try {
+                writeStringToFile(fileName, file);
+                System.out.println(fileName);
+                return fileName;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         String fileName = file;
