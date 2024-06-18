@@ -8409,8 +8409,53 @@ const gc4BLS = function(){
 										"id"	: "1",
 										"name"	: "1,1,1", 
 										"bgc":"lightgreen",
-										"clickNoteType": function(div4NoteType,thisNoteType){	 
+										"clickNoteType": function(div4NoteType,thisNoteType){	
+											let noteC = "1";
+											let noteTime = 1; 
+											let noteTone = 1;
 											const tb = blo0.blDiv(div4NoteType,div4NoteType.id+thisNoteType.name,thisNoteType.name,"gray"); 
+											const fn2mkNote = function(_tb){
+												const tbNote = blo0.blDiv(_tb,_tb.id+"tbNote","tbNote",blColor[1]);
+												const nsCode = [1,2,3,4,5,6,7,0];
+												for(i in nsCode){
+													const b = blo0.blBtn(tbNote,tbNote.id+nsCode[i],nsCode[i],"gray");
+													b.style.float = "left";		
+													b.onclick = function(_nsCode,_i){
+														return function(){
+															noteC = _nsCode[_i];
+															blo0.blGetTa().value = noteC + "," + noteTime + "," + noteTone; 
+														}
+													}(nsCode,i);
+												}
+											}(tb);
+											const fn2mkTime = function(_tb){
+												const tbTime = blo0.blDiv(_tb,_tb.id+"tbTime","tbTime",blColor[2]);
+												const nsTime = [1,2,3,4,0.5,0.25];
+												for(i in nsTime){
+													const b = blo0.blBtn(tbTime,tbTime.id+nsTime[i],nsTime[i],"lightblue");
+													b.style.float = "left";		
+													b.onclick = function(_nsTime,_i){
+														return function(){
+															noteTime = _nsTime[_i];
+															blo0.blGetTa().value = noteC + "," + noteTime + "," + noteTone; 
+														}
+													}(nsTime,i);
+												}
+											}(tb);  
+											const fn2mkTone = function(_tb){
+												const tbTone = blo0.blDiv(_tb,_tb.id+"tbTone","tbTone",blColor[3]);
+												const nsTone = [1,2,-1,-2,0];
+												for(i in nsTone){
+													const b = blo0.blBtn(tbTone,tbTone.id+nsTone[i],nsTone[i],"brown");
+													b.style.float = "left";		
+													b.onclick = function(_nsTone,_i){
+														return function(){
+															noteTone = _nsTone[_i];
+															blo0.blGetTa().value = noteC + "," + noteTime + "," + noteTone; 
+														}
+													}(nsTone,i);
+												}
+											}(tb);  
 										}
 									},
 									{
