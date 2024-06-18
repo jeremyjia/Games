@@ -8406,6 +8406,11 @@ const gc4BLS = function(){
 								_v.innerHTML = btn.id;
 								const btns4MNotes =[
 									{
+										"id"	: "1",
+										"name"	: "1,1,1", 
+										"bgc":"lightgreen"
+									},
+									{
 										"id"	: "1/2/",
 										"name"	: "1/2/", 
 										"bgc":"lightgreen"
