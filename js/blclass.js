@@ -8408,7 +8408,10 @@ const gc4BLS = function(){
 									{
 										"id"	: "1",
 										"name"	: "1,1,1", 
-										"bgc":"lightgreen"
+										"bgc":"lightgreen",
+										"clickNoteType": function(div4NoteType,thisNoteType){	 
+											const tb = blo0.blDiv(div4NoteType,div4NoteType.id+thisNoteType.name,thisNoteType.name,"gray"); 
+										}
 									},
 									{
 										"id"	: "1/2/",
@@ -8444,12 +8447,17 @@ const gc4BLS = function(){
 								];
 								const fn4MNotes = function(os){
 									const tb = blo0.blDiv(_v,_v.id+"tb4NoteType","noteType","gray");
+									const v1 = blo0.blDiv(_v,_v.id+"v1","v1","white");
 									for(i in os){ 
 										const b = blo0.blBtn(tb,tb.id+os[i].id,os[i].name,os[i].bgc);
 										b.style.float = "left";
 										b.onclick = function(_b,_os,_i){
 											return function(){			 			 
 												blo0.blGetTa().value = _os[_i].name; 
+												v1.innerHTML = _os[_i].name;
+												if(_os[_i].clickNoteType){
+													_os[_i].clickNoteType(v1,_os[_i]);
+												}
 											}
 										}(b,os,i);
 									}
