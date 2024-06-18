@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.515"
+var g_ver_blClass = "CBlClass_bv1.6.521"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -8167,13 +8167,9 @@ const gc4BLS = function(){
 			{
 				"id": "id_4_musicNote",
 				"type": "musicNote",
-				"makeData": function(r,x1,y1,x2,y2,size,color){
-					var bMoveText = false;
-					var mxLine1 = -1, myLine1 = -1,mxLine2 = -1, myLine2 = -1;
+				"makeData": function(r,x1,y1,x2,y2,size,color){ 
 
-					var v = blo0.blGetTa().value.split(',');
-
-					
+					var v = blo0.blGetTa().value.split(','); 
 
 					r.graphic 			= "musicNote"; 
 					var a = {};
@@ -8192,49 +8188,13 @@ const gc4BLS = function(){
 					r.drawMyself = function(ctx,x,y){
 						ctx.fillStyle = "green";
 						ctx.font = "10px Arial";					
-						 
-						
-						var aNote = function (c,n,tm,tn,_x,_y){
-							//ctx.fillText(n+tm+tn,_x,_y);	
+						  
+						var aNote = function (c,n,tm,tn,_x,_y){ 
 							gBlNote(c,_x,_y,n,tn,tm);
 						}(ctx,r.attribute.note,r.attribute.time,+r.attribute.tone,
 						r.attribute.left+x,r.attribute.top+y);
-						
-						if(bMoveText){
-							ctx.fillStyle = "red";
-							ctx.fillRect(r.x+x,r.y+y,20,20);
-						} 
-					}
-					r.downOnMe = function(x,y,x1,y1){   
-						setPointInText(x,y,x1,y1);
-					}
-					r.upOnMe = function(x,y,x1,y1){
-						toMoveText(x,y,x1,y1);
-						bMoveText = false;
+						 
 					} 
-
-					const setPointInText = function(x,y,x1,y1){
-						if(blo0.blPiR(x,y,r.x+x1,r.y+y1,20,20)){
-							bMoveText = true; 
-							mxLine1 = x;
-							myLine1 = y;
-						}
-						else{
-							bMoveText = false;
-						}
-					}
-					const toMoveText = function(x,y,x1,y1){
-						if(bMoveText){
-							mxLine2 = x;
-							myLine2 = y;
-
-							r.x += mxLine2 - mxLine1;
-							r.y += myLine2 - myLine1; 
-
-							mxLine1 = mxLine2;
-							myLine1 = myLine2;
-						}
-					}
 				},
 				"drawObject": function(r,ctx,x,y){			
 					r.drawMyself(ctx,x,y);	
@@ -8444,6 +8404,51 @@ const gc4BLS = function(){
 							"name":"musicNote",
 							"fn2click":function(_v,btn){ 
 								_v.innerHTML = btn.id;
+								const btns4MNotes =[
+									{
+										"id"	: "1/2/",
+										"name"	: "1/2/", 
+										"bgc":"lightgreen"
+									},
+									{
+										"id"	: "1//2//3//4//",
+										"name"	: "1//2//3//4//", 
+										"bgc":"lightgreen"
+									},
+									{
+										"id"	: "1/2//3//",
+										"name"	: "1/2//3//", 
+										"bgc":"lightgreen"
+									},
+									{
+										"id"	: "1//2//3/",
+										"name"	: "1//2//3/", 
+										"bgc":"lightgreen"
+									},
+									{
+										"id"	: "1./2//",
+										"name"	: "1./2//", 
+										"bgc":"lightgreen"
+									},
+									{
+										"id"	: "1//2./",
+										"name"	: "1//2./", 
+										"bgc":"lightgreen"
+									},
+
+								];
+								const fn4MNotes = function(os){
+									const tb = blo0.blDiv(_v,_v.id+"tb4NoteType","noteType","gray");
+									for(i in os){ 
+										const b = blo0.blBtn(tb,tb.id+os[i].id,os[i].name,os[i].bgc);
+										b.style.float = "left";
+										b.onclick = function(_b,_os,_i){
+											return function(){			 			 
+												blo0.blGetTa().value = _os[_i].name; 
+											}
+										}(b,os,i);
+									}
+								}(btns4MNotes);
 							},
 							"bgc":"white"
 						},
