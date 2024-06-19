@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.521"
+var g_ver_blClass = "CBlClass_bv1.6.522"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -8188,12 +8188,42 @@ const gc4BLS = function(){
 					r.drawMyself = function(ctx,x,y){
 						ctx.fillStyle = "green";
 						ctx.font = "10px Arial";					
-						  
-						var aNote = function (c,n,tm,tn,_x,_y){ 
-							gBlNote(c,_x,_y,n,tn,tm);
-						}(ctx,r.attribute.note,r.attribute.time,+r.attribute.tone,
-						r.attribute.left+x,r.attribute.top+y);
-						 
+						
+						var pattern1 = /[0-7][du]*\/[0-7][du]*\/\/[0-7][du]*\/\//g;  //   1/2//3//
+						var matches = r.attribute.note.match(pattern1);
+ 
+						if (matches) {
+							matches.forEach(function(match) { 
+								gBlNote(ctx,
+									r.attribute.left+x,
+									r.attribute.top+y,
+									1, // note
+									0, // tone
+									0.5  // time
+								);
+								gBlNote(ctx,
+									r.attribute.left+x + 20,
+									r.attribute.top+y,
+									2, // note
+									0, // tone
+									0.25  // time
+								);
+								gBlNote(ctx,
+									r.attribute.left+x + 40,
+									r.attribute.top+y,
+									3, // note
+									0, // tone
+									0.25  // time
+								);
+							});
+						}
+						else{
+							var aNote = function (c,n,tm,tn,_x,_y){ 
+								gBlNote(c,_x,_y,n,tn,tm);
+							}(ctx,r.attribute.note,r.attribute.time,+r.attribute.tone,
+							r.attribute.left+x,r.attribute.top+y);
+
+						} 
 					} 
 				},
 				"drawObject": function(r,ctx,x,y){			
