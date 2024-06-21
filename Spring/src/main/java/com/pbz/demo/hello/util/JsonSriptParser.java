@@ -70,9 +70,9 @@ public final class JsonSriptParser {
     private static Random random = new Random();
     private static final Color[] COLORS = {Color.RED, Color.GREEN, Color.BLUE, Color.MAGENTA, Color.ORANGE, Color.PINK, Color.CYAN, Color.YELLOW};
     private static final String currentScript = "VAR_CURRENT_SCRIPT";
-    public static final String current_sprite_Script = "VAR_CURRENT_SPRITE_SCRIPT";
     public static final String current_Subtitle_Script = "VAR_CURRENT_SUBTITLE_SCRIPT";
-
+    public static HashMap<String, String> spriteScriptMap = new HashMap<>();  //防止精灵对象的脚本被重复加载
+   
     private static SubtitleImageService subtitleImageService = new SubtitleImageService();
     public static List<SubtitleModel> subtitleList = null;
     private static String titleOfLRC = "";
@@ -251,8 +251,8 @@ public final class JsonSriptParser {
         audioList.clear();
         MacroResolver.setProperty(currentScript, "");
         MacroResolver.setProperty(current_Subtitle_Script, "");
-        MacroResolver.setProperty(current_sprite_Script, "");
         MacroResolver.setProperty("VAR_BGAUDIO", "");
+        spriteScriptMap.clear();
         titleOfLRC = "";
 
         initMap(requestObj);
@@ -1170,10 +1170,11 @@ public final class JsonSriptParser {
     }
 
     private static void drawSpriteObject(JSONObject attributeObj, Graphics2D gp2d) throws Exception {
-        String striptFile = attributeObj.getString("script");
+        String scriptKey = attributeObj.getString("script");
         boolean isReLoadScript = false;
-        if (!striptFile.equalsIgnoreCase(MacroResolver.getProperty(current_sprite_Script))) {
-            MacroResolver.setProperty(current_sprite_Script, striptFile);
+
+        String spriteScriptFile = spriteScriptMap.get(scriptKey);
+        if (spriteScriptFile == null || spriteScriptFile.trim().equalsIgnoreCase("")) {
             isReLoadScript = true;
         }
 
@@ -1189,8 +1190,9 @@ public final class JsonSriptParser {
             preDefined.append("function Image() { return document.getImageObj()}");
             engine.eval(preDefined.toString());
 
-            striptFile = FileUtil.downloadFileIfNeed(striptFile);
-            
+            String striptFile = FileUtil.downloadFileIfNeed(scriptKey);
+            spriteScriptMap.put(scriptKey, striptFile);
+
             File f = new File(striptFile);
             Reader r = new InputStreamReader(new FileInputStream(f));
             engine.eval(r);
