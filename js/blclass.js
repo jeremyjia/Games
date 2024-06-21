@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.522"
+var g_ver_blClass = "CBlClass_bv1.6.523"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -8190,10 +8190,14 @@ const gc4BLS = function(){
 						ctx.font = "10px Arial";					
 						
 						var pattern1 = /[0-7][du]*\/[0-7][du]*\/\/[0-7][du]*\/\//g;  //   1/2//3//
-						var matches = r.attribute.note.match(pattern1);
- 
-						if (matches) {
-							matches.forEach(function(match) { 
+						var matches1 = r.attribute.note.match(pattern1); 
+						var pattern2 = /[0-7][du]*\/[0-7][du]*\//g;  //   1/2/
+						var matches2 = r.attribute.note.match(pattern2);
+						var pattern3 = /[0-7][du]*\/\/[0-7][du]*\/\/[0-7][du]*\/\/[0-7][du]*\/\//g;  //   1//2//3//4//
+						var matches3 = r.attribute.note.match(pattern3);
+
+						if (matches1) {
+							matches1.forEach(function(match) { 
 								gBlNote(ctx,
 									r.attribute.left+x,
 									r.attribute.top+y,
@@ -8216,6 +8220,56 @@ const gc4BLS = function(){
 									0.25  // time
 								);
 							});
+						}
+						else if(matches2){
+							matches2.forEach(function(match) { 
+								gBlNote(ctx,
+									r.attribute.left+x,
+									r.attribute.top+y,
+									1, // note
+									0, // tone
+									0.5  // time
+								);
+								gBlNote(ctx,
+									r.attribute.left+x + 20,
+									r.attribute.top+y,
+									2, // note
+									0, // tone
+									0.5  // time
+								); 
+							}); 
+						}
+						else if(matches3){
+							matches3.forEach(function(match) { 
+								gBlNote(ctx,
+									r.attribute.left+x,
+									r.attribute.top+y,
+									1, // note
+									0, // tone
+									0.25  // time
+								);
+								gBlNote(ctx,
+									r.attribute.left+x + 20,
+									r.attribute.top+y,
+									2, // note
+									0, // tone
+									0.25  // time
+								); 
+								gBlNote(ctx,
+									r.attribute.left+x + 40,
+									r.attribute.top+y,
+									3, // note
+									0, // tone
+									0.25  // time
+								); 
+								gBlNote(ctx,
+									r.attribute.left+x + 60,
+									r.attribute.top+y,
+									4, // note
+									0, // tone
+									0.25  // time
+								); 
+							}); 
 						}
 						else{
 							var aNote = function (c,n,tm,tn,_x,_y){ 
