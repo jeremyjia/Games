@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.515"
+var g_ver_blClass = "CBlClass_bv1.6.523"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -8167,13 +8167,9 @@ const gc4BLS = function(){
 			{
 				"id": "id_4_musicNote",
 				"type": "musicNote",
-				"makeData": function(r,x1,y1,x2,y2,size,color){
-					var bMoveText = false;
-					var mxLine1 = -1, myLine1 = -1,mxLine2 = -1, myLine2 = -1;
+				"makeData": function(r,x1,y1,x2,y2,size,color){ 
 
-					var v = blo0.blGetTa().value.split(',');
-
-					
+					var v = blo0.blGetTa().value.split(','); 
 
 					r.graphic 			= "musicNote"; 
 					var a = {};
@@ -8192,49 +8188,97 @@ const gc4BLS = function(){
 					r.drawMyself = function(ctx,x,y){
 						ctx.fillStyle = "green";
 						ctx.font = "10px Arial";					
-						 
 						
-						var aNote = function (c,n,tm,tn,_x,_y){
-							//ctx.fillText(n+tm+tn,_x,_y);	
-							gBlNote(c,_x,_y,n,tn,tm);
-						}(ctx,r.attribute.note,r.attribute.time,+r.attribute.tone,
-						r.attribute.left+x,r.attribute.top+y);
-						
-						if(bMoveText){
-							ctx.fillStyle = "red";
-							ctx.fillRect(r.x+x,r.y+y,20,20);
-						} 
-					}
-					r.downOnMe = function(x,y,x1,y1){   
-						setPointInText(x,y,x1,y1);
-					}
-					r.upOnMe = function(x,y,x1,y1){
-						toMoveText(x,y,x1,y1);
-						bMoveText = false;
-					} 
+						var pattern1 = /[0-7][du]*\/[0-7][du]*\/\/[0-7][du]*\/\//g;  //   1/2//3//
+						var matches1 = r.attribute.note.match(pattern1); 
+						var pattern2 = /[0-7][du]*\/[0-7][du]*\//g;  //   1/2/
+						var matches2 = r.attribute.note.match(pattern2);
+						var pattern3 = /[0-7][du]*\/\/[0-7][du]*\/\/[0-7][du]*\/\/[0-7][du]*\/\//g;  //   1//2//3//4//
+						var matches3 = r.attribute.note.match(pattern3);
 
-					const setPointInText = function(x,y,x1,y1){
-						if(blo0.blPiR(x,y,r.x+x1,r.y+y1,20,20)){
-							bMoveText = true; 
-							mxLine1 = x;
-							myLine1 = y;
+						if (matches1) {
+							matches1.forEach(function(match) { 
+								gBlNote(ctx,
+									r.attribute.left+x,
+									r.attribute.top+y,
+									1, // note
+									0, // tone
+									0.5  // time
+								);
+								gBlNote(ctx,
+									r.attribute.left+x + 20,
+									r.attribute.top+y,
+									2, // note
+									0, // tone
+									0.25  // time
+								);
+								gBlNote(ctx,
+									r.attribute.left+x + 40,
+									r.attribute.top+y,
+									3, // note
+									0, // tone
+									0.25  // time
+								);
+							});
+						}
+						else if(matches2){
+							matches2.forEach(function(match) { 
+								gBlNote(ctx,
+									r.attribute.left+x,
+									r.attribute.top+y,
+									1, // note
+									0, // tone
+									0.5  // time
+								);
+								gBlNote(ctx,
+									r.attribute.left+x + 20,
+									r.attribute.top+y,
+									2, // note
+									0, // tone
+									0.5  // time
+								); 
+							}); 
+						}
+						else if(matches3){
+							matches3.forEach(function(match) { 
+								gBlNote(ctx,
+									r.attribute.left+x,
+									r.attribute.top+y,
+									1, // note
+									0, // tone
+									0.25  // time
+								);
+								gBlNote(ctx,
+									r.attribute.left+x + 20,
+									r.attribute.top+y,
+									2, // note
+									0, // tone
+									0.25  // time
+								); 
+								gBlNote(ctx,
+									r.attribute.left+x + 40,
+									r.attribute.top+y,
+									3, // note
+									0, // tone
+									0.25  // time
+								); 
+								gBlNote(ctx,
+									r.attribute.left+x + 60,
+									r.attribute.top+y,
+									4, // note
+									0, // tone
+									0.25  // time
+								); 
+							}); 
 						}
 						else{
-							bMoveText = false;
-						}
-					}
-					const toMoveText = function(x,y,x1,y1){
-						if(bMoveText){
-							mxLine2 = x;
-							myLine2 = y;
+							var aNote = function (c,n,tm,tn,_x,_y){ 
+								gBlNote(c,_x,_y,n,tn,tm);
+							}(ctx,r.attribute.note,r.attribute.time,+r.attribute.tone,
+							r.attribute.left+x,r.attribute.top+y);
 
-							r.x += mxLine2 - mxLine1;
-							r.y += myLine2 - myLine1; 
-
-							mxLine1 = mxLine2;
-							myLine1 = myLine2;
-						}
-					}
+						} 
+					} 
 				},
 				"drawObject": function(r,ctx,x,y){			
 					r.drawMyself(ctx,x,y);	
@@ -8444,6 +8488,109 @@ const gc4BLS = function(){
 							"name":"musicNote",
 							"fn2click":function(_v,btn){ 
 								_v.innerHTML = btn.id;
+								const btns4MNotes =[
+									{
+										"id"	: "1",
+										"name"	: "1,1,1", 
+										"bgc":"lightgreen",
+										"clickNoteType": function(div4NoteType,thisNoteType){	
+											let noteC = "1";
+											let noteTime = 1; 
+											let noteTone = 1;
+											const tb = blo0.blDiv(div4NoteType,div4NoteType.id+thisNoteType.name,thisNoteType.name,"gray"); 
+											const fn2mkNote = function(_tb){
+												const tbNote = blo0.blDiv(_tb,_tb.id+"tbNote","tbNote",blColor[1]);
+												const nsCode = [1,2,3,4,5,6,7,0];
+												for(i in nsCode){
+													const b = blo0.blBtn(tbNote,tbNote.id+nsCode[i],nsCode[i],"gray");
+													b.style.float = "left";		
+													b.onclick = function(_nsCode,_i){
+														return function(){
+															noteC = _nsCode[_i];
+															blo0.blGetTa().value = noteC + "," + noteTime + "," + noteTone; 
+														}
+													}(nsCode,i);
+												}
+											}(tb);
+											const fn2mkTime = function(_tb){
+												const tbTime = blo0.blDiv(_tb,_tb.id+"tbTime","tbTime",blColor[2]);
+												const nsTime = [1,2,3,4,0.5,0.25];
+												for(i in nsTime){
+													const b = blo0.blBtn(tbTime,tbTime.id+nsTime[i],nsTime[i],"lightblue");
+													b.style.float = "left";		
+													b.onclick = function(_nsTime,_i){
+														return function(){
+															noteTime = _nsTime[_i];
+															blo0.blGetTa().value = noteC + "," + noteTime + "," + noteTone; 
+														}
+													}(nsTime,i);
+												}
+											}(tb);  
+											const fn2mkTone = function(_tb){
+												const tbTone = blo0.blDiv(_tb,_tb.id+"tbTone","tbTone",blColor[3]);
+												const nsTone = [1,2,-1,-2,0];
+												for(i in nsTone){
+													const b = blo0.blBtn(tbTone,tbTone.id+nsTone[i],nsTone[i],"brown");
+													b.style.float = "left";		
+													b.onclick = function(_nsTone,_i){
+														return function(){
+															noteTone = _nsTone[_i];
+															blo0.blGetTa().value = noteC + "," + noteTime + "," + noteTone; 
+														}
+													}(nsTone,i);
+												}
+											}(tb);  
+										}
+									},
+									{
+										"id"	: "1/2/",
+										"name"	: "1/2/", 
+										"bgc":"lightgreen"
+									},
+									{
+										"id"	: "1//2//3//4//",
+										"name"	: "1//2//3//4//", 
+										"bgc":"lightgreen"
+									},
+									{
+										"id"	: "1/2//3//",
+										"name"	: "1/2//3//", 
+										"bgc":"lightgreen"
+									},
+									{
+										"id"	: "1//2//3/",
+										"name"	: "1//2//3/", 
+										"bgc":"lightgreen"
+									},
+									{
+										"id"	: "1./2//",
+										"name"	: "1./2//", 
+										"bgc":"lightgreen"
+									},
+									{
+										"id"	: "1//2./",
+										"name"	: "1//2./", 
+										"bgc":"lightgreen"
+									},
+
+								];
+								const fn4MNotes = function(os){
+									const tb = blo0.blDiv(_v,_v.id+"tb4NoteType","noteType","gray");
+									const v1 = blo0.blDiv(_v,_v.id+"v1","v1","white");
+									for(i in os){ 
+										const b = blo0.blBtn(tb,tb.id+os[i].id,os[i].name,os[i].bgc);
+										b.style.float = "left";
+										b.onclick = function(_b,_os,_i){
+											return function(){			 			 
+												blo0.blGetTa().value = _os[_i].name; 
+												v1.innerHTML = _os[_i].name;
+												if(_os[_i].clickNoteType){
+													_os[_i].clickNoteType(v1,_os[_i]);
+												}
+											}
+										}(b,os,i);
+									}
+								}(btns4MNotes);
 							},
 							"bgc":"white"
 						},
