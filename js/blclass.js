@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.523"
+var g_ver_blClass = "CBlClass_bv1.6.524"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -8195,6 +8195,8 @@ const gc4BLS = function(){
 						var matches2 = r.attribute.note.match(pattern2);
 						var pattern3 = /[0-7][du]*\/\/[0-7][du]*\/\/[0-7][du]*\/\/[0-7][du]*\/\//g;  //   1//2//3//4//
 						var matches3 = r.attribute.note.match(pattern3);
+						var pattern4 = /[0-7][du]*\/\/[0-7][du]*\/\/[0-7][du]*\//g;  //   1//2//3/
+						var matches4 = r.attribute.note.match(pattern4); 
 
 						if (matches1) {
 							matches1.forEach(function(match) { 
@@ -8269,6 +8271,31 @@ const gc4BLS = function(){
 									0, // tone
 									0.25  // time
 								); 
+							}); 
+						}
+						else if(matches4){
+							matches4.forEach(function(match) { 
+								gBlNote(ctx,
+									r.attribute.left+x,
+									r.attribute.top+y,
+									1, // note
+									0, // tone
+									0.25  // time
+								);
+								gBlNote(ctx,
+									r.attribute.left+x + 20,
+									r.attribute.top+y,
+									2, // note
+									0, // tone
+									0.25  // time
+								); 
+								gBlNote(ctx,
+									r.attribute.left+x + 40,
+									r.attribute.top+y,
+									3, // note
+									0, // tone
+									0.5  // time
+								);  
 							}); 
 						}
 						else{
