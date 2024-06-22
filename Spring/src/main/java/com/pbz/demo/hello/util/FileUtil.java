@@ -349,23 +349,30 @@ public class FileUtil {
     private static String savePlugInToPlugInFile(String strInput) throws IOException {
         // commentID:1234, or phthon_commentID:1234
         String commentID = strInput.substring(strInput.indexOf(":") + 1);
+
+        String fileName = "plx_" + commentID + ".js";
+        if (strInput.startsWith("phthon")) {
+            fileName = "plx_" + commentID + ".py";
+        }
+        String fullPath = System.getProperty("user.dir") + "/" + fileName;
+
+        /*
+        if (new File(fullPath).exists()) {
+            System.out.println("The file " + fullPath + " already exist!");
+            return fileName;
+        }*/
+
         String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentID;
         String resultString = NetAccessUtil.doGetOnGitHub(url, "");
         int s = resultString.indexOf("body");
         int e = resultString.indexOf("reactions");
         String plugInContentStr = resultString.substring(s + 7, e - 3);
 
-        String fileName = "plx_"+commentID + ".js";
-        if(strInput.startsWith("phthon")) {
-            fileName =  "plx_"+commentID + ".py";
-        }
-        String fullPath = System.getProperty("user.dir") + "/" + fileName;
-               
         FileWriter fw2 = new FileWriter(fullPath);
-        BufferedWriter bw = new BufferedWriter(fw2);    
+        BufferedWriter bw = new BufferedWriter(fw2);
         plugInContentStr = plugInContentStr.replace("\\r\\n", "\r\n");
         plugInContentStr = plugInContentStr.replace("\\", "");
-        bw.write(plugInContentStr); 
+        bw.write(plugInContentStr);
         bw.close();
 
         System.out.println(plugInContentStr);
