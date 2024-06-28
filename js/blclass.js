@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.524"
+var g_ver_blClass = "CBlClass_bv1.6.525"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -6523,6 +6523,11 @@ const gBlNote = function(ctx,_x,_y,c,tone,time){
 	  y = _y + 1*dy;    
 	  ctx.fillRect(x,y,18, 2); 
 	}  
+	if(time==0.75){
+	  ctx.fillText('.', x + dx*2,y);
+	  y = _y + 0.5*dy;    
+	  ctx.fillRect(x,y,18  + dx*2, 2); 
+	} 
 	if(time==2){
 	  x = _x + 2*dx;
 	  ctx.fillText("-", x,y);
@@ -8541,7 +8546,7 @@ const gc4BLS = function(){
 											}(tb);
 											const fn2mkTime = function(_tb){
 												const tbTime = blo0.blDiv(_tb,_tb.id+"tbTime","tbTime",blColor[2]);
-												const nsTime = [1,2,3,4,0.5,0.25];
+												const nsTime = [1,2,3,4,0.75,0.5,0.25];
 												for(i in nsTime){
 													const b = blo0.blBtn(tbTime,tbTime.id+nsTime[i],nsTime[i],"lightblue");
 													b.style.float = "left";		
