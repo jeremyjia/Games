@@ -1,0 +1,69 @@
+{
+    "request": {
+        "version": "0.0.27",
+        "width": 1024,
+        "height": 768,
+        "music": "gydgs.mp3",
+        "rate": "1",
+        "frames": [
+            {
+                "number": "1",
+                "time": "30",
+                "objects": [
+                    {
+                        "text": "${VAR_TITLE}",
+                        "x": 100,
+                        "y": 600,
+                        "size": 40,
+                        "color": "238,173,14"
+                    },
+                    {
+                        "text": "排名   国家    金牌    银牌    铜牌    总数",
+                        "x": 40,
+                        "y": 30,
+                        "size": 30,
+                        "color": "218,112,214"
+                    }
+                ],
+                "backgroundColor": "200,200,222"
+            }
+        ],
+        "superObjects": [
+            {
+                "type": "text",
+                "attribute": {
+                    "x1": 20,
+                    "y1": 150,
+                    "x2": -1,
+                    "y2": -1,
+                    "size": 25,
+                    "color": "10,10,10",
+                    "name": "${MEDAL_LIST}"
+                },
+                "frameRange": "(1,512)",
+                "action": {
+                    "trace": "x=20",
+                    "step": -2
+                }
+            }
+        ],
+        "Macros": [
+            {
+                "name": "VAR_TITLE",
+                "value": "巴黎奥运会金牌榜数据爬取演示程序"
+            },
+            {
+                "name": "MEDAL_LIST",
+                "value": {
+                    "type": "python",
+                    "attribute": {
+                        "script": "phthon_commentID:2254462605",
+                        "input": "url-",
+                        "output": "out_medal_list.txt",
+                        "opts": ""
+                    }
+                }
+            }
+        ]
+    }
+}

@@ -190,7 +190,9 @@ public final class JsonSriptParser {
             String outputFile = attrObj.getString("output");
             String opts = attrObj.optString("opts");
             script = FileUtil.downloadFileIfNeed(script);
-            inputFile = FileUtil.downloadFileIfNeed(inputFile);
+            if (!inputFile.startsWith("url-")) {
+                inputFile = FileUtil.downloadFileIfNeed(inputFile);
+            }
             List<String> cmds = new ArrayList<String>();
             if (isWindows) {
                 cmds.add("python");
@@ -211,7 +213,14 @@ public final class JsonSriptParser {
             }
             String[] commands = cmds.toArray(new String[] {});
             ExecuteCommand.executeCommandOnServer(commands);
-            strValue = outputFile;
+            if (outputFile.endsWith(".txt")) {
+                String filePath = System.getProperty("user.dir") + "/" + outputFile;
+                strValue = FileUtil.readAllBytes(filePath);
+                strValue = strValue.replace("n", "\\n");
+
+            } else {
+                strValue = outputFile;
+            }
         } else if ("svg".equalsIgnoreCase(type)) {
 
             JSONObject attrObj = valObj.getJSONObject("attribute");
