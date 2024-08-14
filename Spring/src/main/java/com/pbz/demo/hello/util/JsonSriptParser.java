@@ -26,6 +26,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 import javax.script.Invocable;
@@ -188,7 +190,9 @@ public final class JsonSriptParser {
             String outputFile = attrObj.getString("output");
             String opts = attrObj.optString("opts");
             script = FileUtil.downloadFileIfNeed(script);
-            inputFile = FileUtil.downloadFileIfNeed(inputFile);
+            if (!inputFile.startsWith("url-")) {
+                inputFile = FileUtil.downloadFileIfNeed(inputFile);
+            }
             List<String> cmds = new ArrayList<String>();
             if (isWindows) {
                 cmds.add("python");
@@ -209,7 +213,14 @@ public final class JsonSriptParser {
             }
             String[] commands = cmds.toArray(new String[] {});
             ExecuteCommand.executeCommandOnServer(commands);
-            strValue = outputFile;
+            if (outputFile.endsWith(".txt")) {
+                String filePath = System.getProperty("user.dir") + "/" + outputFile;
+                strValue = FileUtil.readAllBytes(filePath);
+                strValue = strValue.replace("n", "\\n");
+
+            } else {
+                strValue = outputFile;
+            }
         } else if ("svg".equalsIgnoreCase(type)) {
 
             JSONObject attrObj = valObj.getJSONObject("attribute");
@@ -1152,9 +1163,63 @@ public final class JsonSriptParser {
             gp2d.setFont(new Font("黑体", Font.BOLD, 30));
 
             String note = attrObj.getString("note");
-            float time = attrObj.getFloat("time");
-            int tone = attrObj.getInt("tone");
-            mNote.draw_1_note(gp2d, left, top, note, time, tone);
+            if (note.length() == 1) {
+              //绘制单音符
+                float time = attrObj.getFloat("time");
+                int tone = attrObj.getInt("tone");
+                mNote.draw_1_note(gp2d, left, top, note, time, tone);
+            } else {
+                // "note": "1/2/"
+                int dx = 25;
+                String regexPattern1 = "(\\d+)/(\\d+)/"; // 1/2/
+                String regexPattern2 = "(\\d+)/(\\d+)//(\\d+)//"; // 1/2//3//
+                String regexPattern3 = "(\\d+)//(\\d+)//(\\d+)/"; // 1//2//3/
+                String regexPattern4 = "(\\d+)//(\\d+)//(\\d+)//(\\d+)//"; // 1//2//3//4//
+                Matcher matcher1 = Pattern.compile(regexPattern1).matcher(note);
+                Matcher matcher2 = Pattern.compile(regexPattern2).matcher(note);
+                Matcher matcher3 = Pattern.compile(regexPattern3).matcher(note);
+                Matcher matcher4 = Pattern.compile(regexPattern4).matcher(note);
+
+                if (matcher4.find()) {
+                    System.out.println("matcher4");
+                    String note1 = matcher4.group(1);
+                    String note2 = matcher4.group(2);
+                    String note3 = matcher4.group(3);
+                    String note4 = matcher4.group(4);
+                    mNote.draw_1_note(gp2d, left, top, note1, (float) 0.25, 0);
+                    mNote.draw_1_note(gp2d, left + dx, top, note2, (float) 0.25, 0);
+                    mNote.draw_1_note(gp2d, left + dx * 2, top, note3, (float) 0.25, 0);
+                    mNote.draw_1_note(gp2d, left + dx * 3, top, note4, (float) 0.25, 0);
+
+                } else if (matcher3.find()) {
+                    System.out.println("matcher3");
+                    String note1 = matcher3.group(1);
+                    String note2 = matcher3.group(2);
+                    String note3 = matcher3.group(3);
+                    mNote.draw_1_note(gp2d, left, top, note1, (float) 0.25, 0);
+                    mNote.draw_1_note(gp2d, left + dx, top, note2, (float) 0.25, 0);
+                    mNote.draw_1_note(gp2d, left + dx * 2, top, note3, (float) 0.5, 0);
+
+                } else if (matcher2.find()) {
+                    System.out.println("matcher2");
+                    String note1 = matcher2.group(1);
+                    String note2 = matcher2.group(2);
+                    String note3 = matcher2.group(3);
+                    mNote.draw_1_note(gp2d, left, top, note1, (float) 0.5, 0);
+                    mNote.draw_1_note(gp2d, left + dx, top, note2, (float) 0.25, 0);
+                    mNote.draw_1_note(gp2d, left + dx * 2, top, note3, (float) 0.25, 0);
+
+                } else if (matcher1.find()) {
+                    System.out.println("matcher1");
+                    String note1 = matcher1.group(1);
+                    String note2 = matcher1.group(2);
+                    mNote.draw_1_note(gp2d, left, top, note1, (float) 0.5, 0);
+                    mNote.draw_1_note(gp2d, left + dx, top, note2, (float) 0.5, 0);
+                } else {
+                    gp2d.drawString("NOT SUPPORT!", left, top); // TODO待定需求
+                }
+            }
+
         } else if ("arc".equalsIgnoreCase(graphicType)) {
             gp2d.setColor(color);
             gp2d.setFont(new Font("黑体", Font.BOLD, 30));
