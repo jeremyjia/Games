@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.526"
+var g_ver_blClass = "CBlClass_bv1.6.531"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -7392,7 +7392,7 @@ const gc4BLS = function(){
 					{
 						"name":"rate",
 						"fn4ui": function(v){ 
-							const fs = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,25,60];
+							const fs = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,25,60,72,76,80,104];
 							const tb = blo0.blDiv(v,v.id+"tb","tb","Violet"); 
 							for(i in fs){
 								const b = blo0.blBtn(tb,tb.id+i,fs[i],"Fuchsia");
