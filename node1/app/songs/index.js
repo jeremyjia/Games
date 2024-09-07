@@ -1,4 +1,4 @@
-const taSongs = "0号漂泊者.小笛-点歌单 v1.321";  
+const taSongs = "0号漂泊者.小笛-点歌单 v1.322";  
 const l = require('../../logger');
 var ofg = require('officegen');
 var fs = require('fs');
@@ -82,7 +82,7 @@ const u = function(){
               "真的爱你:Beyond",
               "光辉岁月:Beyond",
               "海阔天空:Beyond",
-              "海阔天空:Beyond",
+              "不再犹豫:Beyond",
               "蓝莲花:许巍",
               "故乡:许巍",
               "晴朗:许巍",
@@ -158,7 +158,7 @@ const u = function(){
     //text2p(p,"\n\n泉州向阳树琴行大院  " + Date());
   
     //* 服务器生成文件
-    let out = fs.createWriteStream('public/s2.docx')
+    let out = fs.createWriteStream('public/s3.docx')
   
     out.on('error', function (err) {
       console.log(err)
