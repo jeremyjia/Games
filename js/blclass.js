@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.531"
+var g_ver_blClass = "CBlClass_bv1.6.532"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -7355,6 +7355,11 @@ const gc4BLS = function(){
 								o.id = 11;
 								o.name = "bzll.mp3";
 								o.src = "http://localhost:8080/bzll.mp3";
+								ls.push(o);
+								var o = {};
+								o.id = 11;
+								o.name = "j72_4_4.mp3";
+								o.src = "https://littleflute.github.io/gt1/mp3/j72_4_4.mp3";
 								ls.push(o);
 								return ls;
 							}(); 
