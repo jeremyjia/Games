@@ -235,6 +235,19 @@ public class FileUtil {
 		return sb.toString();
 	}
 
+    public static boolean downloadFileByCurl(String url, String saveFilePath) {
+        String[] extractPicturesCmd = { "curl", url, "-o", saveFilePath };
+        try {
+            ExecuteCommand.executeCommand(extractPicturesCmd, null, new File("."), null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (!new File(saveFilePath).exists()) {
+            return false;
+        }
+        System.out.println("Download file by curl success:" + saveFilePath);
+        return true;
+    }
 	public static void downloadFile(String url, String saveFilePath) {
 		try {
 			url = fixUrl(url);
@@ -311,6 +324,12 @@ public class FileUtil {
             long begintime = System.currentTimeMillis();
             System.out.println("Downloading file: " + file);
             FileUtil.downloadFile(file, saveFile);
+            // Try to download file by curl command.
+            if (!new File(saveFile).exists()) {
+                if (!downloadFileByCurl(file, saveFile)) {
+                    throw new IOException("Download file " + file + " failed!");
+                }
+            }
             long endtime = System.currentTimeMillis();
             System.out.println("Download file Time:" + (endtime - begintime));
         }
@@ -669,7 +688,12 @@ public class FileUtil {
         return fileName;
     }
 	public static void main(String[] args) {
-
+	    try {
+            downloadFileByCurl("https://littleflute.github.io/english/NewConceptEnglish/Book2/3.mp3", "3.mp3");
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
+	    
 		String path = "C:\\jiaGameAll\\Games\\Spring\\target";
 		clearWorkSpace(path);
 		// 全局代理
