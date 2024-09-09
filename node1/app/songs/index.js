@@ -1,4 +1,4 @@
-const taSongs = "0号漂泊者.小笛-点歌单 v1.312";  
+const taSongs = "0号漂泊者.小笛-点歌单 v1.322";  
 const l = require('../../logger');
 var ofg = require('officegen');
 var fs = require('fs');
@@ -51,26 +51,26 @@ const u = function(){
               "老男孩:筷子兄弟",
               "失恋阵线联盟:草蜢",
               "众人划桨开大船:付笛声",
-              "原创* 我的故乡在南方:小笛(littleflute):brown", 
-              "原创* 请你放心的走:小笛(littleflute):brown",
-              "原创* 唱自己的歌，走自己的路:小笛(littleflute):brown",
-              "原创* 南方雨季:小笛(littleflute):brown ", 
-              "原创* 近视歌手:小笛(littleflute):brown ",
-              "原创* 关于学院路:小笛(littleflute):brown ",
-              "原创* 彩色的梦:小笛(littleflute):brown ", 
-              "原创* 城市的夜晚:小笛(littleflute):brown ",
-              "原创* 辞职之歌:小笛(littleflute):brown ",
-              "原创* 程序员之歌:小笛(littleflute):brown",
+              "原创* 我的故乡在南方:小笛(littleflute):red", 
+              "原创* 请你放心的走:小笛(littleflute):red",
+              "原创* 唱自己的歌，走自己的路:小笛(littleflute):red",
+              "原创* 南方雨季:小笛(littleflute):red", 
+              "原创* 近视歌手:小笛(littleflute):red",
+              "原创* 关于学院路:小笛(littleflute):red",
+              "原创* 彩色的梦:小笛(littleflute):red", 
+              "原创* 城市的夜晚:小笛(littleflute):red",
+              "原创* 辞职之歌:小笛(littleflute):red",
+              "原创* 程序员之歌:小笛(littleflute):red",
               "我想有个家:潘美辰",
               "张三的歌:李寿全",
               "大海:张雨生",
               "我的未来不是梦:张雨生",
-              "英文_ 500 miles:佚名:darkgreen",
-              "英文_ Yesterday once more:Carpenter:darkgreen",
-              "英文_ Yellow submarine:beatles:darkgreen",
-              "英文_ The sound of silence:Paul Simn:darkgreen",
-              "英文_ ElCondorPasa秃鹰飞去:Paul Simn",
-              "英文_ I don't like to sleep alone:beatles", 
+              "英文_ 500 miles:佚名:green",
+              "英文_ Yesterday once more:Carpenter:green",
+              "英文_ Yellow submarine:beatles:green",
+              "英文_ The sound of silence:Paul Simn:green",
+              "英文_ ElCondorPasa秃鹰飞去:Paul Simn:green",
+              "英文_ I don't like to sleep alone:beatles:green", 
               "蜗牛与黄鹂鸟:佚名",
               "让我们荡起双桨:佚名",
               "听妈妈讲过去的事情:佚名",
@@ -82,7 +82,7 @@ const u = function(){
               "真的爱你:Beyond",
               "光辉岁月:Beyond",
               "海阔天空:Beyond",
-              "海阔天空:Beyond",
+              "不再犹豫:Beyond",
               "蓝莲花:许巍",
               "故乡:许巍",
               "晴朗:许巍",
@@ -155,10 +155,10 @@ const u = function(){
 
     
     //*/
-    text2p(p,"\n\n泉州向阳树琴行大院  " + Date());
+    //text2p(p,"\n\n泉州向阳树琴行大院  " + Date());
   
     //* 服务器生成文件
-    let out = fs.createWriteStream('public/songs.docx')
+    let out = fs.createWriteStream('public/s3.docx')
   
     out.on('error', function (err) {
       console.log(err)

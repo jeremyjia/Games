@@ -392,7 +392,12 @@ public final class JsonSriptParser {
             }
         }
 
-        if (index == 0) {
+        //如果没有提供场景参数frames时index为0 ，此时生成默认的视频，只需要提供一些基本的参数，如视频宽，高，时间秒数，背景颜色等
+        if (index == 0) {            
+            if(time == null || time.trim().length() == 0) {
+                time = "10";
+                System.out.println("Warning: Not provide time attribute, will use the defult value 10 seconds.");
+            }
             createDefaultVideo(width, height, time, rate, bgColor);
         }
         String suffix = isWindows ? ".bat" : ".sh";
@@ -410,7 +415,11 @@ public final class JsonSriptParser {
         double dRate = Double.parseDouble(rate);
         long secondOfAudio = (long) ((double) index / dRate);
         if (secondOfAudio == 0) {
-            secondOfAudio = Long.parseLong(time);
+            if (index == 0) {
+                secondOfAudio = Long.parseLong(time);
+            } else {
+                throw new Exception("The rate " + dRate + " is large than the total frame times " + index);
+            }
         }
         secondOfAudio += 2;
         combineAudios(ffmpegPath, secondOfAudio);
@@ -512,6 +521,7 @@ public final class JsonSriptParser {
 
     private static void createDefaultVideo(int width, int height, String time, String rate, String bgColor)
             throws Exception {
+        
         int t = Integer.parseInt(time);
         int r = Integer.parseInt(rate);
         Color colorBackground = getColor(bgColor);
