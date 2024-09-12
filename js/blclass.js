@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.533"
+var g_ver_blClass = "CBlClass_bv1.6.534"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -3772,7 +3772,7 @@ function CBlClass ()
 				if(ID_CMD_BLS_UI == cmdID){
 					var d = blo0.blMDiv(oBoss,oBoss.id+"mdiv4_bls_UI","blsUI",555,100,222,100,"green");
 					var tb = blo0.blDiv(d,d.id+"tb","tb","gray");
-					var b1= blo0.blBtn(tb,tb.id+"b1","b1","gray");
+					var b1= blo0.blBtn(tb,tb.id+"b1","blsNew","gray");
 					b1.onclick = function(){
 						curDrawingType = G_DRAW_BLS;
 					}
@@ -7267,7 +7267,13 @@ const gc4BLS = function(){
 	this.getSOs = function(){return lsSuperObjects;}
 	this.select = function(b){		s = b;		}
 	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
-	this.setXY2 = function(x,y){		x2 = x; y2 = y;		}
+	this.setXY2 = function(x,y){ 
+		x2 = x; y2 = y;	
+		if(x1>x2)	x2 = x1 + 100;
+		if(y1>y2)	y2 = y1 + 100;
+		x2 = (x2-x1)%2?x2+1:x2; 
+		y2 = (y2-y1)%2?y2+1:y2; 
+	}
 	this.draw_me = function(cvs){	
 		var ctx = cvs.getContext("2d");	
 		const d = 10; 
@@ -7539,7 +7545,7 @@ const gc4BLS = function(){
 							return "h:" + (y2-y1);
 						},
 						"fn4ui": function(_v,_b){
-							const hs = [1,-1,2,-2,5,-5,10,-10,100,-100,200,-200,500,-500];
+							const hs = [2,-2,10,-10,100,-100,200,-200,500,-500];
 							for(i in hs){
 								var s = hs[i]>0?"+"+hs[i]:hs[i];
 								var b = blo0.blBtn(_v,_v.id+i,s,"Indigo");
@@ -7560,7 +7566,7 @@ const gc4BLS = function(){
 							return "w:" + (x2-x1);
 						},
 						"fn4ui": function(_v,_b){ 
-							const ws = [1,-1,2,-2,5,-5,10,-10,100,-100,200,-200,500,-500];
+							const ws = [2,-2,10,-10,100,-100,200,-200,500,-500];
 							for(i in ws){
 								var s = ws[i]>0?"+"+ws[i]:ws[i];
 								var b = blo0.blBtn(_v,_v.id+i,s,"purple");
