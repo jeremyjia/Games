@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.535"
+var g_ver_blClass = "CBlClass_bv1.6.541"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -7543,6 +7543,31 @@ const gc4BLS = function(){
 								l.splice(0,1);
 								tb.refreshSOs(l);  
 							}
+							const soPlugIns = function(){
+								let pis = ["https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxRain.js",
+									"https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxWaterDrop.js",
+									"https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxRunning.js"
+								];
+								for (i in pis){
+									let b = blo0.blBtn(tb,tb.id+"pi" + i, i,"darkgray"); 
+									b.onclick = function(_p,_i){
+										return function(){
+											var o = {};
+											o.type = "javascript";
+											o.frameRange = "(1,1000)";
+											var a = {};
+											a.script = _p[_i];
+											a.function = "animateFrame";
+											a.start = 1;
+											o.attribute = a;
+											o.layer = 1;
+											l.push(o); 
+											tb.refreshSOs(l); 
+										}
+									}(pis,i);
+								}
+							}();
+
 							tb.refreshSOs(l);
 						},
 						"color": "Turquoise"
