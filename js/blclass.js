@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.534"
+var g_ver_blClass = "CBlClass_bv1.6.535"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -7420,11 +7420,13 @@ const gc4BLS = function(){
 						"name":"so",
 						"fn4ui": function(v){ 
 							const tb = blo0.blDiv(v,v.id+"tb","tb",this.color);
+							const allSO = blo0.blDiv(v,v.id+"allSO","so:","gray");
 							const vos = blo0.blDiv(v,v.id+"vos","vos","BurlyWood");
 							const vEndOfOS = blo0.blDiv(v,v.id+"vEndOfOS","vEndOfOS","white");
-							tb.refreshSOs = function(l){ 
+							tb.refreshSOs = function(l){  
+								allSO.innerHTML = "so:";
 								for(i in l){
-									const b = blo0.blBtn(tb,tb.id+i,i,"Lavender"); 
+									const b = blo0.blBtn(allSO,allSO.id+i,i,"Lavender"); 
 									newSO.style.float = "right";
  
 									b.onclick = function(_b,_i,_v){
@@ -7520,7 +7522,7 @@ const gc4BLS = function(){
 							}							
 							const l = _thisBLS.getSOs();
 							const newSO = blo0.blBtn(tb,tb.id+"newSO","newSO","Salmon"); 
-							newSO.style.float = "left";
+							newSO.style.float = "right";
 							newSO.onclick = function(){
 								var o = {};
 								o.type = "javascript";
@@ -7533,6 +7535,13 @@ const gc4BLS = function(){
 								o.layer = 1;
 								l.push(o); 
 								tb.refreshSOs(l); 
+							}
+							
+							const delSO = blo0.blBtn(tb,tb.id+"delSO","delSO","brown"); 
+							delSO.style.float = "right";
+							delSO.onclick = function(){
+								l.splice(0,1);
+								tb.refreshSOs(l);  
 							}
 							tb.refreshSOs(l);
 						},
