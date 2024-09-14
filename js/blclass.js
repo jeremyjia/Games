@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.541"
+var g_ver_blClass = "CBlClass_bv1.6.542"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -827,6 +827,37 @@ function CBlClass ()
 				s += " t2-t1 = " + (t2-t1)/1000 + "s";
 				s += " fps = " + fps;
 				ctx.fillText(s, x1,y1 + 20);
+
+
+				
+				
+
+				const checkSite = function(){
+					async function isWebsiteAccessible(url) {
+						try {
+							const response = await fetch(url, { method: 'HEAD' }); // 使用 HEAD 请求以减轻负载
+							if (response.ok) {
+								return true; // 状态码在200-299之间
+							} else {
+								return false;
+							}
+						} catch (error) {
+							console.error('Error fetching the URL:', error);
+							return false;
+						}
+					}
+
+					// 示例使用
+					isWebsiteAccessible('http://localhost:8080/')
+					.then(isAccessible => {
+						if (isAccessible) {
+							ctx.fillText("xddbg 11 : ok! ", 55,120);
+						} else {
+							ctx.fillText("xddbg 11 :  error!", 55,120);
+						}
+					});
+					
+				}();
 			}
 			return o;
 		}();
