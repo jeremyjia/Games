@@ -7544,7 +7544,9 @@ const gc4BLS = function(){
 								tb.refreshSOs(l);  
 							}
 							const soPlugIns = function(){
-								let pis = ["https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxRain.js",
+								let pis = [
+									"https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/myplx.js",
+									"https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxRain.js",
 									"https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxWaterDrop.js",
 									"https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxRunning.js"
 								];
