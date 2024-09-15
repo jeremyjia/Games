@@ -1,0 +1,80 @@
+{
+  "request": {
+    "version": "gc4BLS: bv0.29",
+    "width": 800,
+    "height": 600,
+    "music": "https://littleflute.github.io/english/NewConceptEnglish/Book2/2.mp3",
+    "rate": "1",
+    "frames": [
+      {
+        "time": 30,
+        "backgroundColor": "gray",
+        "objects": [
+          {
+            "text": "每隔m帧画n帧",
+            "x": 100,
+            "y": 100,
+            "size": 50,
+            "color": "100,145,35"
+        }
+        ]
+      }
+    ],
+    "superObjects": [
+      {
+        "type": "circle",
+        "attribute": {
+            "x1": 50,
+            "y1": 400,
+            "x2": 40,
+            "y2": 40,
+            "size": 5,
+            "color": "200,0,0",
+            "name": "红灯"
+        },
+        "frameRange": "(1,100)",
+        "frameSubset": "(2,1)",
+        "action": {
+            "trace": "function trace(x) { return 400; }",
+            "step": 0
+        }
+    },
+    {
+      "type": "circle",
+      "attribute": {
+          "x1": 200,
+          "y1": 400,
+          "x2": 40,
+          "y2": 40,
+          "size": 5,
+          "color": "255,255,0",
+          "name": "黄灯"
+      },
+      "frameRange": "(2,100)",
+      "frameSubset": "(2,1)",
+      "action": {
+          "trace": "function trace(x) { return 400; }",
+          "step": 0
+      }
+    },
+    {
+      "type": "circle",
+      "attribute": {
+          "x1": 350,
+          "y1": 400,
+          "x2": 40,
+          "y2": 40,
+          "size": 5,
+          "color": "0,255,0",
+          "name": "绿灯"
+      },
+      "frameRange": "(3,100)",
+      "frameSubset": "(2,1)",
+      "action": {
+          "trace": "function trace(x) { return 400; }",
+          "step": 0
+      }
+    }
+    ]
+  }
+}

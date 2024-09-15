@@ -802,11 +802,55 @@ public final class JsonSriptParser {
                     nFactor = Integer.parseInt(rate);
                 }
             }
+
+            // 进一步判断是否在要求的子集中
+            List<Integer> numbers = getValidframeNumbers(jsonObj, sf, ef, nFactor);
             if (num >= (sf * nFactor) && num <= (ef * nFactor)) {
-                superObjects.add(jsonObj);
+                if (numbers == null || numbers.size() == 0) {
+                    superObjects.add(jsonObj);
+                } else {
+                    if (numbers.contains(num)) {
+                        superObjects.add(jsonObj);
+                    }
+                }
             }
         }
         return superObjects;
+    }
+
+    private static List<Integer> getValidframeNumbers(JSONObject jsonObj, int start, int end, int nFactor) {
+        if (!jsonObj.has("frameSubset")) {
+            return null;
+        }
+
+        String rangeValue = jsonObj.getString("frameSubset");
+        String rangeArray[] = rangeValue.split(",");
+        String s = rangeArray[0].substring(1);
+        String e = rangeArray[1].substring(0, rangeArray[1].length() - 1);
+        int m = Integer.parseInt(s);
+        int n = Integer.parseInt(e);
+
+        if (m == 0 || n == 0) {
+            System.out.println("Parameter of frameSubset is zero, will follow up frameRange attrubute!");
+            return null;
+        }
+        List<Integer> list = new ArrayList<>();
+        int p = 0;
+        int q = 0;
+        // 收集每隔m帧画n帧(m,n)合法集合
+        for (int i = start; i <= end; i++) {
+            if (p < n) {
+                list.add(i * nFactor);
+                p++;
+            } else {
+                q++;
+                if (q >= m) {
+                    p = 0;
+                    q = 0;
+                }
+            }
+        }
+        return list;
     }
 
     private static void drawSupperObjects(JSONObject jObj, Graphics2D gp2d, int number) throws Exception {
