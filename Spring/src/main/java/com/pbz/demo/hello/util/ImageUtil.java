@@ -2,8 +2,10 @@ package com.pbz.demo.hello.util;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.CropImageFilter;
 import java.awt.image.FilteredImageSource;
@@ -99,6 +101,29 @@ public class ImageUtil {
             blueHex = "0" + blueHex;
         }
         return redHex + greenHex + blueHex;
+    }
+    
+    public static BufferedImage rotateImage(BufferedImage originalImage, double angle) {
+        // 计算旋转后的图片大小
+        double radians = Math.toRadians(angle);
+        double sin = Math.abs(Math.sin(radians));
+        double cos = Math.abs(Math.cos(radians));
+        int width = originalImage.getWidth();
+        int height = originalImage.getHeight();
+        int newWidth = (int) Math.floor(width * cos + height * sin);
+        int newHeight = (int) Math.floor(height * cos + width * sin);
+        if(newWidth == 0 || newHeight==0) {
+            return originalImage; //Error: Width (0) and height (0) must be > 0
+        }
+        // 创建一个新的图片缓冲区
+        BufferedImage rotatedImage = new BufferedImage(newWidth, newHeight, originalImage.getType());
+        Graphics2D graphics2D = rotatedImage.createGraphics();
+        // 应用旋转
+        AffineTransform at = new AffineTransform();
+        at.rotate(radians, newWidth / 2, newHeight / 2);
+        graphics2D.drawRenderedImage(originalImage, at);
+
+        return rotatedImage;
     }
 
 }
