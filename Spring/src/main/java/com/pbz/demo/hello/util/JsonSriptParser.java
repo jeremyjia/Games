@@ -864,29 +864,50 @@ public final class JsonSriptParser {
             Y = (float) (a * X * X + b * X + c);
         }
 
-        boolean bPrint = false;
-        if (actionObj.has("print")) {
-            bPrint = actionObj.getBoolean("print");
-        }
-        if (bPrint) {
-            // 绘制超级对象的脚印
-            for (int i = sfNum; i <= number; i++) {
+        // 绘制超级对象的足迹（脚印），可以定义脚印的图片或者简单绘制圆点
+        if (actionObj.has("footprint")) {
+            JSONObject footPrintObj = actionObj.getJSONObject("footprint");
+            String footPrintType = footPrintObj.getString("type");
+            JSONObject footPrintAttrObj = footPrintObj.getJSONObject("attribute");
+            String footSrc = footPrintAttrObj.getString("src");
+            int footWidthAttr = footPrintAttrObj.getInt("width");
+            int footHeightAttr = footPrintAttrObj.getInt("height");
+            int footDyAttr = footPrintAttrObj.getInt("dy");
+            int footStepAttr = footPrintAttrObj.getInt("step");
+            if (footStepAttr <= 0) {
+                footStepAttr = 1;
+            }
+            for (int i = sfNum; i <= number; i = i + footStepAttr) {
                 float printX = x1 + (i - sfNum) * step;
-                float printY;
-                if (actionTrace.toLowerCase().startsWith("function")) {
-                    printY = calTraceByJS(printX, actionTrace);
-                } else if (actionTrace.toLowerCase().startsWith("x")) {
-                    String xValue = actionTrace.substring(2);
-                    printX = Integer.parseInt(xValue);
-                    printY = y1 + (i - sfNum) * step;
-                } else {
-                    String parm[] = actionTrace.split("\\+");
-                    float a1 = Float.parseFloat(parm[0].substring(2, parm[0].indexOf("*")));
-                    float b1 = Float.parseFloat(parm[1].substring(0, parm[1].indexOf("*")));
-                    float c1 = Float.parseFloat(parm[2]);
-                    printY = (float) (a1 * printX * printX + b1 * printX + c1);
+                float printY = calYCoordinate(actionTrace, printX, i, x1, y1, sfNum, step);
+                float printX1 = x1 + (i + 1 - sfNum) * step;
+                float printY1 = calYCoordinate(actionTrace, printX1, i + 1, x1, y1, sfNum, step);
+
+                if ("circle".equalsIgnoreCase(footPrintType)) {
+                    gp2d.fillOval((int) printX, (int) printY, footWidthAttr, footHeightAttr);
+                } else if ("picture".equalsIgnoreCase(footPrintType)) {
+                    // 绘制脚印的图片，图片会根据运动轨迹的方向进行旋转
+                    double degrees;
+                    double dSlope;
+                    if (printX1 - printX == 0) {
+                        degrees = 90; // 斜率不存在
+                    } else {
+                        dSlope = (printY1 - printY) / (printX1 - printX);
+                        double radians = Math.atan(dSlope);
+                        degrees = Math.toDegrees(radians);
+                    }
+                    String footPic = FileUtil.downloadFileIfNeed(footSrc);
+                    File imgFile = new File(footPic);
+                    if (imgFile.exists()) {
+                        BufferedImage originalImage = ImageIO.read(imgFile);
+                        BufferedImage rotatedImage = ImageUtil.rotateImage(originalImage, 90 - degrees);
+                        int left = (int) printX;
+                        int top = (int) printY + footDyAttr;
+                        int w = footWidthAttr;
+                        int h = footHeightAttr;
+                        gp2d.drawImage(rotatedImage, left, top, w, h, null);
+                    }
                 }
-                gp2d.fillOval((int) printX, (int) printY, 6, 6);
             }
         }
 
@@ -961,6 +982,23 @@ public final class JsonSriptParser {
         }
     }
 
+    private static float calYCoordinate(String actionTrace, float printX, int i, int x1, int y1, int sfNum, float step) throws Exception {
+        float printY;
+        if (actionTrace.toLowerCase().startsWith("function")) {
+            printY = calTraceByJS(printX, actionTrace);
+        } else if (actionTrace.toLowerCase().startsWith("x")) {
+            String xValue = actionTrace.substring(2);
+            printX = Integer.parseInt(xValue);
+            printY = y1 + (i - sfNum) * step;
+        } else {
+            String parm[] = actionTrace.split("\\+");
+            float a1 = Float.parseFloat(parm[0].substring(2, parm[0].indexOf("*")));
+            float b1 = Float.parseFloat(parm[1].substring(0, parm[1].indexOf("*")));
+            float c1 = Float.parseFloat(parm[2]);
+            printY = (float) (a1 * printX * printX + b1 * printX + c1);
+        }
+        return printY;
+    }
     private static float calTraceByJS(float x, String actionTrace) throws Exception {
         engine.eval(actionTrace);
         Invocable invocable = (Invocable) engine;
