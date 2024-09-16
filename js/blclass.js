@@ -7457,8 +7457,10 @@ const gc4BLS = function(){
 					{
 						"name":"time",
 						"fn4ui": function(v){							
-							const tb = blo0.blDiv(v,v.id+"tb","tb","Violet"); 
+							const tb = blo0.blDiv(v,v.id+"tb_time","video time for w/o frame","Violet"); 
 							const ta = blo0.blTextarea(tb,tb.id+"Tafortime",t.getVideoTime(),blGrey[1]);
+							ta.style.width="15%";
+							ta.style.height="22px";
 							ta.addEventListener("input", function(e) {
 								var tav = this.value;
 								t.setVideoTime(tav) ;
