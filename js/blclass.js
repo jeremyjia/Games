@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.544"
+var g_ver_blClass = "CBlClass_bv1.6.545"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2361,7 +2361,12 @@ function CBlClass ()
                worker._2do(xmlhttp.responseText);
             }
 			else{    
-			  worker._2do("error xd 11");
+				if (xmlhttp.readyState >= 1 && xmlhttp.readyState < 4) {
+					worker._2do("Task is in progress");
+				}
+				else {
+					worker._2do("error xd 11");
+				}
 			}
         }
         xmlhttp.open("GET",href,true);
