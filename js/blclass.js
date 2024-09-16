@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.543"
+var g_ver_blClass = "CBlClass_bv1.6.544"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -736,6 +736,7 @@ function CBlClass ()
 		const r = function() {	
 			var bRun = false;
 			var fps = 1;
+			var time = 5; //added by jeremyjia
 			var n = 0; 
 			var t1 = Date.now();
 			var t2 = Date.now();
@@ -793,6 +794,12 @@ function CBlClass ()
 			}
 			o.getFPS = function(){
 				return fps;
+			}
+			o.setVideoTime = function(n){
+				time = n;
+			}
+			o.getVideoTime = function(){
+				return time;
 			}
 			o.getVP = function(){ return vp;}
 			o.getFrameNo = function(l,nf){
@@ -7448,6 +7455,20 @@ const gc4BLS = function(){
 						"color": "Orchid"
 					},
 					{
+						"name":"time",
+						"fn4ui": function(v){							
+							const tb = blo0.blDiv(v,v.id+"tb_time","video time for w/o frame","Violet"); 
+							const ta = blo0.blTextarea(tb,tb.id+"Tafortime",t.getVideoTime(),blGrey[1]);
+							ta.style.width="15%";
+							ta.style.height="22px";
+							ta.addEventListener("input", function(e) {
+								var tav = this.value;
+								t.setVideoTime(tav) ;
+							})
+						},
+						"color": "Orchid"
+					},
+					{
 						"name":"so",
 						"fn4ui": function(v){ 
 							const tb = blo0.blDiv(v,v.id+"tb","tb",this.color);
@@ -7571,7 +7592,7 @@ const gc4BLS = function(){
 							const delSO = blo0.blBtn(tb,tb.id+"delSO","delSO","brown"); 
 							delSO.style.float = "right";
 							delSO.onclick = function(){
-								l.splice(0,1);
+								l.splice(l.length-1,1); // changed by jeremyjia
 								tb.refreshSOs(l);  
 							}
 							const soPlugIns = function(){
@@ -8551,6 +8572,7 @@ const gc4BLS = function(){
 		r.version 		= "gc4BLS: bv0.15";
 		r.width 		= x2 - x1;
 		r.height 		= y2 - y1;
+		r.time          = blsTimer.getVideoTime();  //add by jeremyjia
 		r.music 		= blsTimer.getVP().src;
 		r.rate 			= function(){
 			var s = "";
