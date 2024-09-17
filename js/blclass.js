@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.545"
+var g_ver_blClass = "CBlClass_bv1.6.551"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -839,7 +839,7 @@ function CBlClass ()
 				
 				
 
-				const checkSite = function(){
+				const checkSite = function(_x,_y){
 					async function isWebsiteAccessible(url) {
 						try {
 							const response = await fetch(url, { method: 'HEAD' }); // 使用 HEAD 请求以减轻负载
@@ -858,13 +858,13 @@ function CBlClass ()
 					isWebsiteAccessible('http://localhost:8080/')
 					.then(isAccessible => {
 						if (isAccessible) {
-							ctx.fillText("xddbg 11 : ok! ", 55,120);
+							ctx.fillText("server_status: ok! ", _x,_y);
 						} else {
-							ctx.fillText("xddbg 11 :  error!", 55,120);
+							ctx.fillText("server_status:  error!",_x,_y);
 						}
 					});
 					
-				}();
+				}(x1,y1+55);
 			}
 			return o;
 		}();
@@ -7341,7 +7341,7 @@ const gc4BLS = function(){
 		blsTimer.drawOnLoop(cvs,this,x1,y1,x2,y2);
 
 		const showDebugMsg4BLS = function(){
-			ctx.fillStyle = "yellow";
+			ctx.fillStyle = "purple";
 			ctx.font = "10px Arial";
 			var s = _makeDbgMsgInFrame();
 			ctx.fillText(s, x1,y1+30);		
@@ -8823,7 +8823,7 @@ const gc4BLS = function(){
 			}
 		}
 		const fn4setbackgroundColor = function(v,btnBoss){
-			const tb = blo0.blDiv(v,v.id+"tb4backgroundcolor","backgroundcolor0.11","blue");		
+			const tb = blo0.blDiv(v,v.id+"tb4backgroundcolor","backgroundcolor0.12","blue");		
 			const static = blo0.blBtn(tb,tb.id+"Static","f.backgroundColor","gray");
 			static.style.float = "left"; 	
 			const val = blo0.blBtn(tb,tb.id+"val",f[n].backgroundColor,"lightgray");
@@ -8831,7 +8831,7 @@ const gc4BLS = function(){
 			const fn4Red = function(_tb,_val){
 				const tb = blo0.blDiv(_tb,_tb.id+"tb4Red","red","red");		
 				const v = blo0.blBtn(tb,tb.id+"v","red","gray");
-				const ws = [1,10,111,222];
+				const ws = [1,10,55,88,111,155,222,255];
 				for(i in ws){						
 						var b = blo0.blBtn(tb,tb.id+i,ws[i],"rgb("+ws[i]+",11,11)");
 						b.onclick = function(_i,_ls){
@@ -8846,6 +8846,16 @@ const gc4BLS = function(){
 			const fn4Green = function(_tb,_val){
 				const tb = blo0.blDiv(_tb,_tb.id+"tb4Green","green","green");		
 				const v = blo0.blBtn(tb,tb.id+"v","green","gray");
+				const ws = [1,10,55,88,111,155,222,255];
+				for(i in ws){						
+						var b = blo0.blBtn(tb,tb.id+i,ws[i],"rgb(11,"+ws[i]+",11)");
+						b.onclick = function(_i,_ls){
+							return function(){
+								f[n].backgroundColor = "0," + _ls[_i]+",0";
+								btnBoss.click(); 
+							}
+						}(i,ws);
+				}
 			}(tb,val);
 			const fn4Blue = function(_tb,_val){
 				const tb = blo0.blDiv(_tb,_tb.id+"tb4Blue","blue","blue");		
