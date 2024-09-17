@@ -8823,7 +8823,8 @@ const gc4BLS = function(){
 			}
 		}
 		const fn4setbackgroundColor = function(v,btnBoss){
-			const tb = blo0.blDiv(v,v.id+"tb4backgroundcolor","backgroundcolor0.12","blue");		
+			const tb = blo0.blDiv(v,v.id+"tb4backgroundcolor","backgroundcolor0.12","blue");	
+			tb.innerHTML = blo0.blTime(0);	
 			const static = blo0.blBtn(tb,tb.id+"Static","f.backgroundColor","gray");
 			static.style.float = "left"; 	
 			const val = blo0.blBtn(tb,tb.id+"val",f[n].backgroundColor,"lightgray");
@@ -8833,7 +8834,7 @@ const gc4BLS = function(){
 				const v = blo0.blBtn(tb,tb.id+"v","red","gray");
 				const ws = [1,10,55,88,111,155,222,255];
 				for(i in ws){						
-						var b = blo0.blBtn(tb,tb.id+i,ws[i],"rgb("+ws[i]+",11,11)");
+						var b = blo0.blBtn(tb,tb.id + "red" + i,ws[i],"rgb("+ws[i]+",11,11)");
 						b.onclick = function(_i,_ls){
 							return function(){
 								f[n].backgroundColor = _ls[_i]+",0,0";
@@ -8848,7 +8849,7 @@ const gc4BLS = function(){
 				const v = blo0.blBtn(tb,tb.id+"v","green","gray");
 				const ws = [1,10,55,88,111,155,222,255];
 				for(i in ws){						
-						var b = blo0.blBtn(tb,tb.id+i,ws[i],"rgb(11,"+ws[i]+",11)");
+						var b = blo0.blBtn(tb,tb.id  + "red" + i,ws[i],"rgb(11,"+ws[i]+",11)");
 						b.onclick = function(_i,_ls){
 							return function(){
 								f[n].backgroundColor = "0," + _ls[_i]+",0";
