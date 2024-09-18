@@ -2444,8 +2444,9 @@ function CBlClass ()
 				colorDisplay.style.height   = "100px" ;
 				colorDisplay.style.border   = '1px solid #000';
 				colorDisplay.style.marginTop = "20px";
-	
-	
+				blueSlider.value = 115;
+				updateColor();
+				
 				function updateColor() {
 					const red = redSlider.value;
 					const green = greenSlider.value;
