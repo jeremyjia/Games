@@ -7821,6 +7821,9 @@ const gc4BLS = function(){
 							f.time = n;
 							f.backgroundColor = i%2?"11,222,11":"11,33,222"; 
 							f.objects = [];
+							f.objects.push(_newObject("musicNote","1/2/",111+i*10,55+i*10,155,111,25,"0,200,0"));
+							f.objects.push(_newObject("line","1/2/",111+i*10,55+i*10,155,111,25,"220,11,0"));
+							
 							lsFrame.push(f); 
 						}
 						tabFrames.refreshFrames(); 
@@ -8248,7 +8251,7 @@ const gc4BLS = function(){
 		}
 	}
 
-	const _newObject = function(_oType,x1,y1,x2,y2,size,color){ 
+	const _newObject = function(_oType,sText,x1,y1,x2,y2,size,color){ 
 		const osDefine = [
 			{
 				"id": "id_4_line",
@@ -8384,7 +8387,7 @@ const gc4BLS = function(){
 				"type": "musicNote",
 				"makeData": function(r,x1,y1,x2,y2,size,color){ 
 
-					var v = blo0.blGetTa().value.split(','); 
+					var v = sText.split(',');//blo0.blGetTa().value.split(','); 
 
 					r.graphic 			= "musicNote"; 
 					var a = {};
@@ -9012,16 +9015,16 @@ const gc4BLS = function(){
 			this.upObjCmd = function(x,y,x0,y0,os){
 				if(bDownCmd){
 					if("id_4_objLine"==type){
-						os.push(_newObject("line",x1-x0,y1-y0,x2-x0,y2-y0,5.5,"0,200,0"));
+						os.push(_newObject("line","sText",x1-x0,y1-y0,x2-x0,y2-y0,5.5,"0,200,0"));
 					}	
 					if("id_4_objText"==type){
-						os.push(_newObject("text",x1-x0,y1-y0,x2-x0,y2-y0,25,"0,200,0"));
+						os.push(_newObject("text","sText",x1-x0,y1-y0,x2-x0,y2-y0,25,"0,200,0"));
 					}	 
-					if("id_4_objMusicNote"==type){
-						os.push(_newObject("musicNote",x1-x0,y1-y0,x2-x0,y2-y0,25,"0,200,0"));
+					if("id_4_objMusicNote"==type){ 
+						os.push(_newObject("musicNote",blo0.blGetTa().value,x1-x0,y1-y0,x2-x0,y2-y0,25,"0,200,0"));
 					}	
 					if("id_4_objSprite"==type){
-						os.push(_newObject("sprite",x1-x0,y1-y0,x2-x0,y2-y0,25,"210,200,0"));
+						os.push(_newObject("sprite","sText",x1-x0,y1-y0,x2-x0,y2-y0,25,"210,200,0"));
 					}	
 					if("id_4_objEdit"==type){
 						for(i in os){
