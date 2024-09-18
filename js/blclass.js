@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.533"
+var g_ver_blClass = "CBlClass_bv1.6.545"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -736,6 +736,7 @@ function CBlClass ()
 		const r = function() {	
 			var bRun = false;
 			var fps = 1;
+			var time = 5; //added by jeremyjia
 			var n = 0; 
 			var t1 = Date.now();
 			var t2 = Date.now();
@@ -794,6 +795,12 @@ function CBlClass ()
 			o.getFPS = function(){
 				return fps;
 			}
+			o.setVideoTime = function(n){
+				time = n;
+			}
+			o.getVideoTime = function(){
+				return time;
+			}
 			o.getVP = function(){ return vp;}
 			o.getFrameNo = function(l,nf){
 				var nr = 0;
@@ -827,6 +834,37 @@ function CBlClass ()
 				s += " t2-t1 = " + (t2-t1)/1000 + "s";
 				s += " fps = " + fps;
 				ctx.fillText(s, x1,y1 + 20);
+
+
+				
+				
+
+				const checkSite = function(){
+					async function isWebsiteAccessible(url) {
+						try {
+							const response = await fetch(url, { method: 'HEAD' }); // 使用 HEAD 请求以减轻负载
+							if (response.ok) {
+								return true; // 状态码在200-299之间
+							} else {
+								return false;
+							}
+						} catch (error) {
+							console.error('Error fetching the URL:', error);
+							return false;
+						}
+					}
+
+					// 示例使用
+					isWebsiteAccessible('http://localhost:8080/')
+					.then(isAccessible => {
+						if (isAccessible) {
+							ctx.fillText("xddbg 11 : ok! ", 55,120);
+						} else {
+							ctx.fillText("xddbg 11 :  error!", 55,120);
+						}
+					});
+					
+				}();
 			}
 			return o;
 		}();
@@ -2323,7 +2361,12 @@ function CBlClass ()
                worker._2do(xmlhttp.responseText);
             }
 			else{    
-			  worker._2do("error xd 11");
+				if (xmlhttp.readyState >= 1 && xmlhttp.readyState < 4) {
+					worker._2do("Task is in progress");
+				}
+				else {
+					worker._2do("error xd 11");
+				}
 			}
         }
         xmlhttp.open("GET",href,true);
@@ -3772,7 +3815,7 @@ function CBlClass ()
 				if(ID_CMD_BLS_UI == cmdID){
 					var d = blo0.blMDiv(oBoss,oBoss.id+"mdiv4_bls_UI","blsUI",555,100,222,100,"green");
 					var tb = blo0.blDiv(d,d.id+"tb","tb","gray");
-					var b1= blo0.blBtn(tb,tb.id+"b1","b1","gray");
+					var b1= blo0.blBtn(tb,tb.id+"b1","blsNew","gray");
 					b1.onclick = function(){
 						curDrawingType = G_DRAW_BLS;
 					}
@@ -7267,7 +7310,13 @@ const gc4BLS = function(){
 	this.getSOs = function(){return lsSuperObjects;}
 	this.select = function(b){		s = b;		}
 	this.setXY1 = function(x,y){		x1 = x; y1 = y;		}
-	this.setXY2 = function(x,y){		x2 = x; y2 = y;		}
+	this.setXY2 = function(x,y){ 
+		x2 = x; y2 = y;	
+		if(x1>x2)	x2 = x1 + 100;
+		if(y1>y2)	y2 = y1 + 100;
+		x2 = (x2-x1)%2?x2+1:x2; 
+		y2 = (y2-y1)%2?y2+1:y2; 
+	}
 	this.draw_me = function(cvs){	
 		var ctx = cvs.getContext("2d");	
 		const d = 10; 
@@ -7411,14 +7460,30 @@ const gc4BLS = function(){
 						"color": "Orchid"
 					},
 					{
+						"name":"time",
+						"fn4ui": function(v){							
+							const tb = blo0.blDiv(v,v.id+"tb_time","video time for w/o frame","Violet"); 
+							const ta = blo0.blTextarea(tb,tb.id+"Tafortime",t.getVideoTime(),blGrey[1]);
+							ta.style.width="15%";
+							ta.style.height="22px";
+							ta.addEventListener("input", function(e) {
+								var tav = this.value;
+								t.setVideoTime(tav) ;
+							})
+						},
+						"color": "Orchid"
+					},
+					{
 						"name":"so",
 						"fn4ui": function(v){ 
 							const tb = blo0.blDiv(v,v.id+"tb","tb",this.color);
+							const allSO = blo0.blDiv(v,v.id+"allSO","so:","gray");
 							const vos = blo0.blDiv(v,v.id+"vos","vos","BurlyWood");
 							const vEndOfOS = blo0.blDiv(v,v.id+"vEndOfOS","vEndOfOS","white");
-							tb.refreshSOs = function(l){ 
+							tb.refreshSOs = function(l){  
+								allSO.innerHTML = "so:";
 								for(i in l){
-									const b = blo0.blBtn(tb,tb.id+i,i,"Lavender"); 
+									const b = blo0.blBtn(allSO,allSO.id+i,i,"Lavender"); 
 									newSO.style.float = "right";
  
 									b.onclick = function(_b,_i,_v){
@@ -7514,7 +7579,7 @@ const gc4BLS = function(){
 							}							
 							const l = _thisBLS.getSOs();
 							const newSO = blo0.blBtn(tb,tb.id+"newSO","newSO","Salmon"); 
-							newSO.style.float = "left";
+							newSO.style.float = "right";
 							newSO.onclick = function(){
 								var o = {};
 								o.type = "javascript";
@@ -7528,6 +7593,40 @@ const gc4BLS = function(){
 								l.push(o); 
 								tb.refreshSOs(l); 
 							}
+							
+							const delSO = blo0.blBtn(tb,tb.id+"delSO","delSO","brown"); 
+							delSO.style.float = "right";
+							delSO.onclick = function(){
+								l.splice(l.length-1,1); // changed by jeremyjia
+								tb.refreshSOs(l);  
+							}
+							const soPlugIns = function(){
+								let pis = [
+									"https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/myplx.js",
+									"https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxRain.js",
+									"https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxWaterDrop.js",
+									"https://jeremyjia.github.io/Games/pbzTools/scriptengine/plugin/plxRunning.js"
+								];
+								for (i in pis){
+									let b = blo0.blBtn(tb,tb.id+"pi" + i, i,"darkgray"); 
+									b.onclick = function(_p,_i){
+										return function(){
+											var o = {};
+											o.type = "javascript";
+											o.frameRange = "(1,1000)";
+											var a = {};
+											a.script = _p[_i];
+											a.function = "animateFrame";
+											a.start = 1;
+											o.attribute = a;
+											o.layer = 1;
+											l.push(o); 
+											tb.refreshSOs(l); 
+										}
+									}(pis,i);
+								}
+							}();
+
 							tb.refreshSOs(l);
 						},
 						"color": "Turquoise"
@@ -7539,7 +7638,7 @@ const gc4BLS = function(){
 							return "h:" + (y2-y1);
 						},
 						"fn4ui": function(_v,_b){
-							const hs = [1,-1,2,-2,5,-5,10,-10,100,-100,200,-200,500,-500];
+							const hs = [2,-2,10,-10,100,-100,200,-200,500,-500];
 							for(i in hs){
 								var s = hs[i]>0?"+"+hs[i]:hs[i];
 								var b = blo0.blBtn(_v,_v.id+i,s,"Indigo");
@@ -7560,7 +7659,7 @@ const gc4BLS = function(){
 							return "w:" + (x2-x1);
 						},
 						"fn4ui": function(_v,_b){ 
-							const ws = [1,-1,2,-2,5,-5,10,-10,100,-100,200,-200,500,-500];
+							const ws = [2,-2,10,-10,100,-100,200,-200,500,-500];
 							for(i in ws){
 								var s = ws[i]>0?"+"+ws[i]:ws[i];
 								var b = blo0.blBtn(_v,_v.id+i,s,"purple");
@@ -8478,6 +8577,7 @@ const gc4BLS = function(){
 		r.version 		= "gc4BLS: bv0.15";
 		r.width 		= x2 - x1;
 		r.height 		= y2 - y1;
+		r.time          = blsTimer.getVideoTime();  //add by jeremyjia
 		r.music 		= blsTimer.getVP().src;
 		r.rate 			= function(){
 			var s = "";
