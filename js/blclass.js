@@ -2411,43 +2411,16 @@ function CBlClass ()
         return r;
     }
 	this.blColorPicker = function(oBoss,id,bkClr){
-		document.addEventListener('DOMContentLoaded', function() {
-			const redSlider = document.getElementById('red' + id);
-			const greenSlider = document.getElementById('green' + id);
-			const blueSlider = document.getElementById('blue' + id);
-			const colorDisplay = document.getElementById('colorDisplay' + id);
-			const colorCode = document.getElementById('colorCode' + id);
-			colorDisplay.style.width    = "100px" ;
-			colorDisplay.style.height   = "100px" ;
-			colorDisplay.style.border   = '1px solid #000';
-			colorDisplay.style.marginTop = "20px";
-
-
-			function updateColor() {
-				const red = redSlider.value;
-				const green = greenSlider.value;
-				const blue = blueSlider.value;
-				const rgbColor = `rgb(${red}, ${green}, ${blue})`;
-
-				colorDisplay.style.backgroundColor = rgbColor;
-				colorCode.textContent = `RGB: ${red}, ${green}, ${blue}`;
-			}
-
-			redSlider.addEventListener('input', updateColor);
-			greenSlider.addEventListener('input', updateColor);
-			blueSlider.addEventListener('input', updateColor);
-		});
-
+		
 		let r = '';
 		r += '<h2>颜色选择器</h2>';
-		r += '</div>';
+		r += '<label id="colorDisplay'+id+'">cc</label>';
 		r += '<label for="red">红:</label>';
 		r += '<input type="range" id="red'+id+'" min="0" max="255" value="255">';
 		r += '<label for="green">绿:</label>';
 		r += '<input type="range" id="green'+id+'" min="0" max="255" value="0">';
 		r += '<label for="blue">蓝:</label>';
 		r += '<input type="range" id="blue'+id+'" min="0" max="255" value="0">';
-		r += '<div id="colorDisplay'+id+'">cc</div>';
 		r += '<p id="colorCode'+id+'"></p >';
 		
 			
@@ -2456,6 +2429,36 @@ function CBlClass ()
 			o = document.createElement("div");
 			o.id = id;
 			o.innerHTML = r; 
+
+			document.addEventListener('DOMContentLoaded', function() {
+				console.log(blo0.blTime(0) + " xddbg");
+				const redSlider = document.getElementById('red' + id);
+				const greenSlider = document.getElementById('green' + id);
+				const blueSlider = document.getElementById('blue' + id);
+				const colorDisplay = document.getElementById('colorDisplay' + id);
+				const colorCode = document.getElementById('colorCode' + id);
+				colorDisplay.style.width    = "100px" ;
+				colorDisplay.style.height   = "100px" ;
+				colorDisplay.style.border   = '1px solid #000';
+				colorDisplay.style.marginTop = "20px";
+	
+	
+				function updateColor() {
+					const red = redSlider.value;
+					const green = greenSlider.value;
+					const blue = blueSlider.value;
+					const rgbColor = `rgb(${red}, ${green}, ${blue})`;
+	
+					colorDisplay.style.backgroundColor = rgbColor;
+					colorCode.textContent = `RGB: ${red}, ${green}, ${blue}`;
+				}
+	
+				redSlider.addEventListener('input', updateColor);
+				greenSlider.addEventListener('input', updateColor);
+				blueSlider.addEventListener('input', updateColor);
+			});
+
+			
 			o.style.backgroundColor=bkClr?bkClr:"gray";
 			if(oBoss!=null)oBoss.appendChild(o);
 		}
@@ -8907,6 +8910,7 @@ const gc4BLS = function(){
 			const fn4Blue = function(_tb,_val){
 				const tb = blo0.blDiv(_tb,_tb.id+"tb4Blue","blue","blue");		
 				const v = blo0.blBtn(tb,tb.id+"v","blue","gray");
+				const cp = blo0.blColorPicker(_tb,"cpTest","green");
 			}(tb,val);
 		} 
 	}
