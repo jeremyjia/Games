@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>blColorPicker</title> 
+</head>
+
+<body>
+    <button id="colorPicker">colorPicker</button>
+    <div id="v1" style="width:500px;">v1</div> 
+    <div id="v2" style="width:400px;border: 1px green solid;">v2</div> 
+
+    <script src="../../js/blclass.js"></script>
+    <script>
+        let b = bl$("colorPicker");
+        let v1 = bl$("v1");
+        let v2 = bl$("v2");
+        b.onclick = function(){
+            v1.innerHTML = "";
+            makePicker(v1,"blColorPikerv1","red");
+            blo0.blColorPicker(v2,"blColorPikerv2","gray");
+        }
+
+        let makePicker = function(oBoss,id,bkClr){
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const redSlider = document.getElementById('red');
+                const greenSlider = document.getElementById('green');
+                const blueSlider = document.getElementById('blue');
+                const colorDisplay = document.getElementById('colorDisplay');
+                const colorCode = document.getElementById('colorCode');
+                colorDisplay.style.width    = "100px" ;
+                colorDisplay.style.height   = "100px" ;
+                colorDisplay.style.border   = '1px solid #000';
+                colorDisplay.style.marginTop = "20px";
+
+
+                function updateColor() {
+                    const red = redSlider.value;
+                    const green = greenSlider.value;
+                    const blue = blueSlider.value;
+                    const rgbColor = `rgb(${red}, ${green}, ${blue})`;
+
+                    colorDisplay.style.backgroundColor = rgbColor;
+                    colorCode.textContent = `RGB: ${red}, ${green}, ${blue}`;
+                }
+
+                redSlider.addEventListener('input', updateColor);
+                greenSlider.addEventListener('input', updateColor);
+                blueSlider.addEventListener('input', updateColor);
+            });
+
+            let r = '';
+            r += '<h2>颜色选择器</h2>';
+            r += '</div>';
+            r += '<label for="red">红:</label>';
+            r += '<input type="range" id="red" min="0" max="255" value="255">';
+            r += '<label for="green">绿:</label>';
+            r += '<input type="range" id="green" min="0" max="255" value="0">';
+            r += '<label for="blue">蓝:</label>';
+            r += '<input type="range" id="blue" min="0" max="255" value="0">';
+            r += '<div id="colorDisplay">cc</div>';
+            r += '<p id="colorCode"></p >';
+            
+                
+            var o = document.getElementById(id);
+            if(!o){
+                o = document.createElement("div");
+                o.id = id;
+                o.innerHTML = r; 
+                o.style.backgroundColor=bkClr?bkClr:"gray";
+                if(oBoss!=null)oBoss.appendChild(o);
+            }
+            return o;
+        }
+        
+
+        b.click();
+     </script>
+
+</body>
+</html>
