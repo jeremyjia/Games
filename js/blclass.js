@@ -7498,7 +7498,7 @@ const gc4BLS = function(){
 					{
 						"name":"rate",
 						"fn4ui": function(v){ 
-							const fs = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,25,60,72,76,80,104];
+							const fs = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,25,30,60,72,76,80,104];
 							const tb = blo0.blDiv(v,v.id+"tb","tb","Violet"); 
 							for(i in fs){
 								const b = blo0.blBtn(tb,tb.id+i,fs[i],"Fuchsia");
@@ -7778,6 +7778,34 @@ const gc4BLS = function(){
 				lsFrame.push(f); 
 				tabFrames.refreshFrames(); 
 			 }
+			 const addMxNFrames = function(){
+				const MxNFrames = blo0.blBtn(tbFrames,tbFrames.id+"MxNFrames","+MxNFromTA","lightgreen");
+				MxNFrames.style.float = "left";
+				MxNFrames.style.color = "white";
+				MxNFrames.onclick = function(){
+					let a = blo0.blGetTa().value;
+					if(a[0]=="f"&&a[1]=="s"&&a[2]==":"){
+						let b = a.split(":");
+						let c = b[1];
+						let d = c.split("x");
+						let m = d[0];
+						let n = d[1];
+						for(var i = 0; i < m ; i ++){
+							var f = {};
+							f.time = n;
+							f.backgroundColor = i%2?"11,222,11":"11,33,222"; 
+							f.objects = [];
+							lsFrame.push(f); 
+						}
+						tabFrames.refreshFrames(); 
+					}
+					else{
+						blo0.blGetTa().value = "fs:10x10";
+					}	
+
+				}
+
+			 }();
 			 
 			 const blsPlay = blo0.blBtn(tbFrames,tbFrames.id+"btnBlsPlay",blsTimer.isPlaying()?"blsStop":"blsPlay","green");
 			 blsPlay.style.float = "right";
