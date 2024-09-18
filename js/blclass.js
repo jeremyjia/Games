@@ -7613,6 +7613,32 @@ const gc4BLS = function(){
 														"color": "Teal",
 														"float": "right"
 													},
+													{
+														"id":7,
+														"name": "redLight",
+														"fnSet": function(l,i){ 
+															l[i]  = {
+																"type": "circle",
+																"attribute": {
+																	"x1": 50,
+																	"y1": 400,
+																	"x2": 40,
+																	"y2": 40,
+																	"size": 5,
+																	"color": "200,0,0",
+																	"name": "红灯"
+																},
+																"frameRange": "(1,100)",
+																"frameSubset": "(2,1)",
+																"action": {
+																	"trace": "function trace(x) { return 400; }",
+																	"step": 0
+																}
+															};
+														},
+														"color": "red",
+														"float": "right"
+													},
 												];
 												for(i in ss){
 													const btn = blo0.blBtn(_v,_v.id+ss[i].id,ss[i].name,ss[i].color);
