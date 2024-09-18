@@ -2410,7 +2410,7 @@ function CBlClass ()
         }
         return r;
     }
-	this.blColorPicker = function(oBoss,id,bkClr){
+	this.blColorPicker = function(oBoss,id,bkClr,oCaller){
 		
 		let r = '';
 		r += '<h2>颜色选择器</h2>';
@@ -2446,7 +2446,7 @@ function CBlClass ()
 				colorDisplay.style.marginTop = "20px";
 				blueSlider.value = 115;
 				updateColor();
-				
+
 				function updateColor() {
 					const red = redSlider.value;
 					const green = greenSlider.value;
@@ -2455,6 +2455,9 @@ function CBlClass ()
 	
 					colorDisplay.style.backgroundColor = rgbColor;
 					colorCode.textContent = `RGB: ${red}, ${green}, ${blue}`;
+					if(oCaller.setBKColor){
+						oCaller.setBKColor(red, green, blue);
+					}
 				}
 	
 				redSlider.addEventListener('input', updateColor);
@@ -8910,7 +8913,12 @@ const gc4BLS = function(){
 			const fn4Blue = function(_tb,_val){
 				const tb = blo0.blDiv(_tb,_tb.id+"tb4Blue","blue","blue");		
 				const v = blo0.blBtn(tb,tb.id+"v","blue","gray");
-				const cp = blo0.blColorPicker(_tb,"cpTest","green");
+				tb.setBKColor = function(r,g,b){
+					let s = r + "," + g +"," + b;
+					console.log(blo0.blTime(0) + " tb.fn : rgb = " + r + "," + g +"," + b);
+					f[n].backgroundColor = s;
+				}
+				const cp = blo0.blColorPicker(_tb,"cpTest","green",tb);
 			}(tb,val);
 		} 
 	}
