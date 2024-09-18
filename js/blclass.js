@@ -770,14 +770,8 @@ function CBlClass ()
 
 			o.paintCurFrame = function(ctx,_lsf,n,x1,y1,x2,y2){
 				ctx.fillStyle = function(){
-					var c = n>-1?_lsf[n].backgroundColor:"Khaki";
-					if("200,100,200"==c ||
-						"100,200,200"==c ||
-						"222,0,0"==c  ||
-						"111,0,0"==c  ||
-						"10,0,0"==c  ||
-						"1,0,0"==c  
-					) c = "rgb(" + c + ")";
+					var c = n>-1?_lsf[n].backgroundColor:"Khaki";					
+					c = "rgb(" + c + ")";
 					return c;
 				}(); 
 				ctx.fillRect(x1,y1,x2-x1,y2-y1);
@@ -2416,6 +2410,17 @@ function CBlClass ()
         }
         return r;
     }
+	this.blColorPicker = function(oBoss,id,html,bkClr){
+        var r = document.getElementById(id);
+        if(!r){
+            r = document.createElement("div");
+            r.id = id;
+    	    r.innerHTML = html; 
+            r.style.backgroundColor=bkClr?bkClr:"gray";
+    	    if(oBoss!=null)oBoss.appendChild(r);
+        }
+        return r;
+	}
     this.blTextarea = function (oBoss,id,html,bkClr){
         var r = document.getElementById(id);
         if(!r){
