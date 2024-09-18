@@ -2428,10 +2428,13 @@ function CBlClass ()
 		if(!o){
 			o = document.createElement("div");
 			o.id = id;
-			o.innerHTML = r; 
+			o.innerHTML = r;  
+			o.style.backgroundColor=bkClr?bkClr:"gray";
+			if(oBoss!=null)oBoss.appendChild(o);
 
-			document.addEventListener('DOMContentLoaded', function() {
-				console.log(blo0.blTime(0) + " xddbg");
+
+			//xddbg11
+			console.log(blo0.blTime(0) + " xddbg");
 				const redSlider = document.getElementById('red' + id);
 				const greenSlider = document.getElementById('green' + id);
 				const blueSlider = document.getElementById('blue' + id);
@@ -2456,11 +2459,7 @@ function CBlClass ()
 				redSlider.addEventListener('input', updateColor);
 				greenSlider.addEventListener('input', updateColor);
 				blueSlider.addEventListener('input', updateColor);
-			});
-
-			
-			o.style.backgroundColor=bkClr?bkClr:"gray";
-			if(oBoss!=null)oBoss.appendChild(o);
+			//xddbg11
 		}
 		return o;
 	}
