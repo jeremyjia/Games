@@ -7820,7 +7820,7 @@ const gc4BLS = function(){
 						let bkRGB = mnc[1];
 						for(var i = 0; i < m ; i ++){
 							var f = {};
-							f.time = n;
+							f.time = parseInt(n);
 							f.backgroundColor = bkRGB; 
 							f.objects = [];
 							f.objects.push(_newObject("musicNote","1/2/",111+i*10,55+i*10,155,111,25,"0,200,0"));
