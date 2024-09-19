@@ -7812,14 +7812,16 @@ const gc4BLS = function(){
 					let a = blo0.blGetTa().value;
 					if(a[0]=="f"&&a[1]=="s"&&a[2]==":"){
 						let b = a.split(":");
-						let c = b[1];
+						let mnc = b[1].split(";");
+						let c = mnc[0];
 						let d = c.split("x");
 						let m = d[0];
 						let n = d[1];
+						let bkRGB = mnc[1];
 						for(var i = 0; i < m ; i ++){
 							var f = {};
 							f.time = n;
-							f.backgroundColor = i%2?"11,222,11":"11,33,222"; 
+							f.backgroundColor = bkRGB; 
 							f.objects = [];
 							f.objects.push(_newObject("musicNote","1/2/",111+i*10,55+i*10,155,111,25,"0,200,0"));
 							f.objects.push(_newObject("line","1/2/",111+i*10,55+i*10,155,111,25,"220,11,0"));
@@ -7829,7 +7831,7 @@ const gc4BLS = function(){
 						tabFrames.refreshFrames(); 
 					}
 					else{
-						blo0.blGetTa().value = "fs:10x10";
+						blo0.blGetTa().value = "fs:5x1;213,11,22";
 					}	
 
 				}
