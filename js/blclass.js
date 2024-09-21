@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.553"
+var g_ver_blClass = "CBlClass_bv1.6.554"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -737,6 +737,7 @@ function CBlClass ()
 			var bRun = false;
 			var fps = 1;
 			var time = 5; //added by jeremyjia
+			var m_bWebsiteAccessible = false;
 			var n = 0; 
 			var t1 = Date.now();
 			var t2 = Date.now();
@@ -795,6 +796,9 @@ function CBlClass ()
 			o.getVideoTime = function(){
 				return time;
 			}
+			o.getServerStatus = function(){
+				return m_bWebsiteAccessible;
+			}
 			o.getVP = function(){ return vp;}
 			o.getFrameNo = function(l,nf){
 				var nr = 0;
@@ -851,14 +855,10 @@ function CBlClass ()
 					// 示例使用
 					isWebsiteAccessible('http://localhost:8080/')
 					.then(isAccessible => {
-						if (isAccessible) {
-							ctx.fillText("server_status: ok! ", _x,_y);
-						} else {
-							ctx.fillText("server_status:  error!",_x,_y);
-						}
+						m_bWebsiteAccessible = isAccessible; //不在此处绘图，否则会闪烁
 					});
 					
-				}(x1,y1+55);
+				}();
 			}
 			return o;
 		}();
@@ -7396,7 +7396,16 @@ const gc4BLS = function(){
 			ctx.fillStyle = "purple";
 			ctx.font = "10px Arial";
 			var s = _makeDbgMsgInFrame();
-			ctx.fillText(s, x1,y1+30);		
+			ctx.fillText(s, x1,y1+30);
+			
+			ctx.fillStyle = "rgb(200,111,1)";
+			ctx.font = "20px Arial";
+			if(blsTimer.getServerStatus() == true){
+				ctx.fillText("server_status: OK! ", x1,y1+70);
+			}else{
+				ctx.fillText("server_status: Not connected! ", x1,y1+70);
+			}
+			
 		}();
 		ctx.fillStyle = oldStyle;
 		blsAOI.setTargetXY(x1,y1,x2,y2);
