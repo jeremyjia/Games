@@ -190,8 +190,8 @@ public final class JsonSriptParser {
             String outputFile = attrObj.getString("output");
             String opts = attrObj.optString("opts");
             script = FileUtil.downloadFileIfNeed(script);
-            if (!inputFile.startsWith("url-")) {
-                inputFile = FileUtil.downloadFileIfNeed(inputFile);
+            if (!inputFile.startsWith("string-")) {
+                inputFile = FileUtil.downloadFileIfNeed(inputFile); //string-代表输入参数为一个字符串，不是文件不需要下载
             }
             List<String> cmds = new ArrayList<String>();
             if (isWindows) {
@@ -213,10 +213,11 @@ public final class JsonSriptParser {
             }
             String[] commands = cmds.toArray(new String[] {});
             ExecuteCommand.executeCommandOnServer(commands);
+            
             if (outputFile.endsWith(".txt")) {
                 String filePath = System.getProperty("user.dir") + "/" + outputFile;
                 strValue = FileUtil.readAllBytes(filePath);
-                strValue = strValue.replace("n", "\\n");
+                strValue = strValue.replace("\n", FileUtil.linedelimiter); // 替换文件的换行符，因为JSON中不能用换行，使用特殊的字符串代表换行，绘制的时候使用
 
             } else {
                 strValue = outputFile;
@@ -986,6 +987,7 @@ public final class JsonSriptParser {
             gp2d.setFont(font);
             float nY = Y;
             int fontH = gp2d.getFontMetrics().getHeight();
+            name = name.replace(FileUtil.linedelimiter, "\n");
             for (String aLine : name.split("\n")) {
                 if (areaObj != null) {
                     int l = areaObj.getInt("left");
@@ -997,6 +999,7 @@ public final class JsonSriptParser {
                     }
                 } else {
                     gp2d.drawString(aLine, X, nY);
+                    System.out.println(aLine);
                 }
                 nY += fontH;
             }

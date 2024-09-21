@@ -58,7 +58,7 @@
                     "type": "python",
                     "attribute": {
                         "script": "phthon_commentID:2254462605",
-                        "input": "url-",
+                        "input": "string-",
                         "output": "out_medal_list.txt",
                         "opts": ""
                     }
