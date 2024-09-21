@@ -1,7 +1,7 @@
 import PyPDF2
 
 # Path to the PDF file
-pdf_file_path = 'sample.pdf'
+pdf_file_path = '/sample.pdf'
 
 # Open the PDF file in binary mode
 with open(pdf_file_path, 'rb') as file:
