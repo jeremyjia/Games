@@ -51,6 +51,7 @@ public class FileUtil {
 	private static String zhPattern = "[\\u4e00-\\u9fa5]";
 	public static final String delString = "1234567890.黑胜红和局()";
 	private static final String replaceString = "raw.githubusercontent.com";
+	public static final String linedelimiter = "$N$";
 
 	public static void copyDirectory(File sourceDir, File targetDir) throws IOException {
 
@@ -389,7 +390,7 @@ public class FileUtil {
         FileWriter fw2 = new FileWriter(fullPath);
         BufferedWriter bw = new BufferedWriter(fw2);
         plugInContentStr = plugInContentStr.replace("\\r\\n", "\r\n");
-        plugInContentStr = plugInContentStr.replace("\\", "");  //TODO
+        plugInContentStr = plugInContentStr.replace("\\\"", "\"");
         bw.write(plugInContentStr);
         bw.close();
 
@@ -495,27 +496,27 @@ public class FileUtil {
 	}
 
 	// 将文本分割为多行,考虑中文文章没有空格的情况也会强制分行
-	public static String addLinefeeds(String text, int number) {
-		StringBuffer buffer = new StringBuffer();
-		int index = 0;
-		for (int i = 0; i < text.length(); i++) {
-			char p = text.charAt(i);
-			if (index >= number && number>0) {
-				if (p != ' ' && (index-number)<=3) {
-					buffer.append(p);
-					index++;
-					continue;
-				}
-				buffer.append("\\n");
-				buffer.append(p);
-				index = 0;
-			} else {
-				buffer.append(p);
-				index++;
-			}
-		}
-		return buffer.toString().trim();
-	}
+    public static String addLinefeeds(String text, int number) {
+        StringBuffer buffer = new StringBuffer();
+        int index = 0;
+        for (int i = 0; i < text.length(); i++) {
+            char p = text.charAt(i);
+            if (index >= number && number > 0) {
+                if (p != ' ' && (index - number) <= 3) {
+                    buffer.append(p);
+                    index++;
+                    continue;
+                }
+                buffer.append(linedelimiter);
+                buffer.append(p);
+                index = 0;
+            } else {
+                buffer.append(p);
+                index++;
+            }
+        }
+        return buffer.toString().trim();
+    }
 
     public static String getChessLog(String strFromWeb) {
         String str = removeNoNeedChar(strFromWeb, delString);
