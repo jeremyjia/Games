@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.552"
+var g_ver_blClass = "CBlClass_bv1.6.553"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -8936,49 +8936,17 @@ const gc4BLS = function(){
 		const fn4setbackgroundColor = function(v,btnBoss){
 			const tb = blo0.blDiv(v,v.id+"tb4backgroundcolor","backgroundcolor0.12","blue");	
 			tb.innerHTML = blo0.blTime(0);	
-			const static = blo0.blBtn(tb,tb.id+"Static","f.backgroundColor","gray");
+			const static = blo0.blBtn(tb,"a123jia","f.backgroundColor","gray");
 			static.style.float = "left"; 	
-			const val = blo0.blBtn(tb,tb.id+"val",f[n].backgroundColor,"lightgray");
-			val.style.float = "left"; 
-			const fn4Red = function(_tb,_val){
-				const tb = blo0.blDiv(_tb,_tb.id+"tb4Red","red","red");		
-				const v = blo0.blBtn(tb,tb.id+"v","red","gray");
-				const ws = [1,10,55,88,111,155,222,255];
-				for(i in ws){						
-						var b = blo0.blBtn(tb,tb.id + "red" + i,ws[i],"rgb("+ws[i]+",11,11)");
-						b.onclick = function(_i,_ls){
-							return function(){
-								f[n].backgroundColor = _ls[_i]+",0,0";
-								btnBoss.click(); 
-							}
-						}(i,ws);
-				}
-				
-			}(tb,val);
-			const fn4Green = function(_tb,_val){
-				const tb = blo0.blDiv(_tb,_tb.id+"tb4Green","green","green");		
-				const v = blo0.blBtn(tb,tb.id+"v","green","gray");
-				const ws = [1,10,55,88,111,155,222,255];
-				for(i in ws){						
-						var b = blo0.blBtn(tb,tb.id  + "red" + i,ws[i],"rgb(11,"+ws[i]+",11)");
-						b.onclick = function(_i,_ls){
-							return function(){
-								f[n].backgroundColor = "0," + _ls[_i]+",0";
-								btnBoss.click(); 
-							}
-						}(i,ws);
-				}
-			}(tb,val);
-			const fn4Blue = function(_tb,_val){
-				const tb = blo0.blDiv(_tb,_tb.id+"tb4Blue","blue","blue");		
-				const v = blo0.blBtn(tb,tb.id+"v","blue","gray");
+			const fn4ColorPicker = function(_tb){
+				const tb = blo0.blDiv(_tb,_tb.id+"tb4Blue","blueDiv","blue");		
 				tb.setBKColor = function(r,g,b){
 					let s = r + "," + g +"," + b;
 					console.log(blo0.blTime(0) + " tb.fn : rgb = " + r + "," + g +"," + b);
 					f[n].backgroundColor = s;
 				}
 				const cp = blo0.blColorPicker(_tb,"cpTest","green",tb);
-			}(tb,val);
+			}(tb);
 		} 
 	}
 	const _objCmd = function(){
