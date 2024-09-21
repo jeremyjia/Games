@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>简单颜色选择器</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="colorPicker">
+    <h2>颜色选择器</h2>
+    <label for="red">红:</label>
+    <input type="range" id="red" min="0" max="255" value="255">
+    <label for="green">绿:</label>
+    <input type="range" id="green" min="0" max="255" value="0">
+    <label for="blue">蓝:</label>
+    <input type="range" id="blue" min="0" max="255" value="0">
+    <div id="colorDisplay"></div>
+    <p id="colorCode"></p >
+</div>
+<script src="script.js"></script>
+</body>
+</html>
