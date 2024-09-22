@@ -7177,6 +7177,7 @@ const gc4SoEditor = function(){
 						bRunScript = bRunScript?false:true;
 						d.innerHTML = bRunScript;
 						runStartTime = bRunScript ?  Date.now() : 0;
+						if(bRunScript) nTick = 0;
 					},
 					"color": "green",
 					"float": "left"
