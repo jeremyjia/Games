@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.554"
+var g_ver_blClass = "CBlClass_bv1.6.555"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -7843,6 +7843,14 @@ const gc4BLS = function(){
 						blo0.blGetTa().value = "fs:5x1;213,11,22";
 					}	
 
+				}
+				const backDoor4Frame = blo0.blBtn(tbFrames,"idBackDoor4Frame","backDoor4Frame","gray");
+				backDoor4Frame.style.float = "left";
+				backDoor4Frame.style.color = "white";
+				backDoor4Frame.f = lsFrame;
+				backDoor4Frame.onclick = function(){
+					blo0.blGetTa().value = "const b = bl$('idBackDoor4Frame'); \
+						b.onclick = function(){alert(this.id)};"
 				}
 
 			 }();
