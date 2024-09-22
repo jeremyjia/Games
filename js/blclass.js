@@ -7012,7 +7012,8 @@ const gc4SoEditor = function(){
 	var mx = 50,my = 50; 
 	var ex1,ey1,ex2,ey2;
 	const _C4SoEditor = function(){ 
-		
+		var soFPS = 1;
+		var runStartTime = 0, runNowTime = 0;
 		var nTick = 0;
 		var vCanStatus = null;
 		var bRunScript = false; 
@@ -7121,6 +7122,14 @@ const gc4SoEditor = function(){
 					"color": "cyan"
 				}, 
 				{
+					"id":1.1,
+					"name":"fpsFrmTa",
+					"clickOnMe": function(d){
+						soFPS = blo0.blGetTa().value;	 
+					},
+					"color": "darkGray"
+				}, 
+				{
 					"id":2,
 					"name":"2server",
 					"clickOnMe": function(d){ 
@@ -7163,10 +7172,11 @@ const gc4SoEditor = function(){
 				},
 				{
 					"id":5,
-					"name":"run", 
+					"name":"runSo", 
 					"clickOnMe": function(d){
 						bRunScript = bRunScript?false:true;
 						d.innerHTML = bRunScript;
+						runStartTime = bRunScript ?  Date.now() : 0;
 					},
 					"color": "green",
 					"float": "left"
@@ -7186,11 +7196,17 @@ const gc4SoEditor = function(){
 		this.drawEffect = function(cvs){
 			osubo.showSubObjects(cvs);
 			var ctx = cvs.getContext("2d");
-			nTick++;
+			
 			ctx.fillText("soe1: nTick = " + nTick,x1,y1 + 10); 
 			
+			runNowTime = Date.now();
+			if(runNowTime>runStartTime +1000/soFPS) {
+				runStartTime = runNowTime;
+				nTick++;
+			}
 			ctx.fillStyle = "green";
-			ctx.fillText("soe2",x2,y2);
+			let ss = "soFPS = " + soFPS + " runStartTime:" + runStartTime  + " runNowTime:" + runNowTime;
+			ctx.fillText(ss,x2,y2);
  
 			_2RunScript(cvs);
 		}
