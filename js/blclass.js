@@ -709,6 +709,17 @@ function CBlClass ()
 				for(i in o.ls){
 					ctx.fillRect(o.ls[i].x+x,o.ls[i].y+y,5,5);
 				}
+				ctx.beginPath(); 	
+				if(time%5==0){
+				ctx.moveTo(o.ls[0].x+x,o.ls[0].y+y); 
+				ctx.lineTo(o.ls[2].x+x,o.ls[2].y+y);
+				}	
+				else{
+				ctx.moveTo(o.ls[1].x+x,o.ls[1].y+y); 
+				ctx.lineTo(o.ls[2].x+x,o.ls[2].y+y);
+				}
+				ctx.strokeStyle = "rgb(122,11,22)";
+				ctx.stroke();
 
 				`;
 			}
