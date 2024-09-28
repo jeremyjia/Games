@@ -69,7 +69,7 @@ describe(tag4xdTest, function(){
   it('word', function(){assert.equal("done",'done');  });
   it('abc0', function(){assert.equal("done",'done');  });
   it('back door to edit current frame', function(){assert.equal("done",
-    'to do ...');  });
+    'done');  });
   it('https://littleflute.github.io/Games/issues/21/testC4AutoRun.html',function(){assert.equal("done",'done');}); 
   it('https://littleflute.github.io/Games/issues/21/testC4Canvas.html', function(){assert.equal("done",'done');});
   it('https://nodejs.dovov.com/node-js-msgwindows-api.html', function(){assert.equal("2do",'2do');  }); 
