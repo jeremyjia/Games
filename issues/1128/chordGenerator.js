@@ -2,7 +2,7 @@
 
 // 设置基础音频参数
 const notes = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4']; // 音符列表
-const durations = [0.5, 0.5, 0.5]; // 每个和弦音的持续时间，可以调整
+const durations = [1, 2,3]; // 每个和弦音的持续时间，可以调整
 
 // 初始化Web Audio API
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -31,7 +31,7 @@ function playNote(note, duration) {
 
 // 生成随机和弦（这里以三和弦为例）
 function generateChord() {
-    const rootNoteIndex = Math.floor(Math.random() * notes.length);
+    const rootNoteIndex = 0;//Math.floor(Math.random() * notes.length);
     const rootNote = notes[rootNoteIndex];
     
     // 计算第三音和第五音（基于大三和弦的间隔：根音-第三音=4半音，根音-第五音=7半音）
@@ -48,4 +48,22 @@ function playChord() {
         playNote(note, durations[index]); // 这里可以调整每个音的持续时间来创造不同的节奏
         // 如果想要和弦音同时开始和结束，可以使用相同的duration，并且不需要在playNote里加上index相关的延迟
     });
+}
+
+
+// 播放和弦
+function playXD() {
+    const v = document.getElementById("v");
+    var s = ""; 
+    for( i in notes){ 
+        var b = blo0.blBtn(v,notes[i],notes[i],"gray");
+		b.style.float = "left";
+		b.style.color = "white";
+        b.onclick = function(_n,_i){
+            return function(){
+                playNote(_n[_i],1);
+
+            }
+        }(notes,i);
+    } 
 }
