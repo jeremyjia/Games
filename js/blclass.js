@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.6.554"
+var g_ver_blClass = "CBlClass_bv1.6.555"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -709,6 +709,17 @@ function CBlClass ()
 				for(i in o.ls){
 					ctx.fillRect(o.ls[i].x+x,o.ls[i].y+y,5,5);
 				}
+				ctx.beginPath(); 	
+				if(time%5==0){
+				ctx.moveTo(o.ls[0].x+x,o.ls[0].y+y); 
+				ctx.lineTo(o.ls[2].x+x,o.ls[2].y+y);
+				}	
+				else{
+				ctx.moveTo(o.ls[1].x+x,o.ls[1].y+y); 
+				ctx.lineTo(o.ls[2].x+x,o.ls[2].y+y);
+				}
+				ctx.strokeStyle = "rgb(122,11,22)";
+				ctx.stroke();
 
 				`;
 			}
@@ -7012,7 +7023,8 @@ const gc4SoEditor = function(){
 	var mx = 50,my = 50; 
 	var ex1,ey1,ex2,ey2;
 	const _C4SoEditor = function(){ 
-		
+		var soFPS = 1;
+		var runStartTime = 0, runNowTime = 0;
 		var nTick = 0;
 		var vCanStatus = null;
 		var bRunScript = false; 
@@ -7121,6 +7133,14 @@ const gc4SoEditor = function(){
 					"color": "cyan"
 				}, 
 				{
+					"id":1.1,
+					"name":"fpsFrmTa",
+					"clickOnMe": function(d){
+						soFPS = blo0.blGetTa().value;	 
+					},
+					"color": "darkGray"
+				}, 
+				{
 					"id":2,
 					"name":"2server",
 					"clickOnMe": function(d){ 
@@ -7163,10 +7183,12 @@ const gc4SoEditor = function(){
 				},
 				{
 					"id":5,
-					"name":"run", 
+					"name":"runSo", 
 					"clickOnMe": function(d){
 						bRunScript = bRunScript?false:true;
 						d.innerHTML = bRunScript;
+						runStartTime = bRunScript ?  Date.now() : 0;
+						if(bRunScript) nTick = 0;
 					},
 					"color": "green",
 					"float": "left"
@@ -7186,11 +7208,17 @@ const gc4SoEditor = function(){
 		this.drawEffect = function(cvs){
 			osubo.showSubObjects(cvs);
 			var ctx = cvs.getContext("2d");
-			nTick++;
+			
 			ctx.fillText("soe1: nTick = " + nTick,x1,y1 + 10); 
 			
+			runNowTime = Date.now();
+			if(runNowTime>runStartTime +1000/soFPS) {
+				runStartTime = runNowTime;
+				nTick++;
+			}
 			ctx.fillStyle = "green";
-			ctx.fillText("soe2",x2,y2);
+			let ss = "soFPS = " + soFPS + " runStartTime:" + runStartTime  + " runNowTime:" + runNowTime;
+			ctx.fillText(ss,x2,y2);
  
 			_2RunScript(cvs);
 		}
@@ -7843,6 +7871,14 @@ const gc4BLS = function(){
 						blo0.blGetTa().value = "fs:5x1;213,11,22";
 					}	
 
+				}
+				const backDoor4Frame = blo0.blBtn(tbFrames,"idBackDoor4Frame","backDoor4Frame","gray");
+				backDoor4Frame.style.float = "left";
+				backDoor4Frame.style.color = "white";
+				backDoor4Frame.f = lsFrame;
+				backDoor4Frame.onclick = function(){
+					blo0.blGetTa().value = "const b = bl$('idBackDoor4Frame'); \
+						b.onclick = function(){alert(this.id)};"
 				}
 
 			 }();
