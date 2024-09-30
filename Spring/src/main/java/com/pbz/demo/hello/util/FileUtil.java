@@ -375,11 +375,10 @@ public class FileUtil {
         }
         String fullPath = System.getProperty("user.dir") + "/" + fileName;
 
-        /*
         if (new File(fullPath).exists()) {
-            System.out.println("The file " + fullPath + " already exist!");
+            System.out.println("The plugin file " + fullPath + " already exist!");
             return fileName;
-        }*/
+        }
 
         String url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/" + commentID;
         String resultString = NetAccessUtil.doGetOnGitHub(url, "");

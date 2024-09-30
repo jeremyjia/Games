@@ -50,6 +50,7 @@ import com.deepoove.poi.data.Texts;
 import com.deepoove.poi.data.style.Style;
 import com.pbz.demo.hello.model.AOIArea;
 import com.pbz.demo.hello.model.AudioParam;
+import com.pbz.demo.hello.model.ScriptEngineWrapper;
 import com.pbz.demo.hello.model.SubtitleModel;
 import com.pbz.demo.hello.service.SubtitleImageService;
 import com.pbz.demo.hello.service.VOAService;
@@ -68,6 +69,8 @@ public final class JsonSriptParser {
     private static ScriptEngineManager mgr = new ScriptEngineManager();
     private static ScriptEngine engine = mgr.getEngineByName("JavaScript");
     private static JSGraphEngine graphEngine = new JSGraphEngine();
+    
+    private static Map<String, ScriptEngineWrapper> engineMap = new HashMap<>();
     private static MusicNote mNote = new MusicNote();
     private static Random random = new Random();
     private static final Color[] COLORS = {Color.RED, Color.GREEN, Color.BLUE, Color.MAGENTA, Color.ORANGE, Color.PINK, Color.CYAN, Color.YELLOW};
@@ -261,6 +264,7 @@ public final class JsonSriptParser {
         supperObjectsMapList.clear();
         aoiMap.clear();
         audioList.clear();
+        engineMap.clear();
         MacroResolver.setProperty(currentScript, "");
         MacroResolver.setProperty(current_Subtitle_Script, "");
         MacroResolver.setProperty("VAR_BGAUDIO", "");
@@ -268,6 +272,7 @@ public final class JsonSriptParser {
         titleOfLRC = "";
 
         initMap(requestObj);
+        initJSEngineMap();
         String version = requestObj.getString("version");
         System.out.println("剧本版本:" + version);
         int width = requestObj.getInt("width");
@@ -785,6 +790,43 @@ public final class JsonSriptParser {
         }
     }
 
+    private static void initJSEngineMap() throws Exception {
+        for (Map<String, Object> map : supperObjectsMapList) {
+            JSONObject jsonObj = new JSONObject(map);
+            String type = jsonObj.getString("type");
+            if ("javascript".equalsIgnoreCase(type)) {
+
+                JSONObject attributeObj = jsonObj.getJSONObject("attribute");
+                String striptFile = attributeObj.getString("script");
+                striptFile = FileUtil.downloadFileIfNeed(striptFile);
+
+                // 每一个JS类型的超级对象拥有一个自己的脚本引擎包装器
+                ScriptEngineWrapper scriptEgWrapperObj = new ScriptEngineWrapper();
+                ScriptEngine scriptEngine = scriptEgWrapperObj.getEngine();
+                scriptEngine.put("document", scriptEgWrapperObj.getGraphEngine());
+
+                StringBuffer preDefined = new StringBuffer();
+                preDefined.append("function Image() { return document.getImageObj()}");
+                scriptEgWrapperObj.getEngine().eval(preDefined.toString());
+                File f = new File(striptFile);
+                Reader r = new InputStreamReader(new FileInputStream(f));
+                scriptEgWrapperObj.getEngine().eval(r);
+
+                // TODO
+                if (attributeObj.has("chess")) {
+                    String setChesslogFunName = attributeObj.getString("chess");
+                    Invocable invoke = (Invocable) scriptEngine;
+                    String filteredChessLog = MacroResolver.getProperty(VAR_CHESS_LOG_TEXT_FIXED);// "炮二平六 马8进7";
+                    invoke.invokeFunction(setChesslogFunName, new Object[] { filteredChessLog });
+                }
+
+                // Initialize parameters for JS Plug-in
+                setPlugInArgs(attributeObj, scriptEngine);
+
+                engineMap.put(striptFile, scriptEgWrapperObj);
+            }
+        }
+    }
     private static List<JSONObject> getSuperObjectsByframeNumber(int num) {
         List<JSONObject> superObjects = new ArrayList<JSONObject>();
         for (Map<String, Object> map : supperObjectsMapList) {
@@ -857,7 +899,7 @@ public final class JsonSriptParser {
     private static void drawSupperObjects(JSONObject jObj, Graphics2D gp2d, int number) throws Exception {
         String type = jObj.getString("type");
         if (type.equalsIgnoreCase("javascript")) {
-            drawJavaScriptObject(jObj, gp2d, number);
+            drawJavaScriptObjectEx(jObj, gp2d, number);
             return;
         } else if (type.equalsIgnoreCase("subtitle")) {
             drawSubtitleObject(jObj, gp2d, number);
@@ -1134,6 +1176,7 @@ public final class JsonSriptParser {
         return "";
     }
 
+    @Deprecated
     private static void drawJavaScriptObject(JSONObject jObj, Graphics2D gp2d, int number) throws Exception {
         JSONObject attributeObj = jObj.getJSONObject("attribute");
         String striptFile = attributeObj.getString("script");
@@ -1172,18 +1215,42 @@ public final class JsonSriptParser {
                 invoke.invokeFunction(setChesslogFunName, new Object[] { filteredChessLog });
             }
             // Initialize parameters for JS Plug-in
-            setPlugInArgs(attributeObj);
+            setPlugInArgs(attributeObj, engine);
         }
 
         if (bRefreshArgs) {
-            setPlugInArgs(attributeObj);
+            setPlugInArgs(attributeObj, engine);
         }
 
         Invocable invoke = (Invocable) engine;
         invoke.invokeFunction(functionName, new Object[] { number - start });
     }
 
-    private static void setPlugInArgs(JSONObject attributeObj) throws Exception {
+    private static void drawJavaScriptObjectEx(JSONObject jObj, Graphics2D gp2d, int number) throws Exception {
+        JSONObject attributeObj = jObj.getJSONObject("attribute");
+        String striptFile = attributeObj.getString("script");
+        striptFile = FileUtil.downloadFileIfNeed(striptFile);
+
+        ScriptEngineWrapper sew = engineMap.get(striptFile);
+        sew.getGraphEngine().setGraphics(gp2d);
+        sew.getEngine().put("document", sew.getGraphEngine());
+
+        String functionName = attributeObj.getString("function");
+        int start = attributeObj.getInt("start");
+        boolean bRefreshArgs = false;
+        if (attributeObj.has("refreshArgs")) {
+            if ("true".equalsIgnoreCase(attributeObj.getString("refreshArgs"))) {
+                bRefreshArgs = true;
+            }
+        }
+
+        if (bRefreshArgs) {
+            setPlugInArgs(attributeObj, sew.getEngine());
+        }
+        Invocable invoke = (Invocable) sew.getEngine();
+        invoke.invokeFunction(functionName, new Object[] { number - start });
+    }
+    private static void setPlugInArgs(JSONObject attributeObj, ScriptEngine engine) throws Exception {
         if (attributeObj != null && attributeObj.has("initArgs")) {
             JSONObject argObj = attributeObj.getJSONObject("initArgs");
             String argsFunName = argObj.getString("function");
