@@ -873,10 +873,26 @@ public final class JsonSriptParser {
         int m = Integer.parseInt(s);
         int n = Integer.parseInt(e);
 
-        if (m == 0 || n == 0) {
+        int nSubType = 0;
+        if (jsonObj.has("subtype")) {
+            nSubType = jsonObj.getInt("subtype");
+        }
+
+        if (m <= 0 || n <= 0) {
             System.out.println("Parameter of frameSubset is zero, will follow up frameRange attrubute!");
             return null;
         }
+
+        if (nSubType == 0) {
+            // 黄老师要求的算法：以m帧为一组，一组中画n帧
+            if (n >= m) {
+                return null;
+            }
+            m = m - n;
+        } else {
+            // 画n帧，空m帧，循环
+        }
+
         List<Integer> list = new ArrayList<>();
         int p = 0;
         int q = 0;
