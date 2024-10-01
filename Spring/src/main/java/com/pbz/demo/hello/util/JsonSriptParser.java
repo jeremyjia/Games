@@ -527,7 +527,7 @@ public final class JsonSriptParser {
 
     private static void createDefaultVideo(int width, int height, String time, String rate, String bgColor)
             throws Exception {
-        
+
         int t = Integer.parseInt(time);
         int r = Integer.parseInt(rate);
         Color colorBackground = getColor(bgColor);
@@ -548,13 +548,33 @@ public final class JsonSriptParser {
                 Image videoImage = ImageIO.read(file);
                 g.drawImage(videoImage, 0, 0, width, height, null);
             }
+
+            // 获取所有的超级对象，排序并绘制
+            List<JSONObject> superObjs = getSuperObjectsByframeNumber(i + 1);
+            superObjs.sort(new Comparator<JSONObject>() {
+                @Override
+                public int compare(JSONObject o1, JSONObject o2) {
+                    int x = 0;
+                    int y = 0;
+                    if (o1.has("layer")) {
+                        x = o1.getInt("layer");
+                    }
+                    if (o2.has("layer")) {
+                        y = o2.getInt("layer");
+                    }
+                    return x - y;
+                }
+            });
+            for (JSONObject obj : superObjs) {
+                drawSupperObjects(obj, g, i + 1);
+            }
+
             g.setColor(new Color(30, 80, 200));
             g.setFont(new Font("黑体", Font.BOLD, 40));
             g.drawString(Integer.toString(i + 1), width - 100, 50);// 显示帧号
             ImageIO.write((BufferedImage) image, "JPEG", new File(destImageFile));
             g.dispose();
         }
-
     }
 
     private static void combineAudios(String ffmpegPath, long secondsOfAudio) throws Exception {
