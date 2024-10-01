@@ -84,7 +84,7 @@ public class JSGraphEngine {
 		}
 
 		public void clearRect(int x, int y, int width, int height) {
-			graphics.clearRect(x, y, width, height);
+			//graphics.clearRect(x, y, width, height);
 
 		}
 		
