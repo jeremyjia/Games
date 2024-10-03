@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 
@@ -20,6 +21,15 @@ const dir = './uploads';
 if (!fs.existsSync(dir)){
     fs.mkdirSync(dir);
 }
+
+// 配置CORS中间件
+// 你可以传递一个配置对象，或者简单地使用默认设置来允许所有来源的请求
+app.use(cors({
+    origin: '*', // 允许所有域名访问
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // 允许的HTTP方法
+    allowedHeaders: ['Content-Type', 'Authorization'] // 允许的Header头
+}));
+
 
 // 处理文件上传
 app.post('/upload', upload.single('audio'), (req, res) => {
