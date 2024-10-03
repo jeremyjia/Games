@@ -38,7 +38,6 @@ public class VideoDocServiceImpl implements VideoDocService {
 				Object bodyString = jsonObj.get("body");
 				if (bodyString instanceof String) {
 					String jsonStr = ((String) bodyString).replaceAll("\t", "");// "\t|\r|\n"
-					
 					if (jsonStr.toLowerCase().startsWith("http")) {
 						String tempFile = FileUtil.downloadFile(jsonStr);
 						jsonStr = FileUtil.readAllBytes(tempFile);
@@ -59,27 +58,30 @@ public class VideoDocServiceImpl implements VideoDocService {
 					}
 					VideoDoc vDoc = new VideoDoc(index, des, jsonStr, videoLink, videoPage, commentUrl);
 					videoDocList.add(vDoc);
-				}
-			}
+				}				
+			}//end of for
 
-			long end = System.currentTimeMillis();
-			System.out.println("Task：" + (end - start) + "ms");
-			return videoDocList;
-		} catch (Exception e) {
+            long end = System.currentTimeMillis();
+            System.out.println(docCount + " Task: " + (end - start) + "ms");
+            return videoDocList;
+        } catch (Exception e) {
 			return Collections.emptyList();
 		}
 	}
 
-	private String getDescription(String jsonStr) {
-		String des = "";
-		try {
-			JSONObject jsonObj = new JSONObject(jsonStr);
-			JSONObject requestObj = JsonSriptParser.getJsonObjectbyName(jsonObj, "request");
-			des = requestObj.optString("description");
-		} catch (JSONException e) {
-			return "It's not a valid JSON";
-		}
-		return des;
-	}
+    private String getDescription(String jsonStr) {
+        String des = "";
+        try {
+            JSONObject jsonObj = new JSONObject(jsonStr);
+            JSONObject requestObj = JsonSriptParser.getJsonObjectbyName(jsonObj, "request");
+            if (requestObj == null) {
+                return "It's a JSON but not a scenario JSON"; // 是JSON但不是视频的剧本JSON
+            }
+            des = requestObj.optString("description");
+        } catch (JSONException e) {
+            return "It's not a valid JSON";
+        }
+        return des;
+    }
 
 }
