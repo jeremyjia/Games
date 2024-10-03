@@ -35,7 +35,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // 处理文件上传
 app.post('/upload', upload.single('audio'), (req, res) => {
-    res.json({ message: '文件上传成功: ' + req.file.filename });
+    res.json({ message: '文件上传成功: <a target="_blank" href="uploads/' + req.file.filename + '">' + req.file.filename + '</a>' });
 });
 
 app.listen(port, () => {

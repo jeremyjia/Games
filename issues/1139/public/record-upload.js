@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const stopRecordButton = document.getElementById('stop-record');
     const uploadButton = document.getElementById('upload-audio');
     const audioPlayback = document.getElementById('audio-playback');
+    const status = document.getElementById('status');
 
     let mediaRecorder;
     let audioChunks = [];
@@ -57,7 +58,7 @@ document.addEventListener("DOMContentLoaded", function() {
             })
             .then(response => response.json())
             .then(data => {
-                alert('上传成功: ' + data.message);
+                status.innerHTML = '上传成功: ' + data.message ;
             })
             .catch(error => {
                 console.error('上传失败:', error);
