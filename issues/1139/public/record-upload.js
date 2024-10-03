@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const formData = new FormData();
             formData.append('audio', uploadButton.file);
 
-            fetch('/uploads', {
+            fetch('/upload', {
                 method: 'POST',
                 body: formData
             })

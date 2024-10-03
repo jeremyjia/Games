@@ -8,7 +8,7 @@ const port = 3000;
 
 // 配置Multer
 const storage = multer.diskStorage({
-    destination: './uploads/',
+    destination: './public/uploads/',
     filename: (req, file, cb) => {
         cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
     }
@@ -17,7 +17,7 @@ const upload = multer({ storage: storage });
 
 // 确保uploads目录存在
 const fs = require('fs');
-const dir = './uploads';
+const dir = './public/uploads';
 if (!fs.existsSync(dir)){
     fs.mkdirSync(dir);
 }
