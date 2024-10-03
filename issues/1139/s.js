@@ -30,6 +30,8 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization'] // 允许的Header头
 }));
 
+// 指定静态文件的存放位置，这里假设你的HTML文件放在public文件夹下
+app.use(express.static(path.join(__dirname, 'public')));
 
 // 处理文件上传
 app.post('/upload', upload.single('audio'), (req, res) => {
