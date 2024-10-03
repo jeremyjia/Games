@@ -7500,7 +7500,7 @@ const gc4BLS = function(){
 								o.src = "https://littleflute.github.io/gt1/mp3/j72_4_4.mp3";
 								ls.push(o);
 								var o = {};
-								o.id = 12;
+								o.id = 13;
 								o.name = "colorDream";
 								o.src = "https://github.com/littleflute/Songs/releases/download/%E5%BD%A9%E8%89%B2%E7%9A%84%E6%A2%A6/littleflute.flac.mp3";
 								ls.push(o);
