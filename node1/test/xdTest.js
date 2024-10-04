@@ -1,4 +1,4 @@
-const tag4xdTest = "xdTest.js_v0.13";
+const tag4xdTest = "xdTest.js_v0.14";
 const assert = require('chai').assert;
 const config = require('../config');
 const ExpressServer = require('../expressServer');
@@ -10,6 +10,8 @@ const spiderTest = require('./spider/index.js');
 
 describe(tag4xdTest, function(){ 
   
+  it('2024/10/4 : 21voa', function(){assert.equal("done",'do...');  });
+
   it('spiderTest: test1', function(){     
     spiderTest.test1(assert);   
   });
@@ -74,6 +76,5 @@ describe(tag4xdTest, function(){
   it('https://littleflute.github.io/Games/issues/21/testC4Canvas.html', function(){assert.equal("done",'done');});
   it('https://nodejs.dovov.com/node-js-msgwindows-api.html', function(){assert.equal("2do",'2do');  }); 
   it('1128', function(){assert.equal("done",'done');  });
-  it('21voa', function(){assert.equal("done",'do...');  });
   
 });
