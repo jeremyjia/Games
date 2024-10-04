@@ -74,5 +74,6 @@ describe(tag4xdTest, function(){
   it('https://littleflute.github.io/Games/issues/21/testC4Canvas.html', function(){assert.equal("done",'done');});
   it('https://nodejs.dovov.com/node-js-msgwindows-api.html', function(){assert.equal("2do",'2do');  }); 
   it('1128', function(){assert.equal("done",'done');  });
+  it('21voa', function(){assert.equal("done",'do...');  });
   
 });
