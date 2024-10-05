@@ -1,4 +1,4 @@
-const tag4xdTest = "xdTest.js_v0.14";
+const tag4xdTest = "xdTest.js_v0.15";
 const assert = require('chai').assert;
 const config = require('../config');
 const ExpressServer = require('../expressServer');
@@ -10,7 +10,8 @@ const spiderTest = require('./spider/index.js');
 
 describe(tag4xdTest, function(){ 
   
-  it('2024/10/4 : 21voa', function(){assert.equal("done",'do...');  });
+  it('2024/10/4 : 21voa; test:issues/455/index.html ',
+     function(){assert.equal("done",'do...');  });
 
   it('spiderTest: test1', function(){     
     spiderTest.test1(assert);   
