@@ -1,4 +1,4 @@
-const tag4xdTest = "xdTest.js_v0.15";
+const tag4xdTest = "xdTest.js_v0.21";
 const assert = require('chai').assert;
 const config = require('../config');
 const ExpressServer = require('../expressServer');
@@ -13,6 +13,11 @@ describe(tag4xdTest, function(){
   //
   
   
+  it('2024/10/7 : [mp3lrc2bls]  node1 end point;' + `
+    test->http://localhost:3001/mp3lrc2bls;
+    test->http://localhost:8080/image/json2video?script=http://localhost:3001/v1.json;
+    `,
+    function(){assert.equal("done",'do...');  });
   it('2024/10/7 : [Sprint\bat\r.bat];' + `
     test->cmd r;
     `,
