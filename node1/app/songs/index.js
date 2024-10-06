@@ -1,4 +1,4 @@
-const taSongs = "0号漂泊者.小笛-点歌单 v1.322";  
+const taSongs = "0号漂泊者.小笛-点歌单 v1.323";  
 const l = require('../../logger');
 var ofg = require('officegen');
 var fs = require('fs');
