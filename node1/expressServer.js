@@ -11,7 +11,9 @@ const d3 = import('d3');
 
 const { OpenApiValidator } = require('express-openapi-validator'); 
 const config = require('./config');
- 
+
+
+const mp3lrc2bls = require('./app/mp3lrc2bls/index.js');
 const links = require('./app/links/index.js');
 const songs = require('./app/songs/index.js');
 const spider = require('./app/spider/index.js');
@@ -44,8 +46,7 @@ class ExpressServer {
     });
     
 
-    // param
-    // url: 
+    this.app.get('/mp3lrc2bls', (req, res) => {  mp3lrc2bls.newBls(req,res); });
     this.app.get('/links', (req, res) => {  links.getHrefs(req,res); });
 
     this.app.get('/songs', (req, res) => {      
