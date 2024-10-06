@@ -1,0 +1,48 @@
+const tagLinks = "get all links in url page. v0.13";  
+const l = require('../../logger'); 
+var request = require('request');
+var cheerio = require('cheerio'); 
+
+l.tag1(tagLinks,"-----------------------app\\links\\index.js------")  
+
+var e = {};
+module.exports = e;
+
+e.getHrefs = function(req,res){  
+  res.status(200); 
+  
+  let = q = req.query; 
+  var r = {};
+  r.time = Date();
+
+  if(q.url){
+    r.url =  q.url; 
+    u.allLinks(q.url,res,r);
+  }
+  else{
+    r.url = "xxx"; 
+    res.json(r); 
+  }
+}
+ 
+const u = function(){
+  let o = {};
+  o.allLinks = function(url,res,r){ 
+    request(url,function(error,response,body){
+      if(!error && response.statusCode ==200){
+        $ = cheerio.load(body); 
+        let ls = [];
+        // 选择所有<a>标签并提取href属性
+        $('a').each((index, element) => {
+          const href = $(element).attr('href');
+          let s = `链接 ${index + 1}: ${href}`;
+          console.log(s);
+          ls.push(s);
+       }); 
+       r.ls = ls;
+       res.json(r); 
+      }
+    });  
+  }
+  return o;
+}();

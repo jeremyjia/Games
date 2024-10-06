@@ -12,13 +12,16 @@ describe(tag4xdTest, function(){
   
   //
   
-  it('2024/10/6 : plx_p1; test:Spring/script/1.html; test:http://localhost:8080/',
+  it('2024/10/7 : [links]  node1 end point; test->http://localhost:3001/links?url=https://www.21voa.com/;',
+    function(){assert.equal("done",'do...');  });
+
+  it('2024/10/6 : plx_p1; test:Spring/script/1.html; test->http://localhost:8080/',
     function(){assert.equal("done",'do...');  });
 
   it('2024/10/6 : issues/252 test fail;',
     function(){assert.equal("done",'do...');  });
 
-  it('2024/10/4 : 21voa; test:issues/455/index.html ',
+  it('2024/10/4 : 21voa; test->issues/455/index.html ',
      function(){assert.equal("done",'do...');  });
 
   it('spiderTest: test1', function(){     
