@@ -178,6 +178,9 @@ public class SubtitleImageService {
                     subtitleList.add(curObj);
                     if (lastObj != null) {
                         lastObj.end = (int) time;
+                        
+                        lastObj.nextText = text;
+                        curObj.lastText = lastObj.contextCh;
                     }
                     lastObj = curObj;
                 }else {
