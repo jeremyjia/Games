@@ -15,7 +15,7 @@
 		<spring.boot.version>2.1.6.RELEASE</spring.boot.version>
 		<junit.jupiter.version>5.6.2</junit.jupiter.version>
 		<junit.platform.version>1.6.2</junit.platform.version>
-		<pbz.server.version>1.0.97</pbz.server.version>
+		<pbz.server.version>1.0.98</pbz.server.version>
 	</properties>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -95,7 +95,7 @@
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.7</version>
+			<version>2.14.0</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-fileupload</groupId>

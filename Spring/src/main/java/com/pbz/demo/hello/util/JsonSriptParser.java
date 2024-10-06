@@ -1153,14 +1153,22 @@ public final class JsonSriptParser {
             }
         }
 
-        String strSubtitle = getSubTitleByFrame(subtitleList, number);
+        String strCurrentSubtitle="";
+        String strLastSubtitle = "";
+        String strNextSubtitle = "";
+        SubtitleModel subtitleObj = getSubTitleByFrame(subtitleList, number);
+        if(subtitleObj != null) {
+            strCurrentSubtitle = subtitleObj.contextEng;
+            strLastSubtitle = subtitleObj.lastText;
+            strNextSubtitle = subtitleObj.nextText;
+        }
         if (attributeObj.has("replace")) {
             JSONArray objectArray = attributeObj.getJSONArray("replace");
             for (Object object : objectArray) {
                 JSONObject replaceObj = (JSONObject) object;
                 String regex = replaceObj.getString("regex");
                 String target = replaceObj.getString("target");
-                strSubtitle = FileUtil.ReplaceString(strSubtitle, regex, target);
+                strCurrentSubtitle = FileUtil.ReplaceString(strCurrentSubtitle, regex, target);
             }
         }
         
@@ -1178,7 +1186,7 @@ public final class JsonSriptParser {
         //随机绘制字幕文字
         if (attributeObj.has("random") && "true".equalsIgnoreCase(attributeObj.getString("random"))) {
             for(int i=0; i<10;i++) {
-                drawRandomWord(gp2d, strSubtitle);   
+                drawRandomWord(gp2d, strCurrentSubtitle);   
             }
         } 
         //固定的位置绘制字幕
@@ -1192,24 +1200,28 @@ public final class JsonSriptParser {
                 gp2d.setColor(color);
             }
         }
+        
         Font font = new Font("黑体", Font.BOLD, (int) fSize);
-        gp2d.setFont(font);
-        gp2d.drawString(strSubtitle, x1, y1);
+        gp2d.setFont(font);   
+        int dy = 10;
+        dy += gp2d.getFontMetrics().getHeight();
+        gp2d.drawString(strLastSubtitle, x1, y1);
+        gp2d.drawString(strCurrentSubtitle, x1, y1+dy);
+        gp2d.drawString(strNextSubtitle, x1, y1+2*dy);
 
     }
 
-    private static String getSubTitleByFrame(List<SubtitleModel> ls, int number) {
+    private static SubtitleModel getSubTitleByFrame(List<SubtitleModel> ls, int number) {
         String rate = MacroResolver.getProperty(VAR_RATE);
         int r = Integer.parseInt(rate);
         int s = number / r;
 
         for (SubtitleModel info : ls) {
-            String strSubtitle = info.contextEng;
             if (s >= info.star / 1000 && s <= info.end / 1000) {
-                return strSubtitle;
+                return info;
             }
         }
-        return "";
+        return null;
     }
 
     @Deprecated
@@ -1544,7 +1556,7 @@ public final class JsonSriptParser {
         Color color = COLORS[random.nextInt(COLORS.length)];
         int rotationDegree = random.nextInt(360); // 随机旋转角度，范围 0-360
 
-        Font font = new Font("Arial", Font.BOLD, fontSize);//黑体，Arial
+        Font font = new Font("黑体", Font.BOLD, fontSize);//黑体，Arial
         g2d.setFont(font);
         g2d.setColor(color);
         AffineTransform originalTransform = g2d.getTransform();
