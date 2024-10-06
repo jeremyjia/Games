@@ -12,6 +12,12 @@ describe(tag4xdTest, function(){
   
   //
   
+  
+  it('2024/10/7 : [Sprint\bat\r.bat];' + `
+    test->cmd r;
+    `,
+    function(){assert.equal("done",'do...');  });
+
   it('2024/10/7 : [links]  node1 end point;' + `
     test->http://localhost:3001/links?url=https://www.21voa.com/;
     test->http://localhost:3001/links?url=https://www.21voa.com/&file=lrc;
