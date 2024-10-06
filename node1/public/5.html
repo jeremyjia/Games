@@ -1,7 +1,7 @@
 <!doctype html>
     <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-        <title>resizer</title>
+        <title>resizer_v0.11</title>
         <meta name="author" content="Andrej Hristoliubov anhr@mail.ru">
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
        <style>
@@ -105,20 +105,20 @@
             
         <script type="text/javascript">
             let getPropertyValue = function(style, prop) {
- let value = style.getPropertyValue(prop);
- value = value ? value.replace(/[^0-9.]/g, '') : '0';
- return parseFloat(value);
-}
+                let value = style.getPropertyValue(prop);
+                value = value ? value.replace(/[^0-9.]/g, '') : '0';
+                return parseFloat(value);
+            }
 
-let getElementRect = function(element) {
- let style = window.getComputedStyle(element, null);
- return {
-   x: getPropertyValue(style, 'left'),
-   y: getPropertyValue(style, 'top'),
-   width: getPropertyValue(style, 'width'),
-   height: getPropertyValue(style, 'height')
- }
-}
+            let getElementRect = function(element) {
+                let style = window.getComputedStyle(element, null);
+                return {
+                    x: getPropertyValue(style, 'left'),
+                    y: getPropertyValue(style, 'top'),
+                    width: getPropertyValue(style, 'width'),
+                    height: getPropertyValue(style, 'height')
+                }
+            }
 
 class Resizer {
    constructor(wrapper, element, options) {
