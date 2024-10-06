@@ -12,7 +12,11 @@ describe(tag4xdTest, function(){
   
   //
   
-  it('2024/10/7 : [links]  node1 end point; test->http://localhost:3001/links?url=https://www.21voa.com/;',
+  it('2024/10/7 : [links]  node1 end point;' + `
+    test->http://localhost:3001/links?url=https://www.21voa.com/;
+    test->http://localhost:3001/links?url=https://www.21voa.com/&file=lrc;
+    test->http://localhost:3001/links?url=https://www.21voa.com/&file=lrc&times=1;
+    `,
     function(){assert.equal("done",'do...');  });
 
   it('2024/10/6 : plx_p1; test:Spring/script/1.html; test->http://localhost:8080/',
