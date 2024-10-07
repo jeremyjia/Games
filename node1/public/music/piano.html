@@ -58,7 +58,7 @@
             keyElement.className = 'key';
             keyElement.textContent = key;
             keyElement.addEventListener('mousedown', () => {
-                oSynth.triggerAttackRelease(key,'4n');
+                oSynth.triggerAttackRelease(key,4);//'4n'
                 //oSynth.triggerAttack(key); 
             });
             keyElement.addEventListener('mouseup', () => {
