@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Tone.js Virtual Piano</title>
+    <title>Virtual Piano</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     <style>
         /* 简单的键盘样式 */
@@ -30,14 +30,87 @@
     </style>
 </head>
 <body>
-    <button id="id4cls" onclick = "fnCls(this);">cls</button>
+    <button id="id4Example1" onclick = "fnPlayNotes(this);">示例1：播放多个音符v</button>
+    <button id="id4Example2" onclick = "fnPlayMelody(this);">示例2：创建循环旋律x</button>
+    <button id="id4Example3" onclick = "fnPlayChord(this);">示例3：使用PolySynth同时播放多个音符1v,mx</button>
     <div class="keyboard" id="pianoKeyboard"></div>
 
     <script>
         const pianoKeyboard = document.getElementById('pianoKeyboard');
-        const fnCls = function(e){ 
-            alert(e.id);
+        const fnPlayChord = function(m){
+            console.log(Date());
+            // 创建一个PolySynth合成器并连接到主输出（扬声器）
+            const polySynth = new Tone.PolySynth(Tone.Synth).toDestination();
+
+            // 播放和弦
+            const chord = ['C4', 'E4', 'G4'];
+            const chordDuration = '2n'; // 和弦持续2分音符
+
+            // 安排和弦的播放
+            Tone.Transport.schedule(() => {
+                polySynth.triggerAttack(chord, Tone.now());
+                Tone.Transport.schedule(() => {
+                    polySynth.triggerRelease(chord, Tone.now() + chordDuration);
+                }, chordDuration);
+            }, '0:0:0'); // 从0时刻开始
+
+            // 设置Transport的BPM并启动
+            Tone.Transport.bpm.set(60);
+            Tone.Transport.start();
+
         }
+
+        const fnPlayMelody = function(m){
+            console.log(Date());
+            // 创建一个合成器并连接到主输出（扬声器）
+            const synth = new Tone.Synth().toDestination();
+
+            // 定义旋律
+            const melody = [
+                { note: 'C4', duration: '4n' },
+                { note: 'D4', duration: '4n' },
+                { note: 'E4', duration: '4n' },
+                { note: 'F4', duration: '4n' },
+                { note: 'G4', duration: '4n' },
+                { note: 'A4', duration: '4n' },
+                { note: 'B4', duration: '4n' },
+                { note: 'C5', duration: '4n' }
+            ];
+
+            // 创建并启动循环
+            const loop = new Tone.Loop((time) => {
+                melody.forEach((noteObj, index) => {
+                    Tone.Transport.schedule(() => {
+                        synth.triggerAttackRelease(noteObj.note, noteObj.duration);
+                    }, `${(index / melody.length) * 4}`.replace('.', ',')); // 根据旋律长度计算每个音符的播放时间
+                });
+            }, '4').start(0); // 每4拍循环一次，从0时刻开始
+
+            // 设置Transport的BPM
+            Tone.Transport.bpm.set(120);
+        }
+
+        const fnPlayNotes = function(e){ 
+            // 创建一个合成器并连接到主输出（扬声器）
+            const synth = new Tone.Synth().toDestination();
+
+            // 播放多个音符
+            const notes = ['C4', 'E4', 'G4', 'B4','C4', 'E4', 'G4', 'B4'];
+            const durations = notes.map(() => '4n'); // 每个音符持续4分音符
+
+            notes.forEach((note, index) => {
+                Tone.Transport.schedule(() => {
+                    synth.triggerAttackRelease(note, durations[index]);
+                    console.log(Date());
+                }, `${index * 1}`.replace('.', ',')); // 使用逗号表示的小数来安排时间
+            });
+
+            // 设置Transport的BPM并启动
+            Tone.Transport.bpm.set(120);
+            Tone.Transport.start();
+        }
+
+
         // 引入Tone.js
         // 假设Tone.js已经通过CDN引入
 
@@ -58,7 +131,7 @@
             keyElement.className = 'key';
             keyElement.textContent = key;
             keyElement.addEventListener('mousedown', () => {
-                oSynth.triggerAttackRelease(key,4);//'4n'
+                oSynth.triggerAttackRelease(key,0.1);//'4n'
                 //oSynth.triggerAttack(key); 
             });
             keyElement.addEventListener('mouseup', () => {
