@@ -30,14 +30,20 @@
     </style>
 </head>
 <body>
+    <button id="id4cls" onclick = "fnCls(this);">cls</button>
     <div class="keyboard" id="pianoKeyboard"></div>
 
     <script>
+        const fnCls = function(e){ 
+            
+            oSynth.triggerAttack('E4');
+            if(oSynth.ck) oSynth.triggerRelease(oSynth.ck);
+        }
         // 引入Tone.js
         // 假设Tone.js已经通过CDN引入
 
         // 创建一个合成器，这里使用Tone.Synth，也可以尝试其他合成器如Tone.AMSynth, Tone.FMSynth等
-        const synth = new Tone.Synth().toDestination();
+        const oSynth = new Tone.FMSynth().toDestination();
 
         // 定义一个简单的键盘布局
         // 这里只列出了部分键，你可以根据需要添加更多
@@ -53,17 +59,18 @@
             keyElement.className = 'key';
             keyElement.textContent = key;
             keyElement.addEventListener('mousedown', () => {
-                synth.triggerAttack(key);
+                oSynth.triggerAttack(key);
+                oSynth.ck = key;
             });
             keyElement.addEventListener('mouseup', () => {
-                synth.triggerRelease(key);
+                oSynth.triggerRelease(key);
             });
             // 为了更好的用户体验，可以添加鼠标按下和松开的样式变化
             keyElement.addEventListener('mouseenter', () => {
-                keyElement.style.backgroundColor = '#d0d0d0';
+                keyElement.style.backgroundColor = '#d0d0d0'; 
             });
             keyElement.addEventListener('mouseleave', () => {
-                keyElement.style.backgroundColor = '#f0f0f0';
+                keyElement.style.backgroundColor = '#f0f0f0'; 
             });
             pianoKeyboard.appendChild(keyElement);
         });
