@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sampler</title>
+    <script src="https://cdn.jsdelivr.net/npm/tone@latest/build/Tone.min.js"></script>
+</head>
+<body>
+    <button onclick="C4E4G4()">C4E4G4</button>
+    <button onclick="C()">Play C </button>
+    <button onclick="scheduleTest()">scheduleTest</button>
+    <button onclick="loopTest()">loopTest</button>
+
+    <script>
+        
+        // 创建一个Sampler实例，用于加载吉他样本音频文件
+        const guitarSampler = new Tone.Sampler({
+            urls: {
+                'E2': '937/pianoE2.mp3',
+                'A2': '937/pianoC5.mp3',
+                'D3': '937/1.mp3',
+                'G3': '937/pianoG3.mp3',
+                'B3': '937/1.mp3',
+                'C4': '937/pianoC4.mp3',
+                'E4': '937/pianoE4.mp3',
+                'G4': '937/pianoG4.mp3',
+                // ... 可以继续添加其他音符对应的音频文件路径
+            },
+            baseUrl: 'http://localhost:3001/', // 替换为你的音频文件所在的基础URL
+            onload: () => {
+                console.log('吉他样本音频文件加载完成！');
+                // 可以在音频文件加载完成后，设置一些初始的播放参数或状态
+            }
+        }).toDestination(); // 将Sampler的输出连接到音频目的地（扬声器）
+
+        // 定义一个和弦对象，包含和弦名称和对应的音符数组
+        const chords = {
+            'C': ['E2', 'G3', 'C4'],
+            'G': ['G3', 'B3', 'D4'],
+            'C4E4G4': ['C4', 'E4', 'G4'],
+            // ... 可以继续添加其他和弦
+        };
+        // 播放吉他音符或和弦的函数
+        function playGuitar(notesOrChord, duration = '4n', time = Tone.Transport.now()) {
+            // 确保音频上下文已经启动
+            if (!Tone.context.state === 'running') {
+                Tone.start();
+            }
+            console.log(notesOrChord);
+            // 如果是和弦，则将其转换为音符数组
+            const notes = Array.isArray(notesOrChord) ? notesOrChord : chords[notesOrChord] || [];
+            console.log(notes);
+
+            // 遍历音符数组，并依次触发吉他音符的演奏
+            notes.forEach((note, index) => {
+                // 设置每个音符的播放时间，使其按照节奏依次播放
+                const noteTime = time + (index * (duration / notes.length));
+                console.log("xddbg:" + note);
+               // guitarSampler.triggerAttackRelease(note, duration / notes.length, noteTime);
+                guitarSampler.triggerAttackRelease(note,"1.5");
+               
+            });
+        }
+
+
+        function C4E4G4() {
+            console.log(Date()); 
+            playGuitar('C4E4G4');
+        }
+        function C() {
+            console.log(Date()); 
+            playGuitar('C');
+        }
+
+        function scheduleTest() {
+            console.log(Date());   
+            Tone.Transport.bpm.set(120);
+
+            // 在特定的时间点播放和弦
+            Tone.Transport.schedule(() => {
+                console.log(Date() + "xd")
+                playGuitar('C');
+            }, '+0:0:2'); // 在2秒后播放C和弦
+ 
+            Tone.Transport.schedule(() => {
+                playGuitar('C4E4G4');
+            }, '+0:0:4');  
+
+            // 启动Transport，开始播放
+            Tone.Transport.start();
+        }
+        
+        function loopTest() {
+            console.log(Date() + "loop");   
+            Tone.Transport.bpm.set(120);
+ 
+
+             // 创建并启动循环
+             const loop = new Tone.Loop((time) => {
+                console.log(Date() + "x");   
+                playGuitar('C4E4G4');
+            }, '4').start(0); // 每4拍循环一次，从0时刻开始
+
+
+            // 启动Transport，开始播放
+            Tone.Transport.start();
+        }
+
+    </script>
+</body>
+</html>
