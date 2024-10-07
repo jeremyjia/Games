@@ -34,10 +34,9 @@
     <div class="keyboard" id="pianoKeyboard"></div>
 
     <script>
+        const pianoKeyboard = document.getElementById('pianoKeyboard');
         const fnCls = function(e){ 
-            
-            oSynth.triggerAttack('E4');
-            if(oSynth.ck) oSynth.triggerRelease(oSynth.ck);
+            alert(e.id);
         }
         // 引入Tone.js
         // 假设Tone.js已经通过CDN引入
@@ -53,17 +52,17 @@
         ];
 
         // 创建键盘UI
-        const pianoKeyboard = document.getElementById('pianoKeyboard');
+        
         keys.forEach(key => {
             const keyElement = document.createElement('div');
             keyElement.className = 'key';
             keyElement.textContent = key;
             keyElement.addEventListener('mousedown', () => {
-                oSynth.triggerAttack(key);
-                oSynth.ck = key;
+                oSynth.triggerAttackRelease(key,'4n');
+                //oSynth.triggerAttack(key); 
             });
             keyElement.addEventListener('mouseup', () => {
-                oSynth.triggerRelease(key);
+                //oSynth.triggerRelease(key);
             });
             // 为了更好的用户体验，可以添加鼠标按下和松开的样式变化
             keyElement.addEventListener('mouseenter', () => {
