@@ -17,7 +17,7 @@ const mp3lrc2bls = require('./app/mp3lrc2bls/index.js');
 const links = require('./app/links/index.js');
 const songs = require('./app/songs/index.js');
 const spider = require('./app/spider/index.js');
-const _51voa = require('./app/spider/51voa/index.js');
+const _voa = require('./app/spider/21voa/index.js');
 const ScrapingAntClient = require('./app/spider/ScrapingAntClient/index.js');
 const word = require('./app/word/index.js');
 const abc2db = require('./app/abc2db/index.js');
@@ -57,8 +57,8 @@ class ExpressServer {
       spider.spider(req,res); 
     });
 
-    this.app.get('/spider/51voa', (req, res) => {      
-      _51voa.index(req,res); 
+    this.app.get('/spider/21voa', (req, res) => {      
+      _voa.index(req,res); 
     });
 
     this.app.get('/spider/ScrapingAntClient', (req, res) => {      

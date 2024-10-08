@@ -1,4 +1,5 @@
 const tag21voa = "21voa_v0.11";
+var fs = require('fs'); 
 var request = require('request');
 var cheerio = require('cheerio');
 
@@ -6,6 +7,15 @@ var e = {};
 module.exports = e;
 
 e.index = function(req,res){
+  console.log(Date());
+  
+  fs.readFile('app/spider/21voa/index.html', function(err, data) {
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(data);
+    return res.end();
+  });
+
+  /*
     request('https://www.21voa.com/',function(error,response,body){
       if(!error && response.statusCode ==200){
         $ = cheerio.load(body); 
@@ -29,4 +39,5 @@ e.index = function(req,res){
         res.json(r);
       }
   }); 
+  */
 }
