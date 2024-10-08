@@ -1,4 +1,4 @@
-const tagMp3Lrc2Bls = "mp3lrc2bls/index.js bv0.22";  
+const tagMp3Lrc2Bls = "mp3lrc2bls/index.js bv0.23";  
 const fs = require('fs');
 const l = require('../../logger'); 
 l.tag1(tagMp3Lrc2Bls,"-----------tagMp3Lrc2Bls------------------")
@@ -8,17 +8,20 @@ module.exports = e;
  
 e.newBls = function(req,res){
     res.status(200); 
-    
+    const baseURL = "https://www.21voa.com/";
+    const mp3URL = "https://files.21voa.com/audio/202410/two-americans-win-nobel-prize-in-medicine-for-microrna-discovery.mp3";
+    const lrcURL = "/static/lrc/two-americans-win-nobel-prize-in-medicine-for-microrna-discovery.lrc";
+
     let r = {};
     r.tag = tagMp3Lrc2Bls;
     r.time = Date();
     const filePath = './public/v1.json';
     const content = u.makeBls(1920,1040,115,"1",
-        "https://files.21voa.com/audio/202410/spanish-scientist-uses-bacteria-to-repair-18th-century-artworks.mp3",
+        mp3URL,
         [
             {
                 "number": "1",
-                "time": "115",
+                "time": "388",
                 "objects": [
                     {
                         "text": "newBls.frame[0].text " + r.time,
@@ -29,7 +32,7 @@ e.newBls = function(req,res){
                         "layer": 2
                     }
                 ],
-                "backgroundColor": "255,149,55"
+                "backgroundColor": "111,149,55"
             }
         ],
         [
@@ -37,7 +40,7 @@ e.newBls = function(req,res){
                 "type": "subtitle",
                 "frameRange": "(1,115)",
                 "attribute": {
-                    "script": "https://www.21voa.com/static/lrc/spanish-scientist-uses-bacteria-to-repair-18th-century-artworks.lrc",
+                    "script": baseURL + lrcURL,
                     "x1": 20,
                     "y1": 670,
                     "size": 30,
