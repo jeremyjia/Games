@@ -1,4 +1,4 @@
-const tagMp3Lrc2Bls = "mp3lrc2bls/index.js bv0.23";  
+const tagMp3Lrc2Bls = "mp3lrc2bls/index.js bv0.31";  
 const fs = require('fs');
 const l = require('../../logger'); 
 l.tag1(tagMp3Lrc2Bls,"-----------tagMp3Lrc2Bls------------------")
@@ -7,15 +7,19 @@ var e = {};
 module.exports = e;
  
 e.newBls = function(req,res){
+    let q = req.query; 
     res.status(200); 
-    const baseURL = "https://www.21voa.com/";
-    const mp3URL = "https://files.21voa.com/audio/202410/two-americans-win-nobel-prize-in-medicine-for-microrna-discovery.mp3";
-    const lrcURL = "/static/lrc/two-americans-win-nobel-prize-in-medicine-for-microrna-discovery.lrc";
+    
+    const mp3URL = q.mp3; 
+    const lrcURL = q.lrc; 
 
     let r = {};
     r.tag = tagMp3Lrc2Bls;
     r.time = Date();
-    const filePath = './public/v1.json';
+    r.mp3 = q.mp3;
+    r.lrc = q.lrc;
+    r.bls = q.bls;
+    const filePath = './public/'+q.bls+'.json';
     const content = u.makeBls(1920,1040,115,"1",
         mp3URL,
         [
@@ -28,11 +32,11 @@ e.newBls = function(req,res){
                         "x": 80,
                         "y": 320,
                         "size": 60,
-                        "color": "160,32,240",
+                        "color": "160,32,123",
                         "layer": 2
                     }
                 ],
-                "backgroundColor": "111,149,55"
+                "backgroundColor": "111,255,55"
             }
         ],
         [
@@ -40,7 +44,7 @@ e.newBls = function(req,res){
                 "type": "subtitle",
                 "frameRange": "(1,115)",
                 "attribute": {
-                    "script": baseURL + lrcURL,
+                    "script": lrcURL,
                     "x1": 20,
                     "y1": 670,
                     "size": 30,

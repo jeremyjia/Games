@@ -6,9 +6,7 @@ var cheerio = require('cheerio');
 var e = {};
 module.exports = e;
 
-e.index = function(req,res){
-  console.log(Date());
-  
+e.index = function(req,res){ 
   fs.readFile('app/spider/21voa/index.html', function(err, data) {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write(data);

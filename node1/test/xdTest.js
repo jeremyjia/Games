@@ -12,7 +12,12 @@ describe(tag4xdTest, function(){
   
   //
   
-  
+  it('2024/10/9 : [mp3lrc2bls]  node1 end point;' + `
+    test->http://localhost:3001/mp3lrc2bls?mp3=https://files.21voa.com/audio/202410/two-americans-win-nobel-prize-in-medicine-for-microrna-discovery.mp3&lrc=/static/lrc/two-americans-win-nobel-prize-in-medicine-for-microrna-discovery.lrc&bls=test1;
+    test->http://localhost:3001/spider/21voa;
+    `,
+    function(){assert.equal("done",'do...');  });
+
   it('2024/10/7 : [mp3lrc2bls]  node1 end point;' + `
     test->http://localhost:3001/mp3lrc2bls;
     test->http://localhost:8080/image/json2video?script=http://localhost:3001/v1.json;

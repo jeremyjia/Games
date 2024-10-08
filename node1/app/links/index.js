@@ -11,7 +11,7 @@ module.exports = e;
 e.getHrefs = function(req,res){  
   res.status(200); 
   
-  let = q = req.query; 
+  let q = req.query; 
   var r = {};
   r.time = Date();
 
@@ -63,8 +63,10 @@ const u = function(){
         $('a').each((index, element) => {
           const href = $(element).attr('href');
           if(href.endsWith(f)){
-            let s = `链接 ${index + 1}: ${href}`;
-            console.log(s);
+            let s = {};
+            s.txt =  `xd链接 ${index + 1}: ${href}`;
+            s.href = `${href}`;
+            
             ls.push(s);
           }
        }); 
@@ -84,7 +86,10 @@ const u = function(){
         // 选择所有<a>标签并提取href属性
         $('a').each((index, element) => {
           const href = $(element).attr('href');
-          let s = `链接 ${index + 1}: ${href}`; 
+          let o = {};
+          o.txt = `xd链接 ${index + 1}: ${href}`; 
+          o.href = `${href}`; 
+          const s = JSON.stringify(o);
           if(href.endsWith(f)&&n<1){
             n++;
             ls.push(s);
