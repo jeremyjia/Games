@@ -66,15 +66,21 @@ body {
 <div class="topnav" id="myTopnav">
   <a href="../../">Home</a>
   <a href="../spider">spider</a>
-  <a href="#"  class="active">21voa_bv0.35</a>  
+  <a href="#"  class="active">21voa_bv0.41</a>  
   <a href="javascript:void(0);" class="icon" onclick="myFunction()">
     <i class="fa fa-bars"></i>
   </a>
 </div>
 
 <div style="padding-left:16px">
-  <h2>Responsive Topnav Example</h2>
-  <p>Resize the browser window to see how it works.</p>
+  <div id="id_4_wrapper_Timer"  style="background-color: lightgreen;width:100%;height: 50px;border:1px solid lightslategray">
+    <div id="id_4_Timer_Toolbar">
+        <button id="id_4_Timer_Switch" onclick="fnTimer(this);">start</button>
+    </div>
+    <div id="id_4_Timer_View" style="border:1px solid lemonchiffon">v
+
+    </div>
+  </div>
   <button onclick="step1();" style="background-color: #04AA6D;">step1->https://www.21voa.com/</button>
   <p id="downloadV">dbg</p>
 </div>
@@ -89,6 +95,11 @@ function myFunction() {
   } else {
     x.className = "topnav";
   }
+}
+function fnTimer(m){
+    if(!m.t) m.t = blo0.blTimer (1000,5,(leftTime)=>{
+        bl$("id_4_Timer_View").innerHTML = leftTime;
+    });
 }
  
 let lrcLink = "";
