@@ -1206,7 +1206,11 @@ public final class JsonSriptParser {
         int dy = 10;
         dy += gp2d.getFontMetrics().getHeight();
         gp2d.drawString(strLastSubtitle, x1, y1);
+
+        gp2d.setColor(new Color(255, 55, 50));
         gp2d.drawString(strCurrentSubtitle, x1, y1+dy);
+
+        gp2d.setColor(new Color(155, 155, 155));
         gp2d.drawString(strNextSubtitle, x1, y1+2*dy);
 
     }

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Virtual Piano</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <style>
+        /* 简单的键盘样式 */
+        .keyboard {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .key {
+            width: 50px;
+            height: 150px;
+            margin: 5px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .key:active {
+            background-color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <button id="id4Example1" onclick = "fnPlayNotes(this);">示例1：播放多个音符v</button>
+    <button id="id4Example2" onclick = "fnPlayMelody(this);">示例2：创建循环旋律x</button>
+    <button id="id4Example3" onclick = "fnPlayChord(this);">示例3：使用PolySynth同时播放多个音符1v,mx</button>
+    <div class="keyboard" id="pianoKeyboard"></div>
+
+    <script>
+        const pianoKeyboard = document.getElementById('pianoKeyboard');
+        const fnPlayChord = function(m){
+            console.log(Date());
+            // 创建一个PolySynth合成器并连接到主输出（扬声器）
+            const polySynth = new Tone.PolySynth(Tone.Synth).toDestination();
+
+            // 播放和弦
+            const chord = ['C4', 'E4', 'G4'];
+            const chordDuration = '2n'; // 和弦持续2分音符
+
+            // 安排和弦的播放
+            Tone.Transport.schedule(() => {
+                polySynth.triggerAttack(chord, Tone.now());
+                Tone.Transport.schedule(() => {
+                    polySynth.triggerRelease(chord, Tone.now() + chordDuration);
+                }, chordDuration);
+            }, '0:0:0'); // 从0时刻开始
+
+            // 设置Transport的BPM并启动
+            Tone.Transport.bpm.set(60);
+            Tone.Transport.start();
+
+        }
+
+        const fnPlayMelody = function(m){
+            console.log(Date());
+            // 创建一个合成器并连接到主输出（扬声器）
+            const synth = new Tone.Synth().toDestination();
+
+            // 定义旋律
+            const melody = [
+                { note: 'C4', duration: '4n' },
+                { note: 'D4', duration: '4n' },
+                { note: 'E4', duration: '4n' },
+                { note: 'F4', duration: '4n' },
+                { note: 'G4', duration: '4n' },
+                { note: 'A4', duration: '4n' },
+                { note: 'B4', duration: '4n' },
+                { note: 'C5', duration: '4n' }
+            ];
+
+            // 创建并启动循环
+            const loop = new Tone.Loop((time) => {
+                melody.forEach((noteObj, index) => {
+                    Tone.Transport.schedule(() => {
+                        synth.triggerAttackRelease(noteObj.note, noteObj.duration);
+                    }, `${(index / melody.length) * 4}`.replace('.', ',')); // 根据旋律长度计算每个音符的播放时间
+                });
+            }, '4').start(0); // 每4拍循环一次，从0时刻开始
+
+            // 设置Transport的BPM
+            Tone.Transport.bpm.set(120);
+        }
+
+        const fnPlayNotes = function(e){ 
+            // 创建一个合成器并连接到主输出（扬声器）
+            const synth = new Tone.Synth().toDestination();
+
+            // 播放多个音符
+            const notes = ['C4', 'E4', 'G4', 'B4','C4', 'E4', 'G4', 'B4'];
+            const durations = notes.map(() => '4n'); // 每个音符持续4分音符
+
+            notes.forEach((note, index) => {
+                Tone.Transport.schedule(() => {
+                    synth.triggerAttackRelease(note, durations[index]);
+                    console.log(Date());
+                }, `${index * 1}`.replace('.', ',')); // 使用逗号表示的小数来安排时间
+            });
+
+            // 设置Transport的BPM并启动
+            Tone.Transport.bpm.set(120);
+            Tone.Transport.start();
+        }
+
+
+        // 引入Tone.js
+        // 假设Tone.js已经通过CDN引入
+
+        // 创建一个合成器，这里使用Tone.Synth，也可以尝试其他合成器如Tone.AMSynth, Tone.FMSynth等
+        const oSynth = new Tone.FMSynth().toDestination();
+
+        // 定义一个简单的键盘布局
+        // 这里只列出了部分键，你可以根据需要添加更多
+        const keys = [
+            'C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4',
+            'C5', 'D5', 'E5', 'F5', 'G5', 'A5', 'B5'
+        ];
+
+        // 创建键盘UI
+        
+        keys.forEach(key => {
+            const keyElement = document.createElement('div');
+            keyElement.className = 'key';
+            keyElement.textContent = key;
+            keyElement.addEventListener('mousedown', () => {
+                oSynth.triggerAttackRelease(key,0.1);//'4n'
+                //oSynth.triggerAttack(key); 
+            });
+            keyElement.addEventListener('mouseup', () => {
+                //oSynth.triggerRelease(key);
+            });
+            // 为了更好的用户体验，可以添加鼠标按下和松开的样式变化
+            keyElement.addEventListener('mouseenter', () => {
+                keyElement.style.backgroundColor = '#d0d0d0'; 
+            });
+            keyElement.addEventListener('mouseleave', () => {
+                keyElement.style.backgroundColor = '#f0f0f0'; 
+            });
+            pianoKeyboard.appendChild(keyElement);
+        });
+
+        // 注意：在真实的项目中，你可能需要处理键盘按键事件，以便用户可以使用电脑键盘来演奏虚拟钢琴。
+        // 这可以通过添加keydown和keyup事件监听器到window对象来实现。
+    </script>
+</body>
+</html>
