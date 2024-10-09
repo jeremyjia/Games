@@ -66,23 +66,28 @@ body {
 <div class="topnav" id="myTopnav">
   <a href="../../">Home</a>
   <a href="../spider">spider</a>
-  <a href="#"  class="active">21voa_bv0.42</a>  
+  <a href="#"  class="active">21voa_bv0.45</a>  
   <a href="javascript:void(0);" class="icon" onclick="myFunction()">
     <i class="fa fa-bars"></i>
   </a>
 </div>
 
 <div style="padding-left:16px">
-  <div id="id_4_wrapper_Timer"  style="background-color: lightgreen;width:100%;height: 50px;border:1px solid lightslategray">
+  <div id="id_4_wrapper_Timer"  style="background-color: lightgreen;width:100%;height: 150px;border:1px solid lightslategray">
     <div id="id_4_Timer_Toolbar">
         <button id="id_4_Timer_Switch" onclick="fnTimer(this);">start</button>
     </div>
     <div id="id_4_Timer_View" style="border:1px solid lemonchiffon">v
-
     </div>
+    <div id="id_4_start_View" style="border:1px solid burlywood;background-color:coral;">v</div>
+    <div id="id_4_pre_page_View" style="border:1px solid burlywood;background-color:aquamarine;">v</div>
+    <div id="id_4_page_View" style="border:1px solid burlywood;background-color: paleturquoise;">v</div>
   </div>
-  <button onclick="step1();" style="background-color: #04AA6D;">step1->https://www.21voa.com/</button>
-  <p id="downloadV">dbg</p>
+  <div>
+        <button onclick="step1();" style="background-color: #04AA6D;">step1->https://www.21voa.com/</button>
+        <button id="id_4_oneStep" onclick="oneStep(this);" style="background-color: darkgoldenrod;float:right">oneStep</button>
+        <p id="downloadV">dbg</p>
+  </div>
 </div>
 
 <script src="https://littleflute.github.io/JavaScript/w3.js" ></script>
@@ -96,9 +101,36 @@ function myFunction() {
     x.className = "topnav";
   }
 }
+function oneStep(t){
+    alert(t.id);
+}
 function fnTimer(m){
-    if(!m.t) m.t = blo0.blTimer (1000,5,(leftTime)=>{
-        bl$("id_4_Timer_View").innerHTML = leftTime;
+    const ds = 24*60*60;
+    const ds2 = ds*2;
+    let prePage = "";
+    let nTime = 0;
+    let nTick = 0;
+    let nInval= 60;
+    bl$("id_4_start_View").innerHTML = blo0.blTime(0);
+    if(!m.t) m.t = blo0.blTimer (1000,24*60*60,(leftTime)=>{
+        nTick++;
+        bl$("id_4_Timer_View").innerHTML = leftTime + " ds:" + ds + " nTick=" + nTick + " nInval=" + nInval;
+        if(nTick%nInval!=0) return;
+
+        
+        const link1 = "http://localhost:3001/links?url=https://www.21voa.com/&file=lrc&&times=1";
+        var w = {};
+        w._2do = function(txt){  
+            let o = JSON.parse(txt);
+            let o1 = JSON.parse(o.ls[0]);
+            let o2 = JSON.parse(o.ls[1]);
+            nTime++;
+            bl$("id_4_pre_page_View").innerHTML = prePage + " nTime=" + nTime;
+            bl$("id_4_page_View").innerHTML = o1.href + " : "+blo0.blTime(0);
+            prePage = o1.href;
+        }   
+        blo0.blAjx(w,link1);   
+
     });
 }
  
