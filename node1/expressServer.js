@@ -1,4 +1,4 @@
-const tag = "[expressServer.js_bv0.133]"; 
+const tag = "[expressServer.js_bv0.134]"; 
 const l = require('./logger');
 const path = require('path'); 
 const express = require('express');
@@ -13,8 +13,9 @@ const { OpenApiValidator } = require('express-openapi-validator');
 const config = require('./config');
 
 
+const txtdraw = require('./app/txtdraw/index.js');
 const mp3lrc2bls = require('./app/mp3lrc2bls/index.js');
-const links = require('./app/links/index.js');
+const links = require('./app/links/index.js'); 
 const songs = require('./app/songs/index.js');
 const spider = require('./app/spider/index.js');
 const _voa = require('./app/spider/21voa/index.js');
@@ -46,6 +47,7 @@ class ExpressServer {
     });
     
 
+    this.app.get('/txtdraw', (req, res) => {  txtdraw.toDraw(req,res); });
     this.app.get('/mp3lrc2bls', (req, res) => {  mp3lrc2bls.newBls(req,res); });
     this.app.get('/links', (req, res) => {  links.getHrefs(req,res); });
 

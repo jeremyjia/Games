@@ -25,18 +25,18 @@ e.newBls = function(req,res){
         [
             {
                 "number": "1",
-                "time": "388",
+                "time": "255",
                 "objects": [
                     {
                         "text": "newBls.frame[0].text " + r.time,
                         "x": 80,
                         "y": 320,
                         "size": 60,
-                        "color": "160,32,123",
+                        "color": "55,222,123",
                         "layer": 2
                     }
                 ],
-                "backgroundColor": "111,123,55"
+                "backgroundColor": "111,123,66"
             }
         ],
         [
