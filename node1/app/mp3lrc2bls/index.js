@@ -1,4 +1,4 @@
-const tagMp3Lrc2Bls = "mp3lrc2bls/index.js bv0.32";  
+const tagMp3Lrc2Bls = "mp3lrc2bls/index.js bv0.33";  
 const fs = require('fs');
 const l = require('../../logger'); 
 l.tag1(tagMp3Lrc2Bls,"-----------tagMp3Lrc2Bls------------------")
@@ -25,7 +25,7 @@ e.newBls = function(req,res){
         [
             {
                 "number": "1",
-                "time": "255",
+                "time": "355",
                 "objects": [
                     {
                         "text": "newBls.frame[0].text " + r.time,
@@ -36,7 +36,7 @@ e.newBls = function(req,res){
                         "layer": 2
                     }
                 ],
-                "backgroundColor": "111,123,66"
+                "backgroundColor": "111,123,222"
             }
         ],
         [
