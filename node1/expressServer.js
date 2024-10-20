@@ -1,4 +1,4 @@
-const tag = "[expressServer.js_bv0.133]"; 
+const tag = "[expressServer.js_bv0.135]"; 
 const l = require('./logger');
 const path = require('path'); 
 const express = require('express');
@@ -11,10 +11,15 @@ const d3 = import('d3');
 
 const { OpenApiValidator } = require('express-openapi-validator'); 
 const config = require('./config');
- 
+
+
+const bls2v = require('./app/bls2v/index.js');
+const txtdraw = require('./app/txtdraw/index.js');
+const mp3lrc2bls = require('./app/mp3lrc2bls/index.js');
+const links = require('./app/links/index.js'); 
 const songs = require('./app/songs/index.js');
 const spider = require('./app/spider/index.js');
-const _51voa = require('./app/spider/51voa/index.js');
+const _voa = require('./app/spider/21voa/index.js');
 const ScrapingAntClient = require('./app/spider/ScrapingAntClient/index.js');
 const word = require('./app/word/index.js');
 const abc2db = require('./app/abc2db/index.js');
@@ -43,6 +48,11 @@ class ExpressServer {
     });
     
 
+    this.app.get('/bls2v', (req, res) => {  bls2v.createV(req,res); });
+    this.app.get('/txtdraw', (req, res) => {  txtdraw.toDraw(req,res); });
+    this.app.get('/mp3lrc2bls', (req, res) => {  mp3lrc2bls.newBls(req,res); });
+    this.app.get('/links', (req, res) => {  links.getHrefs(req,res); });
+
     this.app.get('/songs', (req, res) => {      
       songs.songs(req,res); 
     });
@@ -51,8 +61,8 @@ class ExpressServer {
       spider.spider(req,res); 
     });
 
-    this.app.get('/spider/51voa', (req, res) => {      
-      _51voa.index(req,res); 
+    this.app.get('/spider/21voa', (req, res) => {      
+      _voa.index(req,res); 
     });
 
     this.app.get('/spider/ScrapingAntClient', (req, res) => {      

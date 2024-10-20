@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.7.11"
+var g_ver_blClass = "CBlClass_bv1.7.12"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -3183,7 +3183,7 @@ function CBlClass ()
 										   "target":"美国"
 										 },
 										 {
-										   "regex":"更多听力请访问51VOA.COM",
+										   "regex":"更多听力请访问21VOA.COM",
 										   "target":"漂泊者乐园团队制作"
 										 }
 									]
@@ -3223,7 +3223,7 @@ function CBlClass ()
 							},
 							{
 								"name": "VAR_IMG_PATH",
-								"value": "https://img.51voa.cn/1/C501D07B-81C5-462A-89C8-E630C2DD9A1F_w268_r1.jpg"
+								"value": "https://img.21voa.cn/1/C501D07B-81C5-462A-89C8-E630C2DD9A1F_w268_r1.jpg"
 							}
 						]
 					}
@@ -7975,12 +7975,12 @@ const gc4BLS = function(){
 					},
 					{
 						"id":3,
-						"name":"dl-51voa-index",
+						"name":"dl-21voa-index",
 						"fn2server": function(b,v,_bs,_i){
 							v.innerHTML = this.name + ` ${_i}`; 
 							const svrAPI = "http://localhost:8080/download";  
 							var i = blo0.blDownloadTask(svrAPI ,
-								"https://www.51voa.com/","51voaIndex.html",v,
+								"https://www.21voa.com/","51voaIndex.html",v,
 								function afterDL51voaIndex(){
 									var n = parseInt(_i) + 1;
 									_bs[n].fn2server(b,v,_bs,n);
@@ -8012,15 +8012,15 @@ const gc4BLS = function(){
 								var d = "(" + c[0]+"/"+c[1]+"/"+c[2];
 	
 								var e = a[1].split(d); 
-								const url51voa = "https://www.51voa.com";
+								const urlVOA = "https://www.21voa.com";
 								var s = "";
 								for(var i=0; i<e.length-1;i++){
 									var f = e[i].split('" target="_blank">');
 									var g = f[f.length-2].split('<a href="');
 									var h = g[g.length-1];
-									var s = `<a href="${url51voa}${h}" target="_blank">${f[f.length-1]}</a>`;
+									var s = `<a href="${urlVOA}${h}" target="_blank">${f[f.length-1]}</a>`;
 									const page = blco1.blDiv(vNew,vNew.id+i,s,blo0.c(i));
-									v.ps.push({"href":`${url51voa}${h}`,"txt":f[f.length-1]})	 
+									v.ps.push({"href":`${urlVOA}${h}`,"txt":f[f.length-1]})	 
 								}
 	
 								vDate.innerHTML = b[0]; 
@@ -8072,7 +8072,7 @@ const gc4BLS = function(){
 								
 								var a = y.split('<a id="lrc" href="');
 								var b = a[1].split('"></a>');
-								var lrcUrl = `https://www.51voa.com/${b[0]}`; 
+								var lrcUrl = `https://www.21voa.com/${b[0]}`; 
 								if(!blo0.ls51voaLrc) blo0.ls51voaLrc = [];
 								blo0.ls51voaLrc[0] = lrcUrl;
 
@@ -8131,7 +8131,7 @@ const gc4BLS = function(){
 													   "target":"美国"
 													 },
 													 {
-													   "regex":"更多听力请访问51VOA.COM",
+													   "regex":"更多听力请访问21VOA.COM",
 													   "target":"漂泊者乐园团队制作"
 													 }
 												]
@@ -8171,7 +8171,7 @@ const gc4BLS = function(){
 										},
 										{
 											"name": "VAR_IMG_PATH",
-											"value": "https://img.51voa.cn/1/022a0000-0aff-0242-008a-08dae3bd0580_cx0_cy1_cw0_w268_r1.jpg"
+											"value": "https://img.21voa.cn/1/022a0000-0aff-0242-008a-08dae3bd0580_cx0_cy1_cw0_w268_r1.jpg"
 										}
 									]
 								}
