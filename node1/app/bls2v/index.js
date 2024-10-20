@@ -81,7 +81,7 @@ const util = require('util');
 const spawnPromise = util.promisify(spawn);
 
 async function runCommands() {
-    const child = spawn('cmd.exe', ['/c', 'dir'], {
+    const child = spawn('cmd.exe', ['', 'ffmpeg  -i public/tmp/output.png b.jpg'], {
         stdio: ['ignore', 'pipe', 'pipe'], // 忽略输入，将标准输出和标准错误管道化
         shell: false // 在这种情况下，我们不需要 shell: true，因为我们直接调用了 cmd.exe
       });
