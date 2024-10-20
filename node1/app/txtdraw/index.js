@@ -1,7 +1,7 @@
-const tag_txtDraw= "txtDraw/index.js bv0.21";    
+const tag_txtDraw= "txtDraw/index.js bv0.22";    
 const l = require('../../logger.js'); 
-//const c = require('../../util/canvas.js'); 
-const { Canvas } = require('node-drawille-canvas');
+const c = require('../../util/canvas.js'); 
+//const { Canvas } = require('node-drawille-canvas');
 
   
 
@@ -19,7 +19,7 @@ e.toDraw = function(req,res){
 
     var r = {}; 
     r.time = Date();
-    r.api = tag_txtDraw;  
+    r.error = "npm install node-drawille-canvas : failed! can't test _fn2do(r)";  
     r.test = c.toDraw();
 
     res.json(r); 

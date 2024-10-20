@@ -33,8 +33,8 @@ e.toDraw = function(){
     const buffer = canvas.toBuffer('image/png');
 
     // 将 buffer 写入文件
-    fs.writeFileSync('output.png', buffer);
+    fs.writeFileSync('public/tmp/output.png', buffer);
 
-    console.log('Image saved as output.png');
+    console.log('Image saved as output1.png');
      return "tag_util_canvas" + Date();
 }
