@@ -1,6 +1,6 @@
-const tag_util_canvas= "util/canvas.js bv0.15";   
+const tag_util_canvas= "util/canvas.js bv0.21";   
 const l = require('../logger');  
-//const { createCanvas, loadImage } = require('canvas');
+const { createCanvas, loadImage } = require('canvas');
 const fs = require('fs');
 
 l.tag1(tag_util_canvas,"--tag_util_canvas---------------------------")

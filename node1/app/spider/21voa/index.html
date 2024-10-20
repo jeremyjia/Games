@@ -66,7 +66,7 @@ body {
 <div class="topnav" id="myTopnav">
   <a href="../../">Home</a>
   <a href="../spider">spider</a>
-  <a href="#"  class="active">21voa_bv0.45</a>  
+  <a href="#"  class="active">21voa_bv0.51</a>  
   <a href="javascript:void(0);" class="icon" onclick="myFunction()">
     <i class="fa fa-bars"></i>
   </a>
@@ -156,6 +156,7 @@ function step2(d,lrcUrl,htmlUrl){
    const v1 = blo0.blDiv(d,d.id+"lrc",lrcUrl,blColor[1]);
    const v2 = blo0.blDiv(d,d.id+"html",htmlUrl,blColor[2]); 
    const b2 = blo0.blBtn(d,d.id+"b2","step2",blColor[4]); 
+   blo0.blLink(d,"id-21voa-index","21voa-index","https://www.21voa.com","blue");
    const p = blo0.blDiv(d,d.id+"p","content from page",blGrey[3]); 
    b2.onclick = function(){
         let link = "http://localhost:3001/links?url=https://www.21voa.com";

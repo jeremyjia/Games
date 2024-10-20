@@ -1,7 +1,7 @@
 const tag_txtDraw= "txtDraw/index.js bv0.21";    
 const l = require('../../logger.js'); 
-const c = require('../../util/canvas.js'); 
-//const { Canvas } = require('node-drawille-canvas');
+//const c = require('../../util/canvas.js'); 
+const { Canvas } = require('node-drawille-canvas');
 
   
 
