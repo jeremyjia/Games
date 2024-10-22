@@ -38,3 +38,33 @@ e.toDraw = function(){
     console.log('Image saved as output1.png');
      return "tag_util_canvas" + Date();
 }
+
+e.createImgs = function(n){  
+         
+    const canvas = createCanvas(200, 200);
+    const ctx = canvas.getContext('2d');
+
+    for(var i = 0; i<n; i++){
+        
+        let num = i +1;
+        let paddedNum = num.toString().padStart(3, '0'); 
+        
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, 200, 200);
+        ctx.beginPath();
+        ctx.arc(100, 100, 50, 0, Math.PI * 2, true); // 外圈
+        ctx.fillStyle = '#FF0000';
+        ctx.fill();
+    
+        ctx.font = '20px Arial';
+        ctx.fillStyle = '#000000';
+        ctx.fillText('NO. ' + paddedNum, 50, 150);
+     
+        const buffer = canvas.toBuffer('image/png'); 
+        fs.writeFileSync('public/tmp/' + paddedNum + '.png', buffer);
+    
+        console.log('Image saved as ' + paddedNum + '.png');
+
+    }
+    return "created "  + n + " images. " + Date();
+}
