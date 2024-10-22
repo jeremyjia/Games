@@ -1,4 +1,4 @@
-const tag_bls2v= "bls2v/index.js bv0.25";    
+const tag_bls2v= "bls2v/index.js bv0.32";    
 const l = require('../../logger.js'); 
 const c = require('../../util/canvas.js');  
 //const ffmpeg = require('fluent-ffmpeg');
@@ -15,13 +15,23 @@ e.createV = function(req,res){
     res.status(200);
     console.log(req.body);
 
+    const directoryPath = 'public/tmp';      
+    fs.readdirSync(directoryPath).forEach(file => fs.unlinkSync(path.join(directoryPath, file)));
+
     var r = {}; 
     r.time = Date();
     r.toDo = "call ffmpeg to create video from bls.";  
     r.install = " npm install fluent-ffmpeg ";
+
+    //*
     r.test = c.createImgs(111);
 
-    run_FFMPEG_Command();
+    r.vFile = "tmp/v2.mp4";
+
+        
+    run_Command(r,"ffmpeg",
+        "-framerate 1 -i public/tmp/%03d.png -c:v libx264 -pix_fmt yuv420p public/tmp/v2.mp4");
+    //*/
     res.json(r); 
 } 
 
@@ -80,16 +90,16 @@ const util = require('util');
 // 创建一个返回 Promise 的 spawn 函数
 const spawnPromise = util.promisify(spawn);
 
-async function run_FFMPEG_Command() {
-    let s = "-framerate 1 -i public/tmp/%03d.png -c:v libx264 -pix_fmt yuv420p public/tmp/v1.mp4";
-    let p = s.split(' ');
-    const child = spawn('ffmpeg', p, {
+async function run_Command(r,c,ps) { 
+    let p = ps.split(' ');
+    const child = spawn(c, p, {
         stdio: ['ignore', 'pipe', 'pipe'], // 忽略输入，将标准输出和标准错误管道化
         shell: false // 在这种情况下，我们不需要 shell: true，因为我们直接调用了 cmd.exe
       });
       
       child.stdout.on('data', (data) => {
         console.log(`stdout: ${data}`);
+        r.vFile = "tmp/v1.mp4";
       });
       
       child.stderr.on('data', (data) => {
@@ -100,4 +110,4 @@ async function run_FFMPEG_Command() {
         console.log(`child process exited with code ${code}`);
       });
 }
-
+ 
