@@ -1,5 +1,6 @@
 const tag_util_canvas= "util/canvas.js bv0.21";   
 const l = require('../logger');  
+
 const { createCanvas, loadImage } = require('canvas');
 const fs = require('fs');
 
@@ -39,18 +40,24 @@ e.toDraw = function(){
      return "tag_util_canvas" + Date();
 }
 
-e.createImgs = function(n){  
-         
-    const canvas = createCanvas(200, 200);
+e.createImgsFromBls = function(bls){  
+
+    
+
+    const w = 1920, h = 1040;
+    const canvas = createCanvas(w, h);
     const ctx = canvas.getContext('2d');
 
+
+
+    let n = 111;
     for(var i = 0; i<n; i++){
         
         let num = i +1;
         let paddedNum = num.toString().padStart(3, '0'); 
         
         ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 0, 200, 200);
+        ctx.fillRect(0, 0, w, h);
         ctx.beginPath();
         ctx.arc(100, 100, 50, 0, Math.PI * 2, true); // 外圈
         ctx.fillStyle = '#FF0000';
@@ -58,6 +65,8 @@ e.createImgs = function(n){
     
         ctx.font = '20px Arial';
         ctx.fillStyle = '#000000';
+        ctx.fillText(Date(), 50, 44);
+        ctx.fillText(bls, 50, 111);
         ctx.fillText('NO. ' + paddedNum, 50, 150);
      
         const buffer = canvas.toBuffer('image/png'); 
@@ -66,5 +75,5 @@ e.createImgs = function(n){
         console.log('Image saved as ' + paddedNum + '.png');
 
     }
-    return "created "  + n + " images. " + Date();
+    
 }

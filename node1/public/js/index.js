@@ -22,13 +22,13 @@ bl$("bls2vTest").onclick = function(){
             const bs = [
                 {
                     "id":1,
-                    "name":"blsTest",
+                    "name":"test1",
                     "color": "skyblue",
                     "float": "left",
                     "click":function(_b,_v){
                         _v.innerHTML = this.name;
                         
-                        var url = "http://localhost:3001/bls2v"; 
+                        var url = "http://localhost:3001/bls2v?bls=https://littleflute.github.io/Games/Spring/script/video21.json"; 
                         this._2do = function(txt){        
                             vsb.ta.value = txt;     
                             blo0.blLink(_v,"id4V","video",JSON.parse(txt).vFile,"blue");   
@@ -38,11 +38,18 @@ bl$("bls2vTest").onclick = function(){
                 },
                 {
                     "id":2,
-                    "name":"name2",
+                    "name":"test2",
                     "color": "cyan",
                     "float": "left",
                     "click":function(_b,_v){
                         _v.innerHTML = this.name;
+                        
+                        var url = "http://localhost:3001/bls2v?bls=http://localhost:3001/bls/v1.json"; 
+                        this._2do = function(txt){        
+                            vsb.ta.value = txt;     
+                            blo0.blLink(_v,"id4V","video",JSON.parse(txt).vFile,"blue");   
+                        };
+                        blo0.blAjx(this,url);
                     }
                 },
             ];
