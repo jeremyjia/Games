@@ -66,7 +66,7 @@ body {
 <div class="topnav" id="myTopnav">
   <a href="../../">Home</a>
   <a href="../spider">spider</a>
-  <a href="#"  class="active">21voa_bv0.52</a>  
+  <a href="#"  class="active">21voa_bv0.54</a>  
   <a href="javascript:void(0);" class="icon" onclick="myFunction()">
     <i class="fa fa-bars"></i>
   </a>
@@ -239,27 +239,12 @@ function step4(d,txt){
                         blo0.blAjx(this,link);
                     }
                 },
-                {
-                    "id":2,
-                    "name":"3001bls2v",
-                    "color": "cyan",
-                    "float": "left",
-                    "click":function(_b,_v){
-                        _v.innerHTML = this.name;
-                        
-                        var url = "http://localhost:3001/bls2v?bls=http://localhost:3001/"+o.bls + ".json"; 
-                        this._2do = function(txt){         
-                             _v.innerHTML = txt;
-                             blo0.blLink(_v,"id4V3001","video","http://localhost:3001/"+JSON.parse(txt).vFile,"yellow");     
-                        };
-                        blo0.blAjx(this,url);
-                    }
-                },
+                
             ];
         }
         this.nClick = 0;
 
-        this.md = blo0.blMD(this.id+"md","bls2vTest",333,50,500,400,"gray");
+        this.md = blo0.blMD(this.id+"md","bls2vTest",444,111,500,400,"gray");
         const oui = new C4UI(this.md);
         oui.makeUI();        
       }
@@ -290,21 +275,6 @@ function step4(d,txt){
             }
             const bs = [
                 {
-                    "id":1,
-                    "name":"8080json2video",
-                    "color": "skyblue",
-                    "float": "left",
-                    "click":function(_b,_v){
-                        
-                        this._2do = function(txt){        
-                             _v.innerHTML = txt; 
-                        };
-                        let link = "http://localhost:8080/image/json2video?script=http://localhost:3001/"+o.bls + ".json";
-                        link += "&video="+o.bls + ".mp4";
-                        blo0.blAjx(this,link);
-                    }
-                },
-                {
                     "id":2,
                     "name":"3001bls2v",
                     "color": "cyan",
@@ -315,7 +285,14 @@ function step4(d,txt){
                         var url = "http://localhost:3001/bls2v?bls=http://localhost:3001/"+o.bls + ".json"; 
                         this._2do = function(txt){         
                              _v.innerHTML = txt;
-                             blo0.blLink(_v,"id4V3001","video","http://localhost:3001/"+JSON.parse(txt).vFile,"yellow");   
+                             
+                             var src = "http://localhost:3001/"+JSON.parse(txt).vFile;//'https://littleflute.github.io/ted1/docs/61/v0.mp4';  
+                             
+                             blo0.blLink(_v,"id4V3001","video",src,"yellow"); 
+                            // blo0.blPlayer0(_v,_v.id+"player",src);
+                            // _v.d = blo0.blPlayer("id_4_blPlayerTest","player",src,555,50,444,333,"lightblue"); _v
+                            blo0.blSandBox(_v,"id4SandBox");
+
                         };
                         blo0.blAjx(this,url);
                     }
