@@ -66,7 +66,7 @@ body {
 <div class="topnav" id="myTopnav">
   <a href="../../">Home</a>
   <a href="../spider">spider</a>
-  <a href="#"  class="active">21voa_bv0.51</a>  
+  <a href="#"  class="active">21voa_bv0.52</a>  
   <a href="javascript:void(0);" class="icon" onclick="myFunction()">
     <i class="fa fa-bars"></i>
   </a>
@@ -204,18 +204,135 @@ function step4(d,txt){
     const vbls = blo0.blDiv(d,d.id+"vbls",txt,blGrey[1]); 
     const tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[2]);
     const v1 = blo0.blDiv(d,d.id+"v1","v1",blGrey[3]);
-    const b = blo0.blBtn(tb,tb.id+"b","makeMp4",blColor[6]); 
-    b.onclick = function(){
-        v1.innerHTML = Date() + o.bls;
-        
-        var w = {};
-        w._2do = function(txt){  
-            v1.innerHTML = txt; 
+    const b8080 = blo0.blBtn(tb,tb.id+"b8080","8080CreateV",blColor[6]);  
+    b8080.onclick = function(){
+      if(!this.md){
+        const C4UI = function(_md){  
+            this.makeUI = function(){
+                const tb = blo0.blDiv(_md,_md.id+"tb","tb","gray");
+                const v = blo0.blDiv(_md,_md.id+"v","v","lightblue"); 
+                var n = 0;
+                for(i in bs){
+                    n++;
+                    var btn = blo0.blBtn(tb,tb.id+bs[i].id,bs[i].name,bs[i].color);
+                    btn.style.float = bs[i].float;
+                    btn.onclick = function(_b,_v,_i){
+                        return function(){
+                            bs[_i].click(_b,_v); 
+                        }
+                    }(btn,v,i)
+                }
+            }
+            const bs = [
+                {
+                    "id":1,
+                    "name":"8080json2video",
+                    "color": "skyblue",
+                    "float": "left",
+                    "click":function(_b,_v){
+                        
+                        this._2do = function(txt){        
+                             _v.innerHTML = txt; 
+                        };
+                        let link = "http://localhost:8080/image/json2video?script=http://localhost:3001/"+o.bls + ".json";
+                        link += "&video="+o.bls + ".mp4";
+                        blo0.blAjx(this,link);
+                    }
+                },
+                {
+                    "id":2,
+                    "name":"3001bls2v",
+                    "color": "cyan",
+                    "float": "left",
+                    "click":function(_b,_v){
+                        _v.innerHTML = this.name;
+                        
+                        var url = "http://localhost:3001/bls2v?bls=http://localhost:3001/"+o.bls + ".json"; 
+                        this._2do = function(txt){         
+                             _v.innerHTML = txt;
+                             blo0.blLink(_v,"id4V3001","video","http://localhost:3001/"+JSON.parse(txt).vFile,"yellow");     
+                        };
+                        blo0.blAjx(this,url);
+                    }
+                },
+            ];
+        }
+        this.nClick = 0;
 
-        }   
-        let link = "http://localhost:8080/image/json2video?script=http://localhost:3001/"+o.bls + ".json";
-        link += "&video="+o.bls + ".mp4";
-        blo0.blAjx(w,link);   
+        this.md = blo0.blMD(this.id+"md","bls2vTest",333,50,500,400,"gray");
+        const oui = new C4UI(this.md);
+        oui.makeUI();        
+      }
+
+      this.nClick++;
+      this.innerHTML = "8080CreateV:" + this.nClick;
+      
+      _on_off_div(this,this.md);
+    }
+    const b3001 = blo0.blBtn(tb,tb.id+"b3001","3001CreateV",blColor[7]);  
+    b3001.onclick = function(){
+      if(!this.md){
+        const C4UI = function(_md){  
+            this.makeUI = function(){
+                const tb = blo0.blDiv(_md,_md.id+"tb","tb","gray");
+                const v = blo0.blDiv(_md,_md.id+"v","v","lightblue"); 
+                var n = 0;
+                for(i in bs){
+                    n++;
+                    var btn = blo0.blBtn(tb,tb.id+bs[i].id,bs[i].name,bs[i].color);
+                    btn.style.float = bs[i].float;
+                    btn.onclick = function(_b,_v,_i){
+                        return function(){
+                            bs[_i].click(_b,_v); 
+                        }
+                    }(btn,v,i)
+                }
+            }
+            const bs = [
+                {
+                    "id":1,
+                    "name":"8080json2video",
+                    "color": "skyblue",
+                    "float": "left",
+                    "click":function(_b,_v){
+                        
+                        this._2do = function(txt){        
+                             _v.innerHTML = txt; 
+                        };
+                        let link = "http://localhost:8080/image/json2video?script=http://localhost:3001/"+o.bls + ".json";
+                        link += "&video="+o.bls + ".mp4";
+                        blo0.blAjx(this,link);
+                    }
+                },
+                {
+                    "id":2,
+                    "name":"3001bls2v",
+                    "color": "cyan",
+                    "float": "left",
+                    "click":function(_b,_v){
+                        _v.innerHTML = this.name;
+                        
+                        var url = "http://localhost:3001/bls2v?bls=http://localhost:3001/"+o.bls + ".json"; 
+                        this._2do = function(txt){         
+                             _v.innerHTML = txt;
+                             blo0.blLink(_v,"id4V3001","video","http://localhost:3001/"+JSON.parse(txt).vFile,"yellow");   
+                        };
+                        blo0.blAjx(this,url);
+                    }
+                },
+            ];
+        }
+        this.nClick = 0;
+
+        this.md = blo0.blMD(this.id+"md","bls2vTest",333,50,500,400,"gray");
+        const oui = new C4UI(this.md);
+        oui.makeUI();        
+      }
+
+      this.nClick++;
+      this.innerHTML = "3001CreateV:" + this.nClick;
+      
+      _on_off_div(this,this.md);
     }
 }
 </script>

@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.7.12"
+var g_ver_blClass = "CBlClass_bv1.7.13"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -2948,9 +2948,9 @@ function CBlClass ()
 		}
 		w3.getHttpObject(icURL + "/comments", _loadIssueComments);	
 	}
-	this.blSandBox = function(sbDiv){
+	this.blSandBox = function(sbDiv,id4SandBox){
 		var d1 = blo0.blDiv(sbDiv,sbDiv.id+"d1","d1",blColor[1]);
-		var ta = blo0.blTextarea(d1,"id_4_ta_blrRunJS","alert(1);",blGrey[3]);
+		var ta = blo0.blTextarea(d1,id4SandBox?id4SandBox:"id_4_ta_blrRunJS","alert(1);",blGrey[3]);
 		ta.style.width="95%"; 
 		ta.style.height="111"+"px"; 
 		d1.ta = ta;
