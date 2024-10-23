@@ -364,6 +364,19 @@
       },
       {
         "v": "v0.11",
+        "fn":"blPlayer",
+        "run": function(v){
+          v.innerHTML = "blPlayer";
+          if(!v.d){
+            var src = 'https://littleflute.github.io/ted1/docs/61/v0.mp4';
+            v.d = blo0.blPlayer("id_4_blPlayerTest","player",src,555,50,444,333,"lightblue"); 
+          }
+          _on_off_div(this,v.d);     
+          this.style.background = this.style.background=="red"?blGrey[5]:blColor[4];
+        }
+      },
+      {
+        "v": "v0.11",
         "fn":"test",
         "run": function(v){ 
           bl$("id_4_ta_blrRunJS").value = v.innerHTML ;
