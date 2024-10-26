@@ -1,4 +1,4 @@
-const tag4xdTest = "xdTest.js_v0.21";
+const tag4xdTest = "xdTest.js_v0.22";
 const assert = require('chai').assert;
 const config = require('../config');
 const ExpressServer = require('../expressServer');
@@ -12,6 +12,13 @@ describe(tag4xdTest, function(){
   
   //
   
+  
+  it('2024/10/26: [bls2v]  node1 end point;' + `
+    test->http://localhost:3001/bls2v?bls=http://localhost:3001/v1.json;
+    test->http://localhost:3001/bls2v?bls=http://localhost:8080/video.json;
+    `,
+    function(){assert.equal("done",'2do');  });
+
   it('2024/10/9 : [mp3lrc2bls]  node1 end point;' + `
     test->http://localhost:3001/mp3lrc2bls?mp3=https://files.21voa.com/audio/202410/two-americans-win-nobel-prize-in-medicine-for-microrna-discovery.mp3&lrc=/static/lrc/two-americans-win-nobel-prize-in-medicine-for-microrna-discovery.lrc&bls=test1;
     test->http://localhost:3001/spider/21voa;
