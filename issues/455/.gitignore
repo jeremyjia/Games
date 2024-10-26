@@ -1,7 +1,6 @@
 *.voa
 *.sh
-*.jpg
-*.html
+*.jpg 
 *.json
 *.mp3
 *.mp4

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自动作曲</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <script src="guitar.js"></script>
+</head>
+<body>
+    <button id="id4Test" onclick="fnTest(this);">test</button>
+    <button id="id4Guitar" onclick="fnGuitar(this);">guitar</button>
+    <script>
+       
+        const fnTest = function(m){        
+             
+                // 初始化 Tone.js
+                Tone.start().then(() => {
+                    // 定义音阶（这里使用 C 大调音阶）
+                    const scale = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'];
+
+                    // 生成随机旋律
+                    function generateMelody(length) {
+                        let melody = [];
+                        for (let i = 0; i < length; i++) {
+                            // 从音阶中随机选择一个音符
+                            let note = scale[Math.floor(Math.random() * scale.length)];
+                            // 随机生成音符的时长（这里使用四分音符、八分音符和十六分音符）
+                            let duration = ['4n', '8n', '16n'][Math.floor(Math.random() * 3)];
+                            melody.push({ note, duration });
+                        }
+                        return melody;
+                    }
+
+                    // 播放旋律
+                    function playMelody(melody) {
+                        let synth = new Tone.Synth().toDestination();
+                        melody.forEach((noteObj, index) => {
+                            // 设置音符和时长
+                            synth.triggerAttackRelease(noteObj.note, Tone.Time(noteObj.duration), index * Tone.Time(noteObj.duration));
+                        });
+                    }
+
+                    // 生成并播放旋律
+                    const melody = generateMelody(16); // 生成 16 个音符的旋律
+                    console.log(melody); // 在控制台打印生成的旋律
+                    playMelody(melody); // 播放生成的旋律
+                }); 
+        }
+    </script>
+</body>
+</html>

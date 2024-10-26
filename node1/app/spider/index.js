@@ -1,7 +1,6 @@
  
-const tagSpider = "index.js bv 0.21";
-
-var http = require('http');
+const tagSpider = "index.js bv 0.22";
+ 
 var fs = require('fs'); 
 
 var e = {};
