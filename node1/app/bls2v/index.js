@@ -1,4 +1,4 @@
-const tag_bls2v= "bls2v/index.js bv0.33";    
+const tag_bls2v= "bls2v/index.js bv0.34";    
 const l = require('../../logger.js'); 
 
 var request = require('request');
@@ -31,12 +31,15 @@ e.createV = function(req,res){
     request(q.bls,function(error,response,body){
         l.tag1(q.bls,"--q.bls---------------------------")  
         if(!error && response.statusCode ==200){
-            //*
+            
             r.vFile = "tmp/v2.mp4";
-            r.body = body; 
+            //r.body = body; 
+            r.bls = {};
+            r.bls.version = JSON.parse(body).request.version;
+            r.bls.music = JSON.parse(body).request.music;
                 
-            r.test = canvas.createImgsFromBls(body);
-
+            //r.test = canvas.createImgsFromBls(body);
+/*
             command.run_Command(r,"ffmpeg",
                 "-framerate 1 -i public/tmp/%03d.png -c:v libx264 -pix_fmt yuv420p public/tmp/v2.mp4");
             //*/
