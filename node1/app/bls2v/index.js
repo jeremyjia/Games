@@ -76,13 +76,28 @@ const downloadAudioFile = function(res,r){
             console.log('MP3文件下载完成!');
             file.end();
             r.Date = Date();
-            res.json(r); 
+            getAudioDuration(filePath,res,r)
+            
         });
     });
 
     }).on('error', (err) => {
         console.error(`下载过程中发生错误: ${err.message}`);
         r.errMsg= err.message;
+        res.json(r); 
+    });
+}
+const getAudioDuration = function(path,res,r){
+    const audioLoader = require('audio-loader');
+
+    audioLoader(path).then(res => {
+        const duration = res.duration;
+        console.log(`音频时长: ${duration}秒`);
+        r.duration = duration;
+        res.json(r); 
+    }).catch(err => {
+        console.error(err);
+        r.errMsg = err.message;
         res.json(r); 
     });
 }
