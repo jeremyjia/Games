@@ -1,4 +1,4 @@
-const tag4xdTest = "xdTest.js_v0.22";
+const tag4xdTest = "xdTest.js_v0.23";
 const assert = require('chai').assert;
 const config = require('../config');
 const ExpressServer = require('../expressServer');
@@ -12,6 +12,12 @@ describe(tag4xdTest, function(){
   
   //
   
+  it('2024/10/27: [mp3lrc2bls]  node1 end point;' + `
+    test->http://localhost:3001/mp3lrc2bls?mp3=https://littleflute.github.io/blcd10/share152/Track%2001.mp3&lrc=https://littleflute.github.io/51voa/special/2021/11/20/anymore-any-longer-and-no-longer.lrc&bls=v1;
+    test->http://localhost:8080/image/json2video?script=http://localhost:3001/v1.json;
+    test->http://localhost:3001/bls2v?bls=http://localhost:3001/v1.json;
+    `,
+    function(){assert.equal("done",'2do');  });
   
   it('2024/10/26: [bls2v]  node1 end point;' + `
     test->http://localhost:3001/bls2v?bls=http://localhost:3001/v1.json;

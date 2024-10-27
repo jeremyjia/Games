@@ -39,11 +39,6 @@ e.createV = function(req,res){
             r.bls.music = JSON.parse(body).request.music;
                 
             downloadAudioFile(res,r);
-            //r.test = canvas.createImgsFromBls(body);
-/*
-            command.run_Command(r,"ffmpeg",
-                "-framerate 1 -i public/tmp/%03d.png -c:v libx264 -pix_fmt yuv420p public/tmp/v2.mp4");
-            //*/
         }
         else{
             r.error = "xxx";
@@ -90,16 +85,42 @@ const downloadAudioFile = function(res,r){
 const getAudioDuration = function(path,res,r){
     const audioLoader = require('audio-loader');
 
-    audioLoader(path).then(res => {
-        const duration = res.duration;
-        console.log(`音频时长: ${duration}秒`);
-        r.duration = duration;
-        res.json(r); 
+    audioLoader(path).then(out => {
+        const duration = out.duration;
+        console.log(`音频时长: ${duration}秒`); 
+        makeVideo(res,r,path,duration);
     }).catch(err => {
         console.error(err);
         r.errMsg = err.message;
         res.json(r); 
     });
+}
+const makeVideo = function(res,r,path,duration){
+    r.makeVideo = Date();
+    r.path = path;
+    r.duration = duration;
+    r.test = canvas.createImgsFromBls("{}",duration);
+
+    command.run_Command(r,"ffmpeg",
+                "-framerate 1 -i public/tmp/%03d.png -c:v libx264 -pix_fmt yuv420p public/tmp/v2.mp4",
+        function(){
+            l.tag1(tag_bls2v,"--nextCommand1---------------------------")
+            command.run_Command(r,"ffmpeg",
+                        "-i public/tmp/v2.mp4 -i public/song.mp3 -c:v libx264 -pix_fmt yuv420p public/tmp/v11.mp4",
+                function(){
+                    l.tag1(tag_bls2v,"--nextCommand2---------------------------")
+
+                });  
+        });  
+     
+
+    /*
+    l.tag1(tag_bls2v,"--f222---------------------------")            
+    //*/
+
+ 
+    res.json(r); 
+
 }
 
 const ffmpegTest = function(){ 
