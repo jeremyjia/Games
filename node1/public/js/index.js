@@ -69,7 +69,7 @@ bl$("bls2vTest").onclick = function(){
 }
 const initTest = function(){
     const bar = bl$("ID4TestBar");
-    const bt1 = blo0.blBtn(bar,bar.id+"1","mp3lrc2vTest",blColor[0]);
+    const bt1 = blo0.blBtn(bar,bar.id+"1","mp3lrc2blsTest",blColor[0]);
     bt1.onclick = function(){
         alert("bt1");
     }
