@@ -75,6 +75,55 @@ const initTest = function(){
         
         _on_off_div(this,this.md);
     }
+    
+    bt2.onclick = function(){
+        if(!this.md){
+            const btns = [
+                {
+                    "id":1,
+                    "name":"test1",
+                    "color": "skyblue",
+                    "float": "left",
+                    "click":function(_b,_v,vsb){
+                        _v.innerHTML = this.name;
+                        
+                        var url = "http://localhost:3001/bls2v?bls=https://littleflute.github.io/Games/Spring/script/video21.json"; 
+                        this._2do = function(txt){        
+                            vsb.ta.value = txt;     
+                            blo0.blLink(_v,"id4V","video",JSON.parse(txt).vFile,"blue");   
+                        };
+                        blo0.blAjx(this,url);
+                    }
+                },
+                {
+                    "id":2,
+                    "name":"test2",
+                    "color": "cyan",
+                    "float": "left",
+                    "click":function(_b,_v,vsb){
+                        _v.innerHTML = this.name;
+                        
+                        var url = "http://localhost:3001/bls2v?bls=http://localhost:3001/bls/v1.json"; 
+                        this._2do = function(txt){        
+                            vsb.ta.value = txt;     
+                            blo0.blLink(_v,"id4V","video",JSON.parse(txt).vFile,"blue");   
+                        };
+                        blo0.blAjx(this,url);
+                    }
+                },
+            ];
+            this.nClick = 0;
+
+            this.md = new C4UI("mp3lrc2blsTest",btns);
+            this.md.makeUI();        
+        }
+
+        this.nClick++;
+        this.innerHTML = "mp3lrc2blsTest:" + this.nClick;
+        
+        _on_off_div(this,this.md);
+    }
+
 
 
 }();
