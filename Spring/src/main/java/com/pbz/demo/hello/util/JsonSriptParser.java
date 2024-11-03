@@ -1169,6 +1169,8 @@ public final class JsonSriptParser {
                 String regex = replaceObj.getString("regex");
                 String target = replaceObj.getString("target");
                 strCurrentSubtitle = FileUtil.ReplaceString(strCurrentSubtitle, regex, target);
+                strLastSubtitle = FileUtil.ReplaceString(strLastSubtitle, regex, target);
+                strNextSubtitle = FileUtil.ReplaceString(strNextSubtitle, regex, target);
             }
         }
         
@@ -1177,7 +1179,8 @@ public final class JsonSriptParser {
             gp2d.setColor(new Color(255, 169, 0));
             gp2d.setFont(new Font("黑体", Font.BOLD, 50));
             int y = 120;
-            for (String line : titleOfLRC.split("\\\\n")) {
+            titleOfLRC = titleOfLRC.replace(FileUtil.linedelimiter, "\n");
+            for (String line : titleOfLRC.split("\n")) {
                 gp2d.drawString(line, 50, y);
                 y += gp2d.getFontMetrics().getHeight();
             }
