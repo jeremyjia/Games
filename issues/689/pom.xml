@@ -57,6 +57,11 @@
 			<artifactId>opencv-platform</artifactId>
 			<version>4.3.0-1.5.3</version>
 		</dependency>
+		<dependency>
+			<groupId>org</groupId>
+			<artifactId>jaudiotagger</artifactId>
+			<version>2.0.3</version>
+		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-all -->
 		<dependency>
@@ -110,6 +115,17 @@
 			<artifactId>json</artifactId>
 			<version>20231013</version>
 		</dependency>
+    <dependency>
+        <groupId>com.jfoenix</groupId>
+        <artifactId>jfoenix</artifactId>
+        <version>8.0.8</version>
+    </dependency>
+    <dependency>
+        <groupId>org.openjfx</groupId>
+        <artifactId>javafx-controls</artifactId>
+        <version>17</version>
+    </dependency>
+
 	</dependencies>
  
 	<build>
