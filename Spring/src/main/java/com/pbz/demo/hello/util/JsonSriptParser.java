@@ -220,6 +220,9 @@ public final class JsonSriptParser {
             if (outputFile.endsWith(".txt")) {
                 String filePath = System.getProperty("user.dir") + "/" + outputFile;
                 strValue = FileUtil.readAllBytes(filePath);
+                if(isWindows) {
+                    strValue = strValue.replace("\r", "");  //替换Windows上回车符  
+                }                
                 strValue = strValue.replace("\n", FileUtil.linedelimiter); // 替换文件的换行符，因为JSON中不能用换行，使用特殊的字符串代表换行，绘制的时候使用
 
             } else {
