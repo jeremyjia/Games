@@ -25,8 +25,6 @@ const initTest = function(){
     const bt1 = blo0.blBtn(bar,bar.id+"bls2vTest","bls2vTest","gray");
     const bt2 = blo0.blBtn(bar,bar.id+"mp3lrc2blsTest","mp3lrc2blsTest","gray");
     bt2.onclick = function(){
-        alert("bt1");
-    }
     
     bt1.onclick = function(){
         if(!this.md){
@@ -63,8 +61,7 @@ const initTest = function(){
                         blo0.blAjx(this,url);
                     }
                 },
-            ];
-            this.nClick = 0;
+            ]            this.nClick = 0
 
             this.md = new C4UI("id4_bls2v",btns);
             this.md.makeUI();        
