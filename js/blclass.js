@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.7.15"
+var g_ver_blClass = "CBlClass_bv1.7.22"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -154,6 +154,83 @@ function CBlClass ()
 	var blScriptName = "noName";
 	var blRed = 120, blGreen=11, blBlue=220;
 	var _ps = []; 
+
+	let nKline = 0;
+	this.blDrawKline = function(ctx,x,y,w,h){		
+		nKline++;
+		ctx.fillStyle = "white"; 
+		ctx.fillRect(x,y,w,h);
+		const drawKlineTest = function(ctx,gN){
+			const dataHistory = [
+			  {
+				"o":100,
+				"c":120,
+				"h":140,
+				"l":90
+			  },
+			  
+			  {
+				"o":110,
+				"c":120,
+				"h":140,
+				"l":90
+			  },
+			  {
+				"o":110,
+				"c":130,
+				"h":140,
+				"l":90
+			  },
+			  {
+				"o":80,
+				"c":130,
+				"h":140,
+				"l":70
+			  }
+			];
+			  ctx.fillStyle = 'blue';
+			  ctx.fillRect(110, 110, 22, 22);
+			  
+			  ctx.fillRect(110+10, 90, 2, 33);
+	  
+			  const x0 = 111;
+			  const y0 = 333;
+			  let xC = x0;
+			  const dx = 50;
+			  const w = 11;
+			  ctx.fillRect(x0, y0, 2,2);
+	  
+			  for(i in dataHistory){
+				xC = x0 + i*dx;
+				ctx.fillRect(xC, y0-dataHistory[i].o, w*2,20);
+				
+				ctx.fillRect(xC+w, y0-dataHistory[i].h, 2,40);
+	  
+			  }
+	  
+			  ctx.fillStyle = 'brown';
+		   
+			  xC += dx;
+			  let oCur = 80;
+			  let yCur = 80 + gN%20;
+			  ctx.fillRect(xC, y0-oCur, w*2,yCur - oCur);
+				
+			  ctx.fillRect(xC+w, y0-123, 2,40);
+		}
+		
+		drawKlineTest(ctx,nKline);
+	}
+	this.blMousePos = function(ctx,x,y,b){
+		if(b){
+			const dd = 21;
+			ctx.fillStyle = "red"; 
+			ctx.fillRect(x,y,1,dd); 
+			ctx.fillRect(x,y,dd,1); 
+			ctx.fillRect(x,y-dd,1,dd); 
+			ctx.fillRect(x-dd,y,dd,1); 
+
+		}
+	}
 
 	this.blh_test_blPaint = function(v){
 		var d = blo0.blPaint("id_4_test_blPaint",50,50,1111,1111); 		
@@ -3897,8 +3974,10 @@ function CBlClass ()
 				ctx.font = "30px Arial";
 				ctx.fillText(nTicks++, 10, 50);
 				ctx.font = "30px Arial";
-				ctx.fillText(bMS, 111, 50);
-				ctx.fillText("["+x+","+y+"]", 222, 50);
+				ctx.fillText("bMS=" + bMS, 111, 50);
+				ctx.fillText("["+x+","+y+"]", 333, 50);
+				blo0.blDrawKline(ctx,33,55,555,444);
+				blo0.blMousePos(ctx,x,y,bMS);
 				
 				for(i in lsOs){
 					lsOs[i].draw_me(cvs); 
