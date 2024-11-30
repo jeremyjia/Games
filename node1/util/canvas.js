@@ -1,4 +1,4 @@
-const tag_util_canvas= "util/canvas.js bv0.21";   
+const tag_util_canvas= "util/canvas.js bv0.22";   
 const l = require('../logger');  
 
 const { createCanvas, loadImage } = require('canvas');
@@ -40,23 +40,20 @@ e.toDraw = function(){
      return "tag_util_canvas" + Date();
 }
 
-e.createImgsFromBls = function(bls){  
-
-    
-
+e.createImgsFromBls = function(bls,seconds){   
     const w = 1920, h = 1040;
     const canvas = createCanvas(w, h);
     const ctx = canvas.getContext('2d');
 
 
 
-    let n = 111;
+    let n = seconds;
     for(var i = 0; i<n; i++){
         
         let num = i +1;
         let paddedNum = num.toString().padStart(3, '0'); 
         
-        ctx.fillStyle = '#FFFFFF';
+        ctx.fillStyle = '#FFFF11';
         ctx.fillRect(0, 0, w, h);
         ctx.beginPath();
         ctx.arc(100, 100, 50, 0, Math.PI * 2, true); // 外圈

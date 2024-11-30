@@ -1,4 +1,4 @@
-const tag_bls2v= "bls2v/index.js bv0.33";    
+const tag_bls2v= "bls2v/index.js bv0.34";    
 const l = require('../../logger.js'); 
 
 var request = require('request');
@@ -31,16 +31,14 @@ e.createV = function(req,res){
     request(q.bls,function(error,response,body){
         l.tag1(q.bls,"--q.bls---------------------------")  
         if(!error && response.statusCode ==200){
-            //*
+            
             r.vFile = "tmp/v2.mp4";
-            r.body = body; 
+            //r.body = body; 
+            r.bls = {};
+            r.bls.version = JSON.parse(body).request.version;
+            r.bls.music = JSON.parse(body).request.music;
                 
-            r.test = canvas.createImgsFromBls(body);
-
-            command.run_Command(r,"ffmpeg",
-                "-framerate 1 -i public/tmp/%03d.png -c:v libx264 -pix_fmt yuv420p public/tmp/v2.mp4");
-            //*/
-            res.json(r); 
+            downloadAudioFile(res,r);
         }
         else{
             r.error = "xxx";
@@ -51,6 +49,79 @@ e.createV = function(req,res){
       }); 
    
 } 
+const downloadAudioFile = function(res,r){
+    const http = require('https');
+    const fs = require('fs'); 
+    const url = r.bls.music;
+    const filePath = './public/song.mp3'; // 保存文件的路径和名称
+
+    const file = fs.createWriteStream(filePath);
+
+    http.get(url, (response) => {
+    response.setEncoding('binary');
+    let data = '';
+
+    response.on('data', (chunk) => {
+        data += chunk;
+    });
+
+    response.on('end', () => {
+        file.write(data, 'binary', (err) => {
+            if (err) throw err;
+            console.log('MP3文件下载完成!');
+            file.end();
+            r.Date = Date();
+            getAudioDuration(filePath,res,r)
+            
+        });
+    });
+
+    }).on('error', (err) => {
+        console.error(`下载过程中发生错误: ${err.message}`);
+        r.errMsg= err.message;
+        res.json(r); 
+    });
+}
+const getAudioDuration = function(path,res,r){
+    const audioLoader = require('audio-loader');
+
+    audioLoader(path).then(out => {
+        const duration = out.duration;
+        console.log(`音频时长: ${duration}秒`); 
+        makeVideo(res,r,path,duration);
+    }).catch(err => {
+        console.error(err);
+        r.errMsg = err.message;
+        res.json(r); 
+    });
+}
+const makeVideo = function(res,r,path,duration){
+    r.makeVideo = Date();
+    r.path = path;
+    r.duration = duration;
+    r.test = canvas.createImgsFromBls("{}",duration);
+
+    command.run_Command(r,"ffmpeg",
+                "-framerate 1 -i public/tmp/%03d.png -c:v libx264 -pix_fmt yuv420p public/tmp/v2.mp4",
+        function(){
+            l.tag1(tag_bls2v,"--nextCommand1---------------------------")
+            command.run_Command(r,"ffmpeg",
+                        "-i public/tmp/v2.mp4 -i public/song.mp3 -c:v libx264 -pix_fmt yuv420p public/tmp/v11.mp4",
+                function(){
+                    l.tag1(tag_bls2v,"--nextCommand2---------------------------")
+
+                });  
+        });  
+     
+
+    /*
+    l.tag1(tag_bls2v,"--f222---------------------------")            
+    //*/
+
+ 
+    res.json(r); 
+
+}
 
 const ffmpegTest = function(){ 
 
