@@ -7,6 +7,7 @@ from flask import Flask, jsonify
 import cv2
 import os
 import numpy as np
+import drawAKlineModule as dkl
 
 
 app = Flask(__name__)
@@ -47,8 +48,10 @@ def get_data():
     param1 = request.args.get('param1', '0.8')
     param2 = request.args.get('param2', '100') #blue
     print(param1+'_'+param2)
-    filename='test.jpg'
-    image_path = os.path.join(app.static_folder, filename)
+    dkl.generate_kline_picture()
+    filename='kline.jpg'
+    #image_path = os.path.join(app.static_folder, filename)
+    image_path = os.path.join(app.root_path, filename)
     img = cv2.imread(image_path)
     image = np.power(img, float(param1))
     #将图片转换为NumPy数组
