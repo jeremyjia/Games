@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request
+import configparser
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 from io import BytesIO
@@ -7,9 +8,11 @@ from flask import Flask, jsonify
 import cv2
 import os
 import numpy as np
+import drawAKlineModule as dkl
 
 
 app = Flask(__name__)
+PLUGIN_NAME = 0
 
 @app.route('/')
 def index():
@@ -49,6 +52,16 @@ def get_data():
     print(param1+'_'+param2)
     filename='test.jpg'
     image_path = os.path.join(app.static_folder, filename)
+    
+    if PLUGIN_NAME == 0:
+        print("call cat plugin")
+    elif PLUGIN_NAME == 1:
+        dkl.generate_kline_picture()
+        filename='kline.jpg'
+        image_path = os.path.join(app.root_path, filename)
+    else:
+        print("Not support!")
+
     img = cv2.imread(image_path)
     image = np.power(img, float(param1))
     #将图片转换为NumPy数组
@@ -69,4 +82,9 @@ def numpy_to_base64(image_np):
     return image_base4
 
 if __name__ == '__main__':
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    global plugin_name
+    PLUGIN_NAME = int(config['plugin']['name'])
+    print(PLUGIN_NAME)
     app.run(debug=True)
