@@ -9,7 +9,7 @@ import cv2
 import os
 import numpy as np
 import drawAKlineModule as dkl
-
+import plxRealDataKline as dklm
 
 app = Flask(__name__)
 
@@ -53,24 +53,22 @@ def get_image_data():
     param1 = request.args.get('param1', '0.8')
     param2 = request.args.get('param2', '100') #blue
     print(param1+'_'+param2)
-    
-    filename='test.jpg'
-    image_path = os.path.join(app.static_folder, filename)    
+   
+    image_folder_path = app.root_path
     pluginId = global_plugin_data['plunginid']
     
-    if pluginId == 1:
-        dkl.generate_kline_picture()
-        filename='kline.jpg'
-        image_path = os.path.join(app.root_path, filename)
-    elif pluginId == 2:
-        dkl.generate_last_column_kline_picture()
-        filename='kline_column.jpg'
-        image_path = os.path.join(app.root_path, filename)
+    if pluginId == 1:      
+        filename = dkl.generate_kline_picture()
+    elif pluginId == 2:      
+        filename = dkl.generate_last_column_kline_picture()
     elif pluginId == 3:
-         print("Not support yet!")
+         filename = dklm.generate_kline_real_data_picture()   
     else:
+        image_folder_path = app.static_folder
+        filename='test.jpg'
         print("Use default cat image!")
 
+    image_path = os.path.join(image_folder_path, filename)
     img = cv2.imread(image_path)
     image = np.power(img, float(param1))
     #将图片转换为NumPy数组
