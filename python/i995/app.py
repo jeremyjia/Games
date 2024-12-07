@@ -53,9 +53,9 @@ def get_image_data():
     param1 = request.args.get('param1', '0.8')
     param2 = request.args.get('param2', '100') #blue
     print(param1+'_'+param2)
-    filename='test.jpg'
-    image_path = os.path.join(app.static_folder, filename)
     
+    filename='test.jpg'
+    image_path = os.path.join(app.static_folder, filename)    
     pluginId = global_plugin_data['plunginid']
     
     if pluginId == 1:
@@ -63,7 +63,11 @@ def get_image_data():
         filename='kline.jpg'
         image_path = os.path.join(app.root_path, filename)
     elif pluginId == 2:
-        print("Not support!")
+        dkl.generate_last_column_kline_picture()
+        filename='kline_column.jpg'
+        image_path = os.path.join(app.root_path, filename)
+    elif pluginId == 3:
+         print("Not support yet!")
     else:
         print("Use default cat image!")
 
