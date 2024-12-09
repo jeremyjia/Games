@@ -18,10 +18,10 @@ def generate_all_random_data(num_days):
 
 
 def generate_kline_picture():
-    df = generate_all_random_data(10)
+    df = generate_all_random_data(20)
     #使用mplfinance保存绘制的K线图
     mpf.plot(df, type='candle', style='charles', volume=True, title='Stock Price K-Line Chart', ylabel='Price',savefig='kline.jpg')
-    return 0
+    return 'kline.jpg'
 
 
 
@@ -41,7 +41,7 @@ def generate_last_column_random_data(num_days):
 def generate_last_column_kline_picture():
     df = generate_last_column_random_data(6)
     mpf.plot(df, type='candle', style='charles', volume=True, title='Stock Price K-Line Chart', ylabel='Price', ylim=[10, 200],savefig='kline_column.jpg')
-    return 0
+    return 'kline_column.jpg'
 
 
 
