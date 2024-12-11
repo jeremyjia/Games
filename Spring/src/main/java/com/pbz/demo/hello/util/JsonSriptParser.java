@@ -220,6 +220,9 @@ public final class JsonSriptParser {
             if (outputFile.endsWith(".txt")) {
                 String filePath = System.getProperty("user.dir") + "/" + outputFile;
                 strValue = FileUtil.readAllBytes(filePath);
+                if(isWindows) {
+                    strValue = strValue.replace("\r", "");  //替换Windows上回车符  
+                }                
                 strValue = strValue.replace("\n", FileUtil.linedelimiter); // 替换文件的换行符，因为JSON中不能用换行，使用特殊的字符串代表换行，绘制的时候使用
 
             } else {
@@ -1169,6 +1172,8 @@ public final class JsonSriptParser {
                 String regex = replaceObj.getString("regex");
                 String target = replaceObj.getString("target");
                 strCurrentSubtitle = FileUtil.ReplaceString(strCurrentSubtitle, regex, target);
+                strLastSubtitle = FileUtil.ReplaceString(strLastSubtitle, regex, target);
+                strNextSubtitle = FileUtil.ReplaceString(strNextSubtitle, regex, target);
             }
         }
         
@@ -1177,7 +1182,8 @@ public final class JsonSriptParser {
             gp2d.setColor(new Color(255, 169, 0));
             gp2d.setFont(new Font("黑体", Font.BOLD, 50));
             int y = 120;
-            for (String line : titleOfLRC.split("\\\\n")) {
+            titleOfLRC = titleOfLRC.replace(FileUtil.linedelimiter, "\n");
+            for (String line : titleOfLRC.split("\n")) {
                 gp2d.drawString(line, 50, y);
                 y += gp2d.getFontMetrics().getHeight();
             }
