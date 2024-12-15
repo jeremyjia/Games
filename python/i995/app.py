@@ -56,6 +56,7 @@ def get_image_data():
    
     image_folder_path = app.root_path
     pluginId = global_plugin_data['plunginid']
+    print("plunginid:"+ str(pluginId))
     
     if pluginId == 1:      
         filename = dkl.generate_kline_picture()
@@ -79,7 +80,7 @@ def get_image_data():
     image_array = np.clip(image_array, 0, 255)
     #cv2.imwrite(r"1_"+filename, image)
     img_str = numpy_to_base64(image_array)
-    print(img_str)
+    #print(img_str)
     return f'<img src="data:image/png;base64,{img_str}">'
 
 
@@ -114,4 +115,6 @@ def numpy_to_base64(image_np):
 if __name__ == '__main__':
     
     global_plugin_data = load_config()
+    id = global_plugin_data['plunginid']
+    print(id)
     app.run(debug=True, port=5000,use_reloader=False, threaded=True)
