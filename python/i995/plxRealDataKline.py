@@ -53,7 +53,7 @@ def generate_kline_real_data_picture():
     mc = mpf.make_marketcolors(up='red', down='green', inherit=True)               
     mpf_style = mpf.make_mpf_style(marketcolors=mc, base_mpl_style='seaborn', rc={'font.size': 8})
     #mpf.plot(result, type='candle', mav=mav_arr, style=mpf_style, volume=True, title='Stock Price K-Line Chart', ylabel='Price',figscale=1.2)
-    mpf.plot(result, type='candle', mav=mav_arr, style=mpf_style, volume=True, title='Stock Price K-Line Chart', ylabel='Price',figscale=1.2,savefig='kline_real_data.jpg')
+    mpf.plot(result, type='candle', mav=mav_arr, style=mpf_style, volume=True, title=stockID+' Stock Price K-Line Chart', ylabel='Price',figscale=1.2,savefig='kline_real_data.jpg')
     
     # 登出系统
     bs.logout()
