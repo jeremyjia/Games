@@ -37,6 +37,13 @@
             background-color: #0000ff;
             color: #ffffff;  /* 高亮颜色 */
         }
+        .timerStick { 
+            position: absolute;
+            width: 2px;
+            top: 233px;
+            left: 50px;
+            border: #11f solid 1px;
+        }
     </style>
 </head>
 <body>
@@ -45,6 +52,8 @@
     <div class="lyrics-container">
         <div class="lyrics-text" id="lyrics"></div>
         <div class="xdTest" id="id4Test"></div>
+        
+        <div class = "timerStick"  id="id4Stick">movestick</div>
         <div class="toolbar" id="id4Toolbar">
             <button id="id4btnStart">start</button>
         </div>
@@ -54,7 +63,13 @@
         // 初始化 id4Test
         function initTest() { 
             const btnStart = document.getElementById("id4btnStart"); 
+            const dStick = document.getElementById("id4Stick"); 
+            dStick.toMove = function(me,myTimer){
+                me.innerHTML = myTimer.getStep();  
+                myTimer.moveObj(me);
+            }
             btnStart.onclick = function(){
+                musicTimer.clickTimer(btnStart,dStick);
                 const lyricsText = "1111222233334444";
                 const lyricsElement = document.getElementById("id4Test");
                 
@@ -110,6 +125,37 @@
         initTest(); 
         initLyrics();
         startKaraoke();
+        const musicTimer = function(){ 
+            let o = {};
+            o.id = "1234";
+            o.clickTimer = function(btnTimer,moveStick){
+                if(!bIsRunning) {
+                    toRun(moveStick,100);
+                    btnTimer.innerHTML = "stop";
+                    nStep = 0;
+                }
+                else{
+                    btnTimer.innerHTML = "start";
+                }
+                bIsRunning = !bIsRunning; 
+            }
+            o.getStep = function(){ return nStep;}
+            o.moveObj = function(oDiv){
+                oDiv.style.left = (50 + nStep*4) + 'px';
+            }
+            
+            let toRun = function(moveStick,nTimeout){
+                nStep++;
+                setTimeout(() => {
+                    if(moveStick.toMove) moveStick.toMove(moveStick,o);
+                    if(bIsRunning) toRun(moveStick,nTimeout);
+                }, nTimeout); 
+            }
+
+            let nStep = 0;
+            let bIsRunning = false;
+            return o;      
+        }();
     </script>
 </body>
 </html>
