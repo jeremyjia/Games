@@ -6,16 +6,36 @@
             font-size: 48px;
             font-weight: bold;
             text-align: center;
+            border: #666 solid 1px;
             margin: 50px;
         }
         
         .lyrics-text span {
             color: #666;  /* 默认颜色 */
             transition: color 1.3s ease;  /* 添加颜色过渡效果 */
+            border: #66f solid 1px;
         }
         
         .lyrics-text span.active {
-            color: #ff0000;  /* 高亮颜色 */
+            color: #ff00ff;  /* 高亮颜色 */
+        }
+        .xdTest span {
+            color: #a66;  /* 默认颜色 */
+            transition: color 1.3s ease;  /* 添加颜色过渡效果 */
+            border: #66f solid 1px;
+            background-color: #666;
+            width: 40px;
+            top: 333px;
+            left: 50px;
+            position: absolute;
+        }
+        .xdTest span.green {
+            color: #ffffff;  /* 高亮颜色 */
+            background-color: #00ff00;
+        }
+        .xdTest span.blue {
+            background-color: #0000ff;
+            color: #ffffff;  /* 高亮颜色 */
         }
     </style>
 </head>
@@ -24,9 +44,45 @@
 
     <div class="lyrics-container">
         <div class="lyrics-text" id="lyrics"></div>
+        <div class="xdTest" id="id4Test"></div>
+        <div class="toolbar" id="id4Toolbar">
+            <button id="id4btnStart">start</button>
+        </div>
     </div>
 
     <script>
+        // 初始化 id4Test
+        function initTest() { 
+            const btnStart = document.getElementById("id4btnStart"); 
+            btnStart.onclick = function(){
+                const lyricsText = "1111222233334444";
+                const lyricsElement = document.getElementById("id4Test");
+                
+                // 将每个字符用span包裹
+                lyricsElement.innerHTML = lyricsText.split('').map(char => 
+                    `<span>${char}</span>`
+                ).join('');
+                const spans = document.querySelectorAll("#id4Test span");
+                
+                spans.forEach((span, index) => { 
+                        span.style.left = (50 + index*40) + 'px'; 
+                });
+
+                startXD();
+            }
+        }
+        // xd启动动画
+        function startXD() {
+            const spans = document.querySelectorAll("#id4Test span");
+            
+            spans.forEach((span, index) => {
+                // 为每个字符设置延迟动画
+                setTimeout(() => {  
+                    span.style.left = (50 + index*40) + 'px';
+                    span.classList.add("blue"); 
+                }, index*300);  // 每个字符间隔300ms
+            });
+        }
         // 初始化歌词
         function initLyrics() {
             const lyricsText = "轻轻敲醒沉睡的心灵";
@@ -51,6 +107,7 @@
         }
 
         // 初始化并启动
+        initTest(); 
         initLyrics();
         startKaraoke();
     </script>
