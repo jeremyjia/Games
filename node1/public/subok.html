@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .lyrics-container {
+            font-size: 48px;
+            font-weight: bold;
+            text-align: center;
+            margin: 50px;
+        }
+        
+        .lyrics-text span {
+            color: #666;  /* 默认颜色 */
+            transition: color 1.3s ease;  /* 添加颜色过渡效果 */
+        }
+        
+        .lyrics-text span.active {
+            color: #ff0000;  /* 高亮颜色 */
+        }
+    </style>
+</head>
+<body>
+    from deepseek. 2025.1.29 Wed Beijing.
+
+    <div class="lyrics-container">
+        <div class="lyrics-text" id="lyrics"></div>
+    </div>
+
+    <script>
+        // 初始化歌词
+        function initLyrics() {
+            const lyricsText = "轻轻敲醒沉睡的心灵";
+            const lyricsElement = document.getElementById("lyrics");
+            
+            // 将每个字符用span包裹
+            lyricsElement.innerHTML = lyricsText.split('').map(char => 
+                `<span>${char}</span>`
+            ).join('');
+        }
+
+        // 启动动画
+        function startKaraoke() {
+            const spans = document.querySelectorAll("#lyrics span");
+            
+            spans.forEach((span, index) => {
+                // 为每个字符设置延迟动画
+                setTimeout(() => {
+                    span.classList.add("active");
+                }, index * 300);  // 每个字符间隔300ms
+            });
+        }
+
+        // 初始化并启动
+        initLyrics();
+        startKaraoke();
+    </script>
+</body>
+</html>
