@@ -63,7 +63,11 @@
                 drawPolygon();
             }
         });
-
+        document.addEventListener('dblclick', function() {
+            clickData.length = 0;
+            updateDataDisplay();
+            clearCanvas();
+        });
         // 绘制多边形
         function drawPolygon() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
