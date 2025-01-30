@@ -3,11 +3,11 @@
 <head>
     <style>
         .lyrics-container {
-            font-size: 48px;
+            font-size: 22px;
             font-weight: bold;
             text-align: center;
             border: #666 solid 1px;
-            margin: 50px;
+            margin: 2px;
         }
         
         .lyrics-text span {
@@ -25,8 +25,8 @@
             border: #66f solid 1px;
             background-color: #666;
             width: 40px;
-            top: 333px;
-            left: 50px;
+            top: 11px;
+            left: 350px;
             position: absolute;
         }
         .xdTest span.green {
@@ -44,6 +44,25 @@
             left: 50px;
             border: #11f solid 1px;
         }
+        .cMusicPage {
+            position: absolute;
+            width: 222px;
+            top: 233px;
+            left: 50px;
+            border: #1af solid 1px;
+
+        }
+        #id4btnStart {
+            position: fixed; /* 固定定位 */
+            bottom: .41%;  
+            left: 50%; /* 水平方向居中，先偏移50% */
+            width: 20%;
+            height: 8%;
+            transform: translateX(-50%); /* 使用transform属性将元素向左移动自身宽度的50%，实现真正居中 */
+            padding: 10px 20px; /* 内边距，可以根据需要调整 */
+            font-size: 32px; /* 字体大小，可以根据需要调整 */
+            cursor: pointer; /* 鼠标悬停时显示为手形 */
+        }
     </style>
 </head>
 <body>
@@ -53,21 +72,22 @@
         <div class="lyrics-text" id="lyrics"></div>
         <div class="xdTest" id="id4Test"></div>
         
-        <div class = "timerStick"  id="id4Stick">movestick</div>
-        <div class="toolbar" id="id4Toolbar">
-            <button id="id4btnStart">start</button>
-        </div>
     </div>
+    <div class = "cMusicPage"  id="id4MusicPage">musicPage</div>
+    <div class = "timerStick"  id="id4Stick">movestick</div> 
+    <button id="id4btnStart">start</button>
 
     <script>
         // 初始化 id4Test
         function initTest() { 
             const btnStart = document.getElementById("id4btnStart"); 
             const dStick = document.getElementById("id4Stick"); 
+            const dMusicPage = document.getElementById("id4MusicPage"); 
+            oMusicPage.init(dMusicPage);
             dStick.toMove = function(me,myTimer){
                 me.innerHTML = myTimer.getStep();  
                 myTimer.moveObj(me);
-            }
+            } 
             btnStart.onclick = function(){
                 musicTimer.clickTimer(btnStart,dStick);
                 const lyricsText = "1111222233334444";
@@ -80,7 +100,7 @@
                 const spans = document.querySelectorAll("#id4Test span");
                 
                 spans.forEach((span, index) => { 
-                        span.style.left = (50 + index*40) + 'px'; 
+                        span.style.left = (40 + index*40) + 'px'; 
                 });
 
                 startXD();
@@ -121,8 +141,6 @@
             });
         }
 
-        // 初始化并启动
-        initTest(); 
         initLyrics();
         startKaraoke();
         const musicTimer = function(){ 
@@ -156,6 +174,28 @@
             let bIsRunning = false;
             return o;      
         }();
+        //musicTimer
+
+        const oMusicPage = function(){
+            let o = {};
+            o.init = function(dBoss){
+                dBoss.style.left = window.innerWidth*0.05 + "px";
+                dBoss.style.top = window.innerHeight/8 + "px";
+                dBoss.style.width = window.innerWidth*0.9 + "px";
+                dBoss.style.height = window.innerHeight*0.75 + "px";
+                dBoss.style.border = "red 1px solid";
+                dBoss.style.backgroundColor = "lightblue";
+                dBoss.onclick = function(){
+                    dBoss.innerHTML = Date();
+                }
+            }
+            return o;
+        }();
+        //oMusicPage
+
+        
+        // 初始化并启动
+        initTest(); 
     </script>
 </body>
 </html>
