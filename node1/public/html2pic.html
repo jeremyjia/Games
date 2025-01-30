@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Save Webpage as Image</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-VM94ERH9l2fT7Uq9h468l1sX1D9fPKI5p/Y1x0b2hT6L365aE7q5v2n5X30R7Y3e42F+K/031P57m6X7Y/5YQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+    <div id="capture" style="padding:10px; background:#f5da55">
+        <h4 style="color:#000;">Hello world!</h4>
+        <p>This is a simple example of capturing a div and converting it to an image.</p>
+    </div>
+    <button id="save">Save as Image</button>
+    <script>
+        document.getElementById('save').addEventListener('click', function () {
+            var element = document.getElementById('capture');
+            html2canvas(element).then(function (canvas) {
+                // 将canvas转换为图片URL
+                var imgData = canvas.toDataURL('image/png');
+
+                // 创建一个隐藏的<a>元素，用于下载图片
+                var link = document.createElement('a');
+                link.href = imgData;
+                link.download = 'webpage-image.png';
+
+                // 触发点击事件以下载图片
+                link.click();
+            });
+        });
+    </script>
+</body>
+</html>
