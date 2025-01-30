@@ -1,0 +1,100 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .container {
+            margin: 50px auto;
+        }
+        canvas {
+            background: transparent;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <canvas id="karaokeCanvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('karaokeCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // 配置参数
+        const text = "单画布卡拉OK效果";
+        const fontSize = 40;
+        const colors = {
+            base: '#666',      // 基础颜色
+            highlight: '#ff0000' // 高亮颜色
+        };
+
+        // 初始化画布
+        function initCanvas() {
+            ctx.font = `${fontSize}px Arial`;
+            const textWidth = ctx.measureText(text).width;
+            const canvasHeight = fontSize * 2;
+
+            // 处理高清屏适配
+            const scale = window.devicePixelRatio || 1;
+            canvas.width = textWidth * scale;
+            canvas.height = canvasHeight * scale;
+            canvas.style.width = `${textWidth}px`;
+            canvas.style.height = `${canvasHeight}px`;
+            ctx.scale(scale, scale);
+        }
+
+        // 绘制函数
+        function drawFrame(progress) {
+            const canvasWidth = canvas.width / (window.devicePixelRatio || 1);
+            const canvasHeight = canvas.height / (window.devicePixelRatio || 1);
+
+            // 清空画布
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+            // 绘制基础文本
+            ctx.fillStyle = colors.base;
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, 0, canvasHeight/2);
+
+            // 保存画布状态
+            ctx.save();
+            
+            // 设置高亮裁剪区域
+            ctx.beginPath();
+            ctx.rect(0, 0, canvasWidth * progress, canvasHeight);
+            ctx.clip();
+
+            // 绘制高亮文本
+            ctx.fillStyle = colors.highlight;
+            ctx.fillText(text, 0, canvasHeight/2);
+
+            // 恢复画布状态
+            ctx.restore();
+        }
+
+        // 动画控制
+        function animate() {
+            const duration = 3000;
+            const start = Date.now();
+
+            function update() {
+                const elapsed = Date.now() - start;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                drawFrame(progress);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            
+            requestAnimationFrame(update);
+        }
+
+        // 初始化并启动
+        initCanvas();
+        animate();
+        window.addEventListener('resize', initCanvas);
+    </script>
+</body>
+</html>
