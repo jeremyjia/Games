@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Path Drawing</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="drawingCanvas" width="800" height="600"></canvas>
+    <script>
+        window.onload = function() {
+    var canvas = document.getElementById('drawingCanvas');
+    var ctx = canvas.getContext('2d');
+    var points = []; // 存储点击的点
+
+    // 监听鼠标点击事件
+    canvas.addEventListener('click', function(event) {
+        // 获取点击位置相对于Canvas的坐标
+        var rect = canvas.getBoundingClientRect();
+        var x = event.clientX - rect.left;
+        var y = event.clientY - rect.top;
+
+        // 将点击的点添加到数组中
+        points.push({ x: x, y: y });
+
+        // 如果至少有两个点，则绘制路径
+        if (points.length >= 2) {
+            ctx.beginPath();
+            ctx.moveTo(points[points.length - 2].x, points[points.length - 2].y);
+            ctx.lineTo(x, y);
+            ctx.strokeStyle = 'black';
+            ctx.stroke();
+        }
+    });
+
+    // 可选：清空画布并重新开始绘制路径的功能
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        points = []; // 重置点数组
+    }
+
+    // 可选：添加一个按钮来清空画布
+    var clearButton = document.createElement('button');
+    clearButton.innerHTML = 'Clear Canvas';
+    clearButton.onclick = clearCanvas;
+    document.body.appendChild(clearButton);
+};
+    </script>
+</body>
+</html>
