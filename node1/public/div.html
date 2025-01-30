@@ -1,45 +1,135 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>跨平台可拖动DIV</title>
     <style>
-       .hidden {
-            display: none;
+        .fixed-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 600px;
+            height: 80px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            touch-action: none; /* 禁用默认触摸行为 */
         }
-#dynamicDiv {
-    width: 200px;
-    height: 100px;
-    border: 1px solid black;
-    position: absolute; /* Optional: for positioning purposes */
-    background-color: lightgray;
-    text-align: center;
-    line-height: 100px; /* Center text vertically */
-}
+
+        .draggable {
+            position: absolute;
+            width: 100px;
+            height: 60px;
+            background: #2196F3;
+            border-radius: 8px;
+            cursor: grab;
+            user-select: none;
+            transition: transform 0.1s, background 0.3s;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .draggable.active {
+            background: #1976D2;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
-    <button id="toggleButton">Show DIV</button>
-    <div id="dynamicDiv" class="hidden">This is a dynamic DIV</div>
+    <div class="fixed-container">
+        <div class="draggable" id="dragBox">
+            拖动我
+        </div>
+    </div>
 
     <script>
-       document.addEventListener('DOMContentLoaded', (event) => {   
-            const toggleButton = document.getElementById('toggleButton');
-            const dynamicDiv = document.getElementById('dynamicDiv');
+        (function() {
+            const dragBox = document.getElementById('dragBox');
+            const container = document.querySelector('.fixed-container');
+            
+            // 初始化边界参数
+            let minX = 0;
+            let maxX = 0;
+            function updateBoundary() {
+                const containerWidth = container.offsetWidth;
+                const boxWidth = dragBox.offsetWidth;
+                maxX = containerWidth - boxWidth;
+            }
+            updateBoundary();
 
-            toggleButton.addEventListener('click', () => {
-                dynamicDiv.classList.toggle('hidden');
+            // 触摸/鼠标事件通用处理
+            let isDragging = false;
+            let startPos = 0;
+            let initialLeft = 0;
+
+            // 通用坐标获取函数
+            const getClientX = (event) => {
+                return event.touches ? event.touches[0].clientX : event.clientX;
+            };
+
+            // 开始拖动
+            const startDrag = (e) => {
+                isDragging = true;
+                startPos = getClientX(e);
+                initialLeft = dragBox.offsetLeft;
+                dragBox.classList.add('active');
+                
+                // 阻止默认行为（移动端滚动）
+                e.preventDefault();
+            };
+
+            // 处理移动
+            const moveHandler = (e) => {
+                if (!isDragging) return;
+                
+                const currentX = getClientX(e);
+                const deltaX = currentX - startPos;
+                let newLeft = initialLeft + deltaX;
+
+                // 边界约束
+                newLeft = Math.max(minX, Math.min(newLeft, maxX));
+                
+                // 应用新位置
+                dragBox.style.left = `${newLeft}px`;
+            };
+
+            // 结束拖动
+            const endDrag = () => {
+                isDragging = false;
+                dragBox.classList.remove('active');
+            };
+
+            // 事件监听
+            dragBox.addEventListener('mousedown', startDrag);
+            dragBox.addEventListener('touchstart', startDrag);
+
+            document.addEventListener('mousemove', moveHandler);
+            document.addEventListener('touchmove', moveHandler, { passive: false });
+
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchend', endDrag);
+            document.addEventListener('touchcancel', endDrag);
+
+            // 响应式处理
+            window.addEventListener('resize', () => {
+                updateBoundary();
+                // 保持当前相对位置
+                const currentPercent = dragBox.offsetLeft / maxX;
+                updateBoundary(); // 重新计算maxX
+                dragBox.style.left = `${currentPercent * maxX}px`;
             });
 
-            window.addEventListener('click', (event) => {
-                if (event.target !== toggleButton && !dynamicDiv.contains(event.target)) {
-                    dynamicDiv.classList.add('hidden');
-                }
-            });
-
-            // Prevent the click event on the dynamicDiv itself from hiding it
-            dynamicDiv.addEventListener('click', (event) => {
-                event.stopPropagation();
-            });
-       });
+            // 初始化位置
+            dragBox.style.left = '0px';
+        })();
     </script>
 </body>
 </html>
