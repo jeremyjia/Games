@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canvas Path Drawing</title>
+    <title>Fill Polygon by Clicking</title>
     <style>
         canvas {
             border: 1px solid black;
@@ -11,45 +11,62 @@
     </style>
 </head>
 <body>
-    <canvas id="drawingCanvas" width="800" height="600"></canvas>
+    <canvas id="polygonCanvas" width="600" height="400"></canvas>
     <script>
-        window.onload = function() {
-    var canvas = document.getElementById('drawingCanvas');
-    var ctx = canvas.getContext('2d');
-    var points = []; // 存储点击的点
+        const canvas = document.getElementById('polygonCanvas');
+        const ctx = canvas.getContext('2d');
+        let points = [];
 
-    // 监听鼠标点击事件
-    canvas.addEventListener('click', function(event) {
-        // 获取点击位置相对于Canvas的坐标
-        var rect = canvas.getBoundingClientRect();
-        var x = event.clientX - rect.left;
-        var y = event.clientY - rect.top;
+        canvas.addEventListener('click', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
 
-        // 将点击的点添加到数组中
-        points.push({ x: x, y: y });
+            // Add the clicked point to the points array
+            points.push({ x, y });
 
-        // 如果至少有两个点，则绘制路径
-        if (points.length >= 2) {
+            // Redraw the points and lines to show the current polygon
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.beginPath();
-            ctx.moveTo(points[points.length - 2].x, points[points.length - 2].y);
-            ctx.lineTo(x, y);
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.strokeStyle = 'red';
+            ctx.stroke();
+
+            // Draw small circles at each point for better visualization
+            ctx.fillStyle = 'blue';
+            points.forEach(point => ctx.beginPath() && ctx.arc(point.x, point.y, 3, 0, Math.PI * 2) && ctx.fill());
+        });
+
+        canvas.addEventListener('dblclick', (event) => {
+            if (points.length < 3) {
+                alert('You need at least 3 points to form a polygon!');
+                return;
+            }
+
+            // Close the polygon by adding the first point again at the end
+            points.push(points[0]);
+
+            // Fill the polygon
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.closePath();
+            ctx.fillStyle = 'green';
+            ctx.fill();
+
+            // Optionally, stroke the polygon's border for better visualization
             ctx.strokeStyle = 'black';
             ctx.stroke();
-        }
-    });
 
-    // 可选：清空画布并重新开始绘制路径的功能
-    function clearCanvas() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        points = []; // 重置点数组
-    }
-
-    // 可选：添加一个按钮来清空画布
-    var clearButton = document.createElement('button');
-    clearButton.innerHTML = 'Clear Canvas';
-    clearButton.onclick = clearCanvas;
-    document.body.appendChild(clearButton);
-};
+            // Reset the points array for a new polygon
+            points = [];
+        });
     </script>
 </body>
 </html>
