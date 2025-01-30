@@ -2,6 +2,20 @@
 <html>
 <head>
     <style>
+    
+    .hidden {
+        display: none;
+    }
+    
+    #divPars {
+        width: 200px;
+        height: 100px;
+        border: 1px solid black;
+        position: absolute; /* Optional: for positioning purposes */
+        background-color: lightgray;
+        text-align: center;
+        line-height: 100px; /* Center text vertically */
+    }
         .lyrics-container {
             font-size: 22px;
             font-weight: bold;
@@ -51,17 +65,18 @@
             left: 50px;
             border: #1af solid 1px;
 
-        }
-        #id4btnStart {
-            position: fixed; /* 固定定位 */
-            bottom: .41%;  
-            left: 50%; /* 水平方向居中，先偏移50% */
-            width: 20%;
-            height: 8%;
-            transform: translateX(-50%); /* 使用transform属性将元素向左移动自身宽度的50%，实现真正居中 */
-            padding: 10px 20px; /* 内边距，可以根据需要调整 */
-            font-size: 32px; /* 字体大小，可以根据需要调整 */
-            cursor: pointer; /* 鼠标悬停时显示为手形 */
+        }  
+        .cFixedToolbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;       /* 底部高度 */
+            background: #333;   /* 背景颜色 */
+            color: white;       /* 文字颜色 */
+            padding: 20px;      /* 内边距 */
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1); /* 顶部投影 */
+            z-index: 1000;      /* 确保在最上层 */
         }
     </style>
 </head>
@@ -75,7 +90,14 @@
     </div>
     <div class = "cMusicPage"  id="id4MusicPage">musicPage</div>
     <div class = "timerStick"  id="id4Stick">movestick</div> 
-    <button id="id4btnStart">start</button>
+    
+    <div id="divPars" class="hidden">This is a dynamic DIV for Paragraphs</div>
+
+    <!-- 固定底部div -->
+    <div class="cFixedToolbar"> 
+        <button id="id4btnStart">start</button>
+        <button id="togglePars">Pars</button>
+    </div>
 
     <script>
         // 初始化 id4Test
@@ -83,6 +105,27 @@
             const btnStart = document.getElementById("id4btnStart"); 
             const dStick = document.getElementById("id4Stick"); 
             const dMusicPage = document.getElementById("id4MusicPage"); 
+
+            document.addEventListener('DOMContentLoaded', (event) => {   
+                    const toggleButton = document.getElementById('togglePars');
+                    const dynamicDiv = document.getElementById('divPars');
+
+                    toggleButton.addEventListener('click', () => {
+                        dynamicDiv.classList.toggle('hidden');
+                    });
+
+                    window.addEventListener('click', (event) => {
+                        if (event.target !== toggleButton && !dynamicDiv.contains(event.target)) {
+                            dynamicDiv.classList.add('hidden');
+                        }
+                    });
+
+                    // Prevent the click event on the dynamicDiv itself from hiding it
+                    dynamicDiv.addEventListener('click', (event) => {
+                        event.stopPropagation();
+                    });
+            });
+
             oMusicPage.init(dMusicPage);
             dStick.toMove = function(me,myTimer){
                 me.innerHTML = myTimer.getStep();  

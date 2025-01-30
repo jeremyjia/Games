@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+       .hidden {
+            display: none;
+        }
+#dynamicDiv {
+    width: 200px;
+    height: 100px;
+    border: 1px solid black;
+    position: absolute; /* Optional: for positioning purposes */
+    background-color: lightgray;
+    text-align: center;
+    line-height: 100px; /* Center text vertically */
+}
+    </style>
+</head>
+<body>
+    <button id="toggleButton">Show DIV</button>
+    <div id="dynamicDiv" class="hidden">This is a dynamic DIV</div>
+
+    <script>
+       document.addEventListener('DOMContentLoaded', (event) => {   
+            const toggleButton = document.getElementById('toggleButton');
+            const dynamicDiv = document.getElementById('dynamicDiv');
+
+            toggleButton.addEventListener('click', () => {
+                dynamicDiv.classList.toggle('hidden');
+            });
+
+            window.addEventListener('click', (event) => {
+                if (event.target !== toggleButton && !dynamicDiv.contains(event.target)) {
+                    dynamicDiv.classList.add('hidden');
+                }
+            });
+
+            // Prevent the click event on the dynamicDiv itself from hiding it
+            dynamicDiv.addEventListener('click', (event) => {
+                event.stopPropagation();
+            });
+       });
+    </script>
+</body>
+</html>
