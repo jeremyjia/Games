@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        canvas {
+            border: 1px solid #ccc;
+            margin: 20px;
+            background: white;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            background: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="staffCanvas" width="800" height="200"></canvas>
+
+    <script>
+        const canvas = document.getElementById('staffCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 五线谱配置
+        const config = {
+            lineSpacing: 15,      // 线间距
+            staffTop: 80,         // 五线谱顶部起始位置
+            lineWidth: 2,         // 谱线宽度
+            clefWidth: 40,        // 谱号宽度
+            noteRadius: 6,        // 音符半径
+            colors: {
+                staff: '#000',
+                note: '#000',
+                clef: '#000'
+            }
+        };
+
+        // 音符数据示例（C大调音阶）
+        const notes = [
+            { pitch: 'C4', duration: 4 },  // 四分音符
+            { pitch: 'D4', duration: 4 },
+            { pitch: 'E4', duration: 4 },
+            { pitch: 'F4', duration: 4 },
+            { pitch: 'G4', duration: 2 },  // 二分音符
+            { pitch: 'A4', duration: 4 },
+            { pitch: 'B4', duration: 4 },
+            { pitch: 'C5', duration: 1 }   // 全音符
+        ];
+
+        // 初始化画布
+        function initCanvas() {
+            ctx.lineWidth = config.lineWidth;
+            ctx.strokeStyle = config.colors.staff;
+            ctx.fillStyle = config.colors.note;
+        }
+
+        // 绘制五线谱基础线
+        function drawStaffLines() {
+            for(let i = 0; i < 5; i++) {
+                const y = config.staffTop + i * config.lineSpacing;
+                ctx.beginPath();
+                ctx.moveTo(50, y);
+                ctx.lineTo(canvas.width - 50, y);
+                ctx.stroke();
+            }
+        }
+
+        // 绘制高音谱号
+        function drawTrebleClef(x) {
+            ctx.save();
+            ctx.translate(x, config.staffTop - config.lineSpacing);
+            ctx.scale(0.8, 0.8);
+            
+            // 绘制谱号曲线
+            ctx.beginPath();
+            ctx.moveTo(20, 80);
+            ctx.bezierCurveTo(30, 30, 70, 10, 80, 50);
+            ctx.bezierCurveTo(85, 70, 70, 90, 60, 95);
+            ctx.bezierCurveTo(50, 100, 40, 95, 35, 85);
+            ctx.bezierCurveTo(25, 70, 30, 50, 45, 40);
+            ctx.bezierCurveTo(60, 30, 75, 40, 80, 60);
+            
+            // 绘制竖直线
+            ctx.moveTo(15, 10);
+            ctx.lineTo(15, 120);
+            
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // 转换音高到Y坐标
+        function pitchToY(pitch) {
+            const baseNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+            const octave = parseInt(pitch.slice(1));
+            const noteIndex = baseNotes.indexOf(pitch[0]);
+            
+            // 中央C（C4）的位置计算
+            const baseY = config.staffTop + 2 * config.lineSpacing;
+            return baseY - (octave - 4) * 7 * (config.lineSpacing/2) 
+                   - noteIndex * (config.lineSpacing/2);
+        }
+
+        // 绘制音符
+        function drawNote(x, pitch, duration) {
+            const y = pitchToY(pitch);
+            
+            // 绘制符头
+            ctx.beginPath();
+            ctx.ellipse(x, y, config.noteRadius, config.noteRadius*0.8, 0, 0, Math.PI*2);
+            ctx.fill();
+            
+            // 绘制符杆
+            if(duration < 4) {
+                const stemLength = 3.5 * config.lineSpacing;
+                const stemX = x + config.noteRadius;
+                const stemY = y > config.staffTop + 2*config.lineSpacing ? 
+                              y - stemLength : y + stemLength;
+                
+                ctx.beginPath();
+                ctx.moveTo(stemX, y);
+                ctx.lineTo(stemX, stemY);
+                ctx.stroke();
+                
+                // 绘制符尾（八分音符）
+                if(duration === 0.5) {
+                    ctx.beginPath();
+                    ctx.arc(stemX, stemY, 5, -Math.PI/2, Math.PI/2);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        // 绘制调号（C大调示例）
+        function drawKeySignature(x) {
+            // 此处可以扩展绘制升降号
+            ctx.fillStyle = config.colors.staff;
+            ctx.font = '20px Arial';
+            ctx.fillText('♩ = 120', x, config.staffTop - 25);
+        }
+
+        // 主绘制函数
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawStaffLines();
+            drawTrebleClef(60);
+            drawKeySignature(120);
+
+            // 绘制示例音符
+            let xPos = 180;
+            notes.forEach(note => {
+                drawNote(xPos, note.pitch, note.duration);
+                xPos += 50;
+            });
+        }
+
+        // 初始化并绘制
+        initCanvas();
+        draw();
+
+        // 窗口大小变化处理
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth - 40;
+            draw();
+        });
+    </script>
+</body>
+</h
