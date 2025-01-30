@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        /* 新增图片容器样式 */
+        #imageContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            max-width: 100%;
+            max-height: 100%;
+            z-index: 0;
+        }
+
+        /* 调整原有元素的z-index */
+        .contour { z-index: 2; }
+        #dataPanel { z-index: 3; }
+        #canvasOverlay { z-index: 1; }
+        
+        /* 添加文件上传按钮样式 */
+        #uploadBtn {
+            position: fixed;
+            top: 60px;
+            left: 20px;
+            z-index: 4;
+        }
+    </style>
+</head>
+<body>
+    <input type="file" id="uploadBtn" accept="image/*">
+    <div id="dataPanel">点击数据将显示在这里</div>
+    <canvas id="canvasOverlay"></canvas>
+    < img id="imageContainer" alt="背景图片">
+
+    <script>
+        const clickData = [];
+        const canvas = document.getElementById('canvasOverlay');
+        const ctx = canvas.getContext('2d');
+        const imgContainer = document.getElementById('imageContainer');
+        
+        // 图片位置信息存储
+        let imgPosition = {
+            x: 0,
+            y: 0,
+            width: 0,
+            height: 0
+        };
+
+        // 初始化Canvas尺寸
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // 图片加载处理
+        document.getElementById('uploadBtn').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                imgContainer.onload = function() {
+                    // 计算图片显示尺寸
+                    const maxWidth = window.innerWidth * 0.8;
+                    const maxHeight = window.innerHeight * 0.8;
+                    const ratio = Math.min(
+                        maxWidth / this.naturalWidth,
+                        maxHeight / this.naturalHeight
+                    );
+                    
+                    imgPosition.width = this.naturalWidth * ratio;
+                    imgPosition.height = this.naturalHeight * ratio;
+                    imgPosition.x = (window.innerWidth - imgPosition.width) / 2;
+                    imgPosition.y = (window.innerHeight - imgPosition.height) / 2;
+
+                    // 设置图片显示尺寸和位置
+                    imgContainer.style.width = `${imgPosition.width}px`;
+                    imgContainer.style.height = `${imgPosition.height}px`;
+                    imgContainer.style.transform = `translate(${imgPosition.x}px, ${imgPosition.y}px)`;
+                };
+                imgContainer.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // 修改后的点击事件处理
+        document.addEventListener('click', function(e) {
+            // 转换坐标到图片相对位置
+            const imgRect = imgContainer.getBoundingClientRect();
+            const x = e.clientX - imgRect.left;
+            const y = e.clientY - imgRect.top;
+
+            // 检查点击是否在图片范围内
+            if (x < 0 || y < 0 || x > imgRect.width || y > imgRect.height) return;
+
+            // 记录原始图片尺寸的相对坐标
+            const scaleX = imgContainer.naturalWidth / imgRect.width;
+            const scaleY = imgContainer.naturalHeight / imgRect.height;
+            const absoluteX = x * scaleX;
+            const absoluteY = y * scaleY;
+
+            createContour(e.clientX, e.clientY);
+            
+            clickData.push({ 
+                x: absoluteX,
+                y: absoluteY,
+                displayX: x,
+                displayY: y,
+                timestamp: new Date().toISOString()
+            });
+            
+            updateDataDisplay();
+            
+            if (clickData.length >= 3) {
+                drawPolygon();
+            }
+        });
+
+        // 修改后的多边形绘制方法
+        function drawPolygon() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.beginPath();
+            clickData.forEach((point, index) => {
+                const screenX = point.displayX + imgPosition.x;
+                const screenY = point.displayY + imgPosition.y;
+                
+                if (index === 0) {
+                    ctx.moveTo(screenX, screenY);
+                } else {
+                    ctx.lineTo(screenX, screenY);
+                }
+            });
+            ctx.closePath();
+            
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+            ctx.fill();
+            ctx.strokeStyle = '#ff0000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        // 其他原有函数保持不变...
+        // (保持原有的 createContour、updateDataDisplay、exportData 等函数不变)
+    </script>
+</body>
+</html>
