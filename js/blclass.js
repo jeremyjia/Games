@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.7.24"
+var g_ver_blClass = "CBlClass_bv1.7.25"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -293,9 +293,7 @@ function CBlClass ()
 					const audioLinks = Array.from(doc.querySelectorAll('a'))
 						.map(a => a.href)
 						.filter(href => href.toLowerCase().endsWith('.mp3'));
-	
-					// 显示结果
-					const resultDiv = document.getElementById('result');
+	 
 					if (audioLinks.length > 0) {
 						v1.innerHTML = `
 							<h3>找到的MP3链接：</h3>
