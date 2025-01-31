@@ -8,6 +8,7 @@
         }
         canvas {
             background: transparent;
+            border: 1px solid red;
         }
     </style>
 </head>
@@ -18,10 +19,10 @@
 
     <script>
         const canvas = document.getElementById('karaokeCanvas');
-        const ctx = canvas.getContext('2d');
+        const ctx0 = canvas.getContext('2d');
 
         // 配置参数
-        const text = "单画布卡拉OK效果";
+        const text0 = "单画布卡拉OK效果";
         const fontSize = 40;
         const colors = {
             base: '#666',      // 基础颜色
@@ -30,8 +31,8 @@
 
         // 初始化画布
         function initCanvas() {
-            ctx.font = `${fontSize}px Arial`;
-            const textWidth = ctx.measureText(text).width;
+            ctx0.font = `${fontSize}px Arial`;
+            const textWidth = ctx0.measureText(text0).width;
             const canvasHeight = fontSize * 2;
 
             // 处理高清屏适配
@@ -40,21 +41,26 @@
             canvas.height = canvasHeight * scale;
             canvas.style.width = `${textWidth}px`;
             canvas.style.height = `${canvasHeight}px`;
-            ctx.scale(scale, scale);
+            ctx0.scale(scale, scale);
         }
 
-        // 绘制函数
-        function drawFrame(progress) {
+        function clearCanvas(ctx){
             const canvasWidth = canvas.width / (window.devicePixelRatio || 1);
             const canvasHeight = canvas.height / (window.devicePixelRatio || 1);
-
-            // 清空画布
             ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+        }
+        // 绘制函数
+        function drawOKText(cvs,text,progress,x,y) {
+            const ctx = cvs.getContext('2d');
+            const canvasWidth = cvs.width / (window.devicePixelRatio || 1);
+            const canvasHeight = cvs.height / (window.devicePixelRatio || 1);
+ 
 
             // 绘制基础文本
             ctx.fillStyle = colors.base;
             ctx.textBaseline = 'middle';
-            ctx.fillText(text, 0, canvasHeight/2);
+            ctx.fillText(text, x,y);
 
             // 保存画布状态
             ctx.save();
@@ -66,7 +72,7 @@
 
             // 绘制高亮文本
             ctx.fillStyle = colors.highlight;
-            ctx.fillText(text, 0, canvasHeight/2);
+            ctx.fillText(text, x,y);
 
             // 恢复画布状态
             ctx.restore();
@@ -80,8 +86,10 @@
             function update() {
                 const elapsed = Date.now() - start;
                 const progress = Math.min(elapsed / duration, 1);
-                
-                drawFrame(progress);
+                clearCanvas(ctx0);
+                drawOKText(canvas,text0,progress,0,10);
+                drawOKText(canvas,"line2: 号两岸三地",progress,0,33);
+                drawOKText(canvas,"333: 号两岸三地号两岸三地号两岸三地号两岸三地号两岸三地号两岸三地",0.5,0,55);
                 
                 if (progress < 1) {
                     requestAnimationFrame(update);

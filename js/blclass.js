@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.7.22"
+var g_ver_blClass = "CBlClass_bv1.7.23"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -158,7 +158,7 @@ function CBlClass ()
 	let nKline = 0;
 	this.blDrawKline = function(ctx,x,y,w,h){		
 		nKline++;
-		ctx.fillStyle = "white"; 
+		ctx.fillStyle = "gray"; 
 		ctx.fillRect(x,y,w,h);
 		const drawKlineTest = function(ctx,gN){
 			const dataHistory = [
@@ -219,6 +219,36 @@ function CBlClass ()
 		}
 		
 		drawKlineTest(ctx,nKline);
+	}
+	this.blDrawOKText = function(cvs,text,progress,x,y,baseColor,highlightColor,){
+		const ctx = cvs.getContext('2d');
+		ctx.fillStyle = "green"; 
+		ctx.fillRect(x,y,55,55); 
+		
+		const canvasWidth = cvs.width / (window.devicePixelRatio || 1);
+		const canvasHeight = cvs.height / (window.devicePixelRatio || 1);
+
+
+		// 绘制基础文本
+		ctx.fillStyle = baseColor;
+		ctx.textBaseline = 'middle';
+		ctx.fillText(text, x,y);
+		
+		// 保存画布状态
+		ctx.save();
+		
+		// 设置高亮裁剪区域
+		ctx.beginPath();
+		ctx.rect(0, 0, canvasWidth * progress, canvasHeight);
+		ctx.clip();
+
+		// 绘制高亮文本
+		ctx.fillStyle = highlightColor;
+		ctx.fillText(text, x,y);
+
+		// 恢复画布状态
+		ctx.restore();
+             
 	}
 	this.blMousePos = function(ctx,x,y,b){
 		if(b){
@@ -3977,6 +4007,8 @@ function CBlClass ()
 				ctx.fillText("bMS=" + bMS, 111, 50);
 				ctx.fillText("["+x+","+y+"]", 333, 50);
 				blo0.blDrawKline(ctx,33,55,555,444);
+				blo0.blDrawOKText(cvs,"卡拉ok字幕测试。: 号两岸三地号两岸三地号两岸三地号两岸三地号两岸三地号两岸三地",nTicks/100,33,55,"gray","red");
+
 				blo0.blMousePos(ctx,x,y,bMS);
 				
 				for(i in lsOs){
