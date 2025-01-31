@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MP3链接提取</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .mp3-link {
+            color: #0066cc;
+            text-decoration: none;
+            word-break: break-all;
+        }
+        .mp3-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h2>MP3链接提取器</h2>
+    <p>帮我做一个网页，提取下面这个链接的内容，并提取第一个mp3的链接，并生成链接在网页中。https://www.21voa.com/special_english/in-india-sudden-sea-turtle-deaths-cause-concern-93323.html
+        
+    </p>
+    <div id="result">正在获取内容...</div>
+
+    <script>
+        // 使用CORS代理服务
+        const corsProxy = 'https://api.allorigins.win/get?url=';
+        const targetUrl = 'https://www.21voa.com/special_english/in-india-sudden-sea-turtle-deaths-cause-concern-93323.html';
+
+        // 获取并处理内容
+        async function fetchAndParse() {
+            try {
+                // 通过代理获取内容
+                const response = await fetch(corsProxy + encodeURIComponent(targetUrl));
+                const data = await response.json();
+                
+                // 创建临时DOM解析
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(data.contents, 'text/html');
+
+                // 查找所有音频链接
+                const audioLinks = Array.from(doc.querySelectorAll('a'))
+                    .map(a => a.href)
+                    .filter(href => href.toLowerCase().endsWith('.mp3'));
+
+                // 显示结果
+                const resultDiv = document.getElementById('result');
+                if (audioLinks.length > 0) {
+                    resultDiv.innerHTML = `
+                        <h3>找到的MP3链接：</h3>
+                        <a class="mp3-link" href="${audioLinks[0]}" target="_blank">${audioLinks[0]}</a>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '未找到MP3链接';
+                }
+                
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    '获取内容失败，请尝试刷新页面或检查控制台。错误信息：' + error.message;
+            }
+        }
+
+        // 页面加载后自动执行
+        window.onload = fetchAndParse;
+    </script>
+</body>
+</html>

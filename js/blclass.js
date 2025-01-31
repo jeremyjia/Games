@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.7.23"
+var g_ver_blClass = "CBlClass_bv1.7.24"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -262,7 +262,57 @@ function CBlClass ()
 		}
 	}
 
-	this.blh_test_blPaint = function(v){
+	this.blh_test_blSpider = function(b,v){
+		var d = blo0.blSpider("id_4_test_blSpider",50,50,555,111); 		
+		return d;
+	}			
+	this.blSpider = function(_id,_x,_y,_w,_h){ 		 
+		var d= blo0.blMD(_id, "blSpider-"+_id,_x,_y,_w,_h,blGrey[1]);
+		if(!d.load){
+			d.load = true;
+			const tb = blo0.blDiv(d,"id_4_tb_spider","tb","lightgray");
+			const v = blo0.blDiv(d,d.id+"v","v","brown");
+			const v1 = blo0.blDiv(d,d.id+"v1","v1","gray");
+			const targetUrl = 'https://www.21voa.com/special_english/in-india-sudden-sea-turtle-deaths-cause-concern-93323.html';
+			var ta	= blo0.blTextarea(v,v.id+"ta",targetUrl,"grey");
+			ta.style.width="95%"; 
+			ta.style.height="130px"; 
+			const b1 = blo0.blBtn(tb,tb.id+"b1","fetch","green");
+			b1.onclick = async function fetchAndParse() {
+				try {
+					const corsProxy = 'https://api.allorigins.win/get?url=';
+					// 通过代理获取内容
+					const response = await fetch(corsProxy + encodeURIComponent(ta.value));
+					const data = await response.json();
+					
+					// 创建临时DOM解析
+					const parser = new DOMParser();
+					const doc = parser.parseFromString(data.contents, 'text/html');
+	
+					// 查找所有音频链接
+					const audioLinks = Array.from(doc.querySelectorAll('a'))
+						.map(a => a.href)
+						.filter(href => href.toLowerCase().endsWith('.mp3'));
+	
+					// 显示结果
+					const resultDiv = document.getElementById('result');
+					if (audioLinks.length > 0) {
+						v1.innerHTML = `
+							<h3>找到的MP3链接：</h3>
+							<a class="mp3-link" href="${audioLinks[0]}" target="_blank">${audioLinks[0]}</a>
+						`;
+					} else {
+						v1.innerHTML = '未找到MP3链接';
+					}
+					
+				} catch (error) {
+					v1.innerHTML = '获取内容失败，请尝试刷新页面或检查控制台。错误信息：' + error.message;
+				}
+			}			
+		} 
+		return d;
+	}
+	this.blh_test_blPaint = function(b,v){
 		var d = blo0.blPaint("id_4_test_blPaint",50,50,1111,1111); 		
 		return d;
 	}			
@@ -5916,21 +5966,22 @@ _blShowObj2Div = function (oDivBoss,obj)
 		  d.style.backgroundColor = "green";
 		  d.style.color = "yellow";
 		  oBoss.appendChild(d);
-		  b.onclick = function(_thisBtnFun,_thisDivFun){
-			  const _2Ts = ["blPaint"]; 
-			  const _fun2Ts = [blo0.blh_test_blPaint];
+		  const testTargets = ["blPaint","blSpider"]; 
+		  const testMethors = [blo0.blh_test_blPaint,blo0.blh_test_blSpider];
+		  b.onclick = function(_b,_d,_2Ts,_fun2Ts){
 			  for(j in _2Ts){
-				if(_thisBtnFun.id==_2Ts[j]){
+				if(_b.id==_2Ts[j]){
+					_b.j = j;
 					b.style.backgroundColor = "brown";
 					return function(){ 
-						var tv = _fun2Ts[j](_thisDivFun); 
-						_on_off_div(_thisBtnFun,tv);
-						_thisBtnFun.style.background = _thisBtnFun.style.background=="red"?blGrey[5]:blColor[4];
+						var tv = _fun2Ts[_b.j](_b,_d); 
+						_on_off_div(_b,tv);
+						_b.style.background = _b.style.background=="red"?blGrey[5]:blColor[4];
 					}
 				}
 			  }
 			  return function(){}
-		  }(b,d);
+		  }(b,d,testTargets,testMethors);
 
 		 
 		  
