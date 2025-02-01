@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.7.25"
+var g_ver_blClass = "CBlClass_bv1.7.31"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -983,7 +983,7 @@ function CBlClass ()
 			o.drawOnLoop = function(cvs,_thisBLS,x1,y1,x2,y2){		
 				var ctx = cvs.getContext("2d");		
 				if(bRun){ 	
-					const _frms = _thisBLS.getFrames();
+					const _frms = _thisBLS.getScenes();
 					ctx.fillStyle = "lightblue";
 					ctx.fillRect(x1,y1,x2-x1,y2-y1);
 					this.paintCurFrame(ctx,_frms,this.getFrameNo(_frms,n),x1,y1,x2,y2);
@@ -1304,17 +1304,17 @@ function CBlClass ()
 						v.innerHTML = _fs[_i].number;
 						var btnFrameTime = blo0.blBtn(v,"btnFrameTime","frame_time:"+_fs[_i].time,"lightblue");
 						btnFrameTime.style.float = "right";
-						const lsFrameTime = [1,-1,5,-5,10,-10];
-						for(j in lsFrameTime){
-							var a = lsFrameTime[j]>0?"+"+lsFrameTime[j]:lsFrameTime[j];
-							var b = blo0.blBtn(v,"lsFrameTime"+j,a,blGrey[3]);
+						const nFrames = [1,-1,5,-5,10,-10];
+						for(j in nFrames){
+							var a = nFrames[j]>0?"+"+nFrames[j]:nFrames[j];
+							var b = blo0.blBtn(v,"nFrames"+j,a,blGrey[3]);
 							b.style.float = "right";
 							b.onclick = function(_thisBtn,_ls,_j){
 								return function(){
 									_fs[_i].time = Number(_fs[_i].time)+_ls[_j];
 									btnFrameTime.innerHTML ="frame_time:"+_fs[_i].time;
 								}
-							}(b,lsFrameTime,j)
+							}(b,nFrames,j)
 
 						}
 
@@ -7499,7 +7499,7 @@ const gc4BLS = function(){
 
 	const _thisBLS = this;
 	const blsTimer = blo0.blAudioTimer();
-	var lsFrame = [];   
+	var lsScene = [];   
 	var nCurF = -1; 
 	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,sBlsTitle = "...";
 	var msgDbg = "msgBLS"; 
@@ -7539,10 +7539,10 @@ const gc4BLS = function(){
 		ctx.fillText(s, x2-20,y2 - 20);
 		lsso.soDraw(cvs,n,x1,y1,x2,y2); 
 	}
-	this.getFrames = function(){return lsFrame;}
+	this.getScenes = function(){return lsScene;}
 	this._getAllFramesNumber = function(){
 		var n = 0;
-		const l = lsFrame;
+		const l = lsScene;
 		for(i in l){
 			n += l[i].time;
 		}
@@ -7570,7 +7570,7 @@ const gc4BLS = function(){
 		var oldStyle = ctx.fillStyle;
 		
 		if(!blsTimer.isPlaying()){
-			blsTimer.paintCurFrame(ctx,this.getFrames(),nCurF,x1,y1,x2,y2);
+			blsTimer.paintCurFrame(ctx,this.getScenes(),nCurF,x1,y1,x2,y2);
 			_objCmd.drawObjCmdUI(ctx,x1+5,y1-15); 
 		}
 
@@ -7975,43 +7975,45 @@ const gc4BLS = function(){
 
 			 
 			 const split4tb2 = blo0.blDiv(eui.v1,eui.v1.id+"split4tb2","split4tb2","gray");
-			 const tbFrames = blo0.blDiv(eui.v1,eui.v1.id+"tbFrames","blsFrames:","green");
-			 tbFrames.style.color = "white";
+			 const tbScenes = blo0.blDiv(eui.v1,eui.v1.id+"tbScenes","blsScenes:","green");
+			 tbScenes.style.color = "white";
 			 const dAllFrames = blo0.blDiv(eui.v1,"id_4_all_frames","allFrames","lightgray");
 			 const tabFrames = blo0.blDiv(eui.v1,eui.v1.id+"tabFrames","tabFrames:","lightgray");
 			 tabFrames.refreshFrames = function(){
 				tabFrames.innerHTML = "";
 				var lsBtnFrame = [];
-				for(i in lsFrame){ 
+				for(i in lsScene){ 
 				   var b = blo0.blBtn(tabFrames,tabFrames.id+i,i,"purple");
 				   b.style.float = "left";
-				   b.onclick = function(_btn4CurFrame,_i,_lsFrame){
+				   b.onclick = function(_btn4CurFrame,_i,_scs){
 					   return function(){ 
 							nCurF = _i; 
-						   _ui4curFrame(_btn4CurFrame,v4curF,_lsFrame,_i,_thisBLS);
+						   _ui4curFrame(_btn4CurFrame,v4curF,_scs,_i,_thisBLS);
 						   blo0.blMarkBtnInList(_btn4CurFrame,lsBtnFrame,"yellow","grey");
 					   }
-				   }(b,i,lsFrame);
+				   }(b,i,lsScene);
 				   lsBtnFrame.push(b);
 				}
 				dAllFrames.innerHTML = _thisBLS._getAllFramesNumber();
 			 }
-			 const newFrame = blo0.blBtn(tbFrames,tbFrames.id+"newFrame","+Frame","green");
-			 newFrame.style.float = "left";
-			 newFrame.style.color = "white";
-			 newFrame.onclick = function(){
+			 const sc1 = blo0.blBtn(tbScenes,tbScenes.id+"sc1","+scene","green");
+			 sc1.style.float = "left";
+			 sc1.style.color = "white";
+			 sc1.setAttribute('title',"add 1 scene to bls.");
+			 sc1.onclick = function(){
 				var f = {};
 				f.time = 5;
 				f.backgroundColor = "gray"; 
 				f.objects = [];
-				lsFrame.push(f); 
+				lsScene.push(f); 
 				tabFrames.refreshFrames(); 
 			 }
-			 const addMxNFrames = function(){
-				const MxNFrames = blo0.blBtn(tbFrames,tbFrames.id+"MxNFrames","+MxNFromTA","lightgreen");
-				MxNFrames.style.float = "left";
-				MxNFrames.style.color = "white";
-				MxNFrames.onclick = function(){
+			 const addMxNScenes = function(){
+				const MxNScenes = blo0.blBtn(tbScenes,tbScenes.id+"MxNScenes","+MxNFromTA","lightgreen");
+				MxNScenes.style.float = "left";
+				MxNScenes.style.color = "white";
+				MxNScenes.setAttribute('title',"add M scenes to bls, last N Frames per scene.(e.g. fs:5x1;214,11,22)");
+				MxNScenes.onclick = function(){
 					let a = blo0.blGetTa().value;
 					if(a[0]=="f"&&a[1]=="s"&&a[2]==":"){
 						let b = a.split(":");
@@ -8029,19 +8031,19 @@ const gc4BLS = function(){
 							f.objects.push(_newObject("musicNote","1/2/",111+i*10,55+i*10,155,111,25,"0,200,0"));
 							f.objects.push(_newObject("line","1/2/",111+i*10,55+i*10,155,111,25,"220,11,0"));
 							
-							lsFrame.push(f); 
+							lsScene.push(f); 
 						}
 						tabFrames.refreshFrames(); 
 					}
 					else{
-						blo0.blGetTa().value = "fs:5x1;213,11,22";
+						blo0.blGetTa().value = "fs:5x1;214,11,22";
 					}	
 
 				}
-				const backDoor4Frame = blo0.blBtn(tbFrames,"idBackDoor4Frame","backDoor4Frame","gray");
+				const backDoor4Frame = blo0.blBtn(tbScenes,"idBackDoor4Frame","backDoor4Frame","gray");
 				backDoor4Frame.style.float = "left";
 				backDoor4Frame.style.color = "white";
-				backDoor4Frame.f = lsFrame;
+				backDoor4Frame.f = lsScene;
 				backDoor4Frame.onclick = function(){
 					blo0.blGetTa().value = "const b = bl$('idBackDoor4Frame'); \
 						b.onclick = function(){alert(this.id)};"
@@ -8049,7 +8051,25 @@ const gc4BLS = function(){
 
 			 }();
 			 
-			 const blsPlay = blo0.blBtn(tbFrames,tbFrames.id+"btnBlsPlay",blsTimer.isPlaying()?"blsStop":"blsPlay","green");
+			 const btnScene2SameColor = blo0.blBtn(tbScenes,tbScenes.id+"btnScene2SameColor","sameColor","gray");
+			 btnScene2SameColor.style.float = "right";
+			 btnScene2SameColor.style.color = "white";
+			 btnScene2SameColor.setAttribute('title',"set all scenes to the same background color.(sc:214,11,22)");
+			 btnScene2SameColor.onclick = function(){ 
+				let a = blo0.blGetTa().value;
+				if(a[0]=="s"&&a[1]=="c"&&a[2]==":"){
+					let b = a.split(":"); 
+					let sameColor = b[1]; 
+					let l = lsScene; 
+					for(i in l){
+						l[i].backgroundColor = sameColor;
+					} 
+				}
+				else{
+					blo0.blGetTa().value = "sc:214,11,22";
+				}	
+			 }
+			 const blsPlay = blo0.blBtn(tbScenes,tbScenes.id+"btnBlsPlay",blsTimer.isPlaying()?"blsStop":"blsPlay","green");
 			 blsPlay.style.float = "right";
 			 blsPlay.style.color = "white";
 			 blsPlay.onclick = function(){
@@ -8882,14 +8902,14 @@ const gc4BLS = function(){
 		return o;
 	}
 	const _curFrameDown = function(x,y,x1,y1){ 
-		if(nCurF>-1) 		_objCmd.downObjCmd(x,y,x1,y1,lsFrame[nCurF].objects); 
+		if(nCurF>-1) 		_objCmd.downObjCmd(x,y,x1,y1,lsScene[nCurF].objects); 
 	}
 	const _curFrameMove = function(x,y,x1,y1){
-		if(nCurF>-1) 		_objCmd.moveObjCmd(x,y,x1,y1,lsFrame[nCurF].objects); 
+		if(nCurF>-1) 		_objCmd.moveObjCmd(x,y,x1,y1,lsScene[nCurF].objects); 
 	}
 	
 	const _curFrameUp = function(x,y,x1,y1){
-		if(nCurF>-1) 		_objCmd.upObjCmd(x,y,x1,y1,lsFrame[nCurF].objects); 
+		if(nCurF>-1) 		_objCmd.upObjCmd(x,y,x1,y1,lsScene[nCurF].objects); 
 	}
 	
 	
@@ -8906,7 +8926,7 @@ const gc4BLS = function(){
 			s += blsTimer.getFPS();
 			return s;
 		}(); 
-		r.frames 		= lsFrame;		
+		r.frames 		= lsScene;		
 		r.superObjects 	= lsSuperObjects;
 		s.request 		= r;			
 		return s;	
