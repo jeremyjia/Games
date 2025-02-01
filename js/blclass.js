@@ -7624,8 +7624,8 @@ const gc4BLS = function(){
 				blo0.blGetTa().value = JSON.stringify(_makeBLS());	
 			 } 
 
+			 const split4tb1 = blo0.blDiv(eui.v1,eui.v1.id+"split4tb1","split4tb1","gray");
 			 const makeToolbar1 = function(t,_thisBLS){
-				const split4tb1 = blo0.blDiv(eui.v1,eui.v1.id+"split4tb1","split4tb1","gray");
 				
 				const bs1 = [
 					{
@@ -7977,6 +7977,113 @@ const gc4BLS = function(){
 
 			 
 			 const split4tb2 = blo0.blDiv(eui.v1,eui.v1.id+"split4tb2","split4tb2","gray");
+			 const makeToolbar2 = function(t,_myBls){
+				const bs2 = [
+					{
+						"name":"+1x1",
+						"title":"add 1 scene to bls.",
+						"color":"green",
+						"fn4ui": function(_v,_b){  
+							var sc = {};
+							sc.time = 1;
+							sc.backgroundColor = "11,22,33"; 
+							sc.objects = [];
+							lsScene.push(sc); 
+							tabFrames.refreshFrames(); 
+						},
+					},
+					{
+						"name":"+1x5",
+						"title":"add 1 scene to bls, time=5",
+						"color":"green",
+						"fn4ui": function(_v,_b){  
+							var sc = {};
+							sc.time = 5;
+							sc.backgroundColor = "121,22,33"; 
+							sc.objects = [];
+							lsScene.push(sc); 
+							tabFrames.refreshFrames(); 
+						},
+					},
+					{
+						"name":"+MxN",
+						"title":"add M scenes to bls, time=N",
+						"color":"green",
+						"fn4ui": function(_v,_b){  
+							let a = blo0.blGetTa().value;
+							if(a[0]=="f"&&a[1]=="s"&&a[2]==":"){
+								let b = a.split(":");
+								let mnc = b[1].split(";");
+								let c = mnc[0];
+								let d = c.split("x");
+								let m = d[0];
+								let n = d[1];
+								let bkRGB = mnc[1];
+								for(var i = 0; i < m ; i ++){
+									var f = {};
+									f.time = parseInt(n);
+									f.backgroundColor = bkRGB; 
+									f.objects = [];
+									f.objects.push(_newObject("musicNote","1/2/",111+i*10,55+i*10,155,111,25,"0,200,0"));
+									f.objects.push(_newObject("line","1/2/",111+i*10,55+i*10,155,111,25,"220,11,0"));
+									
+									lsScene.push(f); 
+								}
+								tabFrames.refreshFrames(); 
+							}
+							else{
+								blo0.blGetTa().value = "fs:5x1;214,11,22";
+							}	
+						},
+					},
+					{
+						"name":"sameClr",
+						"color":"white",
+						"title":"set all scenes to the same background color.(sc:13,121,22)",
+						"fn4ui": function(_v,_b){ 
+							let a = blo0.blGetTa().value;
+							if(a[0]=="s"&&a[1]=="c"&&a[2]==":"){
+								let b = a.split(":"); 
+								let sameColor = b[1]; 
+								let l = lsScene; 
+								for(i in l){
+									l[i].backgroundColor = sameColor;
+								} 
+							}
+							else{
+								blo0.blGetTa().value = "sc:13,121,22";
+							}	
+						},
+					},
+					{
+						"name":"to do...",
+						"color":"gray",
+						"fn4ui": function(_v,_b){ 
+							_v.innerHTML = Date(); 
+						},
+					},
+				];
+				const tb2 = blo0.blDiv(eui.v1,eui.v1.id+"tb2","tb2","plum");
+				const v4tb2 = blo0.blDiv(eui.v1,eui.v1.id+"v4tb2","v4tb2","Thistle");
+				for(i in bs2){
+					var s = bs2[i].fnInit?bs2[i].fnInit():bs2[i].name;
+					const btn = blo0.blBtn(tb2,tb2.id+bs2[i].name,s,bs2[i].color); 
+					btn.style.float = bs2[i].float?bs2[i].float:"left";
+					btn.setAttribute('title',bs2[i].title?bs2[i].title:"no title yet.");
+					btn.onclick = function(_b,_v,_i){
+						return function(){
+							_v.innerHTML = "";
+							const split4btns = blo0.blDiv(_v,_v.id+"split4btns","split4btns","red");
+							if(bs2[_i].fn4ui) bs2[_i].fn4ui(_v,_b);
+							else{_v.innerHTML = "no fn4ui()"}
+						}
+					}(btn,v4tb2,i);
+
+				}
+
+
+			 }(blsTimer,this);
+
 			 const tbScenes = blo0.blDiv(eui.v1,eui.v1.id+"tbScenes","blsScenes:","green");
 			 tbScenes.style.color = "white";
 			 const dAllFrames = blo0.blDiv(eui.v1,"id_4_all_frames","allFrames","lightgray");
@@ -7998,79 +8105,8 @@ const gc4BLS = function(){
 				}
 				dAllFrames.innerHTML = _thisBLS._getAllFramesNumber();
 			 }
-			 const sc1 = blo0.blBtn(tbScenes,tbScenes.id+"sc1","+scene","green");
-			 sc1.style.float = "left";
-			 sc1.style.color = "white";
-			 sc1.setAttribute('title',"add 1 scene to bls.");
-			 sc1.onclick = function(){
-				var f = {};
-				f.time = 5;
-				f.backgroundColor = "gray"; 
-				f.objects = [];
-				lsScene.push(f); 
-				tabFrames.refreshFrames(); 
-			 }
-			 const addMxNScenes = function(){
-				const MxNScenes = blo0.blBtn(tbScenes,tbScenes.id+"MxNScenes","+MxNFromTA","lightgreen");
-				MxNScenes.style.float = "left";
-				MxNScenes.style.color = "white";
-				MxNScenes.setAttribute('title',"add M scenes to bls, last N Frames per scene.(e.g. fs:5x1;214,11,22)");
-				MxNScenes.onclick = function(){
-					let a = blo0.blGetTa().value;
-					if(a[0]=="f"&&a[1]=="s"&&a[2]==":"){
-						let b = a.split(":");
-						let mnc = b[1].split(";");
-						let c = mnc[0];
-						let d = c.split("x");
-						let m = d[0];
-						let n = d[1];
-						let bkRGB = mnc[1];
-						for(var i = 0; i < m ; i ++){
-							var f = {};
-							f.time = parseInt(n);
-							f.backgroundColor = bkRGB; 
-							f.objects = [];
-							f.objects.push(_newObject("musicNote","1/2/",111+i*10,55+i*10,155,111,25,"0,200,0"));
-							f.objects.push(_newObject("line","1/2/",111+i*10,55+i*10,155,111,25,"220,11,0"));
-							
-							lsScene.push(f); 
-						}
-						tabFrames.refreshFrames(); 
-					}
-					else{
-						blo0.blGetTa().value = "fs:5x1;214,11,22";
-					}	
-
-				}
-				const backDoor4Frame = blo0.blBtn(tbScenes,"idBackDoor4Frame","backDoor4Frame","gray");
-				backDoor4Frame.style.float = "left";
-				backDoor4Frame.style.color = "white";
-				backDoor4Frame.f = lsScene;
-				backDoor4Frame.onclick = function(){
-					blo0.blGetTa().value = "const b = bl$('idBackDoor4Frame'); \
-						b.onclick = function(){alert(this.id)};"
-				}
-
-			 }();
 			 
-			 const btnScene2SameColor = blo0.blBtn(tbScenes,tbScenes.id+"btnScene2SameColor","sameColor","gray");
-			 btnScene2SameColor.style.float = "right";
-			 btnScene2SameColor.style.color = "white";
-			 btnScene2SameColor.setAttribute('title',"set all scenes to the same background color.(sc:13,11,22)");
-			 btnScene2SameColor.onclick = function(){ 
-				let a = blo0.blGetTa().value;
-				if(a[0]=="s"&&a[1]=="c"&&a[2]==":"){
-					let b = a.split(":"); 
-					let sameColor = b[1]; 
-					let l = lsScene; 
-					for(i in l){
-						l[i].backgroundColor = sameColor;
-					} 
-				}
-				else{
-					blo0.blGetTa().value = "sc:13 ,11 ,22";
-				}	
-			 }
+			 
 			 const blsPlay = blo0.blBtn(tbScenes,tbScenes.id+"btnBlsPlay",blsTimer.isPlaying()?"blsStop":"blsPlay","green");
 			 blsPlay.style.float = "right";
 			 blsPlay.style.color = "white";
