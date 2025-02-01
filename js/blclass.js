@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.7.31"
+var g_ver_blClass = "CBlClass_bv1.7.32"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -993,8 +993,8 @@ function CBlClass ()
 				ctx.font = "10px Arial";
 				var s = " Timer: bRun = " + bRun;
 				s += " n = " + n; 
-				s += " t1 = " + t1; 
-				s += " t2 = " + t2;  
+				s += " startTime = " + t1; 
+				s += " curTime = " + t2;  
 				s += " t2-t1 = " + (t2-t1)/1000 + "s";
 				s += " fps = " + fps;
 				ctx.fillText(s, x1,y1 + 20);
@@ -7500,7 +7500,7 @@ const gc4BLS = function(){
 	const _thisBLS = this;
 	const blsTimer = blo0.blAudioTimer();
 	var lsScene = [];   
-	var nCurF = -1; 
+	var iCurScene = -1; 
 	var x1,y1,x2,y2,s = false,e = false,mx1,my1,mx2,my2,sBlsTitle = "...";
 	var msgDbg = "msgBLS"; 
 	const blsAOI = blo0.blAOI();
@@ -7570,14 +7570,16 @@ const gc4BLS = function(){
 		var oldStyle = ctx.fillStyle;
 		
 		if(!blsTimer.isPlaying()){
-			blsTimer.paintCurFrame(ctx,this.getScenes(),nCurF,x1,y1,x2,y2);
+			blsTimer.paintCurFrame(ctx,this.getScenes(),iCurScene,x1,y1,x2,y2);
 			_objCmd.drawObjCmdUI(ctx,x1+5,y1-15); 
 		}
 
-		ctx.fillStyle = "rgb(200,111,1)";//"blue";
-		ctx.font = "30px Arial";
-		var ss = sBlsTitle + " : curFrame = " + nCurF;
-		ctx.fillText(ss, x1,y1);
+		if(iCurScene>-1){
+			ctx.fillStyle = "rgb(200,111,1)";//"blue";
+			ctx.font = "30px Arial";
+			var ss = sBlsTitle + " : curSceneNo=" + iCurScene + " time=" + lsScene[iCurScene].time;
+			ctx.fillText(ss, x1,y1 + 50);
+		}
 
 		blsTimer.drawOnLoop(cvs,this,x1,y1,x2,y2);
 
@@ -7981,18 +7983,18 @@ const gc4BLS = function(){
 			 const tabFrames = blo0.blDiv(eui.v1,eui.v1.id+"tabFrames","tabFrames:","lightgray");
 			 tabFrames.refreshFrames = function(){
 				tabFrames.innerHTML = "";
-				var lsBtnFrame = [];
+				var lsBtn4Scenes = [];
 				for(i in lsScene){ 
 				   var b = blo0.blBtn(tabFrames,tabFrames.id+i,i,"purple");
 				   b.style.float = "left";
-				   b.onclick = function(_btn4CurFrame,_i,_scs){
+				   b.onclick = function(_b,_i,_scs){
 					   return function(){ 
-							nCurF = _i; 
-						   _ui4curFrame(_btn4CurFrame,v4curF,_scs,_i,_thisBLS);
-						   blo0.blMarkBtnInList(_btn4CurFrame,lsBtnFrame,"yellow","grey");
+							iCurScene = _i; 
+						   _ui4CurScene(_b,v4curF,_scs,_i,_thisBLS);
+						   blo0.blMarkBtnInList(_b,lsBtn4Scenes,"yellow","grey");
 					   }
 				   }(b,i,lsScene);
-				   lsBtnFrame.push(b);
+				   lsBtn4Scenes.push(b);
 				}
 				dAllFrames.innerHTML = _thisBLS._getAllFramesNumber();
 			 }
@@ -8054,7 +8056,7 @@ const gc4BLS = function(){
 			 const btnScene2SameColor = blo0.blBtn(tbScenes,tbScenes.id+"btnScene2SameColor","sameColor","gray");
 			 btnScene2SameColor.style.float = "right";
 			 btnScene2SameColor.style.color = "white";
-			 btnScene2SameColor.setAttribute('title',"set all scenes to the same background color.(sc:214,11,22)");
+			 btnScene2SameColor.setAttribute('title',"set all scenes to the same background color.(sc:13,11,22)");
 			 btnScene2SameColor.onclick = function(){ 
 				let a = blo0.blGetTa().value;
 				if(a[0]=="s"&&a[1]=="c"&&a[2]==":"){
@@ -8066,7 +8068,7 @@ const gc4BLS = function(){
 					} 
 				}
 				else{
-					blo0.blGetTa().value = "sc:214,11,22";
+					blo0.blGetTa().value = "sc:13 ,11 ,22";
 				}	
 			 }
 			 const blsPlay = blo0.blBtn(tbScenes,tbScenes.id+"btnBlsPlay",blsTimer.isPlaying()?"blsStop":"blsPlay","green");
@@ -8902,14 +8904,14 @@ const gc4BLS = function(){
 		return o;
 	}
 	const _curFrameDown = function(x,y,x1,y1){ 
-		if(nCurF>-1) 		_objCmd.downObjCmd(x,y,x1,y1,lsScene[nCurF].objects); 
+		if(iCurScene>-1) 		_objCmd.downObjCmd(x,y,x1,y1,lsScene[iCurScene].objects); 
 	}
 	const _curFrameMove = function(x,y,x1,y1){
-		if(nCurF>-1) 		_objCmd.moveObjCmd(x,y,x1,y1,lsScene[nCurF].objects); 
+		if(iCurScene>-1) 		_objCmd.moveObjCmd(x,y,x1,y1,lsScene[iCurScene].objects); 
 	}
 	
 	const _curFrameUp = function(x,y,x1,y1){
-		if(nCurF>-1) 		_objCmd.upObjCmd(x,y,x1,y1,lsScene[nCurF].objects); 
+		if(iCurScene>-1) 		_objCmd.upObjCmd(x,y,x1,y1,lsScene[iCurScene].objects); 
 	}
 	
 	
@@ -8937,9 +8939,9 @@ const gc4BLS = function(){
 		r = msgDbg + " :: v 13 showDebugMsg4BLS: x1y1[" + x1 + ","+ y1 + "]";;
 		return r;
 	}
-	const _ui4curFrame = function(curFrameBtn,_v,f,n,_thisBLS){
+	const _ui4CurScene = function(curFrameBtn,_v,f,n,_thisBLS){
 		_v.innerHTML = "";
-		const btns4CurFrame = [
+		const btns4CurScene = [
 			{	
 				"id": "id_4_time",	
 				"name": "time",
@@ -8956,7 +8958,7 @@ const gc4BLS = function(){
 				"id": "id_4_objects",	
 				"name": "os",
 				"fn4click": function(targetV,myBtn){ 
-					const btns4ObjectsInCurFrame = [
+					const btns4ObjectsInCurScene = [
 						{
 							"id":"id_4_objSprite",
 							"name":"sprite",
@@ -9112,7 +9114,7 @@ const gc4BLS = function(){
 					const split4CurFrame = blo0.blDiv(targetV,targetV.id+"split4CurFrame","split4CurFrame","lightgreen");
 					const tb = blo0.blDiv(targetV,targetV.id+"tb","tb","gray");
 					const v = blo0.blDiv(targetV,targetV.id+"v","v","white");
-					const fnObjectsInCurFrame = function(os){
+					const fnObjectsInCurScene = function(os){
 						for(i in os){
 							const b = blo0.blBtn(tb,tb.id+os[i].id,os[i].name,os[i].bgc);
 							b.style.float = "left";
@@ -9123,15 +9125,15 @@ const gc4BLS = function(){
 								}
 							}(b,os,i);
 						}
-					}(btns4ObjectsInCurFrame);
+					}(btns4ObjectsInCurScene);
 				},
 				"bgc":"Bisque"
 			},
 		];
 		const splitline1 = blo0.blDiv(_v,_v.id+"splitline1","splitline1","green");	
-		const tb = blo0.blDiv(_v,_v.id+"tb4curFrame","tb4curFrame","lightgreen");	
-		const v = blo0.blDiv(_v,_v.id+"v4curFrame","v4curFrame","gray");	
-		const _2_make_ui_4_curFrame = function(ts){
+		const tb = blo0.blDiv(_v,_v.id+"tb4curScene","tb4curScene","lightgreen");	
+		const v4curScene = blo0.blDiv(_v,_v.id+"v4curScene","v4curScene","gray");	
+		const _2_make_ui_4_curScene = function(ts){
 			for(i in ts){ 
 				const b = blo0.blBtn(tb,tb.id+ts[i].id,ts[i].name,ts[i].bgc); 
 				b.style.float = "left";
@@ -9140,9 +9142,9 @@ const gc4BLS = function(){
 						_vTarget.innerHTML = "";
 						_ts[_i].fn4click(_vTarget,_b);
 					}
-				}(b,ts,i,v);
+				}(b,ts,i,v4curScene);
 			}
-		}(btns4CurFrame);
+		}(btns4CurScene);
 
 
 		const fn4settime = function(v){
