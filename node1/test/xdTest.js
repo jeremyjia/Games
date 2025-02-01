@@ -11,10 +11,10 @@ const spiderTest = require('./spider/index.js');
 describe(tag4xdTest, function(){ 
   
   //
-  it('2025/2/1: bls editor can play bls at right FPS;' + `
+  it('T001# 2025/2/1: bls editor can play bls at right FPS;' + `
     test->https://littleflute.github.io/Games/issues/21/index.html;
     `,
-    function(){assert.equal("done",'2do');  });
+    function(){assert.equal("done",'done');  });
 
   it('2024/10/27: [mp3lrc2bls]  node1 end point;' + `
     test->http://localhost:3001/mp3lrc2bls?mp3=https://littleflute.github.io/blcd10/share152/Track%2001.mp3&lrc=https://littleflute.github.io/51voa/special/2021/11/20/anymore-any-longer-and-no-longer.lrc&bls=v1;
