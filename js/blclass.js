@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.7.32"
+var g_ver_blClass = "CBlClass_bv1.7.33"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -902,6 +902,7 @@ function CBlClass ()
 		const r = function() {	
 			var bRun = false;
 			var fps = 1;
+			var spf = 1;
 			var time = 5; //added by jeremyjia
 			var m_bWebsiteAccessible = false;
 			var n = 0; 
@@ -952,6 +953,7 @@ function CBlClass ()
 			}
 			o.setFPS = function(n){
 				fps = n;
+				spf = 1000/n;
 			}
 			o.getFPS = function(){
 				return fps;
@@ -986,7 +988,7 @@ function CBlClass ()
 					const _frms = _thisBLS.getScenes();
 					ctx.fillStyle = "lightblue";
 					ctx.fillRect(x1,y1,x2-x1,y2-y1);
-					this.paintCurFrame(ctx,_frms,this.getFrameNo(_frms,n),x1,y1,x2,y2);
+					this.paintCurFrame(ctx,_frms,this.getFrameNo(_frms,vp.currentTime/spf*1000),x1,y1,x2,y2);
 					_thisBLS.paintSuperObjects(cvs,n);
 				}	
 				ctx.fillStyle = "blue";
@@ -997,7 +999,11 @@ function CBlClass ()
 				s += " curTime = " + t2;  
 				s += " t2-t1 = " + (t2-t1)/1000 + "s";
 				s += " fps = " + fps;
-				ctx.fillText(s, x1,y1 + 20);
+				s += " spf = " + spf;
+				s += " vp.curT = " + vp.currentTime; 
+				ctx.fillText(s, x1,y1 + 44);
+				ctx.fillText(" beatNO = " + vp.currentTime*6/5, x1,y1 + 66);
+				ctx.fillText(" FrameNO = " + vp.currentTime/spf*1000, x1,y1 + 88);
 
 
 				
@@ -7703,7 +7709,7 @@ const gc4BLS = function(){
 					{
 						"name":"rate",
 						"fn4ui": function(v){ 
-							const fs = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,25,30,60,72,76,80,104];
+							const fs = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,25,30,35,60,72,76,80,104];
 							const tb = blo0.blDiv(v,v.id+"tb","tb","Violet"); 
 							for(i in fs){
 								const b = blo0.blBtn(tb,tb.id+i,fs[i],"Fuchsia");
@@ -8056,7 +8062,7 @@ const gc4BLS = function(){
 						},
 					},
 					{
-						"name":"ac1",
+						"name":"cr1",
 						"color":"white",
 						"title":"set every scene to a random background color.",
 						"fn4ui": function(_v,_b){  
@@ -8067,6 +8073,30 @@ const gc4BLS = function(){
 								const b = Math.floor(Math.random() * 256);
 								const rgbColor = `${r},${g},${b}`;
 								l[i].backgroundColor = rgbColor;
+							} 
+						}
+					},
+					{
+						"name":"cr5",
+						"color":"white",
+						"title":"set every 25 scenes to a random background color.",
+						"fn4ui": function(_v,_b){  
+							let l = lsScene; 
+							const rgbR = function(){
+								let r = Math.floor(Math.random() * 256); // 生成0-255之间的随机整数
+								let g = Math.floor(Math.random() * 256);
+								let b = Math.floor(Math.random() * 256); 
+								return `${r},${g},${b}`; 
+							}
+							let rgbColor = rgbR();
+							let j = 1;
+							for(i in l){ 
+								if(j>5){
+									j=1;
+									rgbColor = rgbR();
+								}
+								l[i].backgroundColor = rgbColor;
+								j++;
 							} 
 						}
 					},
