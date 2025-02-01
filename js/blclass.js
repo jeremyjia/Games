@@ -8037,7 +8037,7 @@ const gc4BLS = function(){
 						},
 					},
 					{
-						"name":"sameClr",
+						"name":"ac0",
 						"color":"white",
 						"title":"set all scenes to the same background color.(sc:13,121,22)",
 						"fn4ui": function(_v,_b){ 
@@ -8054,6 +8054,21 @@ const gc4BLS = function(){
 								blo0.blGetTa().value = "sc:13,121,22";
 							}	
 						},
+					},
+					{
+						"name":"ac1",
+						"color":"white",
+						"title":"set every scene to a random background color.",
+						"fn4ui": function(_v,_b){  
+							let l = lsScene; 
+							for(i in l){
+								const r = Math.floor(Math.random() * 256); // 生成0-255之间的随机整数
+								const g = Math.floor(Math.random() * 256);
+								const b = Math.floor(Math.random() * 256);
+								const rgbColor = `${r},${g},${b}`;
+								l[i].backgroundColor = rgbColor;
+							} 
+						}
 					},
 					{
 						"name":"to do...",
