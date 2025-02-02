@@ -143,6 +143,24 @@
         // 文件处理（保持原有逻辑）
         audioFile.addEventListener('change', async (e) => {
             /* 保持原有文件处理逻辑 */
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // 初始化音频上下文
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // 读取并解码音频文件
+            const arrayBuffer = await file.arrayBuffer();
+            audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+            
+            // 获取第一个声道的PCM数据
+            const channelData = audioBuffer.getChannelData(0);
+            
+            // 调整Canvas尺寸并绘制波形
+            initCanvas();
+            drawWaveform(channelData);
+            
+            playBtn.disabled = false;
         });
 
         // 播放控制（保持原有逻辑）
