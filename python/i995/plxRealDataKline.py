@@ -14,7 +14,7 @@ def generate_kline_real_data_picture():
 
     # 获取股票历史交易数据
     # 详细参数含义请参考baostock官方文档
-    stockID = "601857.sh" #中国石油的股票号
+    stockID = "601988.sh" #"601857.sh" #中国石油的股票号
 
     # 获取当前日期和时间
     now = datetime.now()
@@ -23,7 +23,7 @@ def generate_kline_real_data_picture():
 
     rs = bs.query_history_k_data_plus(stockID,
                                     "date,code,open,high,low,close,preclose,volume,amount,pctChg",
-                                    start_date="2024-12-01", end_date=formatted_end_date,
+                                    start_date="2024-10-01", end_date=formatted_end_date,
                                     frequency="d", adjustflag="3")
 
     # 打印结果集
@@ -47,11 +47,20 @@ def generate_kline_real_data_picture():
         result[col] = result[col].astype(float)
 
     print(result)
-    mpf.plot(result, type='candle', style='charles', volume=True, title=stockID+' Stock K-Line Chart', ylabel='Price', savefig='kline_real_data.jpg')
-    #mpf.plot(result, type='candle', style='charles', volume=True, title='Stock Price K-Line Chart', ylabel='Price')
+
+    mav_arr = [5,10,20]  #均线图
+    # 定义自定义样式
+    mc = mpf.make_marketcolors(up='red', down='green', inherit=True)               
+    mpf_style = mpf.make_mpf_style(marketcolors=mc, base_mpl_style='seaborn', rc={'font.size': 8})
+    #mpf.plot(result, type='candle', mav=mav_arr, style=mpf_style, volume=True, title='Stock Price K-Line Chart', ylabel='Price',figscale=1.2)
+    mpf.plot(result, type='candle', mav=mav_arr, style=mpf_style, volume=True, title=stockID+' Stock Price K-Line Chart', ylabel='Price',figscale=1.2,savefig='kline_real_data.jpg')
+    
     # 登出系统
     bs.logout()
 
     return "kline_real_data.jpg"
+
+
+#generate_kline_real_data_picture()
 
 
