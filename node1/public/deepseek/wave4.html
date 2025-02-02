@@ -164,8 +164,73 @@
         });
 
         // 播放控制（保持原有逻辑）
-        async function togglePlayback() { /* 保持原有播放逻辑 */ }
-        function stopPlayback() { /* 保持原有停止逻辑 */ }
+        async function togglePlayback() { /* 保持原有播放逻辑 */
+            if (!isPlaying) {
+                // 确保上下文已激活（关键修复点）
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioContext.state === 'suspended') {
+                    await audioContext.resume();
+                }
+
+                // 创建新音源节点
+                sourceNode = audioContext.createBufferSource();
+                sourceNode.buffer = audioBuffer;
+                sourceNode.connect(audioContext.destination);
+                
+                // 计时系统
+                startTime = audioContext.currentTime;
+                sourceNode.start(0);
+                
+                // 进度更新
+                const updateProgress = () => {
+                    if (!isPlaying) return;
+                    const elapsed = audioContext.currentTime - startTime;
+                    const progressPercent = (elapsed / audioBuffer.duration) * 100;
+                    progress.style.width = `${Math.min(100, progressPercent)}%`;
+                    
+                    if (elapsed < audioBuffer.duration) {
+                        requestAnimationFrame(updateProgress);
+                    } else {
+                        stopPlayback();
+                    }
+                };
+                
+                sourceNode.onended = stopPlayback;
+                isPlaying = true;
+                playBtn.textContent = '暂停';
+                updateProgress();
+            } else {
+                stopPlayback();
+            }
+         }
+        function stopPlayback() { /* 保持原有停止逻辑 */ 
+            if (sourceNode) {
+                sourceNode.stop();
+                sourceNode.disconnect();
+                sourceNode = null;
+            }
+            isPlaying = false;
+            playBtn.textContent = '播放';
+            progress.style.width = '0%';
+        }
+
+        // 播放按钮事件（关键修复点）
+        playBtn.addEventListener('click', async () => {
+            try {
+                await togglePlayback();
+            } catch (error) {
+                alert(`播放失败：${error.message}`);
+                stopPlayback();
+            }
+        });
+
+        // 窗口大小响应
+        window.addEventListener('resize', () => {
+            initCanvas();
+            if(audioBuffer) drawWaveform(audioBuffer.getChannelData(0));
+        });
 
         // 初始化
         initCanvas();
