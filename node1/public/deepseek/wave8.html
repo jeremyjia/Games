@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>MP3波形可视化（最终修复版）</title>
+    <title>MP3波形可视化（稳定版）</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body { margin: 0; padding: 15px; font-family: Arial; }
@@ -27,53 +27,6 @@
     <canvas id="waveform"></canvas>
 
     <script>
-        /*
-        功能验证清单：
-            播放/暂停按钮
-
-            初始状态显示"播放"且禁用
-
-            加载文件后按钮变为可用
-
-            点击"播放"开始播放，按钮变为"暂停"
-
-            点击"暂停"停止播放，按钮恢复"播放"
-
-            进度控制
-
-            播放时进度条平滑前进
-
-            暂停时进度条保持当前位置
-
-            点击波形任意位置立即跳转
-
-            播放完成自动重置到0%
-
-    跨平台测试
-
-            Windows Chrome：连续跳转无卡顿
-
-            macOS Safari：播放中跳转无音爆
-
-            Android Chrome：触摸操作精准
-
-            iOS Safari：锁屏恢复状态正常
-
-            该版本已通过以下测试环境验证：
-
-            Chrome 118 (Windows 11/macOS Ventura)
-
-            Safari 17 (macOS Sonoma/iOS 17)
-
-            Firefox 118 (Windows 11)
-
-            Edge 117 (Windows 11)
-*/
-// A1: 出现了一个新的问题，在波形上点击第一次是可以播放的，点击第二次以后进度条就不显示了，然后播放按钮的切换功能也失灵了。
-// A2: 还是有问题，测试步骤如下，打开mp3文件。然后点击波形第一次播放成功，再点一次，还是播放了，但是进度条已经不见了，然后按钮切换功能也失效。再点波形文件可以继续播放
-// see: wave8.html
-
-
         const canvas = document.getElementById('waveform');
         const ctx = canvas.getContext('2d');
         const audioFile = document.getElementById('audioFile');
@@ -90,7 +43,8 @@
             isProcessing: false,
             startTime: 0,
             currentPosition: 0,
-            duration: 0
+            duration: 0,
+            animationFrameId: null
         };
 
         // 初始化Canvas
@@ -106,63 +60,72 @@
             ctx.fillRect(0, 0, rect.width, rect.height);
         }
 
-        // 安全停止播放
+        // 安全停止播放（增强版）
         function safeStop() {
+            // 清理动画帧和音频资源
+            cancelAnimationFrame(audioState.animationFrameId);
+            
             if (audioState.source) {
                 try {
                     // 保存当前播放位置
                     const elapsed = audioState.context.currentTime - audioState.startTime;
-                    audioState.currentPosition += elapsed;
+                    audioState.currentPosition = Math.min(
+                        audioState.duration, 
+                        audioState.currentPosition + elapsed
+                    );
                     
-                    audioState.source.stop();
+                    // 立即停止音频
+                    audioState.source.stop(0);
                     audioState.source.disconnect();
                 } catch (e) {
                     console.warn('停止错误:', e);
                 }
                 audioState.source = null;
             }
+            
+            // 强制更新UI状态
             audioState.isPlaying = false;
             playBtn.textContent = '播放';
             updateProgressDisplay();
         }
 
-        // 更新进度显示（不依赖实时播放）
+        // 更新进度显示（立即执行）
         function updateProgressDisplay() {
             const progressPercent = (audioState.currentPosition / audioState.duration) * 100;
             progress.style.width = `${Math.min(100, progressPercent)}%`;
         }
 
-        // 创建新音源
+        // 创建新音源（增强版）
         function createSource() {
             audioState.source = audioState.context.createBufferSource();
             audioState.source.buffer = audioState.buffer;
             audioState.source.connect(audioState.context.destination);
             
-            // 播放结束回调
+            // 播放结束回调（带状态验证）
             audioState.source.onended = () => {
-                audioState.isPlaying = false;
-                playBtn.textContent = '播放';
-                audioState.currentPosition = 0;
-                progress.style.width = '0%';
+                if (audioState.isPlaying) { // 仅处理自然结束的情况
+                    safeStop();
+                    audioState.currentPosition = 0;
+                    progress.style.width = '0%';
+                }
             };
         }
 
-        // 精准播放控制
+        // 精准播放控制（最终版）
         async function playFrom(position) {
-            if (audioState.isProcessing) return;
+            if (audioState.isProcessing || !audioState.buffer) return;
             audioState.isProcessing = true;
 
             try {
-                // 停止当前播放
-                if (audioState.source) {
-                    audioState.source.stop();
-                    audioState.source.disconnect();
-                }
+                // 清理前次播放
+                safeStop();
 
-                // 确保音频上下文激活
+                // 初始化音频上下文
                 if (!audioState.context) {
                     audioState.context = new (window.AudioContext || window.webkitAudioContext)();
                 }
+                
+                // 激活音频上下文
                 if (audioState.context.state === 'suspended') {
                     await audioState.context.resume();
                 }
@@ -173,36 +136,40 @@
                 audioState.startTime = audioState.context.currentTime;
                 audioState.source.start(0, position);
                 
-                // 更新状态
+                // 立即更新状态
                 audioState.isPlaying = true;
                 playBtn.textContent = '暂停';
+                progress.style.width = `${(position / audioState.duration) * 100}%`;
                 
                 // 启动实时进度更新
                 updateProgress();
             } catch (error) {
                 showError(`播放失败: ${error.message}`);
+                safeStop();
             } finally {
                 audioState.isProcessing = false;
             }
         }
 
-        // 实时进度更新
+        // 实时进度更新（优化版）
         function updateProgress() {
             if (!audioState.isPlaying) return;
 
             const elapsed = audioState.context.currentTime - audioState.startTime;
             const current = audioState.currentPosition + elapsed;
+            const progressPercent = Math.min(100, (current / audioState.duration) * 100);
             
-            progress.style.width = `${Math.min(100, (current / audioState.duration) * 100)}%`;
+            // 立即更新进度条
+            progress.style.width = `${progressPercent}%`;
 
             if (current < audioState.duration) {
-                requestAnimationFrame(updateProgress);
+                audioState.animationFrameId = requestAnimationFrame(updateProgress);
             } else {
-                audioState.currentPosition = 0; // 播放完成自动重置
+                safeStop();
             }
         }
 
-        // 波形点击处理
+        // 波形点击处理（最终版）
         async function handleSeek(e) {
             const rect = canvas.getBoundingClientRect();
             const clientX = e.clientX || (e.touches?.[0]?.clientX) || 0;
@@ -212,7 +179,7 @@
             await playFrom(seekPosition);
         }
 
-        // 文件处理
+        // 文件处理（稳定版）
         audioFile.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -235,7 +202,7 @@
             }
         });
 
-        // 播放按钮控制
+        // 播放按钮控制（最终版）
         playBtn.addEventListener('click', () => {
             if (!audioState.buffer) return;
             audioState.isPlaying ? safeStop() : playFrom(audioState.currentPosition);
