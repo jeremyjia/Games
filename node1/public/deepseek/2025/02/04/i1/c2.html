@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>股票模拟系统</title>
+    <style>
+        body {
+            display: flex;
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f0f2f5;
+        }
+        .chart-container {
+            flex: 1;
+            margin-right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        canvas {
+            border: 1px solid #e8e8e8;
+            margin-top: 20px;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            padding: 8px 16px;
+            margin: 0 5px;
+            background: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #40a9ff;
+        }
+        .chat-container {
+            width: 320px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        #chatLog {
+            height: 500px;
+            overflow-y: auto;
+            border: 1px solid #e8e8e8;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #fafafa;
+            border-radius: 4px;
+        }
+        .message {
+            margin: 10px 0;
+            padding: 8px 12px;
+            border-radius: 15px;
+            max-width: 85%;
+            word-break: break-word;
+        }
+        .user-message {
+            background: #1890ff;
+            color: white;
+            margin-left: auto;
+        }
+        .bot-message {
+            background: #f0f0f0;
+            border: 1px solid #e8e8e8;
+        }
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+        #chatInput {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #e8e8e8;
+            border-radius: 4px;
+        }
+        .timestamp {
+            font-size: 12px;
+            color: #999;
+            margin: 4px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="chart-container">
+        <div class="controls">
+            <button onclick="startSimulation()">▶ 开始模拟</button>
+            <button onclick="stopSimulation()">⏹ 停止模拟</button>
+        </div>
+        <canvas id="chart"></canvas>
+    </div>
+
+    <div class="chat-container">
+        <h3>💬 对话记录</h3>
+        <div id="chatLog"></div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="输入消息..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()">发送</button>
+        </div>
+    </div>
+
+<script>
+// 初始化画布
+const canvas = document.getElementById('chart');
+const ctx = canvas.getContext('2d');
+canvas.width = 800;
+canvas.height = 500;
+
+// 系统配置
+const config = {
+    candleWidth: 14,
+    maxDataPoints: 60,
+    padding: { top: 40, right: 40, bottom: 60, left: 60 },
+    updateInterval: 1500
+};
+
+// 数据存储
+let data = [];
+let simulationInterval;
+let currentPrice = 100;
+let currentDate = Date.now();
+
+// 生成初始数据
+function generateInitialData() {
+    data = [];
+    for (let i = 0; i < config.maxDataPoints; i++) {
+        data.push(generateCandle());
+    }
+}
+
+// 生成K线数据
+function generateCandle() {
+    const open = currentPrice;
+    const change = (Math.random() - 0.5) * 8 + (Math.random() - 0.5) * 4;
+    const close = open + change;
+    const high = Math.max(open, close) + Math.random() * 6;
+    const low = Math.min(open, close) - Math.random() * 6;
+    
+    const newCandle = {
+        timestamp: currentDate,
+        open: open,
+        high: high,
+        low: low,
+        close: close
+    };
+    
+    currentPrice = close;
+    currentDate += 86400000;
+    return newCandle;
+}
+
+// 绘制K线图
+function drawChart() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 计算价格范围
+    const prices = data.flatMap(d => [d.high, d.low]);
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+    const priceRange = maxPrice - minPrice || 1;
+    
+    // 计算绘图区域
+    const plotWidth = canvas.width - config.padding.left - config.padding.right;
+    const plotHeight = canvas.height - config.padding.top - config.padding.bottom;
+    
+    // 绘制K线
+    data.forEach((candle, index) => {
+        const x = config.padding.left + (index * plotWidth) / (config.maxDataPoints - 1);
+        const yHigh = config.padding.top + ((maxPrice - candle.high) / priceRange) * plotHeight;
+        const yLow = config.padding.top + ((maxPrice - candle.low) / priceRange) * plotHeight;
+        const yOpen = config.padding.top + ((maxPrice - candle.open) / priceRange) * plotHeight;
+        const yClose = config.padding.top + ((maxPrice - candle.close) / priceRange) * plotHeight;
+        
+        // 绘制影线
+        ctx.beginPath();
+        ctx.moveTo(x, yHigh);
+        ctx.lineTo(x, yLow);
+        ctx.strokeStyle = candle.close >= candle.open ? '#52c41a' : '#f5222d';
+        ctx.stroke();
+        
+        // 绘制实体
+        ctx.fillStyle = candle.close >= candle.open ? '#52c41a' : '#f5222d';
+        ctx.fillRect(
+            x - config.candleWidth/2,
+            Math.min(yOpen, yClose),
+            config.candleWidth,
+            Math.abs(yOpen - yClose)
+        );
+    });
+    
+    // 绘制坐标轴
+    drawAxes(minPrice, maxPrice);
+}
+
+// 绘制坐标轴
+function drawAxes(minPrice, maxPrice) {
+    ctx.save();
+    ctx.strokeStyle = '#ddd';
+    ctx.fillStyle = '#666';
+    ctx.font = '12px Arial';
+    
+    // Y轴
+    ctx.beginPath();
+    ctx.moveTo(config.padding.left, config.padding.top);
+    ctx.lineTo(config.padding.left, canvas.height - config.padding.bottom);
+    ctx.stroke();
+    
+    // Y轴标签
+    const ySteps = 5;
+    for (let i = 0; i <= ySteps; i++) {
+        const price = minPrice + (maxPrice - minPrice) * (i / ySteps);
+        const y = config.padding.top + ((maxPrice - price) / priceRange) * 
+                 (canvas.height - config.padding.top - config.padding.bottom);
+        
+        ctx.fillText(price.toFixed(2), 10, y + 4);
+    }
+    
+    // X轴
+    ctx.beginPath();
+    ctx.moveTo(config.padding.left, canvas.height - config.padding.bottom);
+    ctx.lineTo(canvas.width - config.padding.right, canvas.height - config.padding.bottom);
+    ctx.stroke();
+}
+
+// 更新数据
+function updateData() {
+    data.shift();
+    data.push(generateCandle());
+    drawChart();
+}
+
+// 模拟控制
+function startSimulation() {
+    if (!simulationInterval) {
+        simulationInterval = setInterval(updateData, config.updateInterval);
+        addSystemMessage('模拟已启动');
+    }
+}
+
+function stopSimulation() {
+    clearInterval(simulationInterval);
+    simulationInterval = null;
+    addSystemMessage('模拟已停止');
+}
+
+// 对话功能
+function addSystemMessage(text) {
+    addMessage(text, false, true);
+}
+
+function addMessage(text, isUser, isSystem = false) {
+    const chatLog = document.getElementById('chatLog');
+    const timestamp = new Date().toLocaleTimeString();
+    
+    const timeDiv = document.createElement('div');
+    timeDiv.className = 'timestamp';
+    timeDiv.textContent = timestamp;
+    
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+    msgDiv.textContent = text;
+    
+    if(isSystem) msgDiv.style.fontStyle = 'italic';
+    
+    chatLog.appendChild(timeDiv);
+    chatLog.appendChild(msgDiv);
+    chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    
+    if(message) {
+        addMessage(message, true);
+        processMessage(message);
+        input.value = '';
+    }
+}
+
+function handleKeyPress(e) {
+    if(e.key === 'Enter') sendMessage();
+}
+
+// 消息处理
+function processMessage(message) {
+    setTimeout(() => {
+        const response = generateResponse(message);
+        addMessage(response, false);
+    }, 800);
+}
+
+function generateResponse(message) {
+    const lowerMsg = message.toLowerCase();
+    const lastCandle = data[data.length-1];
+    
+    if(lowerMsg.includes('价')) {
+        return `当前价格：${lastCandle.close.toFixed(2)}`;
+    }
+    if(lowerMsg.includes('趋势') || lowerMsg.includes('走势')) {
+        const change = lastCandle.close - data[data.length-2].close;
+        return `最近趋势：${change >= 0 ? '📈 上涨' : '📉 下跌'} ${Math.abs(change).toFixed(2)}`;
+    }
+    if(lowerMsg.includes('建议') || lowerMsg.includes('操作')) {
+        const suggestions = [
+            '建议持有观察', 
+            '可以考虑逢低买入',
+            '注意风险控制，适当减仓',
+            '短期可能回调，建议观望'
+        ];
+        return suggestions[Math.floor(Math.random()*suggestions.length)];
+    }
+    return '您的消息已记录，稍后将由分析师回复';
+}
+
+// 初始化
+generateInitialData();
+drawChart();
+addSystemMessage('系统初始化完成，欢迎使用股票模拟系统！');
+</script>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>实时股票看盘系统</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            display: flex;
+            gap: 20px;
+        }
+        #chartContainer {
+            border: 1px solid #ccc;
+            padding: 20px;
+            flex: 2;
+        }
+        #chatContainer {
+            border: 1px solid #ccc;
+            padding: 20px;
+            flex: 1;
+            max-width: 300px;
+        }
+        canvas {
+            border: 1px solid #eee;
+        }
+        #chatLog {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .message {
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 15px;
+            max-width: 80%;
+        }
+        .user-message {
+            background-color: #dcf8c6;
+            margin-left: auto;
+        }
+        .bot-message {
+            background-color: #e8f4f8;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="chartContainer">
+        <h2>实时股票K线图</h2>
+        <canvas id="stockChart" width="800" height="500"></canvas>
+    </div>
+    
+    <div id="chatContainer">
+        <h2>对话记录</h2>
+        <div id="chatLog"></div>
+        <input type="text" id="messageInput" placeholder="输入问题...">
+        <button onclick="handleUserInput()">发送</button>
+    </div>
+
+<script>
+// 股票数据相关配置
+let stockData = [];
+const MAX_DATA_POINTS = 30;
+let currentPrice = 100;
+
+// 生成实时股票数据
+function generateRealtimeData() {
+    const volatility = 0.5 + Math.random() * 2; // 随机波动率
+    const change = (Math.random() - 0.5) * volatility;
+    currentPrice = Math.max(10, currentPrice + change);
+    
+    const newData = {
+        time: new Date(),
+        open: currentPrice,
+        high: currentPrice + Math.random() * 2,
+        low: currentPrice - Math.random() * 2,
+        close: currentPrice
+    };
+    
+    if(stockData.length >= MAX_DATA_POINTS) {
+        stockData.shift();
+    }
+    stockData.push(newData);
+}
+
+// 绘制K线图
+function drawChart() {
+    const canvas = document.getElementById('stockChart');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    const padding = 30;
+    const w = canvas.width - padding * 2;
+    const h = canvas.height - padding * 2;
+    
+    // 计算价格范围
+    const prices = stockData.flatMap(d => [d.high, d.low]);
+    const maxPrice = Math.max(...prices);
+    const minPrice = Math.min(...prices);
+    const priceRange = maxPrice - minPrice || 1;
+    
+    // 绘制每个数据点
+    stockData.forEach((d, i) => {
+        const x = padding + (i * w / MAX_DATA_POINTS);
+        const barWidth = w / MAX_DATA_POINTS * 0.8;
+        
+        // 上下影线
+        ctx.beginPath();
+        ctx.moveTo(x + barWidth/2, padding + h - ((d.high - minPrice)/priceRange * h));
+        ctx.lineTo(x + barWidth/2, padding + h - ((d.low - minPrice)/priceRange * h));
+        ctx.strokeStyle = d.close >= d.open ? '#4CAF50' : '#FF5252';
+        ctx.stroke();
+        
+        // K线实体
+        ctx.fillStyle = d.close >= d.open ? '#4CAF50' : '#FF5252';
+        const bodyTop = padding + h - ((Math.max(d.open, d.close) - minPrice)/priceRange * h);
+        const bodyHeight = Math.abs((d.close - d.open)/priceRange * h);
+        ctx.fillRect(x, bodyTop, barWidth, bodyHeight);
+    });
+}
+
+// 对话处理
+function addMessage(message, isUser) {
+    const chatLog = document.getElementById('chatLog');
+    const messageDiv = document.createElement('div');
+    
+    messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+    messageDiv.textContent = message;
+    chatLog.appendChild(messageDiv);
+    
+    // 自动滚动到底部
+    chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+// 处理用户输入
+function handleUserInput() {
+    const input = document.getElementById('messageInput');
+    const question = input.value.trim();
+    
+    if(question) {
+        // 添加用户消息
+        addMessage(`用户：${question}`, true);
+        
+        // 生成回答
+        const answer = generateAnswer(question);
+        addMessage(`系统：${answer}`, false);
+        
+        input.value = '';
+    }
+}
+
+// 智能回答生成
+function generateAnswer(question) {
+    const price = currentPrice.toFixed(2);
+    const trend = stockData.length > 1 ? 
+        (stockData[stockData.length-1].close - stockData[stockData.length-2].close).toFixed(2) : 0;
+    
+    const answers = {
+        "价格": `当前股价：${price} USD，${trend >= 0 ? '上涨' : '下跌'} ${Math.abs(trend)}`,
+        "趋势": `近期趋势：${trend >= 0 ? '看涨' : '看跌'}，最近30分钟波动幅度：${(Math.random()*3).toFixed(1)}%`,
+        "建议": `投资建议：${Math.random() > 0.5 ? '逢低买入' : '逢高卖出'}，注意控制风险`,
+        "帮助": "支持查询：价格、趋势、建议，或输入任意问题"
+    };
+    
+    return answers[question] || "已记录您的问题，稍后分析师会回复。当前股价：" + price;
+}
+
+// 初始化
+window.onload = function() {
+    // 初始化数据
+    for(let i = 0; i < MAX_DATA_POINTS; i++) {
+        generateRealtimeData();
+    }
+    
+    // 启动实时更新
+    setInterval(() => {
+        generateRealtimeData();
+        drawChart();
+    }, 5000); // 每5秒更新一次
+    
+    // 初始绘制
+    drawChart();
+    
+    // 添加欢迎消息
+    addMessage("系统：欢迎使用实时股票分析系统！您可以询问价格、趋势或获取投资建议", false);
+};
+</script>
+</body>
+</html>

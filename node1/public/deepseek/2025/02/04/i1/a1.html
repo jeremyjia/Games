@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>虚拟股票看盘系统</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            display: flex;
+            gap: 20px;
+        }
+        #chartContainer {
+            border: 1px solid #ccc;
+            padding: 20px;
+            flex: 2;
+        }
+        #chatContainer {
+            border: 1px solid #ccc;
+            padding: 20px;
+            flex: 1;
+            max-width: 300px;
+        }
+        canvas {
+            border: 1px solid #eee;
+        }
+        #chatLog {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .message {
+            margin: 5px 0;
+            padding: 5px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+        }
+        .msgFirst {
+            margin: 5px 0;
+            padding: 5px;
+            background-color: #8c37fb;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="chartContainer">
+        <h2>虚拟股票K线图</h2>
+        <canvas id="stockChart" width="600" height="400"></canvas>
+    </div>
+    
+    <div id="chatContainer">
+        <h2>对话记录</h2>
+        <div id="chatLog"></div>
+        <input type="text" id="messageInput" placeholder="输入消息...">
+        <button onclick="addMessage()">发送</button>
+    </div>
+
+<script>
+// 股票数据生成器
+function generateStockData(days = 30) {
+    const data = [];
+    let price = 100; // 初始价格
+    
+    for(let i = 0; i < days; i++) {
+        const open = price;
+        const close = open + (Math.random() - 0.5) * 10;
+        const high = Math.max(open, close) + Math.random() * 5;
+        const low = Math.min(open, close) - Math.random() * 5;
+        
+        data.push({
+            date: new Date(Date.now() - (days - i) * 86400000),
+            open: open,
+            high: high,
+            low: low,
+            close: close
+        });
+        
+        price = close;
+    }
+    return data;
+}
+
+// 绘制K线图
+function drawCandlestickChart(ctx, data) {
+    const canvas = ctx.canvas;
+    const padding = 20;
+    const w = canvas.width - padding * 2;
+    const h = canvas.height - padding * 2;
+    
+    // 计算价格范围
+    const prices = data.flatMap(d => [d.high, d.low]);
+    const maxPrice = Math.max(...prices);
+    const minPrice = Math.min(...prices);
+    const priceRange = maxPrice - minPrice;
+    
+    // 计算时间间隔
+    const days = data.length;
+    const barWidth = w / days * 0.8;
+    
+    // 清空画布
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 绘制K线
+    data.forEach((d, i) => {
+        const x = padding + (i * w / days) + (w / days * 0.1);
+        const yHigh = padding + h - ((d.high - minPrice) / priceRange * h);
+        const yLow = padding + h - ((d.low - minPrice) / priceRange * h);
+        const yOpen = padding + h - ((d.open - minPrice) / priceRange * h);
+        const yClose = padding + h - ((d.close - minPrice) / priceRange * h);
+        
+        // 绘制上下影线
+        ctx.beginPath();
+        ctx.moveTo(x + barWidth/2, yHigh);
+        ctx.lineTo(x + barWidth/2, yLow);
+        ctx.strokeStyle = d.close >= d.open ? 'green' : 'red';
+        ctx.stroke();
+        
+        // 绘制实体
+        ctx.fillStyle = d.close >= d.open ? 'green' : 'red';
+        ctx.fillRect(x, Math.min(yOpen, yClose), barWidth, Math.abs(yOpen - yClose));
+    });
+}
+
+// 聊天功能
+function addMessage() {
+    const input = document.getElementById('messageInput');
+    const log = document.getElementById('chatLog');
+    
+    if(input.value.trim()) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'message';
+        msgDiv.textContent = input.value;
+        log.appendChild(msgDiv);
+        input.value = '';
+        log.scrollTop = log.scrollHeight;
+    }
+}
+
+// 初始化
+window.onload = function() {
+    const canvas = document.getElementById('stockChart');
+    const ctx = canvas.getContext('2d');
+    const stockData = generateStockData(30);
+    
+    drawCandlestickChart(ctx, stockData);
+    
+    // 添加示例对话记录
+    const demoMessages = [
+        "帮我用原生JavaScript生成一个网页可以演示。虚拟股票的k线图。并把我的对话记录显示在网页上。",
+        "系统：欢迎使用虚拟股票系统！",
+        "用户：当前价格趋势如何？",
+        "系统：请查看左侧K线图分析走势"
+    ];
+    
+    let n = 0;
+    demoMessages.forEach(msg => {
+        n++;
+        const msgDiv = document.createElement('div');
+        msgDiv.className = n==1?'msgFirst':'message';
+        msgDiv.textContent = msg;
+        document.getElementById('chatLog').appendChild(msgDiv);
+    });
+};
+</script>
+</body>
+</html>
