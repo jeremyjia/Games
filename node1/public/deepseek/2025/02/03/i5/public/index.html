@@ -148,7 +148,49 @@
     </div>
 
     <script>
-        // 原有代码保留...
+        const canvas = document.getElementById('preview');
+        const ctx = canvas.getContext('2d');
+        let animationId = null;
+
+        // 初始化画布
+        canvas.width = 640;
+        canvas.height = 480;
+
+        // 实时预览
+        document.getElementById('editor').addEventListener('input', function() {
+            try {
+                const config = JSON.parse(this.value);
+                updatePreview(config);
+            } catch (error) {
+                console.log('JSON解析错误');
+            }
+        });
+
+        function updatePreview(config) {
+            cancelAnimationFrame(animationId);
+            let currentTime = 0;
+
+            function animate() {
+                const currentColor = getCurrentColor(config, currentTime);
+                ctx.fillStyle = currentColor;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                currentTime = (currentTime + 0.1) % getTotalDuration(config);
+                animationId = requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+
+        function getCurrentColor(config, time) {
+            const segment = config.find(s => time >= s.start && time < s.end);
+            return segment ? segment.color : '#FFFFFF';
+        }
+
+        function getTotalDuration(config) {
+            return Math.max(...config.map(s => s.end));
+        }
+
         
         // 新增模态框功能
         const modal = document.getElementById('videoModal');
@@ -217,6 +259,7 @@
         }
 
         // 初始化预览...
+        updatePreview(JSON.parse(document.getElementById('editor').value));
     </script>
 </body>
 </html>
