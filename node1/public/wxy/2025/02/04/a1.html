@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vector Drawing System</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.tools {
+    margin-bottom: 20px;
+}
+
+button {
+    margin: 5px;
+    padding: 10px;
+    font-size: 16px;
+}
+
+canvas {
+    border: 1px solid #000;
+}
+    </style>
+</head>
+<body>
+    <div class="tools">
+        <button onclick="selectTool('text')">Text</button>
+        <button onclick="selectTool('line')">Line</button>
+        <button onclick="selectTool('circle')">Circle</button>
+        <button onclick="selectTool('rect')">Rectangle</button>
+        <button onclick="saveDrawing()">Save</button>
+    </div>
+    <canvas id="canvas" width="800" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let currentTool = 'text';
+let drawings = [];
+
+function selectTool(tool) {
+    currentTool = tool;
+    ctx.beginPath(); // Reset path for new drawing
+}
+
+canvas.addEventListener('mousedown', (e) => {
+    const { offsetX, offsetY } = e;
+    const start = { x: offsetX, y: offsetY };
+
+    if (currentTool === 'text') {
+        let text = prompt('Enter text:');
+        if (text) {
+            ctx.font = '20px Arial';
+            ctx.fillText(text, offsetX, offsetY);
+            drawings.push({ type: 'text', x: offsetX, y: offsetY, text });
+        }
+    } else if (currentTool === 'line') {
+        drawing = { type: 'line', start, end: null };
+        drawings.push(drawing);
+    } else {
+        drawing = { type: currentTool, start };
+        drawings.push(drawing);
+    }
+});
+
+canvas.addEventListener('mousemove', (e) => {
+    if (currentTool === 'line' && drawings.length > 0 && drawings[drawings.length - 1].type === 'line') {
+        const { offsetX, offsetY } = e;
+        const end = { x: offsetX, y: offsetY };
+        drawings[drawings.length - 1].end = end;
+        redraw();
+    }
+});
+
+canvas.addEventListener('mouseup', () => {
+    if (currentTool === 'circle' || currentTool === 'rect') {
+        const { offsetX, offsetY } = event;
+        const radius = Math.sqrt(Math.pow(offsetX - drawings[drawings.length - 1].start.x, 2) + Math.pow(offsetY - drawings[drawings.length - 1].start.y, 2));
+        if (currentTool === 'circle') {
+            drawings[drawings.length - 1].radius = radius;
+        } else if (currentTool === 'rect') {
+            // For simplicity, assume square for now
+            drawings[drawings.length - 1].width = radius * 2;
+            drawings[drawings.length - 1].height = radius * 2;
+        }
+        redraw();
+    }
+});
+
+function redraw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawings.forEach(drawing => {
+        switch (drawing.type) {
+            case 'text':
+                ctx.font = '20px Arial';
+                ctx.fillText(drawing.text, drawing.x, drawing.y);
+                break;
+            case 'line':
+                ctx.moveTo(drawing.start.x, drawing.start.y);
+                ctx.lineTo(drawing.end.x, drawing.end.y);
+                ctx.stroke();
+                break;
+            case 'circle':
+                ctx.beginPath();
+                ctx.arc(drawing.start.x, drawing.start.y, drawing.radius, 0, Math.PI * 2);
+                ctx.stroke();
+                break;
+            case 'rect':
+                ctx.strokeRect(drawing.start.x - drawing.width / 2, drawing.start.y - drawing.height / 2, drawing.width, drawing.height);
+                break;
+        }
+    });
+}
+
+function saveDrawing() {
+    const jsonData = JSON.stringify(drawings, null, 2);
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'drawing.json';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+    </script>
+</body>
+</html>
