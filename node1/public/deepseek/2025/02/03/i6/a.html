@@ -21,6 +21,11 @@
             background: white;
         }
         .prop-item { margin: 10px 0; }
+        #main-canvas {
+            display: block;
+            border: 2px solid #333;
+            background: #87CEEB;
+        }
     </style>
 </head>
 <body>
@@ -82,6 +87,7 @@ canvas.addEventListener('click', selectObject);
 
 // 主渲染循环
 function render() {
+    console.log(2);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     // 绘制背景
@@ -112,22 +118,75 @@ function render() {
     });
 }
 
-// 添加新对象
+// 修复坐标计算问题
 function startAddObject(e) {
     const type = e.target.dataset.type;
     const rect = canvas.getBoundingClientRect();
     
+    // 计算正确的画布坐标
+    const scaleX = canvas.width / canvas.offsetWidth;
+    const scaleY = canvas.height / canvas.offsetHeight;
+    
+    const x = (e.clientX - rect.left) * scaleX - templates[type].width/2;
+    const y = (e.clientY - rect.top) * scaleY - templates[type].height/2;
+    
     const newObj = {
         type,
-        x: e.clientX - rect.left - templates[type].width/2,
-        y: e.clientY - rect.top - templates[type].height/2,
+        x: Math.max(0, Math.min(x, canvas.width - templates[type].width)),  // 边界限制
+        y: Math.max(0, Math.min(y, canvas.height - templates[type].height)),
         ...templates[type]
     };
     
     scene.objects.push(newObj);
+    console.log('Added:', newObj);  // 调试日志
     render();
 }
+// 添加初始化检查
+canvas.width = 800;
+canvas.height = 600;
+console.log('Canvas size:', canvas.width, canvas.height);  // 确认尺寸
+// 添加帧率监控
+let lastRender = Date.now();
+function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 绘制背景
+    ctx.fillStyle = scene.background;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // 绘制所有对象
+    scene.objects.forEach(obj => {
+        ctx.save();
+        drawObject(obj);
+        ctx.restore();
+    });
+    
+    // 绘制选中框
+    if (selectedObj) {
+        ctx.strokeStyle = '#FF0000';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(
+            selectedObj.x - 2,
+            selectedObj.y - 2,
+            selectedObj.width + 4,
+            selectedObj.height + 4
+        );
+    }
+    
+    // 显示帧率
+    const now = Date.now();
+    const fps = 1000 / (now - lastRender);
+    lastRender = now;
+    ctx.fillStyle = '#000';
+    ctx.fillText(`FPS: ${fps.toFixed(1)}`, 10, 20);
+}
 
+// 添加事件监听容错
+window.addEventListener('load', () => {
+    document.querySelectorAll('.obj-type').forEach(item => {
+        item.addEventListener('mousedown', startAddObject);
+    });
+});
 // 选择对象
 function selectObject(e) {
     const rect = canvas.getBoundingClientRect();
@@ -191,6 +250,7 @@ function updateProp(prop, value) {
 
 // 拖动功能
 function startDrag(e) {
+    console.log(3)
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -222,28 +282,45 @@ function endDrag() {
     updatePropertyPanel();
 }
 
-// 绘制云朵
+// 绘制云朵 
 function drawCloud(obj) {
+    ctx.fillStyle = obj.color;
+    
+    // 创建组合路径
     ctx.beginPath();
-    ctx.arc(obj.x + 20, obj.y + 15, 15, 0, Math.PI * 2);
-    ctx.arc(obj.x + 35, obj.y + 10, 20, 0, Math.PI * 2);
-    ctx.arc(obj.x + 55, obj.y + 15, 15, 0, Math.PI * 2);
+    
+    // 主云体（三个重叠圆）
+    ctx.arc(obj.x + 25, obj.y + 20, 20, 0, Math.PI * 2);  // 左圆
+    ctx.arc(obj.x + 50, obj.y + 15, 25, 0, Math.PI * 2);  // 中心圆
+    ctx.arc(obj.x + 75, obj.y + 20, 20, 0, Math.PI * 2);  // 右圆
+    
+    // 填充路径
     ctx.fill();
 }
 
-// 绘制树木
+// 绘制树木（调整坐标计算）
 function drawTree(obj) {
-    // 树干
+    // 树干（调整位置到中心）
     ctx.fillStyle = obj.trunkColor;
-    ctx.fillRect(obj.x + 15, obj.y + 50, 10, 30);
+    ctx.fillRect(
+        obj.x + obj.width/2 - 5,  // 居中
+        obj.y + obj.height - 30,  // 底部留出空间
+        10, 
+        30
+    );
     
-    // 树冠
+    // 树冠（调整位置）
     ctx.fillStyle = obj.color;
     ctx.beginPath();
-    ctx.arc(obj.x + 20, obj.y + 30, 20, 0, Math.PI * 2);
+    ctx.arc(
+        obj.x + obj.width/2,     // 中心X
+        obj.y + obj.height - 50, // 中心Y
+        25,                      // 半径
+        0, 
+        Math.PI * 2
+    );
     ctx.fill();
 }
-
 // 导出数据
 function exportData() {
     const output = {
@@ -263,6 +340,7 @@ function exportData() {
 
 // 初始渲染
 render();
+console.log(1);
 </script>
 </body>
 </html>
