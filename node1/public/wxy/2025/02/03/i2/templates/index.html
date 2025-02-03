@@ -1,0 +1,128 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Stock Data</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        canvas {
+            max-width: 800px;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mock Stock Data</h1>
+    <canvas id="stockChart"></canvas>
+
+    <script>
+        const ctx = document.getElementById('stockChart').getContext('2d');
+        const stockData = {{ stock_data|tojson }}; // Flask Jinja2 template to render JSON
+
+        const labels = stockData.map(data => data.date);
+        const openData = stockData.map(data => data.open);
+        const highData = stockData.map(data => data.high);
+        const lowData = stockData.map(data => data.low);
+        const closeData = stockData.map(data => data.close);
+
+        function drawCandlestick(ctx, labels, openData, highData, lowData, closeData) {
+            const backgroundColor = [];
+            const borderColor = [];
+            const dataWidth = (ctx.canvas.width / labels.length) * 0.8;
+
+            for (let i = 0; i < labels.length; i++) {
+                const color = openData[i] < closeData[i] ? 'rgba(75, 192, 192, 0.2)' : 'rgba(255, 99, 132, 0.2)';
+                backgroundColor.push(
+                    color,
+                    color,
+                    color,
+                    color
+                );
+
+                borderColor.push(
+                    openData[i] < closeData[i] ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)',
+                    openData[i] < closeData[i] ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)',
+                    'rgba(0, 0, 0, 1)',
+                    'rgba(0, 0, 0, 1)'
+                );
+            }
+
+            const candlestickChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Open-Close',
+                        data: openData.map((open, index) => ({
+                            x: index,
+                            y: open,
+                            w: dataWidth / 2,
+                            borderColor: borderColor[index * 4],
+                            backgroundColor: backgroundColor[index * 4]
+                        })),
+                        backgroundColor: backgroundColor,
+                        borderColor: borderColor,
+                        borderWidth: 1,
+                        categoryPercentage: 0.8,
+                        barPercentage: 0.6
+                    }, {
+                        label: 'High-Low',
+                        data: highData.map((high, index) => ({
+                            x: index + (dataWidth / 4),
+                            y: lowData[index],
+                            w: dataWidth / 2,
+                            h: highData[index] - lowData[index],
+                            borderColor: 'rgba(0, 0, 0, 1)',
+                            backgroundColor: borderColor[index * 4 + 2]
+                        })),
+                        type: 'horizontalBar',
+                        backgroundColor: 'transparent',
+                        borderWidth: 0,
+                        categoryPercentage: 0.8,
+                        barPercentage: 1.2
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            display: false,
+                        },
+                        y: {
+                            display: true,
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: true,
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function (context) {
+                                    const labelIndex = context.dataIndex;
+                                    const datasetIndex = context.datasetIndex;
+                                    const dataset = context.chart.data.datasets[datasetIndex];
+                                    const dataPoint = dataset.data[labelIndex];
+
+                                    if (datasetIndex === 0) {
+                                        return `Open: $${dataPoint.y.toFixed(2)}`;
+                                    } else if (datasetIndex === 1) {
+                                        return `High: $${dataPoint.h.toFixed(2)}\nLow: $${dataPoint.y.toFixed(2)}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        drawCandlestick(ctx, labels, openData, highData, lowData, closeData);
+    </script>
+</body>
+</html>
