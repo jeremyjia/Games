@@ -47,7 +47,7 @@ function createVideo(audioPath, imagePath, outputPath, callback) {
 }
 
 // 使用示例
-const audio = path.join(__dirname, 'input.mp3');
+const audio = path.join(__dirname, '1.mp3');
 const image = path.join(__dirname, '1.png');
 const output = path.join(__dirname, 'output.mp4');
 
