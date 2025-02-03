@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>高级矢量绘图系统</title>
+    <style>
+        #toolbar {
+            padding: 10px;
+            background: #f0f0f0;
+            margin-bottom: 10px;
+        }
+        canvas {
+            border: 1px solid #ccc;
+        }
+        .tool-btn {
+            padding: 5px 10px;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+        .tool-btn.active {
+            background: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div id="toolbar">
+        <button class="tool-btn active" data-tool="select">✥ 选择</button>
+        <button class="tool-btn" data-tool="text">T 文本</button>
+        <button class="tool-btn" data-tool="line">/ 直线</button>
+        <button class="tool-btn" data-tool="circle">○ 圆形</button>
+        <button class="tool-btn" data-tool="rect">□ 矩形</button>
+        <button class="tool-btn" data-tool="quarter">♩ 四分音符</button>
+        <button class="tool-btn" data-tool="eighth">♪ 八分音符</button>
+        <button class="tool-btn" data-tool="whole">𝅝 全音符</button>
+        <button class="tool-btn" data-tool="scarecrow">🌾 稻草人</button>
+        <button class="tool-btn" data-tool="trebleclef">🎼 高音谱号</button>
+        <input type="color" id="colorPicker" value="#000000">
+        <input type="number" id="lineWidth" value="2" min="1" max="10">
+        <button id="saveBtn">保存为JSON</button>
+    </div>
+    <canvas id="canvas" width="800" height="600"></canvas>
+
+    <script>
+        class ShapeFactory {
+            static create(type, start, end, color, lineWidth, text) {
+                switch(type) {
+                    case 'text': return new TextShape(start, text, color, lineWidth);
+                    case 'line': return new Line(start, end, color, lineWidth);
+                    case 'rect': return new Rectangle(start, end, color, lineWidth);
+                    case 'circle': return new Circle(start, end, color, lineWidth);
+                    case 'quarter': return new QuarterNote(start, end, color, lineWidth);
+                    case 'eighth': return new EighthNote(start, end, color, lineWidth);
+                    case 'whole': return new WholeNote(start, end, color, lineWidth);
+                    case 'scarecrow': return new Scarecrow(start, end, color, lineWidth);
+                    case 'trebleclef': return new TrebleClef(start, end, color, lineWidth);
+                    default: throw new Error('未知图形类型');
+                }
+            }
+        }
+
+        class Shape {
+            constructor(start, end, color, lineWidth) {
+                this.points = [start, end];
+                this.color = color;
+                this.lineWidth = lineWidth;
+                this.rotation = 0;
+            }
+
+            draw(ctx) {
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = this.lineWidth;
+                ctx.beginPath();
+                this._draw(ctx);
+                ctx.stroke();
+            }
+
+            _draw(ctx) {
+                throw new Error('必须实现_draw方法');
+            }
+
+            toJSON() {
+                return {
+                    type: this.constructor.name.toLowerCase(),
+                    points: this.points,
+                    color: this.color,
+                    lineWidth: this.lineWidth,
+                    rotation: this.rotation
+                };
+            }
+        }
+
+        // 基本图形类（直线、矩形、圆形）
+        class Line extends Shape {
+            _draw(ctx) {
+                const [start, end] = this.points;
+                ctx.moveTo(start.x, start.y);
+                ctx.lineTo(end.x, end.y);
+            }
+        }
+
+        class Rectangle extends Shape {
+            _draw(ctx) {
+                const [start, end] = this.points;
+                ctx.rect(start.x, start.y, end.x - start.x, end.y - start.y);
+            }
+        }
+
+        class Circle extends Shape {
+            _draw(ctx) {
+                const [start, end] = this.points;
+                const radius = Math.sqrt((end.x - start.x)**2 + (end.y - start.y)**2);
+                ctx.arc(start.x, start.y, radius, 0, Math.PI * 2);
+            }
+        }
+
+        // 文本类
+        class TextShape {
+            constructor(pos, text, color, lineWidth) {
+                this.pos = pos;
+                this.text = text;
+                this.color = color;
+                this.lineWidth = lineWidth;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.fillStyle = this.color;
+                ctx.textBaseline = 'top';
+                ctx.font = `${this.lineWidth * 2}px Arial`;
+                ctx.fillText(this.text, this.pos.x, this.pos.y);
+                ctx.restore();
+            }
+
+            toJSON() {
+                return {
+                    type: 'text',
+                    pos: this.pos,
+                    text: this.text,
+                    color: this.color,
+                    lineWidth: this.lineWidth
+                };
+            }
+        }
+
+        // 简谱音符类
+        class WholeNote extends Shape {
+            _draw(ctx) {
+                const [start, end] = this.points;
+                const size = this._calculateSize();
+                
+                ctx.save();
+                ctx.translate(start.x, start.y);
+                ctx.rotate(this.rotation);
+                
+                ctx.beginPath();
+                ctx.ellipse(0, 0, size * 0.8, size, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            _calculateSize() {
+                const [start, end] = this.points;
+                return Math.sqrt((end.x - start.x)**2 + (end.y - start.y)**2)/2;
+            }
+        }
+
+        class QuarterNote extends Shape {
+            _draw(ctx) {
+                const [start, end] = this.points;
+                const size = this._calculateSize();
+                
+                ctx.save();
+                ctx.translate(start.x, start.y);
+                ctx.rotate(this.rotation);
+                
+                // 实心椭圆
+                ctx.beginPath();
+                ctx.ellipse(0, 0, size * 0.4, size * 0.6, 0, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                
+                // 符干
+                ctx.beginPath();
+                ctx.moveTo(size * 0.4, 0);
+                ctx.lineTo(size * 0.4, -size * 2);
+                ctx.stroke();
+                
+                ctx.restore();
+            }
+
+            _calculateSize() {
+                const [start, end] = this.points;
+                return Math.sqrt((end.x - start.x)**2 + (end.y - start.y)**2);
+            }
+        }
+
+        class EighthNote extends QuarterNote {
+            _draw(ctx) {
+                super._draw(ctx);
+                
+                const size = this._calculateSize();
+                
+                ctx.save();
+                ctx.translate(this.points[0].x, this.points[0].y);
+                ctx.rotate(this.rotation);
+                
+                // 符尾
+                ctx.beginPath();
+                ctx.moveTo(size * 0.4, -size * 2);
+                ctx.lineTo(size * 0.8, -size * 1.8);
+                ctx.lineTo(size * 0.4, -size * 1.6);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                
+                ctx.restore();
+            }
+        }
+
+        // 其他特殊图形类
+        class Scarecrow extends Shape {
+            _draw(ctx) {
+                const [start] = this.points;
+                const baseSize = this._calculateSize();
+                
+                // 头部
+                ctx.arc(start.x, start.y, baseSize * 0.2, 0, Math.PI * 2);
+                
+                // 身体和四肢
+                this._drawBody(ctx, start, baseSize);
+                this._drawHat(ctx, start, baseSize);
+            }
+
+            _drawBody(ctx, start, size) {
+                ctx.moveTo(start.x, start.y + size * 0.2);
+                ctx.lineTo(start.x, start.y + size * 0.6);
+                
+                ctx.moveTo(start.x - size * 0.3, start.y + size * 0.3);
+                ctx.lineTo(start.x + size * 0.3, start.y + size * 0.3);
+                
+                ctx.moveTo(start.x, start.y + size * 0.6);
+                ctx.lineTo(start.x - size * 0.2, start.y + size * 0.9);
+                ctx.moveTo(start.x, start.y + size * 0.6);
+                ctx.lineTo(start.x + size * 0.2, start.y + size * 0.9);
+            }
+
+            _drawHat(ctx, start, size) {
+                ctx.moveTo(start.x - size * 0.2, start.y - size * 0.1);
+                ctx.lineTo(start.x + size * 0.2, start.y - size * 0.1);
+                ctx.lineTo(start.x, start.y - size * 0.3);
+                ctx.closePath();
+            }
+
+            _calculateSize() {
+                const [start, end] = this.points;
+                return Math.max(Math.abs(end.x - start.x), Math.abs(end.y - start.y)) * 0.8;
+            }
+        }
+
+        class TrebleClef extends Shape {
+            _draw(ctx) {
+                const [start] = this.points;
+                const scale = this._calculateScale();
+                
+                ctx.save();
+                ctx.translate(start.x, start.y);
+                ctx.rotate(this.rotation);
+                
+                this._drawMainCurve(ctx, scale);
+                this._drawBottomLoop(ctx, scale);
+                this._drawDecorations(ctx, scale);
+                
+                ctx.restore();
+            }
+
+            _drawMainCurve(ctx, scale) {
+                ctx.moveTo(0, 0);
+                ctx.bezierCurveTo(-35*scale, -150*scale, 85*scale, -220*scale, 110*scale, -160*scale);
+            }
+
+            _drawBottomLoop(ctx, scale) {
+                ctx.moveTo(0, 0);
+                ctx.bezierCurveTo(25*scale, 25*scale, 55*scale, 25*scale, 80*scale, 0);
+            }
+
+            _drawDecorations(ctx, scale) {
+                ctx.moveTo(45*scale, -90*scale);
+                ctx.lineTo(60*scale, -110*scale);
+                
+                ctx.moveTo(110*scale, -160*scale);
+                ctx.quadraticCurveTo(130*scale, -180*scale, 100*scale, -200*scale);
+                ctx.quadraticCurveTo(70*scale, -180*scale, 90*scale, -160*scale);
+                
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, 40*scale);
+            }
+
+            _calculateScale() {
+                const [start, end] = this.points;
+                const dx = end.x - start.x;
+                const dy = end.y - start.y;
+                return Math.sqrt(dx*dx + dy*dy) / 180;
+            }
+        }
+
+        // 初始化画布和状态
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let shapes = [];
+        let currentTool = 'select';
+        let isDrawing = false;
+        let currentShape = null;
+        let startPos = null;
+
+        // 工具按钮事件
+        document.querySelectorAll('.tool-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTool = btn.dataset.tool;
+            });
+        });
+
+        // 颜色和线宽控件
+        const colorPicker = document.getElementById('colorPicker');
+        const lineWidth = document.getElementById('lineWidth');
+
+        // 鼠标事件处理
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', drawing);
+        canvas.addEventListener('mouseup', finishDrawing);
+        canvas.addEventListener('mouseout', finishDrawing);
+
+        // 保存功能
+        document.getElementById('saveBtn').addEventListener('click', () => {
+            const json = JSON.stringify(shapes.map(shape => shape.toJSON()), null, 2);
+            console.log(json);
+            alert('JSON已保存到控制台');
+        });
+
+        function startDrawing(e) {
+            const pos = getCanvasPosition(e);
+            
+            if (currentTool === 'text') {
+                const text = prompt('输入文本:');
+                if (text) {
+                    shapes.push(new TextShape(pos, text, colorPicker.value, lineWidth.value));
+                    redraw();
+                }
+                return;
+            }
+
+            if (currentTool === 'select') return;
+
+            isDrawing = true;
+            startPos = pos;
+            currentShape = ShapeFactory.create(
+                currentTool, 
+                startPos, 
+                {...startPos},
+                colorPicker.value, 
+                lineWidth.value
+            );
+        }
+
+        function drawing(e) {
+            if (!isDrawing || !currentShape) return;
+            
+            const currentPos = getCanvasPosition(e);
+            currentShape.points[1] = currentPos;
+            currentShape.rotation = Math.atan2(
+                currentPos.y - startPos.y, 
+                currentPos.x - startPos.x
+            );
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            redraw();
+            currentShape.draw(ctx);
+        }
+
+        function finishDrawing() {
+            if (!isDrawing) return;
+            isDrawing = false;
+            
+            if (currentShape) {
+                shapes.push(currentShape);
+                currentShape = null;
+            }
+            redraw();
+        }
+
+        function redraw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            shapes.forEach(shape => shape.draw(ctx));
+        }
+
+        function getCanvasPosition(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        }
+    </script>
+</body>
+</html>
