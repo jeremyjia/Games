@@ -1,0 +1,122 @@
+<!-- 前端代码 (index.html) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实时视频生成系统</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 20px;
+            overflow: hidden;
+            background: #1a1a1a;
+            color: white;
+        }
+        canvas {
+            border: 2px solid #444;
+            margin-bottom: 20px;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="videoCanvas"></canvas>
+    <div class="controls">
+        <button onclick="startRecording()">开始录制</button>
+        <button onclick="stopRecording()">停止并生成视频</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('videoCanvas');
+        const ctx = canvas.getContext('2d');
+        let isRecording = false;
+        let sessionId = null;
+        let frameCount = 0;
+
+        // 设置画布大小
+        canvas.width = 640;
+        canvas.height = 480;
+
+        // 动画函数
+        function animate() {
+            if(!isRecording) return;
+
+            const width = canvas.width;
+            const height = canvas.height;
+            const time = Date.now() / 1000;
+            const grayValue = 255 - (255 * time % 255);
+            
+            ctx.fillStyle = `rgb(${grayValue}, ${grayValue}, ${grayValue})`;
+            ctx.fillRect(0, 0, width, height);
+
+            // 每100ms捕获一帧 (10fps)
+            if(frameCount % 3 === 0) {
+                captureFrame();
+            }
+            
+            frameCount++;
+            requestAnimationFrame(animate);
+        }
+
+        // 捕获并发送帧数据
+        async function captureFrame() {
+            const dataURL = canvas.toDataURL('image/jpeg', 0.8);
+            
+            try {
+                await fetch('/api/frames', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Session-ID': sessionId
+                    },
+                    body: JSON.stringify({ frame: dataURL })
+                });
+            } catch (error) {
+                console.error('帧发送失败:', error);
+            }
+        }
+
+        // 开始录制
+        async function startRecording() {
+            isRecording = true;
+            
+            // 获取会话ID
+            const response = await fetch('/api/session', { method: 'POST' });
+            const data = await response.json();
+            sessionId = data.sessionId;
+            
+            animate();
+        }
+
+        // 停止并生成视频
+        async function stopRecording() {
+            isRecording = false;
+            
+            const response = await fetch(`/api/generate-video/${sessionId}`);
+            const videoBlob = await response.blob();
+            
+            // 下载视频
+            const url = window.URL.createObjectURL(videoBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'recording.mp4';
+            a.click();
+        }
+    </script>
+</body>
+</html>
