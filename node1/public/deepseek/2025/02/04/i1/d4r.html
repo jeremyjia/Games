@@ -37,13 +37,195 @@
     <canvas id="canvas" width="800" height="600"></canvas>
 
     <script>
+        class ShapeFactory {
+            static create(type, start, end, color, lineWidth, text) {
+                switch(type) {
+                    case 'text': return new TextShape(start, text, color, lineWidth);
+                    case 'line': return new Line(start, end, color, lineWidth);
+                    case 'rect': return new Rectangle(start, end, color, lineWidth);
+                    case 'circle': return new Circle(start, end, color, lineWidth);
+                    case 'scarecrow': return new Scarecrow(start, end, color, lineWidth);
+                    case 'trebleclef': return new TrebleClef(start, end, color, lineWidth);
+                    default: throw new Error('未知图形类型');
+                }
+            }
+        }
+
+        class Shape {
+            constructor(start, end, color, lineWidth) {
+                this.points = [start, end];
+                this.color = color;
+                this.lineWidth = lineWidth;
+                this.rotation = 0;
+            }
+
+            draw(ctx) {
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = this.lineWidth;
+                ctx.beginPath();
+                this._draw(ctx);
+                ctx.stroke();
+            }
+
+            _draw(ctx) {
+                throw new Error('必须实现_draw方法');
+            }
+
+            toJSON() {
+                return {
+                    type: this.constructor.name.toLowerCase(),
+                    points: this.points,
+                    color: this.color,
+                    lineWidth: this.lineWidth,
+                    rotation: this.rotation
+                };
+            }
+        }
+
+        class Line extends Shape {
+            _draw(ctx) {
+                const [start, end] = this.points;
+                ctx.moveTo(start.x, start.y);
+                ctx.lineTo(end.x, end.y);
+            }
+        }
+
+        class Rectangle extends Shape {
+            _draw(ctx) {
+                const [start, end] = this.points;
+                ctx.rect(start.x, start.y, end.x - start.x, end.y - start.y);
+            }
+        }
+
+        class Circle extends Shape {
+            _draw(ctx) {
+                const [start, end] = this.points;
+                const radius = Math.sqrt((end.x - start.x)**2 + (end.y - start.y)**2);
+                ctx.arc(start.x, start.y, radius, 0, Math.PI * 2);
+            }
+        }
+
+        class TextShape {
+            constructor(pos, text, color, lineWidth) {
+                this.pos = pos;
+                this.text = text;
+                this.color = color;
+                this.lineWidth = lineWidth;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.fillStyle = this.color;
+                ctx.textBaseline = 'top';
+                ctx.font = `${this.lineWidth * 2}px Arial`;
+                ctx.fillText(this.text, this.pos.x, this.pos.y);
+                ctx.restore();
+            }
+
+            toJSON() {
+                return {
+                    type: 'text',
+                    pos: this.pos,
+                    text: this.text,
+                    color: this.color,
+                    lineWidth: this.lineWidth
+                };
+            }
+        }
+
+        class Scarecrow extends Shape {
+            _draw(ctx) {
+                const [start] = this.points;
+                const baseSize = this._calculateSize();
+                
+                // 头部
+                ctx.arc(start.x, start.y, baseSize * 0.2, 0, Math.PI * 2);
+                
+                // 身体和四肢
+                this._drawBody(ctx, start, baseSize);
+                this._drawHat(ctx, start, baseSize);
+            }
+
+            _drawBody(ctx, start, size) {
+                ctx.moveTo(start.x, start.y + size * 0.2);
+                ctx.lineTo(start.x, start.y + size * 0.6);
+                
+                ctx.moveTo(start.x - size * 0.3, start.y + size * 0.3);
+                ctx.lineTo(start.x + size * 0.3, start.y + size * 0.3);
+                
+                ctx.moveTo(start.x, start.y + size * 0.6);
+                ctx.lineTo(start.x - size * 0.2, start.y + size * 0.9);
+                ctx.moveTo(start.x, start.y + size * 0.6);
+                ctx.lineTo(start.x + size * 0.2, start.y + size * 0.9);
+            }
+
+            _drawHat(ctx, start, size) {
+                ctx.moveTo(start.x - size * 0.2, start.y - size * 0.1);
+                ctx.lineTo(start.x + size * 0.2, start.y - size * 0.1);
+                ctx.lineTo(start.x, start.y - size * 0.3);
+                ctx.closePath();
+            }
+
+            _calculateSize() {
+                const [start, end] = this.points;
+                return Math.max(Math.abs(end.x - start.x), Math.abs(end.y - start.y)) * 0.8;
+            }
+        }
+
+        class TrebleClef extends Shape {
+            _draw(ctx) {
+                const [start] = this.points;
+                const scale = this._calculateScale();
+                
+                ctx.save();
+                ctx.translate(start.x, start.y);
+                ctx.rotate(this.rotation);
+                
+                this._drawMainCurve(ctx, scale);
+                this._drawBottomLoop(ctx, scale);
+                this._drawDecorations(ctx, scale);
+                
+                ctx.restore();
+            }
+
+            _drawMainCurve(ctx, scale) {
+                ctx.moveTo(0, 0);
+                ctx.bezierCurveTo(-35*scale, -150*scale, 85*scale, -220*scale, 110*scale, -160*scale);
+            }
+
+            _drawBottomLoop(ctx, scale) {
+                ctx.moveTo(0, 0);
+                ctx.bezierCurveTo(25*scale, 25*scale, 55*scale, 25*scale, 80*scale, 0);
+            }
+
+            _drawDecorations(ctx, scale) {
+                ctx.moveTo(45*scale, -90*scale);
+                ctx.lineTo(60*scale, -110*scale);
+                
+                ctx.moveTo(110*scale, -160*scale);
+                ctx.quadraticCurveTo(130*scale, -180*scale, 100*scale, -200*scale);
+                ctx.quadraticCurveTo(70*scale, -180*scale, 90*scale, -160*scale);
+                
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, 40*scale);
+            }
+
+            _calculateScale() {
+                const [start, end] = this.points;
+                const dx = end.x - start.x;
+                const dy = end.y - start.y;
+                return Math.sqrt(dx*dx + dy*dy) / 180;
+            }
+        }
+
+        // 初始化画布和状态
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        let isDrawing = false;
-        let currentTool = 'select';
         let shapes = [];
+        let currentTool = 'select';
+        let isDrawing = false;
         let currentShape = null;
-        let startX, startY;
+        let startPos = null;
 
         // 工具按钮事件
         document.querySelectorAll('.tool-btn').forEach(btn => {
@@ -66,27 +248,18 @@
 
         // 保存功能
         document.getElementById('saveBtn').addEventListener('click', () => {
-            const json = JSON.stringify(shapes, null, 2);
+            const json = JSON.stringify(shapes.map(shape => shape.toJSON()), null, 2);
             console.log(json);
             alert('JSON已保存到控制台');
         });
 
         function startDrawing(e) {
-            const rect = canvas.getBoundingClientRect();
-            startX = e.clientX - rect.left;
-            startY = e.clientY - rect.top;
+            const pos = getCanvasPosition(e);
             
             if (currentTool === 'text') {
                 const text = prompt('输入文本:');
                 if (text) {
-                    shapes.push({
-                        type: 'text',
-                        x: startX,
-                        y: startY,
-                        text: text,
-                        color: colorPicker.value,
-                        lineWidth: lineWidth.value
-                    });
+                    shapes.push(new TextShape(pos, text, colorPicker.value, lineWidth.value));
                     redraw();
                 }
                 return;
@@ -95,52 +268,29 @@
             if (currentTool === 'select') return;
 
             isDrawing = true;
-            currentShape = {
-                type: currentTool,
-                color: colorPicker.value,
-                lineWidth: lineWidth.value,
-                points: [{x: startX, y: startY}],
-                rotation: 0
-            };
+            startPos = pos;
+            currentShape = ShapeFactory.create(
+                currentTool, 
+                startPos, 
+                {...startPos},  // 初始结束点与起点相同
+                colorPicker.value, 
+                lineWidth.value
+            );
         }
 
         function drawing(e) {
-            if (!isDrawing) return;
+            if (!isDrawing || !currentShape) return;
             
-            const rect = canvas.getBoundingClientRect();
-            const currentX = e.clientX - rect.left;
-            const currentY = e.clientY - rect.top;
-
+            const currentPos = getCanvasPosition(e);
+            currentShape.points[1] = currentPos;
+            currentShape.rotation = Math.atan2(
+                currentPos.y - startPos.y, 
+                currentPos.x - startPos.x
+            );
+            
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             redraw();
-            
-            currentShape.points[1] = {x: currentX, y: currentY};
-            const dx = currentX - startX;
-            const dy = currentY - startY;
-            currentShape.rotation = Math.atan2(dy, dx);
-            
-            ctx.beginPath();
-            ctx.strokeStyle = currentShape.color;
-            ctx.lineWidth = currentShape.lineWidth;
-
-            switch(currentTool) {
-                case 'line':
-                    drawLine(currentShape.points[0], currentShape.points[1]);
-                    break;
-                case 'rect':
-                    drawRect(currentShape.points[0], currentShape.points[1]);
-                    break;
-                case 'circle':
-                    drawCircle(currentShape.points[0], currentShape.points[1]);
-                    break;
-                case 'scarecrow':
-                    drawScarecrow(currentShape.points[0], currentShape.points[1]);
-                    break;
-                case 'trebleclef':
-                    drawTrebleClef(currentShape);
-                    break;
-            }
-            ctx.stroke();
+            currentShape.draw(ctx);
         }
 
         function finishDrawing() {
@@ -156,123 +306,15 @@
 
         function redraw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            shapes.forEach(shape => {
-                ctx.save();
-                ctx.strokeStyle = shape.color;
-                ctx.lineWidth = shape.lineWidth;
-                ctx.beginPath();
-
-                switch(shape.type) {
-                    case 'text':
-                        ctx.fillStyle = shape.color;
-                        ctx.textBaseline = 'top';
-                        ctx.font = `${shape.lineWidth * 2}px Arial`;
-                        ctx.fillText(shape.text, shape.x, shape.y);
-                        break;
-                    case 'line':
-                        drawLine(shape.points[0], shape.points[1]);
-                        break;
-                    case 'rect':
-                        drawRect(shape.points[0], shape.points[1]);
-                        break;
-                    case 'circle':
-                        drawCircle(shape.points[0], shape.points[1]);
-                        break;
-                    case 'scarecrow':
-                        drawScarecrow(shape.points[0], shape.points[1]);
-                        break;
-                    case 'trebleclef':
-                        drawTrebleClef(shape);
-                        break;
-                }
-                ctx.stroke();
-                ctx.restore();
-            });
+            shapes.forEach(shape => shape.draw(ctx));
         }
 
-        // 基本图形绘制函数
-        function drawLine(start, end) {
-            ctx.moveTo(start.x, start.y);
-            ctx.lineTo(end.x, end.y);
-        }
-
-        function drawRect(start, end) {
-            const width = end.x - start.x;
-            const height = end.y - start.y;
-            ctx.rect(start.x, start.y, width, height);
-        }
-
-        function drawCircle(start, end) {
-            const radius = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
-            ctx.arc(start.x, start.y, radius, 0, Math.PI * 2);
-        }
-
-        // 稻草人绘制函数
-        function drawScarecrow(start, end) {
-            const width = end.x - start.x;
-            const height = end.y - start.y;
-            const baseSize = Math.max(Math.abs(width), Math.abs(height)) * 0.8;
-            
-            // 头部
-            ctx.arc(start.x, start.y, baseSize * 0.2, 0, Math.PI * 2);
-            
-            // 身体
-            ctx.moveTo(start.x, start.y + baseSize * 0.2);
-            ctx.lineTo(start.x, start.y + baseSize * 0.6);
-            
-            // 手臂
-            ctx.moveTo(start.x - baseSize * 0.3, start.y + baseSize * 0.3);
-            ctx.lineTo(start.x + baseSize * 0.3, start.y + baseSize * 0.3);
-            
-            // 双腿
-            ctx.moveTo(start.x, start.y + baseSize * 0.6);
-            ctx.lineTo(start.x - baseSize * 0.2, start.y + baseSize * 0.9);
-            ctx.moveTo(start.x, start.y + baseSize * 0.6);
-            ctx.lineTo(start.x + baseSize * 0.2, start.y + baseSize * 0.9);
-            
-            // 帽子
-            ctx.moveTo(start.x - baseSize * 0.2, start.y - baseSize * 0.1);
-            ctx.lineTo(start.x + baseSize * 0.2, start.y - baseSize * 0.1);
-            ctx.lineTo(start.x, start.y - baseSize * 0.3);
-            ctx.closePath();
-        }
-
-        // 专业级高音谱号绘制函数
-        function drawTrebleClef(shape) {
-            const start = shape.points[0];
-            const end = shape.points[1];
-            const dx = end.x - start.x;
-            const dy = end.y - start.y;
-            const length = Math.sqrt(dx*dx + dy*dy);
-            const scale = length / 180;
-            
-            ctx.save();
-            ctx.translate(start.x, start.y);
-            ctx.rotate(shape.rotation);
-            
-            // 主螺旋曲线
-            ctx.moveTo(0, 0);
-            ctx.bezierCurveTo(-35*scale, -150*scale, 85*scale, -220*scale, 110*scale, -160*scale);
-            
-            // 底部环
-            ctx.moveTo(0, 0);
-            ctx.bezierCurveTo(25*scale, 25*scale, 55*scale, 25*scale, 80*scale, 0*scale);
-            
-            // 中间交叉线
-            ctx.moveTo(45*scale, -90*scale);
-            ctx.lineTo(60*scale, -110*scale);
-            
-            // 顶部装饰环
-            ctx.moveTo(110*scale, -160*scale);
-            ctx.quadraticCurveTo(130*scale, -180*scale, 100*scale, -200*scale);
-            ctx.quadraticCurveTo(70*scale, -180*scale, 90*scale, -160*scale);
-            
-            // 竖直线
-            ctx.moveTo(0, 0);
-            ctx.lineTo(0, 40*scale);
-
-            ctx.restore();
+        function getCanvasPosition(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
         }
     </script>
 </body>
