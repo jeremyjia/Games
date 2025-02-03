@@ -5,6 +5,12 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
+// 创建保存配置的目录
+const configDir = path.join(__dirname, 'saved_configs');
+if (!fs.existsSync(configDir)) {
+    fs.mkdirSync(configDir, { recursive: true });
+}
+
 const app = express();
 const port = 3000;
 
@@ -16,6 +22,43 @@ const config = {
   width: 640,
   height: 480
 };
+
+
+// 新增保存配置端点
+app.post('/save-config', (req, res) => {
+  try {
+      const { config, filename } = req.body;
+      
+      // 验证输入
+      if (!config || !filename) {
+          throw new Error('无效的请求参数');
+      }
+      
+      // 验证文件名格式
+      if (!/^[\w\-]+\.json$/.test(filename)) {
+          throw new Error('文件名格式不正确');
+      }
+
+      // 验证配置结构
+      validateConfig(config);
+
+      // 保存文件
+      const filePath = path.join(configDir, filename);
+      fs.writeFileSync(filePath, JSON.stringify(config, null, 2));
+      
+      res.json({ 
+          success: true,
+          filename: filename,
+          path: filePath
+      });
+      
+  } catch (error) {
+      res.status(400).json({
+          success: false,
+          message: error.message
+      });
+  }
+});
 
 app.post('/generate', async (req, res) => {
   try {

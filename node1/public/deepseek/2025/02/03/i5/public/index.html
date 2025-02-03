@@ -139,6 +139,8 @@
   }
 ]</textarea>
             <button onclick="generateVideo()">生成视频</button>
+            <!-- 前端修改部分 -->
+            <button onclick="saveConfig()" style="background: #2196F3; margin-left: 10px;">保存配置</button>
         </div>
         
         <div>
@@ -257,7 +259,32 @@
                 alert('生成失败: ' + error.message);
             }
         }
+        // 新增保存配置功能
+        async function saveConfig() {
+            try {
+                const config = JSON.parse(document.getElementById('editor').value);
+                
+                const response = await fetch('/save-config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        config: config,
+                        filename: `config_${Date.now()}.json`
+                    })
+                });
 
+                const result = await response.json();
+                if (result.success) {
+                    alert('配置保存成功！文件名: ' + result.filename);
+                } else {
+                    alert('保存失败: ' + result.message);
+                }
+            } catch (error) {
+                alert('保存失败: ' + error.message);
+            }
+        }
         // 初始化预览...
         updatePreview(JSON.parse(document.getElementById('editor').value));
     </script>
