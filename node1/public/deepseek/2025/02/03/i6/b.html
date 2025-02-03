@@ -190,6 +190,8 @@ function drawObject(obj) {
     }
 }
 
+// 添加帧率监控
+let lastRender = Date.now();
 // 渲染循环
 function render() {
     // 清除画布
@@ -213,6 +215,13 @@ function render() {
             selectedObj.height + 4
         );
     }
+
+    // 显示帧率
+    const now = Date.now();
+    const fps = 1000 / (now - lastRender);
+    lastRender = now;
+    ctx.fillStyle = '#000';
+    ctx.fillText(`FPS: ${fps.toFixed(1)}`, 10, 20);
 }
 
 // 其他功能保持不变...
