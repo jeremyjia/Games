@@ -26,22 +26,25 @@
         // 设置画布大小
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-
+ 
         // 动画函数
         function animate() {
             const width = canvas.width;
             const height = canvas.height;
             const time = Date.now() / 1000; // 获取当前时间（秒）
-            const grayValue = 255 - (255 * time % 1); // 计算当前灰度值（0-255）
+            const grayValue = 255 - (255 * time % 255); // 计算当前灰度值（0-255）
 
+            let rgb = `rgb(${grayValue}, ${grayValue}, ${grayValue})`;
+            
             // 清空画布
-            ctx.fillStyle = `rgb(${grayValue}, ${grayValue}, ${grayValue})`;
+            ctx.fillStyle = rgb;
             ctx.fillRect(0, 0, width, height);
 
             // 请求下一帧
             requestAnimationFrame(animate);
         }
-
+        
+        console.log(Date());
         // 开始动画
         animate();
     </script>
