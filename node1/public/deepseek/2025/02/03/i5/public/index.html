@@ -54,6 +54,10 @@
             align-items: center;
             z-index: 1000;
         }
+        .modal.show {
+            display: flex;
+        }
+
         .modal-content {
             background: white;
             padding: 20px;
@@ -70,6 +74,12 @@
             border: none;
             font-size: 24px;
             cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .loading {
             display: none;
@@ -232,6 +242,17 @@
             }
         }
 
+        
+        
+        // 新增模态框功能
+        const modal = document.getElementById('videoModal');
+        const videoPlayer = document.getElementById('videoPlayer');
+        const videoSource = document.getElementById('videoSource');
+        const loading = document.getElementById('loading');
+
+        function showModal() {
+            modal.style.display = 'flex';
+        }
         // 视频模态框功能
         function showVideoModal(blob) {
             const videoUrl = URL.createObjectURL(blob);
