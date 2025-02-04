@@ -56,13 +56,19 @@
             grid-template-columns: repeat(3, 1fr);
             gap: 8px;
         }
+        .rotation-controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
         #startBtn { background: #4CAF50; }
         #stopBtn { background: #f44336; }
         #fishBtn { background: #e91e63; }
         #jumpBtn { background: #ff9800; }
         #dogBtn { background: #9C27B0; }
         #dismissDogBtn { background: #673AB7; }
-        #rotateLeftBtn, #rotateRightBtn { background: #607D8B; }
+        #lieLeftBtn, #lieRightBtn { background: #795548; }
+        #turnLeftBtn, #turnBackBtn, #turnRightBtn { background: #009688; }
         .status-bar {
             position: absolute;
             top: 10px;
@@ -78,8 +84,13 @@
 <body>
     <div class="status-bar">状态: <span id="status">运行中</span></div>
     <div class="controls">
-        <button id="rotateLeftBtn">↩ 左转</button>
-        <button id="rotateRightBtn">↪ 右转</button>
+        <button id="lieLeftBtn">🛌 左躺</button>
+        <button id="lieRightBtn">🛌 右躺</button>
+        <div class="rotation-controls">
+            <button id="turnLeftBtn">↩ 左转</button>
+            <button id="turnBackBtn">↻ 后转</button>
+            <button id="turnRightBtn">↪ 右转</button>
+        </div>
         <button id="startBtn">开始自动</button>
         <button id="stopBtn">停止自动</button>
         <button id="dogBtn">🐶 召唤小狗</button>
@@ -120,6 +131,8 @@
                 this.speed = canvas.width * 0.005;
                 this.rodAngle = 0;
                 this.direction = 0; // 0: 正面 1: 右 2: 背面 3: 左
+                this.lyingState = 0; // 0: 正常 1: 左躺 2: 右躺
+                this.bodyRotation = 0;
             }
 
             reset() {
@@ -132,12 +145,21 @@
                 this.animationStep = 0;
                 this.fishingProgress = 0;
                 this.direction = 0;
+                this.lyingState = 0;
+                this.bodyRotation = 0;
             }
 
             draw() {
                 ctx.save();
                 ctx.translate(this.x, this.y);
-                ctx.rotate((this.direction * Math.PI)/2);
+                
+                // 处理躺下状态
+                if(this.lyingState !== 0) {
+                    ctx.rotate(this.lyingState === 1 ? -Math.PI/2 : Math.PI/2);
+                    ctx.translate(0, 50);
+                } else {
+                    ctx.rotate((this.direction * Math.PI)/2 + this.bodyRotation);
+                }
 
                 if(isFishing) this.#drawFishingRod();
 
@@ -270,6 +292,11 @@
             }
 
             update() {
+                if (this.lyingState !== 0) {
+                    this.bodyRotation = Math.sin(Date.now()/300) * 0.1;
+                    return;
+                }
+
                 if (isMoving) {
                     this.x += this.speed * (this.direction % 2 === 0 ? 1 : 0);
                     if (this.x > canvas.width - 50 || this.x < 50) {
@@ -296,8 +323,23 @@
                 }
             }
 
+            lieDown(side) {
+                this.lyingState = side;
+                this.bodyRotation = 0;
+            }
+
+            standUp() {
+                this.lyingState = 0;
+            }
+
             rotate(step) {
+                if(this.lyingState !== 0) return;
                 this.direction = (this.direction + step + 4) % 4;
+            }
+
+            turnBack() {
+                if(this.lyingState !== 0) return;
+                this.direction = (this.direction + 2) % 4;
             }
         }
 
@@ -432,19 +474,20 @@
         }
 
         function move(direction) {
+            if(scarecrow.lyingState !== 0) return;
             const newX = scarecrow.x + (PHYSICS.STEP_SIZE * direction);
             scarecrow.x = Math.max(50, Math.min(canvas.width - 50, newX));
         }
 
         function jump() {
-            if (!scarecrow.isJumping) {
+            if (!scarecrow.isJumping && scarecrow.lyingState === 0) {
                 scarecrow.velocityY = PHYSICS.JUMP_FORCE;
                 scarecrow.isJumping = true;
             }
         }
 
         function fish() {
-            if(!isFishing) {
+            if(!isFishing && scarecrow.lyingState === 0) {
                 isFishing = true;
                 document.getElementById('status').textContent = '钓鱼中...';
                 setTimeout(() => {
@@ -474,14 +517,6 @@
             }
         }
 
-        function rotateLeft() {
-            scarecrow.rotate(-1);
-        }
-
-        function rotateRight() {
-            scarecrow.rotate(1);
-        }
-
         // 事件监听
         document.getElementById('startBtn').addEventListener('click', startAuto);
         document.getElementById('stopBtn').addEventListener('click', stopAuto);
@@ -491,8 +526,31 @@
         document.getElementById('fishBtn').addEventListener('click', fish);
         document.getElementById('dogBtn').addEventListener('click', summonDog);
         document.getElementById('dismissDogBtn').addEventListener('click', dismissDog);
-        document.getElementById('rotateLeftBtn').addEventListener('click', rotateLeft);
-        document.getElementById('rotateRightBtn').addEventListener('click', rotateRight);
+
+        // 新增事件监听
+        document.getElementById('lieLeftBtn').addEventListener('click', () => {
+            scarecrow.lieDown(1);
+            document.getElementById('status').textContent = '左躺中';
+        });
+        document.getElementById('lieRightBtn').addEventListener('click', () => {
+            scarecrow.lieDown(2);
+            document.getElementById('status').textContent = '右躺中';
+        });
+        document.getElementById('turnLeftBtn').addEventListener('click', () => {
+            scarecrow.standUp();
+            scarecrow.rotate(-1);
+            document.getElementById('status').textContent = '左转';
+        });
+        document.getElementById('turnRightBtn').addEventListener('click', () => {
+            scarecrow.standUp();
+            scarecrow.rotate(1);
+            document.getElementById('status').textContent = '右转';
+        });
+        document.getElementById('turnBackBtn').addEventListener('click', () => {
+            scarecrow.standUp();
+            scarecrow.turnBack();
+            document.getElementById('status').textContent = '向后转';
+        });
 
         document.querySelectorAll('button').forEach(btn => {
             btn.addEventListener('touchstart', (e) => {
