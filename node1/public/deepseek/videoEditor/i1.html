@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        .toolbar {
+            position: absolute;
+            background: rgba(240, 240, 240, 0.9);
+            padding: 10px;
+            border: 1px solid #ccc;
+            cursor: move;
+            touch-action: none;
+            border-radius: 5px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            user-select: none;
+        }
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+        canvas {
+            touch-action: none;
+        }
+        button {
+            padding: 8px;
+            margin: 2px;
+            min-width: 60px;
+            touch-action: manipulation;
+        }
+        #shape-toolbar { left: 20px; top: 20px; }
+        #scene-toolbar { left: 20px; top: 120px; }
+        #playback-toolbar { left: 20px; bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div id="canvas-container">
+        <canvas id="main-canvas"></canvas>
+        
+        <div id="shape-toolbar" class="toolbar">
+            <button data-shape="rect">矩形</button>
+            <button data-shape="circle">圆形</button>
+            <button data-shape="line">直线</button>
+            <button data-shape="triangle">三角形</button>
+        </div>
+
+        <div id="scene-toolbar" class="toolbar">
+            <button data-scene="forest">树林</button>
+            <button data-scene="beach">海边</button>
+            <button data-scene="road">马路</button>
+        </div>
+
+        <div id="playback-toolbar" class="toolbar">
+            <button id="play">▶</button>
+            <button id="pause">⏸</button>
+            <button id="export">导出JSON</button>
+        </div>
+    </div>
+
+<script>
+    /*
+    从0制作一个网页视频编辑器。
+    在JavaScript画布上可以编辑数字视频，可以编辑不同的场景。
+    有一个工具条上面可以创建各种对象，如直线，圆，矩形，三角形场，这些对象可以添加到场景。
+    还有一个工具条可以设置场景，有树林，海边，马路。另一个工具条可以播放视频。
+    所有工具条都是悬浮可以移动的。最后导出成json文件。可以在手机上演示。
+    */
+class VideoEditor {
+    constructor() {
+        this.canvas = document.getElementById('main-canvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.scenes = [this.createNewScene()];
+        this.currentScene = this.scenes[0];
+        this.selectedTool = 'rect';
+        this.dragging = false;
+        this.currentObject = null;
+        this.draggingToolbar = null;
+        this.dragOffset = { x: 0, y: 0 };
+
+        this.initCanvas();
+        this.initToolbars();
+        this.initDrag();
+        this.bindExport();
+    }
+
+    createNewScene() {
+        return {
+            background: null,
+            objects: [],
+            duration: 5000 // 默认5秒
+        };
+    }
+
+    initCanvas() {
+        this.resizeCanvas();
+        window.addEventListener('resize', () => this.resizeCanvas());
+        
+        // 桌面端事件
+        this.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
+        document.addEventListener('mousemove', this.handleMouseMove.bind(this));
+        document.addEventListener('mouseup', this.handleMouseUp.bind(this));
+        
+        // 移动端事件
+        this.canvas.addEventListener('touchstart', this.handleTouchStart.bind(this));
+        document.addEventListener('touchmove', this.handleTouchMove.bind(this));
+        document.addEventListener('touchend', this.handleTouchEnd.bind(this));
+    }
+
+    initToolbars() {
+        // 形状选择
+        document.querySelectorAll('#shape-toolbar button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.selectedTool = e.target.dataset.shape;
+            });
+        });
+
+        // 场景设置
+        document.querySelectorAll('#scene-toolbar button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.setSceneBackground(e.target.dataset.scene);
+            });
+        });
+
+        // 播放控制
+        document.getElementById('play').addEventListener('click', () => this.startPlayback());
+        document.getElementById('pause').addEventListener('click', () => this.pausePlayback());
+    }
+
+    initDrag() {
+        document.querySelectorAll('.toolbar').forEach(toolbar => {
+            toolbar.addEventListener('mousedown', this.startDrag.bind(this));
+            toolbar.addEventListener('touchstart', this.startDrag.bind(this));
+        });
+    }
+
+    startDrag(e) {
+        this.draggingToolbar = e.currentTarget;
+        const rect = this.draggingToolbar.getBoundingClientRect();
+        
+        if (e.type === 'touchstart') {
+            this.dragOffset.x = e.touches[0].clientX - rect.left;
+            this.dragOffset.y = e.touches[0].clientY - rect.top;
+        } else {
+            this.dragOffset.x = e.clientX - rect.left;
+            this.dragOffset.y = e.clientY - rect.top;
+        }
+        
+        document.addEventListener('mousemove', this.handleDrag.bind(this));
+        document.addEventListener('touchmove', this.handleDrag.bind(this));
+        document.addEventListener('mouseup', this.stopDrag.bind(this));
+        document.addEventListener('touchend', this.stopDrag.bind(this));
+    }
+
+    handleDrag(e) {
+        if (!this.draggingToolbar) return;
+        
+        let clientX, clientY;
+        if (e.type === 'touchmove') {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+
+        this.draggingToolbar.style.left = `${clientX - this.dragOffset.x}px`;
+        this.draggingToolbar.style.top = `${clientY - this.dragOffset.y}px`;
+    }
+
+    stopDrag() {
+        this.draggingToolbar = null;
+        document.removeEventListener('mousemove', this.handleDrag);
+        document.removeEventListener('touchmove', this.handleDrag);
+    }
+
+    bindExport() {
+        document.getElementById('export').addEventListener('click', () => {
+            const data = this.exportToJSON();
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'scene.json';
+            a.click();
+        });
+    }
+
+    handleMouseDown(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        this.startDrawing(x, y);
+    }
+
+    handleTouchStart(e) {
+        e.preventDefault();
+        const rect = this.canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        this.startDrawing(x, y);
+    }
+
+    startDrawing(x, y) {
+        this.dragging = true;
+        this.currentObject = {
+            type: this.selectedTool,
+            x1: x,
+            y1: y,
+            x2: x,
+            y2: y,
+            color: '#ff0000'
+        };
+    }
+
+    handleMouseMove(e) {
+        if (!this.dragging) return;
+        const rect = this.canvas.getBoundingClientRect();
+        this.updateDrawing(e.clientX - rect.left, e.clientY - rect.top);
+    }
+
+    handleTouchMove(e) {
+        if (!this.dragging) return;
+        e.preventDefault();
+        const rect = this.canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        this.updateDrawing(touch.clientX - rect.left, touch.clientY - rect.top);
+    }
+
+    updateDrawing(x, y) {
+        this.currentObject.x2 = x;
+        this.currentObject.y2 = y;
+        this.redraw();
+    }
+
+    handleMouseUp() {
+        this.finishDrawing();
+    }
+
+    handleTouchEnd() {
+        this.finishDrawing();
+    }
+
+    finishDrawing() {
+        this.dragging = false;
+        if (this.currentObject) {
+            this.currentScene.objects.push(this.currentObject);
+            this.currentObject = null;
+            this.redraw();
+        }
+    }
+
+    setSceneBackground(type) {
+        const backgrounds = {
+            forest: '#4a752c',
+            beach: '#87ceeb',
+            road: '#808080'
+        };
+        this.currentScene.background = backgrounds[type];
+        this.redraw();
+    }
+
+    redraw() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // 绘制背景
+        if (this.currentScene.background) {
+            this.ctx.fillStyle = this.currentScene.background;
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+        
+        // 绘制所有对象
+        this.currentScene.objects.forEach(obj => this.drawObject(obj));
+        if (this.currentObject) this.drawObject(this.currentObject);
+    }
+
+    drawObject(obj) {
+        this.ctx.beginPath();
+        this.ctx.strokeStyle = obj.color;
+        this.ctx.lineWidth = 2;
+
+        switch(obj.type) {
+            case 'rect':
+                this.ctx.strokeRect(
+                    Math.min(obj.x1, obj.x2),
+                    Math.min(obj.y1, obj.y2),
+                    Math.abs(obj.x2 - obj.x1),
+                    Math.abs(obj.y2 - obj.y1)
+                );
+                break;
+                
+            case 'circle':
+                const radius = Math.hypot(obj.x2 - obj.x1, obj.y2 - obj.y1);
+                this.ctx.arc(obj.x1, obj.y1, radius, 0, Math.PI*2);
+                this.ctx.stroke();
+                break;
+                
+            case 'line':
+                this.ctx.moveTo(obj.x1, obj.y1);
+                this.ctx.lineTo(obj.x2, obj.y2);
+                this.ctx.stroke();
+                break;
+                
+            case 'triangle':
+                const centerX = (obj.x1 + obj.x2) / 2;
+                const centerY = (obj.y1 + obj.y2) / 2;
+                this.ctx.moveTo(centerX, obj.y1);
+                this.ctx.lineTo(obj.x2, obj.y2);
+                this.ctx.lineTo(obj.x1, obj.y2);
+                this.ctx.closePath();
+                this.ctx.stroke();
+                break;
+        }
+    }
+
+    resizeCanvas() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+        this.redraw();
+    }
+
+    startPlayback() {
+        // 播放逻辑占位
+        console.log('Playback started');
+    }
+
+    pausePlayback() {
+        // 暂停逻辑占位
+        console.log('Playback paused');
+    }
+
+    exportToJSON() {
+        return JSON.stringify({
+            scenes: this.scenes,
+            version: '1.0',
+            meta: {
+                created: new Date().toISOString(),
+                resolution: `${this.canvas.width}x${this.canvas.height}`
+            }
+        }, null, 2);
+    }
+}
+
+// 初始化编辑器
+const editor = new VideoEditor();
+</script>
+</body>
+</html>
