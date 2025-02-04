@@ -945,8 +945,7 @@ function CBlClass ()
 				ctx.fillRect(x1,y1,x2-x1,y2-y1);
 				
 				ctx.fillStyle = "white";
-				ctx.fillText("xddbg:CurScene: n=" + n , x1,y1 + 44);
-				if(_thisBLS.btnScenes) _thisBLS.btnScenes[n].style.backgroundColor = "green";
+				ctx.fillText("xddbg:CurScene: n=" + n , x1,y1 + 44); 
 				 
 				if(n>-1){
 					const os = _lsSc[n].objects;
@@ -1008,10 +1007,7 @@ function CBlClass ()
 				ctx.fillText(s, x1,y1 + 44);
 				ctx.fillText(" beatNO = " + vp.currentTime*6/5, x1,y1 + 66);
 				ctx.fillText(" FrameNO = " + vp.currentTime/spf*1000, x1,y1 + 88);
-
-
-				
-				
+ 
 
 				const checkSite = function(_x,_y){
 					async function isWebsiteAccessible(url) {
@@ -7585,13 +7581,7 @@ const gc4BLS = function(){
 			blsTimer.paintCurScene(ctx,this,this.getScenes(),iCurScene,x1,y1,x2,y2);
 			_objCmd.drawObjCmdUI(ctx,x1+5,y1-15); 
 		}
-
-		if(iCurScene>-1){
-			ctx.fillStyle = "rgb(200,111,1)";//"blue";
-			ctx.font = "30px Arial";
-			var ss = sBlsTitle + " : curSceneNo=" + iCurScene + " time=" + lsScene[iCurScene].time;
-			ctx.fillText(ss, x1,y1 + 50);
-		}
+ 
 
 		blsTimer.drawOnLoop(cvs,this,x1,y1,x2,y2);
 
