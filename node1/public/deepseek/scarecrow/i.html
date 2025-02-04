@@ -1,104 +1,157 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>可控制的稻草人</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能稻草人</title>
     <style>
         canvas {
             border: 1px solid #000;
             background: #87CEEB;
+            touch-action: none;
         }
         body {
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             background: #f0f0f0;
+            touch-action: manipulation;
         }
         .controls {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
             justify-content: center;
+            padding: 0 10px;
         }
         button {
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 12px 20px;
+            font-size: 14px;
             cursor: pointer;
             background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: 5px;
-            transition: all 0.3s;
-            min-width: 120px;
+            border-radius: 25px;
+            transition: all 0.2s;
+            min-width: 90px;
+            touch-action: manipulation;
+        }
+        @media (max-width: 480px) {
+            button {
+                padding: 10px 15px;
+                font-size: 13px;
+                min-width: 80px;
+            }
         }
         button:hover {
-            background-color: #45a049;
-            transform: translateY(-2px);
+            transform: scale(1.05);
         }
         button:active {
-            transform: translateY(0);
-        }
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
+            transform: scale(0.95);
         }
         .movement-controls {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+            gap: 8px;
+        }
+        #fishBtn { background: #e91e63; }
+        #jumpBtn { background: #ff9800; }
+        .status-bar {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px;
+            border-radius: 5px;
+            font-family: Arial;
         }
     </style>
 </head>
 <body>
+    <div class="status-bar">状态: <span id="status">运行中</span></div>
     <div class="controls">
         <button id="startBtn">开始自动</button>
         <button id="stopBtn">停止自动</button>
         <div class="movement-controls">
-            <button id="leftBtn" style="background:#2196F3">← 左移5步</button>
-            <button id="jumpBtn" style="background:#ff9800">↑ 跳跃</button>
-            <button id="rightBtn" style="background:#2196F3">→ 右移5步</button>
+            <button id="leftBtn" style="background:#2196F3">← 移动</button>
+            <button id="jumpBtn">↑ 跳跃</button>
+            <button id="rightBtn" style="background:#2196F3">→ 移动</button>
         </div>
+        <button id="fishBtn">🎣 钓鱼</button>
     </div>
-    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <canvas id="gameCanvas"></canvas>
 
     <script>
-        //再升级一下，让他在手机上运行的时候更美观。另外在停止状态它也可以左移。也可以钓鱼，也可以上跳。
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         let animationId = null;
         let isMoving = true;
-        const STEP_SIZE = 40;
-        const JUMP_FORCE = -20;
-        const GRAVITY = 0.8;
-        const GROUND_Y = canvas.height - 100;
+        let isFishing = false;
+        
+        // 动态尺寸设置
+        function setCanvasSize() {
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            canvas.width = isMobile ? window.innerWidth * 0.95 : 800;
+            canvas.height = isMobile ? window.innerHeight * 0.6 : 400;
+        }
+        setCanvasSize();
+
+        const PHYSICS = {
+            STEP_SIZE: canvas.width * 0.05,
+            JUMP_FORCE: -18,
+            GRAVITY: 0.7,
+            FISHING_TIME: 1500
+        };
 
         class Scarecrow {
             constructor() {
-                this.resetPosition();
-                this.speed = 3;
-                this.armAngle = 0;
-                this.legAngle = 0;
-                this.animationStep = 0;
-                this.velocityY = 0;
-                this.isJumping = false;
+                this.reset();
+                this.speed = canvas.width * 0.005;
+                this.rodAngle = 0;
             }
 
-            resetPosition() {
+            reset() {
                 this.x = canvas.width / 2;
-                this.y = GROUND_Y;
+                this.y = canvas.height - 100;
                 this.direction = 1;
                 this.velocityY = 0;
                 this.isJumping = false;
+                this.armAngle = 0;
+                this.legAngle = 0;
+                this.animationStep = 0;
+                this.fishingProgress = 0;
             }
 
             draw() {
                 ctx.save();
                 ctx.translate(this.x, this.y);
 
-                // 绘制身体
+                // 绘制钓竿
+                if(isFishing) {
+                    ctx.save();
+                    ctx.rotate(-this.rodAngle + Math.PI/4);
+                    ctx.strokeStyle = '#795548';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(20, -80);
+                    ctx.lineTo(80, -140);
+                    ctx.stroke();
+                    
+                    // 鱼线
+                    ctx.strokeStyle = '#FFFFFF';
+                    ctx.setLineDash([2, 3]);
+                    ctx.beginPath();
+                    ctx.moveTo(80, -140);
+                    ctx.lineTo(80 + Math.sin(Date.now()/200)*10, -140 + 50);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+
+                // 身体
                 ctx.fillStyle = '#8B4513';
                 ctx.fillRect(-15, -80, 30, 80);
 
@@ -115,48 +168,37 @@
                 ctx.fill();
 
                 // 手臂
+                this.#drawArm(-15, -this.armAngle);
+                this.#drawArm(15, this.armAngle);
+
+                // 腿部
+                this.#drawLeg(-10, -this.legAngle);
+                this.#drawLeg(10, this.legAngle);
+
+                ctx.restore();
+            }
+
+            #drawArm(startX, angle) {
+                ctx.save();
+                ctx.rotate(angle);
                 ctx.strokeStyle = '#8B4513';
                 ctx.lineWidth = 8;
-                
-                // 左臂
-                ctx.save();
-                ctx.rotate(-this.armAngle);
                 ctx.beginPath();
-                ctx.moveTo(-15, -80);
-                ctx.lineTo(-45, -50);
+                ctx.moveTo(startX, -80);
+                ctx.lineTo(startX*2, -50);
                 ctx.stroke();
                 ctx.restore();
+            }
 
-                // 右臂
+            #drawLeg(startX, angle) {
                 ctx.save();
-                ctx.rotate(this.armAngle);
-                ctx.beginPath();
-                ctx.moveTo(15, -80);
-                ctx.lineTo(45, -50);
-                ctx.stroke();
-                ctx.restore();
-
-                // 腿
+                ctx.rotate(angle);
                 ctx.strokeStyle = '#8B4513';
-                
-                // 左腿
-                ctx.save();
-                ctx.rotate(-this.legAngle);
+                ctx.lineWidth = 6;
                 ctx.beginPath();
-                ctx.moveTo(-10, 0);
-                ctx.lineTo(-20, 40);
+                ctx.moveTo(startX, 0);
+                ctx.lineTo(startX*1.5, 40);
                 ctx.stroke();
-                ctx.restore();
-
-                // 右腿
-                ctx.save();
-                ctx.rotate(this.legAngle);
-                ctx.beginPath();
-                ctx.moveTo(10, 0);
-                ctx.lineTo(20, 40);
-                ctx.stroke();
-                ctx.restore();
-
                 ctx.restore();
             }
 
@@ -169,7 +211,7 @@
                     }
                 }
 
-                // 动画更新
+                // 动画系统
                 this.animationStep = (this.animationStep + 1) % 60;
                 this.armAngle = Math.sin(this.animationStep * 0.1) * 0.5;
                 this.legAngle = Math.cos(this.animationStep * 0.1) * 0.3;
@@ -177,14 +219,17 @@
                 // 跳跃物理
                 if (this.isJumping) {
                     this.y += this.velocityY;
-                    this.velocityY += GRAVITY;
-                    
-                    // 落地检测
-                    if (this.y >= GROUND_Y) {
-                        this.y = GROUND_Y;
+                    this.velocityY += PHYSICS.GRAVITY;
+                    if (this.y >= canvas.height - 100) {
+                        this.y = canvas.height - 100;
                         this.velocityY = 0;
                         this.isJumping = false;
                     }
+                }
+
+                // 钓鱼动画
+                if(isFishing) {
+                    this.rodAngle = Math.sin(Date.now()/200) * 0.2;
                 }
             }
         }
@@ -194,9 +239,11 @@
         function gameLoop() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // 绘制地面
+            // 绘制场景
             ctx.fillStyle = '#90EE90';
             ctx.fillRect(0, canvas.height - 60, canvas.width, 60);
+            ctx.fillStyle = '#4682B4';
+            ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
             
             scarecrow.update();
             scarecrow.draw();
@@ -205,51 +252,62 @@
         }
 
         // 控制函数
-        function startMovement() {
-            if (!isMoving) {
-                isMoving = true;
-                gameLoop();
-            }
+        function startAuto() {
+            isMoving = true;
+            document.getElementById('status').textContent = '自动运行中';
+            gameLoop();
         }
 
-        function stopMovement() {
+        function stopAuto() {
             isMoving = false;
-            cancelAnimationFrame(animationId);
+            document.getElementById('status').textContent = '已停止';
         }
 
-        function moveLeft() {
-            scarecrow.x = Math.max(50, scarecrow.x - STEP_SIZE);
-            scarecrow.direction = -1;
-        }
-
-        function moveRight() {
-            scarecrow.x = Math.min(canvas.width - 50, scarecrow.x + STEP_SIZE);
-            scarecrow.direction = 1;
+        function move(direction) {
+            const newX = scarecrow.x + (PHYSICS.STEP_SIZE * direction);
+            scarecrow.x = Math.max(50, Math.min(canvas.width - 50, newX));
+            scarecrow.direction = direction;
         }
 
         function jump() {
             if (!scarecrow.isJumping) {
-                scarecrow.velocityY = JUMP_FORCE;
+                scarecrow.velocityY = PHYSICS.JUMP_FORCE;
                 scarecrow.isJumping = true;
             }
         }
 
+        function fish() {
+            if(!isFishing) {
+                isFishing = true;
+                document.getElementById('status').textContent = '钓鱼中...';
+                setTimeout(() => {
+                    isFishing = false;
+                    document.getElementById('status').textContent = isMoving ? '自动运行中' : '已停止';
+                }, PHYSICS.FISHING_TIME);
+            }
+        }
+
         // 事件监听
-        document.getElementById('startBtn').addEventListener('click', startMovement);
-        document.getElementById('stopBtn').addEventListener('click', stopMovement);
-        document.getElementById('leftBtn').addEventListener('click', moveLeft);
-        document.getElementById('rightBtn').addEventListener('click', moveRight);
+        document.getElementById('startBtn').addEventListener('click', startAuto);
+        document.getElementById('stopBtn').addEventListener('click', stopAuto);
+        document.getElementById('leftBtn').addEventListener('click', () => move(-1));
+        document.getElementById('rightBtn').addEventListener('click', () => move(1));
         document.getElementById('jumpBtn').addEventListener('click', jump);
+        document.getElementById('fishBtn').addEventListener('click', fish);
 
-        // 初始启动
+        // 触摸事件支持
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                btn.click();
+            });
+        });
+
+        // 初始化
         gameLoop();
-
-        // 窗口调整处理
         window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth * 0.8;
-            canvas.height = window.innerHeight * 0.8;
-            GROUND_Y = canvas.height - 100;
-            scarecrow.resetPosition();
+            setCanvasSize();
+            scarecrow.reset();
         });
     </script>
 </body>
