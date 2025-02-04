@@ -9,30 +9,65 @@
         }
         body {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
             background: #f0f0f0;
         }
+        .controls {
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:active {
+            background-color: #3d8b40;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
+    <div class="controls">
+        <button id="startBtn">开始运动</button>
+        <button id="stopBtn">停止运动</button>
+    </div>
     <canvas id="gameCanvas" width="800" height="400"></canvas>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        
+        let animationId = null;
+        let isMoving = true;
+
         class Scarecrow {
             constructor() {
-                this.x = canvas.width / 2;
-                this.y = canvas.height - 100;
+                this.resetPosition();
                 this.speed = 3;
-                this.direction = 1;
                 this.armAngle = 0;
                 this.legAngle = 0;
                 this.animationStep = 0;
+            }
+
+            resetPosition() {
+                this.x = canvas.width / 2;
+                this.y = canvas.height - 100;
+                this.direction = 1;
             }
 
             draw() {
@@ -102,20 +137,16 @@
             }
 
             update() {
-                // 移动和边界检测
-                this.x += this.speed * this.direction;
-                if (this.x > canvas.width - 50 || this.x < 50) {
-                    this.direction *= -1;
-                }
+                if (isMoving) {
+                    this.x += this.speed * this.direction;
+                    if (this.x > canvas.width - 50 || this.x < 50) {
+                        this.direction *= -1;
+                    }
 
-                // 更新动画参数
-                this.animationStep = (this.animationStep + 1) % 60;
-                
-                // 摆臂动画
-                this.armAngle = Math.sin(this.animationStep * 0.1) * 0.5;
-                
-                // 腿部动画
-                this.legAngle = Math.cos(this.animationStep * 0.1) * 0.3;
+                    this.animationStep = (this.animationStep + 1) % 60;
+                    this.armAngle = Math.sin(this.animationStep * 0.1) * 0.5;
+                    this.legAngle = Math.cos(this.animationStep * 0.1) * 0.3;
+                }
             }
         }
 
@@ -131,17 +162,36 @@
             scarecrow.update();
             scarecrow.draw();
             
-            requestAnimationFrame(gameLoop);
+            animationId = requestAnimationFrame(gameLoop);
         }
 
-        // 启动动画
+        // 控制函数
+        function startMovement() {
+            if (!isMoving) {
+                isMoving = true;
+                gameLoop();
+            }
+        }
+
+        function stopMovement() {
+            isMoving = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+        }
+
+        // 事件监听
+        document.getElementById('startBtn').addEventListener('click', startMovement);
+        document.getElementById('stopBtn').addEventListener('click', stopMovement);
+
+        // 初始启动
         gameLoop();
 
         // 窗口调整处理
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth * 0.8;
             canvas.height = window.innerHeight * 0.8;
-            scarecrow.y = canvas.height - 100;
+            scarecrow.resetPosition();
         });
     </script>
 </body>
