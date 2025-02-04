@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.7.33"
+var g_ver_blClass = "CBlClass_bv1.7.34"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -8647,7 +8647,7 @@ const gc4BLS = function(){
 				"type": "text",
 				"makeData": function(r,x1,y1,x2,y2,size,color){
 					var bMoveText = false;
-					var mxLine1 = -1, myLine1 = -1,mxLine2 = -1, myLine2 = -1;
+					var mxText1 = -1, myText1 = -1,mxText2 = -1, myText2 = -1;
 
 					r.text = blo0.blGetTa().value;
 					r.x = x1;
@@ -8674,8 +8674,8 @@ const gc4BLS = function(){
 					const setPointInText = function(x,y,x1,y1){
 						if(blo0.blPiR(x,y,r.x+x1,r.y+y1,20,20)){
 							bMoveText = true; 
-							mxLine1 = x;
-							myLine1 = y;
+							mxText1 = x;
+							myText1 = y;
 						}
 						else{
 							bMoveText = false;
@@ -8683,14 +8683,14 @@ const gc4BLS = function(){
 					}
 					const toMoveText = function(x,y,x1,y1){
 						if(bMoveText){
-							mxLine2 = x;
-							myLine2 = y;
+							mxText2 = x;
+							myText2 = y;
 
-							r.x += mxLine2 - mxLine1;
-							r.y += myLine2 - myLine1; 
+							r.x += mxText2 - mxText1;
+							r.y += myText2 - myText1; 
 
-							mxLine1 = mxLine2;
-							myLine1 = myLine2;
+							mxText1 = mxText2;
+							myText1 = myText2;
 						}
 					}
 				},
@@ -8702,6 +8702,8 @@ const gc4BLS = function(){
 				"id": "id_4_musicNote",
 				"type": "musicNote",
 				"makeData": function(r,x1,y1,x2,y2,size,color){ 
+					let bMoveMusicNote = false;
+					var mxMnt1 = -1, myMnt1 = -1,mxMnt2 = -1, myMnt2 = -1;
 
 					var v = sText.split(',');//blo0.blGetTa().value.split(','); 
 
@@ -8720,6 +8722,11 @@ const gc4BLS = function(){
 					r.attribute 		= a;
 
 					r.drawMyself = function(ctx,x,y){
+						if(bMoveMusicNote){
+							ctx.fillStyle = "red";
+							ctx.fillRect(r.attribute.left+x,r.attribute.top+y,20,20);
+						} 
+
 						ctx.fillStyle = "green";
 						ctx.font = "10px Arial";					
 						
@@ -8841,6 +8848,28 @@ const gc4BLS = function(){
 							}(ctx,r.attribute.note,r.attribute.time,+r.attribute.tone,
 							r.attribute.left+x,r.attribute.top+y);
 
+						} 
+					} 
+					
+					r.downOnMe = function(x,y,x1,y1){    
+						if(blo0.blPiR(x,y,r.attribute.left+x1,r.attribute.top+y1,20,20)){
+							bMoveMusicNote = true;  
+							mxMnt1 = x;
+							myMnt1 = y;
+						}
+						else{
+							bMoveMusicNote = false;
+						}
+					}
+					r.upOnMe = function(x,y,x1,y1){   
+						if(bMoveMusicNote){
+							mxMnt2 = x;
+							myMnt2 = y;
+							r.attribute.left += mxMnt2 - mxMnt1;
+							r.attribute.top += myMnt2 - myMnt1; 
+							mxMnt1 = mxMnt2;
+							myMnt1 = myMnt2;
+							bMoveMusicNote = false;
 						} 
 					} 
 				},
