@@ -1,5 +1,5 @@
 // file: blclass.js   
-var g_ver_blClass = "CBlClass_bv1.7.34"
+var g_ver_blClass = "CBlClass_bv1.7.35"
 
 function myAjaxCmd(method, url, data, callback){
 	const getToken = function () {
@@ -903,7 +903,7 @@ function CBlClass ()
 			var bRun = false;
 			var fps = 1;
 			var spf = 1;
-			var time = 5; //added by jeremyjia
+			var time = 5;  
 			var m_bWebsiteAccessible = false;
 			var n = 0; 
 			var t1 = Date.now();
@@ -969,8 +969,9 @@ function CBlClass ()
 			}
 			o.getServerStatus = function(){
 				return m_bWebsiteAccessible;
-			}
-			o.getVP = function(){ return vp;}
+			} 
+			o.setSrc = function(s){  vp.src = s; }
+			o.getSrc = function(){ return vp.src;}
 			o.getFrameNo = function(l,nf){
 				var nr = 0;
 				var m = 0;
@@ -1031,6 +1032,25 @@ function CBlClass ()
 					});
 					
 				}();
+			}
+			o.showMyUI = function (v,float){
+				return function(_thisTimer){
+					const b = blo0.blBtn(v,v.id+"_btn_play","play","green");
+					b.style.float = float;
+					b.style.color = "white";
+					b.onclick = function(){ 
+						if(bRun){
+							_thisTimer.stop();
+							b.innerHTML = "play";
+							b.style.backgroundColor = "green";
+						}
+						else{
+							_thisTimer.start();
+							b.innerHTML = "stop";
+							b.style.backgroundColor = "brown";
+						} 
+					}
+				}(o,v,float);
 			}
 			return o;
 		}();
@@ -7576,30 +7596,7 @@ const gc4BLS = function(){
 			ctx.fillstyle = oldStyle;
 		} 
 		var oldStyle = ctx.fillStyle;
-		
-		if(!blsTimer.isPlaying()){
-			blsTimer.paintCurScene(ctx,this,this.getScenes(),iCurScene,x1,y1,x2,y2);
-			_objCmd.drawObjCmdUI(ctx,x1+5,y1-15); 
-		}
- 
-
-		blsTimer.drawOnLoop(cvs,this,x1,y1,x2,y2);
-
-		const showDebugMsg4BLS = function(){
-			ctx.fillStyle = "purple";
-			ctx.font = "10px Arial";
-			var s = _makeDbgMsgInFrame();
-			ctx.fillText(s, x1,y1+30);
-			
-			ctx.fillStyle = "rgb(200,111,1)";
-			ctx.font = "20px Arial";
-			if(blsTimer.getServerStatus() == true){
-				ctx.fillText("server_status: OK! ", x1,y1+70);
-			}else{
-				ctx.fillText("server_status: Not connected! ", x1,y1+70);
-			}
-			
-		}();
+		  
 		ctx.fillStyle = oldStyle;
 		blsAOI.setTargetXY(x1,y1,x2,y2);
 		blsAOI.drawAOI(ctx,"green");
@@ -7673,17 +7670,20 @@ const gc4BLS = function(){
 							}(); 
 							
 							const tb = blo0.blDiv(v,v.id+"tb","tb","Violet"); 
-							const vSrc = blo0.blDiv(tb,tb.id+"vSrc",t.getVP().src,"lightgreen");
-							const setSrc = blo0.blBtn(tb,tb.id+"setSrc","setFromTA","green");
-							setSrc.onclick = function(){
+							const vSrc = blo0.blDiv(tb,tb.id+"vSrc",t.getSrc(),"lightgreen");
+							const frmTa = blo0.blBtn(tb,tb.id+"frmTa","setFromTA","green");
+							const src2ta = blo0.blBtn(tb,tb.id+"Src2TA","2TA","gray");
+							src2ta.onclick = function(){ blo0.blGetTa().value = vSrc.innerHTML;}
+							frmTa.onclick = function(){
 								vSrc.innerHTML = blo0.blGetTa().value;
-								t.getVP().src = 	blo0.blGetTa().value;
+								t.setSrc(blo0.blGetTa().value);
 							}
 							for(i in ms){
 								const b = blo0.blBtn(tb,tb.id+ms[i].id,ms[i].name,"Fuchsia");
 								b.onclick = function(_i){
 									return function(){
-										vSrc.innerHTML = t.getVP().src = ms[_i].src;										
+										vSrc.innerHTML = ms[_i].src;
+										t.setSrc(ms[_i].src);										
 									}
 								}(i);
 							}
@@ -7694,7 +7694,8 @@ const gc4BLS = function(){
 									const btn = blo0.blBtn(tb51voaMp3,tb51voaMp3.id+i,i,"gray");
 									btn.onclick = function(_b,_l,_i){
 										return function(){
-											vSrc.innerHTML = t.getVP().src = _l[_i];	
+											vSrc.innerHTML = _l[_i];
+											t.setSrc(_l[_i]);			
 										}
 									}(btn,blo0.ls51voaMp3,i);
 								}
@@ -8149,23 +8150,7 @@ const gc4BLS = function(){
 				dAllFrames.innerHTML = _thisBLS._getAllFramesNumber();
 			 }
 			 
-			 
-			 const blsPlay = blo0.blBtn(tbScenes,tbScenes.id+"btnBlsPlay",blsTimer.isPlaying()?"blsStop":"blsPlay","green");
-			 blsPlay.style.float = "right";
-			 blsPlay.style.color = "white";
-			 blsPlay.onclick = function(){
-				const b = blsTimer;
-				this.t = b; 
-				if(b.isPlaying()){
-					b.stop();
-					this.innerHTML = "blsPlay";
-				}
-				else{
-					b.start();
-					this.innerHTML = "blsStop";
-				} 
-			 }
-
+			 blsTimer.showMyUI(tbScenes,"right"); 
 
 			 tabFrames.refreshFrames(); 
 			 
@@ -9029,8 +9014,8 @@ const gc4BLS = function(){
 		r.version 		= "gc4BLS: bv0.15";
 		r.width 		= x2 - x1;
 		r.height 		= y2 - y1;
-		r.time          = blsTimer.getVideoTime();  //add by jeremyjia
-		r.music 		= blsTimer.getVP().src;
+		r.time          = blsTimer.getVideoTime();  
+		r.music 		= blsTimer.getSrc();
 		r.rate 			= function(){
 			var s = "";
 			s += blsTimer.getFPS();
