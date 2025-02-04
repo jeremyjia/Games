@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>稻草人与小狗</title>
+    <title>智能稻草人</title>
     <style>
         canvas {
             border: 1px solid #000;
@@ -31,7 +31,6 @@
             padding: 12px 20px;
             font-size: 14px;
             cursor: pointer;
-            background-color: #4CAF50;
             color: white;
             border: none;
             border-radius: 25px;
@@ -57,9 +56,12 @@
             grid-template-columns: repeat(3, 1fr);
             gap: 8px;
         }
+        #startBtn { background: #4CAF50; }
+        #stopBtn { background: #f44336; }
         #fishBtn { background: #e91e63; }
         #jumpBtn { background: #ff9800; }
         #dogBtn { background: #9C27B0; }
+        #dismissDogBtn { background: #673AB7; }
         .status-bar {
             position: absolute;
             top: 10px;
@@ -78,6 +80,7 @@
         <button id="startBtn">开始自动</button>
         <button id="stopBtn">停止自动</button>
         <button id="dogBtn">🐶 召唤小狗</button>
+        <button id="dismissDogBtn">👋 小狗离开</button>
         <div class="movement-controls">
             <button id="leftBtn" style="background:#2196F3">← 移动</button>
             <button id="jumpBtn">↑ 跳跃</button>
@@ -93,7 +96,7 @@
         let animationId = null;
         let isMoving = true;
         let isFishing = false;
-        
+
         function setCanvasSize() {
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             canvas.width = isMobile ? window.innerWidth * 0.95 : 800;
@@ -229,6 +232,7 @@
                 this.reset();
                 this.speed = 8;
                 this.tailAngle = 0;
+                this.isLeaving = false;
             }
 
             reset() {
@@ -238,23 +242,41 @@
                 this.isMoving = false;
                 this.isVisible = false;
                 this.animationStep = 0;
+                this.isLeaving = false;
             }
 
             summon(scarecrowX) {
                 this.targetX = scarecrowX - 80;
                 this.isMoving = true;
                 this.isVisible = true;
+                this.isLeaving = false;
                 this.x = canvas.width + 100;
+            }
+
+            dismiss() {
+                if(this.isVisible && !this.isMoving) {
+                    this.isMoving = true;
+                    this.isLeaving = true;
+                    this.targetX = canvas.width + 150;
+                }
             }
 
             update() {
                 if(this.isMoving && this.isVisible) {
-                    this.x -= this.speed;
-                    this.animationStep = (this.animationStep + 1) % 30;
-                    if(this.x <= this.targetX) {
-                        this.isMoving = false;
-                        this.x = this.targetX;
+                    if(this.isLeaving) {
+                        this.x += this.speed;
+                        if(this.x >= this.targetX) {
+                            this.isVisible = false;
+                            this.isMoving = false;
+                        }
+                    } else {
+                        this.x -= this.speed;
+                        if(this.x <= this.targetX) {
+                            this.isMoving = false;
+                            this.x = this.targetX;
+                        }
                     }
+                    this.animationStep = (this.animationStep + 1) % 30;
                 }
                 this.tailAngle = Math.sin(Date.now()/200) * 0.3;
             }
@@ -369,6 +391,16 @@
             }
         }
 
+        function dismissDog() {
+            if(dog.isVisible) {
+                dog.dismiss();
+                document.getElementById('status').textContent = '小狗离开了...';
+                setTimeout(() => {
+                    document.getElementById('status').textContent = isMoving ? '自动运行中' : '已停止';
+                }, 2000);
+            }
+        }
+
         document.getElementById('startBtn').addEventListener('click', startAuto);
         document.getElementById('stopBtn').addEventListener('click', stopAuto);
         document.getElementById('leftBtn').addEventListener('click', () => move(-1));
@@ -376,6 +408,7 @@
         document.getElementById('jumpBtn').addEventListener('click', jump);
         document.getElementById('fishBtn').addEventListener('click', fish);
         document.getElementById('dogBtn').addEventListener('click', summonDog);
+        document.getElementById('dismissDogBtn').addEventListener('click', dismissDog);
 
         document.querySelectorAll('button').forEach(btn => {
             btn.addEventListener('touchstart', (e) => {
