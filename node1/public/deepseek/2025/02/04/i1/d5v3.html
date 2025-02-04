@@ -86,6 +86,8 @@
     <script src="https://jeremyjia.github.io/Games/js/blclass.js" ></script> 
     <script>
         const xdv = blo0.blMD("xddbg", "dbg" ,    666,100,333,111, "lightgreen"); 
+        xdv.v = blo0.blDiv(xdv,xdv.id+"v","v",blGrey[1]);
+
         class ShapeFactory {
             static create(type, start, end, color, lineWidth, text) {
                 const createPoint = (p) => ({x: p.x, y: p.y}); // 确保坐标对象结构
