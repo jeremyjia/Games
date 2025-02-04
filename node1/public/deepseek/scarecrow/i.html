@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智能稻草人</title>
+    <title>多角度稻草人</title>
     <style>
         canvas {
             border: 1px solid #000;
@@ -62,6 +62,7 @@
         #jumpBtn { background: #ff9800; }
         #dogBtn { background: #9C27B0; }
         #dismissDogBtn { background: #673AB7; }
+        #rotateLeftBtn, #rotateRightBtn { background: #607D8B; }
         .status-bar {
             position: absolute;
             top: 10px;
@@ -77,6 +78,8 @@
 <body>
     <div class="status-bar">状态: <span id="status">运行中</span></div>
     <div class="controls">
+        <button id="rotateLeftBtn">↩ 左转</button>
+        <button id="rotateRightBtn">↪ 右转</button>
         <button id="startBtn">开始自动</button>
         <button id="stopBtn">停止自动</button>
         <button id="dogBtn">🐶 召唤小狗</button>
@@ -116,43 +119,58 @@
                 this.reset();
                 this.speed = canvas.width * 0.005;
                 this.rodAngle = 0;
+                this.direction = 0; // 0: 正面 1: 右 2: 背面 3: 左
             }
 
             reset() {
                 this.x = canvas.width / 2;
                 this.y = canvas.height - 100;
-                this.direction = 1;
                 this.velocityY = 0;
                 this.isJumping = false;
                 this.armAngle = 0;
                 this.legAngle = 0;
                 this.animationStep = 0;
                 this.fishingProgress = 0;
+                this.direction = 0;
             }
 
             draw() {
                 ctx.save();
                 ctx.translate(this.x, this.y);
+                ctx.rotate((this.direction * Math.PI)/2);
 
-                if(isFishing) {
-                    ctx.save();
-                    ctx.rotate(-this.rodAngle + Math.PI/4);
-                    ctx.strokeStyle = '#795548';
-                    ctx.lineWidth = 4;
-                    ctx.beginPath();
-                    ctx.moveTo(20, -80);
-                    ctx.lineTo(80, -140);
-                    ctx.stroke();
-                    
-                    ctx.strokeStyle = '#FFFFFF';
-                    ctx.setLineDash([2, 3]);
-                    ctx.beginPath();
-                    ctx.moveTo(80, -140);
-                    ctx.lineTo(80 + Math.sin(Date.now()/200)*10, -140 + 50);
-                    ctx.stroke();
-                    ctx.restore();
+                if(isFishing) this.#drawFishingRod();
+
+                switch(this.direction % 4) {
+                    case 0: this.#drawFront(); break;
+                    case 1: this.#drawRightSide(); break;
+                    case 2: this.#drawBack(); break;
+                    case 3: this.#drawLeftSide(); break;
                 }
 
+                ctx.restore();
+            }
+
+            #drawFishingRod() {
+                ctx.save();
+                ctx.rotate(-this.rodAngle + Math.PI/4);
+                ctx.strokeStyle = '#795548';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(20, -80);
+                ctx.lineTo(80, -140);
+                ctx.stroke();
+                
+                ctx.strokeStyle = '#FFFFFF';
+                ctx.setLineDash([2, 3]);
+                ctx.beginPath();
+                ctx.moveTo(80, -140);
+                ctx.lineTo(80 + Math.sin(Date.now()/200)*10, -140 + 50);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            #drawFront() {
                 ctx.fillStyle = '#8B4513';
                 ctx.fillRect(-15, -80, 30, 80);
 
@@ -168,10 +186,62 @@
 
                 this.#drawArm(-15, -this.armAngle);
                 this.#drawArm(15, this.armAngle);
-
                 this.#drawLeg(-10, -this.legAngle);
                 this.#drawLeg(10, this.legAngle);
+            }
 
+            #drawRightSide() {
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(-10, -80, 20, 80);
+
+                ctx.beginPath();
+                ctx.ellipse(0, -100, 15, 20, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#FFD700';
+                ctx.fill();
+
+                ctx.strokeStyle = '#8B4513';
+                ctx.lineWidth = 8;
+                ctx.beginPath();
+                ctx.moveTo(10, -80);
+                ctx.lineTo(40, -50);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, 40);
+                ctx.stroke();
+            }
+
+            #drawBack() {
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(-15, -80, 30, 80);
+
+                ctx.fillStyle = '#A0522D';
+                ctx.beginPath();
+                ctx.arc(0, -110, 25, 0, Math.PI);
+                ctx.fill();
+
+                ctx.strokeStyle = '#654321';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(0, -90);
+                ctx.lineTo(0, -70);
+                ctx.stroke();
+
+                ctx.strokeStyle = '#8B4513';
+                ctx.lineWidth = 8;
+                ctx.beginPath();
+                ctx.moveTo(-20, -80);
+                ctx.lineTo(-20, -50);
+                ctx.moveTo(20, -80);
+                ctx.lineTo(20, -50);
+                ctx.stroke();
+            }
+
+            #drawLeftSide() {
+                ctx.save();
+                ctx.scale(-1, 1);
+                this.#drawRightSide();
                 ctx.restore();
             }
 
@@ -201,9 +271,9 @@
 
             update() {
                 if (isMoving) {
-                    this.x += this.speed * this.direction;
+                    this.x += this.speed * (this.direction % 2 === 0 ? 1 : 0);
                     if (this.x > canvas.width - 50 || this.x < 50) {
-                        this.direction *= -1;
+                        this.direction = (this.direction + 2) % 4;
                     }
 
                     this.animationStep = (this.animationStep + 1) % 60;
@@ -224,6 +294,10 @@
                 if(isFishing) {
                     this.rodAngle = Math.sin(Date.now()/200) * 0.2;
                 }
+            }
+
+            rotate(step) {
+                this.direction = (this.direction + step + 4) % 4;
             }
         }
 
@@ -360,7 +434,6 @@
         function move(direction) {
             const newX = scarecrow.x + (PHYSICS.STEP_SIZE * direction);
             scarecrow.x = Math.max(50, Math.min(canvas.width - 50, newX));
-            scarecrow.direction = direction;
         }
 
         function jump() {
@@ -401,6 +474,15 @@
             }
         }
 
+        function rotateLeft() {
+            scarecrow.rotate(-1);
+        }
+
+        function rotateRight() {
+            scarecrow.rotate(1);
+        }
+
+        // 事件监听
         document.getElementById('startBtn').addEventListener('click', startAuto);
         document.getElementById('stopBtn').addEventListener('click', stopAuto);
         document.getElementById('leftBtn').addEventListener('click', () => move(-1));
@@ -409,6 +491,8 @@
         document.getElementById('fishBtn').addEventListener('click', fish);
         document.getElementById('dogBtn').addEventListener('click', summonDog);
         document.getElementById('dismissDogBtn').addEventListener('click', dismissDog);
+        document.getElementById('rotateLeftBtn').addEventListener('click', rotateLeft);
+        document.getElementById('rotateRightBtn').addEventListener('click', rotateRight);
 
         document.querySelectorAll('button').forEach(btn => {
             btn.addEventListener('touchstart', (e) => {
