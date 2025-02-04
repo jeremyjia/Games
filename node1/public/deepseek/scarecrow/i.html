@@ -4,6 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>智能稻草人</title>
     <style>
+        /* 保持原有样式不变 */
         canvas {
             border: 1px solid #000;
             background: #87CEEB;
@@ -86,7 +87,6 @@
     <canvas id="gameCanvas"></canvas>
 
     <script>
-        //再升级一下，停止的时候手脚不要动。
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         let animationId = null;
@@ -204,20 +204,20 @@
             }
 
             update() {
-                // 自动移动
+                // 自动移动和动画更新
                 if (isMoving) {
                     this.x += this.speed * this.direction;
                     if (this.x > canvas.width - 50 || this.x < 50) {
                         this.direction *= -1;
                     }
+
+                    // 只在自动移动时更新动画
+                    this.animationStep = (this.animationStep + 1) % 60;
+                    this.armAngle = Math.sin(this.animationStep * 0.1) * 0.5;
+                    this.legAngle = Math.cos(this.animationStep * 0.1) * 0.3;
                 }
 
-                // 动画系统
-                this.animationStep = (this.animationStep + 1) % 60;
-                this.armAngle = Math.sin(this.animationStep * 0.1) * 0.5;
-                this.legAngle = Math.cos(this.animationStep * 0.1) * 0.3;
-
-                // 跳跃物理
+                // 跳跃物理（始终有效）
                 if (this.isJumping) {
                     this.y += this.velocityY;
                     this.velocityY += PHYSICS.GRAVITY;
@@ -256,7 +256,7 @@
         function startAuto() {
             isMoving = true;
             document.getElementById('status').textContent = '自动运行中';
-            gameLoop();
+            if(!animationId) gameLoop();
         }
 
         function stopAuto() {
