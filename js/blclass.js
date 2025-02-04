@@ -936,16 +936,20 @@ function CBlClass ()
 				return bRun;
 			}
 
-			o.paintCurFrame = function(ctx,_lsf,n,x1,y1,x2,y2){
+			o.paintCurScene = function(ctx,_thisBLS,_lsSc,n,x1,y1,x2,y2){
 				ctx.fillStyle = function(){
-					var c = n>-1?_lsf[n].backgroundColor:"Khaki";					
-					c = "rgb(" + c + ")";
+					var c = n>-1?_lsSc[n].backgroundColor:"Khaki";					
+					c = "rgb(" + c + ")"; 
 					return c;
 				}(); 
 				ctx.fillRect(x1,y1,x2-x1,y2-y1);
+				
+				ctx.fillStyle = "white";
+				ctx.fillText("xddbg:CurScene: n=" + n , x1,y1 + 44);
+				if(_thisBLS.btnScenes) _thisBLS.btnScenes[n].style.backgroundColor = "green";
 				 
 				if(n>-1){
-					const os = _lsf[n].objects;
+					const os = _lsSc[n].objects;
 					for(i in os){
 						os[i].selfDraw(ctx,x1,y1);
 					}
@@ -985,10 +989,10 @@ function CBlClass ()
 			o.drawOnLoop = function(cvs,_thisBLS,x1,y1,x2,y2){		
 				var ctx = cvs.getContext("2d");		
 				if(bRun){ 	
-					const _frms = _thisBLS.getScenes();
+					const allScenes = _thisBLS.getScenes();
 					ctx.fillStyle = "lightblue";
 					ctx.fillRect(x1,y1,x2-x1,y2-y1);
-					this.paintCurFrame(ctx,_frms,this.getFrameNo(_frms,vp.currentTime/spf*1000),x1,y1,x2,y2);
+					this.paintCurScene(ctx,_thisBLS,allScenes,this.getFrameNo(allScenes,vp.currentTime/spf*1000),x1,y1,x2,y2);
 					_thisBLS.paintSuperObjects(cvs,n);
 				}	
 				ctx.fillStyle = "blue";
@@ -2142,9 +2146,11 @@ function CBlClass ()
 		for(j in _ls){
 			if(_btn.id==_ls[j].id){
 				_btn.style.backgroundColor = _highlightColor;
+				_btn.style.border = "solid red 1px";
 			}
 			else{
 				_ls[j].style.backgroundColor = _darkColor;
+				_ls[j].style.border = "solid darkgray 1px";
 			}
 		}		
 	}
@@ -7576,7 +7582,7 @@ const gc4BLS = function(){
 		var oldStyle = ctx.fillStyle;
 		
 		if(!blsTimer.isPlaying()){
-			blsTimer.paintCurFrame(ctx,this.getScenes(),iCurScene,x1,y1,x2,y2);
+			blsTimer.paintCurScene(ctx,this,this.getScenes(),iCurScene,x1,y1,x2,y2);
 			_objCmd.drawObjCmdUI(ctx,x1+5,y1-15); 
 		}
 
@@ -8136,9 +8142,11 @@ const gc4BLS = function(){
 			 tabFrames.refreshFrames = function(){
 				tabFrames.innerHTML = "";
 				var lsBtn4Scenes = [];
+				_thisBLS.btnScenes = lsBtn4Scenes;
 				for(i in lsScene){ 
 				   var b = blo0.blBtn(tabFrames,tabFrames.id+i,i,"purple");
 				   b.style.float = "left";
+				   
 				   b.onclick = function(_b,_i,_scs){
 					   return function(){ 
 							iCurScene = _i; 
