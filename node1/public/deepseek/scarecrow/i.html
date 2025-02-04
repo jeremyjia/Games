@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>行走的稻草人</title>
+    <title>可控制的稻草人</title>
     <style>
         canvas {
             border: 1px solid #000;
@@ -18,34 +18,49 @@
         }
         .controls {
             margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
         button {
             padding: 10px 20px;
-            margin: 0 10px;
             font-size: 16px;
             cursor: pointer;
             background-color: #4CAF50;
             color: white;
             border: none;
             border-radius: 5px;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
+            min-width: 120px;
         }
         button:hover {
             background-color: #45a049;
+            transform: translateY(-2px);
         }
         button:active {
-            background-color: #3d8b40;
+            transform: translateY(0);
         }
         button:disabled {
             background-color: #cccccc;
             cursor: not-allowed;
         }
+        .movement-controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="controls">
-        <button id="startBtn">开始运动</button>
-        <button id="stopBtn">停止运动</button>
+        <button id="startBtn">开始自动</button>
+        <button id="stopBtn">停止自动</button>
+        <div class="movement-controls">
+            <button id="leftBtn" style="background:#2196F3">← 左移5步</button>
+            <button id="jumpBtn" style="background:#ff9800">↑ 跳跃</button>
+            <button id="rightBtn" style="background:#2196F3">→ 右移5步</button>
+        </div>
     </div>
     <canvas id="gameCanvas" width="800" height="400"></canvas>
 
@@ -54,6 +69,10 @@
         const ctx = canvas.getContext('2d');
         let animationId = null;
         let isMoving = true;
+        const STEP_SIZE = 40;
+        const JUMP_FORCE = -20;
+        const GRAVITY = 0.8;
+        const GROUND_Y = canvas.height - 100;
 
         class Scarecrow {
             constructor() {
@@ -62,12 +81,16 @@
                 this.armAngle = 0;
                 this.legAngle = 0;
                 this.animationStep = 0;
+                this.velocityY = 0;
+                this.isJumping = false;
             }
 
             resetPosition() {
                 this.x = canvas.width / 2;
-                this.y = canvas.height - 100;
+                this.y = GROUND_Y;
                 this.direction = 1;
+                this.velocityY = 0;
+                this.isJumping = false;
             }
 
             draw() {
@@ -78,19 +101,19 @@
                 ctx.fillStyle = '#8B4513';
                 ctx.fillRect(-15, -80, 30, 80);
 
-                // 绘制头部
+                // 头部
                 ctx.beginPath();
                 ctx.arc(0, -100, 20, 0, Math.PI * 2);
                 ctx.fillStyle = '#FFD700';
                 ctx.fill();
 
-                // 绘制帽子
+                // 帽子
                 ctx.fillStyle = '#A0522D';
                 ctx.beginPath();
                 ctx.arc(0, -110, 25, 0, Math.PI);
                 ctx.fill();
 
-                // 绘制手臂
+                // 手臂
                 ctx.strokeStyle = '#8B4513';
                 ctx.lineWidth = 8;
                 
@@ -112,7 +135,7 @@
                 ctx.stroke();
                 ctx.restore();
 
-                // 绘制腿
+                // 腿
                 ctx.strokeStyle = '#8B4513';
                 
                 // 左腿
@@ -137,15 +160,30 @@
             }
 
             update() {
+                // 自动移动
                 if (isMoving) {
                     this.x += this.speed * this.direction;
                     if (this.x > canvas.width - 50 || this.x < 50) {
                         this.direction *= -1;
                     }
+                }
 
-                    this.animationStep = (this.animationStep + 1) % 60;
-                    this.armAngle = Math.sin(this.animationStep * 0.1) * 0.5;
-                    this.legAngle = Math.cos(this.animationStep * 0.1) * 0.3;
+                // 动画更新
+                this.animationStep = (this.animationStep + 1) % 60;
+                this.armAngle = Math.sin(this.animationStep * 0.1) * 0.5;
+                this.legAngle = Math.cos(this.animationStep * 0.1) * 0.3;
+
+                // 跳跃物理
+                if (this.isJumping) {
+                    this.y += this.velocityY;
+                    this.velocityY += GRAVITY;
+                    
+                    // 落地检测
+                    if (this.y >= GROUND_Y) {
+                        this.y = GROUND_Y;
+                        this.velocityY = 0;
+                        this.isJumping = false;
+                    }
                 }
             }
         }
@@ -175,14 +213,32 @@
 
         function stopMovement() {
             isMoving = false;
-            if (animationId) {
-                cancelAnimationFrame(animationId);
+            cancelAnimationFrame(animationId);
+        }
+
+        function moveLeft() {
+            scarecrow.x = Math.max(50, scarecrow.x - STEP_SIZE);
+            scarecrow.direction = -1;
+        }
+
+        function moveRight() {
+            scarecrow.x = Math.min(canvas.width - 50, scarecrow.x + STEP_SIZE);
+            scarecrow.direction = 1;
+        }
+
+        function jump() {
+            if (!scarecrow.isJumping) {
+                scarecrow.velocityY = JUMP_FORCE;
+                scarecrow.isJumping = true;
             }
         }
 
         // 事件监听
         document.getElementById('startBtn').addEventListener('click', startMovement);
         document.getElementById('stopBtn').addEventListener('click', stopMovement);
+        document.getElementById('leftBtn').addEventListener('click', moveLeft);
+        document.getElementById('rightBtn').addEventListener('click', moveRight);
+        document.getElementById('jumpBtn').addEventListener('click', jump);
 
         // 初始启动
         gameLoop();
@@ -191,6 +247,7 @@
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth * 0.8;
             canvas.height = window.innerHeight * 0.8;
+            GROUND_Y = canvas.height - 100;
             scarecrow.resetPosition();
         });
     </script>
