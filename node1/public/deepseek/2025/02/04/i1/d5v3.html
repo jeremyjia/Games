@@ -83,31 +83,23 @@
     <div id="timeline"></div>
     <canvas id="canvas" width="800" height="600"></canvas>
 
+    <script src="https://jeremyjia.github.io/Games/js/blclass.js" ></script> 
     <script>
+        const xdv = blo0.blMD("xddbg", "dbg" ,    666,100,333,111, "lightgreen"); 
         class ShapeFactory {
             static create(type, start, end, color, lineWidth, text) {
-                const createPoint = (p) => ({x: p.x, y: p.y});
+                const createPoint = (p) => ({x: p.x, y: p.y}); // 确保坐标对象结构
                 switch(type) {
-                    case 'text': 
-                        return new TextShape(createPoint(start), text, color, lineWidth);
-                    case 'line': 
-                        return new Line(createPoint(start), createPoint(end), color, lineWidth);
-                    case 'rect': 
-                        return new Rectangle(createPoint(start), createPoint(end), color, lineWidth);
-                    case 'circle': 
-                        return new Circle(createPoint(start), createPoint(end), color, lineWidth);
-                    case 'quarter': 
-                        return new QuarterNote(createPoint(start), createPoint(end), color, lineWidth);
-                    case 'eighth': 
-                        return new EighthNote(createPoint(start), createPoint(end), color, lineWidth);
-                    case 'whole': 
-                        return new WholeNote(createPoint(start), createPoint(end), color, lineWidth);
-                    case 'scarecrow': 
-                        return new Scarecrow(createPoint(start), createPoint(end), color, lineWidth);
-                    case 'trebleclef': 
-                        return new TrebleClef(createPoint(start), createPoint(end), color, lineWidth);
-                    default: 
-                        throw new Error('未知图形类型');
+                    case 'text': return new TextShape(createPoint(start), text, color, lineWidth);
+                    case 'line': return new Line(createPoint(start), createPoint(end), color, lineWidth);
+                    case 'rect': return new Rectangle(createPoint(start), createPoint(end), color, lineWidth);
+                    case 'circle': return new Circle(createPoint(start), createPoint(end), color, lineWidth);
+                    case 'quarter': return new QuarterNote(createPoint(start), createPoint(end), color, lineWidth);
+                    case 'eighth': return new EighthNote(createPoint(start), createPoint(end), color, lineWidth);
+                    case 'whole': return new WholeNote(createPoint(start), createPoint(end), color, lineWidth);
+                    case 'scarecrow': return new Scarecrow(createPoint(start), createPoint(end), color, lineWidth);
+                    case 'trebleclef': return new TrebleClef(createPoint(start), createPoint(end), color, lineWidth);
+                    default: throw new Error('未知图形类型');
                 }
             }
         }
@@ -267,40 +259,30 @@
                 const [start] = this.points;
                 const baseSize = this._calculateSize();
                 
-                ctx.beginPath();
                 ctx.arc(start.x, start.y, baseSize * 0.2, 0, Math.PI * 2);
-                ctx.stroke();
                 
                 this._drawBody(ctx, start, baseSize);
                 this._drawHat(ctx, start, baseSize);
             }
 
             _drawBody(ctx, start, size) {
-                ctx.beginPath();
                 ctx.moveTo(start.x, start.y + size * 0.2);
                 ctx.lineTo(start.x, start.y + size * 0.6);
-                ctx.stroke();
                 
-                ctx.beginPath();
                 ctx.moveTo(start.x - size * 0.3, start.y + size * 0.3);
                 ctx.lineTo(start.x + size * 0.3, start.y + size * 0.3);
-                ctx.stroke();
                 
-                ctx.beginPath();
                 ctx.moveTo(start.x, start.y + size * 0.6);
                 ctx.lineTo(start.x - size * 0.2, start.y + size * 0.9);
                 ctx.moveTo(start.x, start.y + size * 0.6);
                 ctx.lineTo(start.x + size * 0.2, start.y + size * 0.9);
-                ctx.stroke();
             }
 
             _drawHat(ctx, start, size) {
-                ctx.beginPath();
                 ctx.moveTo(start.x - size * 0.2, start.y - size * 0.1);
                 ctx.lineTo(start.x + size * 0.2, start.y - size * 0.1);
                 ctx.lineTo(start.x, start.y - size * 0.3);
                 ctx.closePath();
-                ctx.stroke();
             }
 
             _calculateSize() {
@@ -326,35 +308,25 @@
             }
 
             _drawMainCurve(ctx, scale) {
-                ctx.beginPath();
                 ctx.moveTo(0, 0);
                 ctx.bezierCurveTo(-35*scale, -150*scale, 85*scale, -220*scale, 110*scale, -160*scale);
-                ctx.stroke();
             }
 
             _drawBottomLoop(ctx, scale) {
-                ctx.beginPath();
                 ctx.moveTo(0, 0);
                 ctx.bezierCurveTo(25*scale, 25*scale, 55*scale, 25*scale, 80*scale, 0);
-                ctx.stroke();
             }
 
             _drawDecorations(ctx, scale) {
-                ctx.beginPath();
                 ctx.moveTo(45*scale, -90*scale);
                 ctx.lineTo(60*scale, -110*scale);
-                ctx.stroke();
                 
-                ctx.beginPath();
                 ctx.moveTo(110*scale, -160*scale);
                 ctx.quadraticCurveTo(130*scale, -180*scale, 100*scale, -200*scale);
                 ctx.quadraticCurveTo(70*scale, -180*scale, 90*scale, -160*scale);
-                ctx.stroke();
                 
-                ctx.beginPath();
                 ctx.moveTo(0, 0);
                 ctx.lineTo(0, 40*scale);
-                ctx.stroke();
             }
 
             _calculateScale() {
@@ -397,7 +369,6 @@
         let currentShape = null;
         let startPos = null;
 
-        // 工具按钮事件
         document.querySelectorAll('.tool-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
@@ -407,9 +378,8 @@
         });
 
         const colorPicker = document.getElementById('colorPicker');
-        const lineWidthInput = document.getElementById('lineWidth');
+        const lineWidth = document.getElementById('lineWidth');
 
-        // 鼠标事件
         canvas.addEventListener('mousedown', startDrawing);
         canvas.addEventListener('mousemove', drawing);
         canvas.addEventListener('mouseup', finishDrawing);
@@ -421,8 +391,9 @@
             if (currentTool === 'text') {
                 const text = prompt('输入文本:');
                 if (text) {
-                    const textShape = new TextShape(pos, text, colorPicker.value, lineWidthInput.value);
-                    animState.currentFrameData.shapes.push(textShape);
+                    animState.currentFrameData.shapes.push(
+                        new TextShape(pos, text, colorPicker.value, lineWidth.value)
+                    );
                     redraw();
                     updateTimeline();
                 }
@@ -436,9 +407,9 @@
             currentShape = ShapeFactory.create(
                 currentTool, 
                 startPos, 
-                startPos, // 初始时终点与起点相同
+                startPos, // 初始化时使用相同起点
                 colorPicker.value, 
-                lineWidthInput.value
+                lineWidth.value
             );
         }
 
@@ -460,10 +431,6 @@
             isDrawing = false;
             
             if (currentShape) {
-                // 确保终点有效
-                if (currentShape.points[1].x === undefined) {
-                    currentShape.points[1] = {x: startPos.x, y: startPos.y};
-                }
                 animState.currentFrameData.shapes.push(currentShape);
                 currentShape = null;
                 updateTimeline();
@@ -474,34 +441,24 @@
         function redraw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // 绘制已保存的图形
+            // 先绘制已保存的图形
             animState.currentFrameData.shapes.forEach(shape => {
                 try {
-                    let restoredShape;
-                    if (shape.type === 'text') {
-                        restoredShape = new TextShape(
-                            shape.pos,
-                            shape.text,
-                            shape.color,
-                            shape.lineWidth
-                        );
-                    } else {
-                        restoredShape = ShapeFactory.create(
-                            shape.type,
-                            shape.points[0],
-                            shape.points[1] || shape.points[0],
-                            shape.color,
-                            shape.lineWidth
-                        );
-                        restoredShape.rotation = shape.rotation;
-                    }
+                    const restoredShape = ShapeFactory.create(
+                        shape.type,
+                        shape.points[0],
+                        shape.points[1] || shape.points[0], // 处理单点图形
+                        shape.color,
+                        shape.lineWidth
+                    );
+                    restoredShape.rotation = shape.rotation;
                     restoredShape.draw(ctx);
                 } catch (error) {
                     console.error("图形渲染失败:", error);
                 }
             });
 
-            // 绘制当前正在绘制的临时图形
+            // 再绘制当前正在绘制的临时图形
             if (isDrawing && currentShape) {
                 currentShape.draw(ctx);
             }
@@ -525,38 +482,25 @@
                 thumb.width = 80;
                 thumb.height = 60;
                 
-                const thumbCtx = thumb.getContext('2d');
-                thumbCtx.clearRect(0, 0, 80, 60);
-                thumbCtx.save();
-                thumbCtx.scale(80/800, 60/600);
-                
+                const ctx = thumb.getContext('2d');
+                ctx.clearRect(0, 0, 80, 60);
+                ctx.scale(80/800, 60/600);
                 frame.shapes.forEach(shape => {
                     try {
-                        let restoredShape;
-                        if (shape.type === 'text') {
-                            restoredShape = new TextShape(
-                                shape.pos,
-                                shape.text,
-                                shape.color,
-                                shape.lineWidth
-                            );
-                        } else {
-                            restoredShape = ShapeFactory.create(
-                                shape.type,
-                                shape.points[0],
-                                shape.points[1] || shape.points[0],
-                                shape.color,
-                                shape.lineWidth
-                            );
-                            restoredShape.rotation = shape.rotation;
-                        }
-                        restoredShape.draw(thumbCtx);
+                        const restoredShape = ShapeFactory.create(
+                            shape.type,
+                            shape.points[0],
+                            shape.points[1] || shape.points[0],
+                            shape.color,
+                            shape.lineWidth
+                        );
+                        restoredShape.rotation = shape.rotation;
+                        restoredShape.draw(ctx);
                     } catch (error) {
                         console.error("缩略图渲染失败:", error);
                     }
                 });
                 
-                thumbCtx.restore();
                 thumb.addEventListener('click', () => {
                     animState.currentFrame = index;
                     redraw();
@@ -598,7 +542,6 @@
             update();
         }
 
-        // 控制按钮事件
         document.getElementById('addFrame').addEventListener('click', () => {
             animState.addFrame();
             updateTimeline();
@@ -637,6 +580,7 @@
 
         // 初始化时间轴
         updateTimeline();
+        blo0
     </script>
 </body>
 </html>
