@@ -1,67 +1,99 @@
-
 <!DOCTYPE html>
-
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>videoEditor</title>
     <style>
-     /* 新增导航菜单样式 */
+        /* 导航栏样式优化 */
         .navbar {
             width: 100%;
             background: #1a1a1a;
-            padding: 15px 0;
             position: fixed;
             top: 0;
             z-index: 1000;
+            padding: 12px 0; /* 调整内边距 */
         }
+        
         .nav-menu {
             list-style: none;
             display: flex;
             justify-content: center;
-            gap: 30px;
+            gap: 20px; /* 减少间距 */
             margin: 0;
-            padding: 0;
+            padding: 0 15px;
+            flex-wrap: wrap; /* 小屏幕换行 */
         }
+        
         .nav-menu a {
             color: white;
             text-decoration: none;
             font-family: Arial, sans-serif;
-            font-size: 16px;
-            transition: color 0.3s;
+            font-size: 0.9rem; /* 使用相对单位 */
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: all 0.3s;
         }
+        
         .nav-menu a:hover {
             color: #4CAF50;
+            background: rgba(255,255,255,0.1);
         }
-         
+        
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .nav-menu {
+                gap: 10px;
+                justify-content: flex-start;
+                overflow-x: auto; /* 横向滚动 */
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 5px;
+            }
+            
+            .nav-menu::-webkit-scrollbar {
+                height: 4px;
+            }
+            
+            .nav-menu::-webkit-scrollbar-thumb {
+                background: #4CAF50;
+            }
+        }
+        
         body {
-            padding-top: 60px; /* 给导航栏留出空间 */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            padding-top: 56px; /* 根据导航栏高度调整 */
             min-height: 100vh;
             margin: 0;
             background: #f0f0f0;
             touch-action: manipulation;
-        } 
+        }
+        
+        /* 添加主要内容区域 */
+        .main-content {
+            max-width: 1200px;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+        }
     </style>
 </head>
-<body><!-- 新增导航菜单 -->
+<body>
     <nav class="navbar">
         <ul class="nav-menu">
-            <li><a href="#" target="_blank">v0.14</a></li>
-            <li><a href="https://www.deepseek.com" target="_blank">DeepSeek 首页</a></li>
-            <li><a href="../">[..]</a></li>
+            <li><a href="#">v0.14</a></li> <!-- 移除target="_blank" -->
+            <li><a href="https://www.deepseek.com" target="_blank" rel="noopener">DeepSeek 首页</a></li>
+            <li><a href="../">上级目录</a></li> <!-- 明确文字提示 -->
             <li><a href="c1/">[c1]</a></li>
             <li><a href="c2/">[c2]</a></li>
             <li><a href="i1.html">i1.html</a></li>
             <li><a href="i2.html">i2.html</a></li>
             <li><a href="i3.html">i3.html</a></li>
             <li><a href="i4.html">i4.html</a></li>
-            <!-- 可以继续添加其他菜单项 -->
         </ul>
     </nav>
     
+    <div class="main-content">
+        <h1>视频编辑器</h1>
+        <p>请选择上方导航菜单开始操作</p>
+        <!-- 后续可添加更多内容 -->
+    </div>
 </body>
 </html>
