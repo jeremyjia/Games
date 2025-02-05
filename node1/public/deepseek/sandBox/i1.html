@@ -46,9 +46,11 @@
   </style>
 </head>
 <body>
-  <div class="toolbar">
+    <script src="https://littleflute.github.io/Games/js/blclass.js" ></script> 
+    <script src="https://littleflute.github.io/JavaScript/w3.js" ></script>
+  <div class="toolbar" id="id4toolbar">
     <button onclick="runCode()">Run Code</button>
-    <button onclick="clearCode()">Clear</button>
+    <button onclick="clearCode()">Clear</button> 
   </div>
   <div class="container">
     <textarea id="code" placeholder="Paste your HTML, CSS, and JavaScript code here..."></textarea>
@@ -80,6 +82,14 @@
 
     // 初始运行一次
     runCode();
+    const xdb = blo0.blBtn(bl$("id4toolbar"),"id4xdb","xdb","gray");
+    xdb.onclick = function(){
+        const d = blo0.blMD("id4MDiv", "mdTest",11,10,333,155,blGrey[1]);
+        const sbx = blo0.blSandBox(d,"id4SBox");
+        const b = xdb;
+        _on_off_div(b,d);
+		b.style.background = b.style.background=="red"?blGrey[5]:blColor[4];
+    } 
   </script>
 </body>
 </html>
