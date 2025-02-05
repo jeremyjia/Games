@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Code Sandbox Pro</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: #f0f0f0;
+    }
+    .toolbar {
+      background: #fff;
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 8px 15px;
+      font-size: 14px;
+      cursor: pointer;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    .container {
+      display: flex;
+      flex: 1;
+      flex-direction: row;
+      position: relative;
+    }
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+    }
+    .editor-pane {
+      width: 50%;
+      height: 100%;
+      position: relative;
+    }
+    @media (max-width: 768px) {
+      .editor-pane {
+        width: 100%;
+        height: 50%;
+      }
+    }
+    #code {
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+      padding: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      border: none;
+      background: #282c34;
+      color: #abb2bf;
+      tab-size: 2;
+      resize: none;
+    }
+    #preview {
+      width: 50%;
+      height: 100%;
+      border: none;
+      background: white;
+    }
+    @media (max-width: 768px) {
+      #preview {
+        width: 100%;
+        height: 50%;
+      }
+    }
+    .code-examples {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <div class="code-examples">
+      <button onclick="runCode()">▶️ Run</button>
+      <button onclick="clearCode()">🔄 Clear</button>
+      <button onclick="loadExample('html')">📄 HTML</button>
+      <button onclick="loadExample('css')">🎨 CSS</button>
+      <button onclick="loadExample('js')">⚙️ JavaScript</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="editor-pane">
+      <textarea id="code" placeholder="Write your code here..."></textarea>
+    </div>
+    <iframe id="preview"></iframe>
+  </div>
+
+  <script>
+    const examples = {
+      html: `<!DOCTYPE html>
+<html>
+<head>
+  <title>Example</title>
+  <style>
+    body {
+      padding: 20px;
+      font-family: Arial;
+    }
+    .box {
+      width: 100px;
+      height: 100px;
+      background: #4CAF50;
+      transition: 0.3s;
+    }
+  </style>
+</head>
+<body>
+  <h1>Hello World!</h1>
+  <div class="box"></div>
+  <script>
+    document.querySelector('.box').addEventListener('click', () => {
+      box.style.transform = 'rotate(45deg)';
+    });
+  <\/script>
+</body>
+</html>`,
+
+      css: `/* CSS Example */
+body {
+  background: #f0f0f0;
+}
+
+.card {
+  width: 300px;
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.button {
+  padding: 10px 20px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}`,
+
+      js: `// JavaScript Example
+document.body.innerHTML = '<h2>JS Demo</h2>';
+const btn = document.createElement('button');
+btn.textContent = 'Click Me';
+btn.style.margin = '10px';
+
+btn.addEventListener('click', () => {
+  const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'];
+  document.body.style.backgroundColor = 
+    colors[Math.floor(Math.random() * colors.length)];
+});
+
+document.body.appendChild(btn);`
+    };
+
+    function runCode() {
+      const code = document.getElementById('code').value;
+      const iframe = document.getElementById('preview');
+      const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+      
+      iframeDocument.open();
+      iframeDocument.write(code);
+      iframeDocument.close();
+    }
+
+    function clearCode() {
+      document.getElementById('code').value = '';
+      runCode();
+    }
+
+    function loadExample(type) {
+      document.getElementById('code').value = examples[type];
+      runCode();
+    }
+
+    // 初始运行示例
+    loadExample('html');
+  </script>
+</body>
+</html>
