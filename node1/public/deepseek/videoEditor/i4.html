@@ -20,21 +20,29 @@
         .toolbar {
             position: fixed;
             background: #fff;
-            padding: 10px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
             touch-action: none;
             min-width: 120px;
-            cursor: grab;
         }
-        .toolbar.dragging {
+        .toolbar-header {
+            padding: 8px;
+            background: rgba(0,0,0,0.1);
+            cursor: grab;
+            border-radius: 8px 8px 0 0;
+            user-select: none;
+        }
+        .toolbar.dragging .toolbar-header {
             cursor: grabbing;
+        }
+        .toolbar-content {
+            padding: 10px;
         }
         .toolbar button {
             display: block;
             margin: 5px;
             padding: 8px;
-            width: 100%;
+            width: calc(100% - 10px);
         }
         .frame-btn {
             display: inline-block;
@@ -70,6 +78,12 @@
         .fps-control {
             margin: 10px 0;
             width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .fps-value {
+            font-size: 14px;
         }
     </style>
 </head>
@@ -198,41 +212,59 @@
         }
 
         class Toolbar {
-            constructor(buttons, position, color) {
+            constructor(title, buttons, position, color) {
                 this.element = document.createElement('div');
                 this.element.className = 'toolbar';
                 this.element.style.backgroundColor = color;
                 this.element.style.left = position.x + 'px';
                 this.element.style.top = position.y + 'px';
                 
+                // 添加工具条头部
+                const header = document.createElement('div');
+                header.className = 'toolbar-header';
+                header.textContent = title;
+                
+                const content = document.createElement('div');
+                content.className = 'toolbar-content';
+                
                 buttons.forEach(btn => {
                     if (btn.type === 'range') {
                         const container = document.createElement('div');
+                        container.className = 'fps-control';
+                        
                         const label = document.createElement('label');
                         label.textContent = btn.label;
+                        
                         const input = document.createElement('input');
                         Object.assign(input, btn.attrs);
+                        
+                        const valueDisplay = document.createElement('span');
+                        valueDisplay.className = 'fps-value';
+                        valueDisplay.textContent = btn.attrs.value;
+                        
                         container.appendChild(label);
                         container.appendChild(input);
-                        this.element.appendChild(container);
+                        container.appendChild(valueDisplay);
+                        content.appendChild(container);
                     } else {
                         const button = document.createElement('button');
                         button.textContent = btn.label;
                         button.onclick = btn.action;
-                        this.element.appendChild(button);
+                        content.appendChild(button);
                     }
                 });
 
-                this.initDrag();
+                this.element.appendChild(header);
+                this.element.appendChild(content);
+                this.initDrag(header);
                 document.body.appendChild(this.element);
             }
 
-            initDrag() {
+            initDrag(handle) {
                 let isDragging = false;
                 let offset = {x: 0, y: 0};
 
                 const startDrag = (e) => {
-                    if (e.target.tagName === 'INPUT') return;
                     isDragging = true;
                     this.element.classList.add('dragging');
                     offset = {
@@ -255,11 +287,11 @@
                     this.element.classList.remove('dragging');
                 };
 
-                this.element.addEventListener('mousedown', startDrag);
+                handle.addEventListener('mousedown', startDrag);
                 document.addEventListener('mousemove', doDrag);
                 document.addEventListener('mouseup', stopDrag);
                 
-                this.element.addEventListener('touchstart', (e) => startDrag(e.touches[0]));
+                handle.addEventListener('touchstart', (e) => startDrag(e.touches[0]));
                 document.addEventListener('touchmove', (e) => doDrag(e.touches[0]));
                 document.addEventListener('touchend', stopDrag);
             }
@@ -307,7 +339,9 @@
             }
 
             initToolbars() {
+                // 背景工具条
                 new Toolbar(
+                    '背景设置',
                     BACKGROUNDS.map(bg => ({
                         label: bg,
                         action: () => {
@@ -317,25 +351,31 @@
                             }
                         }
                     })),
-                    {x: 20, y: 20}, '#FFE4B5'
+                    {x: 20, y: 20}, 
+                    '#FFE4B5'
                 );
 
+                // 对象工具条
                 new Toolbar(
+                    '添加对象',
                     ['汽车', '树木', '小狗'].map(type => ({
                         label: type,
                         action: () => this.currentObjectType = type
                     })),
-                    {x: 20, y: 150}, '#B0E0E6'
+                    {x: 20, y: 150}, 
+                    '#B0E0E6'
                 );
 
+                // 播放控制工具条
                 new Toolbar(
+                    '播放控制',
                     [
                         {label: '播放', action: () => this.playAnimation()},
                         {label: '暂停', action: () => this.stopAnimation()},
                         {label: '导出JSON', action: () => this.showExportModal()},
                         {
                             type: 'range',
-                            label: '帧率: ',
+                            label: '帧率',
                             attrs: {
                                 type: 'range',
                                 min: 1,
@@ -344,25 +384,30 @@
                                 className: 'fps-control',
                                 oninput: (e) => {
                                     this.fps = parseInt(e.target.value);
+                                    e.target.nextElementSibling.textContent = this.fps;
                                 }
                             }
                         }
                     ],
-                    {x: window.innerWidth - 160, y: 20}, '#98FB98'
+                    {x: window.innerWidth - 160, y: 20}, 
+                    '#98FB98'
                 );
             }
 
             initFrameToolbar() {
+                // 帧工具条距离底部50px
                 this.frameToolbar = new Toolbar(
+                    '帧管理',
                     [
                         {label: '+ 添加帧', action: () => this.addFrame()},
                         {label: '- 删除帧', action: () => this.deleteFrame()}
                     ],
-                    {x: window.innerWidth/2 - 60, y: window.innerHeight - 100}, '#DDA0DD'
+                    {x: window.innerWidth/2 - 60, y: window.innerHeight - 100}, 
+                    '#DDA0DD'
                 );
                 
-                this.framesContainer = document.createElement('div');
-                this.frameToolbar.element.appendChild(this.framesContainer);
+                this.framesContainer = this.frameToolbar.element.querySelector('.toolbar-content');
+                this.framesContainer.style.padding = '10px 5px';
             }
 
             addFrame() {
@@ -372,10 +417,16 @@
                 frameBtn.textContent = `帧 ${this.frameManager.frames.length}`;
                 frameBtn.dataset.frameId = frame.id;
                 
-                Array.from(this.framesContainer.children).forEach(c => c.classList.remove('selected'));
+                Array.from(this.framesContainer.children).forEach(c => {
+                    if(c.className !== 'frame-btn') return;
+                    c.classList.remove('selected');
+                });
                 
                 frameBtn.onclick = () => {
-                    Array.from(this.framesContainer.children).forEach(c => c.classList.remove('selected'));
+                    Array.from(this.framesContainer.children).forEach(c => {
+                        if(c.className !== 'frame-btn') return;
+                        c.classList.remove('selected');
+                    });
                     frameBtn.classList.add('selected');
                     this.frameManager.selectFrame(frame.id);
                     this.refreshCanvas();
@@ -395,7 +446,9 @@
                 if (btnToRemove) btnToRemove.remove();
                 
                 Array.from(this.framesContainer.children).forEach((btn, index) => {
-                    btn.textContent = `帧 ${index + 1}`;
+                    if (btn.className === 'frame-btn') {
+                        btn.textContent = `帧 ${index + 1}`;
+                    }
                 });
 
                 if (this.frameManager.currentFrame) {
@@ -430,7 +483,9 @@
                     this.refreshCanvas();
                     
                     const btns = Array.from(this.framesContainer.children);
-                    btns.forEach(btn => btn.classList.remove('selected'));
+                    btns.forEach(btn => {
+                        if(btn.className === 'frame-btn') btn.classList.remove('selected')
+                    });
                     if (btns[currentIndex]) btns[currentIndex].classList.add('selected');
                     
                     currentIndex = (currentIndex + 1) % totalFrames;
