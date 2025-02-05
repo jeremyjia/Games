@@ -56,6 +56,13 @@
             max-height: 80vh;
             overflow: auto;
         }
+        .close-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -171,6 +178,10 @@
             selectFrame(frameId) {
                 this.currentFrame = this.frames.find(f => f.id === frameId);
             }
+
+            getFrameIndex(frameId) {
+                return this.frames.findIndex(f => f.id === frameId);
+            }
         }
 
         class Toolbar {
@@ -232,6 +243,8 @@
                 this.initFrameToolbar();
                 this.currentObjectType = null;
                 this.initCanvasInteraction();
+                this.isPlaying = false;
+                this.animationInterval = null;
             }
 
             initCanvasInteraction() {
@@ -313,7 +326,6 @@
                 frameBtn.className = 'frame-btn';
                 frameBtn.textContent = `帧 ${this.frameManager.frames.length}`;
                 
-                // 清除所有帧按钮的选中状态
                 Array.from(this.framesContainer.children).forEach(c => c.classList.remove('selected'));
                 
                 frameBtn.onclick = () => {
@@ -337,7 +349,6 @@
                 const btnIndex = btns.findIndex(c => c.textContent.includes(frameId));
                 if (btnIndex > -1) btns[btnIndex].remove();
                 
-                // 更新按钮序号
                 btns.forEach((btn, index) => {
                     if (index >= btnIndex) {
                         btn.textContent = `帧 ${index + 1}`;
@@ -356,6 +367,32 @@
                 frame.objects.forEach(obj => this.canvasManager.drawObject(obj));
             }
 
+            playAnimation() {
+                if (this.isPlaying || this.frameManager.frames.length === 0) return;
+                
+                this.isPlaying = true;
+                let currentIndex = 0;
+                const totalFrames = this.frameManager.frames.length;
+                
+                this.animationInterval = setInterval(() => {
+                    const frame = this.frameManager.frames[currentIndex];
+                    this.frameManager.selectFrame(frame.id);
+                    this.refreshCanvas();
+                    
+                    // 更新选中状态
+                    const btns = Array.from(this.framesContainer.children);
+                    btns.forEach(btn => btn.classList.remove('selected'));
+                    if (btns[currentIndex]) btns[currentIndex].classList.add('selected');
+                    
+                    currentIndex = (currentIndex + 1) % totalFrames;
+                }, 500); // 每500ms切换一帧
+            }
+
+            stopAnimation() {
+                this.isPlaying = false;
+                clearInterval(this.animationInterval);
+            }
+
             showExportModal() {
                 const data = this.frameManager.frames.map(f => ({
                     background: f.background,
@@ -364,10 +401,21 @@
                 
                 const modal = document.createElement('div');
                 modal.className = 'modal';
-                modal.textContent = JSON.stringify(data, null, 2);
+                
+                const closeBtn = document.createElement('div');
+                closeBtn.className = 'close-btn';
+                closeBtn.textContent = '×';
+                closeBtn.onclick = () => modal.remove();
+                
+                const pre = document.createElement('pre');
+                pre.textContent = JSON.stringify(data, null, 2);
+                
+                modal.appendChild(closeBtn);
+                modal.appendChild(pre);
                 document.body.appendChild(modal);
                 
-                setTimeout(() => modal.remove(), 5000);
+                // 3秒后自动关闭（原为5秒）
+                setTimeout(() => modal.remove(), 3000);
             }
         }
 
