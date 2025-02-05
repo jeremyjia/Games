@@ -63,6 +63,10 @@
             cursor: pointer;
             font-weight: bold;
         }
+        .fps-control {
+            margin: 10px 0;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -169,9 +173,12 @@
             }
 
             deleteFrame(frameId) {
-                this.frames = this.frames.filter(f => f.id !== frameId);
+                const index = this.frames.findIndex(f => f.id === frameId);
+                if (index === -1) return;
+
+                this.frames.splice(index, 1);
                 if (this.currentFrame?.id === frameId) {
-                    this.currentFrame = this.frames[0] || null;
+                    this.currentFrame = this.frames[Math.max(index-1, 0)] || null;
                 }
             }
 
@@ -193,10 +200,21 @@
                 this.element.style.top = position.y + 'px';
                 
                 buttons.forEach(btn => {
-                    const button = document.createElement('button');
-                    button.textContent = btn.label;
-                    button.onclick = btn.action;
-                    this.element.appendChild(button);
+                    if (btn.type === 'range') {
+                        const container = document.createElement('div');
+                        const label = document.createElement('label');
+                        label.textContent = btn.label;
+                        const input = document.createElement('input');
+                        Object.assign(input, btn.attrs);
+                        container.appendChild(label);
+                        container.appendChild(input);
+                        this.element.appendChild(container);
+                    } else {
+                        const button = document.createElement('button');
+                        button.textContent = btn.label;
+                        button.onclick = btn.action;
+                        this.element.appendChild(button);
+                    }
                 });
 
                 this.initDrag();
@@ -245,6 +263,7 @@
                 this.initCanvasInteraction();
                 this.isPlaying = false;
                 this.animationInterval = null;
+                this.fps = 2; // 默认2 FPS
             }
 
             initCanvasInteraction() {
@@ -297,11 +316,27 @@
                     {x: 20, y: 150}, '#B0E0E6'
                 );
 
+                // 更新播放控制工具条
                 new Toolbar(
                     [
                         {label: '播放', action: () => this.playAnimation()},
                         {label: '暂停', action: () => this.stopAnimation()},
-                        {label: '导出JSON', action: () => this.showExportModal()}
+                        {label: '导出JSON', action: () => this.showExportModal()},
+                        {
+                            type: 'range',
+                            label: '帧率: ',
+                            attrs: {
+                                type: 'range',
+                                min: 1,
+                                max: 30,
+                                value: 2,
+                                className: 'fps-control',
+                                oninput: (e) => {
+                                    this.fps = parseInt(e.target.value);
+                                    document.getElementById('fpsValue').textContent = this.fps;
+                                }
+                            }
+                        }
                     ],
                     {x: window.innerWidth - 160, y: 20}, '#98FB98'
                 );
@@ -325,6 +360,7 @@
                 const frameBtn = document.createElement('div');
                 frameBtn.className = 'frame-btn';
                 frameBtn.textContent = `帧 ${this.frameManager.frames.length}`;
+                frameBtn.dataset.frameId = frame.id; // 添加数据属性
                 
                 Array.from(this.framesContainer.children).forEach(c => c.classList.remove('selected'));
                 
@@ -343,17 +379,25 @@
             deleteFrame() {
                 if (!this.frameManager.currentFrame) return;
                 const frameId = this.frameManager.currentFrame.id;
+                
+                // 删除数据中的帧
                 this.frameManager.deleteFrame(frameId);
                 
-                const btns = Array.from(this.framesContainer.children);
-                const btnIndex = btns.findIndex(c => c.textContent.includes(frameId));
-                if (btnIndex > -1) btns[btnIndex].remove();
+                // 删除对应的按钮
+                const btnToRemove = this.framesContainer.querySelector(`[data-frame-id="${frameId}"]`);
+                if (btnToRemove) btnToRemove.remove();
                 
-                btns.forEach((btn, index) => {
-                    if (index >= btnIndex) {
-                        btn.textContent = `帧 ${index + 1}`;
-                    }
+                // 更新剩余按钮的序号
+                Array.from(this.framesContainer.children).forEach((btn, index) => {
+                    btn.textContent = `帧 ${index + 1}`;
                 });
+
+                // 自动选择新的当前帧
+                if (this.frameManager.currentFrame) {
+                    const newIndex = this.frameManager.frames.indexOf(this.frameManager.currentFrame);
+                    const newBtn = this.framesContainer.children[newIndex];
+                    if (newBtn) newBtn.classList.add('selected');
+                }
                 
                 this.refreshCanvas();
             }
@@ -373,7 +417,8 @@
                 this.isPlaying = true;
                 let currentIndex = 0;
                 const totalFrames = this.frameManager.frames.length;
-                
+                const intervalTime = 1000 / this.fps; // 根据FPS计算间隔
+
                 this.animationInterval = setInterval(() => {
                     const frame = this.frameManager.frames[currentIndex];
                     this.frameManager.selectFrame(frame.id);
@@ -385,7 +430,7 @@
                     if (btns[currentIndex]) btns[currentIndex].classList.add('selected');
                     
                     currentIndex = (currentIndex + 1) % totalFrames;
-                }, 500); // 每500ms切换一帧
+                }, intervalTime);
             }
 
             stopAnimation() {
@@ -414,7 +459,6 @@
                 modal.appendChild(pre);
                 document.body.appendChild(modal);
                 
-                // 3秒后自动关闭（原为5秒）
                 setTimeout(() => modal.remove(), 3000);
             }
         }
