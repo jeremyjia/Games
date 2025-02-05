@@ -1,5 +1,5 @@
 <!--
-请帮我升级这个网页，在顶上添加一个导航菜单。有一个菜单可以点击以后链接到deepseek的首页。
+2025/2/6 升级让所有工具条为悬浮可移动的
 -->
 <!DOCTYPE html>
 
@@ -8,11 +8,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>多场景稻草人</title>
     <style>
+     /* 新增导航菜单样式 */
+        .navbar {
+            width: 100%;
+            background: #1a1a1a;
+            padding: 15px 0;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+        }
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 0;
+            padding: 0;
+        }
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            transition: color 0.3s;
+        }
+        .nav-menu a:hover {
+            color: #4CAF50;
+        }
+        
         canvas {
             border: 1px solid #000;
             touch-action: none;
         }
         body {
+            padding-top: 60px; /* 给导航栏留出空间 */
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -92,7 +121,18 @@
         }
     </style>
 </head>
-<body>
+<body><!-- 新增导航菜单 -->
+    <nav class="navbar">
+        <ul class="nav-menu">
+            <li><a href="#" target="_blank">v0.11</a></li>
+            <li><a href="https://www.deepseek.com" target="_blank">DeepSeek 首页</a></li>
+            <li><a href="f.html">f.html</a></li>
+            <li><a href="i1.html">i1.html</a></li>
+            <li><a href="s1.html">s1.html</a></li>
+            <li><a href="readme.txt">readme.txt</a></li>
+            <!-- 可以继续添加其他菜单项 -->
+        </ul>
+    </nav>
     <div class="status-bar">状态: <span id="status">运行中</span></div>
     <div class="scene-toolbar">
         <button class="scene-btn" id="roadSceneBtn">🚗 马路边</button>
