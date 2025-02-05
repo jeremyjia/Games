@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JS类设计工坊 v2.0</title>
+    <title>JS类设计工坊</title>
     <style>
         body {
             margin: 0;
@@ -74,12 +74,14 @@
             color: white;
             border-radius: 3px;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s;
         }
 
         button.active {
-            background: #45a049;
-            box-shadow: 0 0 0 2px #4CAF50;
+            background: #1B5E20;
+            box-shadow: 0 0 0 2px #4CAF50,
+                        0 0 12px rgba(76,175,80,0.5);
+            transform: scale(1.05);
         }
 
         .button-group {
@@ -101,6 +103,8 @@
 <body>
     <nav id="nav">
         <a href="https://www.deepseek.com" style="color: white; text-decoration: none;">DeepSeek 首页</a>
+        <a href="#" style="color: rgb(114, 196, 244); text-decoration: none;">d1.html v3.11</a>
+        <a href=".." style="color: rgb(237, 87, 170); text-decoration: none;">[..]</a>
     </nav>
 
     <div id="codeEditor" class="draggable">
@@ -108,8 +112,10 @@
         <div class="content">
             <textarea id="codeArea"></textarea>
             <div class="button-group">
-                <button onclick="updateClassCode()">更新类代码</button>
+                <button onclick="updateClassCode()">更新代码</button>
                 <button onclick="clearCode()" style="background: #f44336;">清除代码</button>
+                <button onclick="replaceCode()" style="background: #2196F3;">替换字符串</button>
+                <button onclick="clearN()" style="background: #2381d9;">清除\n</button>
             </div>
         </div>
     </div>
@@ -174,13 +180,8 @@
         
         document.querySelectorAll('#classToolbar button').forEach(btn => {
             btn.addEventListener('click', () => {
-                // 移除所有按钮的高亮状态
-                document.querySelectorAll('#classToolbar button').forEach(b => {
-                    b.classList.remove('active');
-                });
-                // 设置当前按钮高亮
+                document.querySelectorAll('#classToolbar button').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                
                 currentClassBtn = btn;
                 document.getElementById('codeArea').value = btn.dataset.code;
             });
@@ -194,6 +195,36 @@
 
         function clearCode() {
             document.getElementById('codeArea').value = '';
+        }
+
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function clearN(){
+            try {
+                const find = '\\n';
+                const replaceWith = '';
+                const textarea = document.getElementById('codeArea');
+                const regex = new RegExp(escapeRegExp(find), 'g');
+                textarea.value = textarea.value.replace(regex, replaceWith);
+            } catch (e) {
+                alert('替换失败：' + e.message);
+            }
+        }
+        function replaceCode() {
+            const find = prompt('请输入要查找的字符串：');
+            if (find === null) return;
+            
+            const replaceWith = prompt('请输入替换后的字符串：') || '';
+            const textarea = document.getElementById('codeArea');
+            
+            try {
+                const regex = new RegExp(escapeRegExp(find), 'g');
+                textarea.value = textarea.value.replace(regex, replaceWith);
+            } catch (e) {
+                alert('替换失败：' + e.message);
+            }
         }
 
         // 实例生成
