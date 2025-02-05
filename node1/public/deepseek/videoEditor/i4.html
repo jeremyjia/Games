@@ -418,15 +418,17 @@
                 frameBtn.textContent = `帧 ${this.frameManager.frames.length}`;
                 frameBtn.dataset.frameId = frame.id;
                 
-                Array.from(this.framesContainer.children).forEach(c => {
-                    if(c.className !== 'frame-btn') return;
-                    c.classList.remove('selected');
+                Array.from(this.framesContainer.children).forEach(c => { 
+                    if(c.classList.contains('frame-btn')) {
+                        c.classList.remove('selected');
+                    }
                 });
                 
                 frameBtn.onclick = () => {
                     Array.from(this.framesContainer.children).forEach(c => {
-                        if(c.className !== 'frame-btn') return;
-                        c.classList.remove('selected');
+                        if(c.classList.contains('frame-btn')) {
+                            c.classList.remove('selected');
+                        }
                     });
                     frameBtn.classList.add('selected');
                     this.frameManager.selectFrame(frame.id);
