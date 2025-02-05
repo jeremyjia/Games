@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>视频数据编辑器</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            touch-action: none;
+            font-family: Arial;
+        }
+        #mainCanvas {
+            border: 2px solid #333;
+            position: fixed;
+            left: 20vw;
+            top: 10vh;
+            width: 60vw;
+            height: 60vh;
+        }
+        .toolbar {
+            position: fixed;
+            background: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            touch-action: none;
+            min-width: 120px;
+        }
+        .toolbar button {
+            display: block;
+            margin: 5px;
+            padding: 8px;
+            width: 100%;
+        }
+        .frame-btn {
+            display: inline-block;
+            padding: 8px;
+            margin: 2px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+        }
+        .selected {
+            background: #ffd700;
+            border-color: #ff9900;
+        }
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #e0f7ff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            max-width: 80vw;
+            max-height: 80vh;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="mainCanvas"></canvas>
+
+    <script>
+        class CanvasManager {
+            constructor() {
+                this.canvas = document.getElementById('mainCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+            }
+
+            resize() {
+                const rect = this.canvas.getBoundingClientRect();
+                this.canvas.width = rect.width;
+                this.canvas.height = rect.height;
+            }
+
+            clear() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+
+            drawBackground(type) {
+                const ctx = this.ctx;
+                ctx.save();
+                
+                switch(type) {
+                    case '海边':
+                        ctx.fillStyle = '#87CEEB';
+                        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height/2);
+                        ctx.fillStyle = '#FFD700';
+                        ctx.fillRect(0, this.canvas.height/2, this.canvas.width, this.canvas.height/2);
+                        break;
+                    case '马路边':
+                        ctx.fillStyle = '#808080';
+                        ctx.fillRect(0, this.canvas.height*0.7, this.canvas.width, this.canvas.height*0.3);
+                        break;
+                    case '树林':
+                        ctx.fillStyle = '#228B22';
+                        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                        break;
+                    case '操场':
+                        ctx.fillStyle = '#4CAF50';
+                        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                        ctx.beginPath();
+                        ctx.arc(this.canvas.width/2, this.canvas.height/2, 50, 0, Math.PI*2);
+                        ctx.strokeStyle = 'white';
+                        ctx.stroke();
+                        break;
+                }
+                ctx.restore();
+            }
+
+            drawObject(obj) {
+                const ctx = this.ctx;
+                ctx.save();
+                ctx.translate(obj.x, obj.y);
+                ctx.scale(obj.scale, obj.scale);
+                
+                switch(obj.type) {
+                    case '汽车':
+                        ctx.fillStyle = '#FF0000';
+                        ctx.fillRect(-20, -10, 40, 20);
+                        ctx.fillRect(-15, -20, 30, 10);
+                        break;
+                    case '树木':
+                        ctx.fillStyle = '#8B4513';
+                        ctx.fillRect(-5, -20, 10, 20);
+                        ctx.fillStyle = '#228B22';
+                        ctx.beginPath();
+                        ctx.arc(0, -30, 15, 0, Math.PI*2);
+                        ctx.fill();
+                        break;
+                    case '小狗':
+                        ctx.fillStyle = '#8B4513';
+                        ctx.beginPath();
+                        ctx.arc(0, 0, 10, 0, Math.PI*2);
+                        ctx.fill();
+                        ctx.fillRect(-5, -15, 10, 15);
+                        break;
+                }
+                ctx.restore();
+            }
+        }
+
+        class FrameManager {
+            constructor() {
+                this.frames = [];
+                this.currentFrame = null;
+            }
+
+            addFrame() {
+                const newFrame = {
+                    id: Date.now(),
+                    background: '海边',
+                    objects: [],
+                    selectedObject: null
+                };
+                this.frames.push(newFrame);
+                this.selectFrame(newFrame.id);
+                return newFrame;
+            }
+
+            deleteFrame(frameId) {
+                this.frames = this.frames.filter(f => f.id !== frameId);
+                if (this.currentFrame?.id === frameId) {
+                    this.currentFrame = this.frames[0] || null;
+                }
+            }
+
+            selectFrame(frameId) {
+                this.currentFrame = this.frames.find(f => f.id === frameId);
+            }
+        }
+
+        class Toolbar {
+            constructor(buttons, position, color) {
+                this.element = document.createElement('div');
+                this.element.className = 'toolbar';
+                this.element.style.backgroundColor = color;
+                this.element.style.left = position.x + 'px';
+                this.element.style.top = position.y + 'px';
+                
+                buttons.forEach(btn => {
+                    const button = document.createElement('button');
+                    button.textContent = btn.label;
+                    button.onclick = btn.action;
+                    this.element.appendChild(button);
+                });
+
+                this.initDrag();
+                document.body.appendChild(this.element);
+            }
+
+            initDrag() {
+                let isDragging = false;
+                let offset = {x: 0, y: 0};
+
+                const startDrag = (e) => {
+                    isDragging = true;
+                    offset = {
+                        x: e.clientX - this.element.offsetLeft,
+                        y: e.clientY - this.element.offsetTop
+                    };
+                };
+
+                const doDrag = (e) => {
+                    if (!isDragging) return;
+                    this.element.style.left = (e.clientX - offset.x) + 'px';
+                    this.element.style.top = (e.clientY - offset.y) + 'px';
+                };
+
+                const stopDrag = () => {
+                    isDragging = false;
+                };
+
+                this.element.addEventListener('mousedown', startDrag);
+                document.addEventListener('mousemove', doDrag);
+                document.addEventListener('mouseup', stopDrag);
+                
+                this.element.addEventListener('touchstart', (e) => startDrag(e.touches[0]));
+                document.addEventListener('touchmove', (e) => doDrag(e.touches[0]));
+                document.addEventListener('touchend', stopDrag);
+            }
+        }
+
+        class Editor {
+            constructor() {
+                this.canvasManager = new CanvasManager();
+                this.frameManager = new FrameManager();
+                this.initToolbars();
+                this.initFrameToolbar();
+                this.currentObjectType = null;
+                this.initCanvasInteraction();
+            }
+
+            initCanvasInteraction() {
+                const canvas = this.canvasManager.canvas;
+                
+                const handleCanvasClick = (e) => {
+                    if (!this.currentObjectType || !this.frameManager.currentFrame) return;
+                    
+                    const rect = canvas.getBoundingClientRect();
+                    const scaleX = canvas.width / rect.width;
+                    const scaleY = canvas.height / rect.height;
+                    
+                    const x = (e.clientX || e.touches[0].clientX) - rect.left;
+                    const y = (e.clientY || e.touches[0].clientY) - rect.top;
+                    
+                    const newObj = {
+                        type: this.currentObjectType,
+                        x: x * scaleX,
+                        y: y * scaleY,
+                        scale: 1
+                    };
+                    
+                    this.frameManager.currentFrame.objects.push(newObj);
+                    this.refreshCanvas();
+                };
+
+                canvas.addEventListener('click', handleCanvasClick);
+                canvas.addEventListener('touchstart', handleCanvasClick);
+            }
+
+            initToolbars() {
+                new Toolbar(
+                    ['海边', '马路边', '树林', '操场'].map(bg => ({
+                        label: bg,
+                        action: () => {
+                            if (this.frameManager.currentFrame) {
+                                this.frameManager.currentFrame.background = bg;
+                                this.refreshCanvas();
+                            }
+                        }
+                    })),
+                    {x: 20, y: 20}, '#FFE4B5'
+                );
+
+                new Toolbar(
+                    ['汽车', '树木', '小狗'].map(type => ({
+                        label: type,
+                        action: () => this.currentObjectType = type
+                    })),
+                    {x: 20, y: 150}, '#B0E0E6'
+                );
+
+                new Toolbar(
+                    [
+                        {label: '播放', action: () => this.playAnimation()},
+                        {label: '暂停', action: () => this.stopAnimation()},
+                        {label: '导出JSON', action: () => this.showExportModal()}
+                    ],
+                    {x: window.innerWidth - 160, y: 20}, '#98FB98'
+                );
+            }
+
+            initFrameToolbar() {
+                this.frameToolbar = new Toolbar(
+                    [
+                        {label: '+ 添加帧', action: () => this.addFrame()},
+                        {label: '- 删除帧', action: () => this.deleteFrame()}
+                    ],
+                    {x: window.innerWidth/2 - 60, y: window.innerHeight - 100}, '#DDA0DD'
+                );
+                
+                this.framesContainer = document.createElement('div');
+                this.frameToolbar.element.appendChild(this.framesContainer);
+            }
+
+            addFrame() {
+                const frame = this.frameManager.addFrame();
+                const frameBtn = document.createElement('div');
+                frameBtn.className = 'frame-btn';
+                frameBtn.textContent = `帧 ${this.frameManager.frames.length}`;
+                
+                // 清除所有帧按钮的选中状态
+                Array.from(this.framesContainer.children).forEach(c => c.classList.remove('selected'));
+                
+                frameBtn.onclick = () => {
+                    Array.from(this.framesContainer.children).forEach(c => c.classList.remove('selected'));
+                    frameBtn.classList.add('selected');
+                    this.frameManager.selectFrame(frame.id);
+                    this.refreshCanvas();
+                };
+                
+                this.framesContainer.appendChild(frameBtn);
+                frameBtn.classList.add('selected');
+                this.refreshCanvas();
+            }
+
+            deleteFrame() {
+                if (!this.frameManager.currentFrame) return;
+                const frameId = this.frameManager.currentFrame.id;
+                this.frameManager.deleteFrame(frameId);
+                
+                const btns = Array.from(this.framesContainer.children);
+                const btnIndex = btns.findIndex(c => c.textContent.includes(frameId));
+                if (btnIndex > -1) btns[btnIndex].remove();
+                
+                // 更新按钮序号
+                btns.forEach((btn, index) => {
+                    if (index >= btnIndex) {
+                        btn.textContent = `帧 ${index + 1}`;
+                    }
+                });
+                
+                this.refreshCanvas();
+            }
+
+            refreshCanvas() {
+                this.canvasManager.clear();
+                const frame = this.frameManager.currentFrame;
+                if (!frame) return;
+                
+                this.canvasManager.drawBackground(frame.background);
+                frame.objects.forEach(obj => this.canvasManager.drawObject(obj));
+            }
+
+            showExportModal() {
+                const data = this.frameManager.frames.map(f => ({
+                    background: f.background,
+                    objects: f.objects
+                }));
+                
+                const modal = document.createElement('div');
+                modal.className = 'modal';
+                modal.textContent = JSON.stringify(data, null, 2);
+                document.body.appendChild(modal);
+                
+                setTimeout(() => modal.remove(), 5000);
+            }
+        }
+
+        // 初始化编辑器
+        const editor = new Editor();
+    </script>
+</body>
+</html>
