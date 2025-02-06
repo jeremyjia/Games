@@ -1,101 +1,109 @@
 const fs = require('fs');
 const { createCanvas } = require('canvas');
 const ffmpeg = require('fluent-ffmpeg');
-const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 
 class VideoGenerator {
   constructor() {
-    this.tempDir = path.join(__dirname, 'temp');
+    this.tempDir = path.join(__dirname, 'temp_frames');
     this.outputDir = path.join(__dirname, 'output');
     this._initDirs();
+    this.frameSize = { width: 1280, height: 720 }; // 视频分辨率
   }
 
   _initDirs() {
-    if (!fs.existsSync(this.tempDir)) fs.mkdirSync(this.tempDir);
-    if (!fs.existsSync(this.outputDir)) fs.mkdirSync(this.outputDir);
+    [this.tempDir, this.outputDir].forEach(dir => {
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    });
   }
 
-  async generate(config) {
-    const { inputFile, outputFile, width = 1280, height = 720, fps = 24 } = config;
-    const frameData = this._loadJson(inputFile);
+  async generateFromData(data, outputFileName = 'output.mp4', fps = 24) {
     const tempFiles = [];
-
     try {
-      // 生成帧图片序列
-      for (let i = 0; i < frameData.length; i++) {
-        const framePath = await this._renderFrame(frameData[i], i, width, height);
+      // 生成所有帧图片
+      for (let i = 0; i < data.length; i++) {
+        const framePath = path.join(this.tempDir, `frame_${i.toString().padStart(4, '0')}.png`);
+        await this._renderFrame(data[i], framePath);
         tempFiles.push(framePath);
       }
 
       // 合成视频
-      await this._createVideo(tempFiles, outputFile, fps);
-      return { success: true, output: outputFile };
+      await this._createVideo(tempFiles, outputFileName, fps);
+      return { success: true, output: path.join(this.outputDir, outputFileName) };
     } finally {
       this._cleanup(tempFiles);
     }
   }
 
-  _loadJson(filePath) {
-    try {
-      const data = fs.readFileSync(filePath);
-      return JSON.parse(data);
-    } catch (error) {
-      throw new Error(`JSON解析失败: ${error.message}`);
-    }
-  }
-
-  async _renderFrame(frame, index, width, height) {
-    const canvas = createCanvas(width, height);
+  async _renderFrame(frameData, outputPath) {
+    const canvas = createCanvas(this.frameSize.width, this.frameSize.height);
     const ctx = canvas.getContext('2d');
     
     // 绘制背景
-    this._drawBackground(ctx, frame.background, width, height);
+    this._drawBackground(ctx, frameData.background);
     
-    // 绘制所有对象
-    frame.objects.forEach(obj => {
+    // 绘制对象（示例包含一个汽车对象）
+    frameData.objects.forEach(obj => {
       ctx.save();
-      ctx.translate(obj.x, obj.y);
-      ctx.scale(obj.scale, obj.scale);
+      ctx.translate(obj.x || 0, obj.y || 0);
+      ctx.scale(obj.scale || 1, obj.scale || 1);
       this._drawObject(ctx, obj);
       ctx.restore();
     });
 
-    // 保存临时文件
-    const framePath = path.join(this.tempDir, `frame_${index}_${uuidv4()}.png`);
+    // 保存图片
     await new Promise((resolve, reject) => {
-      const out = fs.createWriteStream(framePath);
+      const out = fs.createWriteStream(outputPath);
       const stream = canvas.createPNGStream();
       stream.pipe(out);
       out.on('finish', resolve);
       out.on('error', reject);
     });
-
-    return framePath;
   }
 
-  _drawBackground(ctx, type, width, height) {
-    // 与前端一致的背景绘制逻辑
+  _drawBackground(ctx, type) {
+    ctx.save();
     switch(type) {
+      case '操场':
+        ctx.fillStyle = '#4CAF50';
+        ctx.fillRect(0, 0, this.frameSize.width, this.frameSize.height);
+        ctx.beginPath();
+        ctx.arc(this.frameSize.width/2, this.frameSize.height/2, 50, 0, Math.PI*2);
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        break;
+
+      case '马路边':
+        ctx.fillStyle = '#808080';
+        ctx.fillRect(0, this.frameSize.height*0.7, this.frameSize.width, this.frameSize.height*0.3);
+        ctx.fillStyle = '#F5F5F5';
+        ctx.fillRect(0, this.frameSize.height*0.7 + 20, this.frameSize.width, 10);
+        break;
+
+      case '树林':
+        ctx.fillStyle = '#228B22';
+        ctx.fillRect(0, 0, this.frameSize.width, this.frameSize.height);
+        break;
+
       case '海边':
         ctx.fillStyle = '#87CEEB';
-        ctx.fillRect(0, 0, width, height/2);
+        ctx.fillRect(0, 0, this.frameSize.width, this.frameSize.height/2);
         ctx.fillStyle = '#FFD700';
-        ctx.fillRect(0, height/2, width, height/2);
+        ctx.fillRect(0, this.frameSize.height/2, this.frameSize.width, this.frameSize.height/2);
         break;
-      // 其他背景类型...
     }
+    ctx.restore();
   }
 
   _drawObject(ctx, obj) {
-    // 与前端一致的对象绘制逻辑
     switch(obj.type) {
       case '汽车':
         ctx.fillStyle = '#FF0000';
-        ctx.fillRect(-20, -10, 40, 20);
-        ctx.fillRect(-15, -20, 30, 10);
+        ctx.fillRect(-20, -10, 40, 20);  // 车身
+        ctx.fillRect(-15, -20, 30, 10);  // 车顶
         break;
-      // 其他对象类型...
+      // 可以继续添加其他对象类型
     }
   }
 
@@ -104,7 +112,7 @@ class VideoGenerator {
       const outputPath = path.join(this.outputDir, outputFile);
       
       ffmpeg()
-        .input(path.join(this.tempDir, 'frame_%d.png'))
+        .input(path.join(this.tempDir, 'frame_%04d.png'))
         .inputFPS(fps)
         .outputOptions([
           '-c:v libx264',
@@ -117,11 +125,8 @@ class VideoGenerator {
         .on('progress', progress => {
           console.log(`处理进度: ${Math.floor(progress.percent)}%`);
         })
-        .on('end', () => {
-          console.log('视频生成完成');
-          resolve();
-        })
-        .on('error', err => reject(err))
+        .on('end', resolve)
+        .on('error', reject)
         .run();
     });
   }
@@ -135,12 +140,33 @@ class VideoGenerator {
 }
 
 // 使用示例
-const generator = new VideoGenerator();
+const testData = [
+  // 此处插入您提供的JSON数据
+  // 为了演示添加一个移动的汽车对象
+  ...Array(2).fill({
+    background: "操场",
+    objects: [{ type: "汽车", x: 200, y: 300, scale: 1 }]
+  }),
+  ...Array(2).fill({
+    background: "马路边",
+    objects: [{ type: "汽车", x: 400, y: 500, scale: 1 }]
+  }),
+  ...Array(2).fill({
+    background: "树林",
+    objects: []
+  }),
+  ...Array(3).fill({
+    background: "海边",
+    objects: []
+  })
+];
 
-generator.generate({
-  inputFile: 't1.json',  // 前端导出的JSON文件
-  outputFile: 'output.mp4',
-  width: 1920,
-  height: 1080,
-  fps: 30
-}).then(console.log).catch(console.error);
+(async () => {
+  const generator = new VideoGenerator();
+  try {
+    const result = await generator.generateFromData(testData, '1.mp4', 24);
+    console.log('视频生成成功:', result.output);
+  } catch (error) {
+    console.error('生成失败:', error);
+  }
+})();
