@@ -3,6 +3,7 @@
 <head>
     <title>视频数据编辑器</title>
     <style>
+        /* 保持原有样式不变 */
         .toolbar {
             position: fixed;
             background: #fff;
@@ -91,9 +92,11 @@
     <button id="runApp">启动编辑器</button>
 
     <script>
+        // 保持原有常量定义不变
         const BACKGROUNDS = ['海边', '马路边', '树林', '操场'];
         
         class CanvasManager {
+            // 保持原有CanvasManager类不变
             constructor() {
                 this.canvas = document.getElementById('mainCanvas');
                 this.ctx = this.canvas.getContext('2d');
@@ -250,6 +253,7 @@
         }
 
         class FrameManager {
+            // 保持原有FrameManager类不变
             constructor() {
                 this.frames = [];
                 this.currentFrame = null;
@@ -287,6 +291,7 @@
         }
 
         class Toolbar {
+            // 保持原有Toolbar类不变
             constructor(title, buttons, position, color) {
                 this.element = document.createElement('div');
                 this.element.className = 'toolbar';
@@ -417,6 +422,7 @@
                 const frame = this.frameManager.currentFrame;
                 if (!frame) return;
 
+                // 修复部分：优先处理添加对象模式
                 if (this.currentObjectType) {
                     const newObj = { 
                         type: this.currentObjectType, 
@@ -427,30 +433,32 @@
                     frame.objects.push(newObj);
                     frame.selectedObject = newObj;
                     this.refreshCanvas();
-                } else {
-                    let selectedObj = null;
-                    for (let i = frame.objects.length - 1; i >= 0; i--) {
-                        const obj = frame.objects[i];
-                        const bbox = this.canvasManager.getObjectBoundingBox(obj);
-                        if (x >= bbox.left && x <= bbox.left + bbox.width &&
-                            y >= bbox.top && y <= bbox.top + bbox.height) {
-                            selectedObj = obj;
-                            break;
-                        }
-                    }
-                    
-                    if (selectedObj) {
-                        frame.selectedObject = selectedObj;
-                        this.isDragging = true;
-                        this.selectedObjectOffset = {
-                            x: x - selectedObj.x,
-                            y: y - selectedObj.y
-                        };
-                    } else {
-                        frame.selectedObject = null;
-                    }
-                    this.refreshCanvas();
+                    return; // 添加对象后立即返回，不执行后续选择逻辑
                 }
+
+                // 仅在没有添加对象模式时执行选择逻辑
+                let selectedObj = null;
+                for (let i = frame.objects.length - 1; i >= 0; i--) {
+                    const obj = frame.objects[i];
+                    const bbox = this.canvasManager.getObjectBoundingBox(obj);
+                    if (x >= bbox.left && x <= bbox.left + bbox.width &&
+                        y >= bbox.top && y <= bbox.top + bbox.height) {
+                        selectedObj = obj;
+                        break;
+                    }
+                }
+                
+                if (selectedObj) {
+                    frame.selectedObject = selectedObj;
+                    this.isDragging = true;
+                    this.selectedObjectOffset = {
+                        x: x - selectedObj.x,
+                        y: y - selectedObj.y
+                    };
+                } else {
+                    frame.selectedObject = null;
+                }
+                this.refreshCanvas();
             }
 
             handlePointerMove(e) {
