@@ -138,7 +138,7 @@ class VideoGenerator {
 const generator = new VideoGenerator();
 
 generator.generate({
-  inputFile: 'animation.json',  // 前端导出的JSON文件
+  inputFile: 't1.json',  // 前端导出的JSON文件
   outputFile: 'output.mp4',
   width: 1920,
   height: 1080,
