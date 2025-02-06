@@ -8,6 +8,7 @@
     <style>
         /* 保持原有样式不变 */
         body {
+            border: 1px solid red;
             margin: 0;
             overflow: hidden;
             touch-action: none;
@@ -92,7 +93,7 @@
     </style>
 </head>
 <body>
-    <canvas id="mainCanvas"></canvas>
+    <button id="runApp">run</button> 
 
     <script>
         const BACKGROUNDS = ['海边', '马路边', '树林', '操场'];
@@ -520,7 +521,20 @@
             }
         }
 
-        const editor = new Editor();
+        
+
+        const btnApp = document.getElementById("runApp");
+        btnApp.onclick = function(){ 
+            if(!btnApp.run){
+                btnApp.run = true;
+                const cvs = document.createElement('canvas'); 
+                cvs.id = "mainCanvas";
+                document.body.appendChild(cvs);
+
+                const editor = new Editor();
+
+            }
+        }
     </script>
 </body>
 </html>
