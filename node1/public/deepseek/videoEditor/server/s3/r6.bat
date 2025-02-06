@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-setlocal enabledelayedexpansion
+setlocal DisableDelayedExpansion
 
 echo Creating project structure...
 mkdir "video-generator" 2>nul
@@ -10,89 +10,92 @@ mkdir public\output 2>nul
 
 echo Writing package.json...
 (
-echo ^{
+echo {
 echo   "name": "video-generator",
 echo   "version": "1.0.0",
-echo   "scripts": ^{
+echo   "scripts": {
 echo     "start": "node server.js"
-echo   ^},
-echo   "dependencies": ^{
+echo   },
+echo   "dependencies": {
 echo     "express": "^4.18.2",
 echo     "body-parser": "^1.20.2",
 echo     "canvas": "^2.11.2",
 echo     "fluent-ffmpeg": "^2.1.2",
 echo     "tmp-promise": "^3.0.3"
-echo   ^}
-echo ^}
+echo   }
+echo }
 ) > package.json
 
 echo Writing server.js...
-set "server_js=const express = require('express');^
-const bodyParser = require('body-parser');^
-const { createCanvas } = require('canvas');^
-const ffmpeg = require('fluent-ffmpeg');^
-const fs = require('fs');^
-const path = require('path');^
-const { dir: getTmpDir } = require('tmp-promise');^
-^
-const app = express();^
-const port = 3000;^
-^
-app.use(bodyParser.json());^
-app.use(express.static('public'));^
-^
-const bgColorMap = ^{
-  '操场': '#90EE90',^
-  '马路边': '#A9A9A9',^
-  '树林': '#228B22',^
-  '海边': '#87CEEB'^
-^};^
-^
-app.post('/generate-video', async (req, res) => ^{
-  try ^{
-    const { frames, fileName, fps } = req.body;^
-    const { path: tempDir, cleanup } = await getTmpDir(^{ unsafeCleanup: true });^
-^
-    // 生成帧画面^
-    const canvas = createCanvas(800, 600);^
-    const ctx = canvas.getContext('2d');^
-^
-    for (let i = 0; i < frames.length; i++^) ^{
-      const frame = frames[i];^
-      ctx.fillStyle = bgColorMap[frame.background] || '#FFFFFF';^
-      ctx.fillRect(0, 0, 800, 600);^
-      ctx.fillStyle = '#000000';^
-      ctx.font = '30px Arial';^
-      ctx.fillText(frame.background, 350, 300);^
-      const buffer = canvas.toBuffer('image/png');^
-      fs.writeFileSync(path.join(tempDir, `frame-${i+1}.png`), buffer);^
-    ^}^
-^
-    // 生成视频^
-    const outputPath = path.join(__dirname, 'public', 'output', fileName);^
-    await new Promise((resolve, reject) => ^{
-      ffmpeg()^
-        .input(path.join(tempDir, 'frame-%%d.png'))^
-        .inputFPS(fps)^
-        .output(outputPath)^
-        .on('end', resolve)^
-        .on('error', reject)^
-        .run();^
-    ^});^
-^
-    cleanup();^
-    res.download(outputPath, fileName);^
-  ^} catch (err) ^{
-    console.error(err);^
-    res.status(500).send('视频生成失败');^
-  ^}^
-^});^
-^
-app.listen(port, () => ^{
-  console.log(`服务已启动：http://localhost:${port}`);^
-^});"
-
-echo !server_js! > server.js
+setlocal EnableDelayedExpansion
+(
+echo // 使用 UTF-8 编码保存
+echo const express = require('express'^);
+echo const bodyParser = require('body-parser'^);
+echo const { createCanvas } = require('canvas'^);
+echo const ffmpeg = require('fluent-ffmpeg'^);
+echo const fs = require('fs'^);
+echo const path = require('path'^);
+echo const { dir: getTmpDir } = require('tmp-promise'^);
+echo.
+echo const app = express(^);
+echo const port = 3000;
+echo.
+echo app.use(bodyParser.json(^)^);
+echo app.use(express.static('public'^)^);
+echo.
+echo const bgColorMap = {
+echo   '操场': '#90EE90',
+echo   '马路边': '#A9A9A9',
+echo   '树林': '#228B22',
+echo   '海边': '#87CEEB'
+echo };
+echo.
+echo app.post('/generate-video', async (req, res) => {
+echo   try {
+echo     const { frames, fileName, fps } = req.body;
+echo     const { path: tempDir, cleanup } = await getTmpDir({ unsafeCleanup: true });
+echo.
+echo     // 生成帧画面
+echo     const canvas = createCanvas(800, 600);
+echo     const ctx = canvas.getContext('2d');
+echo.
+echo     for (let i = 0; i < frames.length; i++^) {
+echo       const frame = frames[i];
+echo       ctx.fillStyle = bgColorMap[frame.background] || '#FFFFFF';
+echo       ctx.fillRect(0, 0, 800, 600);
+echo       ctx.fillStyle = '#000000';
+echo       ctx.font = '30px Arial';
+echo       ctx.fillText(frame.background, 350, 300);
+echo       const buffer = canvas.toBuffer('image/png');
+echo       fs.writeFileSync(path.join(tempDir, `frame-${i+1}.png`), buffer);
+echo     }
+echo.
+echo     // 生成视频
+echo     const outputPath = path.join(__dirname, 'public', 'output', fileName);
+echo     await new Promise((resolve, reject) => {
+echo       ffmpeg()
+echo         .input(path.join(tempDir, 'frame-%%d.png'))
+echo         .inputFPS(fps)
+echo         .output(outputPath)
+echo         .on('end', resolve)
+echo         .on('error', reject)
+echo         .run();
+echo     });
+echo.
+echo     cleanup();
+echo     res.download(outputPath, fileName);
+echo   } catch (err) {
+echo     console.error(err);
+echo     res.status(500).send('视频生成失败');
+echo   }
+echo });
+echo.
+echo app.listen(port, () => {
+echo   console.log(`服务已启动：http://localhost:${port}`);
+echo });
+) > server.js
+endlocal
 
 echo Writing public files...
 (
@@ -131,64 +134,64 @@ echo   background-color: #45a049;
 echo }
 ) > public\style.css
 
-set "app_js=function generateVideo() {^
-  const testData = {^
-    frames: [^
-      {background: '操场', objects: []},^
-      {background: '操场', objects: []},^
-      {background: '马路边', objects: []},^
-      {background: '马路边', objects: []},^
-      {background: '树林', objects: []},^
-      {background: '海边', objects: []},^
-      {background: '马路边', objects: []},^
-      {background: '马路边', objects: []},^
-      {background: '树林', objects: []}^
-    ],^
-    fileName: 'demo.mp4',^
-    fps: 1^
-  };^
-^
-  fetch('/generate-video', {^
-    method: 'POST',^
-    headers: { 'Content-Type': 'application/json' },^
-    body: JSON.stringify(testData)^
-  })^
-  .then(response => {^
-    if (!response.ok) throw new Error('网络响应异常');^
-    return response.blob();^
-  })^
-  .then(blob => {^
-    const url = window.URL.createObjectURL(blob);^
-    const a = document.createElement('a');^
-    a.style.display = 'none';^
-    a.href = url;^
-    a.download = testData.fileName;^
-    document.body.appendChild(a);^
-    a.click();^
-    window.URL.revokeObjectURL(url);^
-    document.body.removeChild(a);^
-  })^
-  .catch(error => {^
-    console.error('发生错误:', error);^
-    alert('视频生成失败，请查看控制台日志');^
-  });^
-}^
-"
-
-echo !app_js! > public\app.js
+setlocal EnableDelayedExpansion
+(
+echo function generateVideo() {
+echo   const testData = {
+echo     frames: [
+echo       {background: '操场', objects: []},
+echo       {background: '操场', objects: []},
+echo       {background: '马路边', objects: []},
+echo       {background: '马路边', objects: []},
+echo       {background: '树林', objects: []},
+echo       {background: '海边', objects: []},
+echo       {background: '马路边', objects: []},
+echo       {background: '马路边', objects: []},
+echo       {background: '树林', objects: []}
+echo     ],
+echo     fileName: 'demo.mp4',
+echo     fps: 1
+echo   };
+echo
+echo   fetch('/generate-video', {
+echo     method: 'POST',
+echo     headers: { 'Content-Type': 'application/json' },
+echo     body: JSON.stringify(testData)
+echo   })
+echo   .then(response => {
+echo     if (!response.ok) throw new Error('网络响应异常');
+echo     return response.blob();
+echo   })
+echo   .then(blob => {
+echo     const url = window.URL.createObjectURL(blob);
+echo     const a = document.createElement('a');
+echo     a.style.display = 'none';
+echo     a.href = url;
+echo     a.download = testData.fileName;
+echo     document.body.appendChild(a);
+echo     a.click();
+echo     window.URL.revokeObjectURL(url);
+echo     document.body.removeChild(a);
+echo   })
+echo   .catch(error => {
+echo     console.error('发生错误:', error);
+echo     alert('视频生成失败，请查看控制台日志');
+echo   });
+echo }
+) > public\app.js
+endlocal
 
 echo Installing dependencies...
-call npm install --loglevel=error
+call npm install --loglevel=error --scripts-prepend-node-path=true
 
 echo.
 echo =================================================
 echo 项目创建成功！请按以下步骤操作：
-echo 1. 确保已安装FFmpeg并添加到系统PATH
+echo 1. 确保已安装以下软件：
+echo    - FFmpeg (添加到系统PATH)
+echo    - Python 3.x
+echo    - Visual Studio Build Tools (C++桌面开发组件)
 echo 2. 运行命令: npm start
 echo 3. 访问 http://localhost:3000
-echo 
-echo 常见问题解决方案：
-echo - 中文乱码：用记事本打开文件后另存为UTF-8编码
-echo - 安装canvas需要Python和Visual Studio Build Tools
 echo =================================================
 pause
