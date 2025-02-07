@@ -70,7 +70,7 @@ echo     ^}
 echo.
 echo     // Generate video
 echo     const outputPath = path.join(__dirname, 'public', 'output', fileName^);
-echo     await new Promise((resolve, reject^) => ^{
+echo     await new Promise((resolve, reject^) =^> ^{
 echo       ffmpeg(^)
 echo         .input(path.join(tempDir, 'frame-%%d.png'^))
 echo         .inputFPS(fps^)
@@ -88,7 +88,7 @@ echo     res.status(500^).send('Error generating video'^);
 echo   ^}
 echo ^}^);
 echo.
-echo app.listen(port, (^) => ^{
+echo app.listen(port, (^) =^> ^{
 echo   console.log(`Server running at http://localhost:${port}`^);
 echo ^}^);
 ) > server.js
@@ -144,8 +144,8 @@ echo     method: 'POST',
 echo     headers: { 'Content-Type': 'application/json' },
 echo     body: JSON.stringify(testData)
 echo   })
-echo   .then(response => response.blob())
-echo   .then(blob => {
+echo   .then(response =^> response.blob())
+echo   .then(blob =^> {
 echo     const url = window.URL.createObjectURL(blob);
 echo     const a = document.createElement('a');
 echo     a.href = url;
