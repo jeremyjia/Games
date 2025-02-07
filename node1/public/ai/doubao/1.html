@@ -9,14 +9,26 @@
         canvas {
             border: 1px solid black;
         }
+
+        /* 新增难度选择样式 */
+        #difficultySelector {
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 
 <body>
+    <!-- 新增难度选择下拉框 -->
+    <select id="difficultySelector">
+        <option value="1">简单</option>
+        <option value="2">中等</option>
+        <option value="3">困难</option>
+    </select>
     <canvas id="gameCanvas" width="400" height="400"></canvas>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const difficultySelector = document.getElementById('difficultySelector');
 
         let snake;
         let dx;
@@ -24,6 +36,14 @@
         let foodX;
         let foodY;
         let score;
+        // 定义不同难度对应的速度间隔（毫秒）
+        const difficultySpeeds = {
+            1: 200,
+            2: 150,
+            3: 100
+        };
+        let currentSpeed;
+        let lastTime = 0;
 
         // 初始化游戏
         function initGame() {
@@ -32,6 +52,13 @@
             dy = 0;
             score = 0;
             generateFood();
+            setDifficulty();
+        }
+
+        // 设置难度
+        function setDifficulty() {
+            const difficulty = parseInt(difficultySelector.value);
+            currentSpeed = difficultySpeeds[difficulty];
         }
 
         // 生成食物
@@ -86,9 +113,12 @@
             }
         }
 
-        function gameLoop() {
-            draw();
-            update();
+        function gameLoop(timestamp) {
+            if (timestamp - lastTime >= currentSpeed) {
+                draw();
+                update();
+                lastTime = timestamp;
+            }
             requestAnimationFrame(gameLoop);
         }
 
@@ -113,6 +143,9 @@
                 dy = 0;
             }
         });
+
+        // 监听难度选择变化
+        difficultySelector.addEventListener('change', setDifficulty);
 
         // 初始化游戏
         initGame();
