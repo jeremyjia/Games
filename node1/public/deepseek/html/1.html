@@ -1,174 +1,249 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>自然语言绘图</title>
+    <title>自然语言绘画</title>
     <style>
-        canvas {
-            border: 1px solid #ccc;
-            background: #f0f8ff;
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 10px;
-        }
-        input {
-            margin: 10px 0;
+        body { margin: 0; overflow: hidden; }
+        canvas { border: 1px solid #ccc; touch-action: none; }
+        #inputArea {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
             padding: 8px;
-            width: 90%;
-            max-width: 500px;
         }
-        button {
-            padding: 8px 20px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
+        .toolbar {
+            position: fixed;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px;
+            user-select: none;
         }
-        #error {
-            color: red;
-            margin-top: 5px;
-            min-height: 20px;
+        .toolbar-header {
+            background: #f0f0f0;
+            padding: 5px;
+            cursor: move;
+            text-align: center;
         }
+        .toolbar button {
+            margin: 2px;
+            padding: 5px;
+            min-width: 40px;
+        }
+        #objToolbar { top: 20px; left: 20px; }
+        #numToolbar { top: 20px; right: 20px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <canvas id="canvas"></canvas>
-        <input type="text" id="command" 
-               placeholder="输入绘图指令，例如：画三座红色房子"
-               onkeypress="handleKeyPress(event)">
+    <canvas id="canvas"></canvas>
+    <div class="toolbar" id="objToolbar">
+        <div class="toolbar-header">对象</div>
+        <button onclick="insertText('房子')">房子</button>
+        <button onclick="insertText('狗')">狗</button>
+        <button onclick="insertText('树')">树</button>
+    </div>
+    <div class="toolbar" id="numToolbar">
+        <div class="toolbar-header">数字</div>
+        <button onclick="insertText('1')">1</button>
+        <button onclick="insertText('2')">2</button>
+        <button onclick="insertText('3')">3</button>
+    </div>
+    <div id="inputArea">
+        <input type="text" id="command" placeholder="输入绘画指令" style="width:70%">
         <button onclick="parseCommand()">绘制</button>
-        <div id="error"></div>
+        <button onclick="deleteSelected()">删除选中</button>
     </div>
 
 <script>
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-let objects = []; // 存储所有绘制对象
+let objects = [];
+let selectedObj = null;
+let isDragging = false;
+let dragType = 'move';
 
 // 初始化画布尺寸
-function resizeCanvas() {
-    canvas.width = Math.min(window.innerWidth * 0.95, 600);
-    canvas.height = Math.min(window.innerHeight * 0.6, 400);
+function initCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight - 100;
 }
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
+initCanvas();
+window.addEventListener('resize', initCanvas);
 
-// 指令解析正则表达式
-const COMMAND_REGEX = 
-/^(画|换)(一|两|三|四|五|六|七|八|九|十|\d+)(座|辆|棵)(红色|蓝色|绿色|黄色)?(房子|车|树)$/;
+// 图形对象构造函数
+function Shape(type, x, y, color) {
+    this.type = type;
+    this.x = x;
+    this.y = y;
+    this.size = 50;
+    this.color = color || '#000';
+    this.selected = false;
+}
+
+// 自然语言解析
+function parseCommand() {
+    const text = document.getElementById('command').value;
+    const regex = /(?:画|绘)?(\d+|两|三|四)?[只个座辆]*(红色|红|蓝色|蓝|绿色|绿)?(房子|狗|树)/g;
+    let match;
+    
+    while ((match = regex.exec(text)) !== null) {
+        let count = match[1] ? chineseToNumber(match[1]) : 1;
+        let color = match[2] ? (match[2].includes('红') ? 'red' : 
+            match[2].includes('蓝') ? 'blue' : 'green') : 'black';
+        let type = match[3];
+        
+        for (let i = 0; i < count; i++) {
+            let x = Math.random() * (canvas.width - 100) + 50;
+            let y = Math.random() * (canvas.height - 100) + 50;
+            objects.push(new Shape(type, x, y, color));
+        }
+    }
+    draw();
+}
 
 // 中文数字转换
-const CHINESE_NUMBERS = {
-    '一':1, '两':2, '三':3, '四':4, '五':5,
-    '六':6, '七':7, '八':8, '九':9, '十':10
-};
-
-function parseCommand() {
-    const command = document.getElementById('command').value.trim();
-    document.getElementById('error').textContent = '';
-    
-    // 清空画布如果是"换"操作
-    if(command.startsWith('换')) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        objects = [];
-    }
-
-    const match = command.match(COMMAND_REGEX);
-    if (!match) return showError('格式示例：画三座红色房子');
-    
-    const [_, action, amount, measure, color, obj] = match;
-    
-    // 验证量词匹配
-    const measureMap = {座:'房子', 辆:'车', 棵:'树'};
-    if(measureMap[measure] !== obj) {
-        return showError(`${measure}不能用于${obj}`);
-    }
-
-    // 转换数量
-    const count = CHINESE_NUMBERS[amount] || parseInt(amount, 10);
-    
-    // 生成随机位置
-    for(let i=0; i<count; i++) {
-        const pos = getValidPosition(obj);
-        drawObject(obj, pos.x, pos.y, color);
-        objects.push({type:obj, ...pos, color});
-    }
+function chineseToNumber(ch) {
+    const map = { '两': 2, '三': 3, '四': 4 };
+    return map[ch] || parseInt(ch) || 1;
 }
 
-// 智能生成有效位置
-function getValidPosition(type) {
-    const baseY = canvas.height - (type === '树' ? 100 : 80);
+// 绘制图形
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    objects.forEach(obj => {
+        ctx.fillStyle = obj.color;
+        ctx.strokeStyle = obj.selected ? 'blue' : 'black';
+        ctx.lineWidth = 2;
+        
+        switch(obj.type) {
+            case '房子':
+                ctx.fillRect(obj.x, obj.y, obj.size, obj.size);
+                ctx.beginPath();
+                ctx.moveTo(obj.x, obj.y);
+                ctx.lineTo(obj.x + obj.size/2, obj.y - obj.size/2);
+                ctx.lineTo(obj.x + obj.size, obj.y);
+                ctx.closePath();
+                ctx.fill();
+                break;
+            case '狗':
+                // 简单狗的形状
+                ctx.beginPath();
+                ctx.arc(obj.x, obj.y, obj.size/3, 0, Math.PI*2);
+                ctx.fill();
+                break;
+            case '树':
+                ctx.fillRect(obj.x, obj.y, obj.size/4, obj.size);
+                ctx.beginPath();
+                ctx.arc(obj.x + obj.size/8, obj.y - obj.size/2, obj.size/2, 0, Math.PI*2);
+                ctx.fill();
+                break;
+        }
+        ctx.stroke();
+        
+        if (obj.selected) {
+            ctx.strokeStyle = 'blue';
+            ctx.strokeRect(obj.x - 5, obj.y - 5, obj.size + 10, obj.size + 10);
+        }
+    });
+}
+
+// 事件处理
+function getMousePos(e) {
+    const rect = canvas.getBoundingClientRect();
     return {
-        x: Math.random() * (canvas.width - 100) + 20,
-        y: baseY - Math.random() * 50
+        x: (e.clientX || e.touches[0].clientX) - rect.left,
+        y: (e.clientY || e.touches[0].clientY) - rect.top
     };
 }
 
-// 绘制对象函数
-function drawObject(type, x, y, color) {
-    const colors = {
-        房子: color || '#8B4513',
-        车: color || '#FF0000',
-        树: color || '#228B22'
-    };
+canvas.addEventListener('mousedown', handleStart);
+canvas.addEventListener('touchstart', handleStart);
 
-    ctx.save();
-    ctx.translate(x, y);
+function handleStart(e) {
+    e.preventDefault();
+    const pos = getMousePos(e);
+    selectedObj = objects.find(obj => 
+        pos.x > obj.x && pos.x < obj.x + obj.size &&
+        pos.y > obj.y && pos.y < obj.y + obj.size
+    );
     
-    switch(type) {
-        case '房子':
-            // 屋顶
-            ctx.beginPath();
-            ctx.moveTo(-20, 0);
-            ctx.lineTo(40, -40);
-            ctx.lineTo(100, 0);
-            ctx.fillStyle = '#A52A2A';
-            ctx.fill();
-            // 主体
-            ctx.fillStyle = colors.房子;
-            ctx.fillRect(0, 0, 80, 60);
-            // 窗户
-            ctx.fillStyle = '#87CEEB';
-            ctx.fillRect(30, 10, 20, 20);
-            break;
-            
-        case '车':
-            // 车身
-            ctx.fillStyle = colors.车;
-            ctx.fillRect(0, 20, 60, 30);
-            // 车轮
-            ctx.beginPath();
-            ctx.arc(10, 50, 8, 0, Math.PI*2);
-            ctx.arc(50, 50, 8, 0, Math.PI*2);
-            ctx.fillStyle = '#333';
-            ctx.fill();
-            break;
-            
-        case '树':
-            // 树干
-            ctx.fillStyle = '#8B4513';
-            ctx.fillRect(15, 40, 10, 30);
-            // 树叶
-            ctx.beginPath();
-            ctx.arc(20, 30, 30, 0, Math.PI*2);
-            ctx.fillStyle = colors.树;
-            ctx.fill();
-            break;
+    if (selectedObj) {
+        selectedObj.selected = true;
+        isDragging = true;
+        dragType = 'move';
+        draw();
     }
-    ctx.restore();
 }
 
-function handleKeyPress(e) {
-    if(e.key === 'Enter') parseCommand();
+window.addEventListener('mousemove', handleMove);
+window.addEventListener('touchmove', handleMove);
+
+function handleMove(e) {
+    if (!isDragging || !selectedObj) return;
+    const pos = getMousePos(e);
+    selectedObj.x = pos.x - selectedObj.size/2;
+    selectedObj.y = pos.y - selectedObj.size/2;
+    draw();
 }
 
-function showError(msg) {
-    document.getElementById('error').textContent = msg;
+window.addEventListener('mouseup', () => isDragging = false);
+window.addEventListener('touchend', () => isDragging = false);
+
+// 工具条拖动
+function makeDraggable(elm) {
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    elm.querySelector('.toolbar-header').addEventListener('mousedown', dragMouseDown);
+    elm.querySelector('.toolbar-header').addEventListener('touchstart', dragMouseDown);
+
+    function dragMouseDown(e) {
+        e = e || window.event;
+        e.preventDefault();
+        pos3 = (e.clientX || e.touches[0].clientX);
+        pos4 = (e.clientY || e.touches[0].clientY);
+        document.onmouseup = closeDrag;
+        document.ontouchend = closeDrag;
+        document.onmousemove = elementDrag;
+        document.ontouchmove = elementDrag;
+    }
+
+    function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        pos1 = (e.clientX || e.touches[0].clientX) - pos3;
+        pos2 = (e.clientY || e.touches[0].clientY) - pos4;
+        pos3 = e.clientX || e.touches[0].clientX;
+        pos4 = e.clientY || e.touches[0].clientY;
+        elm.style.top = (elm.offsetTop + pos2) + "px";
+        elm.style.left = (elm.offsetLeft + pos1) + "px";
+    }
+
+    function closeDrag() {
+        document.onmouseup = null;
+        document.ontouchend = null;
+        document.onmousemove = null;
+        document.ontouchmove = null;
+    }
+}
+
+makeDraggable(document.getElementById('objToolbar'));
+makeDraggable(document.getElementById('numToolbar'));
+
+// 文本插入
+function insertText(text) {
+    const input = document.getElementById('command');
+    const start = input.selectionStart;
+    input.value = input.value.slice(0, start) + text + input.value.slice(start);
+    input.focus();
+    input.setSelectionRange(start + text.length, start + text.length);
+}
+
+// 删除选中
+function deleteSelected() {
+    objects = objects.filter(obj => !obj.selected);
+    draw();
 }
 </script>
 </body>
