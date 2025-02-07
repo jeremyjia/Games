@@ -9,62 +9,36 @@
         canvas {
             border: 1px solid black;
         }
-
-        /* 自定义对话框样式 */
-        #gameOverDialog {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            border: 1px solid #ccc;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-        }
-
-        #overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-        }
     </style>
 </head>
 
 <body>
     <canvas id="gameCanvas" width="400" height="400"></canvas>
-    <!-- 自定义对话框 -->
-    <div id="gameOverDialog">
-        <p id="gameOverMessage"></p>
-        <button onclick="closeDialog()">关闭</button>
-    </div>
-    <!-- 遮罩层 -->
-    <div id="overlay"></div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // 蛇的初始位置和方向
-        let snake = [{ x: 100, y: 100 }, { x: 90, y: 100 }, { x: 80, y: 100 }];
-        let dx = 10;
-        let dy = 0;
+        let snake;
+        let dx;
+        let dy;
         let foodX;
         let foodY;
-        let score = 0;
+        let score;
+
+        // 初始化游戏
+        function initGame() {
+            snake = [{ x: 100, y: 100 }, { x: 90, y: 100 }, { x: 80, y: 100 }];
+            dx = 10;
+            dy = 0;
+            score = 0;
+            generateFood();
+        }
 
         // 生成食物
         function generateFood() {
             foodX = Math.floor(Math.random() * (canvas.width / 10)) * 10;
             foodY = Math.floor(Math.random() * (canvas.height / 10)) * 10;
         }
-
-        generateFood();
 
         function draw() {
             // 清空画布
@@ -101,13 +75,13 @@
 
             // 检查是否撞到边界
             if (snake[0].x < 0 || snake[0].x >= canvas.width || snake[0].y < 0 || snake[0].y >= canvas.height) {
-                showGameOverDialog('游戏结束！你的分数是:'+ score);
+                gameOver();
             }
 
             // 检查是否撞到自己
             for (let i = 1; i < snake.length; i++) {
                 if (snake[0].x === snake[i].x && snake[0].y === snake[i].y) {
-                    showGameOverDialog('游戏结束！你的分数是:'+ score);
+                    gameOver();
                 }
             }
         }
@@ -116,6 +90,12 @@
             draw();
             update();
             requestAnimationFrame(gameLoop);
+        }
+
+        // 游戏结束处理
+        function gameOver() {
+            alert('游戏结束！你的分数是:'+ score);
+            initGame();
         }
 
         document.addEventListener('keydown', function (e) {
@@ -134,25 +114,8 @@
             }
         });
 
-        // 显示游戏结束对话框
-        function showGameOverDialog(message) {
-            const dialog = document.getElementById('gameOverDialog');
-            const overlay = document.getElementById('overlay');
-            const messageElement = document.getElementById('gameOverMessage');
-            messageElement.textContent = message;
-            dialog.style.display = 'block';
-            overlay.style.display = 'block';
-        }
-
-        // 关闭对话框
-        function closeDialog() {
-            const dialog = document.getElementById('gameOverDialog');
-            const overlay = document.getElementById('overlay');
-            dialog.style.display = 'none';
-            overlay.style.display = 'none';
-            location.reload();
-        }
-
+        // 初始化游戏
+        initGame();
         gameLoop();
     </script>
 </body>
