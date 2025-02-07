@@ -1,52 +1,63 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>文本对比工具</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Diff Tool</title>
     <style>
-        body { max-width: 800px; margin: 20px auto; padding: 20px; }
-        .container { display: grid; gap: 20px; }
-        textarea { width: 100%; height: 150px; padding: 10px; }
-        button { padding: 10px 20px; background: #4CAF50; color: white; border: none; cursor: pointer; }
-        button:hover { background: #45a049; }
-        #result { padding: 15px; margin-top: 20px; border-radius: 5px; }
+        textarea { width: 100%; height: 100px; }
+        .diff { margin-top: 20px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>文本对比工具</h1>
-        <textarea id="text1" placeholder="输入第一个文本"></textarea>
-        <textarea id="text2" placeholder="输入第二个文本"></textarea>
-        <button onclick="compareTexts()">对比文本</button>
-        <div id="result"></div>
-    </div>
+    <h1>Text Diff Tool</h1>
+    <textarea id="text1" placeholder="Enter first text"></textarea>
+    <textarea id="text2" placeholder="Enter second text"></textarea>
+    <button onclick="compareTexts()">Compare Texts</button>
+    <button onclick="generateDoc()">Generate Word Document</button>
+    <div class="diff" id="diffResult"></div>
+    <a id="downloadLink" style="display:none;" href=" ">Download Word Document</a >
 
     <script>
         async function compareTexts() {
             const text1 = document.getElementById('text1').value;
             const text2 = document.getElementById('text2').value;
 
-            try {
-                const response = await fetch('/compare', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `text1=${encodeURIComponent(text1)}&text2=${encodeURIComponent(text2)}`
-                });
+            const response = await fetch('/compare', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text1, text2 })
+            });
 
-                const data = await response.json();
-                
-                const resultDiv = document.getElementById('result');
-                resultDiv.innerHTML = `
-                    <h3>对比结果：${data.result}</h3>
-                    <p>${data.details.lengthComparison}</p>
-                    <p>完全匹配：${data.details.exactMatch ? '✅ 是' : '❌ 否'}</p>
-                `;
-                resultDiv.style.backgroundColor = data.details.exactMatch ? '#dff0d8' : '#f8d7da';
+            const { differences } = await response.json();
+            const diffResult = document.getElementById('diffResult');
+            diffResult.innerHTML = differences.map(diff => 
+                `<span style="color: ${diff.added ? 'green' : diff.removed ? 'red' : 'black'}">${diff.value}</span>`
+            ).join('');
+        }
 
-            } catch (error) {
-                console.error('对比出错:', error);
-            }
+        async function generateDoc() {
+            const text1 = document.getElementById('text1').value;
+            const text2 = document.getElementById('text2').value;
+
+            const response = await fetch('/compare', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text1, text2 })
+            });
+
+            const { differences } = await response.json();
+
+            const docResponse = await fetch('/generate-doc', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ differences })
+            });
+
+            const { filePath } = await docResponse.json();
+            const downloadLink = document.getElementById('downloadLink');
+            downloadLink.href = filePath;
+            downloadLink.style.display = 'block';
         }
     </script>
 </body>
