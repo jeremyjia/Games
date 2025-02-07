@@ -40,20 +40,23 @@ button:hover {
 }
 
 #diffResult {
+    min-height: 100px;
     padding: 15px;
-    border: 1px solid #ddd;
+    border: 2px solid #ddd;
     background-color: #f9f9f9;
     white-space: pre-wrap;
+    transition: background-color 0.3s ease;
 }
-
 .added {
-    background-color: #cfc;
-    text-decoration: underline;
+    background-color: #9feb9f !important;
+    border-bottom: 2px solid #4CAF50;
+    padding: 2px 0;
 }
 
 .removed {
-    background-color: #fcc;
+    background-color: #ffb3b3 !important;
     text-decoration: line-through;
+    padding: 2px 0; 
 }
 
 .download-link {
