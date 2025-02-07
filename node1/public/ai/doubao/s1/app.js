@@ -1,10 +1,11 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const app = express();
-const port = 3005;
 const PizZip = require('pizzip');
 const Docxtemplater = require('docxtemplater');
+
+const app = express();
+const port = 3005;
 
 // 存储分数的文件路径
 const scoresFilePath = path.join(__dirname, 'scores.json');
@@ -56,12 +57,28 @@ app.get('/export-history', (req, res) => {
             return;
         }
         const scores = data ? JSON.parse(data) : [];
-        const content = fs.readFileSync(path.join(__dirname, 'template.docx'), 'binary');
-        const zip = new PizZip(content);
+
+        // 动态定义模板内容
+        const templateContent = `
+| 级别 | 分数 |
+{% for score in scores %}
+| {{ score.level }} | {{ score.score }} |
+{% endfor %}
+`;
+
+        // 创建一个空的 ZIP 对象
+        const zip = new PizZip();
+
+        // 手动创建一个简单的 .docx 结构
+        zip.file('word/document.xml', templateContent);
+        zip.file('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`);
+        zip.file('word/_rels/document.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>`);
+
         const doc = new Docxtemplater(zip);
         doc.render({
             scores
         });
+
         const buf = doc.getZip().generate({ type: 'nodebuffer' });
         res.setHeader('Content-Disposition', 'attachment; filename=history.docx');
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
