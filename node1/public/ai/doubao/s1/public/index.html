@@ -51,6 +51,11 @@
             border: 1px solid #ccc;
             padding: 8px;
         }
+
+        #export-button {
+            display: block;
+            margin: 20px auto;
+        }
     </style>
 </head>
 
@@ -79,6 +84,7 @@
         </thead>
         <tbody id="history-body"></tbody>
     </table>
+    <button id="export-button" onclick="exportHistory()" style="display: none;">导出历史记录为 Word</button>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -86,6 +92,7 @@
         const messageDiv = document.getElementById('message-div');
         const historyTable = document.getElementById('history-table');
         const historyBody = document.getElementById('history-body');
+        const exportButton = document.getElementById('export-button');
 
         let snake = [{ x: 100, y: 100 }, { x: 90, y: 100 }, { x: 80, y: 100 }];
         let dx = 10;
@@ -206,6 +213,7 @@
             levelSelector.style.display = 'block';
             messageDiv.style.display = 'block';
             historyTable.style.display = 'none';
+            exportButton.style.display = 'none';
         }
 
         function showHistory() {
@@ -213,6 +221,7 @@
             levelSelector.style.display = 'none';
             messageDiv.style.display = 'none';
             historyTable.style.display = 'block';
+            exportButton.style.display = 'block';
             fetch('/history')
            .then(response => response.json())
            .then(scores => {
@@ -229,6 +238,10 @@
                 });
             })
            .catch(error => console.error('获取历史记录时出错:', error));
+        }
+
+        function exportHistory() {
+            window.location.href = '/export-history';
         }
 
         levelSelector.addEventListener('change', function () {

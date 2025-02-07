@@ -1,9 +1,10 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-
 const app = express();
 const port = 3005;
+const PizZip = require('pizzip');
+const Docxtemplater = require('docxtemplater');
 
 // 存储分数的文件路径
 const scoresFilePath = path.join(__dirname, 'scores.json');
@@ -43,6 +44,28 @@ app.get('/history', (req, res) => {
             const scores = data ? JSON.parse(data) : [];
             res.json(scores);
         }
+    });
+});
+
+// 导出历史记录为 Word 文档的接口
+app.get('/export-history', (req, res) => {
+    fs.readFile(scoresFilePath, 'utf8', (err, data) => {
+        if (err) {
+            console.error('读取历史记录时出错:', err);
+            res.status(500).send('读取历史记录时出错');
+            return;
+        }
+        const scores = data ? JSON.parse(data) : [];
+        const content = fs.readFileSync(path.join(__dirname, 'template.docx'), 'binary');
+        const zip = new PizZip(content);
+        const doc = new Docxtemplater(zip);
+        doc.render({
+            scores
+        });
+        const buf = doc.getZip().generate({ type: 'nodebuffer' });
+        res.setHeader('Content-Disposition', 'attachment; filename=history.docx');
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        res.send(buf);
     });
 });
 
