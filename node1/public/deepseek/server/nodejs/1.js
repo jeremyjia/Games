@@ -1,96 +1,115 @@
 const officegen = require('officegen');
 const fs = require('fs');
 
-// 创建 Word 文档
+// 创建Word文档对象
 const docx = officegen('docx');
 
-// 设置文档默认字体（可选）
-docx.setDocTitle('多彩文档示例');
-docx.setFont({
-  name: '微软雅黑', // 中文字体建议使用系统自带字体
-  size: 12
-});
+// 设置文档属性
+docx.setDocTitle('AI学习日记');
+//docx.setCreator('街头音乐人');
 
-// ==================== 第一个段落 ====================
-const p1 = docx.createP();
-p1.addText('【健康生活小贴士】', {
+// 设置默认样式
+const defaultStyle = {
+  font_face: '微软雅黑',
+  font_size: 12,
+  line_spacing: 240 // 240=1.5倍行距
+};
+//docx.setStyle(defaultStyle);
+
+// 创建可写流
+const output = fs.createWriteStream('AI学习日记.docx');
+
+
+
+
+// 正文内容
+const pObj = docx.createP();
+pObj.addText('🎵 AI编程学习日记 - 2024年X月X日', {
   bold: true,
-  color: '#2E86C1', // 深蓝色
-  font_size: 16,
-  font_face: '微软雅黑'
-});
-p1.addLineBreak();
-p1.addText('每天保持适量的运动（如快走30分钟）、均衡饮食（推荐彩虹饮食法）、保证7-8小时睡眠。研究表明，良好的生活习惯可以降低慢性疾病风险。', {
-  color: '#5D6D7E', // 深灰色
-  italics: true
+  font_size: 22,
+  color: '2A5CAA',
+  align: 'center',
+  shdType: 'clear',
+  shdColor: 'FFFFFF'
 });
 
-// ==================== 第二个段落 ====================
-const p2 = docx.createP();
-p2.addText('【高效工作技巧】', {
-  bold: true,
-  color: '#27AE60', // 绿色
-  font_size: 16,
-  font_face: '微软雅黑'
-});
-p2.addLineBreak();
-p2.addText('使用番茄工作法（25分钟专注+5分钟休息），优先处理「重要不紧急」任务，每日结束前用10分钟做复盘。推荐工具：Trello、Notion。', {
-  color: '#34495E', // 深蓝灰
-  underline: true
-});
+docx.createP().addText(' '); // 空行
 
-// ==================== 第三个段落 ====================
-const p3 = docx.createP();
-p3.addText('【旅行必备清单】', {
-  bold: true,
-  color: '#E67E22', // 橙色
-  font_size: 16,
-  font_face: '微软雅黑'
-});
-p3.addLineBreak();
-p3.addText('证件类：身份证/护照、信用卡；电子设备：充电宝、转换插头；应急物品：常用药品、紧急联系人卡片。建议使用收纳袋分类管理。', {
-  color: '#7F8C8D', // 灰色
-  highlight: 'yellow' // 黄色高亮
-});
-
-// ==================== 创建表格 ====================
-const table = docx.createTable(4, 3); // 4行3列
-
-// 表头样式
-table.setTableStyle({
-  borders: true,
-  borderColor: '#AED6F1', // 浅蓝色边框
-  borderSize: 2
-});
-
-// 表头行
-table.getRow(0).setBgColor('#3498DB'); // 蓝色背景
-table.getCell(0,0).addText('类别', { color: 'white', bold: true });
-table.getCell(0,1).addText('推荐物品', { color: 'white', bold: true });
-table.getCell(0,2).addText('注意事项', { color: 'white', bold: true });
-
-// 表格数据（交替行颜色）
-const data = [
-  { category: '电子设备', items: '充电宝、耳机', tips: '注意航空公司容量限制' },
-  { category: '衣物', items: '外套、舒适鞋', tips: '根据目的地气候选择' },
-  { category: '证件', items: '护照/身份证', tips: '建议准备复印件' }
+// 正文段落
+const content = [
+  { text: '【停驻的意义】', style: { bold: true, font_size: 16, color: 'C00000' } },
+  { text: '\n往日此时，我应背着吉他穿梭于城市角落。但今天，琴盒安静地立在墙角，手指触碰的不再是琴弦，而是键盘。这个决定并非偶然——当街头艺术遇到AI时代，我选择用代码谱写新乐章。' },
+  
+  { text: '\n\n【学习轨迹】', style: { bold: true, font_size: 16, color: 'C00000' } },
+  { text: '\n今日学习重点：\n' },
+  { list: [
+    'Node.js核心模块应用',
+    'officegen文档生成原理',
+    '自动化排版技术',
+    'Markdown与Word格式转换'
+  ], listType: 'numbered' },
+  
+  { text: '\n\n【技术突破】', style: { bold: true, font_size: 16, color: 'C00000' } },
+  { text: '\n成功实现：\n' },
+  { list: [
+    '动态内容生成',
+    '多级标题样式控制',
+    '自动分页与页眉设置',
+    '打印优化格式适配'
+  ], listType: 'bullet' },
+  
+  { text: '\n\n【明日计划】', style: { bold: true, font_size: 16, color: 'C00000' } },
+  { text: '\n1. 集成天气API自动生成演出建议\n2. 开发自动生成歌词文档系统\n3. 研究AI作曲与编程结合的可能性' },
+  
+  { text: '\n\n【心灵感悟】', style: { bold: true, font_size: 16, color: 'C00000' } },
+  { text: '\n音乐与代码，看似南辕北辙，实则异曲同工。两者都需要：\n' },
+  { list: [
+    '节奏与逻辑的平衡',
+    '创意与规范的融合',
+    '重复练习中的即兴灵感',
+    '与受众/用户的深度共鸣'
+  ], listType: 'bullet' }
 ];
 
-data.forEach((row, i) => {
-  const rowIndex = i + 1;
-  table.getRow(rowIndex).setBgColor(i % 2 === 0 ? '#EBF5FB' : '#FDFEFE'); // 交替浅蓝/白色
-  table.getCell(rowIndex, 0).addText(row.category, { color: '#2C3E50' });
-  table.getCell(rowIndex, 1).addText(row.items, { color: '#27AE60' });
-  table.getCell(rowIndex, 2).addText(row.tips, { color: '#E74C3C' });
+content.forEach(item => {
+  if (item.list) {
+    const p = docx.createListOfDots(item.list, { listType: item.listType });
+    p.options = { indent: 400 }; // 缩进400twips（约0.7cm）
+  } else {
+    const p = docx.createP();
+    p.addText(item.text, item.style || {});
+  }
 });
 
-// ==================== 生成文件 ====================
-const output = fs.createWriteStream('demo_output.docx');
+// 分页
+//docx.createPageBreak();
+
+// 封底
+const lastPage = docx.createP();
+lastPage.addText('🎸 明日预告：', { bold: true, font_size: 14 });
+lastPage.addText('\n街头演出与AI预测系统结合实验\n\n', { italic: true });
+lastPage.addText('打印说明：', { color: 'FF0000' });
+lastPage.addText('\n本文档已优化打印设置，建议使用：\n- A4纸张\n- 双面打印\n- 默认边距', {
+  font_face: 'Consolas',
+  color: '666666'
+});
+
+// 错误处理
+output.on('error', (err) => {
+  console.log('生成失败:', err);
+});
+
+// 完成生成
 docx.generate(output, {
-  finalize: () => {
-    console.log('✅ 文档已生成：demo_output.docx');
-  },
-  error: (err) => {
-    console.error('❌ 生成失败:', err);
+  page: {
+    orientation: 'portrait',
+    margins: {
+      top: 1440,    // 1英寸 ≈ 1440twips
+      right: 1080,  // 0.75英寸
+      bottom: 1440,
+      left: 1080
+    }
   }
+}, () => {
+  console.log('✅ 日记文档已生成！建议使用WPS或Office打开打印');
 });
