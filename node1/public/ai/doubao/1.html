@@ -10,7 +10,10 @@
             border: 1px solid black;
         }
 
-        /* 添加信息显示区域的样式 */
+        #difficultySelector {
+            margin-bottom: 10px;
+        }
+
         #messageDiv {
             margin-top: 10px;
             padding: 10px;
@@ -21,13 +24,19 @@
 </head>
 
 <body>
-    <!-- 添加信息显示的 div -->
+    <!-- 难度选择下拉框 -->
+    <select id="difficultySelector">
+        <option value="1">简单</option>
+        <option value="2">中等</option>
+        <option value="3">困难</option>
+    </select>
+    <!-- 用于显示信息的 div -->
     <div id="messageDiv"></div>
     <canvas id="gameCanvas" width="400" height="400"></canvas>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        // 获取信息显示的 div
+        const difficultySelector = document.getElementById('difficultySelector');
         const messageDiv = document.getElementById('messageDiv');
 
         // 蛇的初始位置和方向
@@ -37,6 +46,15 @@
         let foodX;
         let foodY;
         let score = 0;
+
+        // 定义不同难度对应的时间间隔（毫秒）
+        const difficultyIntervals = {
+            1: 200,
+            2: 150,
+            3: 100
+        };
+        let currentInterval = difficultyIntervals[1]; // 默认简单难度
+        let lastTime = 0;
 
         // 生成食物
         function generateFood() {
@@ -98,11 +116,20 @@
             }
         }
 
-        function gameLoop() {
-            draw();
-            update();
+        function gameLoop(timestamp) {
+            if (timestamp - lastTime >= currentInterval) {
+                draw();
+                update();
+                lastTime = timestamp;
+            }
             requestAnimationFrame(gameLoop);
         }
+
+        // 当难度选择改变时更新时间间隔
+        difficultySelector.addEventListener('change', function () {
+            const selectedDifficulty = parseInt(this.value);
+            currentInterval = difficultyIntervals[selectedDifficulty];
+        });
 
         document.addEventListener('keydown', function (e) {
             if (e.key === 'ArrowUp' && dy!== 10) {
