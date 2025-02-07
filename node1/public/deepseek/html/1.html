@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自然语言绘图</title>
+    <style>
+        canvas {
+            border: 1px solid #ccc;
+            background: #f0f8ff;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+        }
+        input {
+            margin: 10px 0;
+            padding: 8px;
+            width: 90%;
+            max-width: 500px;
+        }
+        button {
+            padding: 8px 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        #error {
+            color: red;
+            margin-top: 5px;
+            min-height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <canvas id="canvas"></canvas>
+        <input type="text" id="command" 
+               placeholder="输入绘图指令，例如：画三座红色房子"
+               onkeypress="handleKeyPress(event)">
+        <button onclick="parseCommand()">绘制</button>
+        <div id="error"></div>
+    </div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let objects = []; // 存储所有绘制对象
+
+// 初始化画布尺寸
+function resizeCanvas() {
+    canvas.width = Math.min(window.innerWidth * 0.95, 600);
+    canvas.height = Math.min(window.innerHeight * 0.6, 400);
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// 指令解析正则表达式
+const COMMAND_REGEX = 
+/^(画|换)(一|两|三|四|五|六|七|八|九|十|\d+)(座|辆|棵)(红色|蓝色|绿色|黄色)?(房子|车|树)$/;
+
+// 中文数字转换
+const CHINESE_NUMBERS = {
+    '一':1, '两':2, '三':3, '四':4, '五':5,
+    '六':6, '七':7, '八':8, '九':9, '十':10
+};
+
+function parseCommand() {
+    const command = document.getElementById('command').value.trim();
+    document.getElementById('error').textContent = '';
+    
+    // 清空画布如果是"换"操作
+    if(command.startsWith('换')) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        objects = [];
+    }
+
+    const match = command.match(COMMAND_REGEX);
+    if (!match) return showError('格式示例：画三座红色房子');
+    
+    const [_, action, amount, measure, color, obj] = match;
+    
+    // 验证量词匹配
+    const measureMap = {座:'房子', 辆:'车', 棵:'树'};
+    if(measureMap[measure] !== obj) {
+        return showError(`${measure}不能用于${obj}`);
+    }
+
+    // 转换数量
+    const count = CHINESE_NUMBERS[amount] || parseInt(amount, 10);
+    
+    // 生成随机位置
+    for(let i=0; i<count; i++) {
+        const pos = getValidPosition(obj);
+        drawObject(obj, pos.x, pos.y, color);
+        objects.push({type:obj, ...pos, color});
+    }
+}
+
+// 智能生成有效位置
+function getValidPosition(type) {
+    const baseY = canvas.height - (type === '树' ? 100 : 80);
+    return {
+        x: Math.random() * (canvas.width - 100) + 20,
+        y: baseY - Math.random() * 50
+    };
+}
+
+// 绘制对象函数
+function drawObject(type, x, y, color) {
+    const colors = {
+        房子: color || '#8B4513',
+        车: color || '#FF0000',
+        树: color || '#228B22'
+    };
+
+    ctx.save();
+    ctx.translate(x, y);
+    
+    switch(type) {
+        case '房子':
+            // 屋顶
+            ctx.beginPath();
+            ctx.moveTo(-20, 0);
+            ctx.lineTo(40, -40);
+            ctx.lineTo(100, 0);
+            ctx.fillStyle = '#A52A2A';
+            ctx.fill();
+            // 主体
+            ctx.fillStyle = colors.房子;
+            ctx.fillRect(0, 0, 80, 60);
+            // 窗户
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(30, 10, 20, 20);
+            break;
+            
+        case '车':
+            // 车身
+            ctx.fillStyle = colors.车;
+            ctx.fillRect(0, 20, 60, 30);
+            // 车轮
+            ctx.beginPath();
+            ctx.arc(10, 50, 8, 0, Math.PI*2);
+            ctx.arc(50, 50, 8, 0, Math.PI*2);
+            ctx.fillStyle = '#333';
+            ctx.fill();
+            break;
+            
+        case '树':
+            // 树干
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(15, 40, 10, 30);
+            // 树叶
+            ctx.beginPath();
+            ctx.arc(20, 30, 30, 0, Math.PI*2);
+            ctx.fillStyle = colors.树;
+            ctx.fill();
+            break;
+    }
+    ctx.restore();
+}
+
+function handleKeyPress(e) {
+    if(e.key === 'Enter') parseCommand();
+}
+
+function showError(msg) {
+    document.getElementById('error').textContent = msg;
+}
+</script>
+</body>
+</html>
