@@ -48,7 +48,7 @@ echo   '树林': '#228B22',
 echo   '海边': '#87CEEB'
 echo ^};
 echo.
-echo app.post('/generate-video', async (req, res^) => ^{
+echo app.post('/generate-video', async (req, res^) =^> ^{
 echo   try ^{
 echo     const { frames, fileName, fps } = req.body;
 echo     const { path: tempDir, cleanup } = await getTmpDir(^%^%unsafeCleanup: true^%^%);
