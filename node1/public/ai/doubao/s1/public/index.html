@@ -65,7 +65,7 @@
         <a href="#" onclick="showGame()">游戏</a>
         <a href="#" onclick="showHistory()">历史记录</a>
     </nav>
-    <!-- 级别选择 -->
+    <!-- 难度级别选择 -->
     <select id="level-selector">
         <option value="1">简单</option>
         <option value="2">中等</option>
@@ -84,7 +84,8 @@
         </thead>
         <tbody id="history-body"></tbody>
     </table>
-    <button id="export-button" onclick="exportHistory()" style="display: block;">导出历史记录为 Word</button>
+    <!-- 导出历史记录为 Word 文档的按钮 -->
+    <button id="export-button" onclick="exportHistory()" style="display: none;">导出历史记录为 Word</button>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -101,6 +102,7 @@
         let foodY;
         let score = 0;
 
+        // 不同难度级别的时间间隔
         const difficultyIntervals = {
             1: 200,
             2: 150,
@@ -193,9 +195,9 @@
                 },
                 body: JSON.stringify({ score, level })
             })
-           .then(response => response.text())
-           .then(data => console.log(data))
-           .catch(error => console.error('保存分数时出错:', error));
+              .then(response => response.text())
+              .then(data => console.log(data))
+              .catch(error => console.error('保存分数时出错:', error));
         }
 
         function resetGame() {
@@ -223,21 +225,21 @@
             historyTable.style.display = 'block';
             exportButton.style.display = 'block';
             fetch('/history')
-           .then(response => response.json())
-           .then(scores => {
-                historyBody.innerHTML = '';
-                scores.forEach(scoreEntry => {
-                    const row = document.createElement('tr');
-                    const levelCell = document.createElement('td');
-                    levelCell.textContent = scoreEntry.level;
-                    const scoreCell = document.createElement('td');
-                    scoreCell.textContent = scoreEntry.score;
-                    row.appendChild(levelCell);
-                    row.appendChild(scoreCell);
-                    historyBody.appendChild(row);
-                });
-            })
-           .catch(error => console.error('获取历史记录时出错:', error));
+              .then(response => response.json())
+              .then(scores => {
+                    historyBody.innerHTML = '';
+                    scores.forEach(scoreEntry => {
+                        const row = document.createElement('tr');
+                        const levelCell = document.createElement('td');
+                        levelCell.textContent = scoreEntry.level;
+                        const scoreCell = document.createElement('td');
+                        scoreCell.textContent = scoreEntry.score;
+                        row.appendChild(levelCell);
+                        row.appendChild(scoreCell);
+                        historyBody.appendChild(row);
+                    });
+                })
+              .catch(error => console.error('获取历史记录时出错:', error));
         }
 
         function exportHistory() {
