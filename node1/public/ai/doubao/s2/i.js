@@ -25,7 +25,7 @@ app.get('/history', (req, res) => {
 });
 
 // 保存历史记录为 Word 文档
-app.get('/save-history-to-word', (req, res) => {
+app.get('/save_history_to_word', (req, res) => {
   const docx = officegen('docx');
   const pObj = docx.createP();
   pObj.addText('贪吃蛇游戏历史记录');
