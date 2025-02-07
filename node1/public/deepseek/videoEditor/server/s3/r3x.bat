@@ -93,3 +93,18 @@ echo   console.log(`Server running at http://localhost:${port}`^);
 echo ^}^);
 ) > server.js
  
+echo Writing public files...
+(
+echo ^<!DOCTYPE html^>
+echo ^<html^>
+echo ^<head^>
+echo   ^<title^>Video Generator^</title^>
+echo   ^<link rel="stylesheet" href="style.css"^/^>
+echo ^</head^>
+echo ^<body^>
+echo   ^<h1^>视频生成器^</h1^>
+echo   ^<button onclick="generateVideo()"^>生成视频^</button^>
+echo   ^<script src="app.js"^/^>
+echo ^</body^>
+echo ^</html^>
+) > public\index.html
