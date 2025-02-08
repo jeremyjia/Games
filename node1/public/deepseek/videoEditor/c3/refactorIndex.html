@@ -1,8 +1,6 @@
 <!-- 
 升级这个代码，
-在模态窗口里添加一个生成按钮，
-新建nodejs后端服务程序，
-点生成按钮调用后端生成视频
+在json里加入fps值
 返回升级后完整可运行代码 
 -->
 <!DOCTYPE html>
@@ -144,8 +142,13 @@
         
         // 导出按钮点击处理
         document.getElementById('export').addEventListener('click', () => {
+            const currentFPS = parseInt(fpsInput.value) || 1;
+            const exportData = {
+                scenes,
+                fps: currentFPS
+            };
             const exportJson = document.getElementById('export-json');
-            exportJson.textContent = JSON.stringify(scenes, null, 2);
+            exportJson.textContent = JSON.stringify(exportData, null, 2);
             modal.style.display = 'block';
         });
 
@@ -535,12 +538,16 @@
             statusElement.textContent = '生成中...';
             
             try {
+                const currentFPS = parseInt(fpsInput.value) || 1;
                 const response = await fetch('http://localhost:3005/generateVideo', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(scenes)
+                    body: JSON.stringify({
+                        scenes,
+                        fps: currentFPS
+                    })
                 });
 
                 if (!response.ok) throw new Error('生成失败');
