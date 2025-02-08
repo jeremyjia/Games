@@ -7,6 +7,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Editor</title> 
+    <style>
+        .floating-toolbar {
+            position: absolute;
+            left: 10px;
+            top: 50px;
+            background: #584141;
+            padding: 5px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid red;
+        }
+        .modal-content {
+            background: white;
+            margin: 15% auto;
+            padding: 20px;
+            width: 60%;
+        }
+    </style>
 </head>
 <body>
     <div id="toolbar">
@@ -43,5 +70,140 @@
         </div>
     </div>
  <div> 升级这个代码，让addScene按钮，按下时添加一个场景。把场景画在画布上。升级sceneSelector</div>
+ <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let scenes = [];
+    let currentSceneIndex = 0;
+    let isDrawing = false;
+    let currentShape = null;
+    let startX, startY;
+
+    // 初始化画布大小
+    function initCanvas() {
+        canvas.width = 800;
+        canvas.height = 600;
+    }
+
+    // 场景管理
+    function createScene() {
+        return {
+            id: Date.now(),
+            name: `Scene ${scenes.length + 1}`,
+            background: '#ff11ff',
+            elements: []
+        };
+    }
+
+    function updateSceneSelector() {
+        const selector = document.getElementById('sceneSelector');
+        selector.innerHTML = scenes.map((scene, index) => 
+            `<option value="${index}">${scene.name}</option>`
+        ).join('');
+        selector.value = currentSceneIndex;
+    }
+
+    function drawScene() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // 绘制背景
+        const currentScene = scenes[currentSceneIndex];
+        ctx.fillStyle = currentScene.background;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 绘制元素
+        currentScene.elements.forEach(element => {
+            ctx.fillStyle = element.color || '#000000';
+            switch(element.type) {
+                case 'rectangle':
+                    ctx.fillRect(element.x, element.y, element.width, element.height);
+                    break;
+                case 'circle':
+                    ctx.beginPath();
+                    ctx.arc(element.x, element.y, element.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+                case 'line':
+                    ctx.beginPath();
+                    ctx.moveTo(element.x1, element.y1);
+                    ctx.lineTo(element.x2, element.y2);
+                    ctx.stroke();
+                    break;
+                case 'triangle':
+                    ctx.beginPath();
+                    ctx.moveTo(element.x1, element.y1);
+                    ctx.lineTo(element.x2, document.y2);
+                    ctx.lineTo(element.x3, element.y3);
+                    ctx.closePath();
+                    ctx.fill();
+                    break;
+            }
+        });
+    }
+
+    // 事件监听
+    document.getElementById('addScene').addEventListener('click', () => {
+        scenes.push(createScene());
+        currentSceneIndex = scenes.length - 1;
+        updateSceneSelector();
+        drawScene();
+    });
+
+    document.getElementById('sceneSelector').addEventListener('change', (e) => {
+        currentSceneIndex = e.target.value;
+        drawScene();
+    });
+
+    document.getElementById('delete-scene').addEventListener('click', () => {
+        if (scenes.length > 1) {
+            scenes.splice(currentSceneIndex, 1);
+            currentSceneIndex = Math.max(0, currentSceneIndex - 1);
+            updateSceneSelector();
+            drawScene();
+        }
+    });
+
+    // 形状添加逻辑（示例：矩形）
+    document.getElementById('add-rectangle').addEventListener('click', () => {
+        currentShape = 'rectangle';
+    });
+
+    // 画布绘图逻辑
+    canvas.addEventListener('mousedown', (e) => {
+        if (!currentShape) return;
+        isDrawing = true;
+        startX = e.offsetX;
+        startY = e.offsetY;
+    });
+
+    canvas.addEventListener('mouseup', (e) => {
+        if (!isDrawing) return;
+        isDrawing = false;
+        
+        const element = {
+            type: currentShape,
+            x: startX,
+            y: startY,
+            width: e.offsetX - startX,
+            height: e.offsetY - startY,
+            color: '#ff0000'
+        };
+        
+        scenes[currentSceneIndex].elements.push(element);
+        drawScene();
+        currentShape = null;
+    });
+
+    // 初始化
+    function init() {
+        initCanvas();
+        scenes.push(createScene());
+        updateSceneSelector();
+        drawScene();
+    }
+
+    init();
+</script>
+
 </body>
 </html>
