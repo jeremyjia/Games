@@ -1,6 +1,6 @@
 <!-- 
 升级这个代码，
-每新建场景时，随机添加若干（1-10）不同对象
+Export按钮被点击时，弹出模态窗口显示json文件
 返回升级后完整可运行代码 
 -->
 <!DOCTYPE html>
@@ -67,10 +67,10 @@
     </div>
 
     <div id="id4ObjectsToolbar" class="c_floating_toolbar" style="top:100px;">
-        <button id="add-line">Line</button>
-        <button id="add-circle">Circle</button>
-        <button id="add-rectangle">Rectangle</button>
-        <button id="add-triangle">Triangle</button>
+        <button id="id4Line">Line</button>
+        <button id="id4Circle">Circle</button>
+        <button id="id4Rectangle">Rectangle</button>
+        <button id="id4Triangle">Triangle</button>
     </div> 
 
     <div id="id4SceneToolbar" class="c_floating_toolbar">
@@ -109,6 +109,82 @@
     let playInterval = null;
     let isPlaying = false; // 新增播放状态标识
 
+    class ShapeEditor {
+    static hitTest(element, x, y) {
+        switch(element.type) {
+            case 'rectangle': return this.rectHitTest(element, x, y);
+            case 'circle': return this.circleHitTest(element, x, y);
+            case 'line': return this.lineHitTest(element, x, y);
+            case 'triangle': return this.triangleHitTest(element, x, y);
+        }
+        return null;
+    }
+
+    static rectHitTest(rect, x, y) {
+        const isInside = x >= rect.x && x <= rect.x + rect.width &&
+                        y >= rect.y && y <= rect.y + rect.height;
+        if (!isInside) return null;
+
+        const controls = {
+            'nw': [rect.x, rect.y],
+            'ne': [rect.x + rect.width, rect.y],
+            'sw': [rect.x, rect.y + rect.height],
+            'se': [rect.x + rect.width, rect.y + rect.height],
+            'move': [rect.x + rect.width/2, rect.y + rect.height/2]
+        };
+
+        for (const [type, [cx, cy]] of Object.entries(controls)) {
+            if (Math.abs(x - cx) < CONTROL_SIZE/2 && 
+                Math.abs(y - cy) < CONTROL_SIZE/2) {
+                return type;
+            }
+        }
+        return 'move';
+    }
+
+    static circleHitTest(circle, x, y) {
+        const dx = x - circle.x;
+        const dy = y - circle.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        
+        if (Math.abs(dist - circle.radius) < CONTROL_SIZE) return 'radius';
+        if (dist <= circle.radius) return 'move';
+        return null;
+    }
+
+    static lineHitTest(line, x, y) {
+        const d = this.pointToLineDistance(x, y, line);
+        return d < 5 ? 'move' : null;
+    }
+
+    static triangleHitTest(tri, x, y) {
+        const area = 0.5 * (-tri.y2 * tri.x3 + tri.y1 * (-tri.x2 + tri.x3) + 
+                           tri.x1 * (tri.y2 - tri.y3) + tri.x2 * tri.y3);
+        const s = 1/(2*area)*(tri.y1*tri.x3 - tri.x1*tri.y3 + (tri.y3 - tri.y1)*x + 
+                            (tri.x1 - tri.x3)*y);
+        const t = 1/(2*area)*(tri.x1*tri.y2 - tri.y1*tri.x2 + (tri.y1 - tri.y2)*x + 
+                            (tri.x2 - tri.x1)*y);
+        return (s > 0 && t > 0 && 1-s-t > 0) ? 'move' : null;
+    }
+
+    static pointToLineDistance(x, y, line) {
+        const A = x - line.x1;
+        const B = y - line.y1;
+        const C = line.x2 - line.x1;
+        const D = line.y2 - line.y1;
+
+        const dot = A * C + B * D;
+        const lenSq = C * C + D * D;
+        const param = lenSq !== 0 ? dot / lenSq : -1;
+
+        let xx, yy;
+        if (param < 0) [xx, yy] = [line.x1, line.y1];
+        else if (param > 1) [xx, yy] = [line.x2, line.y2];
+        else [xx, yy] = [line.x1 + param * C, line.y1 + param * D];
+
+        return Math.hypot(x - xx, y - yy);
+    }
+}
     const fpsRange = document.getElementById('fpsRange');
     const fpsInput = document.getElementById('fpsInput');
     const playPauseBtn = document.getElementById('playPause');
@@ -312,10 +388,19 @@
     // 合并后的播放/暂停按钮事件
     playPauseBtn.addEventListener('click', togglePlayback);
 
-    document.getElementById('add-rectangle').addEventListener('click', () => {
+    document.getElementById('id4Rectangle').addEventListener('click', () => {
         currentShape = 'rectangle';
     });
 
+    document.getElementById('id4Line').addEventListener('click', () => {
+        currentShape = 'line';
+    });
+    document.getElementById('id4Circle').addEventListener('click', () => {
+        currentShape = 'circle';
+    });
+    document.getElementById('id4Triangle').addEventListener('click', () => {
+        currentShape = 'triangle';
+    });
     canvas.addEventListener('mousedown', (e) => {
         if (!currentShape) return;
         isDrawing = true;
@@ -335,7 +420,7 @@
             height: e.offsetY - startY,
             color: '#ff0000'
         };
-        
+        console.log("currentShape: "+currentShape);
         scenes[currentSceneIndex].elements.push(element);
         drawScene();
         currentShape = null;
