@@ -1,13 +1,10 @@
-<!--
-升级这个代码，让canvas自适应屏幕宽度
---> 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Editor</title> 
-    <style> 
+    <title>Video Editor</title>
+    <style>
         body {
             margin: 0;
             overflow: hidden;
@@ -78,8 +75,7 @@
     </div>
 
     <div id="playback-toolbar">
-        <button id="play">Play</button>
-        <button id="pause">Pause</button>
+        <button id="playPause">Play</button>
         <div class="fps-control">
             <label>FPS:</label>
             <input type="range" id="fpsRange" min="1" max="100" value="1">
@@ -105,38 +101,39 @@
     let isDrawing = false;
     let currentShape = null;
     let startX, startY;
-    let playInterval = null; // 新增：播放控制变量
+    let playInterval = null;
+    let isPlaying = false; // 新增播放状态标识
 
     const fpsRange = document.getElementById('fpsRange');
     const fpsInput = document.getElementById('fpsInput');
+    const playPauseBtn = document.getElementById('playPause');
 
-        // 同步范围输入和数字输入
-        function syncFPSInput(e) {
-            let value = parseInt(e.target.value);
-            value = Math.min(100, Math.max(1, value || 1));
-            
-            if (e.target === fpsRange) {
-                fpsInput.value = value;
-            } else {
-                fpsRange.value = value;
-            }
+    function syncFPSInput(e) {
+        let value = parseInt(e.target.value);
+        value = Math.min(100, Math.max(1, value || 1));
+        
+        if (e.target === fpsRange) {
+            fpsInput.value = value;
+        } else {
+            fpsRange.value = value;
         }
+    }
 
     fpsRange.addEventListener('input', syncFPSInput);
     fpsInput.addEventListener('input', syncFPSInput);
 
-    // 初始化画布大小
     function initCanvas() {
         const parentWidth = canvas.parentElement.clientWidth;
-        const aspectRatio = 600 / 800; // 保持原始宽高比
+        const aspectRatio = 600 / 800;
         canvas.width = parentWidth;
         canvas.height = parentWidth * aspectRatio;
     }
+
     window.addEventListener('resize', () => {
         initCanvas();
         drawScene();
     });
-    // 场景管理
+
     function createScene() {
         return {
             id: Date.now(),
@@ -157,12 +154,10 @@
     function drawScene() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // 绘制背景
         const currentScene = scenes[currentSceneIndex];
         ctx.fillStyle = currentScene.background;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // 绘制元素
         currentScene.elements.forEach(element => {
             ctx.fillStyle = element.color || '#000000';
             switch(element.type) {
@@ -183,7 +178,7 @@
                 case 'triangle':
                     ctx.beginPath();
                     ctx.moveTo(element.x1, element.y1);
-                    ctx.lineTo(element.x2, document.y2);
+                    ctx.lineTo(element.x2, element.y2);
                     ctx.lineTo(element.x3, element.y3);
                     ctx.closePath();
                     ctx.fill();
@@ -192,7 +187,29 @@
         });
     }
 
-    // 事件监听
+    // 合并后的播放/暂停功能
+    function togglePlayback() {
+        if (!isPlaying) {
+            if (scenes.length === 0) return;
+            const fps = parseInt(fpsInput.value) || 1;
+            const intervalTime = 1000 / fps;
+            
+            playInterval = setInterval(() => {
+                currentSceneIndex = (currentSceneIndex + 1) % scenes.length;
+                updateSceneSelector();
+                drawScene();
+            }, intervalTime);
+            
+            playPauseBtn.textContent = 'Pause';
+            isPlaying = true;
+        } else {
+            clearInterval(playInterval);
+            playInterval = null;
+            playPauseBtn.textContent = 'Play';
+            isPlaying = false;
+        }
+    }
+
     document.getElementById('addScene').addEventListener('click', () => {
         scenes.push(createScene());
         currentSceneIndex = scenes.length - 1;
@@ -213,37 +230,20 @@
             drawScene();
         }
     });
+
     document.getElementById('id4Forest').addEventListener('click', () => {
         if (scenes.length === 0) return;
-        scenes[currentSceneIndex].background = '#228B22'; // 森林绿
+        scenes[currentSceneIndex].background = '#228B22';
         drawScene();
     });
-    document.getElementById('play').addEventListener('click', () => {
-            if (!playInterval && scenes.length > 0) {
-                const fps = parseInt(fpsInput.value) || 1;
-                const intervalTime = 1000 / fps;
-                
-                playInterval = setInterval(() => {
-                    currentSceneIndex = (currentSceneIndex + 1) % scenes.length;
-                    updateSceneSelector();
-                    drawScene();
-                }, intervalTime);
-            }
-        });
 
-        document.getElementById('pause').addEventListener('click', () => {
-            if (playInterval) {
-                clearInterval(playInterval);
-                playInterval = null;
-            }
-        });
+    // 合并后的播放/暂停按钮事件
+    playPauseBtn.addEventListener('click', togglePlayback);
 
-    // 形状添加逻辑（示例：矩形）
     document.getElementById('add-rectangle').addEventListener('click', () => {
         currentShape = 'rectangle';
     });
 
-    // 画布绘图逻辑
     canvas.addEventListener('mousedown', (e) => {
         if (!currentShape) return;
         isDrawing = true;
@@ -269,7 +269,6 @@
         currentShape = null;
     });
 
-    // 初始化
     function init() {
         initCanvas();
         scenes.push(createScene());
@@ -279,6 +278,5 @@
 
     init();
 </script>
-
 </body>
 </html>
