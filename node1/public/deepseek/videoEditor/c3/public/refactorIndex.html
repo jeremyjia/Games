@@ -1,6 +1,7 @@
 <!-- 
 升级这个代码，
-添加对象的时候，鼠标抬起来以后可以出现对象。但鼠标拖动没有画出来
+临时图形绘制功能，在拖动过程中实时显示图形预览 failed.
+点下鼠标只是绘制了背景。已有元素和临时元素都没有换。放下鼠标以后就全部出来了。
 返回升级后完整可运行代码 
 -->
 
@@ -193,165 +194,77 @@
 
     function getCanvasCoordinates(e) {
     const rect = canvas.getBoundingClientRect();
-    let x, y;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     
-    if (e.touches) {
-        x = e.touches[0].clientX - rect.left;
-        y = e.touches[0].clientY - rect.top;
-    } else {
-        x = e.clientX - rect.left;
-        y = e.clientY - rect.top;
-    }
-    
-    // 考虑canvas缩放
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
     
     return {
-        x: x * scaleX,
-        y: y * scaleY
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
     };
 }
 
+ 
 function initCanvasEvents() {
-    // 统一处理鼠标和触摸事件
     const handleStart = (x, y) => {
         if (!currentShape) return;
         isDrawing = true;
         startX = x;
         startY = y;
-        tempElement = null;
     };
+
     const handleMove = (x, y) => {
-                if (!isDrawing || !currentShape) return;
-                
-                // 创建临时图形
-                tempElement = createTempElement(x, y);
-                drawSceneWithTemp(); // 绘制包含临时图形的场景
+        if (!isDrawing || !currentShape) return;
+        
+        // 更新临时图形
+        tempElement = createTempElement(x, y);
+        drawSceneWithTemp();
     };
-    const handleEnd = (x, y) => {
+
+    const handleEnd = () => {
         if (!isDrawing) return;
         isDrawing = false;
         
-        tempElement = null;
-        // 原有创建图形逻辑
-        createShapeElement(x, y);
+        if (tempElement) {
+            // 创建最终图形时使用随机颜色
+            tempElement.color = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+            scenes[currentSceneIndex].elements.push(tempElement);
+            tempElement = null;
+        }
+        drawScene();
     };
-    function drawElement(element, isTemp = false) {
-            ctx.fillStyle = element.color;
-            ctx.strokeStyle = element.color;
-            ctx.lineWidth = isTemp ? 2 : 2; // 临时图形使用虚线
-            if (isTemp) ctx.setLineDash([5, 5]);
 
-            switch(element.type) {
-                case 'rectangle':
-                    ctx.fillRect(element.x, element.y, element.width, element.height);
-                    break;
-                case 'circle':
-                    ctx.beginPath();
-                    ctx.arc(element.x, element.y, element.radius, 0, Math.PI * 2);
-                    ctx.fill();
-                    break;
-                case 'line':
-                    ctx.beginPath();
-                    ctx.moveTo(element.x1, element.y1);
-                    ctx.lineTo(element.x2, element.y2);
-                    ctx.stroke();
-                    break;
-                case 'triangle':
-                    ctx.beginPath();
-                    ctx.moveTo(element.x1, element.y1);
-                    ctx.lineTo(element.x2, element.y2);
-                    ctx.lineTo(element.x3, element.y3);
-                    ctx.closePath();
-                    ctx.fill();
-                    break;
-            }
-            
-            if (isTemp) ctx.setLineDash([]); // 恢复实线
-        }
+    // 统一事件处理
+    const eventHandler = {
+        start: e => {
+            const pos = getCanvasCoordinates(e);
+            handleStart(pos.x, pos.y);
+        },
+        move: e => {
+            const pos = getCanvasCoordinates(e);
+            handleMove(pos.x, pos.y);
+        },
+        end: () => handleEnd()
+    };
 
-        function createShapeElement(endX, endY) {
-            const color = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
-            let element;
-
-            switch(currentShape) {
-                case 'rectangle':
-                    element = {
-                        type: 'rectangle',
-                        x: Math.min(startX, endX),
-                        y: Math.min(startY, endY),
-                        width: Math.abs(endX - startX),
-                        height: Math.abs(endY - startY),
-                        color: color
-                    };
-                    break;
-                case 'circle':
-                    element = {
-                        type: 'circle',
-                        x: startX,
-                        y: startY,
-                        radius: Math.hypot(endX - startX, endY - startY),
-                        color: color
-                    };
-                    break;
-                case 'line':
-                    element = {
-                        type: 'line',
-                        x1: startX,
-                        y1: startY,
-                        x2: endX,
-                        y2: endY,
-                        color: color
-                    };
-                    break;
-                case 'triangle':
-                    element = {
-                        type: 'triangle',
-                        x1: startX,
-                        y1: endY,
-                        x2: endX,
-                        y2: endY,
-                        x3: (startX + endX) / 2,
-                        y3: startY,
-                        color: color
-                    };
-                    break;
-            }
-
-            if (element) {
-                scenes[currentSceneIndex].elements.push(element);
-            }
-        }
     // 鼠标事件
-    canvas.addEventListener('mousedown', (e) => {
-        const pos = getCanvasCoordinates(e);
-        handleStart(pos.x, pos.y);
-    });
-
-    canvas.addEventListener('mousemove', (e) => {
-                const pos = getCanvasCoordinates(e);
-                handleMove(pos.x, pos.y);
-    });
-    canvas.addEventListener('mouseup', (e) => {
-        const pos = getCanvasCoordinates(e);
-        handleEnd(pos.x, pos.y);
-    });
+    canvas.addEventListener('mousedown', eventHandler.start);
+    canvas.addEventListener('mousemove', eventHandler.move);
+    canvas.addEventListener('mouseup', eventHandler.end);
+    canvas.addEventListener('mouseleave', eventHandler.end);
 
     // 触摸事件
-    canvas.addEventListener('touchstart', (e) => {
+    canvas.addEventListener('touchstart', e => {
         e.preventDefault();
-        const pos = getCanvasCoordinates(e);
-        handleStart(pos.x, pos.y);
+        eventHandler.start(e.touches[0]);
     }, { passive: false });
-
-    canvas.addEventListener('touchend', (e) => {
+    canvas.addEventListener('touchmove', e => {
         e.preventDefault();
-        if (!e.touches[0]) {
-            const pos = getCanvasCoordinates(e.changedTouches[0]);
-            handleEnd(pos.x, pos.y);
-        }
+        eventHandler.move(e.touches[0]);
     }, { passive: false });
+    canvas.addEventListener('touchend', eventHandler.end);
 }
 
 function enableDrag(modalContent) {
@@ -643,66 +556,72 @@ function enableDrag(modalContent) {
             ).join('');
             selector.value = currentSceneIndex;
         }
-        function createTempElement(endX, endY) {
-            const color = '#FF0000'; // 临时图形使用红色
-            switch(currentShape) {
-                case 'rectangle':
-                    return {
-                        type: 'rectangle',
-                        x: Math.min(startX, endX),
-                        y: Math.min(startY, endY),
-                        width: Math.abs(endX - startX),
-                        height: Math.abs(endY - startY),
-                        color: color
-                    };
-                case 'circle':
-                    return {
-                        type: 'circle',
-                        x: startX,
-                        y: startY,
-                        radius: Math.hypot(endX - startX, endY - startY),
-                        color: color
-                    };
-                case 'line':
-                    return {
-                        type: 'line',
-                        x1: startX,
-                        y1: startY,
-                        x2: endX,
-                        y2: endY,
-                        color: color
-                    };
-                case 'triangle':
-                    return {
-                        type: 'triangle',
-                        x1: startX,
-                        y1: endY,
-                        x2: endX,
-                        y2: endY,
-                        x3: (startX + endX) / 2,
-                        y3: startY,
-                        color: color
-                    };
-            }
-            return null;
-        }
+       
+        
+function createTempElement(endX, endY) {
+    const baseElement = {
+        type: currentShape,
+        color: '#FF000080' // 半透明红色
+    };
 
-        function drawSceneWithTemp() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // 绘制背景
-            const currentScene = scenes[currentSceneIndex];
-            ctx.fillStyle = currentScene.background;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+    switch(currentShape) {
+        case 'rectangle':
+            return {
+                ...baseElement,
+                x: Math.min(startX, endX),
+                y: Math.min(startY, endY),
+                width: Math.abs(endX - startX),
+                height: Math.abs(endY - startY)
+            };
+        case 'circle':
+            return {
+                ...baseElement,
+                x: startX,
+                y: startY,
+                radius: Math.hypot(endX - startX, endY - startY)
+            };
+        case 'line':
+            return {
+                ...baseElement,
+                x1: startX,
+                y1: startY,
+                x2: endX,
+                y2: endY
+            };
+        case 'triangle':
+            return {
+                ...baseElement,
+                x1: startX,
+                y1: endY,
+                x2: endX,
+                y2: endY,
+                x3: (startX + endX) / 2,
+                y3: startY
+            };
+    }
+}
 
-            // 绘制已有元素
-            currentScene.elements.forEach(element => drawElement(element));
-            
-            // 绘制临时元素
-            if (tempElement) {
-                drawElement(tempElement, true);
-            }
-        }
+        
+function drawSceneWithTemp() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 绘制背景
+    const currentScene = scenes[currentSceneIndex];
+    ctx.fillStyle = currentScene.background;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 绘制已有元素
+    currentScene.elements.forEach(element => drawElement(element));
+    
+    // 绘制临时元素
+    if (tempElement) {
+        ctx.save(); // 保存当前绘图状态
+        ctx.globalAlpha = 0.5; // 设置半透明
+        ctx.setLineDash([5, 5]); // 虚线样式
+        drawElement(tempElement);
+        ctx.restore(); // 恢复绘图状态
+    }
+}
 
         function drawScene() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -960,12 +879,20 @@ function enableDrag(modalContent) {
         });
 
         function init() {
-            initCanvas();
-            scenes.push(createScene());
-            updateSceneSelector();
-            drawScene();
-            initCanvasEvents(); // 初始化新的事件系统
-        }
+    initCanvas();
+    scenes = [createScene()];
+    currentSceneIndex = 0;
+    updateSceneSelector();
+    drawScene();
+    initCanvasEvents();
+    
+    // 绑定形状按钮事件
+    ['Rectangle', 'Circle', 'Line', 'Triangle'].forEach(shape => {
+        document.getElementById(`id4${shape}`).addEventListener('click', () => {
+            currentShape = shape.toLowerCase();
+        });
+    });
+}
         document.getElementById('id4generateVideo').addEventListener('click', async () => {
             const statusElement = document.getElementById('generation-status');
             statusElement.textContent = '生成中...';
@@ -999,7 +926,7 @@ function enableDrag(modalContent) {
                 statusElement.textContent = '生成失败: ' + error.message;
             }
         });
-        init();
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
