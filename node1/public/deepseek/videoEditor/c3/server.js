@@ -8,7 +8,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // 模拟视频生成（实际应集成FFmpeg等视频处理库）
-app.post('/generate-video', (req, res) => {
+app.post('/generateVideo', (req, res) => {
     // 这里应该添加实际的视频生成逻辑
     // 以下为模拟实现，返回一个空视频文件
     const dummyVideo = Buffer.from('', 'utf-8');
