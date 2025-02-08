@@ -1,5 +1,5 @@
 <!--
-升级这个代码，让addScene按钮，按下时添加一个场景。把场景画在画布上。升级sceneSelector
+升级这个代码，play 按钮 可按帧率为1播放视频
 --> 
 <!DOCTYPE html>
 <html lang="en">
@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Editor</title> 
     <style>
-        .floating-toolbar {
+        .c_floating_toolbar {
             position: absolute;
             left: 10px;
             top: 50px;
@@ -42,15 +42,15 @@
         <select id="sceneSelector"></select>
     </div>
 
-    <div id="floating-toolbar-objects" class="floating-toolbar">
+    <div id="id4ObjectsToolbar" class="c_floating_toolbar" style="top:100px;">
         <button id="add-line">Line</button>
         <button id="add-circle">Circle</button>
         <button id="add-rectangle">Rectangle</button>
         <button id="add-triangle">Triangle</button>
-    </div>
+    </div> 
 
-    <div id="floating-toolbar-scenes" class="floating-toolbar">
-        <button id="set-forest">Forest</button>
+    <div id="id4SceneToolbar" class="c_floating_toolbar">
+        <button id="id4Forest">Forest</button>
         <button id="set-beach">Beach</button>
         <button id="set-street">Street</button>
     </div>
@@ -69,7 +69,7 @@
             <pre id="export-json"></pre>
         </div>
     </div>
- <div> 升级这个代码，让addScene按钮，按下时添加一个场景。把场景画在画布上。升级sceneSelector</div>
+ <div id="id4Status">status:</div>
  <script>
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
@@ -78,6 +78,7 @@
     let isDrawing = false;
     let currentShape = null;
     let startX, startY;
+    let playInterval = null; // 新增：播放控制变量
 
     // 初始化画布大小
     function initCanvas() {
@@ -90,7 +91,7 @@
         return {
             id: Date.now(),
             name: `Scene ${scenes.length + 1}`,
-            background: '#ff11ff',
+            background: '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0'),
             elements: []
         };
     }
@@ -162,6 +163,27 @@
             drawScene();
         }
     });
+    document.getElementById('id4Forest').addEventListener('click', () => {
+        if (scenes.length === 0) return;
+        scenes[currentSceneIndex].background = '#228B22'; // 森林绿
+        drawScene();
+    });
+    document.getElementById('play').addEventListener('click', () => {
+            if (!playInterval && scenes.length > 0) {
+                playInterval = setInterval(() => {
+                    currentSceneIndex = (currentSceneIndex + 1) % scenes.length;
+                    updateSceneSelector();
+                    drawScene();
+                }, 1000); // 1000ms = 1秒/帧
+            }
+        });
+
+        document.getElementById('pause').addEventListener('click', () => {
+            if (playInterval) {
+                clearInterval(playInterval);
+                playInterval = null;
+            }
+        });
 
     // 形状添加逻辑（示例：矩形）
     document.getElementById('add-rectangle').addEventListener('click', () => {
