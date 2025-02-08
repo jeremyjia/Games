@@ -1,8 +1,9 @@
 <!-- 
 升级这个代码，
-Export按钮被点击时，弹出模态窗口显示json文件
+现在只能添加rectangle,其他对象不能
 返回升级后完整可运行代码 
 -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,13 +37,22 @@ Export按钮被点击时，弹出模态窗口显示json文件
             width: 100%;
             height: 100%;
             background: rgba(0,0,0,0.5);
-            border: 1px solid red;
         }
         .modal-content {
+            position: relative;
             background: white;
             margin: 15% auto;
-            padding: 20px;
+            padding: 35px 20px 20px;
             width: 60%;
+            max-height: 70vh;
+            overflow: auto;
+        }
+        .close {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+            font-size: 24px;
+            cursor: pointer;
         }
         
         .fps-control {
@@ -97,98 +107,126 @@ Export按钮被点击时，弹出模态窗口显示json文件
             <pre id="export-json"></pre>
         </div>
     </div>
- <div id="id4Status">status:</div>
- <script>
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    let scenes = [];
-    let currentSceneIndex = 0;
-    let isDrawing = false;
-    let currentShape = null;
-    let startX, startY;
-    let playInterval = null;
-    let isPlaying = false; // 新增播放状态标识
 
-    class ShapeEditor {
-    static hitTest(element, x, y) {
-        switch(element.type) {
-            case 'rectangle': return this.rectHitTest(element, x, y);
-            case 'circle': return this.circleHitTest(element, x, y);
-            case 'line': return this.lineHitTest(element, x, y);
-            case 'triangle': return this.triangleHitTest(element, x, y);
-        }
-        return null;
-    }
+    <div id="id4Status">status:</div>
 
-    static rectHitTest(rect, x, y) {
-        const isInside = x >= rect.x && x <= rect.x + rect.width &&
-                        y >= rect.y && y <= rect.y + rect.height;
-        if (!isInside) return null;
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let scenes = [];
+        let currentSceneIndex = 0;
+        let isDrawing = false;
+        let currentShape = null;
+        let startX, startY;
+        let playInterval = null;
+        let isPlaying = false;
 
-        const controls = {
-            'nw': [rect.x, rect.y],
-            'ne': [rect.x + rect.width, rect.y],
-            'sw': [rect.x, rect.y + rect.height],
-            'se': [rect.x + rect.width, rect.y + rect.height],
-            'move': [rect.x + rect.width/2, rect.y + rect.height/2]
-        };
+        // 初始化模态窗口交互
+        const modal = document.getElementById('export-modal');
+        const closeBtn = modal.querySelector('.close');
+        
+        // 导出按钮点击处理
+        document.getElementById('export').addEventListener('click', () => {
+            const exportJson = document.getElementById('export-json');
+            exportJson.textContent = JSON.stringify(scenes, null, 2);
+            modal.style.display = 'block';
+        });
 
-        for (const [type, [cx, cy]] of Object.entries(controls)) {
-            if (Math.abs(x - cx) < CONTROL_SIZE/2 && 
-                Math.abs(y - cy) < CONTROL_SIZE/2) {
-                return type;
+        // 关闭模态窗口处理
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        // 点击外部关闭模态窗口
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // 其他原有代码保持不变...
+        class ShapeEditor {
+            static hitTest(element, x, y) {
+                switch(element.type) {
+                    case 'rectangle': return this.rectHitTest(element, x, y);
+                    case 'circle': return this.circleHitTest(element, x, y);
+                    case 'line': return this.lineHitTest(element, x, y);
+                    case 'triangle': return this.triangleHitTest(element, x, y);
+                }
+                return null;
+            }
+
+            static rectHitTest(rect, x, y) {
+                const isInside = x >= rect.x && x <= rect.x + rect.width &&
+                                y >= rect.y && y <= rect.y + rect.height;
+                if (!isInside) return null;
+
+                const controls = {
+                    'nw': [rect.x, rect.y],
+                    'ne': [rect.x + rect.width, rect.y],
+                    'sw': [rect.x, rect.y + rect.height],
+                    'se': [rect.x + rect.width, rect.y + rect.height],
+                    'move': [rect.x + rect.width/2, rect.y + rect.height/2]
+                };
+
+                for (const [type, [cx, cy]] of Object.entries(controls)) {
+                    if (Math.abs(x - cx) < 5/2 && 
+                        Math.abs(y - cy) < 5/2) {
+                        return type;
+                    }
+                }
+                return 'move';
+            }
+
+            static circleHitTest(circle, x, y) {
+                const dx = x - circle.x;
+                const dy = y - circle.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (Math.abs(dist - circle.radius) < 5) return 'radius';
+                if (dist <= circle.radius) return 'move';
+                return null;
+            }
+
+            static lineHitTest(line, x, y) {
+                const d = this.pointToLineDistance(x, y, line);
+                return d < 5 ? 'move' : null;
+            }
+
+            static triangleHitTest(tri, x, y) {
+                const area = 0.5 * (-tri.y2 * tri.x3 + tri.y1 * (-tri.x2 + tri.x3) + 
+                                   tri.x1 * (tri.y2 - tri.y3) + tri.x2 * tri.y3);
+                const s = 1/(2*area)*(tri.y1*tri.x3 - tri.x1*tri.y3 + (tri.y3 - tri.y1)*x + 
+                                    (tri.x1 - tri.x3)*y);
+                const t = 1/(2*area)*(tri.x1*tri.y2 - tri.y1*tri.x2 + (tri.y1 - tri.y2)*x + 
+                                    (tri.x2 - tri.x1)*y);
+                return (s > 0 && t > 0 && 1-s-t > 0) ? 'move' : null;
+            }
+
+            static pointToLineDistance(x, y, line) {
+                const A = x - line.x1;
+                const B = y - line.y1;
+                const C = line.x2 - line.x1;
+                const D = line.y2 - line.y1;
+
+                const dot = A * C + B * D;
+                const lenSq = C * C + D * D;
+                const param = lenSq !== 0 ? dot / lenSq : -1;
+
+                let xx, yy;
+                if (param < 0) [xx, yy] = [line.x1, line.y1];
+                else if (param > 1) [xx, yy] = [line.x2, line.y2];
+                else [xx, yy] = [line.x1 + param * C, line.y1 + param * D];
+
+                return Math.hypot(x - xx, y - yy);
             }
         }
-        return 'move';
-    }
 
-    static circleHitTest(circle, x, y) {
-        const dx = x - circle.x;
-        const dy = y - circle.y;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        
-        if (Math.abs(dist - circle.radius) < CONTROL_SIZE) return 'radius';
-        if (dist <= circle.radius) return 'move';
-        return null;
-    }
+        const fpsRange = document.getElementById('fpsRange');
+        const fpsInput = document.getElementById('fpsInput');
+        const playPauseBtn = document.getElementById('playPause');
 
-    static lineHitTest(line, x, y) {
-        const d = this.pointToLineDistance(x, y, line);
-        return d < 5 ? 'move' : null;
-    }
-
-    static triangleHitTest(tri, x, y) {
-        const area = 0.5 * (-tri.y2 * tri.x3 + tri.y1 * (-tri.x2 + tri.x3) + 
-                           tri.x1 * (tri.y2 - tri.y3) + tri.x2 * tri.y3);
-        const s = 1/(2*area)*(tri.y1*tri.x3 - tri.x1*tri.y3 + (tri.y3 - tri.y1)*x + 
-                            (tri.x1 - tri.x3)*y);
-        const t = 1/(2*area)*(tri.x1*tri.y2 - tri.y1*tri.x2 + (tri.y1 - tri.y2)*x + 
-                            (tri.x2 - tri.x1)*y);
-        return (s > 0 && t > 0 && 1-s-t > 0) ? 'move' : null;
-    }
-
-    static pointToLineDistance(x, y, line) {
-        const A = x - line.x1;
-        const B = y - line.y1;
-        const C = line.x2 - line.x1;
-        const D = line.y2 - line.y1;
-
-        const dot = A * C + B * D;
-        const lenSq = C * C + D * D;
-        const param = lenSq !== 0 ? dot / lenSq : -1;
-
-        let xx, yy;
-        if (param < 0) [xx, yy] = [line.x1, line.y1];
-        else if (param > 1) [xx, yy] = [line.x2, line.y2];
-        else [xx, yy] = [line.x1 + param * C, line.y1 + param * D];
-
-        return Math.hypot(x - xx, y - yy);
-    }
-}
-    const fpsRange = document.getElementById('fpsRange');
-    const fpsInput = document.getElementById('fpsInput');
-    const playPauseBtn = document.getElementById('playPause');
-    function createRandomShape() {
+        function createRandomShape() {
             const types = ['rectangle', 'circle', 'line', 'triangle'];
             const type = types[Math.floor(Math.random() * types.length)];
             const color = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
@@ -248,34 +286,34 @@ Export按钮被点击时，弹出模态窗口显示json文件
                 }
             }
         }
-    function syncFPSInput(e) {
-        let value = parseInt(e.target.value);
-        value = Math.min(100, Math.max(1, value || 1));
-        
-        if (e.target === fpsRange) {
-            fpsInput.value = value;
-        } else {
-            fpsRange.value = value;
+
+        function syncFPSInput(e) {
+            let value = parseInt(e.target.value);
+            value = Math.min(100, Math.max(1, value || 1));
+            
+            if (e.target === fpsRange) {
+                fpsInput.value = value;
+            } else {
+                fpsRange.value = value;
+            }
         }
-    }
 
-    fpsRange.addEventListener('input', syncFPSInput);
-    fpsInput.addEventListener('input', syncFPSInput);
+        fpsRange.addEventListener('input', syncFPSInput);
+        fpsInput.addEventListener('input', syncFPSInput);
 
-    function initCanvas() {
-        const parentWidth = canvas.parentElement.clientWidth;
-        const aspectRatio = 600 / 800;
-        canvas.width = parentWidth;
-        canvas.height = parentWidth * aspectRatio;
-    }
+        function initCanvas() {
+            const parentWidth = canvas.parentElement.clientWidth;
+            const aspectRatio = 600 / 800;
+            canvas.width = parentWidth;
+            canvas.height = parentWidth * aspectRatio;
+        }
 
-    window.addEventListener('resize', () => {
-        initCanvas();
-        drawScene();
-    });
+        window.addEventListener('resize', () => {
+            initCanvas();
+            drawScene();
+        });
 
-    
-    function createScene() {
+        function createScene() {
             const scene = {
                 id: Date.now(),
                 name: `Scene ${scenes.length + 1}`,
@@ -283,7 +321,6 @@ Export按钮被点击时，弹出模态窗口显示json文件
                 elements: []
             };
             
-            // 添加1-10个随机形状
             const count = Math.floor(Math.random() * 10) + 1;
             for(let i = 0; i < count; i++) {
                 scene.elements.push(createRandomShape());
@@ -291,149 +328,147 @@ Export按钮被点击时，弹出模态窗口显示json文件
             
             return scene;
         }
-    function updateSceneSelector() {
-        const selector = document.getElementById('sceneSelector');
-        selector.innerHTML = scenes.map((scene, index) => 
-            `<option value="${index}">${scene.name}</option>`
-        ).join('');
-        selector.value = currentSceneIndex;
-    }
 
-    function drawScene() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        const currentScene = scenes[currentSceneIndex];
-        ctx.fillStyle = currentScene.background;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        function updateSceneSelector() {
+            const selector = document.getElementById('sceneSelector');
+            selector.innerHTML = scenes.map((scene, index) => 
+                `<option value="${index}">${scene.name}</option>`
+            ).join('');
+            selector.value = currentSceneIndex;
+        }
 
-        currentScene.elements.forEach(element => {
-            ctx.fillStyle = element.color || '#000000';
-            switch(element.type) {
-                case 'rectangle':
-                    ctx.fillRect(element.x, element.y, element.width, element.height);
-                    break;
-                case 'circle':
-                    ctx.beginPath();
-                    ctx.arc(element.x, element.y, element.radius, 0, Math.PI * 2);
-                    ctx.fill();
-                    break;
-                case 'line':
-                    ctx.beginPath();
-                    ctx.moveTo(element.x1, element.y1);
-                    ctx.lineTo(element.x2, element.y2);
-                    ctx.stroke();
-                    break;
-                case 'triangle':
-                    ctx.beginPath();
-                    ctx.moveTo(element.x1, element.y1);
-                    ctx.lineTo(element.x2, element.y2);
-                    ctx.lineTo(element.x3, element.y3);
-                    ctx.closePath();
-                    ctx.fill();
-                    break;
-            }
-        });
-    }
-
-    // 合并后的播放/暂停功能
-    function togglePlayback() {
-        if (!isPlaying) {
-            if (scenes.length === 0) return;
-            const fps = parseInt(fpsInput.value) || 1;
-            const intervalTime = 1000 / fps;
+        function drawScene() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            playInterval = setInterval(() => {
-                currentSceneIndex = (currentSceneIndex + 1) % scenes.length;
+            const currentScene = scenes[currentSceneIndex];
+            ctx.fillStyle = currentScene.background;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            currentScene.elements.forEach(element => {
+                ctx.fillStyle = element.color || '#000000';
+                switch(element.type) {
+                    case 'rectangle':
+                        ctx.fillRect(element.x, element.y, element.width, element.height);
+                        break;
+                    case 'circle':
+                        ctx.beginPath();
+                        ctx.arc(element.x, element.y, element.radius, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                    case 'line':
+                        ctx.beginPath();
+                        ctx.moveTo(element.x1, element.y1);
+                        ctx.lineTo(element.x2, element.y2);
+                        ctx.stroke();
+                        break;
+                    case 'triangle':
+                        ctx.beginPath();
+                        ctx.moveTo(element.x1, element.y1);
+                        ctx.lineTo(element.x2, element.y2);
+                        ctx.lineTo(element.x3, element.y3);
+                        ctx.closePath();
+                        ctx.fill();
+                        break;
+                }
+            });
+        }
+
+        function togglePlayback() {
+            if (!isPlaying) {
+                if (scenes.length === 0) return;
+                const fps = parseInt(fpsInput.value) || 1;
+                const intervalTime = 1000 / fps;
+                
+                playInterval = setInterval(() => {
+                    currentSceneIndex = (currentSceneIndex + 1) % scenes.length;
+                    updateSceneSelector();
+                    drawScene();
+                }, intervalTime);
+                
+                playPauseBtn.textContent = 'Pause';
+                isPlaying = true;
+            } else {
+                clearInterval(playInterval);
+                playInterval = null;
+                playPauseBtn.textContent = 'Play';
+                isPlaying = false;
+            }
+        }
+
+        document.getElementById('addScene').addEventListener('click', () => {
+            scenes.push(createScene());
+            currentSceneIndex = scenes.length - 1;
+            updateSceneSelector();
+            drawScene();
+        });
+
+        document.getElementById('sceneSelector').addEventListener('change', (e) => {
+            currentSceneIndex = e.target.value;
+            drawScene();
+        });
+
+        document.getElementById('delete-scene').addEventListener('click', () => {
+            if (scenes.length > 1) {
+                scenes.splice(currentSceneIndex, 1);
+                currentSceneIndex = Math.max(0, currentSceneIndex - 1);
                 updateSceneSelector();
                 drawScene();
-            }, intervalTime);
+            }
+        });
+
+        document.getElementById('id4Forest').addEventListener('click', () => {
+            if (scenes.length === 0) return;
+            scenes[currentSceneIndex].background = '#228B22';
+            drawScene();
+        });
+
+        playPauseBtn.addEventListener('click', togglePlayback);
+
+        document.getElementById('id4Rectangle').addEventListener('click', () => {
+            currentShape = 'rectangle';
+        });
+
+        document.getElementById('id4Line').addEventListener('click', () => {
+            currentShape = 'line';
+        });
+        document.getElementById('id4Circle').addEventListener('click', () => {
+            currentShape = 'circle';
+        });
+        document.getElementById('id4Triangle').addEventListener('click', () => {
+            currentShape = 'triangle';
+        });
+        canvas.addEventListener('mousedown', (e) => {
+            if (!currentShape) return;
+            isDrawing = true;
+            startX = e.offsetX;
+            startY = e.offsetY;
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (!isDrawing) return;
+            isDrawing = false;
             
-            playPauseBtn.textContent = 'Pause';
-            isPlaying = true;
-        } else {
-            clearInterval(playInterval);
-            playInterval = null;
-            playPauseBtn.textContent = 'Play';
-            isPlaying = false;
-        }
-    }
+            const element = {
+                type: currentShape,
+                x: startX,
+                y: startY,
+                width: e.offsetX - startX,
+                height: e.offsetY - startY,
+                color: '#ff0000'
+            };
+            scenes[currentSceneIndex].elements.push(element);
+            drawScene();
+            currentShape = null;
+        });
 
-    document.getElementById('addScene').addEventListener('click', () => {
-        scenes.push(createScene());
-        currentSceneIndex = scenes.length - 1;
-        updateSceneSelector();
-        drawScene();
-    });
-
-    document.getElementById('sceneSelector').addEventListener('change', (e) => {
-        currentSceneIndex = e.target.value;
-        drawScene();
-    });
-
-    document.getElementById('delete-scene').addEventListener('click', () => {
-        if (scenes.length > 1) {
-            scenes.splice(currentSceneIndex, 1);
-            currentSceneIndex = Math.max(0, currentSceneIndex - 1);
+        function init() {
+            initCanvas();
+            scenes.push(createScene());
             updateSceneSelector();
             drawScene();
         }
-    });
 
-    document.getElementById('id4Forest').addEventListener('click', () => {
-        if (scenes.length === 0) return;
-        scenes[currentSceneIndex].background = '#228B22';
-        drawScene();
-    });
-
-    // 合并后的播放/暂停按钮事件
-    playPauseBtn.addEventListener('click', togglePlayback);
-
-    document.getElementById('id4Rectangle').addEventListener('click', () => {
-        currentShape = 'rectangle';
-    });
-
-    document.getElementById('id4Line').addEventListener('click', () => {
-        currentShape = 'line';
-    });
-    document.getElementById('id4Circle').addEventListener('click', () => {
-        currentShape = 'circle';
-    });
-    document.getElementById('id4Triangle').addEventListener('click', () => {
-        currentShape = 'triangle';
-    });
-    canvas.addEventListener('mousedown', (e) => {
-        if (!currentShape) return;
-        isDrawing = true;
-        startX = e.offsetX;
-        startY = e.offsetY;
-    });
-
-    canvas.addEventListener('mouseup', (e) => {
-        if (!isDrawing) return;
-        isDrawing = false;
-        
-        const element = {
-            type: currentShape,
-            x: startX,
-            y: startY,
-            width: e.offsetX - startX,
-            height: e.offsetY - startY,
-            color: '#ff0000'
-        };
-        console.log("currentShape: "+currentShape);
-        scenes[currentSceneIndex].elements.push(element);
-        drawScene();
-        currentShape = null;
-    });
-
-    function init() {
-        initCanvas();
-        scenes.push(createScene());
-        updateSceneSelector();
-        drawScene();
-    }
-
-    init();
-</script>
+        init();
+    </script>
 </body>
 </html>
