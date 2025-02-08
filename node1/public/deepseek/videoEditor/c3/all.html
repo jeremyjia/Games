@@ -98,7 +98,7 @@
 </head>
 <body>
     <div id="toolbar">
-        <button id="add-scene">Add Scene</button>
+        <button id="addScene">Add Scene</button>
         <button id="delete-scene">Delete Scene</button>
         <select id="scene-selector"></select>
     </div>
@@ -135,7 +135,7 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const sceneSelector = document.getElementById('scene-selector');
-const addSceneBtn = document.getElementById('add-scene');
+const addSceneBtn = document.getElementById('addScene');
 const deleteSceneBtn = document.getElementById('delete-scene');
 const exportBtn = document.getElementById('export');
 const exportModal = document.getElementById('export-modal');
@@ -147,7 +147,7 @@ let currentSceneIndex = 0;
 let frameRate = 1;
 let isPlaying = false;
 
-class Scene {
+class CScene {
     constructor() {
         this.objects = [];
         this.background = null;
@@ -242,8 +242,8 @@ class Triangle {
     }
 }
 
-function addScene() {
-    const scene = new Scene();
+function add_one_scene() {
+    const scene = new CScene();
     scenes.push(scene);
     updateSceneSelector();
     currentSceneIndex = scenes.length - 1;
@@ -295,7 +295,7 @@ function exportToJson() {
     exportModal.style.display = 'block';
 }
 
-addSceneBtn.addEventListener('click', addScene);
+addSceneBtn.addEventListener('click', add_one_scene);
 deleteSceneBtn.addEventListener('click', deleteScene);
 sceneSelector.addEventListener('change', (e) => {
     currentSceneIndex = parseInt(e.target.value);
@@ -349,7 +349,7 @@ document.getElementById('play').addEventListener('click', play);
 document.getElementById('pause').addEventListener('click', pause);
 
 // Initialize with one scene
-addScene();
+add_one_scene();
     </script>
 </body>
 </html>
