@@ -154,7 +154,7 @@ class VideoGenerator {
 const videoGenerator = new VideoGenerator();
 
 // Web服务路由
-app.post('/api/generate', async (req, res) => {
+app.post('/api/generateVideo', async (req, res) => {
   try {
     const { frames, fileName = `video_${Date.now()}.mp4`, fps = 24 } = req.body;
     
