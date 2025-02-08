@@ -1,3 +1,6 @@
+/*
+升级本代码，添加默认静态主页，可测试 /api/generateVideo
+*/
 const fs = require('fs');
 const { createCanvas } = require('canvas');
 const ffmpeg = require('fluent-ffmpeg');
@@ -10,6 +13,7 @@ const cors = require('cors');
 app.use(express.json());
 app.use(cors());
 app.use('/output', express.static(path.join(__dirname, 'output')));
+app.use(express.static(path.join(__dirname, 'public'))); // 静态主页目录
 
 class VideoGenerator {
   constructor() {
