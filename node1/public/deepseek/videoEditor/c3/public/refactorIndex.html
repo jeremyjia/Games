@@ -1,8 +1,3 @@
-<!-- 
-升级这个代码，
-让模态窗口可移动
-返回升级后完整可运行代码 
--->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -48,13 +43,13 @@
             background: rgba(0,0,0,0.5);
         }
         .modal-content {
-            position: relative;
+            position: absolute;
             background: white;
-            margin: 15% auto;
             padding: 35px 20px 20px;
             width: 60%;
             max-height: 70vh;
             overflow: auto;
+            transform: translate(-50%, -50%);
         }
         .close {
             position: absolute;
@@ -87,14 +82,14 @@
             z-index: 1000;
         }
         .c_video_modal_content {
-            position: relative;
+            position: absolute;
             background: white;
-            margin: 15% auto;
             padding: 35px 20px 20px;
             width: 60%;
             max-width: 600px;
             text-align: center;
             border-radius: 8px;
+            transform: translate(-50%, -50%);
         }
         .video-close {
             position: absolute;
@@ -178,28 +173,21 @@
     function enableDrag(modalContent) {
         const header = modalContent.querySelector('.modal-header');
         let isDragging = false;
-        let startX, startY, initialLeft, initialTop;
+        let offsetX = 0, offsetY = 0;
 
         header.addEventListener('mousedown', (e) => {
             isDragging = true;
-            startX = e.clientX;
-            startY = e.clientY;
-            
             const rect = modalContent.getBoundingClientRect();
-            initialLeft = rect.left;
-            initialTop = rect.top;
-            
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
             e.preventDefault();
         });
 
         document.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
             
-            const deltaX = e.clientX - startX;
-            const deltaY = e.clientY - startY;
-            
-            const newLeft = initialLeft + deltaX;
-            const newTop = initialTop + deltaY;
+            const newLeft = e.clientX - offsetX;
+            const newTop = e.clientY - offsetY;
             
             modalContent.style.left = `${newLeft}px`;
             modalContent.style.top = `${newTop}px`;
@@ -210,12 +198,12 @@
             isDragging = false;
         });
     }
-// 初始化模态拖动
+
+        // 初始化模态拖动
         const exportModalContent = document.querySelector('#export-modal .modal-content');
         const videoModalContent = document.querySelector('.c_video_modal_content');
         enableDrag(exportModalContent);
         enableDrag(videoModalContent);
-
 
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -240,9 +228,10 @@
             };
             const exportJson = document.getElementById('export-json');
             exportJson.textContent = JSON.stringify(exportData, null, 2);
-            modal.style.display = 'block';// 重置模态位置
-            exportModalContent.style.left = '';
-            exportModalContent.style.top = '';
+            modal.style.display = 'block';
+            // 重置位置到屏幕中央
+            exportModalContent.style.left = '50%';
+            exportModalContent.style.top = '50%';
             exportModalContent.style.transform = 'translate(-50%, -50%)';
         });
 
@@ -494,10 +483,11 @@
 
         // 打开视频生成模态
         document.getElementById('id4_create_video').addEventListener('click', () => {
-            videoModal.style.display = 'block';// 重置模态位置
-            videoModalContent.style.left = '';
-            videoModalContent.style.top = '';
-            videoModalContent.style.transform = 'translate(-10%, -10%)';
+            videoModal.style.display = 'block';
+            // 重置位置到屏幕中央
+            videoModalContent.style.left = '50%';
+            videoModalContent.style.top = '50%';
+            videoModalContent.style.transform = 'translate(-50%, -50%)';
             createVideo();
         });
 
