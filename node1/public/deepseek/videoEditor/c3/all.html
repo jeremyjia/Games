@@ -33,7 +33,27 @@
     padding: 10px;
     border-radius: 5px;
 }
+.scanes_floating_toolbar {
+    position: absolute;
+    top: 160px;
+    left: 210px;
+    background: #444;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
 
+}
+
+.play_floating_toolbar {
+    position: absolute;
+    top: 222px;
+    left: 210px;
+    background: #444;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+
+}
 #canvas {
     width: 100%;
     height: 100vh;
@@ -87,13 +107,13 @@
         <button id="add-triangle">Triangle</button>
     </div>
 
-    <div id="floating-toolbar-scenes" class="floating-toolbar">
+    <div id="floating-toolbar-scenes" class="scanes_floating_toolbar">
         <button id="set-forest">Forest</button>
         <button id="set-beach">Beach</button>
         <button id="set-street">Street</button>
     </div>
 
-    <div id="playback-toolbar">
+    <div id="playback-toolbar" class="play_floating_toolbar">
         <button id="play">Play</button>
         <button id="pause">Pause</button>
         <button id="export">Export</button>
@@ -260,6 +280,7 @@ function pause() {
 function animate() {
     if (!isPlaying) return;
     scenes[currentSceneIndex].draw();
+    currentSceneIndex = (currentSceneIndex + 1) % scenes.length;
     setTimeout(() => {
         requestAnimationFrame(animate);
     }, 1000 / frameRate);
