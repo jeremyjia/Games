@@ -1,5 +1,5 @@
 <!--
-升级这个代码，play 按钮 可按帧率为1播放视频
+升级这个代码，增加UI让帧率可设置，范围（1-100）
 --> 
 <!DOCTYPE html>
 <html lang="en">
@@ -33,6 +33,19 @@
             padding: 20px;
             width: 60%;
         }
+        
+        .fps-control {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-left: 10px;
+        }
+        .fps-control input[type="range"] {
+            width: 100px;
+        }
+        .fps-control input[type="number"] {
+            width: 50px;
+        }
     </style>
 </head>
 <body>
@@ -58,6 +71,11 @@
     <div id="playback-toolbar">
         <button id="play">Play</button>
         <button id="pause">Pause</button>
+        <div class="fps-control">
+            <label>FPS:</label>
+            <input type="range" id="fpsRange" min="1" max="100" value="1">
+            <input type="number" id="fpsInput" min="1" max="100" value="1">
+        </div>
         <button id="export">Export</button>
     </div>
 
@@ -80,8 +98,26 @@
     let startX, startY;
     let playInterval = null; // 新增：播放控制变量
 
+    const fpsRange = document.getElementById('fpsRange');
+    const fpsInput = document.getElementById('fpsInput');
+
+        // 同步范围输入和数字输入
+        function syncFPSInput(e) {
+            let value = parseInt(e.target.value);
+            value = Math.min(100, Math.max(1, value || 1));
+            
+            if (e.target === fpsRange) {
+                fpsInput.value = value;
+            } else {
+                fpsRange.value = value;
+            }
+        }
+
+    fpsRange.addEventListener('input', syncFPSInput);
+    fpsInput.addEventListener('input', syncFPSInput);
+
     // 初始化画布大小
-    function initCanvas() {
+    function initCanvas() {S
         canvas.width = 800;
         canvas.height = 600;
     }
@@ -170,11 +206,14 @@
     });
     document.getElementById('play').addEventListener('click', () => {
             if (!playInterval && scenes.length > 0) {
+                const fps = parseInt(fpsInput.value) || 1;
+                const intervalTime = 1000 / fps;
+                
                 playInterval = setInterval(() => {
                     currentSceneIndex = (currentSceneIndex + 1) % scenes.length;
                     updateSceneSelector();
                     drawScene();
-                }, 1000); // 1000ms = 1秒/帧
+                }, intervalTime);
             }
         });
 
