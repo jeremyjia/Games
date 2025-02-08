@@ -1,3 +1,8 @@
+<!-- 
+升级这个代码，
+每新建场景时，随机添加若干（1-10）不同对象
+返回升级后完整可运行代码 
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -107,7 +112,66 @@
     const fpsRange = document.getElementById('fpsRange');
     const fpsInput = document.getElementById('fpsInput');
     const playPauseBtn = document.getElementById('playPause');
+    function createRandomShape() {
+            const types = ['rectangle', 'circle', 'line', 'triangle'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const color = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+            const maxWidth = canvas.width;
+            const maxHeight = canvas.height;
+            
+            const getRandomCoord = () => ({
+                x: Math.random() * maxWidth,
+                y: Math.random() * maxHeight
+            });
 
+            switch(type) {
+                case 'rectangle':
+                    const start = getRandomCoord();
+                    return {
+                        type,
+                        x: start.x,
+                        y: start.y,
+                        width: Math.random() * 100 + 20,
+                        height: Math.random() * 100 + 20,
+                        color
+                    };
+                case 'circle':
+                    return {
+                        type,
+                        x: Math.random() * maxWidth,
+                        y: Math.random() * maxHeight,
+                        radius: Math.random() * 50 + 10,
+                        color
+                    };
+                case 'line': {
+                    const start = getRandomCoord();
+                    const end = getRandomCoord();
+                    return {
+                        type,
+                        x1: start.x,
+                        y1: start.y,
+                        x2: end.x,
+                        y2: end.y,
+                        color
+                    };
+                }
+                case 'triangle': {
+                    const p1 = getRandomCoord();
+                    const p2 = getRandomCoord();
+                    const p3 = getRandomCoord();
+                    return {
+                        type,
+                        x1: p1.x,
+                        y1: p1.y,
+                        x2: p2.x,
+                        y2: p2.y,
+                        x3: p3.x,
+                        y3: p3.y,
+                        color
+                    };
+                }
+            }
+        }
     function syncFPSInput(e) {
         let value = parseInt(e.target.value);
         value = Math.min(100, Math.max(1, value || 1));
@@ -134,15 +198,23 @@
         drawScene();
     });
 
+    
     function createScene() {
-        return {
-            id: Date.now(),
-            name: `Scene ${scenes.length + 1}`,
-            background: '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0'),
-            elements: []
-        };
-    }
-
+            const scene = {
+                id: Date.now(),
+                name: `Scene ${scenes.length + 1}`,
+                background: '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0'),
+                elements: []
+            };
+            
+            // 添加1-10个随机形状
+            const count = Math.floor(Math.random() * 10) + 1;
+            for(let i = 0; i < count; i++) {
+                scene.elements.push(createRandomShape());
+            }
+            
+            return scene;
+        }
     function updateSceneSelector() {
         const selector = document.getElementById('sceneSelector');
         selector.innerHTML = scenes.map((scene, index) => 
