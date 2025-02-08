@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>视频数据编辑器</title>
+    <style>
+        /* 保持原有样式不变 */
+        .toolbar {
+            position: fixed;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            touch-action: none;
+            min-width: 120px;
+            z-index: 1000;
+        }
+
+        .toolbar-header {
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.1);
+            cursor: grab;
+            border-radius: 8px 8px 0 0;
+            user-select: none;
+        }
+
+        .toolbar.dragging .toolbar-header {
+            cursor: grabbing;
+        }
+
+        .toolbar-content {
+            padding: 10px;
+        }
+
+        .toolbar button {
+            display: block;
+            margin: 5px;
+            padding: 8px;
+            width: calc(100% - 10px);
+        }
+
+        .scene-btn {
+            display: inline-block;
+            padding: 8px;
+            margin: 2px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+        }
+
+        .selected {
+            background: #ffd700;
+            border-color: #ff9900;
+        }
+
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #e0f7ff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            max-width: 80vw;
+            max-height: 80vh;
+            overflow: auto;
+            z-index: 1001;
+        }
+
+        .close-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .fps-control {
+            margin: 10px 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .fps-value {
+            font-size: 14px;
+        }
+
+        .toolbar button.active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        #mainCanvas {
+            border: 2px solid #333;
+            position: fixed;
+            left: 20vw;
+            top: 10vh;
+            width: 60vw;
+            height: 60vh;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="runApp">启动编辑器</button>
+
+    <script>
+        // 保持原有常量定义不变
+        const BACKGROUNDS = ['海边', '马路边', '树林', '操场'];
+
+        class CanvasManager {
+            // 保持原有CanvasManager类不变
+            constructor() {
+                this.canvas = document.getElementById('mainCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+            }
+
+            resize() {
+                const rect = this.canvas.getBoundingClientRect();
+                this.canvas.width = rect.width;
+                this.canvas.height = rect.height;
+            }
+
+            clear() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+
+            getObjectBoundingBox(obj) {
+                let width, height;
+                switch (obj.type) {
+                    case '汽车':
+                        width = 40 * obj.scale;
+                        height = 20 * obj.scale;
+                        break;
+                    case '树木':
+                        width = 30 * obj.scale;
+                        height = 45 * obj.scale;
+                        break;
+                    case '小狗':
+                        width = 40 * obj.scale;
+                        height = 60 * obj.scale;
+                        break;
+                    default:
+                        width = 0;
+                        height = 0;
+                }
+                return {
+                    left: obj.x - width / 2,
+                    top: obj.y - height / 2,
+                    width,
+                    height
+                };
+            }
+
+            drawSelection(obj) {
+                const ctx = this.ctx;
+                ctx.save();
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                const bbox = this.getObjectBoundingBox(obj);
+                ctx.strokeStyle = '#00ff00';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(bbox.left, bbox.top, bbox.width, bbox.height);
+                ctx.restore();
+            }
+
+            drawBackground(type) {
+                const ctx = this.ctx;
+                ctx.save();
+
+                switch (type) {
+                    case '海边':
+                        ctx.fillStyle = '#87CEEB';
+                        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height / 2);
+                        ctx.fillStyle = '#FFD700';
+                        ctx.fillRect(0, this.canvas.height / 2, this.canvas.width, this.canvas.height / 2);
+                        break;
+                    case '马路边':
+                        ctx.fillStyle = '#808080';
+                        ctx.fillRect(0, this.canvas.height * 0.7, this.canvas.width, this.canvas.height * 0.3);
+                        break;
+                    case '树林':
+                        ctx.fillStyle = '#228B22';
+                        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                        break;
+                    case '操场':
+                        ctx.fillStyle = '#4CAF50';
+                        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                        ctx.beginPath();
+                        ctx.arc(this.canvas.width / 2, this.canvas.height / 2, 50, 0, Math.PI * 2);
+                        ctx.strokeStyle = 'white';
+                        ctx.stroke();
+                        break;
+                }
+                ctx.restore();
+            }
+
+            drawObject(obj) {
+                const ctx = this.ctx;
+                ctx.save();
+                ctx.translate(obj.x, obj.y);
+                ctx.scale(obj.scale, obj.scale);
+
+                switch (obj.type) {
+                    case '汽车':
+                        ctx.fillStyle = '#FF0000';
+                        ctx.fillRect(-20, -10, 40, 20);
+                        ctx.fillRect(-15, -20, 30, 10);
+                        break;
+                    case '树木':
+                        ctx.fillStyle = '#8B4513';
+                        ctx.fillRect(-5, -20, 10, 20);
+                        ctx.fillStyle = '#228B22';
+                        ctx.beginPath();
+                        ctx.arc(0, -30, 15, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                    case '小狗':
+                        ctx.fillStyle = '#8B4513';
+                        ctx.beginPath();
+                        ctx.ellipse(0, 0, 20, 30, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.arc(0, -35, 15, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.arc(-12, -45, 8, 0, Math.PI, true);
+                        ctx.arc(12, -45, 8, 0, Math.PI, true);
+                        ctx.fill();
+                        ctx.fillStyle = '#CD853F';
+                        ctx.beginPath();
+                        ctx.ellipse(0, 5, 12, 20, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = '#8B4513';
+                        ctx.beginPath();
+                        ctx.ellipse(-15, 15, 8, 12, Math.PI / 6, 0, Math.PI * 2);
+                        ctx.ellipse(15, 15, 8, 12, -Math.PI / 6, 0, Math.PI * 2);
+                        ctx.ellipse(-15, 35, 8, 12, Math.PI / 6, 0, Math.PI * 2);
+                        ctx.ellipse(15, 35, 8, 12, -Math.PI / 6, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.moveTo(20, 20);
+                        ctx.quadraticCurveTo(35, 0, 20, -10);
+                        ctx.strokeStyle = '#8B4513';
+                        ctx.lineWidth = 5;
+                        ctx.stroke();
+                        ctx.fillStyle = 'white';
+                        ctx.beginPath();
+                        ctx.arc(-6, -40, 3, 0, Math.PI * 2);
+                        ctx.arc(6, -40, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = 'black';
+                        ctx.beginPath();
+                        ctx.arc(-6, -40, 1.5, 0, Math.PI * 2);
+                        ctx.arc(6, -40, 1.5, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = 'black';
+                        ctx.beginPath();
+                        ctx.ellipse(0, -35, 3, 2, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                }
+                ctx.restore();
+            }
+        }
+
+        class SceneManager {
+            constructor() {
+                this.scenes = [];
+                this.currentScene = null;
+            }
+
+            addScene() {
+                const newScene = {
+                    id: Date.now(),
+                    background: BACKGROUNDS[Math.floor(Math.random() * BACKGROUNDS.length)],
+                    objects: [],
+                    selectedObject: null,
+                    duration: 10 // 默认持续10帧
+                };
+                this.scenes.push(newScene);
+                this.selectScene(newScene.id);
+                return newScene;
+            }
+
+            deleteScene(sceneId) {
+                const index = this.scenes.findIndex(s => s.id === sceneId);
+                if (index === -1) return;
+
+                this.scenes.splice(index, 1);
+                if (this.currentScene?.id === sceneId) {
+                    this.currentScene = this.scenes[Math.max(index - 1, 0)] || null;
+                }
+            }
+
+            selectScene(sceneId) {
+                this.currentScene = this.scenes.find(s => s.id === sceneId);
+            }
+
+            getSceneIndex(sceneId) {
+                return this.scenes.findIndex(s => s.id === sceneId);
+            }
+        }
+
+        class Toolbar {
+            // 保持原有Toolbar类不变
+            constructor(title, buttons, position, color) {
+                this.element = document.createElement('div');
+                this.element.className = 'toolbar';
+                this.element.style.backgroundColor = color;
+                this.element.style.left = position.x + 'px';
+                this.element.style.top = position.y + 'px';
+
+                const header = document.createElement('div');
+                header.className = 'toolbar-header';
+                header.textContent = title;
+
+                const content = document.createElement('div');
+                content.className = 'toolbar-content';
+
+                buttons.forEach(btn => {
+                    if (btn.type === 'range') {
+                        const container = document.createElement('div');
+                        container.className = 'fps-control';
+
+                        const label = document.createElement('label');
+                        label.textContent = btn.label;
+
+                        const input = document.createElement('input');
+                        Object.assign(input, btn.attrs);
+
+                        const valueDisplay = document.createElement('span');
+                        valueDisplay.className = 'fps-value';
+                        valueDisplay.textContent = btn.attrs.value;
+
+                        container.appendChild(label);
+                        container.appendChild(input);
+                        container.appendChild(valueDisplay);
+                        content.appendChild(container);
+                    } else {
+                        const button = document.createElement('button');
+                        button.textContent = btn.label;
+                        button.onclick = btn.action;
+                        content.appendChild(button);
+                    }
+                });
+
+                this.element.appendChild(header);
+                this.element.appendChild(content);
+                this.initDrag(header);
+                document.body.appendChild(this.element);
+            }
+
+            initDrag(handle) {
+                let isDragging = false;
+                let offset = { x: 0, y: 0 };
+
+                const startDrag = (e) => {
+                    isDragging = true;
+                    this.element.classList.add('dragging');
+                    offset = {
+                        x: e.clientX - this.element.offsetLeft,
+                        y: e.clientY - this.element.offsetTop
+                    };
+                };
+
+                const doDrag = (e) => {
+                    if (!isDragging) return;
+                    const clientX = e.clientX || e.touches[0].clientX;
+                    const clientY = e.clientY || e.touches[0].clientY;
+
+                    this.element.style.left = (clientX - offset.x) + 'px';
+                    this.element.style.top = (clientY - offset.y) + 'px';
+                };
+
+                const stopDrag = () => {
+                    isDragging = false;
+                    this.element.classList.remove('dragging');
+                };
+
+                handle.addEventListener('mousedown', startDrag);
+                document.addEventListener('mousemove', doDrag);
+                document.addEventListener('mouseup', stopDrag);
+
+                handle.addEventListener('touchstart', (e) => startDrag(e.touches[0]));
+                document.addEventListener('touchmove', (e) => doDrag(e.touches[0]));
+                document.addEventListener('touchend', stopDrag);
+            }
+        }
+
+        class Editor {
+            constructor() {
+                this.canvasManager = new CanvasManager();
+                this.sceneManager = new SceneManager();
+                this.initToolbars();
+                this.initSceneToolbar();
+                this.currentObjectType = null;
+                this.isDragging = false;
+                this.selectedObjectOffset = { x: 0, y: 0 };
+                this.initCanvasInteraction();
+                this.isPlaying = false;
+                this.animationInterval = null;
+                this.fps = 2;
+
+                document.addEventListener('keydown', (e) => {
+                    if ((e.key === 'Delete' || e.key === 'Backspace') &&
+                        this.sceneManager.currentScene?.selectedObject) {
+                        this.deleteSelectedObject();
+                    }
+                });
+            }
+
+            initCanvasInteraction() {
+                const canvas = this.canvasManager.canvas;
+
+                canvas.addEventListener('mousedown', (e) => this.handlePointerDown(e));
+                document.addEventListener('mousemove', (e) => this.handlePointerMove(e));
+                document.addEventListener('mouseup', () => this.handlePointerUp());
+
+                canvas.addEventListener('touchstart', (e) => this.handlePointerDown(e.touches[0]));
+                canvas.addEventListener('touchmove', (e) => this.handlePointerMove(e.touches[0]));
+                canvas.addEventListener('touchend', () => this.handlePointerUp());
+
+                canvas.addEventListener('wheel', (e) => this.handleWheel(e), { passive: false });
+            }
+
+            handlePointerDown(e) {
+                const rect = this.canvasManager.canvas.getBoundingClientRect();
+                const scaleX = this.canvasManager.canvas.width / rect.width;
+                const scaleY = this.canvasManager.canvas.height / rect.height;
+                const x = (e.clientX - rect.left) * scaleX;
+                const y = (e.clientY - rect.top) * scaleY;
+
+                const scene = this.sceneManager.currentScene;
+                if (!scene) return;
+
+                // 修复部分：优先处理添加对象模式
+                if (this.currentObjectType) {
+                    const newObj = {
+                        type: this.currentObjectType,
+                        x,
+                        y,
+                        scale: 1
+                    };
+                    scene.objects.push(newObj);
+                    scene.selectedObject = newObj;
+                    this.refreshCanvas();
+                    return; // 添加对象后立即返回，不执行后续选择逻辑
+                }
+
+                // 仅在没有添加对象模式时执行选择逻辑
+                let selectedObj = null;
+                for (let i = scene.objects.length - 1; i >= 0; i--) {
+                    const obj = scene.objects[i];
+                    const bbox = this.canvasManager.getObjectBoundingBox(obj
