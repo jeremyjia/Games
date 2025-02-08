@@ -1,9 +1,3 @@
-<!-- 
-升级这个代码，
-现在只能添加rectangle,其他对象不能
-返回升级后完整可运行代码 
--->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Editor</title>
     <style>
+        /* 样式保持不变 */
         body {
             margin: 0;
             overflow: hidden;
@@ -70,6 +65,7 @@
     </style>
 </head>
 <body>
+    <!-- HTML结构保持不变 -->
     <div id="toolbar">
         <button id="addScene">Add Scene</button>
         <button id="delete-scene">Delete Scene</button>
@@ -144,7 +140,6 @@
             }
         });
 
-        // 其他原有代码保持不变...
         class ShapeEditor {
             static hitTest(element, x, y) {
                 switch(element.type) {
@@ -345,7 +340,10 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             currentScene.elements.forEach(element => {
-                ctx.fillStyle = element.color || '#000000';
+                ctx.fillStyle = element.color;
+                ctx.strokeStyle = element.color;
+                ctx.lineWidth = 2;
+
                 switch(element.type) {
                     case 'rectangle':
                         ctx.fillRect(element.x, element.y, element.width, element.height);
@@ -437,6 +435,7 @@
         document.getElementById('id4Triangle').addEventListener('click', () => {
             currentShape = 'triangle';
         });
+
         canvas.addEventListener('mousedown', (e) => {
             if (!currentShape) return;
             isDrawing = true;
@@ -448,16 +447,59 @@
             if (!isDrawing) return;
             isDrawing = false;
             
-            const element = {
-                type: currentShape,
-                x: startX,
-                y: startY,
-                width: e.offsetX - startX,
-                height: e.offsetY - startY,
-                color: '#ff0000'
-            };
-            scenes[currentSceneIndex].elements.push(element);
-            drawScene();
+            let element;
+            const color = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+
+            switch(currentShape) {
+                case 'rectangle':
+                    element = {
+                        type: 'rectangle',
+                        x: Math.min(startX, e.offsetX),
+                        y: Math.min(startY, e.offsetY),
+                        width: Math.abs(e.offsetX - startX),
+                        height: Math.abs(e.offsetY - startY),
+                        color: color
+                    };
+                    break;
+                case 'circle': {
+                    const radius = Math.hypot(e.offsetX - startX, e.offsetY - startY);
+                    element = {
+                        type: 'circle',
+                        x: startX,
+                        y: startY,
+                        radius: radius,
+                        color: color
+                    };
+                    break;
+                }
+                case 'line':
+                    element = {
+                        type: 'line',
+                        x1: startX,
+                        y1: startY,
+                        x2: e.offsetX,
+                        y2: e.offsetY,
+                        color: color
+                    };
+                    break;
+                case 'triangle':
+                    element = {
+                        type: 'triangle',
+                        x1: startX,
+                        y1: e.offsetY,
+                        x2: e.offsetX,
+                        y2: e.offsetY,
+                        x3: (startX + e.offsetX) / 2,
+                        y3: startY,
+                        color: color
+                    };
+                    break;
+            }
+
+            if (element) {
+                scenes[currentSceneIndex].elements.push(element);
+                drawScene();
+            }
             currentShape = null;
         });
 
