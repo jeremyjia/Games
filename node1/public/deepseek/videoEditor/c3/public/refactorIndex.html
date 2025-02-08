@@ -1,3 +1,9 @@
+<!-- 
+升级这个代码，
+手机运行，无法添加对象
+返回升级后完整可运行代码 
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,6 +11,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Editor</title>
     <style>
+        button {
+            min-width: 60px;
+            padding: 8px 12px;
+            touch-action: manipulation;
+        }
+        .c_floating_toolbar {
+            padding: 8px;
+            gap: 6px;
+        }
+        .c_floating_toolbar button {
+            padding: 10px;
+            font-size: 14px;
+        }
         /* 新增可拖动标题栏样式 */
         .modal-header {
             padding: 10px 15px;
@@ -127,8 +146,8 @@
 
     <div id="id4SceneToolbar" class="c_floating_toolbar">
         <button id="id4Forest">Forest</button>
-        <button id="set-beach">Beach</button>
-        <button id="set-street">Street</button>
+        <button id="id4Beach">Beach</button>
+        <button id="id4Street">Street</button>
     </div>
 
     <div id="playback-toolbar">
@@ -170,36 +189,124 @@
     <div id="id4Status">status:</div>
 
     <script> 
-    function enableDrag(modalContent) {
-        const header = modalContent.querySelector('.modal-header');
-        let isDragging = false;
-        let offsetX = 0, offsetY = 0;
-
-        header.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            const rect = modalContent.getBoundingClientRect();
-            offsetX = e.clientX - rect.left;
-            offsetY = e.clientY - rect.top;
-            e.preventDefault();
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            
-            const newLeft = e.clientX - offsetX;
-            const newTop = e.clientY - offsetY;
-            
-            modalContent.style.left = `${newLeft}px`;
-            modalContent.style.top = `${newTop}px`;
-            modalContent.style.transform = 'none';
-        });
-
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
-        });
+    function getCanvasCoordinates(e) {
+    const rect = canvas.getBoundingClientRect();
+    let x, y;
+    
+    if (e.touches) {
+        x = e.touches[0].clientX - rect.left;
+        y = e.touches[0].clientY - rect.top;
+    } else {
+        x = e.clientX - rect.left;
+        y = e.clientY - rect.top;
     }
+    
+    // 考虑canvas缩放
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    return {
+        x: x * scaleX,
+        y: y * scaleY
+    };
+}
 
-        // 初始化模态拖动
+function initCanvasEvents() {
+    // 统一处理鼠标和触摸事件
+    const handleStart = (x, y) => {
+        if (!currentShape) return;
+        isDrawing = true;
+        startX = x;
+        startY = y;
+    };
+
+    const handleEnd = (x, y) => {
+        if (!isDrawing) return;
+        isDrawing = false;
+        
+        // 原有创建图形逻辑
+        createShapeElement(x, y);
+    };
+
+    // 鼠标事件
+    canvas.addEventListener('mousedown', (e) => {
+        const pos = getCanvasCoordinates(e);
+        handleStart(pos.x, pos.y);
+    });
+
+    canvas.addEventListener('mouseup', (e) => {
+        const pos = getCanvasCoordinates(e);
+        handleEnd(pos.x, pos.y);
+    });
+
+    // 触摸事件
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const pos = getCanvasCoordinates(e);
+        handleStart(pos.x, pos.y);
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        if (!e.touches[0]) {
+            const pos = getCanvasCoordinates(e.changedTouches[0]);
+            handleEnd(pos.x, pos.y);
+        }
+    }, { passive: false });
+}
+
+function enableDrag(modalContent) {
+    const header = modalContent.querySelector('.modal-header');
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let initialX = 0, initialY = 0;
+
+    const startDrag = (clientX, clientY) => {
+        isDragging = true;
+        startX = clientX;
+        startY = clientY;
+        const rect = modalContent.getBoundingClientRect();
+        initialX = rect.left;
+        initialY = rect.top;
+    };
+
+    const doDrag = (clientX, clientY) => {
+        if (!isDragging) return;
+        
+        const deltaX = clientX - startX;
+        const deltaY = clientY - startY;
+        
+        modalContent.style.left = `${initialX + deltaX}px`;
+        modalContent.style.top = `${initialY + deltaY}px`;
+        modalContent.style.transform = 'none';
+    };
+
+    const stopDrag = () => {
+        isDragging = false;
+    };
+
+    // 鼠标事件
+    header.addEventListener('mousedown', (e) => {
+        startDrag(e.clientX, e.clientY);
+    });
+
+    // 触摸事件
+    header.addEventListener('touchstart', (e) => {
+        startDrag(e.touches[0].clientX, e.touches[0].clientY);
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        doDrag(e.clientX, e.clientY);
+    });
+
+    document.addEventListener('touchmove', (e) => {
+        doDrag(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: false });
+
+    document.addEventListener('mouseup', stopDrag);
+    document.addEventListener('touchend', stopDrag);
+}
+ // 初始化模态拖动
         const exportModalContent = document.querySelector('#export-modal .modal-content');
         const videoModalContent = document.querySelector('.c_video_modal_content');
         enableDrag(exportModalContent);
@@ -598,6 +705,18 @@
             drawScene();
         });
 
+        document.getElementById('id4Beach').addEventListener('click', () => {
+            if (scenes.length === 0) return;
+            scenes[currentSceneIndex].background = '#228Bff';
+            drawScene();
+        });
+
+        document.getElementById('id4Street').addEventListener('click', () => {
+            if (scenes.length === 0) return;
+            scenes[currentSceneIndex].background = '#888888';
+            drawScene();
+        });
+
         playPauseBtn.addEventListener('click', togglePlayback);
 
         document.getElementById('id4Rectangle').addEventListener('click', () => {
@@ -686,6 +805,7 @@
             scenes.push(createScene());
             updateSceneSelector();
             drawScene();
+            initCanvasEvents(); // 初始化新的事件系统
         }
         document.getElementById('id4generateVideo').addEventListener('click', async () => {
             const statusElement = document.getElementById('generation-status');
