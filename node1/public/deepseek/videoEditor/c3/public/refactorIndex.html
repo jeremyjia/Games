@@ -1,6 +1,6 @@
 <!-- 
 升级这个代码，
-升级genVideo按钮，让它用真正的数据区生成视频
+升级genVideo按钮，让它弹出一个模态窗口显示生成视频
 返回升级后完整可运行代码 
 -->
 <!DOCTYPE html>
@@ -67,6 +67,33 @@
         .fps-control input[type="number"] {
             width: 50px;
         }
+        .c_video_modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        .c_video_modal_content {
+            position: relative;
+            background: white;
+            margin: 15% auto;
+            padding: 35px 20px 20px;
+            width: 60%;
+            max-width: 600px;
+            text-align: center;
+            border-radius: 8px;
+        }
+        .video-close {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+            font-size: 24px;
+            cursor: pointer;
+        }
         .generate-controls {
             margin-top: 20px;
             display: flex;
@@ -108,12 +135,19 @@
             <input type="number" id="fpsInput" min="1" max="100" value="1">
         </div>
         <button id="export">Export</button>
-        <button onclick="createVideo()">genVideo</button>
-        <div id="videoContainer" style="margin-top: 20px;"></div>
+        <button id="id4_create_video">genVideo</button> 
     </div>
 
     <canvas id="canvas"></canvas>
-
+    <div id="id4_video_modal" class="c_video_modal">
+        <div class="c_video_modal_content">
+            <span class="video-close">&times;</span>
+            <div class="generate-controls">
+                <div id="generation-status">准备生成视频...</div>
+                <div id="videoContainer"></div>
+            </div>
+        </div>
+    </div>
     <div id="export-modal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -396,9 +430,35 @@
                 }
             });
         }
+
+        // 新增视频模态控制逻辑
+        const videoModal = document.getElementById('id4_video_modal');
+        const videoClose = document.querySelector('.video-close');
+
+        // 打开视频生成模态
+        document.getElementById('id4_create_video').addEventListener('click', () => {
+            videoModal.style.display = 'block';
+            createVideo();
+        });
+
+        // 关闭视频模态
+        videoClose.addEventListener('click', () => {
+            videoModal.style.display = 'none';
+        });
+
+        // 点击外部关闭模态
+        window.addEventListener('click', (e) => {
+            if (e.target === videoModal) {
+                videoModal.style.display = 'none';
+            }
+        });
+
         async function createVideo() { 
             const statusElement = document.getElementById('generation-status');
+            const videoContainer = document.getElementById('videoContainer');
+            
             statusElement.textContent = '视频生成中...';
+            videoContainer.innerHTML = ''; 
             
             try {
                 const currentFPS = parseInt(fpsInput.value) || 1;
@@ -436,9 +496,7 @@
                 console.error('生成错误:', error);
                 statusElement.textContent = `错误: ${error.message}`;
                 videoContainer.innerHTML = '<p>视频生成失败，请检查控制台</p>';
-            } finally {
-                isGenerating = false;
-            }
+            }  
         }
 
         function togglePlayback() {
