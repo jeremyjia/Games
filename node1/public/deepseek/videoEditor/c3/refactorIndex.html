@@ -1,3 +1,10 @@
+<!-- 
+升级这个代码，
+在模态窗口里添加一个生成按钮，
+新建nodejs后端服务程序，
+点生成按钮调用后端生成视频
+返回升级后完整可运行代码 
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -62,6 +69,16 @@
         .fps-control input[type="number"] {
             width: 50px;
         }
+        .generate-controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        #generation-status {
+            color: #666;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -100,6 +117,10 @@
     <div id="export-modal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
+            <div class="generate-controls">
+                <button id="id4generateVideo">生成视频</button>
+                <span id="generation-status"></span>
+            </div>
             <pre id="export-json"></pre>
         </div>
     </div>
@@ -509,7 +530,35 @@
             updateSceneSelector();
             drawScene();
         }
+        document.getElementById('id4generateVideo').addEventListener('click', async () => {
+            const statusElement = document.getElementById('generation-status');
+            statusElement.textContent = '生成中...';
+            
+            try {
+                const response = await fetch('http://localhost:3005/generateVideo', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(scenes)
+                });
 
+                if (!response.ok) throw new Error('生成失败');
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'video.mp4';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                statusElement.textContent = '生成成功！';
+            } catch (error) {
+                console.error('Error:', error);
+                statusElement.textContent = '生成失败: ' + error.message;
+            }
+        });
         init();
     </script>
 </body>
