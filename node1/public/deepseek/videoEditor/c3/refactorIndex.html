@@ -1,5 +1,5 @@
 <!--
-升级这个代码，增加UI让帧率可设置，范围（1-100）
+升级这个代码，让canvas自适应屏幕宽度
 --> 
 <!DOCTYPE html>
 <html lang="en">
@@ -7,7 +7,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Editor</title> 
-    <style>
+    <style> 
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        canvas {
+            width: 100%;
+            display: block;
+        }
+
         .c_floating_toolbar {
             position: absolute;
             left: 10px;
@@ -117,11 +126,16 @@
     fpsInput.addEventListener('input', syncFPSInput);
 
     // 初始化画布大小
-    function initCanvas() {S
-        canvas.width = 800;
-        canvas.height = 600;
+    function initCanvas() {
+        const parentWidth = canvas.parentElement.clientWidth;
+        const aspectRatio = 600 / 800; // 保持原始宽高比
+        canvas.width = parentWidth;
+        canvas.height = parentWidth * aspectRatio;
     }
-
+    window.addEventListener('resize', () => {
+        initCanvas();
+        drawScene();
+    });
     // 场景管理
     function createScene() {
         return {
