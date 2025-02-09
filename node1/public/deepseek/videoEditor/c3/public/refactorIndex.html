@@ -1,13 +1,6 @@
 <!-- 
 升级这个代码，
-ctx.fillText(
-                `Global: ${frameInfo.global}/${totalFrames} | ` +
-                `Scene: ${currentSceneIndex + 1}/${scenes.length} | ` +
-                `Frame: ${frameInfo.scene}/${currentScene.duration}`,
-                canvas.width/2, 
-                20
-            );
-            无论何时分子只是反映视频当前实际上的数字跟播放次数无关。。
+Export Settings 添加json保存
 
 返回升级后完整可运行代码 
 -->
@@ -145,12 +138,14 @@ ctx.fillText(
         }
         .modal-content {
             position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
             background: white;
             padding: 35px 20px 20px;
             width: 60%;
             max-height: 70vh;
             overflow: auto;
-            transform: translate(-50%, -50%);
         }
         .close {
             position: absolute;
@@ -286,18 +281,20 @@ ctx.fillText(
             </div>
         </div>
     </div>
-    <!-- 修改导出模态结构 -->
+    
     <div id="export-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">Export Settings</div>
             <span class="close">&times;</span>
             <div class="generate-controls">
                 <button id="id4generateVideo">生成视频</button>
+                <button id="saveJson">保存为JSON</button>
                 <span id="generation-status"></span>
             </div>
             <pre id="export-json"></pre>
         </div>
     </div>
+
 
     <div id="id4Status">status:</div>
 
@@ -590,8 +587,14 @@ function enableDrag(modalContent) {
         const deltaX = clientX - startX;
         const deltaY = clientY - startY;
         
-        modalContent.style.left = `${initialX + deltaX}px`;
-        modalContent.style.top = `${initialY + deltaY}px`;
+        // 计算新位置并限制在窗口内
+        const newX = initialX + deltaX;
+        const newY = initialY + deltaY;
+        const maxX = window.innerWidth - modalContent.offsetWidth;
+        const maxY = window.innerHeight - modalContent.offsetHeight;
+        
+        modalContent.style.left = `${Math.max(0, Math.min(newX, maxX))}px`;
+        modalContent.style.top = `${Math.max(0, Math.min(newY, maxY))}px`;
         modalContent.style.transform = 'none';
     };
 
@@ -660,22 +663,70 @@ fpsInput.value = DEFAULT_FPS;
         
         // 导出按钮点击处理
         document.getElementById('export').addEventListener('click', () => {
-            const currentFPS = parseInt(fpsInput.value) || 1;
-            const exportData = {
-                scenes: scenes.map(scene => ({
-                    ...scene,
-                    elements: scene.elements.map(element => ({...element}))
-                })),
-                fps: currentFPS
-            };
+            const exportData = getExportData();
             const exportJson = document.getElementById('export-json');
             exportJson.textContent = JSON.stringify(exportData, null, 2);
+            
+            // 强制重置位置
+            const modalContent = document.querySelector('#export-modal .modal-content');
+            modalContent.style.left = '50%';
+            modalContent.style.top = '50%';
+            modalContent.style.transform = 'translate(-50%, -50%)';
+            
             modal.style.display = 'block';
-            // 重置位置到屏幕中央
-            exportModalContent.style.left = '50%';
-            exportModalContent.style.top = '50%';
-            exportModalContent.style.transform = 'translate(-50%, -50%)';
         });
+
+        document.getElementById('saveJson').addEventListener('click', () => {
+            const exportData = getExportData();
+            saveAsJson(exportData);
+        });
+// 提取数据生成函数
+function getExportData() {
+    const currentFPS = parseInt(fpsInput.value) || 1;
+    return {
+        meta: {
+            version: "1.0",
+            created: new Date().toISOString(),
+            totalFrames: totalFrames,
+            totalScenes: scenes.length
+        },
+        scenes: scenes.map(scene => ({
+            ...scene,
+            elements: scene.elements.map(element => ({
+                ...element,
+                // 特殊处理函数类型
+                myDraw: element.myDraw ? element.myDraw.toString() : null
+            }))
+        })),
+        fps: currentFPS
+    };
+}
+
+
+// 新增保存功能实现
+function saveAsJson(data) {
+    try {
+        const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `video-project-${new Date().toISOString().replace(/[:.]/g,'-')}.json`;
+        
+        document.body.appendChild(a);
+        a.click();
+        
+        // 清理资源
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 100);
+        
+    } catch (e) {
+        console.error('保存失败:', e);
+        alert('JSON保存失败，请检查控制台');
+    }
+}
 
         // 关闭模态窗口处理
         closeBtn.addEventListener('click', () => {
