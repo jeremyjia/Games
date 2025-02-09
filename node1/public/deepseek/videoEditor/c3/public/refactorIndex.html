@@ -1,6 +1,6 @@
 <!-- 
 升级这个代码，
-为了调试方便，请帮我在画布的顶部中间绘制全局帧序号和场景帧序号还有场景持续了多少帧？。
+dbgInf 添加 视频所有帧数，当前场景号
 
 返回升级后完整可运行代码 
 -->
@@ -1097,18 +1097,20 @@ function drawSceneWithTemp() {
             ctx.fillStyle = currentScene.background;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+            // 计算总帧数
+            const totalFrames = scenes.reduce((sum, scene) => sum + scene.duration, 0);
             
-            const dbgInf= function(){// 绘制调试信息
-                ctx.fillStyle = 'black';
-                ctx.font = '14px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(
-                    `Global: ${frameInfo.global} | Scene: ${frameInfo.scene}/${currentScene.duration}`, 
-                    canvas.width/2, 
-                    20
-                );
-            }();
-
+            // 绘制调试信息
+            ctx.fillStyle = 'black';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(
+                `Global: ${frameInfo.global}/${totalFrames} | ` +
+                `Scene: ${currentSceneIndex + 1}/${scenes.length} | ` +
+                `Frame: ${frameInfo.scene}/${currentScene.duration}`,
+                canvas.width/2, 
+                20
+            );
 
             currentScene.elements.forEach(element => {
                 drawElement(element, frameInfo.scene);
@@ -1117,7 +1119,7 @@ function drawSceneWithTemp() {
                 }
             });
         }
-// 新增选中状态绘制函数
+        // 新增选中状态绘制函数
 function drawSelection(element) {
     ctx.save();
     ctx.strokeStyle = '#ff0000';
@@ -1300,23 +1302,32 @@ function drawSelection(element) {
             } else {
                 isPlaying = false;
                 playPauseBtn.textContent = 'Play';
-                // 停止时显示最后帧号
                 drawScene({
                     global: globalFrameCount,
                     scene: sceneFrameCount
                 });
             }
         }
+
         document.getElementById('addScene').addEventListener('click', () => {
             scenes.push(createScene());
             currentSceneIndex = scenes.length - 1;
             updateSceneSelector();
-            drawScene();
+            drawScene({
+                global: globalFrameCount,
+                scene: sceneFrameCount
+            });
         });
 
+        // 修改场景切换相关函数
         document.getElementById('sceneSelector').addEventListener('change', (e) => {
             currentSceneIndex = e.target.value;
-            drawScene();
+            sceneStartFrame = globalFrameCount;
+            sceneFrameCount = 0;
+            drawScene({
+                global: globalFrameCount,
+                scene: sceneFrameCount
+            });
         });
 
         document.getElementById('delete-scene').addEventListener('click', () => {
