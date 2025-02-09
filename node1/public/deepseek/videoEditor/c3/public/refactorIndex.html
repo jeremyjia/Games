@@ -1,6 +1,6 @@
 <!-- 
 升级这个代码，
-让对象 line 可变大小
+双击对象时，弹出一个模态对话框，可编辑对象的颜色
 返回升级后完整可运行代码 
 -->
 
@@ -10,7 +10,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Editor</title>
-    <style>
+    <style> 
+        #color-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1001;
+        }
+        #color-modal .modal-content {
+            background: white;
+            padding: 20px;
+            width: 260px;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 8px;
+        }
+        #color-modal .color-controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
     .control-point.line-endpoint {
             background: #ff9900;
         }
@@ -156,6 +182,19 @@
     </style>
 </head>
 <body>
+    <div id="color-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Edit Color</div>
+            <span class="close">&times;</span>
+            <div style="margin: 20px 0;">
+                <input type="color" id="color-picker" style="width: 100%; height: 40px;">
+            </div>
+            <div class="color-controls">
+                <button id="confirm-color">OK</button>
+                <button id="cancel-color">Cancel</button>
+            </div>
+        </div>
+    </div>
     <div id="toolbar">
         <button id="addScene">Add Scene</button>
         <button id="delete-scene">Delete Scene</button>
@@ -219,6 +258,42 @@
     <div id="id4Status">status:</div>
 
     <script> 
+        // 新增颜色编辑相关变量
+        const colorModal = document.getElementById('color-modal');
+        const colorPicker = document.getElementById('color-picker');
+        const confirmColorBtn = document.getElementById('confirm-color');
+        const cancelColorBtn = document.getElementById('cancel-color');
+
+        // 初始化颜色编辑模态拖动
+        enableDrag(colorModal.querySelector('.modal-content'));
+
+        // 颜色确认按钮
+        confirmColorBtn.addEventListener('click', () => {
+            if (selectedElement) {
+                selectedElement.color = colorPicker.value;
+                drawScene();
+            }
+            colorModal.style.display = 'none';
+        });
+
+        // 颜色取消按钮
+        cancelColorBtn.addEventListener('click', () => {
+            colorModal.style.display = 'none';
+        });
+
+        // 关闭颜色模态
+        colorModal.querySelector('.close').addEventListener('click', () => {
+            colorModal.style.display = 'none';
+        });
+
+        // 点击外部关闭颜色模态
+        window.addEventListener('click', (e) => {
+            if (e.target === colorModal) {
+                colorModal.style.display = 'none';
+            }
+        });
+
+
         let selectedElement = null;
         let selectedControl = null;
         let isDraggingElement = false;
@@ -313,6 +388,22 @@
                     handleEnd(pos.x, pos.y);
                 }
             };
+
+        // 双击事件处理
+        canvas.addEventListener('dblclick', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            
+            const hit = detectHit(x, y);
+            if (hit && hit.element) {
+                selectedElement = hit.element;
+                colorPicker.value = selectedElement.color;
+                colorModal.style.display = 'block';
+            }
+        });
 
             // 绑定事件
             canvas.addEventListener('mousedown', eventHandler.start);
