@@ -203,6 +203,9 @@ fps设置为30，每帧duration=30,播放时，观测到，场景没变
     <div id="id4Status">status:</div>
 
     <script> 
+    // 初始化配置
+    const DEFAULT_FPS = 30;
+    const FRAME_DURATION = 30;
     let tempElement = null; // 用于存储临时图形
 
     function getCanvasCoordinates(clientX, clientY) {
@@ -458,6 +461,9 @@ function enableDrag(modalContent) {
 
         const fpsRange = document.getElementById('fpsRange');
         const fpsInput = document.getElementById('fpsInput');
+        fpsRange.value = DEFAULT_FPS;
+        fpsInput.value = DEFAULT_FPS;
+
         const playPauseBtn = document.getElementById('playPause');
 
         function createRandomShape() {
@@ -564,12 +570,9 @@ function enableDrag(modalContent) {
                 `<option value="${index}">${scene.name}</option>`
             ).join('');
             selector.value = currentSceneIndex; 
-            
-            // 更新持续时间输入框
-            if (scenes[currentSceneIndex]) {
-                document.getElementById('sceneDuration').value = scenes[currentSceneIndex].duration;
-            }
+            document.getElementById('sceneDuration').value = scenes[currentSceneIndex]?.duration || FRAME_DURATION;
         }
+             
        // 监听持续时间输入变化
        document.getElementById('sceneDuration').addEventListener('change', function() {
             const duration = parseInt(this.value) || 1;
@@ -683,41 +686,10 @@ function drawSceneWithTemp() {
 
         function drawScene() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
             const currentScene = scenes[currentSceneIndex];
             ctx.fillStyle = currentScene.background;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            currentScene.elements.forEach(element => {
-                ctx.fillStyle = element.color;
-                ctx.strokeStyle = element.color;
-                ctx.lineWidth = 2;
-
-                switch(element.type) {
-                    case 'rectangle':
-                        ctx.fillRect(element.x, element.y, element.width, element.height);
-                        break;
-                    case 'circle':
-                        ctx.beginPath();
-                        ctx.arc(element.x, element.y, element.radius, 0, Math.PI * 2);
-                        ctx.fill();
-                        break;
-                    case 'line':
-                        ctx.beginPath();
-                        ctx.moveTo(element.x1, element.y1);
-                        ctx.lineTo(element.x2, element.y2);
-                        ctx.stroke();
-                        break;
-                    case 'triangle':
-                        ctx.beginPath();
-                        ctx.moveTo(element.x1, element.y1);
-                        ctx.lineTo(element.x2, element.y2);
-                        ctx.lineTo(element.x3, element.y3);
-                        ctx.closePath();
-                        ctx.fill();
-                        break;
-                }
-            });
+            currentScene.elements.forEach(drawElement);
         }
 
         // 新增视频模态控制逻辑
@@ -794,8 +766,9 @@ function drawSceneWithTemp() {
 
         function togglePlayback() {
             if (!isPlaying) {
-                if (scenes.length === 0) return;
-                const fps = parseInt(fpsInput.value) || 1;
+                if (scenes.length === 0) return; 
+                const fps = parseInt(fpsInput.value) || DEFAULT_FPS;
+
                 const intervalTime = 1000 / fps;
                 
                 let currentFrameCount = 0;
