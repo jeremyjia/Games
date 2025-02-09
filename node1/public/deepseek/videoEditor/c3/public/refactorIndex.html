@@ -1,8 +1,7 @@
 <!-- 
 升级这个代码，
-双击对象时，弹出一个模态对话框，出来可以设置颜色，
-还有一个文本框可以给对象设置一个“myDraw"的属性，其值是“function(ctx,element){/* 自画内容 */}"，
-让对象可以自己绘制一些信息，比如某个circle对象可以再画任意它想画的图形，由函数内容决定
+请帮我设计一个应用当前帧序号的myDraw的例子。
+
 返回升级后完整可运行代码 
 -->
 
@@ -478,7 +477,28 @@
                                         ctx.beginPath();
                                         ctx.arc(element.x, element.y, 10, 0, Math.PI*2);
                                         ctx.fill();`
-                        }
+                        }, {
+                    "funBody":`// 旋转矩形动画
+                                ctx.translate(element.x + element.width/2, element.y + element.height/2);
+                                ctx.rotate(frameNumber * Math.PI / 30);
+                                ctx.fillStyle = 'hsl(' + (frameNumber * 2) + ', 100%, 50%)';
+                                ctx.fillRect(-element.width/2, -element.height/2, element.width, element.height);`
+                },
+                {
+                    "funBody":`// 脉冲圆效果
+                                const pulse = Math.abs(Math.sin(frameNumber * 0.1)) * 20;
+                                ctx.beginPath();
+                                ctx.arc(element.x, element.y, element.radius + pulse, 0, Math.PI*2);
+                                ctx.fillStyle = element.color;
+                                ctx.fill();`
+                },
+                {
+                    "funBody":`// 文字帧计数器
+                                ctx.fillStyle = 'black';
+                                ctx.font = '20px Arial';
+                                ctx.textAlign = 'center';
+                                ctx.fillText('Frame: ' + frameNumber, element.x, element.y);`
+                }
                     ];
                     let n = 0;
                     for(i in exs){
@@ -963,7 +983,7 @@ fpsInput.value = DEFAULT_FPS;
         }
 
         // 图形元素绘制函数
-        function drawElement(element) {
+        function drawElement(element, frameNumber = 0) {
             // 原始绘制逻辑
             ctx.fillStyle = element.color;
             ctx.strokeStyle = element.color;
@@ -997,8 +1017,8 @@ fpsInput.value = DEFAULT_FPS;
             // 执行自定义绘制函数
             if (element.myDraw) {
                 try {
-                    const customDraw = new Function('ctx', 'element', element.myDraw);
-                    customDraw(ctx, element);
+                    const customDraw = new Function('ctx', 'element', 'frameNumber',element.myDraw);
+                    customDraw(ctx, element,frameNumber);
                 } catch (e) {
                     console.error('Custom draw element.myDraw:', element.myDraw);
                     console.error('Custom draw error:', e);
