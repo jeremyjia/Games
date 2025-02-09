@@ -1,6 +1,6 @@
 <!-- 
 升级这个代码，
-请帮我设计一个应用当前帧序号的myDraw的例子。
+为了调试方便，请帮我在画布的顶部中间绘制全局帧序号和场景帧序号还有场景持续了多少帧？。
 
 返回升级后完整可运行代码 
 -->
@@ -12,6 +12,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Editor</title>
     <style> 
+        .debug-info {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            pointer-events: none;
+        }
         #id_4_myDraw_code_TA {
             width: 100%;
             height: 120px;
@@ -284,6 +295,10 @@
     <div id="id4Status">status:</div>
 
     <script> 
+        // 在全局添加帧计数器
+        let globalFrameCount = 0;
+        let sceneFrameCount = 0;
+        let sceneStartFrame = 0;
         // 新增颜色编辑相关变量
         const colorModal = document.getElementById('color-modal');
         const colorPicker = document.getElementById('color-picker');
@@ -296,7 +311,10 @@
                 if (index !== -1) {
                     currentScene.elements.splice(index, 1);
                     selectedElement = null;
-                    drawScene();
+                    drawScene({
+                        global: globalFrameCount,
+                        scene: sceneFrameCount
+                    });
                 }
             }
         }
@@ -421,7 +439,10 @@
                     scenes[currentSceneIndex].elements.push(tempElement);
                     tempElement = null;
             }
-            drawScene();
+            drawScene({
+                global: globalFrameCount,
+                scene: sceneFrameCount
+            });
         };
 
             // 事件处理器
@@ -1067,25 +1088,35 @@ function drawSceneWithTemp() {
             }
         }
 
-        // 优化后的场景绘制函数
-function drawScene() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if (!scenes[currentSceneIndex]) return;
-    
-    const currentScene = scenes[currentSceneIndex];
-    ctx.fillStyle = currentScene.background;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    currentScene.elements.forEach(element => {
-        // 绘制元素本体
-        drawElement(element);
-        
-        // 绘制选中状态
-        if (element === selectedElement) {
-            drawSelection(element);
+
+        function drawScene(frameInfo = { global: 0, scene: 0 }) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (!scenes[currentSceneIndex]) return;
+            
+            const currentScene = scenes[currentSceneIndex];
+            ctx.fillStyle = currentScene.background;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            
+            const dbgInf= function(){// 绘制调试信息
+                ctx.fillStyle = 'black';
+                ctx.font = '14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(
+                    `Global: ${frameInfo.global} | Scene: ${frameInfo.scene}/${currentScene.duration}`, 
+                    canvas.width/2, 
+                    20
+                );
+            }();
+
+
+            currentScene.elements.forEach(element => {
+                drawElement(element, frameInfo.scene);
+                if (element === selectedElement) {
+                    drawSelection(element);
+                }
+            });
         }
-    });
-}
 // 新增选中状态绘制函数
 function drawSelection(element) {
     ctx.save();
@@ -1230,13 +1261,10 @@ function drawSelection(element) {
 
         function togglePlayback() {
             if (!isPlaying) {
-                if (scenes.length === 0) return; 
                 const fps = parseInt(fpsInput.value) || DEFAULT_FPS;
-
                 const intervalTime = 1000 / fps;
-                
-                let currentFrameCount = 0;
                 let lastTime = performance.now();
+                sceneStartFrame = globalFrameCount;
 
                 function playFrame() {
                     if (!isPlaying) return;
@@ -1245,30 +1273,40 @@ function drawSelection(element) {
                     const elapsed = now - lastTime;
                     
                     if (elapsed >= intervalTime) {
-                        const currentScene = scenes[currentSceneIndex];
-                        currentFrameCount++;
+                        globalFrameCount++;
+                        sceneFrameCount = globalFrameCount - sceneStartFrame;
                         
-                        // 场景切换逻辑
-                        if (currentFrameCount >= currentScene.duration) {
+                        const currentScene = scenes[currentSceneIndex];
+                        if (sceneFrameCount >= currentScene.duration) {
                             currentSceneIndex = (currentSceneIndex + 1) % scenes.length;
-                            currentFrameCount = 0;
+                            sceneStartFrame = globalFrameCount;
+                            sceneFrameCount = 0;
                             updateSceneSelector();
                         }
                         
-                        drawScene();
+                        drawScene({
+                            global: globalFrameCount,
+                            scene: sceneFrameCount
+                        });
+                        
                         lastTime = now - (elapsed % intervalTime);
                     }
                     requestAnimationFrame(playFrame);
-                } 
+                }
+                
                 isPlaying = true;
                 playPauseBtn.textContent = 'Pause';
                 requestAnimationFrame(playFrame);
-            } else { 
+            } else {
                 isPlaying = false;
                 playPauseBtn.textContent = 'Play';
+                // 停止时显示最后帧号
+                drawScene({
+                    global: globalFrameCount,
+                    scene: sceneFrameCount
+                });
             }
         }
-
         document.getElementById('addScene').addEventListener('click', () => {
             scenes.push(createScene());
             currentSceneIndex = scenes.length - 1;
@@ -1407,7 +1445,10 @@ function handleMove(x, y) {
         ctx.restore();
     }
 }
-function init() {
+function init() {    
+    globalFrameCount = 0;
+    sceneFrameCount = 0;
+    sceneStartFrame = 0;
     initCanvas();
     scenes = [createScene()];
     currentSceneIndex = 0;
