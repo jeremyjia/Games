@@ -1,6 +1,62 @@
 <!-- 
 升级这个代码，
-  添加json导入
+  导入如下数据后，在播放时，播放声音
+  {
+  "meta": {
+    "version": "2.0",
+    "created": "2025-02-09T22:27:46.038Z",
+    "totalFrames": 30,
+    "totalScenes": 1
+  },
+  “audio":"https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3",
+  "scenes": [
+    {
+      "id": 1739139985159,
+      "name": "Scene 1",
+      "background": "#41176b",
+      "elements": [
+        {
+          "type": "rectangle",
+          "x": 524,
+          "y": 178,
+          "width": 252,
+          "height": 174,
+          "color": "#f9ace3",
+          "myDraw": "function anonymous(ctx,element,frameNumber\n) {\n// 在中心添加文字 \n                                        ctx.fillStyle = 'black';\n                                        ctx.font = '14px Arial';\n                                        ctx.textAlign = 'center';\n                                        ctx.fillText('Hello', element.x, element.y);\n"
+        },
+        {
+          "type": "circle",
+          "x": 353,
+          "y": 329,
+          "radius": 84.38009243891595,
+          "color": "#cf4858",
+          "myDraw": "function anonymous(ctx,element,frameNumber\n) {\n//  \n                                        ctx.fillStyle = 'gold';\n                                        ctx.beginPath();\n                                        ctx.arc(element.x, element.y, 10, 0, Math.PI*2);\n                                        ctx.fill();\n"
+        },
+        {
+          "type": "triangle",
+          "x1": 884,
+          "y1": 312,
+          "x2": 1031,
+          "y2": 312,
+          "x3": 957.5,
+          "y3": 185,
+          "color": "#b755da",
+          "myDraw": "function anonymous(ctx,element,frameNumber\n) {\n// 在中心添加文字 \n                                        ctx.fillStyle = 'black';\n                                        ctx.font = '14px Arial';\n                                        ctx.textAlign = 'center';\n                                        ctx.fillText('Hello', element.x, element.y);\n"
+        },
+        {
+          "type": "circle",
+          "x": 85,
+          "y": 252,
+          "radius": 65.55150646628955,
+          "color": "#7356bf",
+          "myDraw": null
+        }
+      ],
+      "duration": 30
+    }
+  ],
+  "fps": 30
+}
 
 返回升级后完整可运行代码 
 -->
@@ -307,29 +363,60 @@
     <div id="id4Status">status:</div>
 
     <script>
-     document.getElementById('importFile').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-    
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            try {
-                const data = JSON.parse(event.target.result);
-                loadProject(data);
-                alert('项目导入成功！');
-            } catch (error) {
-                console.error('导入失败:', error);
-                alert('文件解析失败，请检查文件格式');
+        // 新增音频相关全局变量
+        let projectAudioURL = null;
+        let currentAudio = null;
+        let audioStartTime = 0;
+        let audioPausePosition = 0;
+
+        document.getElementById('importFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        try {
+            // 预验证JSON格式
+            const rawData = event.target.result;
+            if (!validateJSON(rawData)) {
+                throw new Error('Invalid JSON format');
             }
-        };
-        reader.readAsText(file);
-    });
+            
+            const data = JSON.parse(rawData);
+            loadProject(data);
+            alert('项目导入成功！');
+        } catch (error) {
+            console.error('导入失败:', error);
+            alert(`文件解析失败：${error.message}`);
+        }
+    };
+    reader.readAsText(file);
+});
+
+// JSON格式验证函数
+function validateJSON(jsonString) {
+    try {
+        JSON.parse(jsonString);
+        return true;
+    } catch (e) {
+        // 生成友好的错误提示
+        const errorLine = jsonString.split('\n')[e.message.match(/line (\d+)/)?.[1]-1];
+        console.error(`JSON格式错误：
+            行号：${e.message.match(/line (\d+)/)?.[1]}
+            列号：${e.message.match(/column (\d+)/)?.[1]}
+            错误上下文：${errorLine?.substring(0, 50)}...
+        `);
+        return false;
+    }
+}
+
     function loadProject(data) {
     // 验证数据结构
     if (!data.scenes || !Array.isArray(data.scenes)) {
         throw new Error('无效的项目文件格式');
     }
 
+    projectAudioURL = data.audio || null;
     // 转换函数字符串为可执行代码
     data.scenes.forEach(scene => {
         scene.elements.forEach(element => {
@@ -772,25 +859,24 @@ function syntaxHighlight(json) {
         });
 // 提取数据生成函数
 function getExportData() {
-    const currentFPS = parseInt(fpsInput.value) || 1;
-    return {
-        meta: {
-            version: "1.0",
-            created: new Date().toISOString(),
-            totalFrames: totalFrames,
-            totalScenes: scenes.length
-        },
-        scenes: scenes.map(scene => ({
-            ...scene,
-            elements: scene.elements.map(element => ({
-                ...element,
-                // 特殊处理函数类型
-                myDraw: element.myDraw ? element.myDraw.toString() : null
-            }))
-        })),
-        fps: currentFPS
-    };
-}
+            return {
+                meta: {
+                    version: "2.0",
+                    created: new Date().toISOString(),
+                    totalFrames: totalFrames,
+                    totalScenes: scenes.length
+                },
+                audio: projectAudioURL,  // 新增音频字段
+                scenes: scenes.map(scene => ({
+                    ...scene,
+                    elements: scene.elements.map(element => ({
+                        ...element,
+                        myDraw: element.myDraw ? element.myDraw.toString() : null
+                    }))
+                })),
+                fps: parseInt(fpsInput.value) || 30
+            };
+        }
 
 
 // 新增保存功能实现
@@ -1420,10 +1506,39 @@ function drawSelection(element) {
     if (!isPlaying) {
         const fps = parseInt(fpsInput.value) || DEFAULT_FPS;
         const intervalTime = 1000 / fps;
+        // 音频控制逻辑
+        if (projectAudioURL) {
+                    if (!currentAudio) {
+                        currentAudio = new Audio(projectAudioURL);
+                        currentAudio.currentTime = audioPausePosition;
+                    }
+                    const playPromise = currentAudio.play();
+                    
+                    playPromise.catch(error => {
+                        console.error('音频播放失败:', error);
+                        alert('音频播放需要用户交互，请先点击页面任意位置');
+                    });
+                    
+                    audioStartTime = performance.now() - (audioPausePosition * 1000);
+                }
+
         let lastTime = performance.now();
         
         function playFrame() {
             if (!isPlaying) return;
+
+            // 计算精确的音频同步时间
+            const audioTime = currentAudio ? currentAudio.currentTime : (performance.now() - audioStartTime) / 1000;
+            const targetFrame = Math.floor(audioTime * fps);
+            
+            // 使用音频时间驱动动画帧
+            if (currentAudio) {
+                const currentScene = scenes[currentSceneIndex];
+                if (sceneFrameCount >= currentScene.duration) {
+                    // 场景切换逻辑...
+                }
+                sceneFrameCount = Math.min(targetFrame - previousScenesFrames, currentScene.duration);
+            }
             
             const now = performance.now();
             const elapsed = now - lastTime;
@@ -1455,6 +1570,12 @@ function drawSelection(element) {
         playPauseBtn.textContent = 'Pause';
         requestAnimationFrame(playFrame);
     } else {
+                // 暂停音频
+                if (currentAudio) {
+                    currentAudio.pause();
+                    audioPausePosition = currentAudio.currentTime;
+                    currentAudio = null;
+                }
         isPlaying = false;
         playPauseBtn.textContent = 'Play';
         drawScene();
@@ -1619,6 +1740,12 @@ function init() {
     updateSceneSelector();
     drawScene();
     initCanvasEvents();
+    
+    projectAudioURL = null;
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
 }
 
         document.getElementById('id4generateVideo').addEventListener('click', async () => {
