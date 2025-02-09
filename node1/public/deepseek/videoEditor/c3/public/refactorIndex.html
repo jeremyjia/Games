@@ -1,6 +1,6 @@
 <!-- 
 升级这个代码，
-  导入如下数据后，在播放后，不能 pause
+  导入如下数据后，在播放后，不能 add scene
    {
   "meta": {
     "version": "2.0",
@@ -335,7 +335,31 @@
 
     <div id="id4Status">status:</div>
 
-    <script>// 修改后的播放控制函数
+    <script>
+    document.getElementById('addScene').addEventListener('click', () => {
+    // 暂停播放状态
+    if (isPlaying) togglePlayback();
+    
+    // 创建新场景并重置状态
+    const newScene = createScene();
+    scenes.splice(currentSceneIndex + 1, 0, newScene);
+    currentSceneIndex++;
+    
+    // 更新所有相关状态
+    updateSceneDurations();
+    updateSceneSelector();
+    sceneFrameCount = 0;
+    
+    // 重置音频状态
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+        audioPausePosition = 0;
+    }
+    
+    drawScene();
+});
+    // 修改后的播放控制函数
 let animationFrameId = null;
         // 新增音频相关全局变量
         let projectAudioURL = null;
@@ -384,47 +408,32 @@ function validateJSON(jsonString) {
     }
 }
 
-    function loadProject(data) {
-    // 验证数据结构
-    if (!data.scenes || !Array.isArray(data.scenes)) {
-        throw new Error('无效的项目文件格式');
-    }
-
-    projectAudioURL = data.audio || null;
-    // 转换函数字符串为可执行代码
-    data.scenes.forEach(scene => {
-        scene.elements.forEach(element => {
-            if (element.myDraw && typeof element.myDraw === 'string') {
-                try {
-                    // 转换字符串为函数
-                    element.myDraw = new Function('ctx', 'element', 'frameNumber', element.myDraw);
-                } catch (e) {
-                    console.warn('自定义函数解析失败:', e);
-                    element.myDraw = null;
-                }
-            }
-        });
-    });
-
-    // 更新应用状态
-    scenes = data.scenes;
-    currentSceneIndex = 0;
-    sceneFrameCount = 0;
-    
-    // 更新FPS设置
-    if (data.fps) {
-        fpsInput.value = data.fps;
-        fpsRange.value = data.fps;
-    }
-
-    // 更新场景相关状态
-    updateSceneDurations();
-    updateSceneSelector();
-    
-    // 重置播放状态
+function loadProject(data) {
+    // 暂停当前播放
     if (isPlaying) togglePlayback();
     
-    // 刷新界面
+    // 重置所有状态
+    scenes = [];
+    currentSceneIndex = 0;
+    sceneFrameCount = 0;
+    previousScenesFrames = 0;
+    totalFrames = 0;
+    
+    // 原有加载逻辑...
+    projectAudioURL = data.audio || null;
+    
+    // 深拷贝场景数据
+    data.scenes.forEach(scene => {
+        const newScene = {
+            ...scene,
+            elements: scene.elements.map(element => ({...element}))
+        };
+        scenes.push(newScene);
+    });
+
+    // 更新所有依赖状态
+    updateSceneDurations();
+    updateSceneSelector();
     drawScene();
 }
         let previousScenesFrames = 0;  // 当前场景之前的总帧数
@@ -1573,10 +1582,10 @@ function syncAnimationWithAudio() {
 
 
 document.getElementById('sceneSelector').addEventListener('change', (e) => {
-    if (isPlaying) togglePlayback(); // 切换场景时自动暂停
+    if (isPlaying) togglePlayback();
     currentSceneIndex = parseInt(e.target.value);
-    updateSceneDurations();
     sceneFrameCount = 0;
+    updateSceneDurations();
     drawScene();
 });
 
