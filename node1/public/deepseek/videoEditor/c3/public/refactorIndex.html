@@ -1,14 +1,14 @@
 <!-- 
 升级这个代码，
-  导入如下数据后，在播放时，播放声音
-  {
+  导入如下数据后，在播放后，不能 pause
+   {
   "meta": {
     "version": "2.0",
     "created": "2025-02-09T22:27:46.038Z",
     "totalFrames": 30,
     "totalScenes": 1
   },
-  “audio":"https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3",
+  "audio": "https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3",
   "scenes": [
     {
       "id": 1739139985159,
@@ -22,34 +22,7 @@
           "width": 252,
           "height": 174,
           "color": "#f9ace3",
-          "myDraw": "function anonymous(ctx,element,frameNumber\n) {\n// 在中心添加文字 \n                                        ctx.fillStyle = 'black';\n                                        ctx.font = '14px Arial';\n                                        ctx.textAlign = 'center';\n                                        ctx.fillText('Hello', element.x, element.y);\n"
-        },
-        {
-          "type": "circle",
-          "x": 353,
-          "y": 329,
-          "radius": 84.38009243891595,
-          "color": "#cf4858",
-          "myDraw": "function anonymous(ctx,element,frameNumber\n) {\n//  \n                                        ctx.fillStyle = 'gold';\n                                        ctx.beginPath();\n                                        ctx.arc(element.x, element.y, 10, 0, Math.PI*2);\n                                        ctx.fill();\n"
-        },
-        {
-          "type": "triangle",
-          "x1": 884,
-          "y1": 312,
-          "x2": 1031,
-          "y2": 312,
-          "x3": 957.5,
-          "y3": 185,
-          "color": "#b755da",
-          "myDraw": "function anonymous(ctx,element,frameNumber\n) {\n// 在中心添加文字 \n                                        ctx.fillStyle = 'black';\n                                        ctx.font = '14px Arial';\n                                        ctx.textAlign = 'center';\n                                        ctx.fillText('Hello', element.x, element.y);\n"
-        },
-        {
-          "type": "circle",
-          "x": 85,
-          "y": 252,
-          "radius": 65.55150646628955,
-          "color": "#7356bf",
-          "myDraw": null
+          "myDraw": "function anonymous(ctx,element,frameNumber\n) {\n// 在中心添加文字 \nctx.fillStyle = 'black';\nctx.font = '14px Arial';\nctx.textAlign = 'center';\nctx.fillText('Hello', element.x, element.y);\n}"
         }
       ],
       "duration": 30
@@ -362,7 +335,8 @@
 
     <div id="id4Status">status:</div>
 
-    <script>
+    <script>// 修改后的播放控制函数
+let animationFrameId = null;
         // 新增音频相关全局变量
         let projectAudioURL = null;
         let currentAudio = null;
@@ -1502,92 +1476,107 @@ function drawSelection(element) {
             }  
         }
 
-        function togglePlayback() {
+        
+function togglePlayback() {
     if (!isPlaying) {
         const fps = parseInt(fpsInput.value) || DEFAULT_FPS;
         const intervalTime = 1000 / fps;
+        
         // 音频控制逻辑
         if (projectAudioURL) {
-                    if (!currentAudio) {
-                        currentAudio = new Audio(projectAudioURL);
-                        currentAudio.currentTime = audioPausePosition;
-                    }
-                    const playPromise = currentAudio.play();
-                    
-                    playPromise.catch(error => {
-                        console.error('音频播放失败:', error);
-                        alert('音频播放需要用户交互，请先点击页面任意位置');
-                    });
-                    
-                    audioStartTime = performance.now() - (audioPausePosition * 1000);
-                }
+            if (!currentAudio) {
+                currentAudio = new Audio(projectAudioURL);
+                currentAudio.currentTime = audioPausePosition;
+            }
+            
+            // 添加时间更新监听器
+            currentAudio.addEventListener('timeupdate', syncAnimationWithAudio);
+            
+            const playPromise = currentAudio.play();
+            playPromise.catch(error => {
+                console.error('音频播放失败:', error);
+                alert('音频播放需要用户交互，请先点击页面任意位置');
+            });
+        }
 
         let lastTime = performance.now();
         
-        function playFrame() {
+        function playFrame(timestamp) {
             if (!isPlaying) return;
 
-            // 计算精确的音频同步时间
-            const audioTime = currentAudio ? currentAudio.currentTime : (performance.now() - audioStartTime) / 1000;
-            const targetFrame = Math.floor(audioTime * fps);
-            
-            // 使用音频时间驱动动画帧
-            if (currentAudio) {
-                const currentScene = scenes[currentSceneIndex];
-                if (sceneFrameCount >= currentScene.duration) {
-                    // 场景切换逻辑...
-                }
-                sceneFrameCount = Math.min(targetFrame - previousScenesFrames, currentScene.duration);
-            }
-            
-            const now = performance.now();
-            const elapsed = now - lastTime;
+            const elapsed = timestamp - lastTime;
             
             if (elapsed >= intervalTime) {
-                // 边界检查
-                if (sceneFrameCount >= scenes[currentSceneIndex].duration) {
-                    if (currentSceneIndex >= scenes.length - 1) {
-                        isPlaying = false;
-                        playPauseBtn.textContent = 'Play';
-                        return;
+                // 如果没有音频时使用普通帧推进
+                if (!currentAudio) {
+                    sceneFrameCount++;
+                    if (sceneFrameCount >= scenes[currentSceneIndex].duration) {
+                        if (currentSceneIndex >= scenes.length - 1) {
+                            togglePlayback();
+                            return;
+                        }
+                        currentSceneIndex++;
+                        sceneFrameCount = 0;
+                        updateSceneDurations();
+                        updateSceneSelector();
                     }
-                    // 切换到下一个场景
-                    currentSceneIndex++;
-                    updateSceneDurations();
-                    sceneFrameCount = 0;
-                    updateSceneSelector();
                 }
-                
-                sceneFrameCount++;
+
                 drawScene();
-                
-                lastTime = now - (elapsed % intervalTime);
+                lastTime = timestamp - (elapsed % intervalTime);
             }
-            requestAnimationFrame(playFrame);
+            animationFrameId = requestAnimationFrame(playFrame);
         }
         
         isPlaying = true;
         playPauseBtn.textContent = 'Pause';
-        requestAnimationFrame(playFrame);
+        animationFrameId = requestAnimationFrame(playFrame);
     } else {
-                // 暂停音频
-                if (currentAudio) {
-                    currentAudio.pause();
-                    audioPausePosition = currentAudio.currentTime;
-                    currentAudio = null;
-                }
+        // 暂停逻辑
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio.removeEventListener('timeupdate', syncAnimationWithAudio);
+            audioPausePosition = currentAudio.currentTime;
+        }
+        
         isPlaying = false;
         playPauseBtn.textContent = 'Play';
+        
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+        }
         drawScene();
     }
 }
 
-// 修改后的添加场景处理
-document.getElementById('addScene').addEventListener('click', () => {
-    scenes.push(createScene());
-    currentSceneIndex = scenes.length - 1;
-    updateSceneDurations(); // 新增更新调用
+
+function syncAnimationWithAudio() {
+    const currentTime = currentAudio.currentTime;
+    const targetFrame = Math.floor(currentTime * fpsInput.value);
+    
+    let accumulatedFrames = 0;
+    for (let i = 0; i < scenes.length; i++) {
+        if (accumulatedFrames + scenes[i].duration > targetFrame) {
+            currentSceneIndex = i;
+            sceneFrameCount = targetFrame - accumulatedFrames;
+            break;
+        }
+        accumulatedFrames += scenes[i].duration;
+    }
+    
+    updateSceneDurations();
     updateSceneSelector();
+    drawScene();
+}
+
+
+
+document.getElementById('sceneSelector').addEventListener('change', (e) => {
+    if (isPlaying) togglePlayback(); // 切换场景时自动暂停
+    currentSceneIndex = parseInt(e.target.value);
+    updateSceneDurations();
+    sceneFrameCount = 0;
     drawScene();
 });
 
