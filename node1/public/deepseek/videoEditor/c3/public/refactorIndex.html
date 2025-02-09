@@ -1,6 +1,6 @@
 <!-- 
 升级这个代码，
-Export Settings 添加json保存
+  添加json导入
 
 返回升级后完整可运行代码 
 -->
@@ -204,6 +204,12 @@ Export Settings 添加json保存
             color: #666;
             font-style: italic;
         }
+        pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
+        .string { color: green; }
+        .number { color: darkorange; }
+        .boolean { color: blue; }
+        .null { color: magenta; }
+        .key { color: red; }
     </style>
 </head>
 <body>
@@ -265,6 +271,8 @@ Export Settings 添加json保存
             <input type="range" id="fpsRange" min="1" max="100" value="1">
             <input type="number" id="fpsInput" min="1" max="100" value="1">
         </div>
+        <input type="file" id="importFile" accept=".json" hidden>
+        <button onclick="document.getElementById('importFile').click()">Import</button>
         <button id="export">Export</button>
         <button id="id4_create_video">genVideo</button> 
     </div>
@@ -298,7 +306,66 @@ Export Settings 添加json保存
 
     <div id="id4Status">status:</div>
 
-    <script> 
+    <script>
+     document.getElementById('importFile').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+    
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const data = JSON.parse(event.target.result);
+                loadProject(data);
+                alert('项目导入成功！');
+            } catch (error) {
+                console.error('导入失败:', error);
+                alert('文件解析失败，请检查文件格式');
+            }
+        };
+        reader.readAsText(file);
+    });
+    function loadProject(data) {
+    // 验证数据结构
+    if (!data.scenes || !Array.isArray(data.scenes)) {
+        throw new Error('无效的项目文件格式');
+    }
+
+    // 转换函数字符串为可执行代码
+    data.scenes.forEach(scene => {
+        scene.elements.forEach(element => {
+            if (element.myDraw && typeof element.myDraw === 'string') {
+                try {
+                    // 转换字符串为函数
+                    element.myDraw = new Function('ctx', 'element', 'frameNumber', element.myDraw);
+                } catch (e) {
+                    console.warn('自定义函数解析失败:', e);
+                    element.myDraw = null;
+                }
+            }
+        });
+    });
+
+    // 更新应用状态
+    scenes = data.scenes;
+    currentSceneIndex = 0;
+    sceneFrameCount = 0;
+    
+    // 更新FPS设置
+    if (data.fps) {
+        fpsInput.value = data.fps;
+        fpsRange.value = data.fps;
+    }
+
+    // 更新场景相关状态
+    updateSceneDurations();
+    updateSceneSelector();
+    
+    // 重置播放状态
+    if (isPlaying) togglePlayback();
+    
+    // 刷新界面
+    drawScene();
+}
         let previousScenesFrames = 0;  // 当前场景之前的总帧数
         let sceneFrameCount = 0;       // 当前场景内的帧数
         let totalFrames = 0;           // 所有场景总帧数（自动计算）
@@ -660,12 +727,12 @@ fpsInput.value = DEFAULT_FPS;
         // 初始化模态窗口交互
         const modal = document.getElementById('export-modal');
         const closeBtn = modal.querySelector('.close');
+        const exportJson = document.getElementById('export-json');
         
         // 导出按钮点击处理
         document.getElementById('export').addEventListener('click', () => {
             const exportData = getExportData();
-            const exportJson = document.getElementById('export-json');
-            exportJson.textContent = JSON.stringify(exportData, null, 2);
+            exportJson.innerHTML = syntaxHighlight(exportData); // 添加语法高亮 
             
             // 强制重置位置
             const modalContent = document.querySelector('#export-modal .modal-content');
@@ -675,6 +742,29 @@ fpsInput.value = DEFAULT_FPS;
             
             modal.style.display = 'block';
         });
+// 添加JSON语法高亮显示
+function syntaxHighlight(json) {
+    if (typeof json != 'string') {
+        json = JSON.stringify(json, null, 2);
+    }
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, 
+        function (match) {
+            let cls = 'number';
+            if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                    cls = 'key';
+                } else {
+                    cls = 'string';
+                }
+            } else if (/true|false/.test(match)) {
+                cls = 'boolean';
+            } else if (/null/.test(match)) {
+                cls = 'null';
+            }
+            return '<span class="' + cls + '">' + match + '</span>';
+        });
+}
 
         document.getElementById('saveJson').addEventListener('click', () => {
             const exportData = getExportData();
