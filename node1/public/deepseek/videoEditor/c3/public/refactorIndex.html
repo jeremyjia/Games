@@ -13,7 +13,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Editor</title>
     <style> 
-        #myDraw-code {
+        #id_4_myDraw_code_TA {
             width: 100%;
             height: 120px;
             margin: 10px 0;
@@ -195,6 +195,8 @@
     </style>
 </head>
 <body>
+    <script src="https://littleflute.github.io/JavaScript/w3.js" ></script>
+    <script src="https://littleflute.github.io/Games/js/blclass.js" ></script> 
     <div id="color-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">元素属性设置</div>
@@ -207,12 +209,9 @@
                 <div class="code-hint">
                     自定义绘制函数（直接写函数体代码，可用参数：ctx, element）<br>
                     示例：<br>
-                    ctx.fillStyle = 'gold';<br>
-                    ctx.beginPath();<br>
-                    ctx.arc(element.x, element.y, 10, 0, Math.PI*2);<br>
-                    ctx.fill();
+                    <div id="id_4_myDraw_code_Examples"></div>>
                 </div>
-                <textarea id="myDraw-code" 
+                <textarea id="id_4_myDraw_code_TA" 
                     placeholder="ctx.fillStyle = 'red';\n// 在此输入绘制代码..."></textarea>
             </div>
             <div class="color-controls">
@@ -320,7 +319,7 @@
             if (selectedElement) {
                 selectedElement.color = colorPicker.value;
                 // 构建自定义函数字符串 
-                selectedElement.myDraw = document.getElementById('myDraw-code').value;
+                selectedElement.myDraw = document.getElementById('id_4_myDraw_code_TA').value;
                 drawScene();
             }
             colorModal.style.display = 'none';
@@ -460,7 +459,41 @@
                 // 解析现有自定义函数
                 const funcStr = selectedElement.myDraw || '';
                 const match = funcStr.match(/function\s*\(.*?\)\s*{([\s\S]*)}/);
-                document.getElementById('myDraw-code').value = match ? match[1].trim() : '';
+                const ta = document.getElementById('id_4_myDraw_code_TA');
+                ta.value = funcStr;
+                const _setExamples = function(){
+                    const tb = document.getElementById("id_4_myDraw_code_Examples");
+                    tb.innerHTML = "";
+                    const exs = [
+                        {
+                            "funBody":`// 在中心添加文字 
+                                        ctx.fillStyle = 'black';
+                                        ctx.font = '14px Arial';
+                                        ctx.textAlign = 'center';
+                                        ctx.fillText('Hello', element.x, element.y);`
+                        },
+                        {
+                            "funBody":`//  
+                                        ctx.fillStyle = 'gold';
+                                        ctx.beginPath();
+                                        ctx.arc(element.x, element.y, 10, 0, Math.PI*2);
+                                        ctx.fill();`
+                        }
+                    ];
+                    let n = 0;
+                    for(i in exs){
+                        n++;
+                        var btn= blo0.blBtn(tb,tb.id+"exampeCode"+n,n,blGrey[4]);
+                        btn.onclick = function(_btn,_s,_i){
+                            return function(){
+                                ta.value = _s[_i].funBody;
+                            }
+                        }(btn,exs,i);
+
+                    }
+
+
+                }();
                 colorModal.style.display = 'block';
             }
         });
