@@ -1,6 +1,6 @@
 <!-- 
 升级这个代码，
-让对象可选择，移动
+让对象 line 可变大小
 返回升级后完整可运行代码 
 -->
 
@@ -11,6 +11,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Editor</title>
     <style>
+    .control-point.line-endpoint {
+            background: #ff9900;
+        }
     .selected-element {
         outline: 2px dashed #ff0000;
         outline-offset: 2px;
@@ -487,11 +490,24 @@ fpsInput.value = DEFAULT_FPS;
                 }
             }
             static updateLine(line, control, dx, dy) {
-                line.x1 += dx;
-                line.y1 += dy;
-                line.x2 += dx;
-                line.y2 += dy;
+                switch(control) {
+                    case 'start':
+                        line.x1 += dx;
+                        line.y1 += dy;
+                        break;
+                    case 'end':
+                        line.x2 += dx;
+                        line.y2 += dy;
+                        break;
+                    case 'move':
+                        line.x1 += dx;
+                        line.y1 += dy;
+                        line.x2 += dx;
+                        line.y2 += dy;
+                        break;
+                }
             }
+
             static updateTriangle(tri, control, dx, dy) {
                 tri.x1 += dx;
                 tri.y1 += dy;
@@ -561,7 +577,23 @@ fpsInput.value = DEFAULT_FPS;
                 return null;
             }
 
+            // 修改后的线条碰撞检测
             static lineHitTest(line, x, y) {
+                const threshold = 8;
+                
+                // 检测起点
+                if (Math.abs(x - line.x1) < threshold && 
+                    Math.abs(y - line.y1) < threshold) {
+                    return 'start';
+                }
+                
+                // 检测终点
+                if (Math.abs(x - line.x2) < threshold && 
+                    Math.abs(y - line.y2) < threshold) {
+                    return 'end';
+                }
+                
+                // 检测线段本身
                 const d = this.pointToLineDistance(x, y, line);
                 return d < 5 ? 'move' : null;
             }
@@ -867,8 +899,9 @@ function drawSelection(element) {
             ctx.lineTo(element.x2, element.y2);
             ctx.stroke();
             drawControlPoints([
-                [(element.x1 + element.x2)/2, (element.y1 + element.y2)/2] // Center
-            ]);
+                    [element.x1, element.y1], // 起点
+                    [element.x2, element.y2]  // 终点
+                ], 'line-endpoint');
             break;
         case 'triangle':
             ctx.beginPath();
@@ -886,15 +919,22 @@ function drawSelection(element) {
     
     ctx.restore();
 }
-// 新增控制点绘制函数
-function drawControlPoints(points) {
-    ctx.fillStyle = '#2196F3';
-    points.forEach(([x, y]) => {
-        ctx.beginPath();
-        ctx.arc(x, y, 3, 0, Math.PI*2);
-        ctx.fill();
-    });
-}
+        // 修改后的控制点绘制
+        function drawControlPoints(points, cssClass = '') {
+            const originalFill = ctx.fillStyle;
+            
+            points.forEach(([x, y]) => {
+                ctx.beginPath();
+                ctx.arc(x, y, 6, 0, Math.PI*2);
+                ctx.fillStyle = cssClass === 'line-endpoint' ? '#ff9900' : '#2196F3';
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+            
+            ctx.fillStyle = originalFill;
+        }
 
         // 新增视频模态控制逻辑
         const videoModal = document.getElementById('id4_video_modal');
