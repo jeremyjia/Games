@@ -1,6 +1,13 @@
 <!-- 
 升级这个代码，
-fps设置为30，每帧duration=30,播放时，观测到，场景没变
+播放时 ：
+
+以30FPS运行
+
+每个场景持续30帧（约1秒）
+
+没有正确切换场景并更新画布
+
 返回升级后完整可运行代码 
 -->
 
@@ -348,6 +355,12 @@ function enableDrag(modalContent) {
         let playInterval = null;
         let isPlaying = false;
 
+        // 确保FPS控制初始化正确
+        const fpsRange = document.getElementById('fpsRange');
+const fpsInput = document.getElementById('fpsInput');
+fpsRange.value = DEFAULT_FPS;
+fpsInput.value = DEFAULT_FPS;
+
         // 初始化模态窗口交互
         const modal = document.getElementById('export-modal');
         const closeBtn = modal.querySelector('.close');
@@ -458,12 +471,7 @@ function enableDrag(modalContent) {
                 return Math.hypot(x - xx, y - yy);
             }
         }
-
-        const fpsRange = document.getElementById('fpsRange');
-        const fpsInput = document.getElementById('fpsInput');
-        fpsRange.value = DEFAULT_FPS;
-        fpsInput.value = DEFAULT_FPS;
-
+ 
         const playPauseBtn = document.getElementById('playPause');
 
         function createRandomShape() {
@@ -684,13 +692,46 @@ function drawSceneWithTemp() {
             }
         }
 
-        function drawScene() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const currentScene = scenes[currentSceneIndex];
-            ctx.fillStyle = currentScene.background;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            currentScene.elements.forEach(drawElement);
+        // 优化后的场景绘制函数
+function drawScene() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (!scenes[currentSceneIndex]) return;
+    
+    const currentScene = scenes[currentSceneIndex];
+    ctx.fillStyle = currentScene.background;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    currentScene.elements.forEach(element => {
+        ctx.fillStyle = element.color;
+        ctx.strokeStyle = element.color;
+        ctx.lineWidth = 2;
+        
+        switch(element.type) {
+            case 'rectangle':
+                ctx.fillRect(element.x, element.y, element.width, element.height);
+                break;
+            case 'circle':
+                ctx.beginPath();
+                ctx.arc(element.x, element.y, element.radius, 0, Math.PI * 2);
+                ctx.fill();
+                break;
+            case 'line':
+                ctx.beginPath();
+                ctx.moveTo(element.x1, element.y1);
+                ctx.lineTo(element.x2, element.y2);
+                ctx.stroke();
+                break;
+            case 'triangle':
+                ctx.beginPath();
+                ctx.moveTo(element.x1, element.y1);
+                ctx.lineTo(element.x2, element.y2);
+                ctx.lineTo(element.x3, element.y3);
+                ctx.closePath();
+                ctx.fill();
+                break;
         }
+    });
+}
 
         // 新增视频模态控制逻辑
         const videoModal = document.getElementById('id4_video_modal');
@@ -772,27 +813,36 @@ function drawSceneWithTemp() {
                 const intervalTime = 1000 / fps;
                 
                 let currentFrameCount = 0;
-                let currentSceneIndex = 0; // 重置为第一个场景
+                let lastTime = performance.now();
 
-                playInterval = setInterval(() => {
-                    const currentScene = scenes[currentSceneIndex];
-                    // 更新状态并检查是否应该切换场景
-                    if (++currentFrameCount >= currentScene.duration) {
-                        currentSceneIndex = (currentSceneIndex + 1) % scenes.length;
-                        currentFrameCount = 0;
-                        updateSceneSelector();
-                    }
+                function playFrame() {
+                    if (!isPlaying) return;
                     
-                    drawScene();
-                }, intervalTime);
-                
-                playPauseBtn.textContent = 'Pause';
+                    const now = performance.now();
+                    const elapsed = now - lastTime;
+                    
+                    if (elapsed >= intervalTime) {
+                        const currentScene = scenes[currentSceneIndex];
+                        currentFrameCount++;
+                        
+                        // 场景切换逻辑
+                        if (currentFrameCount >= currentScene.duration) {
+                            currentSceneIndex = (currentSceneIndex + 1) % scenes.length;
+                            currentFrameCount = 0;
+                            updateSceneSelector();
+                        }
+                        
+                        drawScene();
+                        lastTime = now - (elapsed % intervalTime);
+                    }
+                    requestAnimationFrame(playFrame);
+                } 
                 isPlaying = true;
-            } else {
-                clearInterval(playInterval);
-                playInterval = null;
-                playPauseBtn.textContent = 'Play';
+                playPauseBtn.textContent = 'Pause';
+                requestAnimationFrame(playFrame);
+            } else { 
                 isPlaying = false;
+                playPauseBtn.textContent = 'Play';
             }
         }
 
@@ -918,25 +968,31 @@ function drawSceneWithTemp() {
             currentShape = null;
         });
 
-       // 主初始化函数
-       function init() {
-            initCanvas();
-            scenes = [createScene()];
-            currentSceneIndex = 0;
-            updateSceneSelector();
-            drawScene();
-            initCanvasEvents();
-
-            ['Rectangle', 'Circle', 'Line', 'Triangle'].forEach(shape => {
-                document.getElementById(`id4${shape}`).onclick = () => currentShape = shape.toLowerCase();
-            });
-
-            window.addEventListener('resize', () => {
-                initCanvas();
-                drawScene();
-            });
-        }
-
+// 改进的临时元素绘制
+function handleMove(x, y) {
+    if (!isDrawing) return;
+    tempElement = createTempElement(x, y);
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawScene();
+    
+    if (tempElement) {
+        ctx.save();
+        ctx.globalAlpha = 0.5;
+        ctx.setLineDash([5, 5]);
+        drawElement(tempElement);
+        ctx.restore();
+    }
+}
+// 初始化函数保持原有逻辑
+function init() {
+    initCanvas();
+    scenes = [createScene()];
+    currentSceneIndex = 0;
+    updateSceneSelector();
+    drawScene();
+    initCanvasEvents();
+}
 
 
         document.getElementById('id4generateVideo').addEventListener('click', async () => {
@@ -972,6 +1028,8 @@ function drawSceneWithTemp() {
                 statusElement.textContent = '生成失败: ' + error.message;
             }
         });
+
+
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
