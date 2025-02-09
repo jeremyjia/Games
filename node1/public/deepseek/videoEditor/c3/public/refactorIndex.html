@@ -1,7 +1,6 @@
 <!-- 
 升级这个代码，
-临时图形绘制功能，在拖动过程中实时显示图形预览 failed.
-点下鼠标只是绘制了背景。已有元素和临时元素都没有换。放下鼠标以后就全部出来了。
+currentScene not defined. if (currentFrameCount >= currentScene.duration)
 返回升级后完整可运行代码 
 -->
 
@@ -12,6 +11,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Editor</title>
     <style>
+    .scene-duration-control {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-left: 10px;
+    }
+    .scene-duration-control input {
+        width: 60px;
+        padding: 4px;
+    }
         button {
             min-width: 60px;
             padding: 8px 12px;
@@ -131,12 +140,16 @@
     </style>
 </head>
 <body>
-    <!-- HTML结构保持不变 -->
     <div id="toolbar">
         <button id="addScene">Add Scene</button>
         <button id="delete-scene">Delete Scene</button>
         <select id="sceneSelector"></select>
+        <div class="scene-duration-control">
+            <span>Duration:</span>
+            <input type="number" id="sceneDuration" min="1" value="30">
+        </div>
     </div>
+
 
     <div id="id4ObjectsToolbar" class="c_floating_toolbar" style="top:200px;">
         <button id="id4Line">Line</button>
@@ -340,7 +353,10 @@ function enableDrag(modalContent) {
         document.getElementById('export').addEventListener('click', () => {
             const currentFPS = parseInt(fpsInput.value) || 1;
             const exportData = {
-                scenes,
+                scenes: scenes.map(scene => ({
+                    ...scene,
+                    elements: scene.elements.map(element => ({...element}))
+                })),
                 fps: currentFPS
             };
             const exportJson = document.getElementById('export-json');
@@ -537,7 +553,8 @@ function enableDrag(modalContent) {
                 id: Date.now(),
                 name: `Scene ${scenes.length + 1}`,
                 background: '#' + Math.floor(Math.random()*16777215).toString(16),
-                elements: []
+                elements: [],
+                duration: 30  // 默认持续30帧
             };
         }
 
@@ -546,9 +563,21 @@ function enableDrag(modalContent) {
             selector.innerHTML = scenes.map((scene, index) => 
                 `<option value="${index}">${scene.name}</option>`
             ).join('');
-            selector.value = currentSceneIndex;
+            selector.value = currentSceneIndex; 
+            
+            // 更新持续时间输入框
+            if (scenes[currentSceneIndex]) {
+                document.getElementById('sceneDuration').value = scenes[currentSceneIndex].duration;
+            }
         }
-       
+       // 监听持续时间输入变化
+       document.getElementById('sceneDuration').addEventListener('change', function() {
+            const duration = parseInt(this.value) || 1;
+            if (scenes[currentSceneIndex]) {
+                scenes[currentSceneIndex].duration = duration;
+                updateSceneSelector();
+            }
+        });
         // 创建临时元素
         function createTempElement(endX, endY) {
             const base = { type: currentShape, color: '#FF000080' };
@@ -769,9 +798,18 @@ function drawSceneWithTemp() {
                 const fps = parseInt(fpsInput.value) || 1;
                 const intervalTime = 1000 / fps;
                 
+                let currentFrameCount = 0;
+                let currentSceneIndex = 0; // 重置为第一个场景
+
                 playInterval = setInterval(() => {
-                    currentSceneIndex = (currentSceneIndex + 1) % scenes.length;
-                    updateSceneSelector();
+                    const currentScene = scenes[currentSceneIndex];
+                    // 更新状态并检查是否应该切换场景
+                    if (++currentFrameCount >= currentScene.duration) {
+                        currentSceneIndex = (currentSceneIndex + 1) % scenes.length;
+                        currentFrameCount = 0;
+                        updateSceneSelector();
+                    }
+                    
                     drawScene();
                 }, intervalTime);
                 
