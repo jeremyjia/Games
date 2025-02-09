@@ -1,6 +1,13 @@
 <!-- 
 升级这个代码，
-dbgInf 添加 视频所有帧数，当前场景号
+ctx.fillText(
+                `Global: ${frameInfo.global}/${totalFrames} | ` +
+                `Scene: ${currentSceneIndex + 1}/${scenes.length} | ` +
+                `Frame: ${frameInfo.scene}/${currentScene.duration}`,
+                canvas.width/2, 
+                20
+            );
+            无论何时分子只是反映视频当前实际上的数字跟播放次数无关。。
 
 返回升级后完整可运行代码 
 -->
@@ -295,29 +302,33 @@ dbgInf 添加 视频所有帧数，当前场景号
     <div id="id4Status">status:</div>
 
     <script> 
-        // 在全局添加帧计数器
-        let globalFrameCount = 0;
-        let sceneFrameCount = 0;
-        let sceneStartFrame = 0;
+        let previousScenesFrames = 0;  // 当前场景之前的总帧数
+        let sceneFrameCount = 0;       // 当前场景内的帧数
+        let totalFrames = 0;           // 所有场景总帧数（自动计算）
+// 更新场景持续时间相关数据
+function updateSceneDurations() {
+    totalFrames = scenes.reduce((sum, scene) => sum + scene.duration, 0);
+    previousScenesFrames = scenes.slice(0, currentSceneIndex).reduce((sum, scene) => sum + scene.duration, 0);
+}
         // 新增颜色编辑相关变量
         const colorModal = document.getElementById('color-modal');
         const colorPicker = document.getElementById('color-picker');
         const confirmColorBtn = document.getElementById('confirm-color');
         const cancelColorBtn = document.getElementById('cancel-color');
-        function deleteSelectedElement() {
-            if (selectedElement) {
-                const currentScene = scenes[currentSceneIndex];
-                const index = currentScene.elements.indexOf(selectedElement);
-                if (index !== -1) {
-                    currentScene.elements.splice(index, 1);
-                    selectedElement = null;
-                    drawScene({
-                        global: globalFrameCount,
-                        scene: sceneFrameCount
-                    });
-                }
-            }
+      
+        // 删除元素时需要更新绘制
+function deleteSelectedElement() {
+    if (selectedElement) {
+        const currentScene = scenes[currentSceneIndex];
+        const index = currentScene.elements.indexOf(selectedElement);
+        if (index !== -1) {
+            currentScene.elements.splice(index, 1);
+            selectedElement = null;
+            drawScene(); // 直接调用无需参数
         }
+    }
+}
+
 
         // 初始化删除按钮事件
         document.getElementById('id4Delete').addEventListener('click', deleteSelectedElement);
@@ -961,14 +972,15 @@ fpsInput.value = DEFAULT_FPS;
             document.getElementById('sceneDuration').value = scenes[currentSceneIndex]?.duration || FRAME_DURATION;
         }
              
-       // 监听持续时间输入变化
-       document.getElementById('sceneDuration').addEventListener('change', function() {
-            const duration = parseInt(this.value) || 1;
-            if (scenes[currentSceneIndex]) {
-                scenes[currentSceneIndex].duration = duration;
-                updateSceneSelector();
-            }
-        });
+      // 在相关操作后更新帧数计算
+document.getElementById('sceneDuration').addEventListener('change', function() {
+    const duration = Math.max(1, parseInt(this.value) || 1);
+    scenes[currentSceneIndex].duration = duration;
+    updateSceneDurations();
+    sceneFrameCount = Math.min(sceneFrameCount, duration); // 保持当前帧数有效
+    drawScene();
+});
+
         // 创建临时元素
         function createTempElement(endX, endY) {
             const base = { type: currentShape, color: '#FF000080' };
@@ -1089,36 +1101,38 @@ function drawSceneWithTemp() {
         }
 
 
-        function drawScene(frameInfo = { global: 0, scene: 0 }) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (!scenes[currentSceneIndex]) return;
-            
-            const currentScene = scenes[currentSceneIndex];
-            ctx.fillStyle = currentScene.background;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        function drawScene() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (!scenes[currentSceneIndex]) return;
+    
+    const currentScene = scenes[currentSceneIndex];
+    ctx.fillStyle = currentScene.background;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 计算总帧数
-            const totalFrames = scenes.reduce((sum, scene) => sum + scene.duration, 0);
-            
-            // 绘制调试信息
-            ctx.fillStyle = 'black';
-            ctx.font = '14px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(
-                `Global: ${frameInfo.global}/${totalFrames} | ` +
-                `Scene: ${currentSceneIndex + 1}/${scenes.length} | ` +
-                `Frame: ${frameInfo.scene}/${currentScene.duration}`,
-                canvas.width/2, 
-                20
-            );
+    // 计算实际全局位置
+    const globalPosition = previousScenesFrames + sceneFrameCount;
+    
+    // 绘制调试信息
+    ctx.fillStyle = 'black';
+    ctx.font = '14px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(
+        `Global: ${globalPosition}/${totalFrames} | ` +
+        `Scene: ${currentSceneIndex + 1}/${scenes.length} | ` +
+        `Frame: ${sceneFrameCount}/${currentScene.duration}`,
+        canvas.width/2, 
+        20
+    );
 
-            currentScene.elements.forEach(element => {
-                drawElement(element, frameInfo.scene);
-                if (element === selectedElement) {
-                    drawSelection(element);
-                }
-            });
+    currentScene.elements.forEach(element => {
+        drawElement(element, sceneFrameCount);
+        if (element === selectedElement) {
+            drawSelection(element);
         }
+    });
+}
+
+
         // 新增选中状态绘制函数
 function drawSelection(element) {
     ctx.save();
@@ -1262,82 +1276,79 @@ function drawSelection(element) {
         }
 
         function togglePlayback() {
-            if (!isPlaying) {
-                const fps = parseInt(fpsInput.value) || DEFAULT_FPS;
-                const intervalTime = 1000 / fps;
-                let lastTime = performance.now();
-                sceneStartFrame = globalFrameCount;
-
-                function playFrame() {
-                    if (!isPlaying) return;
-                    
-                    const now = performance.now();
-                    const elapsed = now - lastTime;
-                    
-                    if (elapsed >= intervalTime) {
-                        globalFrameCount++;
-                        sceneFrameCount = globalFrameCount - sceneStartFrame;
-                        
-                        const currentScene = scenes[currentSceneIndex];
-                        if (sceneFrameCount >= currentScene.duration) {
-                            currentSceneIndex = (currentSceneIndex + 1) % scenes.length;
-                            sceneStartFrame = globalFrameCount;
-                            sceneFrameCount = 0;
-                            updateSceneSelector();
-                        }
-                        
-                        drawScene({
-                            global: globalFrameCount,
-                            scene: sceneFrameCount
-                        });
-                        
-                        lastTime = now - (elapsed % intervalTime);
+    if (!isPlaying) {
+        const fps = parseInt(fpsInput.value) || DEFAULT_FPS;
+        const intervalTime = 1000 / fps;
+        let lastTime = performance.now();
+        
+        function playFrame() {
+            if (!isPlaying) return;
+            
+            const now = performance.now();
+            const elapsed = now - lastTime;
+            
+            if (elapsed >= intervalTime) {
+                // 边界检查
+                if (sceneFrameCount >= scenes[currentSceneIndex].duration) {
+                    if (currentSceneIndex >= scenes.length - 1) {
+                        isPlaying = false;
+                        playPauseBtn.textContent = 'Play';
+                        return;
                     }
-                    requestAnimationFrame(playFrame);
+                    // 切换到下一个场景
+                    currentSceneIndex++;
+                    updateSceneDurations();
+                    sceneFrameCount = 0;
+                    updateSceneSelector();
                 }
                 
-                isPlaying = true;
-                playPauseBtn.textContent = 'Pause';
-                requestAnimationFrame(playFrame);
-            } else {
-                isPlaying = false;
-                playPauseBtn.textContent = 'Play';
-                drawScene({
-                    global: globalFrameCount,
-                    scene: sceneFrameCount
-                });
+                sceneFrameCount++;
+                drawScene();
+                
+                lastTime = now - (elapsed % intervalTime);
             }
+            requestAnimationFrame(playFrame);
         }
+        
+        isPlaying = true;
+        playPauseBtn.textContent = 'Pause';
+        requestAnimationFrame(playFrame);
+    } else {
+        isPlaying = false;
+        playPauseBtn.textContent = 'Play';
+        drawScene();
+    }
+}
 
-        document.getElementById('addScene').addEventListener('click', () => {
-            scenes.push(createScene());
-            currentSceneIndex = scenes.length - 1;
-            updateSceneSelector();
-            drawScene({
-                global: globalFrameCount,
-                scene: sceneFrameCount
-            });
-        });
+// 修改后的添加场景处理
+document.getElementById('addScene').addEventListener('click', () => {
+    scenes.push(createScene());
+    currentSceneIndex = scenes.length - 1;
+    updateSceneDurations(); // 新增更新调用
+    updateSceneSelector();
+    drawScene();
+});
 
-        // 修改场景切换相关函数
-        document.getElementById('sceneSelector').addEventListener('change', (e) => {
-            currentSceneIndex = e.target.value;
-            sceneStartFrame = globalFrameCount;
-            sceneFrameCount = 0;
-            drawScene({
-                global: globalFrameCount,
-                scene: sceneFrameCount
-            });
-        });
+
+        // 修改后的场景切换事件处理
+document.getElementById('sceneSelector').addEventListener('change', (e) => {
+    currentSceneIndex = parseInt(e.target.value);
+    updateSceneDurations(); // 更新帧数计算
+    sceneFrameCount = 0;    // 重置当前场景帧数
+    drawScene();            // 直接调用无需参数
+});
+
 
         document.getElementById('delete-scene').addEventListener('click', () => {
-            if (scenes.length > 1) {
-                scenes.splice(currentSceneIndex, 1);
-                currentSceneIndex = Math.max(0, currentSceneIndex - 1);
-                updateSceneSelector();
-                drawScene();
-            }
-        });
+    if (scenes.length > 1) {
+        scenes.splice(currentSceneIndex, 1);
+        currentSceneIndex = Math.max(0, currentSceneIndex - 1);
+        updateSceneDurations();
+        sceneFrameCount = 0;
+        updateSceneSelector();
+        drawScene();
+    }
+});
 
         document.getElementById('id4Forest').addEventListener('click', () => {
             if (scenes.length === 0) return;
@@ -1456,13 +1467,14 @@ function handleMove(x, y) {
         ctx.restore();
     }
 }
+
+
+// 初始化时需要更新帧数计算
 function init() {    
-    globalFrameCount = 0;
-    sceneFrameCount = 0;
-    sceneStartFrame = 0;
     initCanvas();
     scenes = [createScene()];
     currentSceneIndex = 0;
+    updateSceneDurations(); // 新增初始化调用
     updateSceneSelector();
     drawScene();
     initCanvasEvents();
