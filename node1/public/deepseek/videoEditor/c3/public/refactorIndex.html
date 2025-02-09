@@ -1,13 +1,6 @@
 <!-- 
 升级这个代码，
-播放时 ：
-
-以30FPS运行
-
-每个场景持续30帧（约1秒）
-
-没有正确切换场景并更新画布
-
+让对象可选择，移动
 返回升级后完整可运行代码 
 -->
 
@@ -18,6 +11,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Editor</title>
     <style>
+    .selected-element {
+        outline: 2px dashed #ff0000;
+        outline-offset: 2px;
+    }
+    .control-point {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: #fff;
+        border: 2px solid #2196F3;
+        border-radius: 50%;
+        pointer-events: none;
+    }
     .scene-duration-control {
         display: inline-flex;
         align-items: center;
@@ -210,10 +216,14 @@
     <div id="id4Status">status:</div>
 
     <script> 
-    // 初始化配置
-    const DEFAULT_FPS = 30;
-    const FRAME_DURATION = 30;
-    let tempElement = null; // 用于存储临时图形
+        let selectedElement = null;
+        let selectedControl = null;
+        let isDraggingElement = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        const DEFAULT_FPS = 30;
+        const FRAME_DURATION = 30;
+        let tempElement = null; // 用于存储临时图形
 
     function getCanvasCoordinates(clientX, clientY) {
             const rect = canvas.getBoundingClientRect();
@@ -226,32 +236,61 @@
     }
 
  
-// 事件处理初始化
-function initCanvasEvents() {
-            const handleStart = (x, y) => {
-                if (!currentShape) return;
-                isDrawing = true;
-                startX = x;
-                startY = y;
-            };
+    // 事件处理初始化
+    function initCanvasEvents() {
+        const handleStart = (x, y) => { 
+            const pos = {x, y};
+            // 优先处理元素选择
+            if (!currentShape) {
+                const hit = detectHit(pos.x, pos.y);
+                if (hit) {
+                    selectedElement = hit.element;
+                    selectedControl = hit.control;
+                    isDraggingElement = true;
+                    dragStartX = pos.x;
+                    dragStartY = pos.y;
+                    drawScene();
+                    return;
+                }
+            }
+            if (!currentShape) return;
+            isDrawing = true;
+            startX = x;
+            startY = y;
+        };
 
-            const handleMove = (x, y) => {
-                if (!isDrawing) return;
-                tempElement = createTempElement(x, y);
-                drawSceneWithTemp();
-            };
-
-            const handleEnd = (x, y) => {
-                if (!isDrawing) return;
-                isDrawing = false;
+        const handleMove = (x, y) => {
+            const pos = {x, y};
+            // 处理元素拖拽
+            if (isDraggingElement && selectedElement) {
+                const dx = pos.x - dragStartX;
+                const dy = pos.y - dragStartY;
                 
-                if (tempElement) {
+                updateElementPosition(selectedElement, selectedControl, dx, dy);
+            
+                dragStartX = pos.x;
+                dragStartY = pos.y;
+                drawScene();
+                return;
+            }
+            if (!isDrawing) return;
+            tempElement = createTempElement(x, y);
+            drawSceneWithTemp();
+        };
+
+        const handleEnd = (x, y) => {
+            isDraggingElement = false;
+            selectedControl = null;
+            if (!isDrawing) return;
+            isDrawing = false;
+                
+            if (tempElement) {
                     tempElement.color = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
                     scenes[currentSceneIndex].elements.push(tempElement);
                     tempElement = null;
-                }
-                drawScene();
-            };
+            }
+            drawScene();
+        };
 
             // 事件处理器
             const eventHandler = {
@@ -286,8 +325,11 @@ function initCanvasEvents() {
                 eventHandler.move(e);
             }, { passive: false });
             canvas.addEventListener('touchend', eventHandler.end);
-        }
-
+    }
+    // 新增元素位置更新函数
+    function updateElementPosition(element, control, dx, dy) {
+        ShapeEditor.updateElement(element, control, dx, dy);
+    }
 function enableDrag(modalContent) {
     const header = modalContent.querySelector('.modal-header');
     let isDragging = false;
@@ -338,6 +380,18 @@ function enableDrag(modalContent) {
 
     document.addEventListener('mouseup', stopDrag);
     document.addEventListener('touchend', stopDrag);
+}
+// 新增碰撞检测函数
+function detectHit(x, y) {
+    const currentScene = scenes[currentSceneIndex];
+    for (let i = currentScene.elements.length - 1; i >= 0; i--) {
+        const element = currentScene.elements[i];
+        const control = ShapeEditor.hitTest(element, x, y);
+        if (control) {
+            return { element, control };
+        }
+    }
+    return null;
 }
  // 初始化模态拖动
         const exportModalContent = document.querySelector('#export-modal .modal-content');
@@ -404,6 +458,75 @@ fpsInput.value = DEFAULT_FPS;
                     case 'triangle': return this.triangleHitTest(element, x, y);
                 }
                 return null;
+            }
+            static updateElement(element, control, dx, dy) {
+                switch(element.type) {
+                    case 'rectangle':
+                        this.updateRectangle(element, control, dx, dy);
+                        break;
+                    case 'circle':
+                        this.updateCircle(element, control, dx, dy);
+                        break;
+                    case 'line':
+                        this.updateLine(element, control, dx, dy);
+                        break;
+                    case 'triangle':
+                        this.updateTriangle(element, control, dx, dy);
+                        break;
+                }
+            }
+            static updateCircle(circle, control, dx, dy) {
+                switch(control) {
+                    case 'move':
+                        circle.x += dx;
+                        circle.y += dy;
+                        break;
+                    case 'radius':
+                        circle.radius += Math.hypot(dx, dy) * (dx > 0 ? 1 : -1);
+                        break;
+                }
+            }
+            static updateLine(line, control, dx, dy) {
+                line.x1 += dx;
+                line.y1 += dy;
+                line.x2 += dx;
+                line.y2 += dy;
+            }
+            static updateTriangle(tri, control, dx, dy) {
+                tri.x1 += dx;
+                tri.y1 += dy;
+                tri.x2 += dx;
+                tri.y2 += dy;
+                tri.x3 += dx;
+                tri.y3 += dy;
+            }
+            static updateRectangle(rect, control, dx, dy) {
+                switch(control) {
+                    case 'move':
+                        rect.x += dx;
+                        rect.y += dy;
+                        break;
+                    case 'nw':
+                        rect.x += dx;
+                        rect.y += dy;
+                        rect.width -= dx;
+                        rect.height -= dy;
+                        break;
+                    case 'ne':
+                        rect.y += dy;
+                        rect.width += dx;
+                        rect.height -= dy;
+                        break;
+                    case 'sw':
+                        rect.x += dx;
+                        rect.width -= dx;
+                        rect.height += dy;
+                        break;
+                    case 'se':
+                        rect.width += dx;
+                        rect.height += dy;
+                        break;
+                }
             }
 
             static rectHitTest(rect, x, y) {
@@ -702,34 +825,74 @@ function drawScene() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     currentScene.elements.forEach(element => {
-        ctx.fillStyle = element.color;
-        ctx.strokeStyle = element.color;
-        ctx.lineWidth = 2;
+        // 绘制元素本体
+        drawElement(element);
         
-        switch(element.type) {
-            case 'rectangle':
-                ctx.fillRect(element.x, element.y, element.width, element.height);
-                break;
-            case 'circle':
-                ctx.beginPath();
-                ctx.arc(element.x, element.y, element.radius, 0, Math.PI * 2);
-                ctx.fill();
-                break;
-            case 'line':
-                ctx.beginPath();
-                ctx.moveTo(element.x1, element.y1);
-                ctx.lineTo(element.x2, element.y2);
-                ctx.stroke();
-                break;
-            case 'triangle':
-                ctx.beginPath();
-                ctx.moveTo(element.x1, element.y1);
-                ctx.lineTo(element.x2, element.y2);
-                ctx.lineTo(element.x3, element.y3);
-                ctx.closePath();
-                ctx.fill();
-                break;
+        // 绘制选中状态
+        if (element === selectedElement) {
+            drawSelection(element);
         }
+    });
+}
+// 新增选中状态绘制函数
+function drawSelection(element) {
+    ctx.save();
+    ctx.strokeStyle = '#ff0000';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+    
+    switch(element.type) {
+        case 'rectangle':
+            ctx.strokeRect(element.x-2, element.y-2, element.width+4, element.height+4);
+            drawControlPoints([
+                [element.x, element.y], // NW
+                [element.x + element.width, element.y], // NE
+                [element.x, element.y + element.height], // SW
+                [element.x + element.width, element.y + element.height], // SE
+                [element.x + element.width/2, element.y + element.height/2] // Center
+            ]);
+            break;
+        case 'circle':
+            ctx.beginPath();
+            ctx.arc(element.x, element.y, element.radius + 2, 0, Math.PI*2);
+            ctx.stroke();
+            drawControlPoints([
+                [element.x + element.radius, element.y], // Radius
+                [element.x, element.y] // Center
+            ]);
+            break;
+        case 'line':
+            ctx.beginPath();
+            ctx.moveTo(element.x1, element.y1);
+            ctx.lineTo(element.x2, element.y2);
+            ctx.stroke();
+            drawControlPoints([
+                [(element.x1 + element.x2)/2, (element.y1 + element.y2)/2] // Center
+            ]);
+            break;
+        case 'triangle':
+            ctx.beginPath();
+            ctx.moveTo(element.x1, element.y1);
+            ctx.lineTo(element.x2, element.y2);
+            ctx.lineTo(element.x3, element.y3);
+            ctx.closePath();
+            ctx.stroke();
+            drawControlPoints([
+                [(element.x1 + element.x2 + element.x3)/3, 
+                 (element.y1 + element.y2 + element.y3)/3] // Center
+            ]);
+            break;
+    }
+    
+    ctx.restore();
+}
+// 新增控制点绘制函数
+function drawControlPoints(points) {
+    ctx.fillStyle = '#2196F3';
+    points.forEach(([x, y]) => {
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, Math.PI*2);
+        ctx.fill();
     });
 }
 
@@ -984,7 +1147,6 @@ function handleMove(x, y) {
         ctx.restore();
     }
 }
-// 初始化函数保持原有逻辑
 function init() {
     initCanvas();
     scenes = [createScene()];
@@ -993,7 +1155,6 @@ function init() {
     drawScene();
     initCanvasEvents();
 }
-
 
         document.getElementById('id4generateVideo').addEventListener('click', async () => {
             const statusElement = document.getElementById('generation-status');
