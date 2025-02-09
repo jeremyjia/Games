@@ -11,6 +11,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Editor</title>
     <style> 
+        #id4Delete {
+            background: #ff4444;
+            color: white;
+        }
         #color-modal {
             display: none;
             position: fixed;
@@ -211,6 +215,7 @@
         <button id="id4Circle">Circle</button>
         <button id="id4Rectangle">Rectangle</button>
         <button id="id4Triangle">Triangle</button>
+        <button id="id4Delete">Delete</button>
     </div> 
 
     <div id="id4SceneToolbar" class="c_floating_toolbar" style="top:100px;">
@@ -263,7 +268,27 @@
         const colorPicker = document.getElementById('color-picker');
         const confirmColorBtn = document.getElementById('confirm-color');
         const cancelColorBtn = document.getElementById('cancel-color');
+        function deleteSelectedElement() {
+            if (selectedElement) {
+                const currentScene = scenes[currentSceneIndex];
+                const index = currentScene.elements.indexOf(selectedElement);
+                if (index !== -1) {
+                    currentScene.elements.splice(index, 1);
+                    selectedElement = null;
+                    drawScene();
+                }
+            }
+        }
 
+        // 初始化删除按钮事件
+        document.getElementById('id4Delete').addEventListener('click', deleteSelectedElement);
+
+        // 添加键盘删除支持
+        document.addEventListener('keydown', (e) => {
+            if ((e.key === 'Delete' || e.key === 'Backspace') && selectedElement) {
+                deleteSelectedElement();
+            }
+        });
         // 初始化颜色编辑模态拖动
         enableDrag(colorModal.querySelector('.modal-content'));
 
@@ -318,6 +343,12 @@
     function initCanvasEvents() {
         const handleStart = (x, y) => { 
             const pos = {x, y};
+            // 点击空白处取消选择
+            const hit = detectHit(pos.x, pos.y);
+            if (!hit) {
+                selectedElement = null;
+                drawScene();
+            }
             // 优先处理元素选择
             if (!currentShape) {
                 const hit = detectHit(pos.x, pos.y);
