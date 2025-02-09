@@ -1,6 +1,8 @@
 <!-- 
 升级这个代码，
-双击对象时，弹出一个模态对话框，可编辑对象的颜色
+双击对象时，弹出一个模态对话框，出来可以设置颜色，
+还有一个文本框可以给对象设置一个“myDraw"的属性，其值是“function(ctx,element){/* 自画内容 */}"，
+让对象可以自己绘制一些信息，比如某个circle对象可以再画任意它想画的图形，由函数内容决定
 返回升级后完整可运行代码 
 -->
 
@@ -11,6 +13,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Editor</title>
     <style> 
+        #myDraw-code {
+            width: 100%;
+            height: 120px;
+            margin: 10px 0;
+            font-family: monospace;
+            resize: vertical;
+        }
         #id4Delete {
             background: #ff4444;
             color: white;
@@ -188,17 +197,31 @@
 <body>
     <div id="color-modal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">Edit Color</div>
+            <div class="modal-header">元素属性设置</div>
             <span class="close">&times;</span>
-            <div style="margin: 20px 0;">
+            <div style="margin: 15px 0;">
+                <label>颜色设置：</label>
                 <input type="color" id="color-picker" style="width: 100%; height: 40px;">
             </div>
+            <div>
+                <div class="code-hint">
+                    自定义绘制函数（直接写函数体代码，可用参数：ctx, element）<br>
+                    示例：<br>
+                    ctx.fillStyle = 'gold';<br>
+                    ctx.beginPath();<br>
+                    ctx.arc(element.x, element.y, 10, 0, Math.PI*2);<br>
+                    ctx.fill();
+                </div>
+                <textarea id="myDraw-code" 
+                    placeholder="ctx.fillStyle = 'red';\n// 在此输入绘制代码..."></textarea>
+            </div>
             <div class="color-controls">
-                <button id="confirm-color">OK</button>
-                <button id="cancel-color">Cancel</button>
+                <button id="confirm-color">应用</button>
+                <button id="cancel-color">取消</button>
             </div>
         </div>
     </div>
+
     <div id="toolbar">
         <button id="addScene">Add Scene</button>
         <button id="delete-scene">Delete Scene</button>
@@ -296,6 +319,8 @@
         confirmColorBtn.addEventListener('click', () => {
             if (selectedElement) {
                 selectedElement.color = colorPicker.value;
+                // 构建自定义函数字符串 
+                selectedElement.myDraw = document.getElementById('myDraw-code').value;
                 drawScene();
             }
             colorModal.style.display = 'none';
@@ -431,7 +456,11 @@
             const hit = detectHit(x, y);
             if (hit && hit.element) {
                 selectedElement = hit.element;
-                colorPicker.value = selectedElement.color;
+                colorPicker.value = selectedElement.color || '#000000';
+                // 解析现有自定义函数
+                const funcStr = selectedElement.myDraw || '';
+                const match = funcStr.match(/function\s*\(.*?\)\s*{([\s\S]*)}/);
+                document.getElementById('myDraw-code').value = match ? match[1].trim() : '';
                 colorModal.style.display = 'block';
             }
         });
@@ -902,6 +931,7 @@ fpsInput.value = DEFAULT_FPS;
 
         // 图形元素绘制函数
         function drawElement(element) {
+            // 原始绘制逻辑
             ctx.fillStyle = element.color;
             ctx.strokeStyle = element.color;
             ctx.lineWidth = 2;
@@ -930,8 +960,23 @@ fpsInput.value = DEFAULT_FPS;
                     ctx.fill();
                     break;
             }
+
+            // 执行自定义绘制函数
+            if (element.myDraw) {
+                try {
+                    const customDraw = new Function('ctx', 'element', element.myDraw);
+                    customDraw(ctx, element);
+                } catch (e) {
+                    console.error('Custom draw element.myDraw:', element.myDraw);
+                    console.error('Custom draw error:', e);
+                }
+            }
+
+            // 绘制选中状态
+            if (element === selectedElement) {
+                drawSelection(element);
+            }
         }
-        
 function drawSceneWithTemp() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
