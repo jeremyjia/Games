@@ -1,36 +1,7 @@
 <!-- 
 升级这个代码，
-  导入如下数据后，在播放后，不能 add scene
-   {
-  "meta": {
-    "version": "2.0",
-    "created": "2025-02-09T22:27:46.038Z",
-    "totalFrames": 30,
-    "totalScenes": 1
-  },
-  "audio": "https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3",
-  "scenes": [
-    {
-      "id": 1739139985159,
-      "name": "Scene 1",
-      "background": "#41176b",
-      "elements": [
-        {
-          "type": "rectangle",
-          "x": 524,
-          "y": 178,
-          "width": 252,
-          "height": 174,
-          "color": "#f9ace3",
-          "myDraw": "function anonymous(ctx,element,frameNumber\n) {\n// 在中心添加文字 \nctx.fillStyle = 'black';\nctx.font = '14px Arial';\nctx.textAlign = 'center';\nctx.fillText('Hello', element.x, element.y);\n}"
-        }
-      ],
-      "duration": 30
-    }
-  ],
-  "fps": 30
-}
-
+  程序初始时，设
+  "audio": "https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3"
 返回升级后完整可运行代码 
 -->
 
@@ -840,26 +811,25 @@ function syntaxHighlight(json) {
             const exportData = getExportData();
             saveAsJson(exportData);
         });
-// 提取数据生成函数
-function getExportData() {
-            return {
-                meta: {
-                    version: "2.0",
-                    created: new Date().toISOString(),
-                    totalFrames: totalFrames,
-                    totalScenes: scenes.length
-                },
-                audio: projectAudioURL,  // 新增音频字段
-                scenes: scenes.map(scene => ({
-                    ...scene,
-                    elements: scene.elements.map(element => ({
-                        ...element,
-                        myDraw: element.myDraw ? element.myDraw.toString() : null
-                    }))
-                })),
-                fps: parseInt(fpsInput.value) || 30
-            };
-        }
+        function getExportData() {
+    return {
+        meta: {
+            version: "2.0",
+            created: new Date().toISOString(),
+            totalFrames: totalFrames,
+            totalScenes: scenes.length
+        },
+        audio: projectAudioURL,  // 自动包含默认音频
+        scenes: scenes.map(scene => ({
+            ...scene,
+            elements: scene.elements.map(element => ({
+                ...element,
+                myDraw: element.myDraw ? element.myDraw.toString() : null
+            }))
+        })),
+        fps: parseInt(fpsInput.value) || 30
+    };
+}
 
 
 // 新增保存功能实现
@@ -1734,16 +1704,19 @@ function init() {
     initCanvas();
     scenes = [createScene()];
     currentSceneIndex = 0;
-    updateSceneDurations(); // 新增初始化调用
+    
+    // 设置默认音频
+    projectAudioURL = "https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3";
+    
+    updateSceneDurations();
     updateSceneSelector();
     drawScene();
     initCanvasEvents();
     
-    projectAudioURL = null;
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio = null;
-            }
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+    }
 }
 
         document.getElementById('id4generateVideo').addEventListener('click', async () => {
