@@ -66,7 +66,7 @@ class MusicNotationEditor {
                 cursor: 'pointer'
             });
             btn.onclick = () => {
-                this.textarea.value += ex.text + ' ';
+                this.textarea.value = ex.text;
                 this.drawNotation();
             };
             toolbar.appendChild(btn);
@@ -265,16 +265,22 @@ class MusicNotationEditor {
         this.windows.forEach((win, index) => {
             const btn = document.createElement('button');
             btn.textContent = `窗口 ${index + 1}`;
+            // 初始颜色设置
+            const isVisible = win.windowElement.style.display !== 'none';
             Object.assign(btn.style, {
                 padding: '6px 12px',
-                backgroundColor: '#607D8B',
+                backgroundColor: isVisible ? '#607D8B' : '#9E9E9E',
                 color: 'white',
                 border: 'none',
                 borderRadius: '4px',
                 cursor: 'pointer'
             });
-            btn.onclick = () => win.windowElement.style.display = 
-                win.windowElement.style.display === 'none' ? 'block' : 'none';
+
+            btn.onclick = () => {
+                const newVisibility = win.windowElement.style.display === 'none' ? 'block' : 'none';
+                win.windowElement.style.display = newVisibility;
+                btn.style.backgroundColor = newVisibility === 'block' ? '#607D8B' : '#9E9E9E';
+            };
             toolbar.appendChild(btn);
         });
 
