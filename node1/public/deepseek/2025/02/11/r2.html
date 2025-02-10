@@ -9,10 +9,12 @@
 <script>
 class MusicNotationEditor {
     static windows = [];
+    static windowCount = 0;
     
     constructor() {
-        this.id = Date.now() + Math.random();
+        this.id = ++MusicNotationEditor.windowCount;
         this.windowElement = null;
+        this.titleBar = null;
         this.textarea = null;
         this.canvas = null;
         this.ctx = null;
@@ -34,12 +36,39 @@ class MusicNotationEditor {
             borderRadius: '10px',
             boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
             zIndex: 1000,
-            cursor: 'move',
             overflow: 'hidden'
         });
+        // 标题栏
+        this.titleBar = document.createElement('div');
+        this.titleBar.textContent = `窗口 ${this.id}`;
+        Object.assign(this.titleBar.style, {
+            padding: '8px 12px',
+            backgroundColor: '#455A64',
+            color: 'white',
+            cursor: 'move',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            userSelect: 'none'
+        });
+        // 关闭按钮
+        const closeButton = document.createElement('button');
+        closeButton.textContent = '×';
+        Object.assign(closeButton.style, {
+            background: 'none',
+            border: 'none',
+            color: 'white',
+            cursor: 'pointer',
+            fontSize: '20px',
+            padding: '0 8px',
+            lineHeight: '1'
+        });
+        closeButton.onclick = () => this.closeWindow();
+        closeButton.addEventListener('mousedown', e => e.stopPropagation());
+        this.titleBar.appendChild(closeButton);
 
-        // 工具栏
-        const toolbar = document.createElement('div');
+       // 工具栏
+       const toolbar = document.createElement('div');
         Object.assign(toolbar.style, {
             padding: '10px',
             backgroundColor: '#607D8B',
@@ -54,7 +83,6 @@ class MusicNotationEditor {
             {label: '示例2', text: "1' 2'' 3''' 4, 5,, 6,,,"},
             {label: '示例3', text: '4/ 5// 6,// 7,,// 1---'}
         ];
-
         examples.forEach(ex => {
             const btn = document.createElement('button');
             btn.textContent = ex.label;
@@ -101,13 +129,14 @@ class MusicNotationEditor {
         this.ctx = this.canvas.getContext('2d');
 
         // 组装元素
+        this.windowElement.appendChild(this.titleBar);
         this.windowElement.appendChild(toolbar);
         this.windowElement.appendChild(this.textarea);
         this.windowElement.appendChild(this.canvas);
         document.body.appendChild(this.windowElement);
 
         // 拖动事件
-        this.windowElement.addEventListener('mousedown', this.startDrag.bind(this));
+        this.titleBar.addEventListener('mousedown', this.startDrag.bind(this));
         document.addEventListener('mousemove', this.drag.bind(this));
         document.addEventListener('mouseup', this.stopDrag.bind(this));
 
@@ -121,6 +150,12 @@ class MusicNotationEditor {
         const rect = this.windowElement.getBoundingClientRect();
         this.offsetX = e.clientX - rect.left;
         this.offsetY = e.clientY - rect.top;
+        
+        // 置顶窗口
+        MusicNotationEditor.windows.forEach(win => {
+            win.windowElement.style.zIndex = 1000;
+        });
+        this.windowElement.style.zIndex = 1001;
     }
 
     drag(e) {
@@ -133,6 +168,15 @@ class MusicNotationEditor {
         this.isDragging = false;
     }
 
+    closeWindow() {
+        this.windowElement.remove();
+        const index = MusicNotationEditor.windows.indexOf(this);
+        if (index !== -1) {
+            MusicNotationEditor.windows.splice(index, 1);
+        }
+        MusicNotationEditor.updateWindowList();
+    }
+    
     drawNotation() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         const notes = this.parseInput(this.textarea.value);
