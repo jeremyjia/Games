@@ -104,9 +104,9 @@ class MusicNotationEditor {
             toolbar.appendChild(btn);
         });
 
-        // 新增按钮：复制到新窗口
-        const copyButton = document.createElement('button');
-        copyButton.textContent = '复制到新窗口';
+        // 新增按钮：建立新实例
+        const copyButton  = document.createElement('button');
+        copyButton.textContent = '建立新实例';
         Object.assign(copyButton.style, {
             padding: '6px 12px',
             borderRadius: '4px',
@@ -302,12 +302,12 @@ class MusicNotationEditor {
         if (note.lines > 0) {
             this.ctx.fillStyle = '#37474F';
             const lineY = y + 12;
-            const lineHeight = 4;
+            const lineHeight = 2;
             
             for (let i = 0; i < note.lines; i++) {
                 this.ctx.fillRect(
-                    x - 8 + (i * 3), 
-                    lineY + (i % 2 === 0 ? 0 : 3),
+                    x - 8, 
+                    lineY + (i % 2) * 3,   
                     20, 
                     lineHeight
                 );
