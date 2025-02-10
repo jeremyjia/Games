@@ -27,6 +27,7 @@ class MusicNotationEditor {
             {label: '示例3', text: '4/ 5// 6,// 7,,// 1---'}
         ];
         this.exampleContainer = null;  // 示例按钮容器
+        this.currentExampleButton = null; // 跟踪当前选中的示例按钮
         this.createWindow();
     }
     // 创建示例按钮的独立方法
@@ -41,6 +42,13 @@ class MusicNotationEditor {
                         cursor: 'pointer'
                     });
                     btn.onclick = () => {
+                        // 清除之前按钮的高亮
+                        if (this.currentExampleButton) {
+                            this.currentExampleButton.style.backgroundColor = '#CFD8DC';
+                        }
+                        // 设置当前按钮高亮
+                        btn.style.backgroundColor = '#607D8B';
+                        this.currentExampleButton = btn;
                         this.textarea.value = text;
                         this.drawNotation();
                     };
@@ -295,14 +303,13 @@ class MusicNotationEditor {
     }
 
     drawNote(x, y, note) {
-        // 绘制音符数字
         this.ctx.fillStyle = '#263238';
         this.ctx.font = '20px Arial';
         const textWidth = this.ctx.measureText(note.value).width;
         this.ctx.fillText(note.value, x, y);
-        const centerX = x + textWidth / 2;  // 计算文本中心
+        const centerX = x + textWidth / 2;
 
-        // 八度标记（居中处理）
+        // 处理八度点
         const dotSize = 3;
         if (note.octave > 0) {
             for (let i = 0; i < note.octave; i++) {
@@ -311,23 +318,30 @@ class MusicNotationEditor {
                 this.ctx.fill();
             }
         } else if (note.octave < 0) {
+            let baseY;
+            if (note.lines > 0) {
+                const lineY = y + 12;
+                const maxLineY = lineY + (note.lines - 1) * 3;
+                baseY = maxLineY + 5; // 横线下方5像素
+            } else {
+                baseY = y + 5; // 无横线时默认位置
+            }
             for (let i = 0; i < Math.abs(note.octave); i++) {
                 this.ctx.beginPath();
-                this.ctx.arc(centerX, y + 5 + (i * 8), dotSize, 0, Math.PI * 2);
+                this.ctx.arc(centerX, baseY + i * 8, dotSize, 0, Math.PI * 2);
                 this.ctx.fill();
             }
         }
 
-        // 时值线
+        // 时值线（已修复线条位置）
         if (note.lines > 0) {
             this.ctx.fillStyle = '#37474F';
             const lineY = y + 12;
             const lineHeight = 2;
-            
             for (let i = 0; i < note.lines; i++) {
                 this.ctx.fillRect(
                     x - 8, 
-                    lineY + (i % 2) * 3,   
+                    lineY + i * 3, // 正确计算每根线的位置
                     20, 
                     lineHeight
                 );
@@ -341,7 +355,6 @@ class MusicNotationEditor {
             this.ctx.fill();
         }
     }
-
     static createNewWindow() {
         new MusicNotationEditor();
     }
