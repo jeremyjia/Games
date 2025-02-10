@@ -27,10 +27,12 @@ class MusicNotationEditor {
     createWindow() {
         // 窗口容器
         this.windowElement = document.createElement('div');
+        const randomLeft = Math.floor(Math.random() * (window.innerWidth - 420)) + 20;
+        const randomTop = Math.floor(Math.random() * (window.innerHeight - 420)) + 20;
         Object.assign(this.windowElement.style, {
             position: 'fixed',
-            left: '100px',
-            top: '100px',
+            left: `${randomLeft}px`,
+            top: `${randomTop}px`,
             width: '400px',
             backgroundColor: '#f5f5f5',
             borderRadius: '10px',
@@ -38,6 +40,7 @@ class MusicNotationEditor {
             zIndex: 1000,
             overflow: 'hidden'
         });
+
         // 标题栏
         this.titleBar = document.createElement('div');
         this.titleBar.textContent = `窗口 ${this.id}`;
@@ -51,6 +54,7 @@ class MusicNotationEditor {
             alignItems: 'center',
             userSelect: 'none'
         });
+
         // 关闭按钮
         const closeButton = document.createElement('button');
         closeButton.textContent = '×';
@@ -67,8 +71,8 @@ class MusicNotationEditor {
         closeButton.addEventListener('mousedown', e => e.stopPropagation());
         this.titleBar.appendChild(closeButton);
 
-       // 工具栏
-       const toolbar = document.createElement('div');
+        // 工具栏
+        const toolbar = document.createElement('div');
         Object.assign(toolbar.style, {
             padding: '10px',
             backgroundColor: '#607D8B',
@@ -99,6 +103,39 @@ class MusicNotationEditor {
             };
             toolbar.appendChild(btn);
         });
+
+        // 新增按钮：复制到新窗口
+        const copyButton = document.createElement('button');
+        copyButton.textContent = '复制到新窗口';
+        Object.assign(copyButton.style, {
+            padding: '6px 12px',
+            borderRadius: '4px',
+            border: 'none',
+            backgroundColor: '#CFD8DC',
+            cursor: 'pointer'
+        });
+        copyButton.onclick = () => {
+            const newWindow = new MusicNotationEditor();
+            newWindow.textarea.value = this.textarea.value;
+            newWindow.drawNotation();
+        };
+        toolbar.appendChild(copyButton);
+
+        // 新增按钮：清空
+        const clearButton = document.createElement('button');
+        clearButton.textContent = '清空';
+        Object.assign(clearButton.style, {
+            padding: '6px 12px',
+            borderRadius: '4px',
+            border: 'none',
+            backgroundColor: '#CFD8DC',
+            cursor: 'pointer'
+        });
+        clearButton.onclick = () => {
+            this.textarea.value = '';
+            this.drawNotation();
+        };
+        toolbar.appendChild(clearButton);
 
         // 文本输入框
         this.textarea = document.createElement('textarea');
@@ -176,7 +213,7 @@ class MusicNotationEditor {
         }
         MusicNotationEditor.updateWindowList();
     }
-    
+
     drawNotation() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         const notes = this.parseInput(this.textarea.value);
