@@ -21,9 +21,31 @@ class MusicNotationEditor {
         this.isDragging = false;
         this.offsetX = 0;
         this.offsetY = 0;
+        this.examples = [  // 实例属性存储示例
+            {label: '示例1', text: '1 2 3 4 5 6 7 0'},
+            {label: '示例2', text: "1' 2'' 3''' 4, 5,, 6,,,"},
+            {label: '示例3', text: '4/ 5// 6,// 7,,// 1---'}
+        ];
+        this.exampleContainer = null;  // 示例按钮容器
         this.createWindow();
     }
-
+    // 创建示例按钮的独立方法
+    createExampleButton(label, text) {
+                    const btn = document.createElement('button');
+                    btn.textContent = label;
+                    Object.assign(btn.style, {
+                        padding: '6px 12px',
+                        borderRadius: '4px',
+                        border: 'none',
+                        backgroundColor: '#CFD8DC',
+                        cursor: 'pointer'
+                    });
+                    btn.onclick = () => {
+                        this.textarea.value = text;
+                        this.drawNotation();
+                    };
+                return btn;
+    }
     createWindow() {
         // 窗口容器
         this.windowElement = document.createElement('div');
@@ -71,7 +93,7 @@ class MusicNotationEditor {
         closeButton.addEventListener('mousedown', e => e.stopPropagation());
         this.titleBar.appendChild(closeButton);
 
-        // 工具栏
+        
         const toolbar = document.createElement('div');
         Object.assign(toolbar.style, {
             padding: '10px',
@@ -80,32 +102,21 @@ class MusicNotationEditor {
             gap: '8px',
             alignItems: 'center'
         });
-
-        // 示例按钮
-        const examples = [
-            {label: '示例1', text: '1 2 3 4 5 6 7 0'},
-            {label: '示例2', text: "1' 2'' 3''' 4, 5,, 6,,,"},
-            {label: '示例3', text: '4/ 5// 6,// 7,,// 1---'}
-        ];
-        examples.forEach(ex => {
-            const btn = document.createElement('button');
-            btn.textContent = ex.label;
-            Object.assign(btn.style, {
-                padding: '6px 12px',
-                borderRadius: '4px',
-                border: 'none',
-                backgroundColor: '#CFD8DC',
-                cursor: 'pointer'
-            });
-            btn.onclick = () => {
-                this.textarea.value = ex.text;
-                this.drawNotation();
-            };
-            toolbar.appendChild(btn);
+        
+        // 示例按钮容器
+        this.exampleContainer = document.createElement('div');
+        this.exampleContainer.style.display = 'flex';
+        this.exampleContainer.style.gap = '8px';
+        
+        // 初始化示例按钮
+        this.examples.forEach(ex => {
+            const btn = this.createExampleButton(ex.label, ex.text);
+            this.exampleContainer.appendChild(btn);
         });
+        toolbar.appendChild(this.exampleContainer);
 
-        // 新增按钮：建立新实例
-        const copyButton  = document.createElement('button');
+         
+        const copyButton = document.createElement('button');
         copyButton.textContent = '建立新实例';
         Object.assign(copyButton.style, {
             padding: '6px 12px',
@@ -115,11 +126,18 @@ class MusicNotationEditor {
             cursor: 'pointer'
         });
         copyButton.onclick = () => {
-            const newWindow = new MusicNotationEditor();
-            newWindow.textarea.value = this.textarea.value;
-            newWindow.drawNotation();
+            const currentText = this.textarea.value;
+            const newLabel = `示例${this.examples.length + 1}`;
+            const newExample = { 
+                label: newLabel, 
+                text: currentText 
+            };
+            this.examples.push(newExample);
+            const newButton = this.createExampleButton(newLabel, currentText);
+            this.exampleContainer.appendChild(newButton);
         };
         toolbar.appendChild(copyButton);
+        
 
         // 新增按钮：清空
         const clearButton = document.createElement('button');
@@ -277,23 +295,25 @@ class MusicNotationEditor {
     }
 
     drawNote(x, y, note) {
-        // 音符数字
+        // 绘制音符数字
         this.ctx.fillStyle = '#263238';
         this.ctx.font = '20px Arial';
+        const textWidth = this.ctx.measureText(note.value).width;
         this.ctx.fillText(note.value, x, y);
+        const centerX = x + textWidth / 2;  // 计算文本中心
 
-        // 八度标记
+        // 八度标记（居中处理）
         const dotSize = 3;
         if (note.octave > 0) {
             for (let i = 0; i < note.octave; i++) {
                 this.ctx.beginPath();
-                this.ctx.arc(x + 15, y - 18 - (i * 8), dotSize, 0, Math.PI * 2);
+                this.ctx.arc(centerX, y - 18 - (i * 8), dotSize, 0, Math.PI * 2);
                 this.ctx.fill();
             }
         } else if (note.octave < 0) {
             for (let i = 0; i < Math.abs(note.octave); i++) {
                 this.ctx.beginPath();
-                this.ctx.arc(x + 15, y + 5 + (i * 8), dotSize, 0, Math.PI * 2);
+                this.ctx.arc(centerX, y + 5 + (i * 8), dotSize, 0, Math.PI * 2);
                 this.ctx.fill();
             }
         }
