@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <button onclick="MusicNotationSystem.createWindow()">新建乐谱窗口</button>
+
+<script>
+class MusicNotationSystem {
+    constructor() {
+        this.window = document.createElement('div');
+        this.canvas = document.createElement('canvas');
+        this.input = document.createElement('textarea');
+        this.isDragging = false;
+        this.offsetX = 0;
+        this.offsetY = 0;
+        this.initWindow();
+    }
+
+    initWindow() {
+        // 窗口样式
+        Object.assign(this.window.style, {
+            position: 'fixed',
+            left: `${Math.random()*300}px`,
+            top: `${Math.random()*300}px`,
+            width: '320px',
+            background: 'linear-gradient(145deg, #f0f0f0, #ffffff)',
+            borderRadius: '10px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+            padding: '15px',
+            cursor: 'move',
+            zIndex: 1000
+        });
+
+        // 输入框样式
+        Object.assign(this.input.style, {
+            width: '100%',
+            height: '80px',
+            marginBottom: '10px',
+            padding: '8px',
+            borderRadius: '6px',
+            border: '1px solid #ddd',
+            fontFamily: 'Arial',
+            resize: 'vertical'
+        });
+
+        // 画布设置
+        this.canvas.width = 300;
+        this.canvas.height = 120;
+        Object.assign(this.canvas.style, {
+            border: '1px solid #ccc',
+            borderRadius: '6px',
+            backgroundColor: 'white'
+        });
+
+        // 组装元素
+        this.window.appendChild(this.input);
+        this.window.appendChild(this.canvas);
+        document.body.appendChild(this.window);
+
+        // 事件监听
+        this.input.addEventListener('input', () => this.drawNotation());
+        this.window.addEventListener('mousedown', e => this.startDrag(e));
+        document.addEventListener('mousemove', e => this.doDrag(e));
+        document.addEventListener('mouseup', () => this.stopDrag());
+    }
+
+    startDrag(e) {
+        this.isDragging = true;
+        const rect = this.window.getBoundingClientRect();
+        this.offsetX = e.clientX - rect.left;
+        this.offsetY = e.clientY - rect.top;
+        this.window.style.zIndex = ++MusicNotationSystem.zIndex;
+    }
+
+    doDrag(e) {
+        if (this.isDragging) {
+            this.window.style.left = `${e.clientX - this.offsetX}px`;
+            this.window.style.top = `${e.clientY - this.offsetY}px`;
+        }
+    }
+
+    stopDrag() {
+        this.isDragging = false;
+    }
+
+    parseInput(text) {
+        const notes = [];
+        let currentBeat = 0;
+        let measure = [];
+        
+        const tokens = text.match(/(\d[\d',/-]*\.?)|(\s+)/g) || [];
+        
+        tokens.forEach(token => {
+            if (/\S/.test(token)) {
+                let note = { 
+                    value: token.trim(),
+                    duration: 1,
+                    dots: (token.match(/\./g) || []).length,
+                    octave: 0,
+                    type: 'quarter'
+                };
+
+                // 解析八度
+                note.octave = (token.match(/'/g) || []).length - (token.match(/,/g) || []).length;
+
+                // 解析时值
+                if (token.includes('//')) {
+                    note.duration = 0.25;
+                    note.type = '16th';
+                } else if (token.includes('/')) {
+                    note.duration = 0.5;
+                    note.type = '8th';
+                } else if (token.includes('---')) {
+                    note.duration = 4;
+                    note.type = 'whole';
+                } else if (token.includes('-')) {
+                    note.duration = 2;
+                    note.type = 'half';
+                }
+
+                // 处理附点
+                note.duration *= (1 + 0.5 * note.dots);
+
+                // 分小节
+                if (currentBeat + note.duration > 4) {
+                    notes.push(measure);
+                    measure = [];
+                    currentBeat = 0;
+                }
+                measure.push(note);
+                currentBeat += note.duration;
+            }
+        });
+        if (measure.length) notes.push(measure);
+        return notes;
+    }
+
+    drawNotation() {
+        const ctx = this.canvas.getContext('2d');
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        const measures = this.parseInput(this.input.value);
+        let x = 20;
+        let y = 60;
+
+        measures.forEach(measure => {
+            measure.forEach(note => {
+                // 绘制数字
+                ctx.fillStyle = '#333';
+                ctx.font = '20px Arial';
+                ctx.fillText(note.value[0], x, y);
+
+                // 绘制八度点
+                if (note.octave > 0) {
+                    ctx.beginPath();
+                    for (let i = 0; i < Math.abs(note.octave); i++) {
+                        ctx.arc(x + 8, y - 15 - i*8, 1.5, 0, Math.PI*2);
+                    }
+                    ctx.fill();
+                } else if (note.octave < 0) {
+                    ctx.beginPath();
+                    for (let i = 0; i < Math.abs(note.octave); i++) {
+                        ctx.arc(x + 8, y + 5 + i*8, 1.5, 0, Math.PI*2);
+                    }
+                    ctx.fill();
+                }
+
+                // 绘制时值符号
+                if (note.type === '8th') {
+                    ctx.fillRect(x-2, y+5, 20, 2);
+                } else if (note.type === '16th') {
+                    ctx.fillRect(x-2, y+5, 20, 2);
+                    ctx.fillRect(x-2, y+10, 20, 2);
+                }
+
+                x += 30;
+            });
+            
+            // 绘制小节线
+            ctx.strokeStyle = '#666';
+            ctx.beginPath();
+            ctx.moveTo(x+5, y-30);
+            ctx.lineTo(x+5, y+30);
+            ctx.stroke();
+            x += 20;
+        });
+    }
+
+    static zIndex = 1000;
+    static createWindow() {
+        new MusicNotationSystem();
+    }
+}
+
+// 初始化基础样式
+const style = document.createElement('style');
+style.textContent = `
+    body { 
+        margin: 20px; 
+        background: #f5f5f5; 
+        font-family: Arial;
+    }
+    button {
+        padding: 12px 24px;
+        background: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    button:hover { background: #45a049; }
+`;
+document.head.appendChild(style);
+</script>
+</body>
+</html>
