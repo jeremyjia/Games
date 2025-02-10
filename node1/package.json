@@ -18,6 +18,7 @@
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "d3": "^7.4.4",
+    "docx": "^9.1.1",
     "docxtemplater": "^3.59.0",
     "express": "^4.21.2",
     "express-openapi-validator": "^4.13.5",

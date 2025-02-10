@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<button onclick="MusicNotationEditor.createNewWindow()">新建窗口</button>
+
+<script>
+class MusicNotationEditor {
+    static windows = [];
+    
+    constructor() {
+        this.id = Date.now() + Math.random();
+        this.windowElement = null;
+        this.textarea = null;
+        this.canvas = null;
+        this.ctx = null;
+        this.isDragging = false;
+        this.offsetX = 0;
+        this.offsetY = 0;
+        this.createWindow();
+    }
+
+    createWindow() {
+        // 窗口容器
+        this.windowElement = document.createElement('div');
+        Object.assign(this.windowElement.style, {
+            position: 'fixed',
+            left: '100px',
+            top: '100px',
+            width: '400px',
+            backgroundColor: '#f5f5f5',
+            borderRadius: '10px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            zIndex: 1000,
+            cursor: 'move',
+            overflow: 'hidden'
+        });
+
+        // 工具栏
+        const toolbar = document.createElement('div');
+        Object.assign(toolbar.style, {
+            padding: '10px',
+            backgroundColor: '#607D8B',
+            display: 'flex',
+            gap: '8px',
+            alignItems: 'center'
+        });
+
+        // 示例按钮
+        const examples = [
+            {label: '示例1', text: '1 2 3 4 5 6 7 0'},
+            {label: '示例2', text: "1' 2'' 3''' 4, 5,, 6,,,"},
+            {label: '示例3', text: '4/ 5// 6,// 7,,// 1---'}
+        ];
+
+        examples.forEach(ex => {
+            const btn = document.createElement('button');
+            btn.textContent = ex.label;
+            Object.assign(btn.style, {
+                padding: '6px 12px',
+                borderRadius: '4px',
+                border: 'none',
+                backgroundColor: '#CFD8DC',
+                cursor: 'pointer'
+            });
+            btn.onclick = () => {
+                this.textarea.value += ex.text + ' ';
+                this.drawNotation();
+            };
+            toolbar.appendChild(btn);
+        });
+
+        // 文本输入框
+        this.textarea = document.createElement('textarea');
+        Object.assign(this.textarea.style, {
+            width: 'calc(100% - 24px)',
+            height: '80px',
+            margin: '12px',
+            padding: '8px',
+            border: '2px solid #B0BEC5',
+            borderRadius: '6px',
+            fontSize: '16px',
+            fontFamily: 'monospace'
+        });
+        this.textarea.placeholder = '在此输入乐谱...';
+        this.textarea.oninput = () => this.drawNotation();
+
+        // 画布
+        this.canvas = document.createElement('canvas');
+        Object.assign(this.canvas.style, {
+            width: 'calc(100% - 24px)',
+            height: '150px',
+            margin: '12px',
+            backgroundColor: 'white',
+            border: '1px solid #B0BEC5'
+        });
+        this.canvas.width = 376;
+        this.canvas.height = 150;
+        this.ctx = this.canvas.getContext('2d');
+
+        // 组装元素
+        this.windowElement.appendChild(toolbar);
+        this.windowElement.appendChild(this.textarea);
+        this.windowElement.appendChild(this.canvas);
+        document.body.appendChild(this.windowElement);
+
+        // 拖动事件
+        this.windowElement.addEventListener('mousedown', this.startDrag.bind(this));
+        document.addEventListener('mousemove', this.drag.bind(this));
+        document.addEventListener('mouseup', this.stopDrag.bind(this));
+
+        // 添加到窗口列表
+        MusicNotationEditor.windows.push(this);
+        MusicNotationEditor.updateWindowList();
+    }
+
+    startDrag(e) {
+        this.isDragging = true;
+        const rect = this.windowElement.getBoundingClientRect();
+        this.offsetX = e.clientX - rect.left;
+        this.offsetY = e.clientY - rect.top;
+    }
+
+    drag(e) {
+        if (!this.isDragging) return;
+        this.windowElement.style.left = (e.clientX - this.offsetX) + 'px';
+        this.windowElement.style.top = (e.clientY - this.offsetY) + 'px';
+    }
+
+    stopDrag() {
+        this.isDragging = false;
+    }
+
+    drawNotation() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        const notes = this.parseInput(this.textarea.value);
+        
+        let x = 30;
+        let y = 60;
+        let currentMeasure = 0;
+        
+        notes.forEach((note, index) => {
+            // 换行逻辑
+            if (currentMeasure + note.duration > 4) {
+                x = 30;
+                y += 50;
+                currentMeasure = 0;
+            }
+            
+            this.drawNote(x, y, note);
+            
+            x += note.width || 40;
+            currentMeasure += note.duration;
+        });
+    }
+
+    parseInput(input) {
+        const tokens = input.match(/[\d][',./-]*|0/g) || [];
+        return tokens.map(token => {
+            const note = {
+                value: token.match(/\d/)[0],
+                octave: 0,
+                duration: 1, // 默认四分音符
+                dots: 0,
+                lines: 0
+            };
+
+            // 处理八度
+            note.octave = (token.match(/'/g) || []).length - (token.match(/,/g) || []).length;
+
+            // 处理时值
+            if (token.includes('-')) {
+                note.duration = 4 - (token.match(/-/g).length - 1) * 2;
+                note.lines = Math.max(0, 4 - note.duration);
+            } else {
+                const slashes = (token.match(/\//g) || []).length;
+                if (slashes > 0) {
+                    note.duration = 1 / Math.pow(2, slashes);
+                    note.lines = slashes;
+                }
+            }
+
+            // 处理附点
+            note.dots = (token.match(/\./g) || []).length;
+            if (note.dots > 0) {
+                note.duration *= 1.5;
+            }
+
+            // 计算显示宽度
+            note.width = 30 + (note.lines > 1 ? 10 : 0);
+
+            return note;
+        });
+    }
+
+    drawNote(x, y, note) {
+        // 音符数字
+        this.ctx.fillStyle = '#263238';
+        this.ctx.font = '20px Arial';
+        this.ctx.fillText(note.value, x, y);
+
+        // 八度标记
+        const dotSize = 3;
+        if (note.octave > 0) {
+            for (let i = 0; i < note.octave; i++) {
+                this.ctx.beginPath();
+                this.ctx.arc(x + 15, y - 18 - (i * 8), dotSize, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+        } else if (note.octave < 0) {
+            for (let i = 0; i < Math.abs(note.octave); i++) {
+                this.ctx.beginPath();
+                this.ctx.arc(x + 15, y + 5 + (i * 8), dotSize, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+        }
+
+        // 时值线
+        if (note.lines > 0) {
+            this.ctx.fillStyle = '#37474F';
+            const lineY = y + 12;
+            const lineHeight = 4;
+            
+            for (let i = 0; i < note.lines; i++) {
+                this.ctx.fillRect(
+                    x - 8 + (i * 3), 
+                    lineY + (i % 2 === 0 ? 0 : 3),
+                    20, 
+                    lineHeight
+                );
+            }
+        }
+
+        // 附点
+        if (note.dots > 0) {
+            this.ctx.beginPath();
+            this.ctx.arc(x + 25, y - 5, 3, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
+    }
+
+    static createNewWindow() {
+        new MusicNotationEditor();
+    }
+
+    static updateWindowList() {
+        const toolbar = document.getElementById('window-list') || document.createElement('div');
+        toolbar.id = 'window-list';
+        toolbar.innerHTML = '';
+        
+        Object.assign(toolbar.style, {
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            padding: '10px',
+            backgroundColor: '#CFD8DC',
+            borderRadius: '8px',
+            display: 'flex',
+            gap: '10px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+        });
+
+        this.windows.forEach((win, index) => {
+            const btn = document.createElement('button');
+            btn.textContent = `窗口 ${index + 1}`;
+            Object.assign(btn.style, {
+                padding: '6px 12px',
+                backgroundColor: '#607D8B',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+            });
+            btn.onclick = () => win.windowElement.style.display = 
+                win.windowElement.style.display === 'none' ? 'block' : 'none';
+            toolbar.appendChild(btn);
+        });
+
+        if (!document.getElementById('window-list')) {
+            document.body.appendChild(toolbar);
+        }
+    }
+}
+</script>
+</body>
+</html>

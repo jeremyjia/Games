@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>blMi index.html</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+</head>
+<body>
+<script src="https://www.w3schools.com/lib/w3.js"></script>
+<script src="https://littleflute.github.io/JavaScript/blclass.js"></script>
+<script src="blMiApp.js"></script>
+
+<div id="id_div_4_mi.bat">
+  <a target="_blank" href="https://github.com/littleflute/bat">bat.git v0.23</a> -
+  <a target="_blank" href="https://github.com/littleflute/bat/edit/master/bat/mi/mi.bat"> mi.bat *</a> -
+</div>
+
+<div class="w3-bar w3-black"><!-- 导航菜单将在此生成 --></div>
+<br>
+<div id="Div_4_MP4List"></div>
+
+<script>
+// 动态创建导航菜单
+document.addEventListener('DOMContentLoaded', function() {
+  const menuItems = [
+    { text: '首页', href: 'index.html' },
+    { text: 'r1.html', href: 'r1.html' },
+    { text: 'GitHub仓库', href: 'https://github.com/littleflute/bat', external: true },
+    { text: '编辑文件', href: 'https://github.com/littleflute/bat/edit/master/bat/mi/mi.bat', external: true },
+    { text: '关于', href: '#about' }
+  ];
+
+  const navBar = document.querySelector('.w3-bar.w3-black');
+  
+  menuItems.forEach(item => {
+    const link = document.createElement('a');
+    link.className = 'w3-bar-item w3-button w3-hover-blue';
+    link.href = item.href;
+    link.textContent = item.text;
+    link.style.fontWeight = 'bold';
+    
+    if (item.external) {
+      link.target = '_blank';
+      link.innerHTML += ' &#x2197;'; // 添加外部链接符号
+    }
+    
+    // 添加悬停效果
+    link.addEventListener('mouseover', () => {
+      link.style.backgroundColor = '#333';
+    });
+    link.addEventListener('mouseout', () => {
+      link.style.backgroundColor = '';
+    });
+
+    navBar.appendChild(link);
+  });
+
+  // 添加响应式按钮（移动端菜单）
+  const mobileMenuBtn = document.createElement('button');
+  mobileMenuBtn.className = 'w3-bar-item w3-button w3-right w3-hide-medium w3-hide-large';
+  mobileMenuBtn.innerHTML = '&#9776;';
+  mobileMenuBtn.onclick = toggleMobileMenu;
+  navBar.appendChild(mobileMenuBtn);
+});
+
+function toggleMobileMenu() {
+  const navBar = document.querySelector('.w3-bar.w3-black');
+  navBar.classList.toggle('w3-show');
+}
+</script>
+
+</body>
+</html>
