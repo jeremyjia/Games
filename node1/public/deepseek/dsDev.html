@@ -19,64 +19,94 @@
     </main>
 
     <script>
-        // 浮动窗口类
+        class WindowToolbar {
+    constructor(container, textarea) {
+        this.container = container;
+        this.textarea = textarea;
+        this.buttons = [
+            { text: '问候', content: '你好！今天天气真不错！' },
+            { text: '时间', content: `当前时间：${new Date().toLocaleTimeString()}` },
+            { text: '表情', content: '😊👍🎉' },
+            { text: '清除', content: '' }
+        ];
+        this.initToolbar();
+    }
+
+    initToolbar() {
+        this.buttons.forEach(btn => {
+            const button = document.createElement('button');
+            button.textContent = btn.text;
+            button.addEventListener('click', () => {
+                this.handleButtonClick(btn.content);
+            });
+            this.container.appendChild(button);
+        });
+    }
+
+    handleButtonClick(content) {
+        if (content === '') {
+            this.textarea.value = '';
+        } else {
+            this.textarea.value += content + '\n';
+        }
+        this.textarea.focus();
+    }
+}
+
+
+// 更新 FloatingWindow 类
 class FloatingWindow {
-    constructor(content = '默认窗口内容') {
+    constructor() {
         this.isDragging = false;
         this.offsetX = 0;
         this.offsetY = 0;
-        this.createWindow(content);
+        this.createWindow();
         this.addEventListeners();
         this.centerWindow();
+        // 初始化工具条和语音功能
+        new WindowToolbar(
+            this.window.querySelector('.toolbar'),
+            this.window.querySelector('textarea')
+        );
     }
 
-    createWindow(content) {
-        // 创建窗口容器
+    createWindow() {
         this.window = document.createElement('div');
         this.window.className = 'floating-window';
-        
-        // 创建标题栏
-        const titleBar = document.createElement('div');
-        titleBar.className = 'title-bar';
-        
-        // 标题文本
-        const title = document.createElement('span');
-        title.textContent = '工具窗口';
-        
-        // 关闭按钮
-        this.closeBtn = document.createElement('button');
-        this.closeBtn.innerHTML = '&times;';
-        
-        // 内容区域
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'window-content';
-        contentDiv.innerHTML = content;
-
-        // 组装元素
-        titleBar.append(title, this.closeBtn);
-        this.window.append(titleBar, contentDiv);
+        this.window.innerHTML = `
+            <div class="title-bar">
+                <span>工具窗口</span>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="window-content">
+                <div class="toolbar"></div>
+                <textarea class="input-area" placeholder="在此输入内容..."></textarea>
+                <button class="speak-btn">朗读内容</button>
+            </div>
+        `;
         document.body.appendChild(this.window);
     }
 
     addEventListeners() {
-        // 拖动处理
         const titleBar = this.window.querySelector('.title-bar');
+        titleBar.addEventListener('mousedown', (e) => this.startDragging(e));
         
-        titleBar.addEventListener('mousedown', (e) => {
-            this.startDragging(e);
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            this.handleDragging(e);
-        });
-
-        document.addEventListener('mouseup', () => {
-            this.stopDragging();
-        });
+        document.addEventListener('mousemove', (e) => this.handleDragging(e));
+        document.addEventListener('mouseup', () => this.stopDragging());
 
         // 关闭按钮
-        this.closeBtn.addEventListener('click', () => {
+        this.window.querySelector('.close-btn').addEventListener('click', () => {
             this.window.remove();
+        });
+
+        // 朗读按钮
+        this.window.querySelector('.speak-btn').addEventListener('click', () => {
+            const text = this.window.querySelector('textarea').value;
+            if (text) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'zh-CN';
+                speechSynthesis.speak(utterance);
+            }
         });
     }
 
@@ -100,15 +130,8 @@ class FloatingWindow {
         this.isDragging = false;
         this.window.style.cursor = 'grab';
     }
-
-    centerWindow() {
-        const x = (window.innerWidth - this.window.offsetWidth) / 2;
-        const y = (window.innerHeight - this.window.offsetHeight) / 2;
-        this.window.style.left = `${x}px`;
-        this.window.style.top = `${y}px`;
-    }
 }
-
+        
 class NavigationMenu {
     constructor(containerSelector, items) {
         this.container = document.querySelector(containerSelector);
@@ -200,7 +223,7 @@ class NavigationMenu {
             }
 
             .nav-container {
-                max-width: 1200px;
+                max-width: none; /* 移除最大宽度限制 */
                 margin: 0 auto;
                 padding: 0 20px;
             }
@@ -209,7 +232,9 @@ class NavigationMenu {
                 list-style: none;
                 display: flex;
                 justify-content: center;
-                gap: 30px;
+                justify-content: flex-start; /* 左对齐代替居中 */
+                flex-wrap: wrap; /* 始终允许换行 */
+                gap: 15px; /* 适当缩小间距 */
                 margin: 0;
                 padding: 0;
             }
@@ -245,7 +270,7 @@ class NavigationMenu {
             @media (max-width: 768px) {
                 .nav-menu {
                     flex-wrap: wrap;
-                    gap: 15px;
+                    gap: 10px;
                     justify-content: flex-start;
                 }
                 
@@ -314,9 +339,10 @@ class NavigationMenu {
 
             /* 导航按钮样式 */
             .nav-menu button {
-                background: none;
-                border: none;
-                color: var(--text-light);
+                background: rgba(255,255,255,0.1);
+                border: 1px solid var(--primary-color);
+                color: var(--primary-color);
+                border-radius: 4px;
                 cursor: pointer;
                 font-family: inherit;
                 padding: 8px 12px;
@@ -328,12 +354,60 @@ class NavigationMenu {
                 background: rgba(255,255,255,0.1);
             }
         `;
+
+        dynamicStyles.textContent += `
+    .toolbar {
+        display: flex;
+        gap: 8px;
+        padding: 8px;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .toolbar button {
+        padding: 4px 8px;
+        background: var(--primary-color);
+        border: none;
+        border-radius: 3px;
+        color: white;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+    
+    .toolbar button:hover {
+        opacity: 0.8;
+    }
+    
+    .input-area {
+        width: 100%;
+        height: 200px;
+        margin: 10px 0;
+        padding: 8px;
+        border: 1px solid #ccc;
+        resize: vertical;
+    }
+    
+    .speak-btn {
+        width: 100%;
+        padding: 8px;
+        background: #2196F3;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    
+    .speak-btn:hover {
+        background: #1976D2;
+    }
+`;
+
         document.head.appendChild(dynamicStyles);
  
         document.addEventListener('DOMContentLoaded', () => {
             // 导航菜单数据
             const menuItems = [
-                { type: 'button', text: '打开工具窗口' }, // 新增按钮
+                { type: 'button', text: '打开工具窗口' }, // 打开工具窗口没有出现在菜单上。
                 { type: 'link', text: '[..]', href: '..' },
                 { type: 'version', text: 'v0.21' },
                 { type: 'external', text: 'DeepSeek 首页', href: 'https://www.deepseek.com' },
