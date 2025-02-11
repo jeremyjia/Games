@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>音乐播放器</title>
+    <style>
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    <nav id="nav-menu"></nav>
+    
+    <button onclick="WindowManager.createWindow()">新建窗口</button>
+    
+    <div id="status-bar" style="position:fixed; bottom:0; width:100%; background:#ddd; padding:5px;"></div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        // 动态生成样式
+        const style = document.createElement('style');
+        style.textContent = `
+            .window {
+                position: absolute;
+                border: 1px solid #000;
+                background: white;
+                z-index: 1000;
+            }
+            .title-bar {
+                background: #333;
+                color: white;
+                padding: 5px;
+                cursor: move;
+            }
+            .beats-container {
+                display: flex;
+                gap: 5px;
+                padding: 10px;
+            }
+            .beat-unit {
+                width: 20px;
+                height: 20px;
+                border: 1px solid #000;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 导航菜单
+        const mls = ["index.html", "readme.md", "i1.html", "i2.html"];
+        const navMenu = document.getElementById('nav-menu');
+        mls.forEach(file => {
+            const a = document.createElement('a');
+            a.href = file;
+            a.textContent = file;
+            a.style.margin = '0 10px';
+            navMenu.appendChild(a);
+        });
+
+        class MusicPlayer {
+            constructor(bpm = 72) {
+                this.audio = new Audio('https://littleflute.github.io/gt1/mp3/j72_4_4.mp3');
+                this.bpm = bpm;
+                this.isPlaying = false;
+                this.beatInterval = null;
+                this.currentBeat = 0;
+            }
+
+            start() {
+                if(this.isPlaying) return;
+                this.isPlaying = true;
+                this.audio.play();
+                const interval = 60000 / this.bpm;
+                this.beatInterval = setInterval(() => this.updateBeat(), interval);
+            }
+
+            stop() {
+                this.isPlaying = false;
+                this.audio.pause();
+                clearInterval(this.beatInterval);
+            }
+
+            updateBeat() {
+                this.currentBeat = (this.currentBeat % 4) + 1;
+                if(this.currentBeat === 1) {
+                    WindowManager.createFirework();
+                }
+                WindowManager.updateAllBeats(this.currentBeat);
+            }
+        }
+
+        class WindowManager {
+            static windows = [];
+            static player = new MusicPlayer();
+            static canvasCtx = canvas.getContext('2d');
+
+            static createWindow() {
+                const win = document.createElement('div');
+                win.className = 'window';
+                win.style.left = Math.random() * 500 + 'px';
+                win.style.top = Math.random() * 300 + 'px';
+                
+                const title = document.createElement('div');
+                title.className = 'title-bar';
+                title.textContent = `Window ${this.windows.length + 1}`;
+                
+                const content = this.createWindowContent();
+                win.appendChild(title);
+                win.appendChild(content);
+                
+                document.body.appendChild(win);
+                this.addDrag(title, win);
+                
+                // 状态栏按钮
+                const btn = document.createElement('button');
+                btn.textContent = title.textContent;
+                btn.onclick = () => win.style.display = win.style.display === 'none' ? 'block' : 'none';
+                statusBar.appendChild(btn);
+                
+                this.windows.push({win, btn, beats: content.querySelectorAll('.beat-unit')});
+            }
+
+            static createWindowContent() {
+                const container = document.createElement('div');
+                const playBtn = document.createElement('button');
+                playBtn.textContent = '播放';
+                playBtn.onclick = () => this.player.start();
+                
+                const beats = document.createElement('div');
+                beats.className = 'beats-container';
+                beats.style.backgroundColor = `hsl(${Math.random()*360}, 50%, 80%)`;
+                
+                for(let i=0; i<4; i++) {
+                    const beat = document.createElement('div');
+                    beat.className = 'beat-unit';
+                    beats.appendChild(beat);
+                }
+                
+                container.appendChild(playBtn);
+                container.appendChild(beats);
+                return container;
+            }
+
+            static addDrag(titleBar, window) {
+                let isDragging = false;
+                let offset = [0,0];
+                
+                titleBar.addEventListener('mousedown', e => {
+                    isDragging = true;
+                    offset = [
+                        e.clientX - window.offsetLeft,
+                        e.clientY - window.offsetTop
+                    ];
+                });
+                
+                document.addEventListener('mousemove', e => {
+                    if(isDragging) {
+                        window.style.left = (e.clientX - offset[0]) + 'px';
+                        window.style.top = (e.clientY - offset[1]) + 'px';
+                    }
+                });
+                
+                document.addEventListener('mouseup', () => isDragging = false);
+            }
+
+            static updateAllBeats(current) {
+                this.windows.forEach(win => {
+                    win.beats.forEach((beat, i) => {
+                        beat.style.backgroundColor = i < current ? '#ff0' : '#fff';
+                    });
+                });
+            }
+
+            static createFirework() {
+                const ctx = this.canvasCtx;
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                
+                // 简单烟花效果
+                let radius = 0;
+                const animate = () => {
+                    ctx.clearRect(0,0,canvas.width,canvas.height);
+                    ctx.beginPath();
+                    ctx.arc(x, y, radius, 0, Math.PI*2);
+                    ctx.fillStyle = `hsl(${Math.random()*360}, 100%, 50%)`;
+                    ctx.fill();
+                    radius += 2;
+                    if(radius < 50) requestAnimationFrame(animate);
+                };
+                animate();
+            }
+        }
+
+        // 初始化画布
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
