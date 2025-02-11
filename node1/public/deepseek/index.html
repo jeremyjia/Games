@@ -104,11 +104,164 @@
                     gap: 10px;
                 }
             }
+
+            /* 新增浮动窗口样式 */
+            .floating-window {
+                position: fixed;
+                background: white;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                z-index: 1001;
+                min-width: 300px;
+                cursor: grab;
+            }
+
+            .floating-window:active {
+                cursor: grabbing;
+            }
+
+            .title-bar {
+                background: var(--bg-dark);
+                color: var(--text-light);
+                padding: 12px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 1px solid #444;
+                cursor: move;
+            }
+
+            .title-bar button {
+                background: none;
+                border: none;
+                color: var(--text-light);
+                font-size: 1.4rem;
+                cursor: pointer;
+                padding: 0 8px;
+                transition: color 0.3s ease;
+            }
+
+            .title-bar button:hover {
+                color: var(--primary-color);
+            }
+
+            .window-content {
+                padding: 20px;
+                max-height: 60vh;
+                overflow-y: auto;
+            }
+
+            /* 导航按钮样式 */
+            .nav-menu button {
+                background: none;
+                border: none;
+                color: var(--text-light);
+                cursor: pointer;
+                font-family: inherit;
+                padding: 8px 12px;
+                transition: all 0.3s ease;
+            }
+
+            .nav-menu button:hover {
+                color: var(--primary-color);
+                background: rgba(255,255,255,0.1);
+            }
         `;
         document.head.appendChild(dynamicStyles);
+// 浮动窗口类
+class FloatingWindow {
+            constructor(content = '默认窗口内容') {
+                this.isDragging = false;
+                this.offsetX = 0;
+                this.offsetY = 0;
+                this.createWindow(content);
+                this.addEventListeners();
+                this.centerWindow();
+            }
 
+            createWindow(content) {
+                // 创建窗口容器
+                this.window = document.createElement('div');
+                this.window.className = 'floating-window';
+                
+                // 创建标题栏
+                const titleBar = document.createElement('div');
+                titleBar.className = 'title-bar';
+                
+                // 标题文本
+                const title = document.createElement('span');
+                title.textContent = '工具窗口';
+                
+                // 关闭按钮
+                this.closeBtn = document.createElement('button');
+                this.closeBtn.innerHTML = '&times;';
+                
+                // 内容区域
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'window-content';
+                contentDiv.innerHTML = content;
+
+                // 组装元素
+                titleBar.append(title, this.closeBtn);
+                this.window.append(titleBar, contentDiv);
+                document.body.appendChild(this.window);
+            }
+
+            addEventListeners() {
+                // 拖动处理
+                const titleBar = this.window.querySelector('.title-bar');
+                
+                titleBar.addEventListener('mousedown', (e) => {
+                    this.startDragging(e);
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    this.handleDragging(e);
+                });
+
+                document.addEventListener('mouseup', () => {
+                    this.stopDragging();
+                });
+
+                // 关闭按钮
+                this.closeBtn.addEventListener('click', () => {
+                    this.window.remove();
+                });
+            }
+
+            startDragging(e) {
+                this.isDragging = true;
+                const rect = this.window.getBoundingClientRect();
+                this.offsetX = e.clientX - rect.left;
+                this.offsetY = e.clientY - rect.top;
+                this.window.style.cursor = 'grabbing';
+            }
+
+            handleDragging(e) {
+                if (!this.isDragging) return;
+                const x = e.clientX - this.offsetX;
+                const y = e.clientY - this.offsetY;
+                this.window.style.left = `${x}px`;
+                this.window.style.top = `${y}px`;
+            }
+
+            stopDragging() {
+                this.isDragging = false;
+                this.window.style.cursor = 'grab';
+            }
+
+            centerWindow() {
+                const x = (window.innerWidth - this.window.offsetWidth) / 2;
+                const y = (window.innerHeight - this.window.offsetHeight) / 2;
+                this.window.style.left = `${x}px`;
+                this.window.style.top = `${y}px`;
+            }
+        }
+        
         // 导航菜单数据
         const menuItems = [
+            { type: 'button', text: '打开工具窗口' }, // 新增按钮
             { type: 'link', text: '[..]', href: '..' },
             { type: 'version', text: 'v0.14' },
             { type: 'external', text: 'DeepSeek 首页', href: 'https://www.deepseek.com' },
@@ -137,18 +290,26 @@
                     const span = document.createElement('span');
                     span.className = 'version';
                     span.textContent = item.text;
-                    span.setAttribute('role', 'text');
                     li.appendChild(span);
+                } else if (item.type === 'button') {
+                    const button = document.createElement('button');
+                    button.textContent = item.text;
+                    button.addEventListener('click', () => {
+                        new FloatingWindow(`
+                            <h3>工具窗口示例</h3>
+                            <p>这是一个可拖动的浮动窗口</p>
+                            <p>可以在此添加各种工具内容</p>
+                        `);
+                    });
+                    li.appendChild(button);
                 } else {
                     const a = document.createElement('a');
                     a.href = item.href;
                     a.textContent = item.text;
-                    
                     if (item.type === 'external') {
                         a.target = '_blank';
                         a.rel = 'noopener noreferrer';
                     }
-
                     li.appendChild(a);
                 }
 
@@ -157,7 +318,6 @@
 
             navContainer.appendChild(ul);
         }
-
         // 初始化
         document.addEventListener('DOMContentLoaded', createNavigation);
     </script>
