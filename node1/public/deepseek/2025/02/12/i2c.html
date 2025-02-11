@@ -1,209 +1,127 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Music Beat Player</title>
+    <title>音乐播放器</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        nav ul { list-style-type: none; padding: 0; }
+        nav ul li { display: inline; margin-right: 10px; }
+        .window { 
+            display: none; 
+            position: absolute; 
+            padding: 10px; 
+            background: white; 
+            border: 1px solid #ccc; 
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); 
+        }
+        .beats { display: flex; }
+        .beat-container { margin: 5px; padding: 10px; border-radius: 5px; }
+        .beat-button { width: 20px; height: 20px; margin: 2px; border: none; border-radius: 3px; }
+        .controls { margin-bottom: 10px; }
+        #bpm { width: 50px; margin-left: 5px; }
+    </style>
 </head>
 <body>
-    <!-- 导航菜单 -->
     <nav>
-        <a href="index.html">index.html</a>
-        <a href="readme.md">readme.md</a>
-        <a href="i1.html">i1.html</a>
+        <ul>
+            <li>首页</li>
+            <li>说明</li>
+            <li>信息</li>
+        </ul>
     </nav>
-
-    <!-- 主内容 -->
-    <button id="openPlayer">打开播放器</button>
-
-    <!-- 浮动窗口 -->
+    <button id="openWindow">打开播放器</button>
     <div id="playerWindow" class="window">
-        <div class="window-header">
-            <span>Beat Player</span>
-            <button class="close">×</button>
+        <div class="controls">
+            <button id="playButton">播放</button>
+            <label for="bpm">速度：</label>
+            <input type="number" id="bpm" value="60" min="20" max="200"> BPM
         </div>
-        <div class="window-content">
-            <div class="controls">
-                <button id="playBtn">▶</button>
-                <input type="number" id="bpm" value="60" min="30" max="240">
-                <label>BPM</label>
-            </div>
-            <div id="beatsContainer"></div>
+        <div class="beats">
+            <!-- 拍子按钮将在这里动态生成 -->
         </div>
     </div>
 
     <script>
-        // 动态生成样式
-        const style = document.createElement('style');
-        style.textContent = `
-            nav {
-                padding: 1rem;
-                background: #333;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-            }
-            nav a {
-                color: white;
-                margin-right: 1rem;
-                text-decoration: none;
-            }
-            .window {
-                position: fixed;
-                top: 100px;
-                left: 100px;
-                background: white;
-                border: 1px solid #ccc;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-                width: 300px;
-                display: none;
-            }
-            .window-header {
-                padding: 0.5rem;
-                background: #f0f0f0;
-                cursor: move;
-                display: flex;
-                justify-content: space-between;
-            }
-            .window-content {
-                padding: 1rem;
-            }
-            .beat-container {
-                display: flex;
-                gap: 5px;
-                margin: 1rem 0;
-                padding: 5px;
-            }
-            .beat-unit {
-                width: 20px;
-                height: 40px;
-                border: 1px solid #999;
-                transition: background 0.1s;
-            }
-            #beatsContainer {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-            }
-        `;
-        document.head.appendChild(style);
-
-        class BeatPlayer {
+        class MusicPlayer {
             constructor() {
-                this.isPlaying = false;
-                this.bpm = 60;
-                this.currentBeat = 0;
-                this.totalBeats = 4;
-                this.interval = null;
-                this.beatContainers = [];
-                this.initBeats();
+                this.bpm = 60; // 默认速度
+                this.interval = null; // 定时器
+                this.currentBeat = 0; // 当前拍子
+                this.init();
             }
 
-            initBeats() {
-                const colors = ['#ffcccc', '#ccffcc', '#ccccff', '#ffccff'];
-                const container = document.getElementById('beatsContainer');
-                
-                for (let i = 0; i < 4; i++) {
-                    const beatDiv = document.createElement('div');
-                    beatDiv.className = 'beat-container';
-                    beatDiv.style.backgroundColor = colors[i];
-                    
-                    for (let j = 0; j < 4; j++) {
-                        const unit = document.createElement('div');
-                        unit.className = 'beat-unit';
-                        beatDiv.appendChild(unit);
-                    }
-                    this.beatContainers.push(beatDiv);
-                    container.appendChild(beatDiv);
-                }
-            }
-
-            updateBeats() {
-                this.beatContainers.forEach(container => {
-                    Array.from(container.children).forEach((unit, index) => {
-                        unit.style.backgroundColor = index === this.currentBeat % 4 ? 
-                            '#ff4444' : '#f0f0f0';
-                    });
+            init() {
+                // 打开播放器窗口
+                document.getElementById('openWindow').addEventListener('click', () => {
+                    document.getElementById('playerWindow').style.display = 'block';
                 });
-                this.currentBeat = (this.currentBeat + 1) % 4;
+
+                // 播放/暂停按钮
+                document.getElementById('playButton').addEventListener('click', () => this.togglePlay());
+
+                // BPM 设置
+                document.getElementById('bpm').addEventListener('change', (e) => {
+                    this.bpm = e.target.value;
+                    if (this.interval) {
+                        clearInterval(this.interval);
+                        this.startPlayback();
+                    }
+                });
+
+                // 创建拍子按钮
+                this.createBeats();
             }
 
+            // 创建拍子按钮
+            createBeats() {
+                const beatsContainer = document.querySelector('.beats');
+                for (let i = 0; i < 4; i++) {
+                    const container = document.createElement('div');
+                    container.className = 'beat-container';
+                    container.style.backgroundColor = `hsl(${i * 90}, 100%, 85%)`;
+                    for (let j = 0; j < 4; j++) {
+                        const button = document.createElement('button');
+                        button.className = 'beat-button';
+                        container.appendChild(button);
+                    }
+                    beatsContainer.appendChild(container);
+                }
+            }
+
+            // 播放/暂停切换
             togglePlay() {
-                this.isPlaying = !this.isPlaying;
-                if (this.isPlaying) {
-                    const intervalTime = (60 / this.bpm) * 1000;
-                    this.interval = setInterval(() => this.updateBeats(), intervalTime);
-                } else {
+                if (this.interval) {
                     clearInterval(this.interval);
+                    this.interval = null;
+                    document.getElementById('playButton').textContent = '播放';
+                } else {
+                    this.startPlayback();
+                    document.getElementById('playButton').textContent = '暂停';
                 }
             }
 
-            setBpm(value) {
-                this.bpm = Math.min(240, Math.max(30, value));
-                if (this.isPlaying) {
-                    this.togglePlay();
-                    this.togglePlay();
-                }
+            // 开始播放
+            startPlayback() {
+                const beatDuration = 60000 / this.bpm / 4; // 每个拍子的间隔时间
+                this.interval = setInterval(() => {
+                    this.updateBeats();
+                }, beatDuration);
+            }
+
+            // 更新拍子按钮颜色
+            updateBeats() {
+                const buttons = document.querySelectorAll('.beat-button');
+                buttons.forEach((button, index) => {
+                    button.style.backgroundColor = index === this.currentBeat % 16 ? 'blue' : 'gray';
+                });
+                this.currentBeat++;
             }
         }
 
-        // 窗口拖动逻辑
-        class Draggable {
-            constructor(element) {
-                this.element = element;
-                this.header = element.querySelector('.window-header');
-                this.isDragging = false;
-                this.offset = [0, 0];
-                
-                this.header.addEventListener('mousedown', this.startDrag.bind(this));
-                document.addEventListener('mousemove', this.drag.bind(this));
-                document.addEventListener('mouseup', this.endDrag.bind(this));
-            }
-
-            startDrag(e) {
-                this.isDragging = true;
-                const rect = this.element.getBoundingClientRect();
-                this.offset = [
-                    e.clientX - rect.left,
-                    e.clientY - rect.top
-                ];
-            }
-
-            drag(e) {
-                if (!this.isDragging) return;
-                this.element.style.left = `${e.clientX - this.offset[0]}px`;
-                this.element.style.top = `${e.clientY - this.offset[1]}px`;
-            }
-
-            endDrag() {
-                this.isDragging = false;
-            }
-        }
-
-        // 初始化程序
-        const player = new BeatPlayer();
-        const windowElement = document.getElementById('playerWindow');
-        new Draggable(windowElement);
-
-        // 事件绑定
-        document.getElementById('openPlayer').addEventListener('click', () => {
-            windowElement.style.display = 'block';
-        });
-
-        document.querySelector('.close').addEventListener('click', () => {
-            windowElement.style.display = 'none';
-        });
-
-        document.getElementById('playBtn').addEventListener('click', () => {
-            player.togglePlay();
-            document.getElementById('playBtn').textContent = 
-                player.isPlaying ? '⏸' : '▶';
-        });
-
-        document.getElementById('bpm').addEventListener('change', (e) => {
-            player.setBpm(parseInt(e.target.value));
-        });
+        // 初始化音乐播放器
+        document.addEventListener('DOMContentLoaded', () => new MusicPlayer());
     </script>
 </body>
 </html>
