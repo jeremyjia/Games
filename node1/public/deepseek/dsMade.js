@@ -87,3 +87,73 @@ class FloatingWindow {
         this.window.style.top = `${y}px`;
     }
 }
+
+class NavigationMenu {
+    constructor(containerSelector, items) {
+        this.container = document.querySelector(containerSelector);
+        this.menuItems = items;
+        this.initMenu();
+    }
+
+    initMenu() {
+        const ul = document.createElement('ul');
+        ul.className = 'nav-menu';
+        ul.setAttribute('role', 'menubar');
+
+        this.menuItems.forEach(item => {
+            const li = this.createMenuItem(item);
+            ul.appendChild(li);
+        });
+
+        this.container.appendChild(ul);
+    }
+
+    createMenuItem(item) {
+        const li = document.createElement('li');
+        li.setAttribute('role', 'none');
+
+        switch(item.type) {
+            case 'version':
+                li.appendChild(this.createVersionElement(item));
+                break;
+            case 'button':
+                li.appendChild(this.createButtonElement(item));
+                break;
+            default:
+                li.appendChild(this.createLinkElement(item));
+        }
+        return li;
+    }
+
+    createVersionElement(item) {
+        const span = document.createElement('span');
+        span.className = 'version';
+        span.textContent = item.text;
+        return span;
+    }
+
+    createButtonElement(item) {
+        const button = document.createElement('button');
+        button.textContent = item.text;
+        button.addEventListener('click', () => {
+            new FloatingWindow(`
+                <h3>工具窗口示例</h3>
+                <p>这是一个可拖动的浮动窗口</p>
+                <p>可以在此添加各种工具内容</p>
+            `);
+        });
+        return button;
+    }
+
+    createLinkElement(item) {
+        const a = document.createElement('a');
+        a.href = item.href;
+        a.textContent = item.text;
+        if (item.type === 'external') {
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+        }
+        return a;
+    }
+}
+

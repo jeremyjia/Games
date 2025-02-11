@@ -170,68 +170,26 @@
             }
         `;
         document.head.appendChild(dynamicStyles);
+ 
+        document.addEventListener('DOMContentLoaded', () => {
+            // 导航菜单数据
+            const menuItems = [
+                { type: 'button', text: '打开工具窗口' }, // 新增按钮
+                { type: 'link', text: '[..]', href: '..' },
+                { type: 'version', text: 'v0.21' },
+                { type: 'external', text: 'DeepSeek 首页', href: 'https://www.deepseek.com' },
+                { type: 'link', text: 'Class Editor', href: 'classEditor/' },
+                { type: 'link', text: 'word2Draw', href: 'word2Draw/' },
+                { type: 'link', text: 'Sandbox', href: 'sandBox/' },
+                { type: 'link', text: 'Scarecrow', href: 'scarecrow' },
+                { type: 'link', text: 'Video Editor', href: 'videoEditor' },
+                { type: 'link', text: 'cube1.html', href: 'cube1.html' },
+                { type: 'link', text: 'cube2.html', href: 'cube2.html' },
+                { type: 'link', text: 'wave9.html', href: 'wave9.html' }
+            ];
 
-        // 导航菜单数据
-        const menuItems = [
-            { type: 'button', text: '打开工具窗口' }, // 新增按钮
-            { type: 'link', text: '[..]', href: '..' },
-            { type: 'version', text: 'v0.14' },
-            { type: 'external', text: 'DeepSeek 首页', href: 'https://www.deepseek.com' },
-            { type: 'link', text: 'Class Editor', href: 'classEditor/' },
-            { type: 'link', text: 'word2Draw', href: 'word2Draw/' },
-            { type: 'link', text: 'Sandbox', href: 'sandBox/' },
-            { type: 'link', text: 'Scarecrow', href: 'scarecrow' },
-            { type: 'link', text: 'Video Editor', href: 'videoEditor' },
-            { type: 'link', text: 'cube1.html', href: 'cube1.html' },
-            { type: 'link', text: 'cube2.html', href: 'cube2.html' },
-            { type: 'link', text: 'wave9.html', href: 'wave9.html' }
-        ];
-
-        // 动态生成导航菜单
-        function createNavigation() {
-            const navContainer = document.querySelector('.nav-container');
-            const ul = document.createElement('ul');
-            ul.className = 'nav-menu';
-            ul.setAttribute('role', 'menubar');
-
-            menuItems.forEach(item => {
-                const li = document.createElement('li');
-                li.setAttribute('role', 'none');
-
-                if (item.type === 'version') {
-                    const span = document.createElement('span');
-                    span.className = 'version';
-                    span.textContent = item.text;
-                    li.appendChild(span);
-                } else if (item.type === 'button') {
-                    const button = document.createElement('button');
-                    button.textContent = item.text;
-                    button.addEventListener('click', () => {
-                        new FloatingWindow(`
-                            <h3>工具窗口示例</h3>
-                            <p>这是一个可拖动的浮动窗口</p>
-                            <p>可以在此添加各种工具内容</p>
-                        `);
-                    });
-                    li.appendChild(button);
-                } else {
-                    const a = document.createElement('a');
-                    a.href = item.href;
-                    a.textContent = item.text;
-                    if (item.type === 'external') {
-                        a.target = '_blank';
-                        a.rel = 'noopener noreferrer';
-                    }
-                    li.appendChild(a);
-                }
-
-                ul.appendChild(li);
-            });
-
-            navContainer.appendChild(ul);
-        }
-        // 初始化
-        document.addEventListener('DOMContentLoaded', createNavigation);
+            new NavigationMenu('.nav-container', menuItems);
+        });
     </script>
 </body>
 </html>
