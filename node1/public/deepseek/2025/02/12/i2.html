@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Beat Player</title>
+</head>
+<body>
+    <!-- 导航菜单 -->
+    <nav>
+        <a href="index.html">index.html</a>
+        <a href="readme.md">readme.md</a>
+        <a href="i1.html">i1.html</a>
+    </nav>
+
+    <!-- 主内容 -->
+    <button id="openPlayer">打开播放器</button>
+
+    <!-- 浮动窗口 -->
+    <div id="playerWindow" class="window">
+        <div class="window-header">
+            <span>Beat Player</span>
+            <button class="close">×</button>
+        </div>
+        <div class="window-content">
+            <div class="controls">
+                <button id="playBtn">▶</button>
+                <input type="number" id="bpm" value="60" min="30" max="240">
+                <label>BPM</label>
+            </div>
+            <div id="beatsContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        // 动态生成样式
+        const style = document.createElement('style');
+        style.textContent = `
+            nav {
+                padding: 1rem;
+                background: #333;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+            }
+            nav a {
+                color: white;
+                margin-right: 1rem;
+                text-decoration: none;
+            }
+            .window {
+                position: fixed;
+                top: 100px;
+                left: 100px;
+                background: white;
+                border: 1px solid #ccc;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                width: 300px;
+                display: none;
+            }
+            .window-header {
+                padding: 0.5rem;
+                background: #f0f0f0;
+                cursor: move;
+                display: flex;
+                justify-content: space-between;
+            }
+            .window-content {
+                padding: 1rem;
+            }
+            .beat-container {
+                display: flex;
+                gap: 5px;
+                margin: 1rem 0;
+                padding: 5px;
+            }
+            .beat-unit {
+                width: 20px;
+                height: 40px;
+                border: 1px solid #999;
+                transition: background 0.1s;
+            }
+            #beatsContainer {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+        `;
+        document.head.appendChild(style);
+
+        class BeatPlayer {
+            constructor() {
+                this.isPlaying = false;
+                this.bpm = 60;
+                this.currentBeat = 0;
+                this.totalBeats = 4;
+                this.interval = null;
+                this.beatContainers = [];
+                this.initBeats();
+            }
+
+            initBeats() {
+                const colors = ['#ffcccc', '#ccffcc', '#ccccff', '#ffccff'];
+                const container = document.getElementById('beatsContainer');
+                
+                for (let i = 0; i < 4; i++) {
+                    const beatDiv = document.createElement('div');
+                    beatDiv.className = 'beat-container';
+                    beatDiv.style.backgroundColor = colors[i];
+                    
+                    for (let j = 0; j < 4; j++) {
+                        const unit = document.createElement('div');
+                        unit.className = 'beat-unit';
+                        beatDiv.appendChild(unit);
+                    }
+                    this.beatContainers.push(beatDiv);
+                    container.appendChild(beatDiv);
+                }
+            }
+
+            updateBeats() {
+                this.beatContainers.forEach(container => {
+                    Array.from(container.children).forEach((unit, index) => {
+                        unit.style.backgroundColor = index === this.currentBeat % 4 ? 
+                            '#ff4444' : '#f0f0f0';
+                    });
+                });
+                this.currentBeat = (this.currentBeat + 1) % 4;
+            }
+
+            togglePlay() {
+                this.isPlaying = !this.isPlaying;
+                if (this.isPlaying) {
+                    const intervalTime = (60 / this.bpm) * 1000;
+                    this.interval = setInterval(() => this.updateBeats(), intervalTime);
+                } else {
+                    clearInterval(this.interval);
+                }
+            }
+
+            setBpm(value) {
+                this.bpm = Math.min(240, Math.max(30, value));
+                if (this.isPlaying) {
+                    this.togglePlay();
+                    this.togglePlay();
+                }
+            }
+        }
+
+        // 窗口拖动逻辑
+        class Draggable {
+            constructor(element) {
+                this.element = element;
+                this.header = element.querySelector('.window-header');
+                this.isDragging = false;
+                this.offset = [0, 0];
+                
+                this.header.addEventListener('mousedown', this.startDrag.bind(this));
+                document.addEventListener('mousemove', this.drag.bind(this));
+                document.addEventListener('mouseup', this.endDrag.bind(this));
+            }
+
+            startDrag(e) {
+                this.isDragging = true;
+                const rect = this.element.getBoundingClientRect();
+                this.offset = [
+                    e.clientX - rect.left,
+                    e.clientY - rect.top
+                ];
+            }
+
+            drag(e) {
+                if (!this.isDragging) return;
+                this.element.style.left = `${e.clientX - this.offset[0]}px`;
+                this.element.style.top = `${e.clientY - this.offset[1]}px`;
+            }
+
+            endDrag() {
+                this.isDragging = false;
+            }
+        }
+
+        // 初始化程序
+        const player = new BeatPlayer();
+        const windowElement = document.getElementById('playerWindow');
+        new Draggable(windowElement);
+
+        // 事件绑定
+        document.getElementById('openPlayer').addEventListener('click', () => {
+            windowElement.style.display = 'block';
+        });
+
+        document.querySelector('.close').addEventListener('click', () => {
+            windowElement.style.display = 'none';
+        });
+
+        document.getElementById('playBtn').addEventListener('click', () => {
+            player.togglePlay();
+            document.getElementById('playBtn').textContent = 
+                player.isPlaying ? '⏸' : '▶';
+        });
+
+        document.getElementById('bpm').addEventListener('change', (e) => {
+            player.setBpm(parseInt(e.target.value));
+        });
+    </script>
+</body>
+</html>
