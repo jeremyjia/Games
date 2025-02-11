@@ -69,6 +69,14 @@ class FloatingWindow {
             this.window.querySelector('textarea')
         );
     }
+    // 添加居中方法实现
+    centerWindow() {
+            const windowRect = this.window.getBoundingClientRect();
+            const left = (window.innerWidth - windowRect.width) / 2;
+            const top = (window.innerHeight - windowRect.height) / 2;
+            this.window.style.left = `${left}px`;
+            this.window.style.top = `${top}px`;
+    }
 
     createWindow() {
         this.window = document.createElement('div');
@@ -90,9 +98,17 @@ class FloatingWindow {
     addEventListeners() {
         const titleBar = this.window.querySelector('.title-bar');
         titleBar.addEventListener('mousedown', (e) => this.startDragging(e));
-        
+        titleBar.addEventListener('touchstart', (e) => this.startDragging(e.touches[0]));
+
         document.addEventListener('mousemove', (e) => this.handleDragging(e));
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // 防止页面滚动
+            this.handleDragging(e.touches[0])
+        });
+
         document.addEventListener('mouseup', () => this.stopDragging());
+        document.addEventListener('touchend', () => this.stopDragging());
+
 
         // 关闭按钮
         this.window.querySelector('.close-btn').addEventListener('click', () => {
