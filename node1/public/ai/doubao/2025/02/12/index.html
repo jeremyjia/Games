@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh - CN">
+<head>
+    <meta charset="UTF - 8">
+    <meta name="viewport" content="width=device-width, initial - scale=1.0">
+    <title>MP3特定区间播放</title>
+    <style>
+        body {
+            font - family: Arial, sans - serif;
+            display: flex;
+            flex - direction: column;
+            justify - content: center;
+            align - items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        input[type="file"] {
+            margin - bottom: 15px;
+        }
+        button {
+            padding: 10px 20px;
+            background - color: #007BFF;
+            color: white;
+            border: none;
+            border - radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <input type="file" id="mp3FileInput" accept=".mp3">
+    <button onclick="playSpecificRange()">播放1到2秒</button>
+    <audio id="mp3Player" style="display:none;"></audio>
+
+    <script>
+        function playSpecificRange() {
+            const fileInput = document.getElementById('mp3FileInput');
+            const audioPlayer = document.getElementById('mp3Player');
+
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const url = URL.createObjectURL(file);
+                audioPlayer.src = url;
+                audioPlayer.currentTime = 1;
+                audioPlayer.addEventListener('loadedmetadata', function () {
+                    audioPlayer.addEventListener('timeupdate', function () {
+                        if (audioPlayer.currentTime >= 2) {
+                            audioPlayer.pause();
+                        }
+                    });
+                    audioPlayer.play();
+                });
+            }
+        }
+    </script>
+</body>
+</html>
