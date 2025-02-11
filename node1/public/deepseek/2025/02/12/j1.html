@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文本朗读器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 500px;
+        }
+
+        #textInput {
+            width: 100%;
+            padding: 12px;
+            margin: 20px 0;
+            font-size: 16px;
+            border: 2px solid #4CAF50;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        #speakButton {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+
+        #speakButton:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <input type="text" id="textInput" placeholder="请输入要朗读的内容">
+        <button onclick="speakText()" id="speakButton">朗读内容</button>
+    </div>
+
+    <script>
+        function speakText() {
+            // 获取输入内容
+            const text = document.getElementById('textInput').value;
+            
+            if (text) {
+                // 创建语音合成对象
+                const utterance = new SpeechSynthesisUtterance(text);
+                
+                // 设置中文语音
+                utterance.lang = 'zh-CN';
+                
+                // 使用默认语音朗读
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("请输入要朗读的内容！");
+            }
+        }
+    </script>
+</body>
+</html>
