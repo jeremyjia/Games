@@ -1,4 +1,7 @@
-v6 (i6a,b.html)
+i5r1.html
+
+
+v6 (i6a,b,c,d.html)
 做一个网页。
 顶部有一个导航菜单，用JavaScript动态添加菜单项 const mls =["index.HTML", "readme.md" "i1.HTML" i2.html]
 底部有一个状态栏。

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音乐播放器</title>
+</head>
+<body>
+    <nav id="nav"></nav>
+    
+    <button id="newWindowBtn" style="margin: 20px;">新建窗口</button>
+    
+    <div id="statusBar" style="position: fixed; bottom: 0; width: 100%; background: #ddd; padding: 5px;"></div>
+
+    <script>
+        class MusicWindow {
+            constructor(id, statusBar) {
+                this.id = id;
+                this.isOpen = true;
+                this.isPlaying = false;
+                this.bpm = 60;
+                this.audioUrl = 'https://littleflute.github.io/gt1/mp3/j72_4_4.mp3';
+                this.interval = null;
+                this.currentBeat = 0;
+                
+                this.createWindow();
+                this.createStatusButton(statusBar);
+                this.createStyle();
+            }
+
+            createWindow() {
+                this.window = document.createElement('div');
+                this.window.className = 'window';
+                this.window.style.cssText = `
+                    position: fixed;
+                    left: ${Math.random()*300+100}px;
+                    top: ${Math.random()*300+100}px;
+                    background: white;
+                    border: 1px solid #666;
+                    z-index: 999;
+                `;
+
+                const titleBar = document.createElement('div');
+                titleBar.className = 'title-bar';
+                titleBar.innerHTML = `
+                    <span>窗口 ${this.id}</span>
+                    <button class="close-btn">×</button>
+                `;
+                titleBar.style.background = '#ccc';
+                titleBar.style.padding = '5px';
+                titleBar.style.cursor = 'move';
+
+                const content = document.createElement('div');
+                content.innerHTML = `
+                    <div class="player-controls">
+                        <input type="text" class="url-input" value="${this.audioUrl}" style="width:200px;">
+                        <input type="number" class="bpm-input" value="${this.bpm}" style="width:60px;">
+                        <button class="play-btn">▶</button>
+                    </div>
+                    <div class="beat-container"></div>
+                `;
+
+                this.window.append(titleBar, content);
+                document.body.appendChild(this.window);
+
+                // 事件监听
+                titleBar.querySelector('.close-btn').onclick = () => this.toggleWindow();
+                titleBar.addEventListener('mousedown', this.startDrag.bind(this));
+                this.window.querySelector('.play-btn').onclick = () => this.togglePlay();
+                this.createBeats();
+            }
+
+            createBeats() {
+                const container = this.window.querySelector('.beat-container');
+                container.style.display = 'flex';
+                for(let i=0; i<4; i++) {
+                    const beat = document.createElement('div');
+                    beat.className = 'beat';
+                    beat.style.margin = '10px';
+                    beat.style.padding = '5px';
+                    beat.style.background = `hsl(${i*90}, 50%, 80%)`;
+                    
+                    for(let j=0; j<4; j++) {
+                        const btn = document.createElement('div');
+                        btn.className = 'beat-btn';
+                        btn.style.width = '20px';
+                        btn.style.height = '20px';
+                        btn.style.margin = '2px';
+                        btn.style.background = '#ddd';
+                        btn.style.display = 'inline-block';
+                        beat.appendChild(btn);
+                    }
+                    container.appendChild(beat);
+                }
+            }
+
+            startDrag(e) {
+                if(e.target.classList.contains('close-btn')) return;
+                
+                const rect = this.window.getBoundingClientRect();
+                let shiftX = e.clientX - rect.left;
+                let shiftY = e.clientY - rect.top;
+
+                const moveAt = (x, y) => {
+                    this.window.style.left = x - shiftX + 'px';
+                    this.window.style.top = y - shiftY + 'px';
+                }
+
+                const onMouseMove = (e) => {
+                    moveAt(e.clientX, e.clientY);
+                }
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', () => {
+                    document.removeEventListener('mousemove', onMouseMove);
+                }, {once: true});
+            }
+
+            toggleWindow() {
+                this.isOpen = !this.isOpen;
+                this.window.style.display = this.isOpen ? 'block' : 'none';
+                this.statusBtn.style.background = this.isOpen ? '#cfc' : '#fcc';
+            }
+
+            createStatusButton(statusBar) {
+                this.statusBtn = document.createElement('button');
+                this.statusBtn.textContent = `窗口 ${this.id}`;
+                this.statusBtn.style.margin = '0 5px';
+                this.statusBtn.onclick = () => this.toggleWindow();
+                statusBar.appendChild(this.statusBtn);
+            }
+
+            togglePlay() {
+                this.isPlaying = !this.isPlaying;
+                const playBtn = this.window.querySelector('.play-btn');
+                playBtn.textContent = this.isPlaying ? '⏸' : '▶';
+                
+                if(this.isPlaying) {
+                    this.startPlayback();
+                } else {
+                    clearInterval(this.interval);
+                }
+            }
+
+            startPlayback() {
+                const beatDuration = 60000 / this.bpm;
+                const audio = new Audio(this.audioUrl);
+                audio.play();
+                
+                this.interval = setInterval(() => {
+                    this.currentBeat = (this.currentBeat + 1) % 16;
+                    this.updateBeats();
+                }, beatDuration / 4);
+            }
+
+            updateBeats() {
+                const beatIndex = this.currentBeat % 4;
+                const measureIndex = Math.floor(this.currentBeat / 4);
+                
+                this.window.querySelectorAll('.beat').forEach((beat, i) => {
+                    beat.querySelectorAll('.beat-btn').forEach((btn, j) => {
+                        btn.style.background = (i === measureIndex && j === beatIndex) ? 
+                            `hsl(${i*90}, 70%, 50%)` : '#ddd';
+                    });
+                });
+            }
+
+            createStyle() {
+                const style = document.createElement('style');
+                style.textContent = `
+                    .window {
+                        box-shadow: 3px 3px 5px rgba(0,0,0,0.3);
+                    }
+                    .title-bar {
+                        user-select: none;
+                    }
+                    .beat-btn {
+                        transition: background 0.1s;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+
+        // 初始化导航
+        const mls = ["index.HTML", "readme.md", "i1.HTML", "i2.html"];
+        const nav = document.getElementById('nav');
+        mls.forEach(file => {
+            const link = document.createElement('a');
+            link.href = file;
+            link.textContent = file;
+            link.style.margin = '0 10px';
+            nav.appendChild(link);
+        });
+
+        // 创建窗口管理
+        let windowId = 1;
+        document.getElementById('newWindowBtn').onclick = () => {
+            new MusicWindow(windowId++, document.getElementById('statusBar'));
+        };
+
+        // 触摸支持
+        document.addEventListener('touchstart', e => {
+            e.preventDefault();
+        }, { passive: false });
+    </script>
+</body>
+</html>
