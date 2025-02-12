@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025/02</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .nav-menu {
+            background: #333;
+            font-family: Arial, sans-serif;
+        }
+
+        .menu-items {
+            display: flex;
+            list-style: none;
+        }
+
+        .menu-item {
+            position: relative;
+        }
+
+        .menu-item a {
+            color: white;
+            text-decoration: none;
+            padding: 1rem;
+            display: block;
+        }
+
+        .submenu {
+            display: none;
+            position: absolute;
+            background: #444;
+            min-width: 200px;
+            top: 100%;
+            left: 0;
+        }
+
+        .menu-item:hover .submenu {
+            display: block;
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            padding: 1rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .menu-items {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .menu-item:hover .submenu {
+                display: none;
+            }
+
+            .submenu {
+                position: static;
+                background: #555;
+                padding-left: 1rem;
+            }
+
+            .nav-menu.active .menu-items {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-container"></nav>
+    <p>
+        设计一个JavaScript类可以实现导航菜单。
+在设计一个网页测试这个类，随便添加几个实例。其中有一个菜单项连接到deep sick的主页。
+在手机上可以完美原型。
+    </p>
+
+    <script>
+        class NavMenu {
+            constructor(config) {
+                this.config = config;
+                this.init();
+                this.bindEvents();
+            }
+
+            init() {
+                this.nav = document.createElement('nav');
+                this.nav.className = 'nav-menu';
+                
+                this.toggleButton = document.createElement('button');
+                this.toggleButton.className = 'mobile-menu-toggle';
+                this.toggleButton.innerHTML = '☰';
+                
+                this.menuItems = document.createElement('ul');
+                this.menuItems.className = 'menu-items';
+                
+                this.config.items.forEach(item => {
+                    this.menuItems.appendChild(this.createMenuItem(item));
+                });
+
+                this.nav.appendChild(this.toggleButton);
+                this.nav.appendChild(this.menuItems);
+            }
+
+            createMenuItem(item) {
+                const li = document.createElement('li');
+                li.className = 'menu-item';
+                
+                const a = document.createElement('a');
+                a.href = item.href;
+                a.textContent = item.text;
+                
+                li.appendChild(a);
+
+                if (item.children) {
+                    const submenu = document.createElement('ul');
+                    submenu.className = 'submenu';
+                    item.children.forEach(child => {
+                        submenu.appendChild(this.createMenuItem(child));
+                    });
+                    li.appendChild(submenu);
+                }
+
+                return li;
+            }
+
+            bindEvents() {
+                this.toggleButton.addEventListener('click', () => this.toggleMenu());
+                
+                // 移动端子菜单切换
+                this.menuItems.querySelectorAll('.menu-item').forEach(item => {
+                    if (item.querySelector('.submenu')) {
+                        item.addEventListener('click', (e) => {
+                            if (window.innerWidth <= 768) {
+                                e.preventDefault();
+                                item.classList.toggle('active');
+                                item.querySelector('.submenu').style.display = 
+                                    item.classList.contains('active') ? 'block' : 'none';
+                            }
+                        });
+                    }
+                });
+
+                window.addEventListener('resize', () => this.handleResize());
+            }
+
+            toggleMenu() {
+                this.nav.classList.toggle('active');
+            }
+
+            handleResize() {
+                if (window.innerWidth > 768) {
+                    this.nav.classList.remove('active');
+                    this.menuItems.querySelectorAll('.submenu').forEach(sub => {
+                        sub.style.display = 'none';
+                    });
+                }
+            }
+        }
+
+        // 创建菜单配置
+        const menuConfig = {
+            items: [
+                {
+                    text: '首页',
+                    href: '/'
+                },
+                {
+                    text: '[..]',
+                    href: '..'
+                },
+                {
+                    text: '[2025/02]->',
+                    href: '#'
+                },
+                {
+                    text: '[03]',
+                    href: '03'
+                },
+                {
+                    text: '[04]',
+                    href: '04'
+                },
+                {
+                    text: '[08]',
+                    href: '08'
+                },
+                {
+                    text: '[10]',
+                    href: '10'
+                },
+                {
+                    text: '[11]',
+                    href: '11'
+                },
+                {
+                    text: '[12]',
+                    href: '12'
+                },
+                {
+                    text: '[13]',
+                    href: '13'
+                },
+                {
+                    text: '深度求索',
+                    href: 'https://www.deepseek.com'
+                },
+                {
+                    text: '产品',
+                    href: '#',
+                    children: [
+                        { text: '产品1', href: '#' },
+                        { text: '产品2', href: '#' }
+                    ]
+                },
+                {
+                    text: '联系我们',
+                    href: '#contact'
+                }
+            ]
+        };
+
+        // 初始化导航菜单
+        const navMenu = new NavMenu(menuConfig);
+        document.querySelector('.nav-container').appendChild(navMenu.nav);
+    </script>
+</body>
+</html>
