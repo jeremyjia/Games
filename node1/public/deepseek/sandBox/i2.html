@@ -87,9 +87,20 @@
       gap: 8px;
       flex-wrap: wrap;
     }
+    
+    button.xdDark {
+      background: #1f1a1a !important;
+      box-shadow: 0 0 8px rgba(54, 52, 52, 0.5);
+    }
+    button.xdLight {
+      background: #a39393 !important;
+      box-shadow: 0 0 8px rgba(54, 52, 52, 0.5);
+    }
   </style>
 </head>
 <body>
+  <script src="https://littleflute.github.io/Games/js/blclass.js"></script>
+  <script src="https://littleflute.github.io/Games/js/w3.js"></script>
   <div class="toolbar">
     <div class="code-examples">
       <button onclick="runCode()">▶️ Run</button>
@@ -97,7 +108,9 @@
       <button onclick="loadExample('html')">📄 HTML</button>
       <button onclick="loadExample('css')">🎨 CSS</button>
       <button onclick="loadExample('js')">⚙️ JavaScript</button>
+      <button id="id_4_load_issue_by_number" onclick="loadIssueByNumber()">i</button>
     </div>
+    <div id="id_4_i21_toolbar">i21:</div>
   </div>
 
   <div class="container">
@@ -194,6 +207,56 @@ document.body.appendChild(btn);`
       runCode();
     }
 
+    function loadIssueByNumber(){ 
+      const btn = document.getElementById('id_4_load_issue_by_number');
+      const is = [1,2,3,4,21,741];
+      const bs = [];
+      if(!btn.w){ 
+        btn.w = blo0.blMD("id_4_w_i21","i21",520,150,330,50,blGrey[0]); 
+
+        const tb1 = blo0.blDiv(btn.w,btn.w.id+"tb1","i:","gray");
+        const tb2 = blo0.blDiv(btn.w,btn.w.id+"tb2","i:","gray");
+        const v4i = blo0.blDiv(btn.w,btn.w.id+"v4i","v4i","gray");
+        const xdDbg = blo0.blDiv(btn.w,btn.w.id+"xdDbg","xdDbg:","gray");
+        window.alert = function(txt){
+          xdDbg.innerHTML = "xdDbg: " + blo0.blTime(1) + ": " + txt;
+        }
+        for(i in is){
+          const b = blo0.blBtn(tb1,tb1.id+"btn4Issue"+is[i],"i"+is[i],"gray");
+          b.classList.add('xdDark');
+          b.onclick = function(_bs,_b,_is,_i){
+            return function(){
+              for(j in _bs){
+                _bs[j].classList.remove('xdLight');
+                var i = blo0.blGetGithubIssueByNumber("jeremyjia","Games",_is[_i],function(res){ 
+                  document.getElementById('code').value = JSON.stringify(res);
+                });
+              } 
+              _b.classList.add('xdLight'); 
+            }
+          }(bs,b,is,i);
+          bs.push(b); 
+        }
+        for(i in is){
+          const b = blo0.blBtn(tb2,tb2.id+"btn4Issue"+is[i],"i"+is[i],"gray");
+          b.classList.add('xdDark');
+          b.onclick = function(_bs,_b,_is,_i){
+            return function(){
+              for(j in _bs){
+                _bs[j].classList.remove('xdLight');
+                blo0.blGetGithubCs2("jeremyjia","Games",_is[_i],function(res){ 
+                  document.getElementById('code').value = JSON.stringify(res);
+                });
+              } 
+              _b.classList.add('xdLight'); 
+            }
+          }(bs,b,is,i);
+          bs.push(b); 
+        }
+        
+      } 
+      _on_off_div(btn,btn.w);
+    }
     // 初始运行示例
     loadExample('html');
   </script>
