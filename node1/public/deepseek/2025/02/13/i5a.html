@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>复读机测试</title>
+    <style>
+        .window {
+            position: fixed;
+            border: 1px solid #ccc;
+            background: white;
+            width: 300px;
+            z-index: 1000;
+        }
+        .header {
+            background: #f0f0f0;
+            padding: 5px;
+            cursor: move;
+        }
+        .content {
+            padding: 10px;
+        }
+        .toolbar button {
+            margin: 2px;
+        }
+        .selected {
+            background: yellow;
+        }
+        #statusBar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #eee;
+            padding: 5px;
+        }
+        .testCaseBtn {
+            margin: 2px;
+        }
+        .progress-container {
+            margin: 10px 0;
+        }
+        .score div {
+            display: inline-block;
+            margin: 2px;
+            padding: 5px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div id="statusBar">
+        <button onclick="createTestCase()">新建用例</button>
+    </div>
+
+<script>
+class Repeater {
+    constructor() {
+        this.audio = new Audio();
+        this.startTime = 0;
+        this.endTime = 0;
+        this.isPlaying = false;
+        this.intervalId = null;
+        this.beatCount = 1;
+        this.createWindow();
+        this.initAudio();
+    }
+
+    createWindow() {
+        this.window = document.createElement('div');
+        this.window.className = 'window';
+        this.window.style.left = Math.random() * 200 + 'px';
+        this.window.style.top = Math.random() * 200 + 'px';
+        
+        // 窗口标题
+        const header = document.createElement('div');
+        header.className = 'header';
+        header.textContent = '复读机';
+        this.window.appendChild(header);
+
+        // 内容区域
+        const content = document.createElement('div');
+        content.className = 'content';
+        
+        // URL输入框
+        this.urlInput = document.createElement('input');
+        this.urlInput.type = 'text';
+        this.urlInput.style.width = '100%';
+        content.appendChild(this.urlInput);
+
+        // 工具条
+        const toolbar = document.createElement('div');
+        toolbar.className = 'toolbar';
+        const urls = [
+            'https://littleflute.github.io/english/NewConceptEnglish/Book2/2.mp3',
+            'https://littleflute.github.io/english/NewConceptEnglish/Book2/10.mp3',
+            'https://littleflute.github.io/gt1/mp3/j72_4_4.mp3'
+        ];
+        urls.forEach(url => {
+            const btn = document.createElement('button');
+            btn.textContent = url.split('/').pop();
+            btn.onclick = () => this.setUrl(url, btn);
+            toolbar.appendChild(btn);
+        });
+        content.appendChild(toolbar);
+
+        // 进度条控制
+        const progressContainer = document.createElement('div');
+        progressContainer.className = 'progress-container';
+        this.startInput = document.createElement('input');
+        this.startInput.type = 'range';
+        this.startInput.max = 100;
+        this.endInput = document.createElement('input');
+        this.endInput.type = 'range';
+        this.endInput.max = 100;
+        progressContainer.appendChild(this.startInput);
+        progressContainer.appendChild(this.endInput);
+        content.appendChild(progressContainer);
+
+        // 播放控制
+        const playBtn = document.createElement('button');
+        playBtn.textContent = '播放';
+        playBtn.onclick = () => this.togglePlay();
+        content.appendChild(playBtn);
+
+        // 乐谱区域
+        this.scoreDiv = document.createElement('div');
+        this.scoreDiv.className = 'score';
+        content.appendChild(this.scoreDiv);
+
+        this.window.appendChild(content);
+        document.body.appendChild(this.window);
+
+        // 拖动处理
+        this.makeDraggable(header, this.window);
+    }
+
+    setUrl(url, btn) {
+        this.urlInput.value = url;
+        document.querySelectorAll('.toolbar button').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        this.audio.src = url;
+    }
+
+    togglePlay() {
+        if(this.isPlaying) {
+            this.pause();
+        } else {
+            this.play();
+        }
+    }
+
+    play() {
+        this.isPlaying = true;
+        this.audio.currentTime = this.startTime;
+        this.audio.play();
+        
+        // 初始化乐谱
+        this.scoreDiv.innerHTML = '';
+        this.beatCount = 1;
+        const bpm = 60; // 默认BPM
+        const interval = 60 / bpm * 1000;
+        this.intervalId = setInterval(() => {
+            const beat = document.createElement('div');
+            beat.textContent = this.beatCount++;
+            this.scoreDiv.appendChild(beat);
+        }, interval);
+    }
+
+    pause() {
+        this.isPlaying = false;
+        this.audio.pause();
+        clearInterval(this.intervalId);
+    }
+
+    initAudio() {
+        this.audio.addEventListener('timeupdate', () => {
+            const progress = (this.audio.currentTime / this.audio.duration) * 100;
+            if(this.audio.currentTime > this.endTime) {
+                this.audio.currentTime = this.startTime;
+            }
+        });
+    }
+
+    makeDraggable(header, element) {
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        header.onmousedown = dragMouseDown;
+        header.ontouchstart = dragTouchStart;
+
+        function dragMouseDown(e) {
+            e.preventDefault();
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onmouseup = closeDragElement;
+            document.onmousemove = elementDrag;
+        }
+
+        function dragTouchStart(e) {
+            pos3 = e.touches[0].clientX;
+            pos4 = e.touches[0].clientY;
+            document.ontouchend = closeDragElement;
+            document.ontouchmove = elementDrag;
+        }
+
+        function elementDrag(e) {
+            e.preventDefault();
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+            pos1 = pos3 - clientX;
+            pos2 = pos4 - clientY;
+            pos3 = clientX;
+            pos4 = clientY;
+            element.style.top = (element.offsetTop - pos2) + "px";
+            element.style.left = (element.offsetLeft - pos1) + "px";
+        }
+
+        function closeDragElement() {
+            document.onmouseup = null;
+            document.onmousemove = null;
+            document.ontouchend = null;
+            document.ontouchmove = null;
+        }
+    }
+}
+
+// 测试用例管理
+let testCases = [];
+function createTestCase() {
+    const repeater = new Repeater();
+    const btn = document.createElement('button');
+    btn.className = 'testCaseBtn';
+    btn.textContent = `用例 ${testCases.length + 1}`;
+    btn.onclick = () => {
+        repeater.window.style.display = repeater.window.style.display === 'none' ? 'block' : 'none';
+        btn.style.background = repeater.window.style.display === 'none' ? 'red' : 'green';
+    };
+    testCases.push({repeater, btn});
+    document.getElementById('statusBar').appendChild(btn);
+}
+</script>
+</body>
+</html>
