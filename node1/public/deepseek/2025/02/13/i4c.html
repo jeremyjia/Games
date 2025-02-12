@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>复读机测试</title>
+    <style>
+        .floating-window {
+            position: fixed;
+            width: 300px;
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            z-index: 1000;
+            touch-action: none;
+        }
+        
+        .toolbar {
+            display: flex;
+            gap: 5px;
+            margin: 10px 0;
+        }
+        
+        .toolbar button {
+            flex: 1;
+            padding: 5px;
+            cursor: pointer;
+        }
+        
+        .selected {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .progress-container {
+            position: relative;
+            height: 30px;
+        }
+        
+        #statusBar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #333;
+            color: white;
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .test-case-btn {
+            padding: 5px 10px;
+            background: #666;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+        
+        audio { width: 100%; }
+    </style>
+</head>
+<body>
+    <script>
+        class Repeater {
+            constructor() {
+                this.window = document.createElement('div');
+                this.window.className = 'floating-window';
+                this.audio = new Audio();
+                this.isPlaying = false;
+                this.startTime = 0;
+                this.endTime = 0;
+                this.initUI();
+                this.makeDraggable();
+            }
+
+            initUI() {
+                // URL输入框
+                const urlInput = document.createElement('input');
+                urlInput.type = 'text';
+                urlInput.style.width = '100%';
+                
+                // 工具条
+                const toolbar = document.createElement('div');
+                toolbar.className = 'toolbar';
+                const urls = [
+                    'https://littleflute.github.io/english/NewConceptEnglish/Book2/2.mp3',
+                    'https://littleflute.github.io/english/NewConceptEnglish/Book2/10.mp3',
+                    'https://littleflute.github.io/gt1/mp3/j72_4_4.mp3'
+                ];
+                
+                urls.forEach(url => {
+                    const btn = document.createElement('button');
+                    btn.textContent = url.split('/').pop();
+                    btn.onclick = () => {
+                        urlInput.value = url;
+                        document.querySelectorAll('.toolbar button').forEach(b => 
+                            b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        this.loadAudio(url);
+                    };
+                    toolbar.appendChild(btn);
+                });
+
+                // 进度控制
+                const progress = document.createElement('input');
+                progress.type = 'range';
+                progress.min = 0;
+                progress.max = 100;
+                progress.style.width = '100%';
+
+                // 时间显示
+                const timeDisplay = document.createElement('div');
+                
+                // 播放控制
+                const playBtn = document.createElement('button');
+                playBtn.textContent = '播放';
+                playBtn.onclick = () => this.togglePlay();
+
+                // 组装界面
+                this.window.append(
+                    urlInput,
+                    toolbar,
+                    progress,
+                    timeDisplay,
+                    playBtn
+                );
+
+                document.body.appendChild(this.window);
+
+                // 音频加载处理
+                this.audio.onloadedmetadata = () => {
+                    progress.max = this.audio.duration;
+                    this.endTime = this.audio.duration;
+                };
+                
+                this.audio.ontimeupdate = () => {
+                    progress.value = this.audio.currentTime;
+                    if(this.audio.currentTime >= this.endTime) {
+                        this.audio.currentTime = this.startTime;
+                        this.audio.play();
+                    }
+                };
+            }
+
+            loadAudio(url) {
+                this.audio.src = url;
+                this.audio.load();
+            }
+
+            togglePlay() {
+                if(this.isPlaying) {
+                    this.audio.pause();
+                } else {
+                    this.audio.currentTime = this.startTime;
+                    this.audio.play();
+                }
+                this.isPlaying = !this.isPlaying;
+            }
+
+            makeDraggable() {
+                let isDragging = false;
+                let offset = [0,0];
+                
+                this.window.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    offset = [
+                        e.clientX - this.window.offsetLeft,
+                        e.clientY - this.window.offsetTop
+                    ];
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if(isDragging) {
+                        this.window.style.left = (e.clientX - offset[0]) + 'px';
+                        this.window.style.top = (e.clientY - offset[1]) + 'px';
+                    }
+                });
+
+                document.addEventListener('mouseup', () => {
+                    isDragging = false;
+                });
+
+                // 触摸事件支持
+                this.window.addEventListener('touchstart', (e) => {
+                    isDragging = true;
+                    offset = [
+                        e.touches[0].clientX - this.window.offsetLeft,
+                        e.touches[0].clientY - this.window.offsetTop
+                    ];
+                }, {passive: true});
+
+                document.addEventListener('touchmove', (e) => {
+                    if(isDragging) {
+                        this.window.style.left = (e.touches[0].clientX - offset[0]) + 'px';
+                        this.window.style.top = (e.touches[0].clientY - offset[1]) + 'px';
+                    }
+                }, {passive: true});
+
+                document.addEventListener('touchend', () => {
+                    isDragging = false;
+                });
+            }
+        }
+
+        // 测试用例管理
+        class TestManager {
+            constructor() {
+                this.cases = [];
+                this.statusBar = document.createElement('div');
+                this.statusBar.id = 'statusBar';
+                document.body.appendChild(this.statusBar);
+                
+                const newCaseBtn = document.createElement('button');
+                newCaseBtn.textContent = '新建用例';
+                newCaseBtn.onclick = () => this.createTestCase();
+                this.statusBar.appendChild(newCaseBtn);
+            }
+
+            createTestCase() {
+                const repeater = new Repeater();
+                const toggleBtn = document.createElement('button');
+                toggleBtn.className = 'test-case-btn';
+                toggleBtn.textContent = `用例 ${this.cases.length + 1}`;
+                
+                toggleBtn.onclick = () => {
+                    repeater.window.style.display = 
+                        repeater.window.style.display === 'none' ? 'block' : 'none';
+                    toggleBtn.style.background = 
+                        repeater.window.style.display === 'none' ? '#666' : '#4CAF50';
+                };
+
+                this.cases.push({repeater, toggleBtn});
+                this.statusBar.appendChild(toggleBtn);
+            }
+        }
+
+        // 初始化测试管理器
+        const testManager = new TestManager();
+    </script>
+</body>
+</html>
