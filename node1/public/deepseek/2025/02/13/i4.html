@@ -5,217 +5,291 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>复读机测试</title>
     <style>
-        .repeater-window {
+        body {
+            margin: 0;
+            padding-bottom: 60px;
+        }
+        
+        .floating-window {
             position: fixed;
-            width: 300px;
+            top: 50px;
+            left: 20px;
+            width: 90%;
+            max-width: 400px;
             background: white;
             border: 1px solid #ccc;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            border-radius: 5px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
             z-index: 1000;
-            resize: both;
-            overflow: auto;
         }
-
+        
         .window-header {
+            padding: 10px;
             background: #f0f0f0;
-            padding: 8px;
             cursor: move;
             user-select: none;
+            border-bottom: 1px solid #ddd;
+            border-radius: 5px 5px 0 0;
         }
-
-        .window-body {
-            padding: 10px;
+        
+        .window-content {
+            padding: 15px;
         }
-
+        
         .toolbar {
             display: flex;
             gap: 5px;
-            margin: 10px 0;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
         }
-
+        
         .toolbar button {
-            flex: 1;
-            padding: 5px;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            background: #fff;
+            border-radius: 3px;
+            cursor: pointer;
         }
-
-        .progress-container {
+        
+        .toolbar button.active {
+            background: #4CAF50;
+            color: white;
+            border-color: #45a049;
+        }
+        
+        .audio-url {
+            width: 100%;
+            padding: 8px;
             margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 3px;
         }
-
-        .time-inputs {
-            display: flex;
-            gap: 5px;
+        
+        .progress-controls {
+            margin: 15px 0;
+        }
+        
+        .progress-controls input[type="range"] {
+            width: 100%;
             margin: 5px 0;
         }
-
-        .time-inputs input {
-            width: 80px;
-            padding: 3px;
+        
+        .play-button {
+            width: 100%;
+            padding: 10px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
-
+        
         #status-bar {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: #eee;
-            padding: 5px;
+            background: #f8f8f8;
+            padding: 10px;
             display: flex;
-            gap: 5px;
+            gap: 10px;
             flex-wrap: wrap;
+            border-top: 1px solid #ddd;
         }
-
-        audio { width: 100%; }
+        
+        #status-bar button {
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div id="status-bar">
-        <button onclick="createTestCase()">新建用例</button>
+        <button id="new-case">新建用例 ➕</button>
     </div>
-
-<script>
-class Repeater {
-    constructor() {
-        this.audio = new Audio();
-        this.isPlaying = false;
-        this.startTime = 0;
-        this.endTime = 0;
-        this.createWindow();
-        this.setupAudio();
-    }
-
-    createWindow() {
-        this.window = document.createElement('div');
-        this.window.className = 'repeater-window';
-        this.window.style.left = `${Math.random() * 300}px`;
-        this.window.style.top = `${Math.random() * 300}px`;
-
-        this.window.innerHTML = `
-            <div class="window-header">复读机</div>
-            <div class="window-body">
-                <input type="text" class="url-input" readonly>
-                <div class="toolbar">
-                    <button data-url="https://littleflute.github.io/english/NewConceptEnglish/Book2/2.mp3">链接1</button>
-                    <button data-url="https://littleflute.github.io/english/NewConceptEnglish/Book2/10.mp3">链接2</button>
-                    <button data-url="https://littleflute.github.io/gt1/mp3/j72_4_4.mp3">链接3</button>
-                </div>
-                <div class="progress-container">
-                    <audio controls></audio>
-                    <div class="time-inputs">
-                        <input type="number" class="start-time" placeholder="开始时间" min="0">
-                        <input type="number" class="end-time" placeholder="结束时间" min="0">
+    <script>
+        class RepeaterMachine {
+            static zIndex = 1000;
+            
+            constructor() {
+                // 创建窗口元素
+                this.window = document.createElement('div');
+                this.window.className = 'floating-window';
+                this.window.innerHTML = `
+                    <div class="window-header">复读机</div>
+                    <div class="window-content">
+                        <div class="toolbar"></div>
+                        <input type="text" class="audio-url" readonly>
+                        <div class="progress-controls">
+                            <label>起点: <input type="range" class="start-time" min="0" value="0"></label>
+                            <label>终点: <input type="range" class="end-time" min="0" value="0"></label>
+                        </div>
+                        <button class="play-button">播放</button>
                     </div>
-                </div>
-                <button class="play-btn">播放/暂停</button>
-            </div>
-        `;
-
-        document.body.appendChild(this.window);
-        this.setupDrag();
-        this.bindEvents();
-    }
-
-    setupDrag() {
-        const header = this.window.querySelector('.window-header');
-        let isDragging = false;
-        let offset = [0, 0];
-
-        const startDrag = (e) => {
-            isDragging = true;
-            offset = [
-                this.window.offsetLeft - (e.clientX || e.touches[0].clientX),
-                this.window.offsetTop - (e.clientY || e.touches[0].clientY)
-            ];
-        };
-
-        const doDrag = (e) => {
-            if (!isDragging) return;
-            this.window.style.left = `${(e.clientX || e.touches[0].clientX) + offset[0]}px`;
-            this.window.style.top = `${(e.clientY || e.touches[0].clientY) + offset[1]}px`;
-        };
-
-        const stopDrag = () => isDragging = false;
-
-        header.addEventListener('mousedown', startDrag);
-        header.addEventListener('touchstart', startDrag);
-        document.addEventListener('mousemove', doDrag);
-        document.addEventListener('touchmove', doDrag);
-        document.addEventListener('mouseup', stopDrag);
-        document.addEventListener('touchend', stopDrag);
-    }
-
-    bindEvents() {
-        // 工具栏按钮
-        this.window.querySelectorAll('.toolbar button').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const url = btn.dataset.url;
-                this.window.querySelector('.url-input').value = url;
-                this.audio.src = url;
-            });
-        });
-
-        // 播放按钮
-        this.window.querySelector('.play-btn').addEventListener('click', () => {
-            this.togglePlay();
-        });
-
-        // 时间输入
-        const updateTimeRange = () => {
-            this.startTime = Math.min(
-                parseFloat(this.window.querySelector('.start-time').value) || 0,
-                parseFloat(this.window.querySelector('.end-time').value) || this.audio.duration
-            );
-            this.endTime = Math.max(
-                parseFloat(this.window.querySelector('.end-time').value) || this.audio.duration,
-                this.startTime
-            );
-        };
-
-        this.window.querySelector('.start-time').addEventListener('change', updateTimeRange);
-        this.window.querySelector('.end-time').addEventListener('change', updateTimeRange);
-
-        // 音频事件
-        this.audio.addEventListener('timeupdate', () => {
-            if (this.audio.currentTime > this.endTime) {
-                this.audio.currentTime = this.startTime;
+                `;
+                document.body.appendChild(this.window);
+                
+                // 元素引用
+                this.toolbar = this.window.querySelector('.toolbar');
+                this.audioUrl = this.window.querySelector('.audio-url');
+                this.startTime = this.window.querySelector('.start-time');
+                this.endTime = this.window.querySelector('.end-time');
+                this.playButton = this.window.querySelector('.play-button');
+                this.audio = new Audio();
+                this.isPlaying = false;
+                this.boundCheckTime = this.checkTime.bind(this);
+                
+                // 初始化工具条
+                const links = [
+                    'https://littleflute.github.io/english/NewConceptEnglish/Book2/2.mp3',
+                    'https://littleflute.github.io/english/NewConceptEnglish/Book2/10.mp3',
+                    'https://littleflute.github.io/gt1/mp3/j72_4_4.mp3'
+                ];
+                
+                links.forEach((link, index) => {
+                    const btn = document.createElement('button');
+                    btn.textContent = `链接 ${index + 1}`;
+                    btn.addEventListener('click', () => {
+                        this.setAudioUrl(link);
+                        this.toolbar.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                    });
+                    this.toolbar.appendChild(btn);
+                });
+                
+                // 初始化首個音频
+                this.setAudioUrl(links[0]);
+                this.toolbar.firstChild.classList.add('active');
+                
+                // 播放控制
+                this.playButton.addEventListener('click', () => this.togglePlay());
+                
+                // 进度条控制
+                this.startTime.addEventListener('input', () => this.endTime.min = this.startTime.value);
+                this.endTime.addEventListener('input', () => this.startTime.max = this.endTime.value);
+                
+                // 拖拽功能
+                this.setupDrag();
+                
+                // 窗口定位
+                this.positionWindow();
             }
-        });
-    }
-
-    togglePlay() {
-        if (this.isPlaying) {
-            this.audio.pause();
-        } else {
-            this.audio.play();
+            
+            positionWindow() {
+                const count = document.querySelectorAll('.floating-window').length - 1;
+                this.window.style.left = 20 + (count * 30) + 'px';
+                this.window.style.top = 50 + (count * 30) + 'px';
+                this.window.style.zIndex = RepeaterMachine.zIndex++;
+            }
+            
+            setupDrag() {
+                let isDragging = false;
+                let startX, startY, initialX, initialY;
+                const header = this.window.querySelector('.window-header');
+                
+                const startDrag = (e) => {
+                    isDragging = true;
+                    startX = e.clientX || e.touches[0].clientX;
+                    startY = e.clientY || e.touches[0].clientY;
+                    initialX = this.window.offsetLeft;
+                    initialY = this.window.offsetTop;
+                    this.window.style.zIndex = RepeaterMachine.zIndex++;
+                };
+                
+                const doDrag = (e) => {
+                    if (!isDragging) return;
+                    const currentX = e.clientX || e.touches[0].clientX;
+                    const currentY = e.clientY || e.touches[0].clientY;
+                    const dx = currentX - startX;
+                    const dy = currentY - startY;
+                    this.window.style.left = initialX + dx + 'px';
+                    this.window.style.top = initialY + dy + 'px';
+                };
+                
+                const stopDrag = () => isDragging = false;
+                
+                header.addEventListener('mousedown', startDrag);
+                header.addEventListener('touchstart', startDrag);
+                document.addEventListener('mousemove', doDrag);
+                document.addEventListener('touchmove', doDrag);
+                document.addEventListener('mouseup', stopDrag);
+                document.addEventListener('touchend', stopDrag);
+            }
+            
+            setAudioUrl(url) {
+                this.audioUrl.value = url;
+                this.audio.src = url;
+                this.audio.load();
+                
+                this.audio.addEventListener('loadedmetadata', () => {
+                    const duration = Math.floor(this.audio.duration);
+                    this.startTime.max = duration;
+                    this.endTime.max = duration;
+                    this.endTime.value = duration;
+                });
+            }
+            
+            togglePlay() {
+                if (this.isPlaying) {
+                    this.pause();
+                } else {
+                    this.play();
+                }
+            }
+            
+            play() {
+                const start = parseFloat(this.startTime.value);
+                const end = parseFloat(this.endTime.value);
+                
+                if (start >= end) {
+                    alert('终点必须大于起点');
+                    return;
+                }
+                
+                this.audio.currentTime = start;
+                this.audio.play();
+                this.isPlaying = true;
+                this.playButton.textContent = '暂停';
+                this.audio.addEventListener('timeupdate', this.boundCheckTime);
+            }
+            
+            pause() {
+                this.audio.pause();
+                this.isPlaying = false;
+                this.playButton.textContent = '播放';
+                this.audio.removeEventListener('timeupdate', this.boundCheckTime);
+            }
+            
+            checkTime() {
+                if (this.audio.currentTime >= this.endTime.value) {
+                    this.audio.currentTime = this.startTime.value;
+                    this.audio.play();
+                }
+            }
         }
-        this.isPlaying = !this.isPlaying;
-    }
-
-    toggleWindow() {
-        this.window.style.display = this.window.style.display === 'none' ? 'block' : 'none';
-    }
-}
-
-// 测试用例管理
-let testCases = [];
-
-function createTestCase() {
-    const repeater = new Repeater();
-    const testCaseBtn = document.createElement('button');
-    let isVisible = true;
-    
-    testCaseBtn.textContent = `用例 ${testCases.length + 1}`;
-    testCaseBtn.style.backgroundColor = '#4CAF50';
-    
-    testCaseBtn.addEventListener('click', () => {
-        isVisible = !isVisible;
-        repeater.toggleWindow();
-        testCaseBtn.style.backgroundColor = isVisible ? '#4CAF50' : '#f44336';
-    });
-    
-    testCases.push(repeater);
-    document.getElementById('status-bar').appendChild(testCaseBtn);
-}
-</script>
+        
+        // 测试用例管理
+        let caseCount = 0;
+        document.getElementById('new-case').addEventListener('click', () => {
+            const machine = new RepeaterMachine();
+            caseCount++;
+            
+            const caseBtn = document.createElement('button');
+            caseBtn.textContent = `用例 ${caseCount}`;
+            let isOpen = true;
+            
+            const toggleWindow = () => {
+                isOpen = !isOpen;
+                machine.window.style.display = isOpen ? 'block' : 'none';
+                caseBtn.style.background = isOpen ? '#4CAF50' : '#ff4444';
+                caseBtn.style.color = 'white';
+            };
+            
+            caseBtn.addEventListener('click', toggleWindow);
+            document.getElementById('status-bar').appendChild(caseBtn);
+        });
+    </script>
 </body>
 </html>
