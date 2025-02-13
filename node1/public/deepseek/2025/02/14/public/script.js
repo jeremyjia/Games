@@ -1,6 +1,62 @@
 let paragraphCount = 0;
-// 在script.js中添加以下函数
+const ParagraphType = {
+    TEXT: 'text',
+    IMAGE: 'image'
+};
 let generatedHtmlContent = '';
+
+function createImageParagraph(file) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const div = document.createElement('div');
+            div.className = 'image-container';
+            div.innerHTML = `
+                <div class="image-preview">
+                    <img src="${e.target.result}">
+                    <button class="control-btn delete-btn" onclick="deleteParagraph(this)">删除</button>
+                </div>
+                <input type="text" 
+                       class="image-caption" 
+                       placeholder="请输入图片描述文字"
+                       oninput="updateDataModel()">
+            `;
+            resolve(div);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+async function insertImage(button, file) {
+    const currentContainer = button.closest('.paragraph-container, .image-container');
+    const newImage = await createImageParagraph(file);
+    currentContainer.insertAdjacentElement('afterend', newImage);
+    updateDataModel();
+}
+async function handleImageUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    if (!file.type.startsWith('image/')) {
+        alert('请选择有效的图片文件');
+        return;
+    }
+
+    // 获取最近的容器
+    const lastFocused = document.querySelector('.paragraph-container:focus-within, .image-container:focus-within');
+    const container = lastFocused || document.querySelector('.paragraph-container, .image-container');
+
+    const newImage = await createImageParagraph(file);
+    
+    if (container) {
+        container.insertAdjacentElement('afterend', newImage);
+    } else {
+        document.getElementById('paragraphsContainer').appendChild(newImage);
+    }
+    
+    updateDataModel();
+    event.target.value = ''; // 重置文件输入
+}
 
 function generateHtml() {
     updateDataModel();
@@ -19,47 +75,41 @@ function generateHtml() {
         <meta charset="UTF-8">
         <title>${title}</title>
         <style>
-            body {
-                font-family: Arial, sans-serif;
-                max-width: 800px;
-                margin: 40px auto;
-                padding: 20px;
-                line-height: 1.6;
+            /* 保留原有样式 */
+            .image-section {
+                margin: 30px 0;
+                text-align: center;
             }
-            .article-title {
-                color: #2E74B5;
-                font-size: 2.4em;
-                border-bottom: 3px solid #2EAD4B;
-                padding-bottom: 15px;
-                margin-bottom: 30px;
+            .image-section img {
+                max-width: 80%;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             }
-            .paragraph-section {
-                margin-bottom: 40px;
-            }
-            .paragraph-title {
-                color: #2EAD4B;
-                font-size: 1.8em;
-                margin-bottom: 15px;
-                font-family: Calibri, sans-serif;
-            }
-            .paragraph-body {
-                color: #444;
-                font-size: 1.1em;
-                font-family: "Times New Roman", serif;
-                line-height: 1.8;
-                text-indent: 2em;
+            .image-caption {
+                color: #666;
+                font-size: 0.9em;
+                margin-top: 10px;
+                font-style: italic;
             }
         </style>
     </head>
     <body>
         <h1 class="article-title">${title}</h1>
         
-        ${paragraphsData.map(p => `
-        <div class="paragraph-section">
-            <h2 class="paragraph-title">${p.title}</h2>
-            <p class="paragraph-body">${p.body}</p>
-        </div>
-        `).join('')}
+        ${paragraphsData.map(item => {
+            if (item.type === ParagraphType.IMAGE) {
+                return `
+                <div class="image-section">
+                    <img src="${item.src}" alt="${item.caption || ''}">
+                    ${item.caption ? `<div class="image-caption">${item.caption}</div>` : ''}
+                </div>`;
+            }
+            return `
+            <div class="paragraph-section">
+                <h2 class="paragraph-title">${item.title}</h2>
+                <p class="paragraph-body">${item.body}</p>
+            </div>`;
+        }).join('')}
     </body>
     </html>
     `;
@@ -67,7 +117,6 @@ function generateHtml() {
     generatedHtmlContent = htmlContent;
     showPreview(htmlContent);
 }
-
 function showPreview(content) {
     const modal = document.getElementById('previewModal');
     const iframe = document.getElementById('previewFrame');
@@ -141,10 +190,20 @@ function deleteParagraph(button) {
 }
 
 function updateDataModel() {
-    paragraphsData = Array.from(document.querySelectorAll('.paragraph-container')).map(container => ({
-        title: container.querySelector('.paragraph-title').value,
-        body: container.querySelector('.paragraph-body').value
-    }));
+    paragraphsData = Array.from(document.querySelectorAll('.paragraph-container, .image-container')).map(container => {
+        if (container.classList.contains('image-container')) {
+            return {
+                type: ParagraphType.IMAGE,
+                src: container.querySelector('img').src,
+                caption: container.querySelector('.image-caption').value
+            };
+        }
+        return {
+            type: ParagraphType.TEXT,
+            title: container.querySelector('.paragraph-title').value,
+            body: container.querySelector('.paragraph-body').value
+        };
+    });
 }
 function exportJson() {
     const data = {

@@ -12,6 +12,54 @@ app.post('/generate-doc', async (req, res) => {
     try {
         const { title, paragraphs } = req.body;
         
+        const docChildren = paragraphs.flatMap(item => {
+            if (item.type === 'image') {
+                const base64Data = item.src.replace(/^data:image\/\w+;base64,/, "");
+                const imageBuffer = Buffer.from(base64Data, 'base64');
+                
+                return [
+                    new Paragraph({
+                        children: [
+                            new ImageRun({
+                                data: imageBuffer,
+                                transformation: {
+                                    width: 500,
+                                    height: 300
+                                }
+                            })
+                        ],
+                        alignment: "CENTER"
+                    }),
+                    new Paragraph({
+                        text: item.caption || "图片描述",
+                        alignment: "CENTER",
+                        italics: true,
+                        color: "666666"
+                    })
+                ];
+            }
+            
+            return [
+                new Paragraph({
+                    heading: HeadingLevel.HEADING_2,
+                    children: [
+                        new TextRun({
+                            text: item.title,
+                            // ...原有文本样式
+                        })
+                    ]
+                }),
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: item.body,
+                            // ...原有文本样式
+                        })
+                    ]
+                })
+            ];
+        });
+
         const doc = new Document({
             sections: [{
                 properties: {
@@ -63,7 +111,9 @@ app.post('/generate-doc', async (req, res) => {
                             ],
                             spacing: { after: 600 }
                         })
-                    ])
+                    ]
+                ),
+                ...docChildren
                 ]
             }]
         });

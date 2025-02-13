@@ -55,48 +55,109 @@
         .delete-btn { background: #dc3545; }
         .insert-btn { background: #17a2b8; }
         .preview-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    display: none;
-    z-index: 1000;
-}
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            z-index: 1000;
+        }
 
-.preview-content {
-    width: 80%;
-    height: 90%;
-    background: white;
-    margin: 2% auto;
-    padding: 20px;
-    border-radius: 5px;
-    display: flex;
-    flex-direction: column;
-}
+        .preview-content {
+            width: 80%;
+            height: 90%;
+            background: white;
+            margin: 2% auto;
+            padding: 20px;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+        }
 
-.preview-iframe {
-    flex: 1;
-    border: none;
-    margin-top: 10px;
-}
+        .preview-iframe {
+            flex: 1;
+            border: none;
+            margin-top: 10px;
+        }
 
-.preview-toolbar {
-    display: flex;
-    gap: 10px;
-    padding: 10px 0;
-}
+        .preview-toolbar {
+            display: flex;
+            gap: 10px;
+            padding: 10px 0;
+        }
+
+        .image-container {
+            margin: 20px 0;
+            border: 2px dashed #ddd;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .image-preview {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .image-preview button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .image-caption {
+            width: 100%;
+            padding: 8px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            border: 1px solid #ddd;
+        }
+        /* 添加上传按钮样式 */
+        .image-upload-btn {
+            background: #17a2b8;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .image-upload-btn:hover {
+            background: #138496;
+        }
     </style>
 </head>
 <body>
     <div class="toolbar">
+        
+
         <button onclick="addParagraph()">➕ 新建段落</button>
         <button onclick="document.getElementById('fileInput').click()">📥 导入JSON</button>
+        <input type="file" id="fileInput" class="file-input" accept=".json">
         <button onclick="exportJson()">📤 导出JSON</button>
         <button id="generateBtn" onclick="generateDoc()">生成Word文档</button>
         <button onclick="generateHtml()">生成HTML预览</button>
-        <input type="file" id="fileInput" class="file-input" accept=".json">
+
+        <label class="image-upload-btn">
+            <input type="file" 
+                   id="imageUpload" 
+                   class="file-input" 
+                   accept="image/*" 
+                   onchange="handleImageUpload(event)">
+            📷 插入图片
+        </label>
+        <button onclick="document.getElementById('imageUpload').click()">
+            📷 插入图片
+        </button>
+
     </div>
     <input type="text" 
            id="articleTitle" 
@@ -106,15 +167,15 @@
     <div id="paragraphsContainer"></div>
 
     <!-- 在body底部添加预览模态框 -->
-<div class="preview-modal" id="previewModal">
-    <div class="preview-content">
-        <div class="preview-toolbar">
-            <button onclick="downloadHtml()">下载HTML</button>
-            <button onclick="closePreview()">关闭</button>
+    <div class="preview-modal" id="previewModal">
+        <div class="preview-content">
+            <div class="preview-toolbar">
+                <button onclick="downloadHtml()">下载HTML</button>
+                <button onclick="closePreview()">关闭</button>
+            </div>
+            <iframe class="preview-iframe" id="previewFrame"></iframe>
         </div>
-        <iframe class="preview-iframe" id="previewFrame"></iframe>
     </div>
-</div>
 
     <script src="script.js"></script>
 </body>
