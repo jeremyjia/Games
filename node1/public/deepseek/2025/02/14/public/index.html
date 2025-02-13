@@ -3,6 +3,8 @@
 <head>
     <title>Enhanced Word Generator</title>
     <style>
+        @import 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css';
+
         body { max-width: 800px; margin: 20px auto; padding: 20px; }
         .toolbar { 
             background: #f5f5f5; 
@@ -175,7 +177,7 @@
     background: white;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    z-index: 1001;
+    z-index: 2000;
     display: none;
 }
 
@@ -210,7 +212,9 @@
 .file-icon {
     width: 24px;
     margin-right: 10px;
+    content: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAhFJREFUeNqkk79Lw0Acx++9a1JJq6m0Dv5AUUQHRRQVHPwDHJxExEFBcHQRJwfBwUFBEMFZJxEHwUEQHPwLFBxEVCwqWqy1SWvS5tf13rvjfE1ajQMf3rvk7nPv+77cJYgxxt9sPM+jMAyBZVnAGAOe5wFjDMqyDEVRBNls9k8AQRAgx3GgUqmgdDqNisUiSqVSCMdxJMuyqG3b+HA4oNVqBQghXwBBFKGmaSiXyyFZlpFpmqhWqyFJkhDDMEiSJNRut9F4PEbH4xH5vu8DEGUZNRoNlM/nQb/fB4PBANRqNVQsFhHDMEhVVdTpdNA5m6ZpCAAAIc/zQBAE0G630WQyAfP5HNRqNVSv11E8HkeqqqJut4t2ux3a7/cYhBCCOI6D4/EYTKdTsFwuQbVaRc1mE8XjcZRIJFCv10O73Q7Zto0BABD6vg8OhwOYzWZgsViASqWCWq0WisViKJlMIk3T0Ha7Ra7rYgAARL7vY9d1wWKxAIvFApTLZdRut1E0GkWpVArpuo42mw3yPA8DACD0PA87jgOWyyVYLpegVCqhTqeDIpEISqfTyDAMtF6vked5GAAAIXEcDO0LmM/nIJ/Po263i0KhEMpkMsg0TbRarZDv+xgAACHGGDuOg1erFZjNZiCXy6Fer4dCoRDKZrNoPB4jy7JQEAT4C0AIYd/3sW3bYDqdgmw2i/r9PgqHwyiXyyHDMNBkMkFBEOD/AdB1HWuahjKZDBoMBigSiSDKMAxkmiYKggD/EWC1WmFd11E6nUbD4RBFo1FEmaaJRqMRopRi8A/ANE1sGAZKpVJoNBqheDyOKMMwkK7r6Hw+Y/AHYLlcYk3TUDKZRKZpong8jijDMJCmaeh0OmHwB2A+n2NN01AikUCj0Qglk0lE6bqOVFVFp9MJgz8A0+kUq6qK4vE4Go/HKJVKIUrTNKSqKjoejxj8AXjPZrPvQqHwTqfT7xdFUZ7v93vx5XJ5DgaD3e12e/wIMACVK2C+Z8RgYAAAAABJRU5ErkJggg==');
 }
+ 
 
 .file-actions {
     margin-left: auto;
@@ -267,6 +271,14 @@
             </div>
             <iframe class="preview-iframe" id="previewFrame"></iframe>
         </div>
+    </div>
+    <!-- index.html 新增部分 -->
+    <div class="server-files-modal" id="serverFilesModal">
+        <div class="server-files-header">
+            <h3>服务器文件</h3>
+            <button onclick="closeServerFiles()">×</button>
+        </div>
+        <div class="server-files-content" id="serverFilesContent"></div>
     </div>
 
     <script src="script.js"></script>

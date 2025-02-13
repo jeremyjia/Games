@@ -1,3 +1,491 @@
+server.js
+const express = require('express'); 
+const fs = require('fs');
+const path = require('path');
+const { Document, Packer, Paragraph, TextRun, HeadingLevel, ImageRun } = require('docx');
+const hljs = require('highlight.js'); // 新增代码高亮库
+const cors = require('cors');
+const app = express();
+const port = 3000;
+// 添加在路由之前
+const filesDir = path.join(__dirname, 'public/files');
+
+app.use(cors());
+app.use(express.static('public'));
+app.use(express.json());
+// 代码段落样式配置
+const codeStyle = {
+       font: "Courier New",
+       color: "2C3E50",
+       size: 22,
+       background: "F8F9FA",
+       border: {
+         color: "BDC3C7",
+         space: 20,
+         size: 4
+       }
+     };
+// 添加新的路由
+app.get('/get-files', (req, res) => {
+    fs.readdir(filesDir, { withFileTypes: true }, (err, files) => {
+        if (err) {
+            return res.status(500).json({ error: '无法读取文件列表' });
+        }
+        
+        const fileList = files.map(dirent => ({
+            name: dirent.name,
+            type: dirent.isDirectory() ? 'folder' : 'file',
+            size: dirent.isFile() ? fs.statSync(path.join(filesDir, dirent.name)).size : 0,
+            modified: fs.statSync(path.join(filesDir, dirent.name)).mtime
+        }));
+        
+        res.json(fileList);
+    });
+});
+app.post('/generate-doc', async (req, res) => {
+    try {
+        const { title, paragraphs } = req.body;
+        
+        const docChildren = paragraphs.flatMap(item => { 
+            if (item.type === 'code') {
+                              const codeLines = item.content.split('\n').map(line => 
+                                 new TextRun({
+                                     text: line,
+                                      break: 1
+                                  })
+                              );
+                              
+                              return [
+                                  new Paragraph({
+                                      heading: HeadingLevel.HEADING_3,
+                                      text: `代码片段 (${item.language})`,
+                                      spacing: { after: 200 }
+                                  }),
+                                  new Paragraph({
+                                      children: codeLines,
+                                      style: "Code",
+                                      border: codeStyle.border,
+                                      shading: {
+                                          fill: codeStyle.background
+                                      }
+                                  })
+                              ];
+                          }
+
+            if (item.type === 'image') {
+                const base64Data = item.src.replace(/^data:image\/\w+;base64,/, "");
+                const imageBuffer = Buffer.from(base64Data, 'base64');
+                if (imageBuffer.length > 2 * 1024 * 1024) { // 2MB限制
+                    throw new Error('图片大小不能超过2MB');
+                }
+                return [
+                    new Paragraph({
+                        children: [
+                            new ImageRun({
+                                data: imageBuffer,
+                                transformation: {
+                                    width: 500,
+                                    height: 300
+                                }
+                            })
+                        ],
+                        alignment: "CENTER"
+                    }),
+                    new Paragraph({
+                        text: item.caption || "图片描述",
+                        alignment: "CENTER",
+                        italics: true,
+                        color: "666666"
+                    })
+                ];
+            }
+            return [
+                new Paragraph({
+                    heading: HeadingLevel.HEADING_2,
+                    children: [
+                        new TextRun({
+                            text: item.title,
+                            // ...原有文本样式
+                        })
+                    ]
+                }),
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: item.body,
+                            // ...原有文本样式
+                        })
+                    ]
+                })
+            ];
+        });
+
+        const doc = new Document({
+            styles: {
+                              paragraphStyles: [{
+                                  id: "Code",
+                                  name: "Code Style",
+                                  basedOn: "Normal",
+                                  quickFormat: true,
+                                  run: {
+                                      font: codeStyle.font,
+                                      color: codeStyle.color,
+                                      size: codeStyle.size * 2
+                                  }
+                              }]
+                            },
+            sections: [{
+                properties: {
+                    page: {
+                        margin: {
+                            top: 1000,
+                            right: 1000,
+                            bottom: 1000,
+                            left: 1000,
+                        }
+                    }
+                },
+                children: [
+                    new Paragraph({
+                        heading: HeadingLevel.TITLE,
+                        children: [
+                            new TextRun({
+                                text: title,
+                                bold: true,
+                                color: "2E74B5",
+                                size: 48,
+                                font: "Arial"
+                            })
+                        ],
+                        spacing: { after: 800 }
+                    }),
+                    ...paragraphs.flatMap(p => [
+                        new Paragraph({
+                            heading: HeadingLevel.HEADING_2,
+                            children: [
+                                new TextRun({
+                                    text: p.title,
+                                    bold: true,
+                                    color: "2EAD4B",
+                                    size: 28,
+                                    font: "Calibri"
+                                })
+                            ],
+                            spacing: { after: 400 }
+                        }),
+                        new Paragraph({
+                            children: [
+                                new TextRun({
+                                    text: p.body,
+                                    color: "444444",
+                                    size: 24,
+                                    font: "Times New Roman"
+                                })
+                            ],
+                            spacing: { after: 600 }
+                        })
+                    ]
+                ),
+                ...docChildren
+                ]
+            }]
+        });
+
+        const buffer = await Packer.toBuffer(doc);
+        
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        res.setHeader('Content-Disposition', 'attachment; filename=generated-doc.docx');
+        res.send(buffer);
+    } catch (error) {
+        console.error('生成错误:', error);
+        res.status(500).json({ 
+            error: '生成失败',
+            message: error.message || '未知错误'
+        });
+    }
+});
+
+app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+});
+
+index.html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enhanced Word Generator</title>
+    <style>
+        body { max-width: 800px; margin: 20px auto; padding: 20px; }
+        .toolbar { 
+            background: #f5f5f5; 
+            padding: 10px; 
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .article-title { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 10px 0; 
+            font-size: 1.2em;
+        }
+        .paragraph-container { 
+            border: 1px solid #ddd; 
+            padding: 15px; 
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .paragraph-title, .paragraph-body {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+        }
+        .paragraph-title { font-weight: bold; }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover { background: #0056b3; }
+        #generateBtn { background: #28a745; }
+        #generateBtn:hover { background: #218838; }
+
+        .file-input { display: none; }
+        .paragraph-controls { 
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .control-btn {
+            padding: 5px 10px;
+            font-size: 0.9em;
+        }
+        .delete-btn { background: #dc3545; }
+        .insert-btn { background: #17a2b8; }
+        .preview-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            z-index: 1000;
+        }
+
+        .preview-content {
+            width: 80%;
+            height: 90%;
+            background: white;
+            margin: 2% auto;
+            padding: 20px;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-iframe {
+            flex: 1;
+            border: none;
+            margin-top: 10px;
+        }
+
+        .preview-toolbar {
+            display: flex;
+            gap: 10px;
+            padding: 10px 0;
+        }
+
+        .image-container {
+            margin: 20px 0;
+            border: 2px dashed #ddd;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .image-preview {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .image-preview button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .image-caption {
+            width: 100%;
+            padding: 8px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            border: 1px solid #ddd;
+        }
+        /* 添加上传按钮样式 */
+        .image-upload-btn {
+            background: #17a2b8;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .image-upload-btn:hover {
+            background: #138496;
+        }
+           .code-container {
+       background: #f8f9fa;
+       border: 2px solid #bdc3c7;
+       border-radius: 6px;
+       padding: 15px;
+       margin: 15px 0;
+       position: relative;
+   }
+   .code-header {
+       display: flex;
+       justify-content: space-between;
+       margin-bottom: 10px;
+   }
+   .code-filename {
+       font-weight: bold;
+       color: #2c3e50;
+   }
+   .language-select {
+       padding: 5px;
+       border-radius: 3px;
+       border: 1px solid #ddd;
+   }
+   pre {
+       margin: 0;
+       white-space: pre-wrap;
+   }
+   .code-content {
+       font-family: 'Courier New', monospace;
+       color: #2c3e50;
+       background: #fff;
+       padding: 10px;
+       border-radius: 4px;
+   }
+   .server-files-modal {
+    position: fixed;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 1001;
+    display: none;
+}
+
+.server-files-header {
+    padding: 12px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+    cursor: move;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 8px 8px 0 0;
+}
+
+.server-files-content {
+    padding: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.file-item:hover {
+    background: #f8f9fa;
+}
+
+.file-icon {
+    width: 24px;
+    margin-right: 10px;
+}
+
+.file-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+}
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        
+
+        <button onclick="addParagraph()">➕ 新建段落</button>
+        <label class="code-upload-btn">
+                   📁 导入代码
+                   <input type="file" 
+                         id="codeUpload" 
+                         class="file-input" 
+                         accept=".js,.html,.css,.py,.java" 
+                         onchange="handleCodeUpload(event)"
+                         multiple>
+               </label>
+
+        <button onclick="document.getElementById('fileInput').click()">📥 导入JSON</button>
+        <input type="file" id="fileInput" class="file-input" accept=".json">
+        <button onclick="exportJson()">📤 导出JSON</button>
+        <button id="generateBtn" onclick="generateDoc()">生成Word文档</button>
+        <button onclick="generateHtml()">生成HTML预览</button>
+
+        <label class="image-upload-btn">
+            <input type="file" 
+                   id="imageUpload" 
+                   class="file-input" 
+                   accept="image/*" 
+                   onchange="handleImageUpload(event)">
+            📷 插入图片
+        </label>
+        <button onclick="showServerFiles()">📂 服务器上的文件</button>
+
+    </div>
+    <input type="text" 
+           id="articleTitle" 
+           class="article-title" 
+           placeholder="请输入文章主标题">
+
+    <div id="paragraphsContainer"></div>
+
+    <!-- 在body底部添加预览模态框 -->
+    <div class="preview-modal" id="previewModal">
+        <div class="preview-content">
+            <div class="preview-toolbar">
+                <button onclick="downloadHtml()">下载HTML</button>
+                <button onclick="closePreview()">关闭</button>
+            </div>
+            <iframe class="preview-iframe" id="previewFrame"></iframe>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+script.js
 let paragraphCount = 0;
 const ParagraphType = {
     TEXT: 'text',
@@ -457,8 +945,6 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
          codeBlock.innerHTML = hljs.highlight(codeBlock.textContent, { language: lang }).value;
          updateDataModel();
      }
-
-// script.js 修正数据加载逻辑
 function loadDataIntoUI(data) {
     document.getElementById('articleTitle').value = data.title || '';
     const container = document.getElementById('paragraphsContainer');
@@ -466,10 +952,10 @@ function loadDataIntoUI(data) {
 
     data.paragraphs.forEach(p => {
         if (p.type === ParagraphType.CODE) {
-            const codeElement = createCodeElement(p.filename, p.content, p.language);
-            container.appendChild(codeElement);
+                   const codeElement = createCodeElement(p.filename, p.content, p.language);
+                   container.appendChild(codeElement);
         }
-        else if (p.type === ParagraphType.IMAGE) {  // 改为 else if
+        if (p.type === ParagraphType.IMAGE) {
             const imageDiv = document.createElement('div');
             imageDiv.className = 'image-container';
             imageDiv.innerHTML = `
@@ -549,3 +1035,5 @@ document.addEventListener('input', () => updateDataModel());
 
 // 初始添加一个段落
 addParagraph();
+
+请帮我修正以上代码。
