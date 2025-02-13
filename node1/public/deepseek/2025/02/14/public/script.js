@@ -5,7 +5,142 @@ const ParagraphType = {
    CODE: 'code'
 };
 let generatedHtmlContent = '';
-// 新增代码处理函数
+
+let isDragging = false;
+let dragStartX = 0;
+let dragStartY = 0;
+let modalOffsetX = 0;
+let modalOffsetY = 0;
+
+function showServerFiles() {
+    const modal = document.getElementById('serverFilesModal');
+    modal.style.display = 'block';
+    loadServerFiles();
+    
+    // 初始居中
+    modal.style.left = '50%';
+    modal.style.top = '100px';
+    modal.style.transform = 'translateX(-50%)';
+}
+
+function closeServerFiles() {
+    document.getElementById('serverFilesModal').style.display = 'none';
+}
+
+async function loadServerFiles() {
+    try {
+        const response = await fetch('/get-files');
+        const files = await response.json();
+        renderFiles(files);
+    } catch (error) {
+        document.getElementById('serverFilesContent').innerHTML = 
+            '<div class="error">加载文件列表失败</div>';
+    }
+}
+
+function renderFiles(files) {
+    const container = document.getElementById('serverFilesContent');
+    container.innerHTML = files.map(file => `
+        <div class="file-item">
+            <img src="${file.type === 'folder' ? 'folder-icon.png' : 'file-icon.png'}" 
+                 class="file-icon" 
+                 alt="${file.type}">
+            <div class="file-info">
+                <div>${file.name}</div>
+                <div class="file-meta">
+                    ${file.type === 'file' ? 
+                        `${(file.size/1024).toFixed(1)}KB | 
+                         ${new Date(file.modified).toLocaleDateString()}` : ''}
+                </div>
+            </div>
+            <div class="file-actions">
+                ${file.type === 'file' ? 
+                    `<button onclick="insertServerFile('${file.name}')">插入</button>` : ''}
+                <button onclick="downloadServerFile('${file.name}')">下载</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 添加拖动功能
+document.getElementById('serverFilesModal').addEventListener('mousedown', (e) => {
+    if (e.target.closest('.server-files-header')) {
+        isDragging = true;
+        const modal = document.getElementById('serverFilesModal');
+        const rect = modal.getBoundingClientRect();
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        modalOffsetX = dragStartX - rect.left;
+        modalOffsetY = dragStartY - rect.top;
+    }
+});
+
+document.addEventListener('mousemove', (e) => {
+    if (isDragging) {
+        const modal = document.getElementById('serverFilesModal');
+        modal.style.left = `${e.clientX - modalOffsetX}px`;
+        modal.style.top = `${e.clientY - modalOffsetY}px`;
+        modal.style.transform = 'none';
+    }
+});
+
+document.addEventListener('mouseup', () => {
+    isDragging = false;
+});
+
+// 文件操作函数
+function insertServerFile(filename) {
+    const fileType = filename.split('.').pop().toLowerCase();
+    
+    if (['png', 'jpg', 'jpeg', 'gif'].includes(fileType)) {
+        insertImageFromServer(filename);
+    } else if (['js', 'html', 'css', 'py'].includes(fileType)) {
+        insertCodeFromServer(filename);
+    } else {
+        alert('不支持此文件类型');
+    }
+}
+
+async function insertCodeFromServer(filename) {
+    try {
+        const response = await fetch(`/files/${filename}`);
+        const code = await response.text();
+        const codeElement = createCodeElement(filename, code, detectLanguage(filename));
+        document.getElementById('paragraphsContainer').appendChild(codeElement);
+        updateDataModel();
+        closeServerFiles();
+    } catch (error) {
+        alert('加载代码失败');
+    }
+}
+
+async function insertImageFromServer(filename) {
+    const imgUrl = `/files/${filename}`;
+    
+    const div = document.createElement('div');
+    div.className = 'image-container';
+    div.innerHTML = `
+        <div class="image-preview">
+            <img src="${imgUrl}">
+            <button class="control-btn delete-btn" onclick="deleteParagraph(this)">删除</button>
+        </div>
+        <input type="text" 
+               class="image-caption" 
+               placeholder="请输入图片描述文字"
+               oninput="updateDataModel()">
+    `;
+    
+    const container = document.getElementById('paragraphsContainer');
+    container.appendChild(div);
+    updateDataModel();
+    closeServerFiles();
+}
+
+function downloadServerFile(filename) {
+    window.open(`/files/${filename}`, '_blank');
+}
+
+
  function createCodeElement(filename, content, language = 'javascript') {
          const div = document.createElement('div');
          div.className = 'code-container';

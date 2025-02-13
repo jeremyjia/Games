@@ -166,7 +166,57 @@
        padding: 10px;
        border-radius: 4px;
    }
+   .server-files-modal {
+    position: fixed;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 1001;
+    display: none;
+}
 
+.server-files-header {
+    padding: 12px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+    cursor: move;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 8px 8px 0 0;
+}
+
+.server-files-content {
+    padding: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.file-item:hover {
+    background: #f8f9fa;
+}
+
+.file-icon {
+    width: 24px;
+    margin-right: 10px;
+}
+
+.file-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+}
     </style>
 </head>
 <body>
@@ -198,9 +248,7 @@
                    onchange="handleImageUpload(event)">
             📷 插入图片
         </label>
-        <button onclick="document.getElementById('imageUpload').click()">
-            📷 插入图片
-        </button>
+        <button onclick="showServerFiles()">📂 服务器上的文件</button>
 
     </div>
     <input type="text" 

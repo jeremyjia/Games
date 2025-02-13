@@ -1,9 +1,13 @@
 const express = require('express'); 
+const fs = require('fs');
+const path = require('path');
 const { Document, Packer, Paragraph, TextRun, HeadingLevel, ImageRun } = require('docx');
 const hljs = require('highlight.js'); // 新增代码高亮库
 const cors = require('cors');
 const app = express();
 const port = 3000;
+// 添加在路由之前
+const filesDir = path.join(__dirname, 'public/files');
 
 app.use(cors());
 app.use(express.static('public'));
@@ -20,7 +24,23 @@ const codeStyle = {
          size: 4
        }
      };
-
+// 添加新的路由
+app.get('/get-files', (req, res) => {
+    fs.readdir(filesDir, { withFileTypes: true }, (err, files) => {
+        if (err) {
+            return res.status(500).json({ error: '无法读取文件列表' });
+        }
+        
+        const fileList = files.map(dirent => ({
+            name: dirent.name,
+            type: dirent.isDirectory() ? 'folder' : 'file',
+            size: dirent.isFile() ? fs.statSync(path.join(filesDir, dirent.name)).size : 0,
+            modified: fs.statSync(path.join(filesDir, dirent.name)).mtime
+        }));
+        
+        res.json(fileList);
+    });
+});
 app.post('/generate-doc', async (req, res) => {
     try {
         const { title, paragraphs } = req.body;
