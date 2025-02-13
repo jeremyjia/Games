@@ -149,6 +149,7 @@ class NavigationMenu {
         const a = document.createElement('a');
         a.href = item.href;
         a.textContent = item.text;
+        a.title = item.title? `tip: ${item.title}`:"no tip"; 
         if (item.type === 'external') {
             a.target = '_blank';
             a.rel = 'noopener noreferrer';
