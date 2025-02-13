@@ -201,28 +201,7 @@ async function loadServerFiles() {
 }
 
 function renderFiles(files) {
-    const container = document.getElementById('serverFilesContent');
-    container.innerHTML = files.map(file => `
-        <div class="file-item">
-            <img src="${file.type === 'folder' ? 'folder-icon.png' : 'file-icon.png'}" 
-                 class="file-icon" 
-                 alt="${file.type}">
-            <div class="file-info">
-                <div>${file.name}</div>
-                <div class="file-meta">
-                    ${file.type === 'file' ? 
-                        `${(file.size/1024).toFixed(1)}KB | 
-                         ${new Date(file.modified).toLocaleDateString()}` : ''}
-                </div>
-            </div>
-            `<div class="file-actions">
-                ${file.type === 'file' ? 
-                    `<button onclick="insertServerFile('${file.name}')">插入</button>` : ''}
-                <button onclick="downloadServerFile('${file.name}')">下载</button>
-                <button onclick="save2Examples('${file.name}')">➕ 实例</button>
-            </div>`
-        </div>
-    `).join('');
+     
 }
 
 // 添加拖动功能
