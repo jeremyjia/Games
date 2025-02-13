@@ -1,4 +1,98 @@
 let paragraphCount = 0;
+// 在script.js中添加以下函数
+let generatedHtmlContent = '';
+
+function generateHtml() {
+    updateDataModel();
+    
+    const title = document.getElementById('articleTitle').value;
+    if (!title) {
+        alert('请输入文章标题');
+        return;
+    }
+
+    // 构建HTML内容
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>${title}</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                max-width: 800px;
+                margin: 40px auto;
+                padding: 20px;
+                line-height: 1.6;
+            }
+            .article-title {
+                color: #2E74B5;
+                font-size: 2.4em;
+                border-bottom: 3px solid #2EAD4B;
+                padding-bottom: 15px;
+                margin-bottom: 30px;
+            }
+            .paragraph-section {
+                margin-bottom: 40px;
+            }
+            .paragraph-title {
+                color: #2EAD4B;
+                font-size: 1.8em;
+                margin-bottom: 15px;
+                font-family: Calibri, sans-serif;
+            }
+            .paragraph-body {
+                color: #444;
+                font-size: 1.1em;
+                font-family: "Times New Roman", serif;
+                line-height: 1.8;
+                text-indent: 2em;
+            }
+        </style>
+    </head>
+    <body>
+        <h1 class="article-title">${title}</h1>
+        
+        ${paragraphsData.map(p => `
+        <div class="paragraph-section">
+            <h2 class="paragraph-title">${p.title}</h2>
+            <p class="paragraph-body">${p.body}</p>
+        </div>
+        `).join('')}
+    </body>
+    </html>
+    `;
+
+    generatedHtmlContent = htmlContent;
+    showPreview(htmlContent);
+}
+
+function showPreview(content) {
+    const modal = document.getElementById('previewModal');
+    const iframe = document.getElementById('previewFrame');
+    
+    modal.style.display = 'block';
+    iframe.srcdoc = content;
+}
+
+function closePreview() {
+    document.getElementById('previewModal').style.display = 'none';
+}
+
+function downloadHtml() {
+    const blob = new Blob([generatedHtmlContent], {type: 'text/html'});
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `document-${new Date().toISOString().slice(0,10)}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
 function createParagraphElement(title = '', body = '') {
     const div = document.createElement('div');
     div.className = 'paragraph-container';

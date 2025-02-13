@@ -54,6 +54,39 @@
         }
         .delete-btn { background: #dc3545; }
         .insert-btn { background: #17a2b8; }
+        .preview-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    z-index: 1000;
+}
+
+.preview-content {
+    width: 80%;
+    height: 90%;
+    background: white;
+    margin: 2% auto;
+    padding: 20px;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+}
+
+.preview-iframe {
+    flex: 1;
+    border: none;
+    margin-top: 10px;
+}
+
+.preview-toolbar {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+}
     </style>
 </head>
 <body>
@@ -62,6 +95,7 @@
         <button onclick="document.getElementById('fileInput').click()">📥 导入JSON</button>
         <button onclick="exportJson()">📤 导出JSON</button>
         <button id="generateBtn" onclick="generateDoc()">生成Word文档</button>
+        <button onclick="generateHtml()">生成HTML预览</button>
         <input type="file" id="fileInput" class="file-input" accept=".json">
     </div>
     <input type="text" 
@@ -70,6 +104,17 @@
            placeholder="请输入文章主标题">
 
     <div id="paragraphsContainer"></div>
+
+    <!-- 在body底部添加预览模态框 -->
+<div class="preview-modal" id="previewModal">
+    <div class="preview-content">
+        <div class="preview-toolbar">
+            <button onclick="downloadHtml()">下载HTML</button>
+            <button onclick="closePreview()">关闭</button>
+        </div>
+        <iframe class="preview-iframe" id="previewFrame"></iframe>
+    </div>
+</div>
 
     <script src="script.js"></script>
 </body>
