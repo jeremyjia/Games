@@ -221,6 +221,44 @@
     display: flex;
     gap: 8px;
 }
+
+/* 在style部分添加 */
+.example-btn {
+    padding: 8px 12px;
+    margin: 5px;
+    background: #17a2b8;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.example-btn:hover {
+    background: #138496;
+}
+
+.example-text-group {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+}
+.example-category {
+    margin: 15px 0;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+.example-item {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+}
+
+.example-item button.delete-btn {
+    padding: 3px 8px;
+    margin-left: 5px;
+    border-radius: 50%;
+}
     </style>
     <!-- 在index.html的head部分添加 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
@@ -256,6 +294,7 @@
             📷 插入图片
         </label>
         <button onclick="showServerFiles()">📂 服务器上的文件</button>
+        <button onclick="showExampleTexts()">📂 实例文本</button>
 
     </div>
     <input type="text" 
@@ -283,6 +322,15 @@
         </div>
         <div class="server-files-content" id="serverFilesContent"></div>
     </div>
+
+    <!-- 在index.html的body底部添加示例文本模态框 -->
+<div class="server-files-modal" id="exampleTextsModal">
+    <div class="server-files-header">
+        <h3>示例文本</h3>
+        <button onclick="closeExampleTexts()">×</button>
+    </div>
+    <div class="server-files-content" id="exampleTextsContent"></div>
+</div>
 
     <script src="script.js"></script>
 </body>

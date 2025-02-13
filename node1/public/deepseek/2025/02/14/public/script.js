@@ -11,6 +11,168 @@ let dragStartX = 0;
 let dragStartY = 0;
 let modalOffsetX = 0;
 let modalOffsetY = 0;
+// 在script.js中添加
+const exampleTexts = {
+    techIntro: "近年来，随着人工智能技术的快速发展，深度学习在自然语言处理领域取得了突破性进展。Transformer架构的提出，使得模型能够更好地捕捉长距离依赖关系。",
+    newsLead: "【本报快讯】今日上午，在科技创新大会上，多位行业专家表示，量子计算将在未来十年内进入实用化阶段。",
+    storyStart: "那是一个风雨交加的深夜，实验室的警报突然响起。我冲进主控室时，发现所有显示屏都在闪烁同样的警告信息——系统已突破临界值！",
+    analysis: "从数据可以看出，用户活跃度与功能更新呈现强正相关（r=0.82）。这表明持续优化产品功能对保持用户黏性至关重要。",
+    quote: "爱因斯坦曾说过：'想象力比知识更重要，因为知识是有限的，而想象力概括着世界的一切。' 这句话在当今科技创新中依然适用。"
+};
+async function save2Examples(filename) {
+    // 检查文件类型是否支持
+    const allowedExts = ['txt', 'md', 'html', 'css', 'js', 'py'];
+    const ext = filename.split('.').pop().toLowerCase();
+    if (!allowedExts.includes(ext)) {
+        alert('仅支持文本类型文件（如.txt,.md等）');
+        return;
+    }
+
+    try {
+        // 获取文件内容
+        const response = await fetch(`/files/${encodeURIComponent(filename)}`);
+        if (!response.ok) throw new Error('文件获取失败');
+        const content = await response.text();
+
+        // 生成唯一键
+        const baseKey = filename.replace(/\.[^.]+$/, '');
+        let finalKey = baseKey;
+        let counter = 1;
+        while (exampleTexts[finalKey]) {
+            finalKey = `${baseKey}_${counter}`;
+            counter++;
+        }
+
+        // 添加到示例文本
+        exampleTexts[finalKey] = content;
+        loadExampleTexts(); // 刷新显示
+        alert(`已添加示例文本: ${finalKey}`);
+    } catch (error) {
+        console.error('保存失败:', error);
+        alert(`保存失败: ${error.message}`);
+    }
+}
+
+let currentDraggingModal = null;
+
+function showExampleTexts() {
+    const modal = document.getElementById('exampleTextsModal');
+    modal.style.display = 'block';
+    loadExampleTexts();
+    
+    // 初始居中定位
+    modal.style.left = '50%';
+    modal.style.top = '100px';
+    modal.style.transform = 'translateX(-50%)';
+}
+
+function closeExampleTexts() {
+    document.getElementById('exampleTextsModal').style.display = 'none';
+}
+
+function loadExampleTexts() {
+    const container = document.getElementById('exampleTextsContent');
+    container.innerHTML = `
+        <div class="example-category">
+            <h4>预设示例</h4>
+            <div class="example-text-group">
+                ${Object.entries(exampleTexts)
+                    .filter(([key]) => !key.includes('_custom'))
+                    .map(([key, text]) => exampleButton(key, text))
+                    .join('')}
+            </div>
+        </div>
+        
+        <div class="example-category">
+            <h4>自定义示例</h4>
+            <div class="example-text-group">
+                ${Object.entries(exampleTexts)
+                    .filter(([key]) => key.includes('_custom'))
+                    .map(([key, text]) => exampleButton(key, text))
+                    .join('')}
+            </div>
+        </div>
+    `;
+}
+
+function exampleButton(key, text) {
+    return `
+        <div class="example-item">
+            <button class="example-btn" 
+                    onclick="insertExampleText('${key}')">
+                ${getButtonLabel(key)}
+            </button>
+            ${key.includes('_custom') ? 
+                `<button class="delete-btn control-btn" 
+                        onclick="deleteExample('${key}')">×</button>` : ''}
+        </div>
+    `;
+}
+
+function deleteExample(key) {
+    if (confirm(`确定要删除示例 "${key}" 吗？`)) {
+        delete exampleTexts[key];
+        loadExampleTexts();
+    }
+}
+
+function getButtonLabel(key) {
+    const labels = {
+        techIntro: "技术导语",
+        newsLead: "新闻开篇",
+        storyStart: "故事开头",
+        analysis: "数据分析",
+        quote: "名人引用"
+    }; 
+    return labels[key] || key.replace(/_/g, ' '); // 显示更友好的名称
+}
+
+function insertExampleText(key) {
+    const text = exampleTexts[key];
+    const activeElement = document.activeElement;
+    
+    if (activeElement && activeElement.classList.contains('paragraph-title')) {
+        insertAtCursor(activeElement, text);
+        updateDataModel();
+    } else if (activeElement && activeElement.classList.contains('paragraph-body')) {
+        insertAtCursor(activeElement, text);
+        updateDataModel();
+    } else {
+        addNewParagraphWithText(text);
+    }
+}
+
+function insertAtCursor(field, text) {
+    const start = field.selectionStart;
+    const end = field.selectionEnd;
+    field.value = field.value.substring(0, start) + 
+                 text + 
+                 field.value.substring(end);
+    // 移动光标到插入内容之后
+    field.selectionStart = field.selectionEnd = start + text.length;
+    field.focus();
+}
+
+function addNewParagraphWithText(text) {
+    const newParagraph = createParagraphElement();
+    newParagraph.querySelector('.paragraph-body').value = text;
+    document.getElementById('paragraphsContainer').appendChild(newParagraph);
+    updateDataModel();
+}
+
+// 模态窗口拖动逻辑
+document.querySelectorAll('.server-files-modal').forEach(modal => {
+    modal.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.server-files-header')) {
+            currentDraggingModal = modal;
+            const rect = modal.getBoundingClientRect();
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            modalOffsetX = dragStartX - rect.left;
+            modalOffsetY = dragStartY - rect.top;
+        }
+    });
+});
 
 function showServerFiles() {
     const modal = document.getElementById('serverFilesModal');
@@ -53,11 +215,12 @@ function renderFiles(files) {
                          ${new Date(file.modified).toLocaleDateString()}` : ''}
                 </div>
             </div>
-            <div class="file-actions">
+            `<div class="file-actions">
                 ${file.type === 'file' ? 
                     `<button onclick="insertServerFile('${file.name}')">插入</button>` : ''}
                 <button onclick="downloadServerFile('${file.name}')">下载</button>
-            </div>
+                <button onclick="save2Examples('${file.name}')">➕ 实例</button>
+            </div>`
         </div>
     `).join('');
 }
@@ -82,10 +245,16 @@ document.addEventListener('mousemove', (e) => {
         modal.style.top = `${e.clientY - modalOffsetY}px`;
         modal.style.transform = 'none';
     }
+    if (currentDraggingModal) {
+        currentDraggingModal.style.left = `${e.clientX - modalOffsetX}px`;
+        currentDraggingModal.style.top = `${e.clientY - modalOffsetY}px`;
+        currentDraggingModal.style.transform = 'none';
+    }
 });
 
 document.addEventListener('mouseup', () => {
     isDragging = false;
+    currentDraggingModal = null;
 });
 
 // 文件操作函数
