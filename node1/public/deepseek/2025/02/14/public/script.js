@@ -347,7 +347,7 @@ function downloadServerFile(filename) {
 
          return div;
      }
-     
+
     // 添加复制函数
 function copyCode(button) {
     const code = button.closest('.code-container').querySelector('code').textContent;
@@ -428,6 +428,13 @@ async function handleImageUpload(event) {
         alert('仅支持PNG、JPEG、GIF和BMP格式的图片');
         return;
     }
+    // 添加大小检查
+    if (file.size > 2 * 1024 * 1024) {
+        alert('图片大小不能超过2MB');
+        event.target.value = '';
+        return;
+    }
+    
 
     // 获取最近的容器
     const lastFocused = document.querySelector('.paragraph-container:focus-within, .image-container:focus-within');
