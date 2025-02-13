@@ -7,7 +7,7 @@ const cors = require('cors');
 const app = express();
 const port = 3000;
 // 添加在路由之前
-const filesDir = path.join(__dirname, 'public/files');
+const filesDir = path.join(__dirname, '');
 
 app.use(cors());
 app.use(express.static('public'));
