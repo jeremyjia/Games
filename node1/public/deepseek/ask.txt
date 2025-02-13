@@ -1,6 +1,4 @@
-
 server.js
-
 const express = require('express'); 
 const fs = require('fs');
 const path = require('path');
@@ -98,6 +96,19 @@ app.post('/generate-doc', async (req, res) => {
                         alignment: "CENTER",
                         italics: true,
                         color: "666666"
+                    })
+                ];
+            }
+            if (item.type === 'text') {
+                return [
+                    new Paragraph({
+                        heading: HeadingLevel.HEADING_2,
+                        text: item.title,
+                        spacing: { after: 200 }
+                    }),
+                    new Paragraph({
+                        text: item.body,
+                        spacing: { line: 300 }
                     })
                 ];
             }
@@ -437,6 +448,7 @@ index.html
 </html>
 
 script.js
+
 let paragraphCount = 0;
 const ParagraphType = {
     TEXT: 'text',
@@ -989,5 +1001,6 @@ document.addEventListener('input', () => updateDataModel());
 // 初始添加一个段落
 addParagraph();
 
-修正：
-文本段落保存不上。图片段落可以。
+修正代码
+可以插入服务器上的文件内容到段落里。
+ 目前是这样。alert('加载代码失败');

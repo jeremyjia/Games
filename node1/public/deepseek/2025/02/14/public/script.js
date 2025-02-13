@@ -94,7 +94,7 @@ function insertServerFile(filename) {
     
     if (['png', 'jpg', 'jpeg', 'gif'].includes(fileType)) {
         insertImageFromServer(filename);
-    } else if (['js', 'html', 'css', 'py'].includes(fileType)) {
+    } else if (['js', 'html', 'css', 'py','txt','md','json'].includes(fileType)) {
         insertCodeFromServer(filename);
     } else {
         alert('不支持此文件类型');
@@ -103,16 +103,19 @@ function insertServerFile(filename) {
 
 async function insertCodeFromServer(filename) {
     try {
-        const response = await fetch(`/files/${filename}`);
+        const response = await fetch(`/files/${encodeURIComponent(filename)}`);
+        if (!response.ok) throw new Error(`HTTP错误! 状态码: ${response.status}`);
         const code = await response.text();
         const codeElement = createCodeElement(filename, code, detectLanguage(filename));
         document.getElementById('paragraphsContainer').appendChild(codeElement);
         updateDataModel();
         closeServerFiles();
     } catch (error) {
-        alert('加载代码失败');
+        console.error('加载代码失败:', error);
+        alert(`加载代码失败: ${error.message}`);
     }
 }
+
 
 async function insertImageFromServer(filename) {
     const imgUrl = `/files/${filename}`;
@@ -147,23 +150,29 @@ function downloadServerFile(filename) {
          div.dataset.type = ParagraphType.CODE;
          
          div.innerHTML = `
-             <div class="code-header">
-                 <span class="code-filename">${filename}</span>
-                 <select class="language-select" onchange="updateCodeLanguage(this)">
-                     <option value="javascript" ${language === 'javascript' ? 'selected' : ''}>JavaScript</option>
-                     <option value="html" ${language === 'html' ? 'selected' : ''}>HTML</option>
-                     <option value="css" ${language === 'css' ? 'selected' : ''}>CSS</option>
-                     <option value="python" ${language === 'python' ? 'selected' : ''}>Python</option>
-                     <option value="java" ${language === 'java' ? 'selected' : ''}>Java</option>
-                 </select>
-             </div>
-             <div class="code-content">
-                 <pre><code class="language-${language}">${hljs.highlightAuto(content).value}</code></pre>
-             </div>
-             <div class="paragraph-controls">
-                 <button class="control-btn delete-btn" onclick="deleteParagraph(this)">删除</button>
-             </div>
-         `;
+        <div class="code-header">
+            <span class="code-filename">${filename}</span>
+            <select class="language-select" onchange="updateCodeLanguage(this)">
+                <option value="javascript" ${language === 'javascript' ? 'selected' : ''}>JavaScript</option>
+                <option value="html" ${language === 'html' ? 'selected' : ''}>HTML</option>
+                <option value="css" ${language === 'css' ? 'selected' : ''}>CSS</option>
+                <option value="python" ${language === 'python' ? 'selected' : ''}>Python</option>
+                <option value="java" ${language === 'java' ? 'selected' : ''}>Java</option>
+            </select>
+        </div>
+        <div class="code-content">
+            <pre><code class="language-${language}">${hljs.highlight(content, { language }).value}</code></pre>
+        </div>
+        <div class="paragraph-controls">
+            <button class="control-btn delete-btn" onclick="deleteParagraph(this)">删除</button>
+        </div>
+    `;
+
+        // 添加高亮初始化
+        setTimeout(() => {
+            hljs.highlightElement(div.querySelector('code'));
+        }, 0);
+
          return div;
      }
     
@@ -449,16 +458,26 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
     reader.readAsText(file);
 });
 
- function updateCodeLanguage(select) {
-         const container = select.closest('.code-container');
-         const codeBlock = container.querySelector('code');
-         const lang = select.value;
-         codeBlock.className = `language-${lang}`;
-         codeBlock.innerHTML = hljs.highlight(codeBlock.textContent, { language: lang }).value;
-         updateDataModel();
-     }
+function updateCodeLanguage(select) {
+    const container = select.closest('.code-container');
+    const codeBlock = container.querySelector('code');
+    const lang = select.value;
+    
+    // 移除旧的高亮类
+    codeBlock.className = codeBlock.className.replace(/\blanguage-\S+/g, '');
+    codeBlock.classList.add(`language-${lang}`);
+    
+    // 重新高亮代码
+    codeBlock.innerHTML = hljs.highlight(codeBlock.textContent, { 
+        language: lang,
+        ignoreIllegals: true 
+    }).value;
+    
+    hljs.highlightElement(codeBlock);
+    updateDataModel();
+}
 
-// script.js 修正数据加载逻辑
+ 
 function loadDataIntoUI(data) {
     document.getElementById('articleTitle').value = data.title || '';
     const container = document.getElementById('paragraphsContainer');

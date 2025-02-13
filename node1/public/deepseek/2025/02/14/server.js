@@ -9,8 +9,10 @@ const port = 3000;
 // 添加在路由之前
 const filesDir = path.join(__dirname, '');
 
-app.use(cors());
+app.use(cors()); 
 app.use(express.static('public'));
+app.use('/static', express.static('public')); // 添加新的静态文件路径
+
 app.use(express.json());
 // 代码段落样式配置
 const codeStyle = {
@@ -41,6 +43,12 @@ app.get('/get-files', (req, res) => {
         res.json(fileList);
     });
 });
+
+app.use('/files', express.static(filesDir, {
+    setHeaders: (res, filePath) => {
+        res.setHeader('Content-Disposition', `attachment; filename=${path.basename(filePath)}`);
+    }
+}));
 app.post('/generate-doc', async (req, res) => {
     try {
         const { title, paragraphs } = req.body;
