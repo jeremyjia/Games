@@ -1,5 +1,6 @@
-const express = require('express');
-const { Document, Packer, Paragraph, TextRun, HeadingLevel } = require('docx');
+const express = require('express'); 
+const { Document, Packer, Paragraph, TextRun, HeadingLevel, ImageRun } = require('docx');
+const hljs = require('highlight.js'); // 新增代码高亮库
 const cors = require('cors');
 const app = express();
 const port = 3000;
@@ -7,16 +8,55 @@ const port = 3000;
 app.use(cors());
 app.use(express.static('public'));
 app.use(express.json());
+// 代码段落样式配置
+const codeStyle = {
+       font: "Courier New",
+       color: "2C3E50",
+       size: 22,
+       background: "F8F9FA",
+       border: {
+         color: "BDC3C7",
+         space: 20,
+         size: 4
+       }
+     };
 
 app.post('/generate-doc', async (req, res) => {
     try {
         const { title, paragraphs } = req.body;
         
-        const docChildren = paragraphs.flatMap(item => {
+        const docChildren = paragraphs.flatMap(item => { 
+            if (item.type === 'code') {
+                              const codeLines = item.content.split('\n').map(line => 
+                                 new TextRun({
+                                     text: line,
+                                      break: 1
+                                  })
+                              );
+                              
+                              return [
+                                  new Paragraph({
+                                      heading: HeadingLevel.HEADING_3,
+                                      text: `代码片段 (${item.language})`,
+                                      spacing: { after: 200 }
+                                  }),
+                                  new Paragraph({
+                                      children: codeLines,
+                                      style: "Code",
+                                      border: codeStyle.border,
+                                      shading: {
+                                          fill: codeStyle.background
+                                      }
+                                  })
+                              ];
+                          }
+
             if (item.type === 'image') {
                 const base64Data = item.src.replace(/^data:image\/\w+;base64,/, "");
                 const imageBuffer = Buffer.from(base64Data, 'base64');
-                
+                if (imageBuffer.length > 2 * 1024 * 1024) { // 2MB限制
+                    throw new Error('图片大小不能超过2MB');
+                }
                 return [
                     new Paragraph({
                         children: [
@@ -38,7 +78,6 @@ app.post('/generate-doc', async (req, res) => {
                     })
                 ];
             }
-            
             return [
                 new Paragraph({
                     heading: HeadingLevel.HEADING_2,
@@ -61,6 +100,19 @@ app.post('/generate-doc', async (req, res) => {
         });
 
         const doc = new Document({
+            styles: {
+                              paragraphStyles: [{
+                                  id: "Code",
+                                  name: "Code Style",
+                                  basedOn: "Normal",
+                                  quickFormat: true,
+                                  run: {
+                                      font: codeStyle.font,
+                                      color: codeStyle.color,
+                                      size: codeStyle.size * 2
+                                  }
+                              }]
+                            },
             sections: [{
                 properties: {
                     page: {
@@ -124,8 +176,11 @@ app.post('/generate-doc', async (req, res) => {
         res.setHeader('Content-Disposition', 'attachment; filename=generated-doc.docx');
         res.send(buffer);
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Error generating document');
+        console.error('生成错误:', error);
+        res.status(500).json({ 
+            error: '生成失败',
+            message: error.message || '未知错误'
+        });
     }
 });
 

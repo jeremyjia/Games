@@ -133,6 +133,40 @@
         .image-upload-btn:hover {
             background: #138496;
         }
+           .code-container {
+       background: #f8f9fa;
+       border: 2px solid #bdc3c7;
+       border-radius: 6px;
+       padding: 15px;
+       margin: 15px 0;
+       position: relative;
+   }
+   .code-header {
+       display: flex;
+       justify-content: space-between;
+       margin-bottom: 10px;
+   }
+   .code-filename {
+       font-weight: bold;
+       color: #2c3e50;
+   }
+   .language-select {
+       padding: 5px;
+       border-radius: 3px;
+       border: 1px solid #ddd;
+   }
+   pre {
+       margin: 0;
+       white-space: pre-wrap;
+   }
+   .code-content {
+       font-family: 'Courier New', monospace;
+       color: #2c3e50;
+       background: #fff;
+       padding: 10px;
+       border-radius: 4px;
+   }
+
     </style>
 </head>
 <body>
@@ -140,6 +174,16 @@
         
 
         <button onclick="addParagraph()">➕ 新建段落</button>
+        <label class="code-upload-btn">
+                   📁 导入代码
+                   <input type="file" 
+                         id="codeUpload" 
+                         class="file-input" 
+                         accept=".js,.html,.css,.py,.java" 
+                         onchange="handleCodeUpload(event)"
+                         multiple>
+               </label>
+
         <button onclick="document.getElementById('fileInput').click()">📥 导入JSON</button>
         <input type="file" id="fileInput" class="file-input" accept=".json">
         <button onclick="exportJson()">📤 导出JSON</button>

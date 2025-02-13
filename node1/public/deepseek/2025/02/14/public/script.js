@@ -1,10 +1,76 @@
 let paragraphCount = 0;
 const ParagraphType = {
     TEXT: 'text',
-    IMAGE: 'image'
+    IMAGE: 'image',
+   CODE: 'code'
 };
 let generatedHtmlContent = '';
-
+// 新增代码处理函数
+ function createCodeElement(filename, content, language = 'javascript') {
+         const div = document.createElement('div');
+         div.className = 'code-container';
+         div.dataset.type = ParagraphType.CODE;
+         
+         div.innerHTML = `
+             <div class="code-header">
+                 <span class="code-filename">${filename}</span>
+                 <select class="language-select" onchange="updateCodeLanguage(this)">
+                     <option value="javascript" ${language === 'javascript' ? 'selected' : ''}>JavaScript</option>
+                     <option value="html" ${language === 'html' ? 'selected' : ''}>HTML</option>
+                     <option value="css" ${language === 'css' ? 'selected' : ''}>CSS</option>
+                     <option value="python" ${language === 'python' ? 'selected' : ''}>Python</option>
+                     <option value="java" ${language === 'java' ? 'selected' : ''}>Java</option>
+                 </select>
+             </div>
+             <div class="code-content">
+                 <pre><code class="language-${language}">${hljs.highlightAuto(content).value}</code></pre>
+             </div>
+             <div class="paragraph-controls">
+                 <button class="control-btn delete-btn" onclick="deleteParagraph(this)">删除</button>
+             </div>
+         `;
+         return div;
+     }
+    
+    // 新增代码上传处理
+     async function handleCodeUpload(event) {
+         const files = Array.from(event.target.files);
+         if (files.length === 0) return;
+     
+         for (const file of files) {
+             const reader = new FileReader();
+             reader.onload = async (e) => {
+                 const content = e.target.result;
+                 const language = detectLanguage(file.name);
+                 const codeElement = createCodeElement(file.name, content, language);
+                 
+                 const lastFocused = document.querySelector('.paragraph-container:focus-within');
+                 if (lastFocused) {
+                     lastFocused.insertAdjacentElement('afterend', codeElement);
+                 } else {
+                     document.getElementById('paragraphsContainer').appendChild(codeElement);
+                 }
+                 
+                 updateDataModel();
+             };
+             reader.readAsText(file);
+         }
+         event.target.value = '';
+     }
+    
+    // 新增语言检测函数
+     function detectLanguage(filename) {
+         const ext = filename.split('.').pop().toLowerCase();
+         const map = {
+             'js': 'javascript',
+             'html': 'html',
+             'css': 'css',
+             'py': 'python',
+             'java': 'java'
+         };
+         return map[ext] || 'plaintext';
+     }
+    
 function createImageParagraph(file) {
     return new Promise((resolve) => {
         const reader = new FileReader();
@@ -37,11 +103,10 @@ async function handleImageUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
     
-    if (!file.type.startsWith('image/')) {
-        alert('请选择有效的图片文件');
+    if (!file.type.match(/image\/(png|jpeg|gif|bmp)/i)) {
+        alert('仅支持PNG、JPEG、GIF和BMP格式的图片');
         return;
     }
-
     // 获取最近的容器
     const lastFocused = document.querySelector('.paragraph-container:focus-within, .image-container:focus-within');
     const container = lastFocused || document.querySelector('.paragraph-container, .image-container');
@@ -145,6 +210,7 @@ function downloadHtml() {
 function createParagraphElement(title = '', body = '') {
     const div = document.createElement('div');
     div.className = 'paragraph-container';
+    div.dataset.type = ParagraphType.TEXT;  // 添加类型标识
     div.innerHTML = `
         <input type="text" 
                class="paragraph-title" 
@@ -179,7 +245,8 @@ function insertParagraph(button) {
 }
 
 function deleteParagraph(button) {
-    if (document.querySelectorAll('.paragraph-container').length <= 1) {
+    const containers = document.querySelectorAll('.paragraph-container, .image-container');
+    if (containers.length <= 1) {
         alert('至少需要保留一个段落');
         return;
     }
@@ -190,7 +257,15 @@ function deleteParagraph(button) {
 }
 
 function updateDataModel() {
-    paragraphsData = Array.from(document.querySelectorAll('.paragraph-container, .image-container')).map(container => {
+    paragraphsData = Array.from(document.querySelectorAll('.paragraph-container, .image-container, .code-container')).map(container => {
+        if (container.classList.contains('code-container')) {
+                        return {
+                            type: ParagraphType.CODE,
+                            filename: container.querySelector('.code-filename').textContent,
+                            content: container.querySelector('code').textContent,
+                            language: container.querySelector('.language-select').value
+                        };
+                    }
         if (container.classList.contains('image-container')) {
             return {
                 type: ParagraphType.IMAGE,
@@ -238,29 +313,70 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
     };
     reader.readAsText(file);
 });
+
+ function updateCodeLanguage(select) {
+         const container = select.closest('.code-container');
+         const codeBlock = container.querySelector('code');
+         const lang = select.value;
+         codeBlock.className = `language-${lang}`;
+         codeBlock.innerHTML = hljs.highlight(codeBlock.textContent, { language: lang }).value;
+         updateDataModel();
+     }
 function loadDataIntoUI(data) {
-    // 清空现有内容
     document.getElementById('articleTitle').value = data.title || '';
     const container = document.getElementById('paragraphsContainer');
     container.innerHTML = '';
 
-    // 加载段落
     data.paragraphs.forEach(p => {
-        const element = createParagraphElement(p.title, p.body);
-        container.appendChild(element);
+        if (p.type === ParagraphType.CODE) {
+                   const codeElement = createCodeElement(p.filename, p.content, p.language);
+                   container.appendChild(codeElement);
+        }
+        if (p.type === ParagraphType.IMAGE) {
+            const imageDiv = document.createElement('div');
+            imageDiv.className = 'image-container';
+            imageDiv.innerHTML = `
+                <div class="image-preview">
+                    <img src="${p.src}">
+                    <button class="control-btn delete-btn" onclick="deleteParagraph(this)">删除</button>
+                </div>
+                <input type="text" 
+                       class="image-caption" 
+                       placeholder="请输入图片描述文字"
+                       value="${p.caption || ''}">
+            `;
+            container.appendChild(imageDiv);
+        } else {
+            const element = createParagraphElement(p.title, p.body);
+            container.appendChild(element);
+        }
     });
 
-    // 确保至少一个段落
     if (data.paragraphs.length === 0) addParagraph();
     updateDataModel();
 }
+
+
 async function generateDoc() {
     updateDataModel();
     
     const articleTitle = document.getElementById('articleTitle').value;
-    
-    if (!articleTitle || paragraphsData.some(p => !p.title || !p.body)) {
-        alert('请填写完整的主标题和所有段落信息');
+    if (!articleTitle) {
+        alert('请填写文章主标题');
+        return;
+    }
+    const hasInvalid = paragraphsData.some(p => {
+        if (p.type === ParagraphType.TEXT) {
+            return !p.title || !p.body;
+        }
+        if (p.type === ParagraphType.IMAGE) {
+            return !p.src;
+        }
+        return true; // 未知类型视为无效
+    });
+
+    if (hasInvalid) {
+        alert('请填写完整的段落信息（图片需要上传成功）');
         return;
     }
 
