@@ -41,14 +41,29 @@
         button:hover { background: #0056b3; }
         #generateBtn { background: #28a745; }
         #generateBtn:hover { background: #218838; }
+
+        .file-input { display: none; }
+        .paragraph-controls { 
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .control-btn {
+            padding: 5px 10px;
+            font-size: 0.9em;
+        }
+        .delete-btn { background: #dc3545; }
+        .insert-btn { background: #17a2b8; }
     </style>
 </head>
 <body>
     <div class="toolbar">
         <button onclick="addParagraph()">➕ 新建段落</button>
+        <button onclick="document.getElementById('fileInput').click()">📥 导入JSON</button>
+        <button onclick="exportJson()">📤 导出JSON</button>
         <button id="generateBtn" onclick="generateDoc()">生成Word文档</button>
+        <input type="file" id="fileInput" class="file-input" accept=".json">
     </div>
-
     <input type="text" 
            id="articleTitle" 
            class="article-title" 
