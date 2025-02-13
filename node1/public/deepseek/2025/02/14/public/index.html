@@ -1,19 +1,61 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Word Generator</title>
+    <title>Enhanced Word Generator</title>
     <style>
         body { max-width: 800px; margin: 20px auto; padding: 20px; }
-        textarea { width: 100%; height: 200px; margin: 10px 0; }
-        button { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
+        .toolbar { 
+            background: #f5f5f5; 
+            padding: 10px; 
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .article-title { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 10px 0; 
+            font-size: 1.2em;
+        }
+        .paragraph-container { 
+            border: 1px solid #ddd; 
+            padding: 15px; 
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .paragraph-title, .paragraph-body {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+        }
+        .paragraph-title { font-weight: bold; }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
         button:hover { background: #0056b3; }
+        #generateBtn { background: #28a745; }
+        #generateBtn:hover { background: #218838; }
     </style>
 </head>
 <body>
-    <h1>Word Document Generator</h1>
-    <textarea id="content" placeholder="Enter your text here..."></textarea>
-    <button onclick="generateDoc()">Generate Word Document</button>
-    
+    <div class="toolbar">
+        <button onclick="addParagraph()">➕ 新建段落</button>
+        <button id="generateBtn" onclick="generateDoc()">生成Word文档</button>
+    </div>
+
+    <input type="text" 
+           id="articleTitle" 
+           class="article-title" 
+           placeholder="请输入文章主标题">
+
+    <div id="paragraphsContainer"></div>
+
     <script src="script.js"></script>
 </body>
 </html>

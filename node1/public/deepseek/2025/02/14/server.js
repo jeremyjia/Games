@@ -1,5 +1,5 @@
 const express = require('express');
-const { Document, Packer, Paragraph, TextRun } = require('docx');
+const { Document, Packer, Paragraph, TextRun, HeadingLevel } = require('docx');
 const cors = require('cors');
 const app = express();
 const port = 3000;
@@ -10,16 +10,60 @@ app.use(express.json());
 
 app.post('/generate-doc', async (req, res) => {
     try {
-        const { content } = req.body;
+        const { title, paragraphs } = req.body;
         
         const doc = new Document({
             sections: [{
+                properties: {
+                    page: {
+                        margin: {
+                            top: 1000,
+                            right: 1000,
+                            bottom: 1000,
+                            left: 1000,
+                        }
+                    }
+                },
                 children: [
                     new Paragraph({
+                        heading: HeadingLevel.TITLE,
                         children: [
-                            new TextRun(content)
-                        ]
-                    })
+                            new TextRun({
+                                text: title,
+                                bold: true,
+                                color: "2E74B5",
+                                size: 48,
+                                font: "Arial"
+                            })
+                        ],
+                        spacing: { after: 800 }
+                    }),
+                    ...paragraphs.flatMap(p => [
+                        new Paragraph({
+                            heading: HeadingLevel.HEADING_2,
+                            children: [
+                                new TextRun({
+                                    text: p.title,
+                                    bold: true,
+                                    color: "2EAD4B",
+                                    size: 28,
+                                    font: "Calibri"
+                                })
+                            ],
+                            spacing: { after: 400 }
+                        }),
+                        new Paragraph({
+                            children: [
+                                new TextRun({
+                                    text: p.body,
+                                    color: "444444",
+                                    size: 24,
+                                    font: "Times New Roman"
+                                })
+                            ],
+                            spacing: { after: 600 }
+                        })
+                    ])
                 ]
             }]
         });
