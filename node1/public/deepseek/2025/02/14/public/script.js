@@ -335,7 +335,10 @@ function downloadServerFile(filename) {
         <div class="paragraph-controls">
             <button class="control-btn delete-btn" onclick="deleteParagraph(this)">删除</button>
         </div>
-    `;
+         `;
+        div.innerHTML += `
+        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+        `;
 
         // 添加高亮初始化
         setTimeout(() => {
@@ -344,7 +347,12 @@ function downloadServerFile(filename) {
 
          return div;
      }
-    
+     
+    // 添加复制函数
+function copyCode(button) {
+    const code = button.closest('.code-container').querySelector('code').textContent;
+    navigator.clipboard.writeText(code);
+}
     // 新增代码上传处理
      async function handleCodeUpload(event) {
          const files = Array.from(event.target.files);
@@ -420,9 +428,16 @@ async function handleImageUpload(event) {
         alert('仅支持PNG、JPEG、GIF和BMP格式的图片');
         return;
     }
+
     // 获取最近的容器
     const lastFocused = document.querySelector('.paragraph-container:focus-within, .image-container:focus-within');
     const container = lastFocused || document.querySelector('.paragraph-container, .image-container');
+
+    const progress = document.createElement('div');
+    progress.textContent = '上传中...';
+    container.appendChild(progress);
+    // 上传完成后移除
+    progress.remove();
 
     const newImage = await createImageParagraph(file);
     
