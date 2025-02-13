@@ -98,6 +98,19 @@ app.post('/generate-doc', async (req, res) => {
                     })
                 ];
             }
+            if (item.type === 'text') {
+                return [
+                    new Paragraph({
+                        heading: HeadingLevel.HEADING_2,
+                        text: item.title,
+                        spacing: { after: 200 }
+                    }),
+                    new Paragraph({
+                        text: item.body,
+                        spacing: { line: 300 }
+                    })
+                ];
+            }
             return [];
         });
 

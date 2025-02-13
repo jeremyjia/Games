@@ -1,4 +1,6 @@
+
 server.js
+
 const express = require('express'); 
 const fs = require('fs');
 const path = require('path');
@@ -8,7 +10,7 @@ const cors = require('cors');
 const app = express();
 const port = 3000;
 // 添加在路由之前
-const filesDir = path.join(__dirname, 'public/files');
+const filesDir = path.join(__dirname, '');
 
 app.use(cors());
 app.use(express.static('public'));
@@ -99,25 +101,7 @@ app.post('/generate-doc', async (req, res) => {
                     })
                 ];
             }
-            return [
-                new Paragraph({
-                    heading: HeadingLevel.HEADING_2,
-                    children: [
-                        new TextRun({
-                            text: item.title,
-                            // ...原有文本样式
-                        })
-                    ]
-                }),
-                new Paragraph({
-                    children: [
-                        new TextRun({
-                            text: item.body,
-                            // ...原有文本样式
-                        })
-                    ]
-                })
-            ];
+            return [];
         });
 
         const doc = new Document({
@@ -133,61 +117,16 @@ app.post('/generate-doc', async (req, res) => {
                                       size: codeStyle.size * 2
                                   }
                               }]
-                            },
+            },
             sections: [{
-                properties: {
-                    page: {
-                        margin: {
-                            top: 1000,
-                            right: 1000,
-                            bottom: 1000,
-                            left: 1000,
-                        }
-                    }
-                },
-                children: [
-                    new Paragraph({
-                        heading: HeadingLevel.TITLE,
-                        children: [
-                            new TextRun({
-                                text: title,
-                                bold: true,
-                                color: "2E74B5",
-                                size: 48,
-                                font: "Arial"
-                            })
-                        ],
-                        spacing: { after: 800 }
-                    }),
-                    ...paragraphs.flatMap(p => [
-                        new Paragraph({
-                            heading: HeadingLevel.HEADING_2,
-                            children: [
-                                new TextRun({
-                                    text: p.title,
-                                    bold: true,
-                                    color: "2EAD4B",
-                                    size: 28,
-                                    font: "Calibri"
-                                })
-                            ],
-                            spacing: { after: 400 }
-                        }),
-                        new Paragraph({
-                            children: [
-                                new TextRun({
-                                    text: p.body,
-                                    color: "444444",
-                                    size: 24,
-                                    font: "Times New Roman"
-                                })
-                            ],
-                            spacing: { after: 600 }
-                        })
-                    ]
-                ),
-                ...docChildren
-                ]
+                                children: [
+                                    new Paragraph({
+                                        heading: HeadingLevel.TITLE,
+                                        children: [/* 标题内容 */],
+                                        spacing: { after: 800 }
+                                    }),
+                                    ...docChildren  // 只保留处理过的特殊内容
+                                ]
             }]
         });
 
@@ -215,6 +154,8 @@ index.html
 <head>
     <title>Enhanced Word Generator</title>
     <style>
+        @import 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css';
+
         body { max-width: 800px; margin: 20px auto; padding: 20px; }
         .toolbar { 
             background: #f5f5f5; 
@@ -387,7 +328,7 @@ index.html
     background: white;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    z-index: 1001;
+    z-index: 2000;
     display: none;
 }
 
@@ -422,7 +363,9 @@ index.html
 .file-icon {
     width: 24px;
     margin-right: 10px;
+    content: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAhFJREFUeNqkk79Lw0Acx++9a1JJq6m0Dv5AUUQHRRQVHPwDHJxExEFBcHQRJwfBwUFBEMFZJxEHwUEQHPwLFBxEVCwqWqy1SWvS5tf13rvjfE1ajQMf3rvk7nPv+77cJYgxxt9sPM+jMAyBZVnAGAOe5wFjDMqyDEVRBNls9k8AQRAgx3GgUqmgdDqNisUiSqVSCMdxJMuyqG3b+HA4oNVqBQghXwBBFKGmaSiXyyFZlpFpmqhWqyFJkhDDMEiSJNRut9F4PEbH4xH5vu8DEGUZNRoNlM/nQb/fB4PBANRqNVQsFhHDMEhVVdTpdNA5m6ZpCAAAIc/zQBAE0G630WQyAfP5HNRqNVSv11E8HkeqqqJut4t2ux3a7/cYhBCCOI6D4/EYTKdTsFwuQbVaRc1mE8XjcZRIJFCv10O73Q7Zto0BABD6vg8OhwOYzWZgsViASqWCWq0WisViKJlMIk3T0Ha7Ra7rYgAARL7vY9d1wWKxAIvFApTLZdRut1E0GkWpVArpuo42mw3yPA8DACD0PA87jgOWyyVYLpegVCqhTqeDIpEISqfTyDAMtF6vked5GAAAIXEcDO0LmM/nIJ/Po263i0KhEMpkMsg0TbRarZDv+xgAACHGGDuOg1erFZjNZiCXy6Fer4dCoRDKZrNoPB4jy7JQEAT4C0AIYd/3sW3bYDqdgmw2i/r9PgqHwyiXyyHDMNBkMkFBEOD/AdB1HWuahjKZDBoMBigSiSDKMAxkmiYKggD/EWC1WmFd11E6nUbD4RBFo1FEmaaJRqMRopRi8A/ANE1sGAZKpVJoNBqheDyOKMMwkK7r6Hw+Y/AHYLlcYk3TUDKZRKZpong8jijDMJCmaeh0OmHwB2A+n2NN01AikUCj0Qglk0lE6bqOVFVFp9MJgz8A0+kUq6qK4vE4Go/HKJVKIUrTNKSqKjoejxj8AXjPZrPvQqHwTqfT7xdFUZ7v93vx5XJ5DgaD3e12e/wIMACVK2C+Z8RgYAAAAABJRU5ErkJggg==');
 }
+ 
 
 .file-actions {
     margin-left: auto;
@@ -479,6 +422,14 @@ index.html
             </div>
             <iframe class="preview-iframe" id="previewFrame"></iframe>
         </div>
+    </div>
+    <!-- index.html 新增部分 -->
+    <div class="server-files-modal" id="serverFilesModal">
+        <div class="server-files-header">
+            <h3>服务器文件</h3>
+            <button onclick="closeServerFiles()">×</button>
+        </div>
+        <div class="server-files-content" id="serverFilesContent"></div>
     </div>
 
     <script src="script.js"></script>
@@ -945,6 +896,8 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
          codeBlock.innerHTML = hljs.highlight(codeBlock.textContent, { language: lang }).value;
          updateDataModel();
      }
+
+// script.js 修正数据加载逻辑
 function loadDataIntoUI(data) {
     document.getElementById('articleTitle').value = data.title || '';
     const container = document.getElementById('paragraphsContainer');
@@ -952,10 +905,10 @@ function loadDataIntoUI(data) {
 
     data.paragraphs.forEach(p => {
         if (p.type === ParagraphType.CODE) {
-                   const codeElement = createCodeElement(p.filename, p.content, p.language);
-                   container.appendChild(codeElement);
+            const codeElement = createCodeElement(p.filename, p.content, p.language);
+            container.appendChild(codeElement);
         }
-        if (p.type === ParagraphType.IMAGE) {
+        else if (p.type === ParagraphType.IMAGE) {  // 改为 else if
             const imageDiv = document.createElement('div');
             imageDiv.className = 'image-container';
             imageDiv.innerHTML = `
@@ -1036,4 +989,5 @@ document.addEventListener('input', () => updateDataModel());
 // 初始添加一个段落
 addParagraph();
 
-请帮我修正以上代码。
+修正：
+文本段落保存不上。图片段落可以。
