@@ -1247,3 +1247,6 @@ document.addEventListener('input', () => updateDataModel());
 
 // 初始添加一个段落
 addParagraph();
+
+
+帮我实现： renderFiles

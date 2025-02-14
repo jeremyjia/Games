@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>绘图代码工具</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+            padding: 5px 0;
+        }
+
+        .toolbar button {
+            padding: 8px;
+            min-width: 60px;
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            touch-action: manipulation;
+        }
+
+        .toolbar button.active {
+            background: #007bff;
+            color: white;
+            border-color: #0062cc;
+        }
+
+        #canvas {
+            border: 1px solid #ccc;
+            margin: 10px 0;
+            touch-action: none;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .button-group {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <input type="text" id="inputBox" placeholder="输入绘图参数...">
+    
+    <div class="button-group">
+        <div class="toolbar" id="toolbarA">
+            <button onclick="drawShape()">绘制</button>
+            <button onclick="clearCanvas()">清空画布</button>
+            <button onclick="updateButtonCode()">更新按钮</button>
+            <button onclick="createNewButton()">新建按钮</button>
+        </div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <textarea id="codeEditor" placeholder="输入JavaScript代码..."></textarea>
+
+    <div class="button-group">
+        <div class="toolbar" id="toolbarB">
+            <button onclick="insertExample1()">示例1</button>
+            <button onclick="insertExample2()">示例2</button>
+            <button onclick="clearCode()">清空代码</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let lastClickedButton = null;
+
+        // 初始化画布大小
+        function initCanvas() {
+            canvas.width = window.innerWidth - 20;
+            canvas.height = 300;
+        }
+        initCanvas();
+        window.addEventListener('resize', initCanvas);
+
+        // 绘图函数
+        function drawShape() {
+            const input = document.getElementById('inputBox').value;
+            const [shape, color='#ff0000'] = input.split(':');
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = color;
+
+            if(shape === 'circle') {
+                ctx.beginPath();
+                ctx.arc(canvas.width/2, canvas.height/2, 50, 0, Math.PI * 2);
+                ctx.fill();
+            } else if(shape === 'square') {
+                ctx.fillRect(canvas.width/2 - 50, canvas.height/2 - 50, 100, 100);
+            }
+        }
+
+        // 清空画布
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // 更新按钮代码
+        function updateButtonCode() {
+            if(lastClickedButton) {
+                const code = document.getElementById('codeEditor').value;
+                lastClickedButton.onclick = new Function(code);
+            }
+        }
+
+        // 创建新按钮
+        function createNewButton() {
+            const newButton = document.createElement('button');
+            newButton.textContent = '新按钮';
+            newButton.onclick = function() {
+                // 设置高亮
+                document.querySelectorAll('#toolbarA button').forEach(btn => 
+                    btn.classList.remove('active'));
+                this.classList.add('active');
+                lastClickedButton = this;
+                
+                // 执行自定义代码
+                const code = document.getElementById('codeEditor').value;
+                try { eval(code); } catch(e) { console.error(e); }
+            };
+            document.getElementById('toolbarA').appendChild(newButton);
+        }
+
+        // 示例代码插入
+        function insertExample1() {
+            document.getElementById('codeEditor').value = 
+                `ctx.fillStyle = '#00ff00';\nctx.fillRect(100, 100, 80, 80);`;
+        }
+
+        function insertExample2() {
+            document.getElementById('codeEditor').value = 
+                `ctx.beginPath();\nctx.arc(200, 150, 40, 0, Math.PI * 2);\nctx.fill();`;
+        }
+
+        function clearCode() {
+            document.getElementById('codeEditor').value = '';
+        }
+
+        // 按钮点击高亮
+        document.querySelectorAll('#toolbarA button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#toolbarA button').forEach(b => 
+                    b.classList.remove('active'));
+                this.classList.add('active');
+                lastClickedButton = this;
+            });
+        });
+    </script>
+</body>
+</html>
