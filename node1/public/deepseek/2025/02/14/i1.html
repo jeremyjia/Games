@@ -57,7 +57,7 @@
 
         textarea {
             width: 100%;
-            min-height: 100px;
+            min-height: 88px;
             padding: 12px;
             margin: var(--element-spacing) 0;
             border: 1px solid #ccc;
@@ -79,7 +79,13 @@
         .button-group {
             margin: var(--element-spacing) 0;
         }
-
+        .button-group button {
+            margin: 2px;
+        }
+        #toolbarB {
+            margin-top: 2px;
+            margin-bottom: 18px;
+        }
         @media (max-width: 480px) {
             :root {
                 --toolbar-height: 40px;
@@ -123,8 +129,6 @@
 
     <canvas id="canvas"></canvas>
 
-    <textarea id="codeEditor" placeholder="输入JavaScript代码..."></textarea>
-
     <div class="button-group">
         <div class="toolbar" id="toolbarB">
             <button onclick="insertExample1()">示例1</button>
@@ -133,6 +137,8 @@
             <button onclick="inputABC()">ABC</button>
         </div>
     </div>
+    <textarea id="codeEditor" placeholder="输入JavaScript代码..."></textarea>
+
 
     <script>
         const canvas = document.getElementById('canvas');
@@ -159,24 +165,27 @@
         });
         resizeObserver.observe(document.body);
 
-        // 绘图函数（保持比例不变）
         function drawShape() {
             const input = document.getElementById('inputBox').value;
-            const [shape, color='#ff0000'] = input.split(':');
+            const params = input.split(':');
+            const [shapeType, color = '#ff0000', ...args] = params;
             
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = color;
 
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const size = Math.min(canvas.width, canvas.height) * 0.2;
-
-            if(shape === 'circle') {
+            if (shapeType === 'circle') {
+                const radius = Math.min(canvas.width, canvas.height) * 0.2;
                 ctx.beginPath();
-                ctx.arc(centerX, centerY, size, 0, Math.PI * 2);
+                ctx.arc(canvas.width/2, canvas.height/2, radius, 0, Math.PI*2);
                 ctx.fill();
-            } else if(shape === 'square') {
-                ctx.fillRect(centerX - size, centerY - size, size * 2, size * 2);
+            } else if (shapeType === 'rect') {
+                const [x=0.4, y=0.4, w=0.2, h=0.2] = args.map(parseFloat);
+                ctx.fillRect(
+                    canvas.width * x,
+                    canvas.height * y,
+                    canvas.width * w,
+                    canvas.height * h
+                );
             }
         }
 
@@ -194,22 +203,28 @@
             }
         }
 
-        // 创建新按钮
         function createNewButton() {
-            const newButton = document.createElement('button');
-            newButton.textContent = '新按钮';
-            newButton.onclick = function() {
-                document.querySelectorAll('#toolbarA button').forEach(btn => 
-                    btn.classList.remove('active'));
-                this.classList.add('active');
-                lastClickedButton = this;
-                
-                const code = document.getElementById('codeEditor').value;
-                try { eval(code); } catch(e) { console.error(e); }
-            };
-            document.getElementById('toolbarA').appendChild(newButton);
-        }
+            const buttonName = prompt("请输入按钮名称：", "新按钮");
+            if (!buttonName) return;
 
+            const newButton = document.createElement('button');
+            newButton.textContent = buttonName;
+            const code = document.getElementById('codeEditor').value;
+
+            try {
+                const buttonFunction = new Function(code);
+                newButton.onclick = function() {
+                    document.querySelectorAll('#toolbarA button').forEach(btn => 
+                        btn.classList.remove('active'));
+                    this.classList.add('active');
+                    lastClickedButton = this;
+                    buttonFunction();
+                };
+                document.getElementById('toolbarA').appendChild(newButton);
+            } catch (e) {
+                alert("代码错误，无法创建按钮：" + e.message);
+            }
+        }
         // 示例代码插入
         function insertExample1() {
             document.getElementById('codeEditor').value = 
@@ -224,11 +239,29 @@
         function clearCode() {
             document.getElementById('codeEditor').value = '';
         }
+        // 完善的ABC输入功能
         function inputABC() {
-            // 在光标位置输入 “ABC”
+            const editor = document.getElementById('codeEditor');
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const value = editor.value;
+            
+            editor.value = value.slice(0, start) + "ABC" + value.slice(end);
+            editor.selectionEnd = start + 3;
+            editor.focus();
         }
-        function replaceABC() {
-            // 替换被选择项为“abc”
+        // 新增替换功能（可绑定到新按钮）
+        function replaceSelected() {
+            const editor = document.getElementById('codeEditor');
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            
+            if (start !== end) {
+                const value = editor.value;
+                editor.value = value.slice(0, start) + "abc" + value.slice(end);
+                editor.selectionEnd = start + 3;
+                editor.focus();
+            }
         }
 
 
@@ -241,6 +274,40 @@
                 lastClickedButton = this;
             });
         });
+
+        let isDrawing = false;
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('touchstart', startDrawing);
+        canvas.addEventListener('touchmove', draw);
+        canvas.addEventListener('touchend', stopDrawing);
+
+        function startDrawing(e) {
+            isDrawing = true;
+            const pos = getCanvasPosition(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const pos = getCanvasPosition(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function getCanvasPosition(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: (e.clientX || e.touches[0].clientX) - rect.left,
+                y: (e.clientY || e.touches[0].clientY) - rect.top
+            };
+        }
     </script>
 </body>
 </html>
