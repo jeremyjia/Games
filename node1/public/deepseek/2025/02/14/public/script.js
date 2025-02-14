@@ -199,9 +199,80 @@ async function loadServerFiles() {
             '<div class="error">加载文件列表失败</div>';
     }
 }
-
 function renderFiles(files) {
-     
+    const container = document.getElementById('serverFilesContent');
+    
+    // 清空现有内容
+    container.innerHTML = '';
+
+    if (files.length === 0) {
+        container.innerHTML = '<div class="file-item">暂无文件</div>';
+        return;
+    }
+
+    files.forEach(file => {
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item';
+        
+        // 文件图标和基本信息
+        fileItem.innerHTML = `
+            <div style="flex:1; min-width: 300px;">
+                <span class="file-icon"></span>
+                <span class="file-name">${file.name}</span>
+                <span class="file-type">(${file.type === 'folder' ? '文件夹' : '文件'})</span>
+            </div>
+            <div style="width:120px;">
+                ${file.type === 'file' ? formatFileSize(file.size) : '-'}
+            </div>
+            <div style="width:180px;">
+                ${new Date(file.modified).toLocaleDateString()} 
+                ${new Date(file.modified).toLocaleTimeString()}
+            </div>
+        `;
+
+        // 操作按钮容器
+        const actions = document.createElement('div');
+        actions.className = 'file-actions';
+
+        // 文件类型相关操作
+        if (file.type === 'file') {
+            const ext = file.name.split('.').pop().toLowerCase();
+            
+            // 插入按钮
+            const insertBtn = createActionButton('插入', () => insertServerFile(file.name));
+            
+            // 下载按钮
+            const downloadBtn = createActionButton('下载', () => downloadServerFile(file.name));
+            
+            actions.append(insertBtn, downloadBtn);
+
+            // 文本文件支持保存为示例
+            if (['txt', 'md', 'html', 'css', 'js', 'py'].includes(ext)) {
+                const saveBtn = createActionButton('存为示例', () => save2Examples(file.name));
+                actions.appendChild(saveBtn);
+            }
+        }
+
+        fileItem.appendChild(actions);
+        container.appendChild(fileItem);
+    });
+}
+
+// 辅助函数：创建操作按钮
+function createActionButton(text, onClick) {
+    const btn = document.createElement('button');
+    btn.className = 'control-btn';
+    btn.textContent = text;
+    btn.onclick = onClick;
+    return btn;
+}
+
+// 辅助函数：格式化文件大小
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 B';
+    const units = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${units[i]}`;
 }
 
 // 添加拖动功能
