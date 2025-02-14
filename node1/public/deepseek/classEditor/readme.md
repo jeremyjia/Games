@@ -1,5 +1,10 @@
+v12 2:56am
+升级 
+功能不变，
+instance[m]() 改成 instance[m](ctx)
+
 2:45am
-升级
+升级 v11
 主页上加画布
 实现 class1 的 drawCircle函数，当点类实例的成员函数时可在画布上画圆。
 

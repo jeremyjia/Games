@@ -147,10 +147,12 @@
     </div>
 
     <script>
+        let ctx = null;
         function initCanvas() {
             const canvas = document.getElementById('drawCanvas');
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
+            ctx = canvas.getContext('2d');  // 初始化全局上下文
         }
         window.addEventListener('load', initCanvas);
         window.addEventListener('resize', initCanvas);
@@ -209,23 +211,17 @@
                     this.name = 'Class1';
                 }
                 
-                clearCanvas() {
-                    const canvas = document.getElementById('drawCanvas');
-                    if (!canvas) return;
-                    const ctx = canvas.getContext('2d');
-                    ctx.clearRect(0, 0, canvas.width, canvas.height); // 清除整个画布
+                clearCanvas(cx) { 
+                    cx.clearRect(0, 0, cx.canvas.width, cx.canvas.height); // 清除整个画布
                 }
                     
-                drawCircle() {
-                    const canvas = document.getElementById('drawCanvas');
-                    if (!canvas) return;
-                    const ctx = canvas.getContext('2d');
-                    const x = Math.random() * canvas.width;
-                    const y = Math.random() * canvas.height;
-                    ctx.beginPath();
-                    ctx.arc(x, y, 20, 0, Math.PI * 2);
-                    ctx.fillStyle = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
-                    ctx.fill();
+                drawCircle(cx) { 
+                    const x = Math.random() * cx.canvas.width;
+                    const y = Math.random() * cx.canvas.height;
+                    cx.beginPath();
+                    cx.arc(x, y, 20, 0, Math.PI * 2);
+                    cx.fillStyle = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+                    cx.fill();
                 }
             }`,
 
@@ -312,7 +308,7 @@
                     div.style.borderBottom = '1px solid #eee';
                     
                     div.addEventListener('click', () => {
-                        instance[m](); // 点击执行方法
+                        instance[m](ctx); // 点击执行方法
                         if (m === 'drawCircle') {
                             // 可以在这里添加额外的画布更新逻辑
                         }
