@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image Contour Extraction</title>
+</head>
+<body>
+<input type="file" id="imageInput" accept="image/*">
+<canvas id="canvas"></canvas>
+<script>
+document.getElementById('imageInput').addEventListener('change', handleImageUpload);
+
+function handleImageUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const contours = edgeDetect(imageData);
+
+            // 在这里，你可以处理contours数据，比如绘制它们或发送到服务器
+            // 这里只是简单地打印出来作为示例
+            console.log(contours);
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function edgeDetect(imageData) {
+    const width = imageData.width;
+    const height = imageData.height;
+    const data = imageData.data;
+    const contours = [];
+
+    // Sobel算子
+    const Gx = [-1, 0, 1, -2, 0, 2, -1, 0, 1]; // x方向梯度
+    const Gy = [-1, -2, -1, 0, 0, 0, 1, 2, 1]; // y方向梯度
+
+    // 遍历每个像素，计算梯度大小
+    for (let y = 1; y < height - 1; y++) {
+        for (let x = 1; x < width - 1; x++) {
+            let sumX = 0, sumY = 0;
+            for (let i = 0; i < 9; i++) {
+                const px = data[((y + (i / 3 | 0)) * width + (x + (i % 3) - 1)) * 4]; // 获取像素值（灰度）
+                sumX += px * Gx[i];
+                sumY += px * Gy[i];
+            }
+            const gradient = Math.sqrt(sumX * sumX + sumY * sumY); // 计算梯度大小
+            if (gradient > 100) { // 设置一个阈值来确定边缘
+                contours.push({ x, y, gradient }); // 将边缘点添加到轮廓数组中
+            }
+        }
+    }
+
+    return contours;
+}
+</script>
+</body>
+</html>

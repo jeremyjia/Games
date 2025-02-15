@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>网页MP3播放器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .player-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            background: #2196F3;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #1976D2;
+        }
+
+        .progress-container {
+            flex-grow: 1;
+            height: 5px;
+            background: #ddd;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #2196F3;
+            width: 0;
+            border-radius: 3px;
+            transition: width 0.1s linear;
+        }
+
+        .playlist {
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .playlist-item {
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+
+        .playlist-item:hover {
+            background: #f0f0f0;
+        }
+
+        .playlist-item.active {
+            background: #e3f2fd;
+            font-weight: bold;
+        }
+
+        .lyrics-container {
+            height: 200px;
+            overflow-y: auto;
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #fff;
+        }
+
+        .lyric-line {
+            padding: 5px 0;
+            transition: all 0.3s;
+        }
+
+        .lyric-line.active {
+            color: #2196F3;
+            font-weight: bold;
+            transform: scale(1.05);
+        }
+
+        input[type="file"] {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="player-container">
+        <div class="controls">
+            <button onclick="skip(-1)">上一首</button>
+            <button onclick="togglePlay()" id="playBtn">播放</button>
+            <button onclick="skip(1)">下一首</button>
+            <div class="progress-container" onclick="seek(event)">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <span id="timeDisplay">0:00 / 0:00</span>
+        </div>
+
+        <div class="lyrics-container" id="lyricsContainer"></div>
+
+        <div class="playlist" id="playlist">
+            <input type="file" id="fileInput" multiple accept=".mp3,.lrc" onchange="handleFiles(this.files)">
+            <div id="playlistItems"></div>
+        </div>
+    </div>
+
+<script>
+const audio = new Audio();
+let playlist = [];
+let currentTrack = 0;
+let lyrics = [];
+
+// 初始化播放器
+function initPlayer() {
+    audio.addEventListener('timeupdate', updateProgress);
+    audio.addEventListener('ended', () => skip(1));
+}
+
+// 解析LRC歌词
+function parseLRC(text) {
+    const lines = text.split('\n');
+    const lrcMap = [];
+    
+    const timeRegex = /\[(\d+):(\d+\.\d+)\]/g;
+    
+    lines.forEach(line => {
+        const matches = [...line.matchAll(timeRegex)];
+        const text = line.replace(timeRegex, '').trim();
+        
+        matches.forEach(match => {
+            const minutes = parseInt(match[1]);
+            const seconds = parseFloat(match[2]);
+            const time = minutes * 60 + seconds;
+            lrcMap.push({ time, text });
+        });
+    });
+    
+    lrcMap.sort((a, b) => a.time - b.time);
+    return lrcMap;
+}
+
+// 更新歌词显示
+function updateLyrics() {
+    const container = document.getElementById('lyricsContainer');
+    const currentTime = audio.currentTime;
+    
+    // 查找当前歌词
+    let activeIndex = lyrics.findIndex((item, index) => {
+        return currentTime >= item.time && 
+               (!lyrics[index+1] || currentTime < lyrics[index+1].time);
+    });
+    
+    // 更新显示
+    container.innerHTML = lyrics
+        .map((item, index) => `
+            <div class="lyric-line ${index === activeIndex ? 'active' : ''}">
+                ${item.text}
+            </div>
+        `).join('');
+    
+    // 自动滚动
+    if (activeIndex > -1) {
+        const activeLine = container.children[activeIndex];
+        activeLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+// 播放指定曲目
+function playTrack(index) {
+    if (index < 0 || index >= playlist.length) return;
+    
+    currentTrack = index;
+    const track = playlist[index];
+    
+    audio.src = track.url;
+    audio.play();
+    document.getElementById('playBtn').textContent = '暂停';
+    
+    // 加载歌词
+    if (track.lrc) {
+        fetch(track.lrc)
+            .then(response => response.text())
+            .then(parseLRC)
+            .then(data => {
+                lyrics = data;
+                updateLyrics();
+            });
+    } else {
+        lyrics = [];
+        document.getElementById('lyricsContainer').innerHTML = '';
+    }
+    
+    // 更新播放列表样式
+    document.querySelectorAll('.playlist-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    document.getElementById(`track-${index}`).classList.add('active');
+}
+
+// 切换播放状态
+function togglePlay() {
+    if (audio.paused) {
+        audio.play();
+        document.getElementById('playBtn').textContent = '暂停';
+    } else {
+        audio.pause();
+        document.getElementById('playBtn').textContent = '播放';
+    }
+}
+
+// 更新进度条
+function updateProgress() {
+    const progress = (audio.currentTime / audio.duration) * 100 || 0;
+    document.getElementById('progressBar').style.width = `${progress}%`;
+    
+    // 更新时间显示
+    const formatTime = time => {
+        const minutes = Math.floor(time / 60);
+        const seconds = Math.floor(time % 60);
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    };
+    
+    document.getElementById('timeDisplay').textContent = 
+        `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+    
+    // 更新歌词
+    if (lyrics.length) updateLyrics();
+}
+
+// 切换曲目
+function skip(offset) {
+    let newIndex = currentTrack + offset;
+    if (newIndex < 0) newIndex = playlist.length - 1;
+    if (newIndex >= playlist.length) newIndex = 0;
+    playTrack(newIndex);
+}
+
+// 进度条点击跳转
+function seek(event) {
+    const rect = event.target.getBoundingClientRect();
+    const percent = (event.clientX - rect.left) / rect.width;
+    audio.currentTime = percent * audio.duration;
+}
+
+// 处理文件上传
+function handleFiles(files) {
+    const newTracks = [];
+    
+    Array.from(files).forEach(file => {
+        if (file.name.endsWith('.mp3')) {
+            newTracks.push({
+                name: file.name.replace(/\.mp3$/i, ''),
+                url: URL.createObjectURL(file)
+            });
+        } else if (file.name.endsWith('.lrc')) {
+            const trackName = file.name.replace(/\.lrc$/i, '');
+            const track = playlist.find(t => t.name === trackName);
+            if (track) {
+                track.lrc = URL.createObjectURL(file);
+            }
+        }
+    });
+    
+    playlist = [...playlist, ...newTracks];
+    updatePlaylist();
+    if (playlist.length === newTracks.length) playTrack(0);
+}
+
+// 更新播放列表显示
+function updatePlaylist() {
+    const container = document.getElementById('playlistItems');
+    container.innerHTML = playlist
+        .map((track, index) => `
+            <div class="playlist-item" id="track-${index}" 
+                 onclick="playTrack(${index})">
+                ${track.name}${track.lrc ? ' (歌词)' : ''}
+            </div>
+        `).join('');
+}
+
+// 初始化
+initPlayer();
+</script>
+</body>
+</html>

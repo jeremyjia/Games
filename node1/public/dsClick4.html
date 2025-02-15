@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #imageContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            max-width: 100%;
+            max-height: 100%;
+            z-index: 0;
+        }
+
+        #dataPanel {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: white;
+            padding: 10px;
+            z-index: 3;
+        }
+
+        #canvasOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        #uploadBtn {
+            position: fixed;
+            top: 60px;
+            left: 20px;
+            z-index: 4;
+        }
+    </style>
+</head>
+<body>
+    <input type="file" id="uploadBtn" accept="image/*">
+    <div id="dataPanel">点击数据将显示在这里</div>
+    <canvas id="canvasOverlay"></canvas>
+    < img id="imageContainer" alt="背景图片">
+
+    <script>
+        const clickData = [];
+        const canvas = document.getElementById('canvasOverlay');
+        const ctx = canvas.getContext('2d');
+        const imgContainer = document.getElementById('imageContainer');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            redrawAll();
+        });
+
+        document.getElementById('uploadBtn').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                imgContainer.onload = function() {
+                    clickData.length = 0;
+                    redrawAll();
+                    updateDataDisplay();
+                };
+                imgContainer.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        document.addEventListener('click', function(e) {
+            const imgRect = imgContainer.getBoundingClientRect();
+            const x = e.clientX - imgRect.left;
+            const y = e.clientY - imgRect.top;
+
+            if (x < 0 || y < 0 || x > imgRect.width || y > imgRect.height) return;
+
+            const scaleX = imgContainer.naturalWidth / imgRect.width;
+            const scaleY = imgContainer.naturalHeight / imgRect.height;
+            const absoluteX = x * scaleX;
+            const absoluteY = y * scaleY;
+
+            clickData.push({ 
+                x: absoluteX,
+                y: absoluteY,
+                timestamp: new Date().toISOString()
+            });
+
+            redrawAll();
+            updateDataDisplay();
+        });
+
+        function redrawAll() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPoints();
+            if (clickData.length >= 3) drawPolygon();
+        }
+
+        function drawPoints() {
+            const imgRect = imgContainer.getBoundingClientRect();
+            const naturalWidth = imgContainer.naturalWidth;
+            const naturalHeight = imgContainer.naturalHeight;
+            
+            if (naturalWidth === 0 || naturalHeight === 0) return;
+
+            clickData.forEach(point => {
+                const screenX = imgRect.left + (point.x * imgRect.width / naturalWidth);
+                const screenY = imgRect.top + (point.y * imgRect.height / naturalHeight);
+                
+                ctx.beginPath();
+                ctx.arc(screenX, screenY, 5, 0, Math.PI * 2);
+                ctx.fillStyle = 'red';
+                ctx.fill();
+            });
+        }
+
+        function drawPolygon() {
+            const imgRect = imgContainer.getBoundingClientRect();
+            const naturalWidth = imgContainer.naturalWidth;
+            const naturalHeight = imgContainer.naturalHeight;
+
+            ctx.beginPath();
+            clickData.forEach((point, index) => {
+                const screenX = imgRect.left + (point.x * imgRect.width / naturalWidth);
+                const screenY = imgRect.top + (point.y * imgRect.height / naturalHeight);
+
+                if (index === 0) ctx.moveTo(screenX, screenY);
+                else ctx.lineTo(screenX, screenY);
+            });
+            
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+            ctx.fill();
+            ctx.strokeStyle = '#ff0000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        function updateDataDisplay() {
+            const dataList = clickData.map((p, i) => 
+                `点${i + 1}: (${p.x.toFixed(1)}, ${p.y.toFixed(1)})`
+            ).join('<br>');
+            document.getElementById('dataPanel').innerHTML = dataList || "点击数据将显示在这里";
+        }
+    </script>
+</body>
+</html>

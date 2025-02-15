@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音乐播放器</title>
+</head>
+<body>
+    <nav id="nav"></nav>
+    
+    <div style="position: fixed; top: 60px;">
+        <button onclick="WindowManager.createWindow()">新建窗口</button>
+        <input type="number" id="bpm" value="72" style="width: 60px;">
+    </div>
+
+    <canvas id="canvas"></canvas>
+    
+    <div id="statusBar" style="position: fixed; bottom: 0; width: 100%; background: #ddd; padding: 5px;"></div>
+
+    <script>
+class MusicPlayer {
+    constructor() {
+        this.audio = new Audio('https://littleflute.github.io/gt1/mp3/j72_4_4.mp3');
+        this.isPlaying = false;
+        this.bpm = 72;
+        this.beatIndex = 0;
+        this.interval = null;
+        this.beatCallbacks = [];
+    }
+
+    addBeatListener(callback) {
+        this.beatCallbacks.push(callback);
+    }
+
+    toggle() {
+        if (this.isPlaying) this.stop();
+        else this.start();
+    }
+
+    start() {
+        this.audio.play();
+        this.isPlaying = true;
+        const beatDuration = 60000 / this.bpm;
+        this.interval = setInterval(() => {
+            this.beatIndex = (this.beatIndex + 1) % 4;
+            this.beatCallbacks.forEach(cb => cb(this.beatIndex));
+        }, beatDuration);
+    }
+
+    stop() {
+        this.audio.pause();
+        clearInterval(this.interval);
+        this.isPlaying = false;
+    }
+}
+
+class WindowManager {
+    static windows = [];
+    static player = new MusicPlayer();
+    static canvasCtx = canvas.getContext('2d');
+
+    static init() {
+        // 初始化导航菜单
+        const mls = ["index.HTML", "readme.md", "i1.HTML", "i2.html"];
+        const nav = document.getElementById('nav');
+        mls.forEach(item => {
+            const a = document.createElement('a');
+            a.href = item;
+            a.textContent = item;
+            nav.appendChild(a);
+        });
+
+        // 初始化画布
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        WindowManager.player.addBeatListener(beat => {
+            if (beat === 0) {
+                WindowManager.createFirework();
+            }
+        });
+    }
+
+    static createWindow() {
+        const win = document.createElement('div');
+        win.className = 'window';
+        win.style.left = Math.random() * 500 + 'px';
+        win.style.top = Math.random() * 300 + 'px';
+        
+        // 窗口内容
+        win.innerHTML = `
+            <div class="titlebar">窗口 ${this.windows.length + 1}</div>
+            <div class="content">
+                <button class="playBtn">▶</button>
+                <div class="beats"></div>
+            </div>
+        `;
+
+        // 初始化节拍器
+        const beats = win.querySelector('.beats');
+        for (let i = 0; i < 4; i++) {
+            const beat = document.createElement('div');
+            beat.className = 'beat';
+            for (let j = 0; j < 4; j++) {
+                const btn = document.createElement('button');
+                btn.style.backgroundColor = j === 0 ? '#ff0000' : '#444';
+                beat.appendChild(btn);
+            }
+            beats.appendChild(beat);
+        }
+
+        // 添加到状态栏
+        const toggleBtn = document.createElement('button');
+        toggleBtn.style.backgroundColor = '#0f0';
+        toggleBtn.onclick = () => {
+            win.style.display = win.style.display === 'none' ? '' : 'none';
+            toggleBtn.style.backgroundColor = win.style.display ? '#f00' : '#0f0';
+        };
+        statusBar.appendChild(toggleBtn);
+
+        document.body.appendChild(win);
+        this.windows.push({win, toggleBtn});
+        this.makeDraggable(win);
+    }
+
+    static makeDraggable(win) {
+        const titleBar = win.querySelector('.titlebar');
+        let isDragging = false;
+        let offset = [0, 0];
+
+        titleBar.addEventListener('mousedown', startDrag);
+        titleBar.addEventListener('touchstart', startDrag);
+
+        function startDrag(e) {
+            isDragging = true;
+            offset = [
+                win.offsetLeft - e.clientX,
+                win.offsetTop - e.clientY
+            ];
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('touchmove', drag);
+            document.addEventListener('mouseup', stopDrag);
+            document.addEventListener('touchend', stopDrag);
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            win.style.left = (e.clientX + offset[0]) + 'px';
+            win.style.top = (e.clientY + offset[1]) + 'px';
+        }
+
+        function stopDrag() {
+            isDragging = false;
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('touchmove', drag);
+        }
+    }
+
+    static createFirework() {
+        const ctx = this.canvasCtx;
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+        
+        // 简单烟花动画实现
+        const particles = [];
+        for (let i = 0; i < 100; i++) {
+            particles.push({
+                x, y,
+                vx: Math.random() * 10 - 5,
+                vy: Math.random() * 10 - 5,
+                life: 1
+            });
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.01;
+                ctx.fillStyle = `rgba(255,${Math.random()*255},0,${p.life})`;
+                ctx.fillRect(p.x, p.y, 5, 5);
+            });
+            if (particles[0].life > 0) requestAnimationFrame(animate);
+        }
+        animate();
+    }
+}
+
+// 初始化样式
+const style = document.createElement('style');
+style.textContent = `
+.window {
+    position: fixed;
+    background: white;
+    border: 1px solid #000;
+    width: 300px;
+}
+.titlebar {
+    background: #444;
+    color: white;
+    padding: 5px;
+    cursor: move;
+}
+.beat {
+    display: flex;
+    gap: 5px;
+    margin: 5px;
+    padding: 5px;
+    background: #${Math.floor(Math.random()*16777215).toString(16)};
+}
+.beat button {
+    width: 20px;
+    height: 40px;
+    border: none;
+}
+`;
+document.head.appendChild(style);
+
+WindowManager.init();
+    </script>
+</body>
+</html>

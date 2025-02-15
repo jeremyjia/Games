@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        canvas {
+            border: 1px solid #ccc;
+            margin: 20px;
+            background: white;
+        }
+        body {
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="musicSheet"></canvas>
+
+    <script>
+        const canvas = document.getElementById('musicSheet');
+        const ctx = canvas.getContext('2d');
+
+        // 简谱配置
+        const config = {
+            noteSpacing: 35,    // 音符间距
+            lineHeight: 80,     // 行高
+            staffSpacing: 20,   // 谱表间距
+            fontSize: 24,       // 基本字号
+            lineWidth: 1.5,     // 线宽
+            colors: {
+                note: '#333',
+                line: '#666',
+                text: '#000'
+            }
+        };
+
+        // 简谱示例数据（小星星片段）
+        const musicData = [
+            { type: 'header', key: '1=C', beat: '4/4' }, // 调号和拍号
+            { type: 'barline' }, // 小节线
+            { note: '1', duration: 1, dot: false }, 
+            { note: '1', duration: 1, dot: false },
+            { note: '5', duration: .5, dot: false },
+            { note: '5', duration: .5, dot: false },
+            { note: '5', duration: 1, dot: false },
+            { type: 'barline' },
+            { note: '6', duration: 1, dot: false, lyric: '一' },
+            { note: '6', duration: 1, dot: false, lyric: '闪' },
+            { note: '5', duration: 2, dot: false, lyric: '一' },
+            { type: 'barline' }
+        ];
+
+        // 初始化画布
+        function initCanvas() {
+            canvas.width = 800;
+            canvas.height = 400;
+            ctx.font = `${config.fontSize}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+        }
+
+        // 绘制音符
+        function drawNote(x, y, note, duration, dot) {
+            // 绘制音符数字
+            ctx.fillStyle = config.colors.note;
+            ctx.fillText(note, x, y);
+
+            // 绘制高低音点
+            if (note.includes('.')) {
+                const [baseNote, dots] = note.split('.');
+                const dotCount = dots.length;
+                const dotY = y - (dotCount * 15); // 上方的点
+                ctx.fillText('.'.repeat(dotCount), x, dotY);
+            }
+
+            // 绘制时值线
+            if (duration < 1) {
+                // 减时线（下方横线）
+                const underLineY = y + 15;
+                ctx.beginPath();
+                ctx.moveTo(x - 10, underLineY);
+                ctx.lineTo(x + 10, underLineY);
+                ctx.strokeStyle = config.colors.line;
+                ctx.lineWidth = config.lineWidth;
+                ctx.stroke();
+                
+                // 八分音符的连音线
+                if (duration === 0.5) {
+                    ctx.beginPath();
+                    ctx.arc(x, y + 20, 12, 0, Math.PI);
+                    ctx.stroke();
+                }
+            }
+
+            // 绘制附点
+            if (dot) {
+                ctx.beginPath();
+                ctx.arc(x + 15, y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // 绘制小节线
+        function drawBarline(x, y) {
+            ctx.beginPath();
+            ctx.moveTo(x, y - 30);
+            ctx.lineTo(x, y + 30);
+            ctx.strokeStyle = config.colors.line;
+            ctx.lineWidth = config.lineWidth * 2;
+            ctx.stroke();
+        }
+
+        // 绘制谱表头
+        function drawHeader(x, y, key, beat) {
+            ctx.fillStyle = config.colors.text;
+            ctx.textAlign = 'left';
+            ctx.fillText(key, x, y - 20);
+            ctx.fillText(beat, x, y + 20);
+            ctx.textAlign = 'center';
+        }
+
+        // 绘制歌词
+        function drawLyric(x, y, text) {
+            ctx.fillStyle = config.colors.text;
+            ctx.fillText(text, x, y + 40);
+        }
+
+        // 主绘制函数
+        function drawMusic() {
+            let x = 100; // 起始X坐标
+            let y = 100; // 起始Y坐标
+            
+            musicData.forEach(item => {
+                switch(item.type) {
+                    case 'header':
+                        drawHeader(x - 50, y, item.key, item.beat);
+                        break;
+                    case 'barline':
+                        drawBarline(x, y);
+                        x += config.noteSpacing;
+                        break;
+                    default:
+                        drawNote(x, y, item.note, item.duration, item.dot);
+                        if (item.lyric) drawLyric(x, y, item.lyric);
+                        x += config.noteSpacing * (item.duration || 1);
+                }
+
+                // 换行检测
+                if (x > canvas.width - 100) {
+                    x = 100;
+                    y += config.lineHeight;
+                }
+            });
+        }
+
+        // 初始化并绘制
+        initCanvas();
+        drawMusic();
+    </script>
+</body>
+</html>

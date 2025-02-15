@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>可编辑长方体</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+      background-color: #f0f0f0;
+      touch-action: none; /* 防止触摸默认行为 */
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // 长方体顶点坐标（3D 空间）
+    let vertices = [
+      { x: 100, y: 100, z: 100 }, // 0
+      { x: 200, y: 100, z: 100 }, // 1
+      { x: 200, y: 200, z: 100 }, // 2
+      { x: 100, y: 200, z: 100 }, // 3
+      { x: 100, y: 100, z: 200 }, // 4
+      { x: 200, y: 100, z: 200 }, // 5
+      { x: 200, y: 200, z: 200 }, // 6
+      { x: 100, y: 200, z: 200 }  // 7
+    ];
+
+    // 长方体边连接关系
+    const edges = [
+      [0, 1], [1, 2], [2, 3], [3, 0], // 底面
+      [4, 5], [5, 6], [6, 7], [7, 4], // 顶面
+      [0, 4], [1, 5], [2, 6], [3, 7]  // 侧面
+    ];
+
+    // 透视投影参数
+    const focalLength = 500;
+
+    // 将 3D 坐标转换为 2D 坐标
+    function project(point) {
+      const scale = focalLength / (focalLength + point.z);
+      return {
+        x: point.x * scale + canvas.width / 2,
+        y: point.y * scale + canvas.height / 2
+      };
+    }
+
+    // 绘制长方体
+    function drawCube() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 2;
+
+      // 绘制边
+      edges.forEach(edge => {
+        const p1 = project(vertices[edge[0]]);
+        const p2 = project(vertices[edge[1]]);
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.stroke();
+      });
+
+      // 绘制顶点
+      ctx.fillStyle = '#f00';
+      vertices.forEach(vertex => {
+        const p = project(vertex);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    // 找到距离鼠标最近的顶点
+    function findClosestVertex(x, y) {
+      let closestIndex = -1;
+      let minDistance = Infinity;
+
+      vertices.forEach((vertex, index) => {
+        const p = project(vertex);
+        const dx = p.x - x;
+        const dy = p.y - y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestIndex = index;
+        }
+      });
+
+      return closestIndex;
+    }
+
+    // 拖动顶点
+    let selectedVertex = null;
+    canvas.addEventListener('mousedown', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      selectedVertex = findClosestVertex(x, y);
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (selectedVertex !== null) {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        // 将屏幕坐标转换为 3D 坐标
+        const scale = focalLength / (focalLength + vertices[selectedVertex].z);
+        vertices[selectedVertex].x = (x - canvas.width / 2) / scale;
+        vertices[selectedVertex].y = (y - canvas.height / 2) / scale;
+
+        drawCube();
+      }
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      selectedVertex = null;
+    });
+
+    // 触摸事件支持
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const rect = canvas.getBoundingClientRect();
+      const x = touch.clientX - rect.left;
+      const y = touch.clientY - rect.top;
+      selectedVertex = findClosestVertex(x, y);
+    });
+
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      if (selectedVertex !== null) {
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+
+        // 将屏幕坐标转换为 3D 坐标
+        const scale = focalLength / (focalLength + vertices[selectedVertex].z);
+        vertices[selectedVertex].x = (x - canvas.width / 2) / scale;
+        vertices[selectedVertex].y = (y - canvas.height / 2) / scale;
+
+        drawCube();
+      }
+    });
+
+    canvas.addEventListener('touchend', () => {
+      selectedVertex = null;
+    });
+
+    // 初始化绘制
+    drawCube();
+  </script>
+</body>
+</html>

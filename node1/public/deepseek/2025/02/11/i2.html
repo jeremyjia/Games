@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Half Red Half Black Text</title>
+    <style>
+        canvas {
+            border: 1px solid #ccc;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="myCanvas" width="400" height="200"></canvas>
+
+    <script>
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 设置文字属性
+        const text = "汉";
+        ctx.font = "100px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        // 获取文字位置
+        const x = canvas.width / 2;
+        const y = canvas.height / 2;
+
+        // 先绘制红色文字
+        ctx.fillStyle = "red";
+        ctx.fillText(text, x, y);
+
+        // 创建左半边的裁剪区域
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, canvas.width/2, canvas.height);
+        ctx.clip();
+
+        // 在裁剪区域内绘制黑色文字
+        ctx.fillStyle = "black";
+        ctx.fillText(text, x, y);
+        
+        ctx.restore();
+    </script>
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>矢量绘图系统</title>
+    <style>
+        #toolbar {
+            padding: 10px;
+            background: #f0f0f0;
+            margin-bottom: 10px;
+        }
+        canvas {
+            border: 1px solid #ccc;
+        }
+        .tool-btn {
+            padding: 5px 10px;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+        .tool-btn.active {
+            background: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div id="toolbar">
+        <button class="tool-btn active" data-tool="select">✥ 选择</button>
+        <button class="tool-btn" data-tool="text">T 文本</button>
+        <button class="tool-btn" data-tool="line">/ 直线</button>
+        <button class="tool-btn" data-tool="circle">○ 圆形</button>
+        <button class="tool-btn" data-tool="rect">□ 矩形</button>
+        <button class="tool-btn" data-tool="scarecrow">🌾 稻草人</button>
+        <input type="color" id="colorPicker" value="#000000">
+        <input type="number" id="lineWidth" value="2" min="1" max="10">
+        <button id="saveBtn">保存为JSON</button>
+    </div>
+    <canvas id="canvas" width="800" height="600"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let currentTool = 'select';
+        let shapes = [];
+        let currentShape = null;
+        let startX, startY;
+
+        // 工具按钮事件
+        document.querySelectorAll('.tool-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTool = btn.dataset.tool;
+            });
+        });
+
+        // 颜色和线宽
+        const colorPicker = document.getElementById('colorPicker');
+        const lineWidth = document.getElementById('lineWidth');
+
+        // 鼠标事件处理
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', drawing);
+        canvas.addEventListener('mouseup', finishDrawing);
+        canvas.addEventListener('mouseout', finishDrawing);
+
+        // 保存按钮
+        document.getElementById('saveBtn').addEventListener('click', () => {
+            const json = JSON.stringify(shapes, null, 2);
+            console.log(json);
+            alert('JSON已保存到控制台');
+        });
+
+        function startDrawing(e) {
+            const rect = canvas.getBoundingClientRect();
+            startX = e.clientX - rect.left;
+            startY = e.clientY - rect.top;
+            
+            if (currentTool === 'text') {
+                const text = prompt('输入文本:');
+                if (text) {
+                    shapes.push({
+                        type: 'text',
+                        x: startX,
+                        y: startY,
+                        text: text,
+                        color: colorPicker.value,
+                        lineWidth: lineWidth.value
+                    });
+                    redraw();
+                }
+                return;
+            }
+
+            if (currentTool === 'select') return;
+
+            isDrawing = true;
+            currentShape = {
+                type: currentTool,
+                color: colorPicker.value,
+                lineWidth: lineWidth.value,
+                points: [{x: startX, y: startY}]
+            };
+        }
+
+        function drawing(e) {
+            if (!isDrawing) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const currentX = e.clientX - rect.left;
+            const currentY = e.clientY - rect.top;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            redraw();
+            
+            currentShape.points[1] = {x: currentX, y: currentY};
+            
+            ctx.beginPath();
+            ctx.strokeStyle = currentShape.color;
+            ctx.lineWidth = currentShape.lineWidth;
+
+            switch(currentTool) {
+                case 'line':
+                    drawLine(currentShape.points[0], currentShape.points[1]);
+                    break;
+                case 'rect':
+                    drawRect(currentShape.points[0], currentShape.points[1]);
+                    break;
+                case 'circle':
+                    drawCircle(currentShape.points[0], currentShape.points[1]);
+                    break;
+                case 'scarecrow':
+                    drawScarecrow(currentShape.points[0], currentShape.points[1]);
+                    break;
+            }
+            ctx.stroke();
+        }
+
+        function finishDrawing() {
+            if (!isDrawing) return;
+            isDrawing = false;
+            
+            if (currentShape) {
+                shapes.push(currentShape);
+                currentShape = null;
+            }
+            redraw();
+        }
+
+        function redraw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            shapes.forEach(shape => {
+                ctx.strokeStyle = shape.color;
+                ctx.lineWidth = shape.lineWidth;
+                ctx.beginPath();
+
+                switch(shape.type) {
+                    case 'text':
+                        ctx.fillStyle = shape.color;
+                        ctx.textBaseline = 'top';
+                        ctx.font = `${shape.lineWidth * 2}px Arial`;
+                        ctx.fillText(shape.text, shape.x, shape.y);
+                        break;
+                    case 'line':
+                        drawLine(shape.points[0], shape.points[1]);
+                        break;
+                    case 'rect':
+                        drawRect(shape.points[0], shape.points[1]);
+                        break;
+                    case 'circle':
+                        drawCircle(shape.points[0], shape.points[1]);
+                        break;
+                    case 'scarecrow':
+                        drawScarecrow(shape.points[0], shape.points[1]);
+                        break;
+                }
+                ctx.stroke();
+            });
+        }
+
+        function drawLine(start, end) {
+            ctx.moveTo(start.x, start.y);
+            ctx.lineTo(end.x, end.y);
+        }
+
+        function drawRect(start, end) {
+            const width = end.x - start.x;
+            const height = end.y - start.y;
+            ctx.rect(start.x, start.y, width, height);
+        }
+
+        function drawCircle(start, end) {
+            const radius = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
+            ctx.arc(start.x, start.y, radius, 0, Math.PI * 2);
+        }
+
+        function drawScarecrow(start, end) {
+            // 计算绘制区域
+            const width = end.x - start.x;
+            const height = end.y - start.y;
+            const baseSize = Math.max(Math.abs(width), Math.abs(height)) * 0.8;
+            
+            // 身体各部分比例
+            const proportions = {
+                head: 0.2,
+                body: 0.4,
+                arm: 0.6,
+                leg: 0.8
+            };
+
+            // 头部（圆形）
+            ctx.arc(start.x, start.y, baseSize * proportions.head, 0, Math.PI * 2);
+            
+            // 身体（直线）
+            ctx.moveTo(start.x, start.y + baseSize * proportions.head);
+            ctx.lineTo(start.x, start.y + baseSize * (proportions.head + proportions.body));
+            
+            // 手臂（直线）
+            ctx.moveTo(start.x - baseSize * proportions.arm/2, 
+                      start.y + baseSize * (proportions.head + proportions.body/3));
+            ctx.lineTo(start.x + baseSize * proportions.arm/2, 
+                      start.y + baseSize * (proportions.head + proportions.body/3));
+            
+            // 双腿（两条斜线）
+            ctx.moveTo(start.x, start.y + baseSize * (proportions.head + proportions.body));
+            ctx.lineTo(start.x - baseSize * proportions.leg/3, 
+                      start.y + baseSize * (proportions.head + proportions.body + proportions.leg));
+            ctx.moveTo(start.x, start.y + baseSize * (proportions.head + proportions.body));
+            ctx.lineTo(start.x + baseSize * proportions.leg/3, 
+                      start.y + baseSize * (proportions.head + proportions.body + proportions.leg));
+
+            // 帽子（三角形）
+            ctx.moveTo(start.x - baseSize * proportions.head, 
+                      start.y - baseSize * proportions.head/2);
+            ctx.lineTo(start.x + baseSize * proportions.head, 
+                      start.y - baseSize * proportions.head/2);
+            ctx.lineTo(start.x, 
+                      start.y - baseSize * proportions.head * 1.5);
+            ctx.closePath();
+        }
+    </script>
+</body>
+</html>

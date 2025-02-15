@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>复读机测试</title>
+    <style>
+        /* 通用样式 */
+        body {
+            margin: 0;
+            padding: 20px 0 60px;
+            font-family: Arial, sans-serif;
+        }
+
+        /* 状态栏样式 */
+        #statusBar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #f0f0f0;
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+        }
+
+        /* 测试用例窗口样式 */
+        .test-case {
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            width: 300px;
+            min-height: 200px;
+        }
+
+        .window-header {
+            background: #eee;
+            padding: 5px;
+            cursor: move;
+            user-select: none;
+        }
+
+        .window-content {
+            padding: 10px;
+        }
+
+        /* 工具条样式 */
+        .toolbar {
+            display: flex;
+            gap: 5px;
+            margin: 10px 0;
+        }
+
+        .toolbar button.active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        /* 进度条容器 */
+        .progress-container {
+            display: grid;
+            grid-template-columns: 50px 1fr 50px;
+            gap: 5px;
+            align-items: center;
+        }
+
+        /* 乐谱样式 */
+        .score {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .beat {
+            width: 30px;
+            height: 30px;
+            background: #2196F3;
+            border: none;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div id="testCases"></div>
+    <div id="statusBar">
+        <button onclick="createTestCase()">新建用例</button>
+    </div>
+
+<script>
+// 复读机核心类
+class RepeaterMachine {
+    constructor() {
+        this.audio = new Audio();
+        this.isPlaying = false;
+        this.loopStart = 0;
+        this.loopEnd = 0;
+        this.createWindow();
+        this.setupAudio();
+    }
+
+    // 创建浮动窗口
+    createWindow() {
+        this.window = document.createElement('div');
+        this.window.className = 'test-case';
+        this.window.innerHTML = `
+            <div class="window-header">复读机</div>
+            <div class="window-content">
+                <input type="text" class="url-input" readonly>
+                <div class="toolbar"></div>
+                <div class="progress-container">
+                    <input type="number" class="start-input" value="0" min="0">
+                    <input type="range" class="progress" min="0" max="100" value="0">
+                    <input type="number" class="end-input" value="0" min="0">
+                </div>
+                <button class="play-btn">播放</button>
+                <div class="score"></div>
+                <div>
+                    BPM: <input type="number" class="bpm" value="60" min="30" max="240">
+                </div>
+            </div>
+        `;
+
+        // 添加工具条按钮
+        const urls = [
+            'https://littleflute.github.io/english/NewConceptEnglish/Book2/2.mp3',
+            'https://littleflute.github.io/english/NewConceptEnglish/Book2/10.mp3',
+            'https://littleflute.github.io/gt1/mp3/j72_4_4.mp3'
+        ];
+        
+        const toolbar = this.window.querySelector('.toolbar');
+        urls.forEach(url => {
+            const btn = document.createElement('button');
+            btn.textContent = url.split('/').pop();
+            btn.addEventListener('click', () => this.setSource(url, btn));
+            toolbar.appendChild(btn);
+        });
+
+        // 初始化拖动功能
+        this.initDrag();
+        // 初始化事件监听
+        this.initEvents();
+        document.getElementById('testCases').appendChild(this.window);
+    }
+
+    // 设置音频源
+    setSource(url, button) {
+        this.audio.src = url;
+        this.window.querySelector('.url-input').value = url;
+        // 高亮处理
+        Array.from(this.window.querySelectorAll('button')).forEach(btn => 
+            btn.classList.remove('active'));
+        button.classList.add('active');
+    }
+
+    // 初始化拖动功能
+    initDrag() {
+        const header = this.window.querySelector('.window-header');
+        let isDragging = false;
+        let offset = [0, 0];
+
+        const startDrag = (e) => {
+            isDragging = true;
+            offset = [
+                this.window.offsetLeft - (e.clientX || e.touches[0].clientX),
+                this.window.offsetTop - (e.clientY || e.touches[0].clientY)
+            ];
+        };
+
+        const doDrag = (e) => {
+            if (!isDragging) return;
+            this.window.style.left = (e.clientX || e.touches[0].clientX) + offset[0] + 'px';
+            this.window.style.top = (e.clientY || e.touches[0].clientY) + offset[1] + 'px';
+        };
+
+        const stopDrag = () => isDragging = false;
+
+        header.addEventListener('mousedown', startDrag);
+        header.addEventListener('touchstart', startDrag);
+        document.addEventListener('mousemove', doDrag);
+        document.addEventListener('touchmove', doDrag);
+        document.addEventListener('mouseup', stopDrag);
+        document.addEventListener('touchend', stopDrag);
+    }
+
+    // 初始化事件监听
+    initEvents() {
+        // 播放按钮
+        const playBtn = this.window.querySelector('.play-btn');
+        playBtn.addEventListener('click', () => this.togglePlay());
+
+        // 时间输入
+        const startInput = this.window.querySelector('.start-input');
+        const endInput = this.window.querySelector('.end-input');
+        startInput.addEventListener('change', () => this.loopStart = Math.min(startInput.value, this.loopEnd));
+        endInput.addEventListener('change', () => this.loopEnd = Math.max(endInput.value, this.loopStart));
+
+        // 音频元数据加载
+        this.audio.addEventListener('loadedmetadata', () => {
+            startInput.max = endInput.max = this.audio.duration;
+            this.loopEnd = this.audio.duration;
+            endInput.value = this.audio.duration;
+        });
+
+        // 时间更新事件
+        this.audio.addEventListener('timeupdate', () => {
+            if (this.audio.currentTime >= this.loopEnd) {
+                this.audio.currentTime = this.loopStart;
+            }
+        });
+    }
+
+    // 播放控制
+    togglePlay() {
+        if (this.isPlaying) {
+            this.audio.pause();
+        } else {
+            this.audio.play();
+            // 初始化乐谱
+            new ScoreTracker(this.audio, 
+                this.window.querySelector('.score'),
+                this.window.querySelector('.bpm').value
+            );
+        }
+        this.isPlaying = !this.isPlaying;
+        this.window.querySelector('.play-btn').textContent = 
+            this.isPlaying ? '暂停' : '播放';
+    }
+}
+
+// 乐谱类
+class ScoreTracker {
+    constructor(audio, container, bpm) {
+        this.container = container;
+        this.bpm = bpm;
+        this.startTime = audio.currentTime;
+        this.interval = 60 / bpm * 1000;
+        this.beatCount = 0;
+        container.innerHTML = '';
+        this.timer = setInterval(() => this.addBeat(), this.interval);
+    }
+
+    addBeat() {
+        const beat = document.createElement('button');
+        beat.className = 'beat';
+        beat.textContent = ++this.beatCount;
+        this.container.appendChild(beat);
+    }
+}
+
+// 测试用例管理
+let testCaseCount = 0;
+
+function createTestCase() {
+    const caseId = ++testCaseCount;
+    const btn = document.createElement('button');
+    btn.textContent = `用例 ${caseId}`;
+    let isOpen = true;
+
+    // 创建复读机实例
+    const machine = new RepeaterMachine();
+    
+    // 切换窗口可见性
+    btn.addEventListener('click', () => {
+        isOpen = !isOpen;
+        machine.window.style.display = isOpen ? 'block' : 'none';
+        btn.style.background = isOpen ? '#4CAF50' : '#ccc';
+    });
+
+    document.getElementById('statusBar').appendChild(btn);
+}
+
+// 初始化第一个用例
+createTestCase();
+</script>
+</body>
+</html>

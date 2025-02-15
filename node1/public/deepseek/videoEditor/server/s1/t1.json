@@ -1,0 +1,15 @@
+{
+    "frames": [
+        {"background": "操场", "objects": []},
+        {"background": "操场", "objects": []},
+        {"background": "马路边", "objects": []},
+        {"background": "马路边", "objects": []},
+        {"background": "树林", "objects": []},
+        {"background": "海边", "objects": []},
+        {"background": "马路边", "objects": []},
+        {"background": "马路边", "objects": []},
+        {"background": "树林", "objects": []}
+    ],
+    "output": "demo.mp4",
+    "fps": 1
+}

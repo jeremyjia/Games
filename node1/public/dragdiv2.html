@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .draggable-box {
+            width: 150px;
+            height: 150px;
+            position: absolute;
+            cursor: grab;
+            user-select: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: all 0.2s;
+            z-index: 1;
+        }
+
+        .draggable-box:active {
+            cursor: grabbing;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+    <!-- 三个可拖动DIV -->
+    <div class="draggable-box" style="background: #2196F3;">蓝色方块</div>
+    <div class="draggable-box" style="background: #4CAF50;">绿色方块</div>
+    <div class="draggable-box" style="background: #FF5722;">橙色方块</div>
+
+    <script>
+        class Draggable {
+            constructor(element) {
+                this.element = element;
+                this.isDragging = false;
+                this.startX = 0;
+                this.startY = 0;
+                this.initialLeft = 0;
+                this.initialTop = 0;
+
+                // 初始化位置
+                this.setRandomPosition();
+                
+                // 绑定事件
+                this.element.addEventListener('mousedown', (e) => this.startDrag(e));
+                this.element.addEventListener('touchstart', (e) => this.startDrag(e), { passive: false });
+                document.addEventListener('mousemove', (e) => this.drag(e));
+                document.addEventListener('touchmove', (e) => this.drag(e), { passive: false });
+                document.addEventListener('mouseup', () => this.endDrag());
+                document.addEventListener('touchend', () => this.endDrag());
+            }
+
+            setRandomPosition() {
+                const maxX = window.innerWidth - this.element.offsetWidth;
+                const maxY = window.innerHeight - this.element.offsetHeight;
+                this.element.style.left = Math.random() * maxX + 'px';
+                this.element.style.top = Math.random() * maxY + 'px';
+            }
+
+            startDrag(e) {
+                this.isDragging = true;
+                const rect = this.element.getBoundingClientRect();
+                this.initialLeft = rect.left;
+                this.initialTop = rect.top;
+                
+                this.startX = e.clientX || e.touches[0].clientX;
+                this.startY = e.clientY || e.touches[0].clientY;
+                
+                e.preventDefault();
+            }
+
+            drag(e) {
+                if (!this.isDragging) return;
+
+                const currentX = e.clientX || e.touches[0].clientX;
+                const currentY = e.clientY || e.touches[0].clientY;
+                const dx = currentX - this.startX;
+                const dy = currentY - this.startY;
+
+                const newLeft = Math.max(0, 
+                    Math.min(window.innerWidth - this.element.offsetWidth, 
+                    this.initialLeft + dx));
+                
+                const newTop = Math.max(0, 
+                    Math.min(window.innerHeight - this.element.offsetHeight, 
+                    this.initialTop + dy));
+
+                this.element.style.left = newLeft + 'px';
+                this.element.style.top = newTop + 'px';
+
+                e.preventDefault();
+            }
+
+            endDrag() {
+                this.isDragging = false;
+            }
+        }
+
+        // 为所有.draggable-box元素创建实例
+        document.querySelectorAll('.draggable-box').forEach(box => {
+            new Draggable(box);
+        });
+
+        // 窗口调整时保持位置
+        window.addEventListener('resize', () => {
+            document.querySelectorAll('.draggable-box').forEach(box => {
+                const rect = box.getBoundingClientRect();
+                box.style.left = Math.max(0, 
+                    Math.min(window.innerWidth - box.offsetWidth, 
+                    rect.left)) + 'px';
+                box.style.top = Math.max(0, 
+                    Math.min(window.innerHeight - box.offsetHeight, 
+                    rect.top)) + 'px';
+            });
+        });
+    </script>
+</body>
+</html>

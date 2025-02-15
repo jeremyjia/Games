@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能文本朗读器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #f0f0f0;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #textInput {
+            width: 100%;
+            height: 120px;
+            padding: 12px;
+            margin: 15px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            resize: vertical;
+        }
+
+        #speakButton {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            background-color: #2196F3;
+        }
+
+        @media (max-width: 480px) {
+            button {
+                flex: 1 1 120px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <button onclick="setExample('greeting')">问候语</button>
+        <button onclick="setExample('quote')">名人名言</button>
+        <button onclick="setExample('joke')">趣味笑话</button>
+        <button onclick="setExample('news')">新闻简报</button>
+    </div>
+
+    <textarea id="textInput" placeholder="在此输入或选择上方示例文本..."></textarea>
+    
+    <button id="speakButton" onclick="speakText()">
+        🎤 朗读文本
+    </button>
+
+    <script>
+        // 示例文本库
+        const examples = {
+            greeting: [
+                "您好！今天是晴朗的一天，祝您工作顺利！",
+                "早上好！记得吃营养早餐哦～",
+                "晚上好！今天过得愉快吗？"
+            ],
+            quote: [
+                "知识就是力量。——培根",
+                "Stay hungry, stay foolish. - 乔布斯",
+                "千里之行，始于足下。——老子"
+            ],
+            joke: [
+                "为什么程序员总是分不清万圣节和圣诞节？因为 Oct 31 == Dec 25！",
+                "什么鱼最聪明？鲸鱼（精明的谐音）"
+            ],
+            news: [
+                "最新消息：我国航天局宣布将于下月发射新一代载人飞船",
+                "科技快讯：人工智能助手在医疗诊断领域取得突破性进展"
+            ]
+        };
+
+        // 设置示例文本
+        function setExample(type) {
+            const texts = examples[type];
+            const randomIndex = Math.floor(Math.random() * texts.length);
+            document.getElementById('textInput').value = texts[randomIndex];
+        }
+
+        // 朗读文本
+        function speakText() {
+            const text = document.getElementById('textInput').value;
+            if (!text) {
+                alert("请输入要朗读的文本");
+                return;
+            }
+
+            if (typeof speechSynthesis === 'undefined') {
+                alert("您的浏览器不支持语音朗读功能，请使用最新版Chrome或Edge浏览器");
+                return;
+            }
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            // 设置中文朗读
+            utterance.lang = 'zh-CN';
+            // 自动选择可用语音
+            const voices = speechSynthesis.getVoices();
+            const chineseVoice = voices.find(voice => voice.lang === 'zh-CN');
+            if (chineseVoice) {
+                utterance.voice = chineseVoice;
+            }
+            
+            speechSynthesis.speak(utterance);
+        }
+
+        // 初始化语音列表
+        if (typeof speechSynthesis !== 'undefined' && !speechSynthesis.onvoiceschanged) {
+            speechSynthesis.onvoiceschanged = () => {
+                // 语音列表加载完成
+            };
+        }
+    </script>
+</body>
+</html>

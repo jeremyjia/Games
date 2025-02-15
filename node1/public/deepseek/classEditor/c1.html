@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript类设计器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .draggable {
+            position: absolute;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border: 1px solid #ccc;
+            cursor: move;
+        }
+
+        #class-code-editor {
+            top: 20px;
+            left: 20px;
+        }
+
+        #class-toolbar {
+            top: 20px;
+            right: 20px;
+        }
+
+        #salary-slip-generator {
+            bottom: 20px;
+            left: 20px;
+        }
+
+        #class-renderer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+<body>
+    <div id="class-code-editor" class="draggable">
+        <textarea id="code-input" rows="10" cols="30"></textarea>
+        <button id="update-button">更新类</button>
+    </div>
+
+    <div id="class-toolbar" class="draggable">
+        <button class="class-button" data-class="Employee">Employee</button>
+        <button class="class-button" data-class="Manager">Manager</button>
+        <button class="class-button" data-class="Developer">Developer</button>
+    </div>
+
+    <div id="salary-slip-generator">
+        <button id="generate-slip">生成工资条</button>
+    </div>
+
+    <canvas id="class-renderer" width="400" height="200"></canvas>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const codeInput = document.getElementById('code-input');
+            const updateButton = document.getElementById('update-button');
+            const classToolbar = document.getElementById('class-toolbar');
+            const generateSlipButton = document.getElementById('generate-slip');
+            const canvas = document.getElementById('class-renderer');
+            const ctx = canvas.getContext('2d');
+
+            // 使元素可拖动
+            function makeDraggable(element) {
+                let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+                element.onmousedown = dragMouseDown;
+
+                function dragMouseDown(e) {
+                    e = e || window.event;
+                    e.preventDefault();
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                    document.onmouseup = closeDragElement;
+                    document.onmousemove = elementDrag;
+                }
+
+                function elementDrag(e) {
+                    e = e || window.event;
+                    e.preventDefault();
+                    pos1 = pos3 - e.clientX;
+                    pos2 = pos4 - e.clientY;
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                    element.style.top = (element.offsetTop - pos2) + "px";
+                    element.style.left = (element.offsetLeft - pos1) + "px";
+                }
+
+                function closeDragElement() {
+                    document.onmouseup = null;
+                    document.onmousemove = null;
+                }
+            }
+
+            // 使文本框和工具条可拖动
+            makeDraggable(document.getElementById('class-code-editor'));
+            makeDraggable(document.getElementById('class-toolbar'));
+
+            // 类定义
+            const classes = {
+                Employee: class Employee {
+                    constructor(name, salary) {
+                        this.name = name;
+                        this.salary = salary;
+                    }
+                    getSalary() {
+                        return this.salary;
+                    }
+                },
+                Manager: class Manager extends Employee {
+                    constructor(name, salary, bonus) {
+                        super(name, salary);
+                        this.bonus = bonus;
+                    }
+                    getSalary() {
+                        return this.salary + this.bonus;
+                    }
+                },
+                Developer: class Developer extends Employee {
+                    constructor(name, salary, overtime) {
+                        super(name, salary);
+                        this.overtime = overtime;
+                    }
+                    getSalary() {
+                        return this.salary + this.overtime * 50;
+                    }
+                }
+            };
+
+            // 点击类名按钮时更新文本框内容
+            classToolbar.querySelectorAll('.class-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const className = button.getAttribute('data-class');
+                    codeInput.value = classes[className].toString();
+                });
+            });
+
+            // 更新类定义
+            updateButton.addEventListener('click', () => {
+                const newClassCode = codeInput.value;
+                try {
+                    const newClass = new Function('return ' + newClassCode)();
+                    classes[newClass.name] = newClass;
+                    alert('类已更新');
+                } catch (e) {
+                    alert('类定义错误: ' + e.message);
+                }
+            });
+
+            // 生成工资条
+            generateSlipButton.addEventListener('click', () => {
+                const instance = new classes.Employee('John Doe', 50000);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.font = '16px Arial';
+                ctx.fillText(`Name: ${instance.name}`, 10, 20);
+                ctx.fillText(`Salary: ${instance.getSalary()}`, 10, 40);
+            });
+        });
+    </script>
+</body>
+</html>

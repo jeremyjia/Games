@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        canvas {
+            border: 2px solid #666;
+            background: #87CEEB;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            margin: 50px;
+            background: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="cowCanvas" width="400" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById('cowCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 颜色配置
+        const colors = {
+            body: '#8B4513',      // 深棕色身体
+            head: '#A0522D',      // 浅棕色头部
+            spots: '#2F4F4F',     // 黑色斑点
+            eyeWhite: '#FFFFFF',  // 眼睛白
+            eyeBall: '#000000',   // 瞳孔
+            horn: '#D2B48C'       // 角的颜色
+        };
+
+        // 动画参数
+        let tailAngle = 0;
+        let isBlinking = false;
+
+        function drawCow() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 绘制身体
+            ctx.fillStyle = colors.body;
+            ctx.beginPath();
+            ctx.ellipse(200, 250, 120, 80, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 绘制头部
+            ctx.fillStyle = colors.head;
+            ctx.beginPath();
+            ctx.ellipse(200, 150, 60, 80, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 绘制耳朵
+            ctx.fillStyle = colors.head;
+            ctx.save();
+            ctx.translate(150, 120);
+            ctx.rotate(-30 * Math.PI/180);
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 25, 40, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            ctx.save();
+            ctx.translate(250, 120);
+            ctx.rotate(30 * Math.PI/180);
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 25, 40, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            // 绘制牛角
+            ctx.fillStyle = colors.horn;
+            ctx.save();
+            ctx.translate(140, 90);
+            ctx.rotate(-45 * Math.PI/180);
+            ctx.fillRect(0, 0, 15, 60);
+            ctx.restore();
+
+            ctx.save();
+            ctx.translate(260, 90);
+            ctx.rotate(45 * Math.PI/180);
+            ctx.fillRect(0, 0, 15, 60);
+            ctx.restore();
+
+            // 绘制眼睛
+            function drawEye(x, y) {
+                ctx.fillStyle = colors.eyeWhite;
+                ctx.beginPath();
+                ctx.arc(x, y, 10, 0, Math.PI * 2);
+                ctx.fill();
+                
+                if(!isBlinking) {
+                    ctx.fillStyle = colors.eyeBall;
+                    ctx.beginPath();
+                    ctx.arc(x, y + 3, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            drawEye(170, 130);
+            drawEye(230, 130);
+
+            // 绘制鼻子
+            ctx.fillStyle = '#A0522D';
+            ctx.beginPath();
+            ctx.ellipse(200, 170, 20, 15, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 绘制鼻孔
+            ctx.fillStyle = colors.eyeBall;
+            ctx.beginPath();
+            ctx.arc(190, 165, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(210, 165, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 绘制四肢
+            ctx.fillStyle = colors.body;
+            ctx.fillRect(140, 300, 40, 80);  // 左前腿
+            ctx.fillRect(220, 300, 40, 80);  // 右前腿
+            ctx.fillRect(120, 320, 40, 60);  // 左后腿
+            ctx.fillRect(240, 320, 40, 60);  // 右后腿
+
+            // 绘制尾巴
+            ctx.save();
+            ctx.translate(280, 270);
+            ctx.rotate(tailAngle * Math.PI/180);
+            ctx.fillStyle = colors.head;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(40, -20);
+            ctx.lineTo(60, 0);
+            ctx.lineTo(40, 20);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+
+            // 绘制斑点
+            ctx.fillStyle = colors.spots;
+            ctx.beginPath();
+            ctx.ellipse(180, 220, 20, 30, 30 * Math.PI/180, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(220, 280, 25, 15, -20 * Math.PI/180, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // 动画循环
+        function animate() {
+            tailAngle = Math.sin(Date.now()/200) * 30;  // 尾巴摆动
+            
+            // 随机眨眼
+            if(Math.random() < 0.02) isBlinking = true;
+            if(isBlinking && Math.random() < 0.1) isBlinking = false;
+
+            drawCow();
+            requestAnimationFrame(animate);
+        }
+
+        // 点击切换颜色
+        canvas.addEventListener('click', () => {
+            colors.body = `hsl(${Math.random()*360}, 50%, 30%)`;
+            colors.head = `hsl(${Math.random()*360}, 40%, 40%)`;
+        });
+
+        animate();
+    </script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音乐播放器</title>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <nav id="nav"></nav>
+    
+    <!-- 主内容 -->
+    <button id="newWindowBtn">新建窗口</button>
+    
+    <!-- 底部状态栏 -->
+    <div id="statusBar"></div>
+
+    <script>
+// 动态生成样式
+const style = document.createElement('style');
+style.textContent = `
+body { margin: 0; font-family: Arial; }
+nav { background: #333; padding: 10px; }
+nav a { color: white; padding: 10px; text-decoration: none; }
+.window { 
+    position: absolute; background: white; 
+    border: 1px solid #ccc; padding: 20px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+    touch-action: none;
+}
+#statusBar { 
+    position: fixed; bottom: 0; width: 100%; 
+    background: #eee; padding: 5px; 
+}
+.beat-container { display: flex; gap: 5px; margin: 10px 0; }
+.beat-box { width: 50px; height: 50px; border: 1px solid #000; }
+.active { background: #ff0000!important; }
+`;
+document.head.appendChild(style);
+
+// 导航菜单
+const mls = ["index.html", "readme.md", "i1.html", "i2.html"];
+const nav = document.getElementById('nav');
+mls.forEach(file => {
+    const a = document.createElement('a');
+    a.href = file;
+    a.textContent = file;
+    nav.appendChild(a);
+});
+
+// 窗口管理类
+class WindowManager {
+    constructor() {
+        this.windows = new Map();
+        this.windowCount = 0;
+    }
+
+    createWindow() {
+        const windowId = `window${++this.windowCount}`;
+        const win = document.createElement('div');
+        win.className = 'window';
+        win.style.left = `${Math.random()*300}px`;
+        win.style.top = `${Math.random()*300}px`;
+        
+        // 添加播放器
+        const player = new MusicPlayer();
+        win.appendChild(player.dom);
+        
+        // 添加拖动功能
+        this.makeDraggable(win);
+        
+        document.body.appendChild(win);
+        this.addStatusButton(windowId, win);
+        this.windows.set(windowId, {element: win, visible: true});
+    }
+
+    makeDraggable(element) {
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        element.onmousedown = dragMouseDown;
+        element.ontouchstart = touchStart;
+
+        function dragMouseDown(e) {
+            e.preventDefault();
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onmousemove = elementDrag;
+            document.onmouseup = closeDrag;
+        }
+
+        function touchStart(e) {
+            pos3 = e.touches[0].clientX;
+            pos4 = e.touches[0].clientY;
+            document.ontouchmove = touchMove;
+            document.ontouchend = touchEnd;
+        }
+
+        function elementDrag(e) {
+            pos1 = pos3 - e.clientX;
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            element.style.top = (element.offsetTop - pos2) + "px";
+            element.style.left = (element.offsetLeft - pos1) + "px";
+        }
+
+        function touchMove(e) {
+            const touch = e.touches[0];
+            element.style.left = touch.clientX - 50 + 'px';
+            element.style.top = touch.clientY - 20 + 'px';
+        }
+
+        function closeDrag() {
+            document.onmousemove = null;
+            document.onmouseup = null;
+        }
+
+        function touchEnd() {
+            document.ontouchmove = null;
+            document.ontouchend = null;
+        }
+    }
+
+    addStatusButton(id, win) {
+        const btn = document.createElement('button');
+        btn.textContent = `窗口 ${this.windowCount}`;
+        let isVisible = true;
+        
+        btn.onclick = () => {
+            isVisible = !isVisible;
+            win.style.display = isVisible ? 'block' : 'none';
+            btn.style.background = isVisible ? '#fff' : '#ccc';
+        };
+        
+        statusBar.appendChild(btn);
+    }
+}
+
+// 音乐播放器类
+class MusicPlayer {
+    constructor() {
+        this.dom = document.createElement('div');
+        this.audio = new Audio('https://littleflute.github.io/gt1/mp3/j72_4_4.mp3');
+        this.isPlaying = false;
+        this.bpm = 60;
+        this.currentBeat = 0;
+        this.interval = null;
+        
+        // 创建界面
+        this.speedInput = document.createElement('input');
+        this.speedInput.type = 'number';
+        this.speedInput.value = 60;
+        this.speedInput.onchange = () => this.setBpm(this.speedInput.value);
+        
+        this.playBtn = document.createElement('button');
+        this.playBtn.textContent = '播放';
+        this.playBtn.onclick = () => this.togglePlay();
+        
+        this.beatContainer = document.createElement('div');
+        this.beatContainer.className = 'beat-container';
+        
+        // 创建4个拍子容器
+        for (let i = 0; i < 4; i++) {
+            const container = document.createElement('div');
+            container.style.background = `hsl(${i*90}, 50%, 80%)`;
+            for (let j = 0; j < 4; j++) {
+                const box = document.createElement('div');
+                box.className = 'beat-box';
+                container.appendChild(box);
+            }
+            this.beatContainer.appendChild(container);
+        }
+
+        this.dom.append(this.speedInput, this.playBtn, this.beatContainer);
+    }
+
+    togglePlay() {
+        if (this.isPlaying) {
+            this.audio.pause();
+            clearInterval(this.interval);
+        } else {
+            this.audio.play();
+            this.startVisualization();
+        }
+        this.isPlaying = !this.isPlaying;
+        this.playBtn.textContent = this.isPlaying ? '暂停' : '播放';
+    }
+
+    startVisualization() {
+        const beatDuration = 60000 / this.bpm;
+        this.interval = setInterval(() => {
+            this.updateBeats();
+            this.currentBeat = (this.currentBeat + 1) % 16;
+        }, beatDuration / 4);
+    }
+
+    updateBeats() {
+        const allBoxes = this.dom.querySelectorAll('.beat-box');
+        allBoxes.forEach(box => box.classList.remove('active'));
+        const currentBox = allBoxes[this.currentBeat];
+        currentBox.classList.add('active');
+    }
+
+    setBpm(value) {
+        this.bpm = value;
+        if (this.isPlaying) {
+            clearInterval(this.interval);
+            this.startVisualization();
+        }
+    }
+}
+
+// 初始化窗口管理器
+const windowManager = new WindowManager();
+document.getElementById('newWindowBtn').onclick = () => windowManager.createWindow();
+    </script>
+</body>
+</html>

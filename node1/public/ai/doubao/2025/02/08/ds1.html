@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网页视频编辑器</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #mainCanvas {
+            border: 1px solid black;
+            display: block;
+            margin: 20px auto;
+        }
+
+        .toolbar {
+            position: fixed;
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            cursor: move;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            width: 80%;
+            max-width: 500px;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="mainCanvas" width="800" height="600"></canvas>
+    <div id="objectToolbar" class="toolbar">
+        <h3>创建对象</h3>
+        <button onclick="addObject('line')">直线</button>
+        <button onclick="addObject('circle')">圆</button>
+        <button onclick="addObject('rectangle')">矩形</button>
+        <button onclick="addObject('triangle')">三角形</button>
+    </div>
+    <div id="sceneToolbar" class="toolbar">
+        <h3>设置场景</h3>
+        <button onclick="setScene('woods')">树林</button>
+        <button onclick="setScene('beach')">海边</button>
+        <button onclick="setScene('road')">马路</button>
+    </div>
+    <div id="playToolbar" class="toolbar">
+        <h3>播放控制</h3>
+        <input type="number" id="fpsInput" value="2" min="1" max="60"> 帧率
+        <button onclick="playAnimation()">播放</button>
+        <button onclick="stopAnimation()">暂停</button>
+        <button onclick="exportToJSON()">导出 JSON</button>
+    </div>
+    <div id="jsonModal" class="modal">
+        <div class="modal-content">
+            <span id="closeModal" onclick="closeModal()" style="float: right; cursor: pointer;">&times;</span>
+            <pre id="jsonContent"></pre>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // 场景和对象数据
+        let scenes = [];
+        let currentSceneIndex = 0;
+        let currentFrame = 0;
+        let isPlaying = false;
+        let animationInterval;
+
+        // 工具条拖动功能
+        function makeDraggable(toolbar) {
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            toolbar.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                offsetX = e.clientX - toolbar.offsetLeft;
+                offsetY = e.clientY - toolbar.offsetTop;
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    toolbar.style.left = (e.clientX - offsetX) + 'px';
+                    toolbar.style.top = (e.clientY - offsetY) + 'px';
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+        }
+
+        const objectToolbar = document.getElementById('objectToolbar');
+        const sceneToolbar = document.getElementById('sceneToolbar');
+        const playToolbar = document.getElementById('playToolbar');
+        makeDraggable(objectToolbar);
+        makeDraggable(sceneToolbar);
+        makeDraggable(playToolbar);
+
+        // 添加对象到当前场景
+        function addObject(type) {
+            const newObject = {
+                type: type,
+                x: canvas.width / 2,
+                y: canvas.height / 2,
+                // 这里可以根据不同类型添加更多属性
+            };
+            if (!scenes[currentSceneIndex]) {
+                scenes[currentSceneIndex] = {
+                    background: 'default',
+                    objects: [],
+                    duration: 10
+                };
+            }
+            scenes[currentSceneIndex].objects.push(newObject);
+            drawScene();
+        }
+
+        // 设置场景
+        function setScene(background) {
+            if (!scenes[currentSceneIndex]) {
+                scenes[currentSceneIndex] = {
+                    background: background,
+                    objects: [],
+                    duration: 10
+                };
+            } else {
+                scenes[currentSceneIndex].background = background;
+            }
+            drawScene();
+        }
+
+        // 绘制场景
+        function drawScene() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const scene = scenes[currentSceneIndex];
+            if (scene) {
+                // 绘制背景
+                switch (scene.background) {
+                    case 'woods':
+                        ctx.fillStyle = 'green';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        break;
+                    case 'beach':
+                        ctx.fillStyle = 'lightblue';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        break;
+                    case 'road':
+                        ctx.fillStyle = 'gray';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        break;
+                    default:
+                        ctx.fillStyle = 'white';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        break;
+                }
+                // 绘制对象
+                scene.objects.forEach(object => {
+                    switch (object.type) {
+                        case 'line':
+                            ctx.beginPath();
+                            ctx.moveTo(object.x, object.y);
+                            ctx.lineTo(object.x + 50, object.y + 50);
+                            ctx.stroke();
+                            break;
+                        case 'circle':
+                            ctx.beginPath();
+                            ctx.arc(object.x, object.y, 20, 0, 2 * Math.PI);
+                            ctx.fill();
+                            break;
+                        case 'rectangle':
+                            ctx.fillRect(object.x, object.y, 50, 30);
+                            break;
+                        case 'triangle':
+                            ctx.beginPath();
+                            ctx.moveTo(object.x, object.y);
+                            ctx.lineTo(object.x + 30, object.y + 50);
+                            ctx.lineTo(object.x - 30, object.y + 50);
+                            ctx.closePath();
+                            ctx.fill();
+                            break;
+                    }
+                });
+            }
+        }
+
+        // 播放动画
+        function playAnimation() {
+            if (isPlaying) return;
+            isPlaying = true;
+            const fps = parseInt(document.getElementById('fpsInput').value);
+            const frameInterval = 1000 / fps;
+            animationInterval = setInterval(() => {
+                drawScene();
+                currentFrame++;
+                if (currentFrame >= scenes[currentSceneIndex]?.duration) {
+                    currentFrame = 0;
+                    currentSceneIndex = (currentSceneIndex + 1) % scenes.length;
+                }
+            }, frameInterval);
+        }
+
+        // 停止动画
+        function stopAnimation() {
+            isPlaying = false;
+            clearInterval(animationInterval);
+        }
+
+        // 导出为 JSON
+        function exportToJSON() {
+            const jsonData = JSON.stringify(scenes, null, 2);
+            const jsonContent = document.getElementById('jsonContent');
+            jsonContent.textContent = jsonData;
+            const jsonModal = document.getElementById('jsonModal');
+            jsonModal.style.display = 'flex';
+        }
+
+        // 关闭模态对话框
+        function closeModal() {
+            const jsonModal = document.getElementById('jsonModal');
+            jsonModal.style.display = 'none';
+        }
+
+        // 初始绘制
+        drawScene();
+    </script>
+</body>
+
+</html>

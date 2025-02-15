@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>复读机测试</title>
+    <style>
+        .floating-window {
+            position: fixed;
+            border: 2px solid #2196F3;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        .toolbar button.active {
+            background: #2196F3;
+            color: white;
+        }
+        .progress-container {
+            margin: 10px 0;
+        }
+        #statusBar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #f0f0f0;
+            padding: 5px;
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        .test-case-btn {
+            padding: 5px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .test-case-btn.active {
+            background: #4CAF50;
+            color: white;
+        }
+        .header {
+            cursor: move;
+            background: #2196F3;
+            color: white;
+            padding: 5px;
+            margin: -10px -10px 10px;
+            border-radius: 6px 6px 0 0;
+        }
+    </style>
+</head>
+<body>
+<script>
+class RepeaterMachine {
+    constructor() {
+        this.audio = new Audio();
+        this.isPlaying = false;
+        this.interval = null;
+        this.startTime = 0;
+        this.endTime = 0;
+        
+        this.createWindow();
+        this.initAudio();
+    }
+
+    createWindow() {
+        this.window = document.createElement('div');
+        this.window.className = 'floating-window';
+        this.window.style.left = `${Math.random() * window.innerWidth/2}px`;
+        this.window.style.top = `${Math.random() * window.innerHeight/2}px`;
+        
+        // 窗口拖动逻辑
+        let isDragging = false;
+        let startX, startY, initialLeft, initialTop;
+        
+        const startDrag = (e) => {
+            isDragging = true;
+            startX = e.clientX || e.touches[0].clientX;
+            startY = e.clientY || e.touches[0].clientY;
+            initialLeft = parseFloat(this.window.style.left) || 0;
+            initialTop = parseFloat(this.window.style.top) || 0;
+        };
+        
+        const drag = (e) => {
+            if (!isDragging) return;
+            const x = (e.clientX || e.touches[0].clientX) - startX;
+            const y = (e.clientY || e.touches[0].clientY) - startY;
+            this.window.style.left = `${initialLeft + x}px`;
+            this.window.style.top = `${initialTop + y}px`;
+        };
+        
+        const stopDrag = () => isDragging = false;
+        
+        // 创建窗口内容
+        this.window.innerHTML = `
+            <div class="header">复读机窗口</div>
+            <div class="toolbar">
+                <button data-url="https://littleflute.github.io/english/NewConceptEnglish/Book2/2.mp3">课文1</button>
+                <button data-url="https://littleflute.github.io/english/NewConceptEnglish/Book2/10.mp3">课文2</button>
+                <button data-url="https://littleflute.github.io/gt1/mp3/j72_4_4.mp3">歌曲</button>
+            </div>
+            <input type="text" class="url-input" style="width:100%;margin:5px 0">
+            <div class="progress-container">
+                <div>进度范围：<input type="number" class="start-time" min="0" step="1"> - 
+                <input type="number" class="end-time" min="0" step="1"></div>
+                <input type="range" class="progress" style="width:100%" min="0" max="100" step="0.1">
+            </div>
+            <button class="play-btn">播放/暂停</button>
+        `;
+
+        // 元素引用
+        this.urlInput = this.window.querySelector('.url-input');
+        this.playBtn = this.window.querySelector('.play-btn');
+        this.progress = this.window.querySelector('.progress');
+        this.startTimeInput = this.window.querySelector('.start-time');
+        this.endTimeInput = this.window.querySelector('.end-time');
+        
+        // 事件监听
+        this.window.querySelector('.header').addEventListener('mousedown', startDrag);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', stopDrag);
+        
+        this.window.querySelector('.header').addEventListener('touchstart', startDrag);
+        document.addEventListener('touchmove', drag);
+        document.addEventListener('touchend', stopDrag);
+
+        this.window.querySelectorAll('.toolbar button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.urlInput.value = btn.dataset.url;
+                btn.parentNode.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.loadAudio();
+            });
+        });
+
+        this.playBtn.addEventListener('click', () => this.togglePlay());
+        this.audio.addEventListener('loadedmetadata', () => this.updateDuration());
+        this.progress.addEventListener('input', () => this.setPlaybackPosition());
+        
+        document.body.appendChild(this.window);
+    }
+
+    initAudio() {
+        this.urlInput.value = 'https://littleflute.github.io/english/NewConceptEnglish/Book2/2.mp3';
+        this.loadAudio();
+    }
+
+    loadAudio() {
+        this.audio.src = this.urlInput.value;
+        this.audio.load();
+    }
+
+    updateDuration() {
+        const duration = this.audio.duration;
+        this.startTimeInput.max = duration;
+        this.endTimeInput.max = duration;
+        this.endTimeInput.value = duration;
+        this.startTime = 0;
+        this.endTime = duration;
+    }
+
+    togglePlay() {
+        if (this.isPlaying) {
+            this.pause();
+        } else {
+            this.play();
+        }
+    }
+
+    play() {
+        this.isPlaying = true;
+        this.playBtn.textContent = '暂停';
+        this.startTime = parseFloat(this.startTimeInput.value) || 0;
+        this.endTime = parseFloat(this.endTimeInput.value) || this.audio.duration;
+        
+        const playSegment = () => {
+            if (this.audio.currentTime >= this.endTime) {
+                this.audio.currentTime = this.startTime;
+            }
+            this.audio.play();
+            this.progress.value = (this.audio.currentTime / this.audio.duration) * 100;
+        };
+        
+        this.audio.currentTime = this.startTime;
+        this.interval = setInterval(playSegment, 100);
+    }
+
+    pause() {
+        this.isPlaying = false;
+        this.playBtn.textContent = '播放';
+        clearInterval(this.interval);
+        this.audio.pause();
+    }
+
+    setPlaybackPosition() {
+        this.audio.currentTime = (this.progress.value / 100) * this.audio.duration;
+    }
+}
+
+// 测试用例管理
+class TestManager {
+    constructor() {
+        this.cases = [];
+        this.statusBar = document.createElement('div');
+        this.statusBar.id = 'statusBar';
+        this.statusBar.innerHTML = '<button onclick="testManager.createCase()">新建用例</button>';
+        document.body.appendChild(this.statusBar);
+    }
+
+    createCase() {
+        const machine = new RepeaterMachine();
+        const btn = document.createElement('button');
+        btn.className = 'test-case-btn';
+        btn.textContent = `用例 ${this.cases.length + 1}`;
+        
+        btn.addEventListener('click', () => {
+            machine.window.style.display = machine.window.style.display === 'none' ? 'block' : 'none';
+            btn.classList.toggle('active');
+        });
+        
+        this.cases.push({ machine, btn });
+        this.statusBar.appendChild(btn);
+    }
+}
+
+const testManager = new TestManager();
+</script>
+</body>
+</html>

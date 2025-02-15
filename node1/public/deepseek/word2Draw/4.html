@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自然语言绘图</title>
+    <style>
+        body {
+            margin: 0;
+            background: #f0f4f8;
+            font-family: Arial, sans-serif;
+        }
+
+        #canvas {
+            background: #ffffff;
+            touch-action: none;
+        }
+
+        .toolbar {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            backdrop-filter: blur(5px);
+            user-select: none;
+        }
+
+        .toolbar button {
+            display: block;
+            margin: 5px;
+            padding: 8px 12px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #inputPanel {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+
+        #textInput {
+            width: 300px;
+            padding: 12px;
+            border: 2px solid #4CAF50;
+            border-radius: 25px;
+            font-size: 16px;
+        }
+
+        #drawButton {
+            padding: 0 24px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+        }
+
+        .selected {
+            filter: drop-shadow(0 0 5px #2196F3);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div id="inputPanel">
+        <input type="text" id="textInput" placeholder="输入绘图指令...">
+        <button id="drawButton">绘制</button>
+    </div>
+
+    <div id="objToolbar" class="toolbar" style="left:20px; top:20px">
+        <button data-text="房子">房子</button>
+        <button data-text="狗">狗</button>
+        <button data-text="树">树</button>
+    </div>
+
+    <div id="numToolbar" class="toolbar" style="left:20px; top:120px">
+        <button data-text="1">1</button>
+        <button data-text="2">2</button>
+        <button data-text="3">3</button>
+    </div>
+
+    <div id="cmdToolbar" class="toolbar" style="right:20px; top:20px">
+        <button data-cmd="画两座绿房子">示例1</button>
+        <button data-cmd="画两只狗">示例2</button>
+        <button data-cmd="三棵树">示例3</button>
+    </div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let objects = [];
+let selectedObj = null;
+let isDragging = false;
+let dragOffset = {x: 0, y: 0};
+let resizeHandle = null;
+
+// 初始化画布尺寸
+function initCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+initCanvas();
+window.addEventListener('resize', initCanvas);
+
+// 图形对象类
+class Shape {
+    constructor(type, x, y, color = '#333', size = 50) {
+        this.type = type;
+        this.x = x;
+        this.y = y;
+        this.size = size;
+        this.color = color;
+        this.isSelected = false;
+    }
+
+    draw() {
+        ctx.save();
+        if (this.isSelected) {
+            ctx.strokeStyle = '#2196F3';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(this.x-this.size/2-5, this.y-this.size/2-5, this.size+10, this.size+10);
+        }
+
+        ctx.fillStyle = this.color;
+        switch(this.type) {
+            case '房子':
+                this.drawHouse();
+                break;
+            case '狗':
+                this.drawDog();
+                break;
+            case '树':
+                this.drawTree();
+        }
+        ctx.restore();
+    }
+
+    drawHouse() {
+        ctx.fillRect(this.x-this.size/2, this.y, this.size, this.size/2);
+        ctx.beginPath();
+        ctx.moveTo(this.x-this.size/2, this.y);
+        ctx.lineTo(this.x, this.y-this.size/2);
+        ctx.lineTo(this.x+this.size/2, this.y);
+        ctx.fill();
+    }
+
+    drawDog() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size/3, 0, Math.PI*2);
+        ctx.fill();
+    }
+
+    drawTree() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size/2, 0, Math.PI*2);
+        ctx.fill();
+    }
+}
+
+// 自然语言解析
+function parseCommand(text) {
+    const colorMap = {红: 'red', 绿: 'green', 蓝: 'blue', 黄: 'yellow'};
+    const commands = [];
+    
+    text = text.replace(/[桌房]/g, m => ({桌: '座', 房: '房子'})[m] || m);
+    const regex = /(?:画|绘)?(\d+)?(?:只|个|座|棵)?\s*([红绿蓝黄]色?)?\s*(房子|狗|树)/gi;
+    
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+        const count = parseInt(match[1]) || 1;
+        const color = colorMap[(match[2] || '').replace('色','')] || '#333';
+        const type = match[3];
+        
+        for (let i=0; i<count; i++) {
+            commands.push({type, color});
+        }
+    }
+    return commands;
+}
+
+// 绘制逻辑
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    objects.forEach(obj => obj.draw());
+}
+
+// 事件处理
+canvas.addEventListener('mousedown', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    selectedObj = objects.find(obj => {
+        return x > obj.x - obj.size/2 && x < obj.x + obj.size/2 &&
+               y > obj.y - obj.size/2 && y < obj.y + obj.size/2;
+    });
+
+    if (selectedObj) {
+        selectedObj.isSelected = true;
+        isDragging = true;
+        dragOffset.x = x - selectedObj.x;
+        dragOffset.y = y - selectedObj.y;
+    }
+    draw();
+});
+
+canvas.addEventListener('mousemove', (e) => {
+    if (!isDragging || !selectedObj) return;
+    const rect = canvas.getBoundingClientRect();
+    selectedObj.x = e.clientX - rect.left - dragOffset.x;
+    selectedObj.y = e.clientY - rect.top - dragOffset.y;
+    draw();
+});
+
+canvas.addEventListener('mouseup', () => {
+    isDragging = false;
+});
+
+canvas.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    if (selectedObj) {
+        objects = objects.filter(obj => obj !== selectedObj);
+        selectedObj = null;
+        draw();
+    }
+});
+
+// 工具栏处理
+document.querySelectorAll('.toolbar').forEach(toolbar => {
+    let isDragging = false;
+    let offset = {x: 0, y: 0};
+    
+    toolbar.addEventListener('mousedown', (e) => {
+        if (e.target.tagName === 'BUTTON') return;
+        isDragging = true;
+        offset.x = e.clientX - toolbar.offsetLeft;
+        offset.y = e.clientY - toolbar.offsetTop;
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        toolbar.style.left = e.clientX - offset.x + 'px';
+        toolbar.style.top = e.clientY - offset.y + 'px';
+    });
+
+    document.addEventListener('mouseup', () => isDragging = false);
+});
+
+// 按钮事件
+document.querySelectorAll('[data-text]').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const input = document.getElementById('textInput');
+        const text = btn.dataset.text;
+        input.value = input.value.slice(0, input.selectionStart) + text + 
+                     input.value.slice(input.selectionEnd);
+    });
+});
+
+document.querySelectorAll('[data-cmd]').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.getElementById('textInput').value = btn.dataset.cmd;
+    });
+});
+
+document.getElementById('drawButton').addEventListener('click', () => {
+    const commands = parseCommand(document.getElementById('textInput').value);
+    commands.forEach(cmd => {
+        objects.push(new Shape(
+            cmd.type,
+            Math.random() * canvas.width,
+            Math.random() * canvas.height,
+            cmd.color
+        ));
+    });
+    draw();
+});
+
+// 初始绘制
+draw();
+</script>
+</body>
+</html>

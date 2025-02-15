@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh - CN">
+
+<head>
+    <meta charset="UTF - 8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>贪吃蛇游戏</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav {
+            background-color: #333;
+            color: white;
+            display: flex;
+            justify-content: center;
+            padding: 10px 0;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+        }
+
+        #level-selector {
+            margin: 20px;
+        }
+
+        canvas {
+            border: 1px solid black;
+            display: block;
+            margin: 20px auto;
+        }
+
+        #message-div {
+            text-align: center;
+            margin: 20px;
+        }
+
+        #history-table {
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+
+        #history-table th,
+        #history-table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+        }
+
+        #export-button {
+            display: block;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 导航菜单 -->
+    <nav>
+        <a href="#" onclick="showGame()">游戏</a>
+        <a href="#" onclick="showHistory()">历史记录</a>
+    </nav>
+    <!-- 难度级别选择 -->
+    <select id="level-selector">
+        <option value="1">简单</option>
+        <option value="2">中等</option>
+        <option value="3">困难</option>
+    </select>
+    <!-- 消息显示区域 -->
+    <div id="message-div"></div>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <!-- 历史记录表格 -->
+    <table id="history-table" style="display: none;">
+        <thead>
+            <tr>
+                <th>级别</th>
+                <th>分数</th>
+            </tr>
+        </thead>
+        <tbody id="history-body"></tbody>
+    </table>
+    <!-- 导出历史记录为 Word 文档的按钮 -->
+    <button id="export-button" onclick="exportHistory()" style="display: none;">导出历史记录为 Word</button>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const levelSelector = document.getElementById('level-selector');
+        const messageDiv = document.getElementById('message-div');
+        const historyTable = document.getElementById('history-table');
+        const historyBody = document.getElementById('history-body');
+        const exportButton = document.getElementById('export-button');
+
+        let snake = [{ x: 100, y: 100 }, { x: 90, y: 100 }, { x: 80, y: 100 }];
+        let dx = 10;
+        let dy = 0;
+        let foodX;
+        let foodY;
+        let score = 0;
+
+        // 不同难度级别的时间间隔
+        const difficultyIntervals = {
+            1: 200,
+            2: 150,
+            3: 100
+        };
+        let currentInterval = difficultyIntervals[1];
+        let lastTime = 0;
+
+        function generateFood() {
+            foodX = Math.floor(Math.random() * (canvas.width / 10)) * 10;
+            foodY = Math.floor(Math.random() * (canvas.height / 10)) * 10;
+        }
+
+        generateFood();
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle ='red';
+            ctx.fillRect(foodX, foodY, 10, 10);
+            ctx.fillStyle = 'green';
+            snake.forEach(segment => {
+                ctx.fillRect(segment.x, segment.y, 10, 10);
+            });
+            ctx.font = '16px Arial';
+            ctx.fillStyle = 'black';
+            ctx.fillText('分数:'+ score, 10, 20);
+        }
+
+        function update() {
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+            snake.unshift(head);
+            if (snake[0].x === foodX && snake[0].y === foodY) {
+                score++;
+                generateFood();
+            } else {
+                snake.pop();
+            }
+            if (snake[0].x < 0 || snake[0].x >= canvas.width || snake[0].y < 0 || snake[0].y >= canvas.height) {
+                gameOver();
+            }
+            for (let i = 1; i < snake.length; i++) {
+                if (snake[0].x === snake[i].x && snake[0].y === snake[i].y) {
+                    gameOver();
+                }
+            }
+        }
+
+        function gameLoop(timestamp) {
+            if (timestamp - lastTime >= currentInterval) {
+                draw();
+                update();
+                lastTime = timestamp;
+            }
+            requestAnimationFrame(gameLoop);
+        }
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowUp' && dy!== 10) {
+                dx = 0;
+                dy = -10;
+            } else if (e.key === 'ArrowDown' && dy!== -10) {
+                dx = 0;
+                dy = 10;
+            } else if (e.key === 'ArrowLeft' && dx!== 10) {
+                dx = -10;
+                dy = 0;
+            } else if (e.key === 'ArrowRight' && dx!== -10) {
+                dx = 10;
+                dy = 0;
+            }
+        });
+
+        function showMessage(message) {
+            messageDiv.textContent = message;
+        }
+
+        function gameOver() {
+            showMessage('游戏结束！你的分数是:'+ score);
+            saveScore(score, parseInt(levelSelector.value));
+            setTimeout(() => {
+                resetGame();
+            }, 2000);
+        }
+
+        function saveScore(score, level) {
+            fetch('/save-score', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ score, level })
+            })
+              .then(response => response.text())
+              .then(data => console.log(data))
+              .catch(error => console.error('保存分数时出错:', error));
+        }
+
+        function resetGame() {
+            snake = [{ x: 100, y: 100 }, { x: 90, y: 100 }, { x: 80, y: 100 }];
+            dx = 10;
+            dy = 0;
+            score = 0;
+            generateFood();
+            showMessage('');
+            currentInterval = difficultyIntervals[parseInt(levelSelector.value)];
+        }
+
+        function showGame() {
+            canvas.style.display = 'block';
+            levelSelector.style.display = 'block';
+            messageDiv.style.display = 'block';
+            historyTable.style.display = 'none';
+            exportButton.style.display = 'none';
+        }
+
+        function showHistory() {
+            canvas.style.display = 'none';
+            levelSelector.style.display = 'none';
+            messageDiv.style.display = 'none';
+            historyTable.style.display = 'block';
+            exportButton.style.display = 'block';
+            fetch('/history')
+              .then(response => response.json())
+              .then(scores => {
+                    historyBody.innerHTML = '';
+                    scores.forEach(scoreEntry => {
+                        const row = document.createElement('tr');
+                        const levelCell = document.createElement('td');
+                        levelCell.textContent = scoreEntry.level;
+                        const scoreCell = document.createElement('td');
+                        scoreCell.textContent = scoreEntry.score;
+                        row.appendChild(levelCell);
+                        row.appendChild(scoreCell);
+                        historyBody.appendChild(row);
+                    });
+                })
+              .catch(error => console.error('获取历史记录时出错:', error));
+        }
+
+        function exportHistory() {
+            window.location.href = '/export-history';
+        }
+
+        levelSelector.addEventListener('change', function () {
+            currentInterval = difficultyIntervals[parseInt(this.value)];
+        });
+
+        gameLoop();
+    </script>
+</body>
+
+</html>

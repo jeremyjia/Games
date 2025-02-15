@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>中国象棋棋盘</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: #f0f0f0;
+        }
+        canvas {
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            background: #e8d8b6;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="chessBoard"></canvas>
+
+    <script>
+        const canvas = document.getElementById('chessBoard');
+        const ctx = canvas.getContext('2d');
+
+        // 棋盘配置
+        const config = {
+            cellSize: 60,       // 格子大小
+            lineWidth: 1.5,     // 线条宽度
+            lineColor: '#000',  // 线条颜色
+            textColor: '#8b0000', // 文字颜色
+            padding: 30         // 棋盘边距
+        };
+
+        // 初始化画布
+        function initCanvas() {
+            // 计算棋盘实际尺寸
+            const width = config.cellSize * 8 + config.padding * 2;
+            const height = config.cellSize * 9 + config.padding * 2;
+            
+            // 处理高清屏适配
+            const scale = window.devicePixelRatio || 1;
+            canvas.width = width * scale;
+            canvas.height = height * scale;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            ctx.scale(scale, scale);
+            
+            // 设置绘制样式
+            ctx.lineWidth = config.lineWidth;
+            ctx.strokeStyle = config.lineColor;
+            ctx.fillStyle = config.textColor;
+            ctx.font = '24px 楷体';
+            ctx.textAlign = 'center';
+        }
+
+        // 绘制棋盘主体
+        function drawBoard() {
+            const { cellSize, padding } = config;
+            const startX = padding;
+            const startY = padding;
+            const endX = startX + cellSize * 8;
+            const endY = startY + cellSize * 9;
+
+            // 绘制竖线
+            for (let i = 0; i <= 8; i++) {
+                const x = startX + i * cellSize;
+                ctx.beginPath();
+                ctx.moveTo(x, startY);
+                
+                // 跳过河界的中间竖线
+                if (i === 0 || i === 8) {
+                    ctx.lineTo(x, endY);
+                } else {
+                    ctx.lineTo(x, startY + cellSize * 4);
+                    ctx.moveTo(x, startY + cellSize * 5);
+                    ctx.lineTo(x, endY);
+                }
+                ctx.stroke();
+            }
+
+            // 绘制横线
+            for (let i = 0; i <= 9; i++) {
+                const y = startY + i * cellSize;
+                ctx.beginPath();
+                ctx.moveTo(startX, y);
+                ctx.lineTo(endX, y);
+                ctx.stroke();
+            }
+
+            // 绘制九宫斜线
+            function drawPalace(x1, y1) {
+                ctx.beginPath();
+                ctx.moveTo(x1 + cellSize * 3, y1);
+                ctx.lineTo(x1 + cellSize * 5, y1 + cellSize * 2);
+                ctx.moveTo(x1 + cellSize * 5, y1);
+                ctx.lineTo(x1 + cellSize * 3, y1 + cellSize * 2);
+                ctx.stroke();
+            }
+
+            // 绘制双方九宫
+            drawPalace(startX, startY + cellSize * 0);       // 上方九宫
+            drawPalace(startX, startY + cellSize * 7);       // 下方九宫
+        }
+
+        // 绘制特殊标记
+        function drawMarkers() {
+            const { cellSize, padding } = config;
+            const positions = [
+                // 炮位
+                [1, 2], [7, 2], [1, 7], [7, 7],
+                // 兵位
+                [0, 3], [2, 3], [4, 3], [6, 3], [8, 3],
+                [0, 6], [2, 6], [4, 6], [6, 6], [8, 6]
+            ];
+
+            ctx.beginPath();
+            positions.forEach(([x, y]) => {
+                const px = padding + x * cellSize;
+                const py = padding + y * cellSize;
+                
+                // 绘制交叉点标记
+                ctx.moveTo(px - 5, py);
+                ctx.lineTo(px + 5, py);
+                ctx.moveTo(px, py - 5);
+                ctx.lineTo(px, py + 5);
+            });
+            ctx.stroke();
+        }
+
+        // 绘制河界文字
+        function drawRiverText() {
+            const { cellSize, padding } = config;
+            const centerX = padding + 4 * cellSize;
+            const centerY = padding + 4.5 * cellSize;
+            
+            // 绘制"楚河汉界"文字
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.fillText('楚 河', -cellSize, -10);
+            ctx.fillText('汉 界', cellSize, -10);
+            ctx.fillText('楚 河', -cellSize, 10);
+            ctx.fillText('汉 界', cellSize, 10);
+            ctx.restore();
+        }
+
+        // 主绘制函数
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBoard();
+            drawMarkers();
+            drawRiverText();
+        }
+
+        // 初始化并绘制
+        initCanvas();
+        draw();
+
+        // 窗口大小变化时重置
+        window.addEventListener('resize', () => {
+            initCanvas();
+            draw();
+        });
+    </script>
+</body>
+</html>

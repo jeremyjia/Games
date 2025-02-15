@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>URL 参数示例</title>
+    <style>
+        .param-box {
+            padding: 20px;
+            border: 1px solid #ccc;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="param-box">
+        <h2>URL 参数展示</h2>
+        <p id="name"></p>
+        <p id="age"></p>
+        <p id="city"></p>
+    </div>
+
+    <script>
+        // 安全获取 URL 参数
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            const safeParams = {};
+
+            // 过滤非法字符
+            const sanitize = str => str.replace(/[<>"'&]/g, '');
+
+            params.forEach((value, key) => {
+                safeParams[key] = sanitize(value);
+            });
+
+            return safeParams;
+        }
+
+        // 显示参数
+        function displayParams() {
+            const params = getUrlParams();
+            
+            document.getElementById('name').textContent = params.name 
+                ? `姓名：${params.name}` 
+                : '未提供姓名参数';
+
+            document.getElementById('age').textContent = params.age 
+                ? `年龄：${params.age}` 
+                : '未提供年龄参数';
+
+            document.getElementById('city').textContent = params.city 
+                ? `城市：${params.city}` 
+                : '未提供城市参数';
+        }
+
+        // 页面加载时执行
+        window.onload = displayParams;
+    </script>
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可拖动区块修正版</title>
+    <style>
+        /* 重置默认样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 容器基础样式 */
+        .scroll-container {
+            position: fixed;
+            background: #f5f5f5;
+            border-radius: 8px;
+            overflow: hidden;
+            touch-action: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        /* 垂直容器定位 */
+        #vertical1 {
+            width: 200px;
+            height: 300px;
+            left: 20px;
+            top: 20px;
+        }
+
+        #vertical2 {
+            width: 200px;
+            height: 300px;
+            right: 20px;
+            bottom: 20px;
+        }
+
+        /* 水平容器定位 */
+        #horizontal1 {
+            width: 400px;
+            height: 150px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #horizontal2 {
+            width: 400px;
+            height: 150px;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* 可拖动内容 */
+        .draggable-content {
+            position: absolute;
+            cursor: grab;
+            user-select: none;
+            transition: transform 0.2s;
+            padding: 20px;
+            color: white;
+        }
+
+        .draggable-content.active {
+            cursor: grabbing;
+            transition: none;
+        }
+
+        /* 垂直内容 */
+        .vertical {
+            width: 100%;
+            min-height: 600px; /* 确保超过容器高度 */
+            background: linear-gradient(180deg, #2196F3, #4CAF50);
+        }
+
+        /* 水平内容 */
+        .horizontal {
+            height: 100%;
+            min-width: 800px; /* 确保超过容器宽度 */
+            background: linear-gradient(90deg, #FF5722, #FFC107);
+        }
+    </style>
+</head>
+<body>
+    <!-- 垂直区块1 -->
+    <div class="scroll-container" id="vertical1">
+        <div class="draggable-content vertical" id="contentV1">
+            <h3>垂直区块1</h3>
+            <div style="height: 500px"></div>
+            <p>底部内容</p>
+        </div>
+    </div>
+
+    <!-- 垂直区块2 -->
+    <div class="scroll-container" id="vertical2">
+        <div class="draggable-content vertical" id="contentV2">
+            <h3>垂直区块2</h3>
+            <div style="height: 700px"></div>
+            <p>底部内容</p>
+        </div>
+    </div>
+
+    <!-- 水平区块1 -->
+    <div class="scroll-container" id="horizontal1">
+        <div class="draggable-content horizontal" id="contentH1">
+            <h3>水平区块1</h3>
+            <div style="display: flex; gap: 50px;">
+                <div>内容A</div>
+                <div>内容B</div>
+                <div>内容C</div>
+                <div>内容D</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 水平区块2 -->
+    <div class="scroll-container" id="horizontal2">
+        <div class="draggable-content horizontal" id="contentH2">
+            <h3>水平区块2</h3>
+            <div style="display: flex; gap: 50px;">
+                <div>项目1</div>
+                <div>项目2</div>
+                <div>项目3</div>
+                <div>项目4</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class Draggable {
+            constructor(containerId, contentId, isVertical) {
+                // 元素绑定验证
+                this.container = document.getElementById(containerId);
+                this.content = document.getElementById(contentId);
+                
+                if (!this.container || !this.content) {
+                    console.error(`元素未找到：容器${containerId} 内容${contentId}`);
+                    return;
+                }
+
+                this.isVertical = isVertical;
+                this.init();
+                console.log(`已初始化：${containerId}`);
+            }
+
+            init() {
+                this.setupDimensions();
+                this.addEventListeners();
+                window.addEventListener('resize', () => this.handleResize());
+            }
+
+            setupDimensions() {
+                // 容器尺寸
+                const containerSize = this.isVertical ? 
+                    this.container.offsetHeight : 
+                    this.container.offsetWidth;
+                
+                // 内容尺寸（使用滚动尺寸确保准确）
+                const contentSize = this.isVertical ? 
+                    this.content.scrollHeight : 
+                    this.content.scrollWidth;
+
+                this.maxScroll = containerSize - contentSize;
+                console.log(`[${this.container.id}] 可滚动范围：${this.maxScroll}px`);
+            }
+
+            addEventListeners() {
+                const startDrag = (e) => {
+                    e.preventDefault();
+                    this.handleStart(e);
+                };
+
+                this.content.addEventListener('mousedown', startDrag);
+                this.content.addEventListener('touchstart', startDrag, { passive: false });
+                
+                document.addEventListener('mousemove', (e) => this.handleMove(e));
+                document.addEventListener('touchmove', (e) => this.handleMove(e), { passive: false });
+                
+                document.addEventListener('mouseup', () => this.handleEnd());
+                document.addEventListener('touchend', () => this.handleEnd());
+            }
+
+            handleStart(e) {
+                this.isDragging = true;
+                this.startPos = this.getClientPos(e);
+                this.currentScroll = this.getScrollPos();
+                this.content.classList.add('active');
+                
+                // 初始化惯性参数
+                this.velocity = 0;
+                this.lastPos = this.currentScroll;
+                this.lastTime = Date.now();
+            }
+
+            handleMove(e) {
+                if (!this.isDragging) return;
+
+                const currentPos = this.getClientPos(e);
+                const delta = currentPos - this.startPos;
+                let newPosition = this.currentScroll + delta;
+
+                // 应用边界限制
+                newPosition = Math.min(0, Math.max(this.maxScroll, newPosition));
+                
+                // 设置新位置
+                this.setScrollPos(newPosition);
+
+                // 计算速度
+                const currentTime = Date.now();
+                if (this.lastTime !== 0) {
+                    const deltaTime = currentTime - this.lastTime;
+                    this.velocity = (newPosition - this.lastPos) / deltaTime;
+                }
+                this.lastPos = newPosition;
+                this.lastTime = currentTime;
+            }
+
+            handleEnd() {
+                this.isDragging = false;
+                this.content.classList.remove('active');
+                this.applyInertia();
+            }
+
+            applyInertia() {
+                const animate = () => {
+                    if (!this.isDragging && Math.abs(this.velocity) > 0.1) {
+                        const newPosition = this.getScrollPos() + this.velocity * 16;
+                        this.setScrollPos(Math.min(0, Math.max(this.maxScroll, newPosition)));
+                        this.velocity *= 0.92;
+                        requestAnimationFrame(animate);
+                    }
+                };
+                requestAnimationFrame(animate);
+            }
+
+            handleResize() {
+                this.setupDimensions();
+                const currentPos = this.getScrollPos();
+                this.setScrollPos(Math.min(0, Math.max(this.maxScroll, currentPos)));
+            }
+
+            getClientPos(e) {
+                return e.touches ? 
+                    (this.isVertical ? e.touches[0].clientY : e.touches[0].clientX) :
+                    (this.isVertical ? e.clientY : e.clientX);
+            }
+
+            getScrollPos() {
+                return parseFloat(this.content.style[this.isVertical ? 'top' : 'left']) || 0;
+            }
+
+            setScrollPos(position) {
+                this.content.style[this.isVertical ? 'top' : 'left'] = `${position}px`;
+            }
+        }
+
+        // 初始化所有实例
+        new Draggable('vertical1', 'contentV1', true);
+        new Draggable('vertical2', 'contentV2', true);
+        new Draggable('horizontal1', 'contentH1', false);
+        new Draggable('horizontal2', 'contentH2', false);
+
+        // 调试命令
+        window.printLayout = () => {
+            console.log('垂直区块1位置：', document.getElementById('contentV1').style.top);
+            console.log('垂直区块2位置：', document.getElementById('contentV2').style.top);
+            console.log('水平区块1位置：', document.getElementById('contentH1').style.left);
+            console.log('水平区块2位置：', document.getElementById('contentH2').style.left);
+        };
+    </script>
+</body>
+</html>

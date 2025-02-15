@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>复读机测试</title>
+    <style>
+        .repeater-window {
+            position: absolute;
+            width: 300px;
+            background: #fff;
+            border: 2px solid #666;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            z-index: 1000;
+            touch-action: none;
+        }
+
+        .header {
+            background: #4CAF50;
+            color: white;
+            padding: 10px;
+            border-radius: 6px 6px 0 0;
+            cursor: move;
+            user-select: none;
+        }
+
+        .content {
+            padding: 15px;
+        }
+
+        .progress-container {
+            height: 5px;
+            background: #ddd;
+            margin: 10px 0;
+            border-radius: 3px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #4CAF50;
+            width: 0;
+            transition: width 0.1s linear;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #addButton {
+            padding: 15px;
+            margin: 20px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <button id="addButton">新建复读机</button>
+
+    <script>
+        class RepeaterMachine {
+            constructor() {
+                this.url = "https://littleflute.github.io/gt1/mp3/j72_4_4.mp3";
+                this.start = 0;
+                this.end = 0;
+                this.isPlaying = false;
+                this.createWindow();
+                this.initAudio();
+            }
+
+            createWindow() {
+                this.window = document.createElement('div');
+                this.window.className = 'repeater-window';
+                this.window.innerHTML = `
+                    <div class="header">复读机 (拖动我)</div>
+                    <div class="content">
+                        <input type="text" class="url-input" value="${this.url}">
+                        <div class="time-controls">
+                            <input type="number" class="start-input" placeholder="开始时间" step="0.1">
+                            <input type="number" class="end-input" placeholder="结束时间" step="0.1">
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar"></div>
+                        </div>
+                        <button class="play-btn">播放/暂停</button>
+                    </div>
+                `;
+
+                document.body.appendChild(this.window);
+                this.enableDrag();
+                this.bindEvents();
+                this.randomPosition();
+            }
+
+            randomPosition() {
+                const maxX = window.innerWidth - 300;
+                const maxY = window.innerHeight - 200;
+                this.window.style.left = Math.random() * maxX + 'px';
+                this.window.style.top = Math.random() * maxY + 'px';
+            }
+
+            enableDrag() {
+                const header = this.window.querySelector('.header');
+                let isDragging = false;
+                let startX, startY, initialX, initialY;
+
+                const startDrag = (e) => {
+                    isDragging = true;
+                    startX = e.clientX || e.touches[0].clientX;
+                    startY = e.clientY || e.touches[0].clientY;
+                    initialX = parseFloat(this.window.style.left) || 0;
+                    initialY = parseFloat(this.window.style.top) || 0;
+                };
+
+                const drag = (e) => {
+                    if (!isDragging) return;
+                    const currentX = e.clientX || e.touches[0].clientX;
+                    const currentY = e.clientY || e.touches[0].clientY;
+                    const dx = currentX - startX;
+                    const dy = currentY - startY;
+                    this.window.style.left = initialX + dx + "px";
+                    this.window.style.top = initialY + dy + "px";
+                };
+
+                const stopDrag = () => isDragging = false;
+
+                header.addEventListener('mousedown', startDrag);
+                header.addEventListener('touchstart', startDrag);
+                document.addEventListener('mousemove', drag);
+                document.addEventListener('touchmove', drag);
+                document.addEventListener('mouseup', stopDrag);
+                document.addEventListener('touchend', stopDrag);
+            }
+
+            initAudio() {
+                this.audio = new Audio(this.url);
+                this.audio.addEventListener('loadedmetadata', () => {
+                    this.end = this.audio.duration;
+                    this.updateInputs();
+                });
+
+                this.audio.addEventListener('timeupdate', () => {
+                    this.updateProgress();
+                    if (this.isPlaying && this.audio.currentTime >= this.end) {
+                        this.audio.currentTime = this.start;
+                    }
+                });
+            }
+
+            bindEvents() {
+                this.window.querySelector('.play-btn').addEventListener('click', () => this.togglePlay());
+                this.window.querySelector('.url-input').addEventListener('change', (e) => {
+                    this.url = e.target.value;
+                    this.audio.src = this.url;
+                    this.audio.load();
+                });
+                
+                const updateTime = () => {
+                    this.start = parseFloat(this.window.querySelector('.start-input').value) || 0;
+                    this.end = parseFloat(this.window.querySelector('.end-input').value) || this.audio.duration;
+                };
+
+                this.window.querySelector('.start-input').addEventListener('change', updateTime);
+                this.window.querySelector('.end-input').addEventListener('change', updateTime);
+            }
+
+            togglePlay() {
+                if (this.isPlaying) {
+                    this.audio.pause();
+                } else {
+                    this.audio.currentTime = this.start;
+                    this.audio.play();
+                }
+                this.isPlaying = !this.isPlaying;
+            }
+
+            updateProgress() {
+                const progress = (this.audio.currentTime - this.start) / (this.end - this.start) * 100;
+                this.window.querySelector('.progress-bar').style.width = `${Math.max(0, progress)}%`;
+            }
+
+            updateInputs() {
+                this.window.querySelector('.start-input').value = this.start;
+                this.window.querySelector('.end-input').value = this.end;
+            }
+        }
+
+        // 创建新复读机
+        document.getElementById('addButton').addEventListener('click', () => new RepeaterMachine());
+    </script>
+</body>
+</html>

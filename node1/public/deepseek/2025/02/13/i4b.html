@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>复读机测试</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px 0 60px;
+            font-family: Arial, sans-serif;
+        }
+
+        .floating-window {
+            position: fixed;
+            width: 300px;
+            background: #fff;
+            border: 2px solid #2196F3;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .window-header {
+            padding: 10px;
+            background: #2196F3;
+            color: white;
+            cursor: move;
+            border-radius: 6px 6px 0 0;
+        }
+
+        .window-content {
+            padding: 15px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 5px;
+            margin: 10px 0;
+        }
+
+        .toolbar button {
+            flex: 1;
+            padding: 5px;
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+
+        .toolbar button.active {
+            background: #2196F3;
+            color: white;
+        }
+
+        .progress-container {
+            margin: 10px 0;
+        }
+
+        .range-inputs {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        #statusBar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #f5f5f5;
+            padding: 10px;
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+        }
+
+        .test-case-btn {
+            padding: 5px 10px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .test-case-btn.closed {
+            background: #f44336;
+        }
+
+        input[type="url"] {
+            width: 100%;
+            padding: 5px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        class RepeaterMachine {
+            constructor() {
+                this.audio = new Audio();
+                this.isPlaying = false;
+                this.loopInterval = null;
+                this.createWindow();
+                this.initAudio();
+            }
+
+            createWindow() {
+                this.window = document.createElement('div');
+                this.window.className = 'floating-window';
+                this.window.style.left = `${Math.random() * (window.innerWidth - 320)}px`;
+                this.window.style.top = `${Math.random() * (window.innerHeight - 400)}px`;
+
+                const html = `
+                    <div class="window-header">复读机</div>
+                    <div class="window-content">
+                        <input type="url" id="audioUrl" readonly>
+                        <div class="toolbar">
+                            ${[
+                                'https://littleflute.github.io/english/NewConceptEnglish/Book2/2.mp3',
+                                'https://littleflute.github.io/english/NewConceptEnglish/Book2/10.mp3',
+                                'https://littleflute.github.io/gt1/mp3/j72_4_4.mp3'
+                            ].map((url, i) => `
+                                <button data-url="${url}">链接${i+1}</button>
+                            `).join('')}
+                        </div>
+                        <div class="progress-container">
+                            <input type="range" id="progress" min="0" max="100" value="0" style="width:100%">
+                        </div>
+                        <div class="range-inputs">
+                            <div>
+                                <label>起点</label>
+                                <input type="range" class="start" min="0" max="100" value="0">
+                            </div>
+                            <div>
+                                <label>终点</label>
+                                <input type="range" class="end" min="0" max="100" value="100">
+                            </div>
+                        </div>
+                        <div class="controls">
+                            <button id="playBtn">播放</button>
+                        </div>
+                    </div>
+                `;
+
+                this.window.innerHTML = html;
+                document.body.appendChild(this.window);
+
+                this.initDrag();
+                this.bindEvents();
+            }
+
+            initDrag() {
+                const header = this.window.querySelector('.window-header');
+                let isDragging = false;
+                let startX, startY, initialLeft, initialTop;
+
+                const startDrag = (e) => {
+                    isDragging = true;
+                    startX = e.clientX || e.touches[0].clientX;
+                    startY = e.clientY || e.touches[0].clientY;
+                    initialLeft = parseFloat(this.window.style.left);
+                    initialTop = parseFloat(this.window.style.top);
+                };
+
+                const doDrag = (e) => {
+                    if (!isDragging) return;
+                    const dx = (e.clientX || e.touches[0].clientX) - startX;
+                    const dy = (e.clientY || e.touches[0].clientY) - startY;
+                    this.window.style.left = `${initialLeft + dx}px`;
+                    this.window.style.top = `${initialTop + dy}px`;
+                };
+
+                const stopDrag = () => isDragging = false;
+
+                header.addEventListener('mousedown', startDrag);
+                header.addEventListener('touchstart', startDrag);
+                document.addEventListener('mousemove', doDrag);
+                document.addEventListener('touchmove', doDrag);
+                document.addEventListener('mouseup', stopDrag);
+                document.addEventListener('touchend', stopDrag);
+            }
+
+            bindEvents() {
+                // 按钮事件
+                this.window.querySelectorAll('.toolbar button').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        this.window.querySelectorAll('.toolbar button').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.audio.src = btn.dataset.url;
+                        this.audio.load();
+                    });
+                });
+
+                // 播放控制
+                const playBtn = this.window.querySelector('#playBtn');
+                playBtn.addEventListener('click', () => {
+                    if (this.isPlaying) {
+                        this.audio.pause();
+                    } else {
+                        const start = this.getStartTime();
+                        const end = this.getEndTime();
+                        this.audio.currentTime = start;
+                        this.audio.play();
+                        this.startLoop(end);
+                    }
+                    this.isPlaying = !this.isPlaying;
+                    playBtn.textContent = this.isPlaying ? '暂停' : '播放';
+                });
+
+                // 进度更新
+                this.audio.addEventListener('timeupdate', () => {
+                    const progress = (this.audio.currentTime / this.audio.duration) * 100 || 0;
+                    this.window.querySelector('#progress').value = progress;
+                });
+
+                // 范围限制
+                this.window.querySelectorAll('.start, .end').forEach(input => {
+                    input.addEventListener('input', () => {
+                        const start = parseFloat(this.window.querySelector('.start').value);
+                        const end = parseFloat(this.window.querySelector('.end').value);
+                        if (start >= end) {
+                            if (input.classList.contains('start')) {
+                                this.window.querySelector('.end').value = start + 1;
+                            } else {
+                                this.window.querySelector('.start').value = end - 1;
+                            }
+                        }
+                    });
+                });
+            }
+
+            getStartTime() {
+                return (parseFloat(this.window.querySelector('.start').value) / 100) * this.audio.duration;
+            }
+
+            getEndTime() {
+                return (parseFloat(this.window.querySelector('.end').value) / 100) * this.audio.duration;
+            }
+
+            startLoop(endTime) {
+                this.audio.addEventListener('timeupdate', () => {
+                    if (this.audio.currentTime >= endTime) {
+                        this.audio.currentTime = this.getStartTime();
+                    }
+                });
+            }
+
+            initAudio() {
+                this.audio.addEventListener('loadedmetadata', () => {
+                    this.window.querySelectorAll('.start, .end').forEach(input => {
+                        input.max = this.audio.duration;
+                    });
+                });
+            }
+        }
+
+        // 测试用例管理
+        class TestManager {
+            constructor() {
+                this.cases = [];
+                this.statusBar = document.createElement('div');
+                this.statusBar.id = 'statusBar';
+                document.body.appendChild(this.statusBar);
+                
+                const addBtn = document.createElement('button');
+                addBtn.textContent = '新建用例';
+                addBtn.onclick = () => this.createTestCase();
+                this.statusBar.appendChild(addBtn);
+            }
+
+            createTestCase() {
+                const machine = new RepeaterMachine();
+                const btn = document.createElement('button');
+                btn.className = 'test-case-btn';
+                btn.textContent = `用例 ${this.cases.length + 1}`;
+                
+                btn.onclick = () => {
+                    machine.window.style.display = machine.window.style.display === 'none' ? 'block' : 'none';
+                    btn.classList.toggle('closed');
+                };
+
+                this.cases.push({ machine, btn });
+                this.statusBar.appendChild(btn);
+            }
+        }
+
+        // 初始化
+        window.onload = () => {
+            new TestManager();
+        };
+    </script>
+</body>
+</html>

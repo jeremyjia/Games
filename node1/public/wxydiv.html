@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多区块垂直拖动</title>
+    <style>
+      body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    position: relative;
+    width: 300px;
+    height: 150px;
+    margin: 20px;
+    border: 1px solid #000;
+    overflow: hidden;
+}
+
+.movable-content {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: lightblue;
+    transition: transform 0.3s ease;
+}
+
+.horizontal .movable-content:not(:first-child) {
+    transform: translateX(100%);
+}
+
+.vertical .movable-content:not(:first-child) {
+    transform: translateY(100%);
+}
+    </style>
+</head>
+<body>
+    <div class="container horizontal">
+        <div class="movable-content">Horizontal Content 1</div>
+        <div class="movable-content">Horizontal Content 2</div>
+    </div>
+    <div class="container vertical">
+        <div class="movable-content">Vertical Content 1</div>
+        <div class="movable-content">Vertical Content 2</div>
+    </div>
+    
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+    const horizontalContainers = document.querySelectorAll('.container.horizontal');
+    const verticalContainers = document.querySelectorAll('.container.vertical');
+
+    horizontalContainers.forEach(container => {
+        let currentIndex = 0;
+        container.addEventListener('click', () => {
+            const contents = container.querySelectorAll('.movable-content');
+            contents.forEach((content, index) => {
+                content.style.transform = index === currentIndex ? 'translateX(0)' : 'translateX(100%)';
+            });
+            currentIndex = (currentIndex + 1) % contents.length;
+        });
+    });
+
+    verticalContainers.forEach(container => {
+        let currentIndex = 0;
+        container.addEventListener('click', () => {
+            const contents = container.querySelectorAll('.movable-content');
+            contents.forEach((content, index) => {
+                content.style.transform = index === currentIndex ? 'translateY(0)' : 'translateY(100%)';
+            });
+            currentIndex = (currentIndex + 1) % contents.length;
+        });
+    });
+});
+    </script>
+</body>
+</html>

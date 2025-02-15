@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模拟视频播放</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="videoCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('videoCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // 设置画布大小
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+ 
+        // 动画函数
+        function animate() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const time = Date.now() / 1000; // 获取当前时间（秒）
+            const grayValue = 255 - (255 * time % 255); // 计算当前灰度值（0-255）
+
+            let rgb = `rgb(${grayValue}, ${grayValue}, ${grayValue})`;
+            
+            // 清空画布
+            ctx.fillStyle = rgb;
+            ctx.fillRect(0, 0, width, height);
+
+            // 请求下一帧
+            requestAnimationFrame(animate);
+        }
+        
+        console.log(Date());
+        // 开始动画
+        animate();
+    </script>
+</body>
+</html>

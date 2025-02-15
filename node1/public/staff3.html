@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        canvas {
+            border: 1px solid #ddd;
+            margin: 20px;
+            background: white;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="staff" width="600" height="200"></canvas>
+
+    <script>
+        const canvas = document.getElementById('staff');
+        const ctx = canvas.getContext('2d');
+        
+        // 精确的Bravura高音谱号路径数据
+        const TREBLE_CLEF_PATH = [
+            ['M', 36.656, 48.961],
+            ['C', 36.656,42.773, 35.359,35.898, 33.984,31.234],
+            ['C', 32.344,25.156, 28.203,20.625, 24.219,17.969],
+            ['C', 20.547,15.508, 16.016,14.844, 11.719,15.586],
+            ['C', 7.227,16.367, 3.32,18.867, 0,22.266],
+            ['L', 0,47.461],
+            ['C', 3.359,43.867, 7.227,41.406, 11.719,40.625],
+            ['C', 16.016,39.883, 20.547,40.547, 24.219,43.008],
+            ['C', 28.203,45.664, 32.344,50.195, 33.984,56.25],
+            ['C', 35.359,60.938, 36.656,67.773, 36.656,75.977],
+            ['C', 36.656,84.18, 35.359,91.016, 33.984,95.703],
+            ['C', 32.344,101.758, 28.203,106.289, 24.219,108.945],
+            ['C', 20.547,111.406, 16.016,112.07, 11.719,111.328],
+            ['C', 7.227,110.547, 3.32,108.047, 0,104.648],
+            ['L', 0,129.844],
+            ['C', 3.32,133.242, 7.227,135.742, 11.719,136.523],
+            ['C', 16.016,137.266, 20.547,136.602, 24.219,134.141],
+            ['C', 28.203,131.484, 32.344,126.953, 33.984,120.898],
+            ['C', 35.359,116.211, 36.656,109.375, 36.656,101.172],
+            ['C', 36.656,92.969, 35.359,86.133, 33.984,81.445],
+            ['C', 32.344,75.391, 28.203,70.859, 24.219,68.203],
+            ['C', 20.547,65.742, 16.016,65.078, 11.719,65.82],
+            ['C', 7.227,66.602, 3.32,69.102, 0,72.5],
+            ['L', 0,97.695],
+            ['C', 3.359,94.102, 7.227,91.641, 11.719,90.859],
+            ['C', 16.016,90.117, 20.547,90.781, 24.219,93.242],
+            ['C', 28.203,95.898, 32.344,100.43, 33.984,106.484],
+            ['C', 35.359,111.172, 36.656,118.008, 36.656,126.211],
+            ['C', 36.656,134.414, 35.359,141.25, 33.984,145.938],
+            ['C', 32.344,151.992, 28.203,156.523, 24.219,159.18],
+            ['C', 20.547,161.641, 16.016,162.305, 11.719,161.563],
+            ['C', 7.227,160.781, 3.32,158.281, 0,154.883],
+            ['L', 0,180.078],
+            ['C', 3.32,183.477, 7.227,185.977, 11.719,186.758],
+            ['C', 16.016,187.5, 20.547,186.836, 24.219,184.375],
+            ['C', 28.203,181.719, 32.344,177.188, 33.984,171.133],
+            ['C', 35.359,166.445, 36.656,159.609, 36.656,151.406],
+            ['C', 36.656,143.203, 35.359,136.367, 33.984,131.68],
+            ['C', 32.344,125.625, 28.203,121.094, 24.219,118.438],
+            ['C', 20.547,115.977, 16.016,115.313, 11.719,116.055],
+            ['C', 7.227,116.836, 3.32,119.336, 0,122.734],
+            ['L', 0,148.32]
+        ];
+
+        const STAFF_CONFIG = {
+            lineSpacing: 14,      // 标准五线谱线间距
+            lineCount: 5,
+            startX: 100,
+            startY: 100,
+            clefScale: 0.85       // 谱号缩放比例
+        };
+
+        function init() {
+            // 高清适配
+            const scale = window.devicePixelRatio || 1;
+            canvas.width = canvas.offsetWidth * scale;
+            canvas.height = canvas.offsetHeight * scale;
+            ctx.scale(scale, scale);
+            
+            // 设置绘制样式
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+        }
+
+        // 绘制标准五线谱
+        function drawStaff() {
+            const { startX, startY, lineSpacing, lineCount } = STAFF_CONFIG;
+            
+            for(let i = 0; i < lineCount; i++) {
+                const y = startY + i * lineSpacing;
+                ctx.beginPath();
+                ctx.moveTo(startX, y);
+                ctx.lineTo(canvas.width - startX, y);
+                ctx.stroke();
+            }
+        }
+
+        // 精确绘制高音谱号
+        function drawTrebleClef() {
+            const { startX, startY, lineSpacing, clefScale } = STAFF_CONFIG;
+            
+            // 计算第二线坐标（从下往上）
+            const secondLineY = startY + lineSpacing;
+            
+            ctx.save();
+            ctx.translate(
+                startX + 25,  // X轴定位
+                secondLineY - lineSpacing * 2.8 // 精确对齐到第二线
+            );
+            ctx.scale(clefScale, clefScale);
+
+            ctx.beginPath();
+            TREBLE_CLEF_PATH.forEach(([command, x, y]) => {
+                const scaleY = y * 0.8; // 垂直缩放调整
+                switch(command) {
+                    case 'M':
+                        ctx.moveTo(x, scaleY);
+                        break;
+                    case 'L':
+                        ctx.lineTo(x, scaleY);
+                        break;
+                    case 'C':
+                        ctx.bezierCurveTo(x, scaleY, arguments[3], arguments[4], arguments[5], arguments[6]);
+                        break;
+                }
+            });
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // 绘制验证标记
+        function drawValidationMark() {
+            const { startY, lineSpacing } = STAFF_CONFIG;
+            const secondLineY = startY + lineSpacing;
+            
+            // 在第二线画红色参考点
+            ctx.fillStyle = 'red';
+            ctx.beginPath();
+            ctx.arc(STAFF_CONFIG.startX + 45, secondLineY, 3, 0, Math.PI*2);
+            ctx.fill();
+        }
+
+        // 执行绘制
+        init();
+        drawStaff();
+        drawTrebleClef();
+        drawValidationMark(); // 显示对齐参考点
+
+        // 响应式处理
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth * 0.8;
+            init();
+            drawStaff();
+            drawTrebleClef();
+            drawValidationMark();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>行走的稻草人</title>
+    <style>
+        canvas {
+            border: 1px solid #000;
+            background: #87CEEB;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        class Scarecrow {
+            constructor() {
+                this.x = canvas.width / 2;
+                this.y = canvas.height - 100;
+                this.speed = 3;
+                this.direction = 1;
+                this.armAngle = 0;
+                this.legAngle = 0;
+                this.animationStep = 0;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+
+                // 绘制身体
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(-15, -80, 30, 80);
+
+                // 绘制头部
+                ctx.beginPath();
+                ctx.arc(0, -100, 20, 0, Math.PI * 2);
+                ctx.fillStyle = '#FFD700';
+                ctx.fill();
+
+                // 绘制帽子
+                ctx.fillStyle = '#A0522D';
+                ctx.beginPath();
+                ctx.arc(0, -110, 25, 0, Math.PI);
+                ctx.fill();
+
+                // 绘制手臂
+                ctx.strokeStyle = '#8B4513';
+                ctx.lineWidth = 8;
+                
+                // 左臂
+                ctx.save();
+                ctx.rotate(-this.armAngle);
+                ctx.beginPath();
+                ctx.moveTo(-15, -80);
+                ctx.lineTo(-45, -50);
+                ctx.stroke();
+                ctx.restore();
+
+                // 右臂
+                ctx.save();
+                ctx.rotate(this.armAngle);
+                ctx.beginPath();
+                ctx.moveTo(15, -80);
+                ctx.lineTo(45, -50);
+                ctx.stroke();
+                ctx.restore();
+
+                // 绘制腿
+                ctx.strokeStyle = '#8B4513';
+                
+                // 左腿
+                ctx.save();
+                ctx.rotate(-this.legAngle);
+                ctx.beginPath();
+                ctx.moveTo(-10, 0);
+                ctx.lineTo(-20, 40);
+                ctx.stroke();
+                ctx.restore();
+
+                // 右腿
+                ctx.save();
+                ctx.rotate(this.legAngle);
+                ctx.beginPath();
+                ctx.moveTo(10, 0);
+                ctx.lineTo(20, 40);
+                ctx.stroke();
+                ctx.restore();
+
+                ctx.restore();
+            }
+
+            update() {
+                // 移动和边界检测
+                this.x += this.speed * this.direction;
+                if (this.x > canvas.width - 50 || this.x < 50) {
+                    this.direction *= -1;
+                }
+
+                // 更新动画参数
+                this.animationStep = (this.animationStep + 1) % 60;
+                
+                // 摆臂动画
+                this.armAngle = Math.sin(this.animationStep * 0.1) * 0.5;
+                
+                // 腿部动画
+                this.legAngle = Math.cos(this.animationStep * 0.1) * 0.3;
+            }
+        }
+
+        const scarecrow = new Scarecrow();
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制地面
+            ctx.fillStyle = '#90EE90';
+            ctx.fillRect(0, canvas.height - 60, canvas.width, 60);
+            
+            scarecrow.update();
+            scarecrow.draw();
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        // 启动动画
+        gameLoop();
+
+        // 窗口调整处理
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth * 0.8;
+            canvas.height = window.innerHeight * 0.8;
+            scarecrow.y = canvas.height - 100;
+        });
+    </script>
+</body>
+</html>

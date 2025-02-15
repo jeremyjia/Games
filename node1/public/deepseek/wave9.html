@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MP3波形可视化（复读机版）</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; padding: 15px; font-family: Arial; }
+        #waveform { border: 1px solid #ccc; margin: 20px 0; width: 100%; height: 180px; position: relative; }
+        .controls { margin: 15px 0; display: flex; gap: 10px; flex-wrap: wrap; }
+        input[type="file"] { width: 100%; padding: 12px; border: 2px dashed #ccc; border-radius: 8px; }
+        button { padding: 12px 24px; font-size: 16px; border: none; border-radius: 25px; cursor: pointer; }
+        .progress-bar { height: 6px; background: #eee; border-radius: 3px; overflow: hidden; }
+        .progress { height: 100%; background: #2196F3; width: 0%; transition: width 0.1s linear; }
+        .error { color: red; margin: 10px 0; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        #loopRange { background: rgba(33, 150, 243, 0.3); position: absolute; height: 100%; pointer-events: none; }
+        .loop-controls { display: flex; gap: 10px; align-items: center; }
+        .time-display { font-family: monospace; }
+    </style>
+</head>
+<body>
+    <input type="file" id="audioFile" accept="audio/mpeg" />
+    <div class="error" id="errorMsg"></div>
+    <div class="controls">
+        <button id="playBtn" disabled>播放/暂停</button>
+        <div class="loop-controls">
+            <button id="loopBtn" style="background:#4CAF50" disabled>循环模式</button>
+            <span class="time-display" id="loopTime">00:00 - 00:00</span>
+        </div>
+    </div>
+    <div class="progress-bar">
+        <div class="progress"></div>
+    </div>
+    <div id="waveform">
+        <div id="loopRange"></div>
+        <canvas></canvas>
+    </div>
+
+    <script>
+        const canvas = document.querySelector('#waveform canvas');
+        const ctx = canvas.getContext('2d');
+        const audioFile = document.getElementById('audioFile');
+        const playBtn = document.getElementById('playBtn');
+        const loopBtn = document.getElementById('loopBtn');
+        const loopRange = document.getElementById('loopRange');
+        const loopTime = document.getElementById('loopTime');
+        const progress = document.querySelector('.progress');
+        const errorMsg = document.getElementById('errorMsg');
+
+        // 状态管理对象
+        const audioState = {
+            context: null,
+            buffer: null,
+            source: null,
+            isPlaying: false,
+            isProcessing: false,
+            duration: 0,
+            currentPosition: 0,
+            loop: { start: 0, end: 0, active: false },
+            animationFrameId: null,
+            selection: { startX: 0, isSelecting: false }
+        };
+
+        // 初始化Canvas
+        function initCanvas() {
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+            ctx.scale(dpr, dpr);
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // 安全停止播放
+        function safeStop() {
+            cancelAnimationFrame(audioState.animationFrameId);
+            audioState.animationFrameId = null;
+            
+            if (audioState.source) {
+                try {
+                    const elapsed = audioState.context.currentTime - audioState.startTime;
+                    audioState.currentPosition = Math.min(
+                        audioState.loop.active ? audioState.loop.end : audioState.duration,
+                        audioState.currentPosition + elapsed
+                    );
+                    audioState.source.stop();
+                    audioState.source.disconnect();
+                } catch (e) {
+                    console.warn('停止错误:', e);
+                }
+                audioState.source = null;
+            }
+            audioState.isPlaying = false;
+            playBtn.textContent = '播放';
+            updateProgressDisplay();
+        }
+
+        // 创建新音源
+        function createSource() {
+            audioState.source = audioState.context.createBufferSource();
+            audioState.source.buffer = audioState.buffer;
+            
+            if (audioState.loop.active) {
+                audioState.source.loop = true;
+                audioState.source.loopStart = audioState.loop.start;
+                audioState.source.loopEnd = audioState.loop.end;
+            }
+            
+            audioState.source.connect(audioState.context.destination);
+            audioState.source.onended = () => {
+                if (!audioState.loop.active) safeStop();
+            };
+        }
+
+        // 播放控制
+        async function play() {
+            if (audioState.isProcessing) return;
+            audioState.isProcessing = true;
+
+            try {
+                safeStop();
+
+                if (!audioState.context) {
+                    audioState.context = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioState.context.state === 'suspended') {
+                    await audioState.context.resume();
+                }
+
+                createSource();
+                audioState.startTime = audioState.context.currentTime;
+                audioState.source.start(0, audioState.currentPosition);
+                
+                audioState.isPlaying = true;
+                playBtn.textContent = '暂停';
+                updateProgress();
+            } catch (error) {
+                showError(`播放失败: ${error.message}`);
+                safeStop();
+            } finally {
+                audioState.isProcessing = false;
+            }
+        }
+
+        // 进度更新
+        function updateProgress() {
+            if (!audioState.isPlaying) return;
+
+            const elapsed = audioState.context.currentTime - audioState.startTime;
+            const current = audioState.currentPosition + elapsed;
+            
+            let displayPosition = current;
+            if (audioState.loop.active && current >= audioState.loop.end) {
+                displayPosition = audioState.loop.start + (current - audioState.loop.end);
+            }
+            
+            progress.style.width = `${Math.min(100, (displayPosition / audioState.duration) * 100)}%`;
+
+            if (current < (audioState.loop.active ? audioState.loop.end : audioState.duration)) {
+                audioState.animationFrameId = requestAnimationFrame(updateProgress);
+            }
+        }
+
+        // 时间格式化
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const secs = Math.floor(seconds % 60).toString().padStart(2, '0');
+            return `${mins}:${secs}`;
+        }
+
+        // 更新循环显示
+        function updateLoopDisplay() {
+            loopRange.style.left = `${(audioState.loop.start / audioState.duration) * 100}%`;
+            loopRange.style.width = `${((audioState.loop.end - audioState.loop.start) / audioState.duration) * 100}%`;
+            loopTime.textContent = `${formatTime(audioState.loop.start)} - ${formatTime(audioState.loop.end)}`;
+        }
+
+        // 事件处理
+        canvas.addEventListener('mousedown', startSelection);
+        canvas.addEventListener('mousemove', updateSelection);
+        canvas.addEventListener('mouseup', endSelection);
+        canvas.addEventListener('mouseleave', cancelSelection);
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            startSelection(e.touches[0]);
+        });
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            updateSelection(e.touches[0]);
+        });
+        canvas.addEventListener('touchend', endSelection);
+
+        loopBtn.addEventListener('click', () => {
+            audioState.loop.active = !audioState.loop.active;
+            loopBtn.style.backgroundColor = audioState.loop.active ? '#4CAF50' : '#9E9E9E';
+            if (!audioState.loop.active) safeStop();
+        });
+
+        playBtn.addEventListener('click', () => {
+            audioState.isPlaying ? safeStop() : play();
+        });
+
+        // 选区处理函数
+        function startSelection(e) {
+            if (!audioState.buffer) return;
+            const rect = canvas.getBoundingClientRect();
+            audioState.selection.startX = e.clientX - rect.left;
+            audioState.selection.isSelecting = true;
+        }
+
+        function updateSelection(e) {
+            if (!audioState.selection.isSelecting) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const currentX = e.clientX - rect.left;
+            const start = Math.min(audioState.selection.startX, currentX);
+            const width = Math.abs(currentX - audioState.selection.startX);
+
+            const startTime = (start / canvas.offsetWidth) * audioState.duration;
+            const endTime = ((start + width) / canvas.offsetWidth) * audioState.duration;
+
+            audioState.loop.start = Math.max(0, Math.min(startTime, endTime));
+            audioState.loop.end = Math.min(audioState.duration, Math.max(startTime, endTime));
+            
+            if (audioState.loop.end - audioState.loop.start > 0.5) {
+                audioState.loop.active = true;
+                loopBtn.style.backgroundColor = '#4CAF50';
+                updateLoopDisplay();
+            }
+        }
+
+        function endSelection() {
+            audioState.selection.isSelecting = false;
+            if (audioState.loop.active) play();
+        }
+
+        function cancelSelection() {
+            audioState.selection.isSelecting = false;
+        }
+
+        // 文件处理
+        audioFile.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            try {
+                safeStop();
+                audioState.buffer = null;
+
+                const arrayBuffer = await file.arrayBuffer();
+                audioState.context = new (window.AudioContext || window.webkitAudioContext)();
+                audioState.buffer = await audioState.context.decodeAudioData(arrayBuffer);
+                audioState.duration = audioState.buffer.duration;
+                
+                initCanvas();
+                drawWaveform(audioState.buffer.getChannelData(0));
+                playBtn.disabled = false;
+                loopBtn.disabled = false;
+            } catch (error) {
+                showError(`文件加载失败: ${error.message}`);
+                playBtn.disabled = true;
+                loopBtn.disabled = true;
+            }
+        });
+
+        // 波形绘制
+        function drawWaveform(channelData) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const visibleWidth = canvas.width / (window.devicePixelRatio || 1);
+            const step = Math.ceil(channelData.length / visibleWidth);
+            const amp = canvas.height / (2 * (window.devicePixelRatio || 1));
+
+            for(let i = 0; i < visibleWidth; i++) {
+                const start = i * step;
+                const end = Math.min(start + step, channelData.length);
+                const segment = channelData.slice(start, end);
+                
+                const min = Math.min(...segment);
+                const max = Math.max(...segment);
+
+                ctx.fillStyle = '#2196F3';
+                ctx.fillRect(i, (1 + min) * amp, 1, Math.max(1, (max - min) * amp));
+            }
+        }
+
+        // 辅助函数
+        function showError(message) {
+            errorMsg.textContent = message;
+            setTimeout(() => errorMsg.textContent = '', 5000);
+        }
+
+        function updateProgressDisplay() {
+            const progressPercent = (audioState.currentPosition / audioState.duration) * 100;
+            progress.style.width = `${Math.min(100, progressPercent)}%`;
+        }
+
+        // 初始化
+        initCanvas();
+    </script>
+</body>
+</html>

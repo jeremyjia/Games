@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>绘制五线谱和高音谱号</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="staffCanvas" width="800" height="200"></canvas>
+    <script>
+        // 获取canvas元素和绘图上下文
+        var canvas = document.getElementById('staffCanvas');
+        var ctx = canvas.getContext('2d');
+
+        // 五线谱的线条数量和间距
+        var numLines = 5;
+        var lineSpacing = 40;
+
+        // 绘制五线谱
+        function drawStaffLines() {
+            for (var i = 0; i < numLines; i++) {
+                var y = (numLines - 1 - i) * lineSpacing + lineSpacing / 2;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.strokeStyle = 'black';
+                ctx.stroke();
+            }
+        }
+
+        // 绘制高音谱号
+        function drawTrebleClef() {
+            // 谱号的位置和大小
+            var clefStartX = 50;
+            var clefStartY = lineSpacing * 2 + lineSpacing / 4; // 大约在第二线和第三线之间
+            var clefSize = 60; // 谱号的大小，可以根据需要调整
+
+            // 开始绘制谱号
+            ctx.beginPath();
+
+            // 谱号的圆圈部分
+            ctx.arc(clefStartX + clefSize / 4, clefStartY, clefSize / 4, 0, Math.PI * 2, true);
+
+            // 谱号的弯曲部分
+            ctx.moveTo(clefStartX + clefSize / 4, clefStartY - clefSize / 4);
+            ctx.quadraticCurveTo(
+                clefStartX, clefStartY - clefSize / 2,
+                clefStartX + clefSize / 2, clefStartY - clefSize * 3 / 4
+            );
+
+            // 谱号的直线部分
+            ctx.lineTo(clefStartX + clefSize * 3 / 2, clefStartY - lineSpacing * 1.5);
+
+            // 谱号的钩子部分
+            ctx.quadraticCurveTo(
+                clefStartX + clefSize * 5 / 4, clefStartY - lineSpacing / 2,
+                clefStartX + clefSize, clefStartY
+            );
+
+            // 设置线条样式并绘制
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 2; // 可以根据需要调整线宽
+            ctx.stroke();
+
+            // 填充圆圈部分
+            ctx.fillStyle = 'black';
+            ctx.fill();
+        }
+
+        // 绘制整个五线谱和高音谱号
+        function drawMusicStaff() {
+            drawStaffLines();
+            drawTrebleClef();
+        }
+
+        // 执行绘制
+        drawMusicStaff();
+    </script>
+</body>
+</html>

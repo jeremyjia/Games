@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音乐播放器系统</title>
+    <style id="dynamicStyle"></style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <nav id="mainNav"></nav>
+
+    <!-- 主内容区 -->
+    <main>
+        <button onclick="WindowManager.createWindow()">新建窗口</button>
+        <canvas id="mainCanvas"></canvas>
+    </main>
+
+    <!-- 底部状态栏 -->
+    <div id="statusBar"></div>
+
+<script>
+// 动态生成样式
+const style = document.createElement('style');
+style.textContent = `
+.window {
+    position: fixed;
+    border: 1px solid #ccc;
+    background: white;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+    min-width: 300px;
+}
+.window-header {
+    background: #f0f0f0;
+    padding: 5px;
+    cursor: move;
+}
+.beat-container {
+    display: flex;
+    gap: 5px;
+    padding: 10px;
+}
+.beat-unit {
+    width: 20px;
+    height: 20px;
+    border: 1px solid #000;
+}
+#mainCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+`;
+document.head.appendChild(style);
+
+// 导航菜单
+const mls = ["index.html", "readme.md", "i1.html", "i2.html"];
+const nav = document.getElementById('mainNav');
+mls.forEach(file => {
+    const link = document.createElement('a');
+    link.href = file;
+    link.textContent = file;
+    nav.appendChild(link);
+});
+
+// 窗口管理器
+class WindowManager {
+    static windows = new Map();
+    static counter = 0;
+
+    static createWindow() {
+        const id = `win${++this.counter}`;
+        const win = new Window(id);
+        this.windows.set(id, win);
+        StatusBar.addButton(id);
+    }
+}
+
+// 窗口类
+class Window {
+    constructor(id) {
+        this.id = id;
+        this.isVisible = true;
+        this.createDOM();
+        this.addEventListeners();
+        MusicPlayer.registerWindow(this);
+    }
+
+    createDOM() {
+        this.element = document.createElement('div');
+        this.element.className = 'window';
+        this.element.innerHTML = `
+            <div class="window-header">窗口 ${this.id}</div>
+            <div class="window-content">
+                <button class="play-btn">播放</button>
+                <div class="beat-container"></div>
+                <input type="text" class="mp3-url" value="https://littleflute.github.io/gt1/mp3/j72_4_4.mp3">
+                <input type="number" class="bpm" value="72">
+            </div>
+        `;
+        document.body.appendChild(this.element);
+        
+        // 创建拍子按钮
+        const container = this.element.querySelector('.beat-container');
+        for (let i = 0; i < 4; i++) {
+            const div = document.createElement('div');
+            div.className = 'beat-unit';
+            container.appendChild(div);
+        }
+    }
+
+    addEventListeners() {
+        let isDragging = false;
+        let offset = [0,0];
+        
+        this.element.querySelector('.window-header').addEventListener('mousedown', e => {
+            isDragging = true;
+            offset = [
+                e.clientX - this.element.offsetLeft,
+                e.clientY - this.element.offsetTop
+            ];
+        });
+
+        document.addEventListener('mousemove', e => {
+            if (!isDragging) return;
+            this.element.style.left = (e.clientX - offset[0]) + 'px';
+            this.element.style.top = (e.clientY - offset[1]) + 'px';
+        });
+
+        document.addEventListener('mouseup', () => isDragging = false);
+    }
+}
+
+// 音乐播放器系统
+class MusicPlayer {
+    static audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    static windows = new Set();
+    static isPlaying = false;
+    static currentBeat = 0;
+    static bpm = 72;
+
+    static registerWindow(window) {
+        this.windows.add(window);
+    }
+
+    static start() {
+        if (this.isPlaying) return;
+        this.isPlaying = true;
+        this.scheduleBeats();
+    }
+
+    static scheduleBeats() {
+        const interval = 60 / this.bpm * 1000;
+        this.intervalId = setInterval(() => {
+            this.currentBeat = (this.currentBeat % 4) + 1;
+            this.updateBeatDisplays();
+            if (this.currentBeat === 1) CanvasManager.createFirework();
+        }, interval);
+    }
+
+    static updateBeatDisplays() {
+        this.windows.forEach(win => {
+            const beats = win.element.querySelectorAll('.beat-unit');
+            beats.forEach((beat, index) => {
+                beat.style.background = index === this.currentBeat - 1 ? '#ff0000' : '';
+            });
+        });
+    }
+}
+
+// 画布管理器
+class CanvasManager {
+    static init() {
+        this.canvas = document.getElementById('mainCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+    }
+
+    static resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+    }
+
+    static createFirework() {
+    const x = Math.random() * this.canvas.width;
+    const y = Math.random() * this.canvas.height;
+    
+    let particles = [];
+    for (let i = 0; i < 100; i++) {
+        particles.push({
+            x,
+            y,
+            color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+            angle: Math.random() * Math.PI * 2,
+            speed: Math.random() * 5 + 2,
+            life: 1
+        });
+    }
+
+    const animate = () => {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        particles.forEach(p => {
+            p.x += Math.cos(p.angle) * p.speed;
+            p.y += Math.sin(p.angle) * p.speed;
+            p.life -= 0.02;
+            
+            this.ctx.beginPath();
+            this.ctx.arc(p.x, p.y, 3 * p.life, 0, Math.PI * 2);
+            this.ctx.fillStyle = p.color;
+            this.ctx.fill();
+        });
+
+        particles = particles.filter(p => p.life > 0);
+        
+        if (particles.length > 0) {
+            requestAnimationFrame(animate);
+        }
+    };
+    
+    animate();
+}
+}
+
+// 状态栏管理器
+class StatusBar {
+    static addButton(id) {
+        const btn = document.createElement('button');
+        btn.textContent = `窗口 ${id}`;
+        btn.addEventListener('click', () => WindowManager.windows.get(id).toggle());
+        document.getElementById('statusBar').appendChild(btn);
+    }
+}
+
+// 初始化
+CanvasManager.init();
+</script>
+</body>
+</html>

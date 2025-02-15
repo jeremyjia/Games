@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>自适应数字工具条</title>
+    <style>
+        /* 可调整的示例容器 */
+        .resizable-container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            border: 2px dashed #ccc;
+            resize: both;
+            overflow: auto;
+            min-width: 300px;
+            min-height: 150px;
+        }
+    </style>
+</head>
+<body>
+    <div class="resizable-container">
+        <p>尝试拖动右下角调整容器大小 →</p>
+        <div id="dynamicToolbar1"></div>
+    </div>
+
+    <div class="resizable-container">
+        <div id="dynamicToolbar2"></div>
+    </div>
+
+<script>
+class ResponsiveNumberToolbar {
+    constructor(config) {
+        this.config = {
+            container: document.body,
+            start: 1,
+            end: 100,
+            title: '数字工具条',
+            visibleItems: 10,
+            ...config
+        };
+
+        this.currentStart = this.config.start;
+        this.observer = null;
+        
+        this.init();
+    }
+
+    init() {
+        this.createStyles();
+        this.createDOM();
+        this.bindEvents();
+        this.setupResizeObserver();
+        this.updateDisplay();
+    }
+
+    createStyles() {
+        if (!document.querySelector('#responsive-toolbar-style')) {
+            const style = document.createElement('style');
+            style.id = 'responsive-toolbar-style';
+            style.textContent = `
+                .rt-wrapper {
+                    width: 100%;
+                    margin: 15px 0;
+                    font-family: system-ui, sans-serif;
+                }
+                .rt-title {
+                    color: #333;
+                    margin-bottom: 12px;
+                    font-size: 1.2em;
+                    font-weight: 600;
+                }
+                .rt-container {
+                    width: 100%;
+                    overflow: hidden;
+                    position: relative;
+                    touch-action: pan-y;
+                }
+                .rt-track {
+                    display: flex;
+                    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                }
+                .rt-button {
+                    flex: 0 0 calc(100% / ${this.config.visibleItems});
+                    min-width: 0;
+                    height: 48px;
+                    border: 1px solid #e0e0e0;
+                    background: #f8f9fa;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    user-select: none;
+                    font-size: clamp(14px, 1.5vw, 16px);
+                    transition: background 0.2s;
+                }
+                .rt-button:hover {
+                    background: #e9ecef;
+                }
+                .rt-button:active {
+                    background: #dee2e6;
+                }
+                .rt-status {
+                    color: #6c757d;
+                    margin-top: 12px;
+                    font-size: 0.9em;
+                    display: flex;
+                    justify-content: space-between;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+
+    createDOM() {
+        this.wrapper = document.createElement('div');
+        this.wrapper.className = 'rt-wrapper';
+
+        this.title = document.createElement('div');
+        this.title.className = 'rt-title';
+        this.title.textContent = this.config.title;
+
+        this.container = document.createElement('div');
+        this.container.className = 'rt-container';
+
+        this.track = document.createElement('div');
+        this.track.className = 'rt-track';
+
+        this.status = document.createElement('div');
+        this.status.className = 'rt-status';
+
+        this.container.appendChild(this.track);
+        this.wrapper.append(this.title, this.container, this.status);
+        this.config.container.appendChild(this.wrapper);
+    }
+
+    bindEvents() {
+        let touchStartX = 0;
+        let mouseDownX = 0;
+        let isDragging = false;
+
+        // 触摸事件
+        this.track.addEventListener('touchstart', e => {
+            touchStartX = e.touches[0].clientX;
+        });
+
+        this.track.addEventListener('touchend', e => {
+            const deltaX = e.changedTouches[0].clientX - touchStartX;
+            this.handleSwipe(deltaX);
+        });
+
+        // 鼠标事件
+        this.track.addEventListener('mousedown', e => {
+            isDragging = true;
+            mouseDownX = e.clientX;
+            this.track.style.transition = 'none';
+        });
+
+        document.addEventListener('mousemove', e => {
+            if (isDragging) {
+                const deltaX = e.clientX - mouseDownX;
+                this.track.style.transform = `translateX(${deltaX}px)`;
+            }
+        });
+
+        document.addEventListener('mouseup', e => {
+            if (isDragging) {
+                isDragging = false;
+                const deltaX = e.clientX - mouseDownX;
+                this.track.style.transition = '';
+                this.track.style.transform = '';
+                this.handleSwipe(deltaX);
+            }
+        });
+    }
+
+    setupResizeObserver() {
+        this.observer = new ResizeObserver(entries => {
+            entries.forEach(entry => {
+                this.updateButtonSizes();
+                this.updateDisplay();
+            });
+        });
+        this.observer.observe(this.container);
+    }
+
+    updateButtonSizes() {
+        const buttons = this.track.querySelectorAll('.rt-button');
+        const itemWidth = this.container.offsetWidth / this.config.visibleItems;
+        buttons.forEach(btn => {
+            btn.style.flexBasis = `${itemWidth}px`;
+        });
+    }
+
+    updateDisplay() {
+        this.track.innerHTML = '';
+        const maxNumber = Math.min(
+            this.currentStart + this.config.visibleItems - 1,
+            this.config.end
+        );
+
+        for (let i = this.currentStart; i <= maxNumber; i++) {
+            const btn = document.createElement('div');
+            btn.className = 'rt-button';
+            btn.textContent = i;
+            btn.onclick = () => alert(`当前数字: ${i}`);
+            this.track.appendChild(btn);
+        }
+
+        this.updateStatus(maxNumber);
+        this.updateButtonSizes();
+    }
+
+    updateStatus(maxNumber) {
+        this.status.innerHTML = `
+            <span>显示范围: ${this.currentStart}-${maxNumber}</span>
+            <span>总数字: ${this.config.start}-${this.config.end}</span>
+        `;
+    }
+
+    handleSwipe(deltaX) {
+        if (Math.abs(deltaX) < 30) return;
+
+        const direction = deltaX > 0 ? -1 : 1;
+        const newStart = this.currentStart + (direction * this.config.visibleItems);
+        
+        this.currentStart = Math.max(
+            this.config.start,
+            Math.min(
+                newStart,
+                this.config.end - this.config.visibleItems + 1
+            )
+        );
+
+        this.updateDisplay();
+    }
+}
+
+// 使用示例
+new ResponsiveNumberToolbar({
+    container: document.getElementById('dynamicToolbar1'),
+    title: '自适应工具条 (1-100)',
+    start: 1,
+    end: 100,
+    visibleItems: 8
+});
+
+new ResponsiveNumberToolbar({
+    container: document.getElementById('dynamicToolbar2'),
+    title: '高级数字组 (100-200)',
+    start: 100,
+    end: 200,
+    visibleItems: 6
+});
+</script>
+</body>
+</html>

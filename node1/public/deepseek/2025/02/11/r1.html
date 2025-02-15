@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<button onclick="MusicNotationEditor.createNewWindow()">新建窗口</button>
+
+<script>
+class MusicNotationEditor {
+    static windows = [];
+    
+    constructor() {
+        this.id = Date.now() + Math.random();
+        this.windowElement = null;
+        this.textarea = null;
+        this.canvas = null;
+        this.ctx = null;
+        this.isDragging = false;
+        this.offsetX = 0;
+        this.offsetY = 0;
+        this.createWindow();
+    }
+
+    createWindow() {
+        // 创建窗口容器
+        this.windowElement = document.createElement('div');
+        Object.assign(this.windowElement.style, {
+            position: 'fixed',
+            left: '100px',
+            top: '100px',
+            width: '400px',
+            backgroundColor: '#f0f0f0',
+            borderRadius: '8px',
+            boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+            zIndex: 1000,
+            cursor: 'move'
+        });
+
+        // 创建工具栏
+        const toolbar = document.createElement('div');
+        Object.assign(toolbar.style, {
+            padding: '8px',
+            backgroundColor: '#e0e0e0',
+            borderTopLeftRadius: '8px',
+            borderTopRightRadius: '8px',
+            display: 'flex',
+            gap: '8px'
+        });
+
+        // 创建示例按钮
+        const examples = [
+            {label: '示例1', text: '1 2 3 4 5 6 7 0'},
+            {label: '示例2', text: '1' 2'' 3''' 4, 5,, 6,,,'},
+            {label: '示例3', text: '4/ 5// 6,// 7,,//'}
+        ];
+
+        examples.forEach(ex => {
+            const btn = document.createElement('button');
+            btn.textContent = ex.label;
+            btn.onclick = () => {
+                this.textarea.value += ex.text + ' ';
+                this.drawNotation();
+            };
+            toolbar.appendChild(btn);
+        });
+
+        // 创建文本输入框
+        this.textarea = document.createElement('textarea');
+        Object.assign(this.textarea.style, {
+            width: 'calc(100% - 16px)',
+            height: '60px',
+            margin: '8px',
+            padding: '4px',
+            border: '1px solid #ccc'
+        });
+        this.textarea.oninput = () => this.drawNotation();
+
+        // 创建画布
+        this.canvas = document.createElement('canvas');
+        Object.assign(this.canvas.style, {
+            width: 'calc(100% - 16px)',
+            height: '120px',
+            margin: '8px',
+            backgroundColor: 'white'
+        });
+        this.canvas.width = 384;
+        this.canvas.height = 120;
+        this.ctx = this.canvas.getContext('2d');
+
+        // 组装窗口
+        this.windowElement.appendChild(toolbar);
+        this.windowElement.appendChild(this.textarea);
+        this.windowElement.appendChild(this.canvas);
+        document.body.appendChild(this.windowElement);
+
+        // 添加拖动事件
+        this.windowElement.addEventListener('mousedown', this.startDrag.bind(this));
+        document.addEventListener('mousemove', this.drag.bind(this));
+        document.addEventListener('mouseup', this.stopDrag.bind(this));
+
+        // 添加到窗口列表
+        MusicNotationEditor.windows.push(this);
+        MusicNotationEditor.updateWindowList();
+    }
+
+    startDrag(e) {
+        this.isDragging = true;
+        const rect = this.windowElement.getBoundingClientRect();
+        this.offsetX = e.clientX - rect.left;
+        this.offsetY = e.clientY - rect.top;
+    }
+
+    drag(e) {
+        if (!this.isDragging) return;
+        this.windowElement.style.left = (e.clientX - this.offsetX) + 'px';
+        this.windowElement.style.top = (e.clientY - this.offsetY) + 'px';
+    }
+
+    stopDrag() {
+        this.isDragging = false;
+    }
+
+    drawNotation() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        const input = this.textarea.value;
+        const notes = this.parseInput(input);
+        
+        let x = 20;
+        let y = 60;
+        let measureCount = 0;
+        let totalBeats = 0;
+
+        notes.forEach(note => {
+            if (totalBeats + note.duration > 4) {
+                x = 20;
+                y += 40;
+                totalBeats = 0;
+                measureCount = 0;
+            }
+
+            this.drawNote(x, y, note);
+            x += 30;
+            totalBeats += note.duration;
+            measureCount++;
+        });
+    }
+
+    parseInput(input) {
+        const notes = [];
+        const tokens = input.match(/[\d'][,']*\/+\.*|-+/g) || [];
+        
+        tokens.forEach(token => {
+            let note = {
+                value: token.match(/[\d]/)?.[0] || '0',
+                octave: 0,
+                duration: 0.25,
+                dots: 0
+            };
+
+            // 处理八度
+            const high = (token.match(/'/g) || []).length;
+            const low = (token.match(/,/g) || []).length;
+            note.octave = high - low;
+
+            // 处理时值
+            if (token.includes('-')) {
+                note.duration = 4;
+            } else if (token.includes('/')) {
+                const slashes = (token.match(/\//g) || []).length;
+                note.duration = slashes === 1 ? 0.5 : slashes === 2 ? 0.25 : 0.125;
+            }
+
+            // 处理点
+            note.dots = (token.match(/\./g) || []).length;
+            
+            notes.push(note);
+        });
+
+        return notes;
+    }
+
+    drawNote(x, y, note) {
+        // 绘制音符数字
+        this.ctx.font = '16px Arial';
+        this.ctx.fillText(note.value, x, y);
+
+        // 绘制八度点
+        if (note.octave > 0) {
+            for (let i = 0; i < note.octave; i++) {
+                this.ctx.beginPath();
+                this.ctx.arc(x + 8, y - 12 - (i * 6), 2, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+        } else if (note.octave < 0) {
+            for (let i = 0; i < Math.abs(note.octave); i++) {
+                this.ctx.beginPath();
+                this.ctx.arc(x + 8, y + 5 + (i * 6), 2, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+        }
+
+        // 绘制时值线
+        const lineY = y + 8;
+        if (note.duration <= 0.25) {
+            this.ctx.fillRect(x - 5, lineY, 20, 2);
+            if (note.duration === 0.125) {
+                this.ctx.fillRect(x - 5, lineY + 5, 20, 2);
+            }
+        }
+    }
+
+    static createNewWindow() {
+        new MusicNotationEditor();
+    }
+
+    static updateWindowList() {
+        const existingToolbar = document.getElementById('window-list-toolbar');
+        if (existingToolbar) existingToolbar.remove();
+
+        const toolbar = document.createElement('div');
+        toolbar.id = 'window-list-toolbar';
+        Object.assign(toolbar.style, {
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            padding: '8px',
+            backgroundColor: '#e0e0e0',
+            borderRadius: '4px',
+            display: 'flex',
+            gap: '8px'
+        });
+
+        this.windows.forEach((win, index) => {
+            const btn = document.createElement('button');
+            btn.textContent = `窗口 ${index + 1}`;
+            btn.onclick = () => {
+                win.windowElement.style.display = 
+                    win.windowElement.style.display === 'none' ? 'block' : 'none';
+            };
+            toolbar.appendChild(btn);
+        });
+
+        document.body.appendChild(toolbar);
+    }
+}
+</script>
+</body>
+</html>

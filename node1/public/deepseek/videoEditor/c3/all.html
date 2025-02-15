@@ -1,0 +1,355 @@
+<!--
+升级这个代码，让每个场景可以持续若干帧，设计一个UI可以为每个场景设置这个值
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Editor</title>
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+#toolbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #333;
+    color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.floating-toolbar {
+    position: absolute;
+    top: 60px;
+    left: 10px;
+    background: #444;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+}
+.scanes_floating_toolbar {
+    position: absolute;
+    top: 160px;
+    left: 210px;
+    background: #444;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+
+}
+
+.play_floating_toolbar {
+    position: absolute;
+    top: 222px;
+    left: 210px;
+    background: #444;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+
+}
+#canvas {
+    width: 100%;
+    height: 100vh;
+    background: #f0f0f0;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 600px;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: black;
+}
+    </style>
+</head>
+<body>
+    <div id="toolbar">
+        <button id="addScene">Add Scene</button>
+        <button id="delete-scene">Delete Scene</button>
+        <select id="scene-selector"></select>
+    </div>
+
+    <div id="floating-toolbar-objects" class="floating-toolbar">
+        <button id="add-line">Line</button>
+        <button id="add-circle">Circle</button>
+        <button id="add-rectangle">Rectangle</button>
+        <button id="add-triangle">Triangle</button>
+    </div>
+
+    <div id="floating-toolbar-scenes" class="scanes_floating_toolbar">
+        <button id="set-forest">Forest</button>
+        <button id="set-beach">Beach</button>
+        <button id="set-street">Street</button>
+    </div>
+
+    <div id="playback-toolbar" class="play_floating_toolbar">
+        <button id="play">Play</button>
+        <button id="pause">Pause</button>
+        <button id="export">Export</button>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <div id="export-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <pre id="export-json"></pre>
+        </div>
+    </div>
+
+    <script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const sceneSelector = document.getElementById('scene-selector');
+const addSceneBtn = document.getElementById('addScene');
+const deleteSceneBtn = document.getElementById('delete-scene');
+const exportBtn = document.getElementById('export');
+const exportModal = document.getElementById('export-modal');
+const closeModal = document.querySelector('.close');
+const exportJson = document.getElementById('export-json');
+
+let scenes = [];
+let currentSceneIndex = 0;
+let frameRate = 1;
+let isPlaying = false;
+
+class CScene {
+    constructor() {
+        this.objects = [];
+        this.background = null;
+    }
+
+    addObject(obj) {
+        this.objects.push(obj);
+    }
+
+    setBackground(bg) {
+        this.background = bg;
+    }
+
+    draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (this.background) {
+            ctx.fillStyle = this.background;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        this.objects.forEach(obj => obj.draw(ctx));
+    }
+}
+
+class Line {
+    constructor(x1, y1, x2, y2, color = 'black') {
+        this.x1 = x1;
+        this.y1 = y1;
+        this.x2 = x2;
+        this.y2 = y2;
+        this.color = color;
+    }
+
+    draw(ctx) {
+        ctx.beginPath();
+        ctx.moveTo(this.x1, this.y1);
+        ctx.lineTo(this.x2, this.y2);
+        ctx.strokeStyle = this.color;
+        ctx.stroke();
+    }
+}
+
+class Circle {
+    constructor(x, y, radius, color = 'black') {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.color = color;
+    }
+
+    draw(ctx) {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+    }
+}
+
+class Rectangle {
+    constructor(x, y, width, height, color = 'black') {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.color = color;
+    }
+
+    draw(ctx) {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
+}
+
+class Triangle {
+    constructor(x1, y1, x2, y2, x3, y3, color = 'black') {
+        this.x1 = x1;
+        this.y1 = y1;
+        this.x2 = x2;
+        this.y2 = y2;
+        this.x3 = x3;
+        this.y3 = y3;
+        this.color = color;
+    }
+
+    draw(ctx) {
+        ctx.beginPath();
+        ctx.moveTo(this.x1, this.y1);
+        ctx.lineTo(this.x2, this.y2);
+        ctx.lineTo(this.x3, this.y3);
+        ctx.closePath();
+        ctx.fillStyle = this.color;
+        ctx.fill();
+    }
+}
+
+function add_one_scene() {
+    const scene = new CScene();
+    scenes.push(scene);
+    updateSceneSelector();
+    currentSceneIndex = scenes.length - 1;
+    sceneSelector.value = currentSceneIndex;
+    scene.draw();
+}
+
+function deleteScene() {
+    if (scenes.length > 1) {
+        scenes.splice(currentSceneIndex, 1);
+        updateSceneSelector();
+        currentSceneIndex = Math.max(0, currentSceneIndex - 1);
+        sceneSelector.value = currentSceneIndex;
+        scenes[currentSceneIndex].draw();
+    }
+}
+
+function updateSceneSelector() {
+    sceneSelector.innerHTML = '';
+    scenes.forEach((scene, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = `Scene ${index + 1}`;
+        sceneSelector.appendChild(option);
+    });
+}
+
+function play() {
+    isPlaying = true;
+    animate();
+}
+
+function pause() {
+    isPlaying = false;
+}
+
+function animate() {
+    if (!isPlaying) return;
+    scenes[currentSceneIndex].draw();
+    currentSceneIndex = (currentSceneIndex + 1) % scenes.length;
+    setTimeout(() => {
+        requestAnimationFrame(animate);
+    }, 1000 / frameRate);
+}
+
+function exportToJson() {
+    const json = JSON.stringify(scenes, null, 2);
+    exportJson.textContent = json;
+    exportModal.style.display = 'block';
+}
+
+addSceneBtn.addEventListener('click', add_one_scene);
+deleteSceneBtn.addEventListener('click', deleteScene);
+sceneSelector.addEventListener('change', (e) => {
+    currentSceneIndex = parseInt(e.target.value);
+    scenes[currentSceneIndex].draw();
+});
+exportBtn.addEventListener('click', exportToJson);
+closeModal.addEventListener('click', () => {
+    exportModal.style.display = 'none';
+});
+
+document.getElementById('add-line').addEventListener('click', () => {
+    const line = new Line(50, 50, 200, 200);
+    scenes[currentSceneIndex].addObject(line);
+    scenes[currentSceneIndex].draw();
+});
+
+document.getElementById('add-circle').addEventListener('click', () => {
+    const circle = new Circle(150, 150, 50);
+    scenes[currentSceneIndex].addObject(circle);
+    scenes[currentSceneIndex].draw();
+});
+
+document.getElementById('add-rectangle').addEventListener('click', () => {
+    const rectangle = new Rectangle(100, 100, 150, 100);
+    scenes[currentSceneIndex].addObject(rectangle);
+    scenes[currentSceneIndex].draw();
+});
+
+document.getElementById('add-triangle').addEventListener('click', () => {
+    const triangle = new Triangle(100, 100, 150, 50, 200, 100);
+    scenes[currentSceneIndex].addObject(triangle);
+    scenes[currentSceneIndex].draw();
+});
+
+document.getElementById('set-forest').addEventListener('click', () => {
+    scenes[currentSceneIndex].setBackground('green');
+    scenes[currentSceneIndex].draw();
+});
+
+document.getElementById('set-beach').addEventListener('click', () => {
+    scenes[currentSceneIndex].setBackground('blue');
+    scenes[currentSceneIndex].draw();
+});
+
+document.getElementById('set-street').addEventListener('click', () => {
+    scenes[currentSceneIndex].setBackground('gray');
+    scenes[currentSceneIndex].draw();
+});
+
+document.getElementById('play').addEventListener('click', play);
+document.getElementById('pause').addEventListener('click', pause);
+
+// Initialize with one scene
+add_one_scene();
+    </script>
+</body>
+</html>

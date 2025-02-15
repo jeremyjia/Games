@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        .draggable-box {
+            width: 100px;
+            height: 100px;
+            position: absolute;
+            cursor: grab;
+            touch-action: none; /* 关键属性 */
+            user-select: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+            z-index: 1;
+        }
+
+        .draggable-box:active {
+            cursor: grabbing;
+            transform: scale(1.05);
+            z-index: 2;
+        }
+
+        #linesCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="draggable-box" style="background: #2196F3;" data-id="A">A</div>
+    <div class="draggable-box" style="background: #4CAF50;" data-id="B">B</div>
+    <div class="draggable-box" style="background: #FF5722;" data-id="C">C</div>
+    <canvas id="linesCanvas"></canvas>
+
+    <script>
+        class TouchDraggable {
+            constructor(element) {
+                this.element = element;
+                this.isDragging = false;
+                this.startX = 0;
+                this.startY = 0;
+                this.offsetX = 0;
+                this.offsetY = 0;
+                
+                this.init();
+            }
+
+            init() {
+                // 统一处理触摸和鼠标事件
+                this.element.addEventListener('mousedown', e => this.start(e));
+                this.element.addEventListener('touchstart', e => this.start(e));
+                
+                document.addEventListener('mousemove', e => this.move(e));
+                document.addEventListener('touchmove', e => this.move(e), { passive: false });
+                
+                document.addEventListener('mouseup', () => this.end());
+                document.addEventListener('touchend', () => this.end());
+                
+                this.setRandomPosition();
+            }
+
+            start(e) {
+                this.isDragging = true;
+                const clientX = e.clientX || e.touches[0].clientX;
+                const clientY = e.clientY || e.touches[0].clientY;
+                
+                const rect = this.element.getBoundingClientRect();
+                this.startX = rect.left;
+                this.startY = rect.top;
+                this.offsetX = clientX - rect.left;
+                this.offsetY = clientY - rect.top;
+                
+                e.preventDefault();
+            }
+
+            move(e) {
+                if (!this.isDragging) return;
+                
+                const clientX = e.clientX || e.touches[0].clientX;
+                const clientY = e.clientY || e.touches[0].clientY;
+                
+                const newX = clientX - this.offsetX;
+                const newY = clientY - this.offsetY;
+                
+                this.element.style.left = Math.max(0, 
+                    Math.min(window.innerWidth - this.element.offsetWidth, newX)) + 'px';
+                this.element.style.top = Math.max(0, 
+                    Math.min(window.innerHeight - this.element.offsetHeight, newY)) + 'px';
+                
+                e.preventDefault();
+            }
+
+            end() {
+                this.isDragging = false;
+            }
+
+            setRandomPosition() {
+                const maxX = window.innerWidth - this.element.offsetWidth;
+                const maxY = window.innerHeight - this.element.offsetHeight;
+                this.element.style.left = Math.random() * maxX + 'px';
+                this.element.style.top = Math.random() * maxY + 'px';
+            }
+        }
+
+        // 初始化所有可拖动元素
+        document.querySelectorAll('.draggable-box').forEach(box => {
+            new TouchDraggable(box);
+        });
+
+        // 以下是连线系统（保持原有逻辑，增加移动端支持）
+        class ConnectionSystem {
+            constructor() {
+                this.canvas = document.getElementById('linesCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.resizeCanvas();
+                window.addEventListener('resize', () => this.resizeCanvas());
+            }
+
+            resizeCanvas() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+
+            updateConnections() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.strokeStyle = '#666';
+                this.ctx.lineWidth = 2;
+
+                // 示例连接逻辑（可自定义）
+                const boxes = [...document.querySelectorAll('.draggable-box')];
+                boxes.forEach((box1, i) => {
+                    if(i < boxes.length-1) {
+                        const box2 = boxes[i+1];
+                        this.drawLine(box1, box2);
+                    }
+                });
+            }
+
+            drawLine(box1, box2) {
+                const rect1 = box1.getBoundingClientRect();
+                const rect2 = box2.getBoundingClientRect();
+                
+                const x1 = rect1.left + rect1.width/2;
+                const y1 = rect1.top + rect1.height/2;
+                const x2 = rect2.left + rect2.width/2;
+                const y2 = rect2.top + rect2.height/2;
+                
+                this.ctx.beginPath();
+                this.ctx.moveTo(x1, y1);
+                this.ctx.lineTo(x2, y2);
+                this.ctx.stroke();
+            }
+        }
+
+        // 初始化连线系统并持续更新
+        const connector = new ConnectionSystem();
+        setInterval(() => connector.updateConnections(), 100);
+
+        // 移动端点击延迟处理
+        if ('ontouchstart' in window) {
+            document.body.style.cursor = 'pointer';
+            document.querySelectorAll('a, button').forEach(el => {
+                el.style.cursor = 'pointer';
+            });
+        }
+    </script>
+</body>
+</html>

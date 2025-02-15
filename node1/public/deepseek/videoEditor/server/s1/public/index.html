@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Generator Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .container { background: #f5f5f5; padding: 20px; border-radius: 8px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #result { margin-top: 20px; }
+        #videoContainer { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>视频生成测试</h1>
+        <button onclick="generateVideo()">生成测试视频</button>
+        <div id="result"></div>
+        <div id="videoContainer"></div>
+    </div>
+
+    <script>
+        async function generateVideo() {
+            const testData = {
+                frames: [
+                    { background: "操场", objects: [] },
+                    { background: "操场", objects: [] },
+                    { background: "马路边", objects: [] },
+                    { background: "马路边", objects: [] },
+                    { background: "树林", objects: [] },
+                    { background: "海边", objects: [] },
+                    { background: "马路边", objects: [] },
+                    { background: "马路边", objects: [] },
+                    { background: "树林", objects: [] }
+                ],
+                fileName: `test_${Date.now()}.mp4`,
+                fps: 24
+            };
+
+            const resultDiv = document.getElementById('result');
+            const videoContainer = document.getElementById('videoContainer');
+            
+            resultDiv.innerHTML = '生成中...';
+            videoContainer.innerHTML = '';
+
+            try {
+                const response = await fetch('/api/generateVideo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testData)
+                });
+
+                const data = await response.json();
+                
+                if (data.downloadUrl) {
+                    resultDiv.innerHTML = '视频生成成功！';
+                    const video = document.createElement('video');
+                    video.controls = true;
+                    video.src = data.downloadUrl;
+                    video.style.width = '100%';
+                    videoContainer.appendChild(video);
+                    
+                    const link = document.createElement('a');
+                    link.href = data.downloadUrl;
+                    link.download = testData.fileName;
+                    link.innerHTML = '下载视频';
+                    videoContainer.appendChild(link);
+                } else {
+                    resultDiv.innerHTML = `错误：${data.message || '未知错误'}`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `请求失败：${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

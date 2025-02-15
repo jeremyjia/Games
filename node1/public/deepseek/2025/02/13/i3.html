@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>复读机测试</title>
+    <style>
+        .repeater-window {
+            position: fixed;
+            width: 300px;
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            resize: both;
+            overflow: auto;
+        }
+
+        .window-header {
+            background: #f0f0f0;
+            padding: 8px;
+            cursor: move;
+            user-select: none;
+        }
+
+        .window-body {
+            padding: 10px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 5px;
+            margin: 10px 0;
+        }
+
+        .toolbar button {
+            flex: 1;
+            padding: 5px;
+        }
+
+        .progress-container {
+            margin: 10px 0;
+        }
+
+        .time-inputs {
+            display: flex;
+            gap: 5px;
+            margin: 5px 0;
+        }
+
+        .time-inputs input {
+            width: 80px;
+            padding: 3px;
+        }
+
+        #status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #eee;
+            padding: 5px;
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        audio { width: 100%; }
+    </style>
+</head>
+<body>
+    <div id="status-bar">
+        <button onclick="createTestCase()">新建用例</button>
+    </div>
+
+<script>
+class Repeater {
+    constructor() {
+        this.audio = new Audio();
+        this.isPlaying = false;
+        this.startTime = 0;
+        this.endTime = 0;
+        this.createWindow();
+        this.setupAudio();
+    }
+
+    createWindow() {
+        this.window = document.createElement('div');
+        this.window.className = 'repeater-window';
+        this.window.style.left = `${Math.random() * 300}px`;
+        this.window.style.top = `${Math.random() * 300}px`;
+
+        this.window.innerHTML = `
+            <div class="window-header">复读机</div>
+            <div class="window-body">
+                <input type="text" class="url-input" readonly>
+                <div class="toolbar">
+                    <button data-url="https://littleflute.github.io/english/NewConceptEnglish/Book2/2.mp3">链接1</button>
+                    <button data-url="https://littleflute.github.io/english/NewConceptEnglish/Book2/10.mp3">链接2</button>
+                    <button data-url="https://littleflute.github.io/gt1/mp3/j72_4_4.mp3">链接3</button>
+                </div>
+                <div class="progress-container">
+                    <audio controls></audio>
+                    <div class="time-inputs">
+                        <input type="number" class="start-time" placeholder="开始时间" min="0">
+                        <input type="number" class="end-time" placeholder="结束时间" min="0">
+                    </div>
+                </div>
+                <button class="play-btn">播放/暂停</button>
+            </div>
+        `;
+
+        document.body.appendChild(this.window);
+        this.setupDrag();
+        this.bindEvents();
+    }
+
+    setupDrag() {
+        const header = this.window.querySelector('.window-header');
+        let isDragging = false;
+        let offset = [0, 0];
+
+        const startDrag = (e) => {
+            isDragging = true;
+            offset = [
+                this.window.offsetLeft - (e.clientX || e.touches[0].clientX),
+                this.window.offsetTop - (e.clientY || e.touches[0].clientY)
+            ];
+        };
+
+        const doDrag = (e) => {
+            if (!isDragging) return;
+            this.window.style.left = `${(e.clientX || e.touches[0].clientX) + offset[0]}px`;
+            this.window.style.top = `${(e.clientY || e.touches[0].clientY) + offset[1]}px`;
+        };
+
+        const stopDrag = () => isDragging = false;
+
+        header.addEventListener('mousedown', startDrag);
+        header.addEventListener('touchstart', startDrag);
+        document.addEventListener('mousemove', doDrag);
+        document.addEventListener('touchmove', doDrag);
+        document.addEventListener('mouseup', stopDrag);
+        document.addEventListener('touchend', stopDrag);
+    }
+
+    bindEvents() {
+        // 工具栏按钮
+        this.window.querySelectorAll('.toolbar button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const url = btn.dataset.url;
+                this.window.querySelector('.url-input').value = url;
+                this.audio.src = url;
+            });
+        });
+
+        // 播放按钮
+        this.window.querySelector('.play-btn').addEventListener('click', () => {
+            this.togglePlay();
+        });
+
+        // 时间输入
+        const updateTimeRange = () => {
+            this.startTime = Math.min(
+                parseFloat(this.window.querySelector('.start-time').value) || 0,
+                parseFloat(this.window.querySelector('.end-time').value) || this.audio.duration
+            );
+            this.endTime = Math.max(
+                parseFloat(this.window.querySelector('.end-time').value) || this.audio.duration,
+                this.startTime
+            );
+        };
+
+        this.window.querySelector('.start-time').addEventListener('change', updateTimeRange);
+        this.window.querySelector('.end-time').addEventListener('change', updateTimeRange);
+
+        // 音频事件
+        this.audio.addEventListener('timeupdate', () => {
+            if (this.audio.currentTime > this.endTime) {
+                this.audio.currentTime = this.startTime;
+            }
+        });
+    }
+
+    togglePlay() {
+        if (this.isPlaying) {
+            this.audio.pause();
+        } else {
+            this.audio.play();
+        }
+        this.isPlaying = !this.isPlaying;
+    }
+
+    toggleWindow() {
+        this.window.style.display = this.window.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
+// 测试用例管理
+let testCases = [];
+
+function createTestCase() {
+    const repeater = new Repeater();
+    const testCaseBtn = document.createElement('button');
+    let isVisible = true;
+    
+    testCaseBtn.textContent = `用例 ${testCases.length + 1}`;
+    testCaseBtn.style.backgroundColor = '#4CAF50';
+    
+    testCaseBtn.addEventListener('click', () => {
+        isVisible = !isVisible;
+        repeater.toggleWindow();
+        testCaseBtn.style.backgroundColor = isVisible ? '#4CAF50' : '#f44336';
+    });
+    
+    testCases.push(repeater);
+    document.getElementById('status-bar').appendChild(testCaseBtn);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #dragDiv {
+            width: 150px;
+            height: 150px;
+            background: #2196F3;
+            position: absolute;
+            cursor: grab;
+            user-select: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: box-shadow 0.2s;
+        }
+
+        #dragDiv:active {
+            cursor: grabbing;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="dragDiv">拖拽我<br>（支持鼠标/触摸）</div>
+
+    <script>
+        const dragBox = document.getElementById('dragDiv');
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let initialLeft = 0;
+        let initialTop = 0;
+
+        // 鼠标/触摸按下事件
+        dragBox.addEventListener('mousedown', startDrag);
+        dragBox.addEventListener('touchstart', startDrag, { passive: false });
+
+        // 鼠标/触摸移动事件
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('touchmove', drag, { passive: false });
+
+        // 鼠标/触摸释放事件
+        document.addEventListener('mouseup', endDrag);
+        document.addEventListener('touchend', endDrag);
+
+        function startDrag(e) {
+            isDragging = true;
+            
+            // 获取初始位置
+            const rect = dragBox.getBoundingClientRect();
+            initialLeft = rect.left;
+            initialTop = rect.top;
+            
+            // 获取起点坐标
+            startX = e.clientX || e.touches[0].clientX;
+            startY = e.clientY || e.touches[0].clientY;
+            
+            // 阻止默认行为（触摸滚动/文本选择）
+            e.preventDefault();
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+
+            // 计算移动距离
+            const currentX = e.clientX || e.touches[0].clientX;
+            const currentY = e.clientY || e.touches[0].clientY;
+            const dx = currentX - startX;
+            const dy = currentY - startY;
+
+            // 计算新位置（限制在可视区域内）
+            const newLeft = Math.max(0, Math.min(window.innerWidth - dragBox.offsetWidth, initialLeft + dx));
+            const newTop = Math.max(0, Math.min(window.innerHeight - dragBox.offsetHeight, initialTop + dy));
+
+            // 应用新位置
+            dragBox.style.left = newLeft + 'px';
+            dragBox.style.top = newTop + 'px';
+
+            e.preventDefault();
+        }
+
+        function endDrag() {
+            isDragging = false;
+        }
+
+        // 初始化位置居中
+        window.onload = () => {
+            dragBox.style.left = (window.innerWidth - dragBox.offsetWidth)/2 + 'px';
+            dragBox.style.top = (window.innerHeight - dragBox.offsetHeight)/2 + 'px';
+        };
+
+        // 窗口大小变化时保持位置
+        window.addEventListener('resize', () => {
+            const rect = dragBox.getBoundingClientRect();
+            dragBox.style.left = Math.max(0, Math.min(window.innerWidth - dragBox.offsetWidth, rect.left)) + 'px';
+            dragBox.style.top = Math.max(0, Math.min(window.innerHeight - dragBox.offsetHeight, rect.top)) + 'px';
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh - CN">
+
+<head>
+    <meta charset="UTF - 8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>绘图工具</title>
+    <style>
+        body {
+            font-family: Arial, sans - serif;
+            display: flex;
+            flex - direction: column;
+            align - items: center;
+            justify - content: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            margin: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            margin: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        #toolbarA button {
+            background - color: #4CAF50;
+            color: white;
+        }
+
+        #toolbarA button.new - button {
+            background - color: #2196F3;
+        }
+
+        #toolbarA button.highlight {
+            background - color: #FF9800;
+        }
+
+        #toolbarB button {
+            background - color: #FF5722;
+            color: white;
+        }
+
+        canvas {
+            border: 1px solid black;
+            margin: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <input type="text" id="inputBox" placeholder="输入绘图内容">
+    <textarea id="codeBox" placeholder="输入JavaScript代码"></textarea>
+    <div id="toolbarA">
+        <button onclick="draw()">绘制</button>
+        <button onclick="updateButtonCode()">更新代码</button>
+        <button onclick="createNewButton()">新建按钮</button>
+        <button onclick="clearCanvas()">清空画布</button>
+    </div>
+    <div id="toolbarB">
+        <button onclick="insertExampleCode()">插入示例代码</button>
+        <button onclick="clearCodeBox()">清空代码框</button>
+        <button onclick="createNewExample()">新建示例</button>
+    </div>
+    <canvas id="drawingCanvas" width="400" height="400"></canvas>
+    <div id="inputTextDisplay"></div>
+
+    <script>
+        let lastClickedButton;
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        const inputBox = document.getElementById('inputBox');
+        const codeBox = document.getElementById('codeBox');
+        const toolbarA = document.getElementById('toolbarA');
+        const toolbarB = document.getElementById('toolbarB');
+        const inputTextDisplay = document.getElementById('inputTextDisplay');
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const inputText = inputBox.value;
+            if (inputText) {
+                ctx.font = '16px Arial';
+                ctx.fillText(inputText, 10, 20);
+            } else {
+                ctx.font = '16px Arial';
+                ctx.fillText('为空', 10, 20);
+            }
+            inputTextDisplay.textContent = `输入内容: ${inputText || '为空'}`;
+        }
+
+        function updateButtonCode() {
+            if (lastClickedButton) {
+                lastClickedButton.onclick = new Function(codeBox.value);
+                lastClickedButton.classList.add('highlight');
+                lastClickedButton.classList.remove('new - button');
+            }
+        }
+
+        function createNewButton() {
+            const newButton = document.createElement('button');
+            newButton.textContent = '新按钮';
+            newButton.classList.add('new - button');
+            newButton.onclick = function () {
+                draw();
+            };
+            toolbarA.appendChild(newButton);
+            lastClickedButton = newButton;
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            inputTextDisplay.textContent = '输入内容: 为空';
+        }
+
+        function insertExampleCode() {
+            codeBox.value = `ctx.font = '16px Arial';
+ctx.fillText('示例文本', 10, 20);`;
+        }
+
+        function clearCodeBox() {
+            codeBox.value = '';
+        }
+
+        function createNewExample() {
+            const newButton = document.createElement('button');
+            newButton.textContent = '新示例';
+            newButton.onclick = function () {
+                codeBox.value = codeBox.value;
+            };
+            toolbarB.appendChild(newButton);
+        }
+
+        toolbarA.addEventListener('click', function (e) {
+            if (e.target.tagName === 'BUTTON' && e.target!== document.querySelector('#toolbarA button[onclick="clearCanvas()"]')) {
+                lastClickedButton = e.target;
+                Array.from(toolbarA.children).forEach(button => button.classList.remove('highlight', 'new - button'));
+                if (lastClickedButton.classList.contains('new - button')) {
+                    lastClickedButton.classList.add('highlight');
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

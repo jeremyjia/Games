@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>手写签名</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+
+        #canvasContainer {
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin: 20px 0;
+            touch-action: none;
+        }
+
+        canvas {
+            border: 1px solid #ccc;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #clearBtn {
+            background-color: #dc3545;
+        }
+
+        #clearBtn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <h2>请在此签名</h2>
+    <div id="canvasContainer">
+        <canvas id="signatureCanvas"></canvas>
+    </div>
+    <div class="button-group">
+        <button id="saveBtn">保存签名</button>
+        <button id="clearBtn">清除</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('signatureCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        // 初始化画布尺寸
+        function initCanvasSize() {
+            const container = document.getElementById('canvasContainer');
+            canvas.width = Math.min(container.offsetWidth, 600);
+            canvas.height = canvas.width * 0.5;
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+        }
+
+        // 绘图功能
+        function startDrawing(e) {
+            isDrawing = true;
+            [lastX, lastY] = getPosition(e);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const [x, y] = getPosition(e);
+            
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            
+            [lastX, lastY] = [x, y];
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        // 获取坐标（兼容移动端）
+        function getPosition(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return [
+                clientX - rect.left,
+                clientY - rect.top
+            ];
+        }
+
+        // 清除画布
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+
+        // 保存图片
+        document.getElementById('saveBtn').addEventListener('click', () => {
+            const dataURL = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = `signature_${Date.now()}.png`;
+            link.href = dataURL;
+            link.click();
+        });
+
+        // 事件监听（兼容移动端）
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+        canvas.addEventListener('touchstart', startDrawing);
+        canvas.addEventListener('touchmove', draw);
+        canvas.addEventListener('touchend', stopDrawing);
+
+        // 初始化
+        initCanvasSize();
+        window.addEventListener('resize', initCanvasSize);
+
+        // 禁用页面滚动
+        document.body.addEventListener('touchmove', (e) => {
+            if (isDrawing) e.preventDefault();
+        }, { passive: false });
+    </script>
+</body>
+</html>

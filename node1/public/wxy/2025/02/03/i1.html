@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MP3 Waveform Display</title>
+    <style>
+        #waveform {
+            width: 100%;
+            height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>MP3 Waveform Display</h1>
+    <audio id="audio" controls></audio>
+    <div id="waveform"></div>
+
+    <!-- Include Wavesurfer.js CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/3.4.0/wavesurfer.min.css" />
+
+    <!-- Include Wavesurfer.js and its dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/3.4.0/wavesurfer.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var wavesurfer = WaveSurfer.create({
+                container: '#waveform',
+                waveColor: 'violet',
+                progressColor: 'purple'
+            });
+
+            var audio = document.getElementById('audio');
+            var audioUrl = 'https://littleflute.github.io/gt1/mp3/j72_4_4.mp.mp3'; // 替换为你的MP3文件路径
+
+            // 加载音频文件
+            wavesurfer.load(audioUrl);
+
+            // 将音频元素的src设置为相同的URL，以便控件可以播放音频
+            audio.src = audioUrl;
+
+            // 可选：同步播放控制
+            audio.addEventListener('play', function () {
+                wavesurfer.play();
+            });
+            audio.addEventListener('pause', function () {
+                wavesurfer.pause();
+            });
+            wavesurfer.on('play', function () {
+                audio.play();
+            });
+            wavesurfer.on('pause', function () {
+                audio.pause();
+            });
+        });
+    </script>
+</body>
+</html>

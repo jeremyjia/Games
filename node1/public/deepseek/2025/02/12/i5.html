@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音乐播放器</title>
+</head>
+<body>
+    <nav id="mainNav"></nav>
+    <button id="newWindowBtn" style="margin:10px">新建窗口</button>
+    <div id="statusBar" style="position:fixed;bottom:0;width:100%;background:#ddd"></div>
+
+    <script>
+        // 动态生成样式
+        const style = document.createElement('style');
+        style.textContent = `
+            .window {
+                position: fixed;
+                border: 1px solid #333;
+                background: white;
+                box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+                min-width: 300px;
+            }
+            .window-header {
+                padding: 5px;
+                background: #444;
+                color: white;
+                cursor: move;
+            }
+            .beats-container {
+                display: flex;
+                gap: 5px;
+                padding: 10px;
+            }
+            .beat-unit {
+                width: 20px;
+                height: 20px;
+                border: 1px solid #000;
+                transition: background 0.1s;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 初始化导航菜单
+        const mls = ["index.html", "readme.md", "i1.html", "i2.html","i3.html","i4.html"];
+        const nav = document.getElementById('mainNav');
+        mls.forEach(file => {
+            const a = document.createElement('a');
+            a.href = file;
+            a.textContent = file;
+            a.style.margin = '0 10px';
+            nav.appendChild(a);
+        });
+
+        // 窗口管理类
+        class MusicWindow {
+            constructor() {
+                this.window = document.createElement('div');
+                this.window.className = 'window';
+                this.isDragging = false;
+                this.isOpen = true;
+                this.offset = [0, 0];
+                this.player = new MusicPlayer(this);
+                
+                this.initWindow();
+                document.body.appendChild(this.window);
+                this.addControlButton();
+            }
+
+            initWindow() {
+                this.window.innerHTML = `
+                    <div class="window-header">音乐窗口</div>
+                    <div class="content">
+                        <button class="playBtn">播放</button>
+                        <input type="number" class="bpm" value="60" min="30" max="240">
+                        <input type="url" class="mp3Url" value="https://littleflute.github.io/gt1/mp3/j72_4_4.mp3">
+                        <div class="beats-container"></div>
+                    </div>
+                `;
+
+                // 初始化节拍显示
+                const container = this.window.querySelector('.beats-container');
+                for (let i = 0; i < 4; i++) {
+                    const div = document.createElement('div');
+                    div.style.backgroundColor = `hsl(${i * 90}, 50%, 80%)`;
+                    for (let j = 0; j < 4; j++) {
+                        const btn = document.createElement('div');
+                        btn.className = 'beat-unit';
+                        div.appendChild(btn);
+                    }
+                    container.appendChild(div);
+                }
+
+                // 事件绑定
+                this.window.querySelector('.playBtn').addEventListener('click', () => this.player.togglePlay());
+                this.window.querySelector('.bpm').addEventListener('change', e => this.player.setBPM(e.target.value));
+                this.window.querySelector('.mp3Url').addEventListener('change', e => this.player.setAudioSrc(e.target.value));
+                this.window.querySelector('.window-header').addEventListener('mousedown', this.startDrag.bind(this));
+            }
+
+            startDrag(e) {
+                this.isDragging = true;
+                this.offset = [
+                    this.window.offsetLeft - e.clientX,
+                    this.window.offsetTop - e.clientY
+                ];
+                document.addEventListener('mousemove', this.drag.bind(this));
+                document.addEventListener('mouseup', this.stopDrag.bind(this));
+            }
+
+            drag(e) {
+                if (this.isDragging) {
+                    this.window.style.left = (e.clientX + this.offset[0]) + 'px';
+                    this.window.style.top = (e.clientY + this.offset[1]) + 'px';
+                }
+            }
+
+            stopDrag() {
+                this.isDragging = false;
+                document.removeEventListener('mousemove', this.drag);
+            }
+
+            addControlButton() {
+                const btn = document.createElement('button');
+                btn.textContent = '窗口控制';
+                btn.style.backgroundColor = '#fff';
+                btn.onclick = () => {
+                    this.isOpen = !this.isOpen;
+                    this.window.style.display = this.isOpen ? 'block' : 'none';
+                    btn.style.backgroundColor = this.isOpen ? '#fff' : '#f00';
+                };
+                document.getElementById('statusBar').appendChild(btn);
+            }
+        }
+
+        // 音乐播放器类
+        class MusicPlayer {
+            constructor(window) {
+                this.window = window;
+                this.audio = new Audio();
+                this.isPlaying = false;
+                this.bpm = 60;
+                this.beatIndex = 0;
+                this.animationFrame = null;
+                this.audio.src = 'https://littleflute.github.io/gt1/mp3/j72_4_4.mp3';
+            }
+
+            togglePlay() {
+                if (this.isPlaying) {
+                    this.pause();
+                } else {
+                    this.play();
+                }
+            }
+
+            play() {
+                this.audio.play();
+                this.isPlaying = true;
+                this.updateBeats();
+            }
+
+            pause() {
+                this.audio.pause();
+                this.isPlaying = false;
+                cancelAnimationFrame(this.animationFrame);
+            }
+
+            setBPM(value) {
+                this.bpm = parseInt(value) || 60;
+            }
+
+            setAudioSrc(url) {
+                this.audio.src = url;
+            }
+
+            updateBeats() {
+                if (!this.isPlaying) return;
+                
+                const beatDuration = 60000 / this.bpm / 4;
+                const units = this.window.window.querySelectorAll('.beat-unit');
+                
+                units.forEach(u => u.style.backgroundColor = '#fff');
+                const currentUnit = units[this.beatIndex % 16];
+                currentUnit.style.backgroundColor = '#ff0000';
+                
+                this.beatIndex++;
+                setTimeout(() => this.updateBeats(), beatDuration);
+            }
+        }
+
+        // 创建新窗口
+        document.getElementById('newWindowBtn').addEventListener('click', () => {
+            new MusicWindow();
+        });
+
+        // 移动端触摸事件处理
+        document.addEventListener('touchstart', e => {
+            if (e.target.closest('.window-header')) {
+                const header = e.target.closest('.window-header');
+                const win = header.parentElement;
+                win.style.left = `${e.touches[0].clientX - 50}px`;
+                win.style.top = `${e.touches[0].clientY - 20}px`;
+            }
+        }, { passive: true });
+    </script>
+</body>
+</html>

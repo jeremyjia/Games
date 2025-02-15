@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>文本对比工具</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/diff@5.0.0/dist/diff.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="text-boxes">
+            <textarea id="text1" placeholder="输入原始文本..."></textarea>
+            <textarea id="text2" placeholder="输入修改后的文本..."></textarea>
+        </div>
+        
+        <div class="buttons">
+            <button onclick="compareText()">对比文本</button>
+            <button onclick="generateWord()">生成Word文档</button>
+        </div>
+
+        <div id="diffResult"></div>
+        <div id="downloadLink"></div>
+    </div>
+
+    <script>
+        let diffs = [];
+
+        function compareText() {
+            try {
+                const text1 = document.getElementById('text1').value;
+                const text2 = document.getElementById('text2').value;
+                
+                // 添加输入校验
+                if (!text1 || !text2) {
+                    alert('请输入需要对比的文本！');
+                    return;
+                }
+
+                // 使用更精确的diff算法
+                diffs = Diff.diffChars(text1, text2); // 改为字符级对比
+                
+                const display = diffs.map(part => {
+                    const className = part.added ? 'added' : part.removed ? 'removed' : '';
+                    return `<span class="${className}">${part.value}</span>`;
+                }).join('');
+                
+                document.getElementById('diffResult').innerHTML = display;
+                
+                // 添加视觉反馈
+                document.getElementById('diffResult').style.backgroundColor = '#fff3e0';
+                setTimeout(() => {
+                    document.getElementById('diffResult').style.backgroundColor = '#f9f9f9';
+                }, 200);
+            } catch (error) {
+                console.error('对比出错:', error);
+                alert('文本对比失败，请检查控制台日志');
+            }
+        }
+
+        async function generateWord() {
+            if (diffs.length === 0) {
+                alert('请先进行文本对比！');
+                return;
+            }
+
+            try {
+                const response = await fetch('/generate-doc', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ diffs })
+                });
+
+                const data = await response.json();
+                const linkContainer = document.getElementById('downloadLink');
+                linkContainer.innerHTML = `
+                    <a href="${data.url}" class="download-link">
+                        ↓ 下载对比文档（${data.url.split('/').pop()}）
+                    </a>
+                `;
+            } catch (error) {
+                alert('生成文档失败');
+            }
+        }
+    </script>
+</body>
+</html>

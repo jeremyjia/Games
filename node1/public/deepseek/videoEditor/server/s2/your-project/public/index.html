@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频生成器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .video-container {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        video {
+            width: 100%;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        .status {
+            margin-top: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>视频生成演示</h1>
+    <button id="generateBtn">生成演示视频</button>
+    <div class="status" id="status"></div>
+    
+    <div class="video-container" id="videoContainer" style="display: none;">
+        <h2>生成的视频：</h2>
+        <video controls id="videoPlayer">
+            <source id="videoSource" type="video/mp4">
+            您的浏览器不支持视频播放
+        </video>
+    </div>
+
+    <script>
+        const btn = document.getElementById('generateBtn');
+        const status = document.getElementById('status');
+        const videoContainer = document.getElementById('videoContainer');
+        const videoPlayer = document.getElementById('videoPlayer');
+        const videoSource = document.getElementById('videoSource');
+
+        const testData = {
+            frames: [
+                {"background": "操场", "objects": []},
+                {"background": "操场", "objects": []},
+                {"background": "马路边", "objects": []},
+                {"background": "马路边", "objects": []},
+                {"background": "树林", "objects": []},
+                {"background": "海边", "objects": []},
+                {"background": "马路边", "objects": []},
+                {"background": "马路边", "objects": []},
+                {"background": "树林", "objects": []}
+            ],
+            fileName: "demo.mp4",
+            fps: 1
+        };
+
+        async function generateVideo() {
+            btn.disabled = true;
+            status.textContent = "视频生成中，请稍候...";
+            
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                status.textContent = "视频生成成功！";
+                
+                // 更新视频源
+                videoSource.src = result.downloadUrl + '?t=' + Date.now(); // 添加时间戳避免缓存
+                videoPlayer.load();
+                videoContainer.style.display = 'block';
+                videoPlayer.play();
+
+            } catch (error) {
+                console.error('生成失败:', error);
+                status.textContent = `生成失败: ${error.message}`;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        btn.addEventListener('click', generateVideo);
+    </script>
+</body>
+</html>

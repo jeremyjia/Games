@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>原生JS K线图</title>
+    <style>
+        .container {
+            width: 1000px;
+            margin: 20px auto;
+        }
+        canvas {
+            border: 1px solid #ddd;
+            background: #fff;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button onclick="startSimulation()">开始模拟</button>
+        <button onclick="stopSimulation()">停止模拟</button>
+    </div>
+    <div class="container">
+        <canvas id="chart"></canvas>
+    </div>
+
+<script>
+const canvas = document.getElementById('chart');
+const ctx = canvas.getContext('2d');
+canvas.width = 1000;
+canvas.height = 600;
+
+// 配置参数
+const config = {
+    candleWidth: 12,      // K线宽度
+    maxDataPoints: 60,    // 最大显示数据量
+    padding: {
+        top: 40,
+        right: 40,
+        bottom: 40,
+        left: 60
+    }
+};
+
+let data = [];
+let simulationInterval;
+let currentPrice = 100;
+let currentDate = Date.now();
+
+// 生成初始数据
+function generateInitialData() {
+    data = [];
+    for (let i = 0; i < config.maxDataPoints; i++) {
+        data.push(generateCandle());
+    }
+}
+
+// 生成单根K线数据
+function generateCandle() {
+    const open = currentPrice;
+    const change = (Math.random() - 0.5) * 10;
+    const close = open + change;
+    const high = Math.max(open, close) + Math.random() * 8;
+    const low = Math.min(open, close) - Math.random() * 8;
+    const timestamp = currentDate;
+    
+    currentPrice = close;
+    currentDate += 86400000; // 增加一天
+    
+    return { timestamp, open, high, low, close };
+}
+
+// 绘制图表
+function drawChart() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 计算价格范围
+    const priceValues = data.flatMap(d => [d.high, d.low]);
+    const minPrice = Math.min(...priceValues);
+    const maxPrice = Math.max(...priceValues);
+    
+    // 计算绘图区域
+    const plotWidth = canvas.width - config.padding.left - config.padding.right;
+    const plotHeight = canvas.height - config.padding.top - config.padding.bottom;
+    
+    // 坐标映射函数
+    const xScale = i => config.padding.left + (i * plotWidth) / (config.maxDataPoints - 1);
+    const yScale = price => {
+        return canvas.height - config.padding.bottom - 
+            ((price - minPrice) / (maxPrice - minPrice)) * plotHeight;
+    };
+    
+    // 绘制K线
+    data.forEach((candle, i) => {
+        const x = xScale(i);
+        
+        // 绘制影线
+        ctx.beginPath();
+        ctx.moveTo(x, yScale(candle.high));
+        ctx.lineTo(x, yScale(candle.low));
+        ctx.strokeStyle = '#666';
+        ctx.stroke();
+        
+        // 绘制实体
+        const bodyTop = yScale(Math.max(candle.open, candle.close));
+        const bodyBottom = yScale(Math.min(candle.open, candle.close));
+        const height = bodyBottom - bodyTop || 1; // 防止零高度
+        
+        ctx.fillStyle = candle.close >= candle.open ? '#00da3c' : '#ec0000';
+        ctx.fillRect(
+            x - config.candleWidth/2,
+            bodyTop,
+            config.candleWidth,
+            height
+        );
+    });
+    
+    // 绘制坐标轴
+    drawAxes(minPrice, maxPrice);
+}
+
+// 绘制坐标轴
+function drawAxes(minPrice, maxPrice) {
+    ctx.save();
+    ctx.strokeStyle = '#000';
+    ctx.fillStyle = '#000';
+    ctx.font = '12px Arial';
+    
+    // Y轴
+    ctx.beginPath();
+    ctx.moveTo(config.padding.left, config.padding.top);
+    ctx.lineTo(config.padding.left, canvas.height - config.padding.bottom);
+    ctx.stroke();
+    
+    // Y轴标签
+    const priceSteps = 5;
+    for (let i = 0; i <= priceSteps; i++) {
+        const price = minPrice + (maxPrice - minPrice) * (i/priceSteps);
+        const y = yScale(price);
+        
+        ctx.fillText(price.toFixed(2), 10, y + 4);
+    }
+    
+    // X轴
+    ctx.beginPath();
+    ctx.moveTo(config.padding.left, canvas.height - config.padding.bottom);
+    ctx.lineTo(canvas.width - config.padding.right, canvas.height - config.padding.bottom);
+    ctx.stroke();
+    
+    // 时间标签（简化的时间显示）
+    const firstDate = new Date(data[0].timestamp);
+    const lastDate = new Date(data[data.length -1].timestamp);
+    
+    ctx.fillText(firstDate.toISOString().slice(0,10), 
+        config.padding.left, canvas.height - 20);
+    ctx.fillText(lastDate.toISOString().slice(0,10), 
+        canvas.width - config.padding.right - 80, canvas.height - 20);
+    
+    ctx.restore();
+}
+
+function updateData() {
+    data.shift(); // 移除旧数据
+    data.push(generateCandle());
+    drawChart();
+}
+
+function startSimulation() {
+    if (!simulationInterval) {
+        simulationInterval = setInterval(updateData, 1000);
+    }
+}
+
+function stopSimulation() {
+    clearInterval(simulationInterval);
+    simulationInterval = null;
+}
+
+// 初始化
+generateInitialData();
+drawChart();
+</script>
+</body>
+</html>

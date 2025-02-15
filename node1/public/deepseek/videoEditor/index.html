@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>videoEditor</title>
+</head>
+<body>
+    <nav class="navbar">
+        <ul class="nav-menu">
+            <li><a href="#">v0.21</a></li>
+            <li><a href="https://www.deepseek.com" target="_blank" rel="noopener">DeepSeek 首页</a></li>
+            <li><a href="../">上级目录</a></li>
+            <li><a href="c1/">[c1]</a></li>
+            <li><a href="c2/">[c2]</a></li>
+            <li><a href="c3/">[c3]</a></li>
+            <li><a href="i1.html">i1.html</a></li>
+            <li><a href="i2.html">i2.html</a></li>
+            <li><a href="i3.html">i3.html</a></li>
+            <li><a href="i4.html">i4.html</a></li>
+            <li><a href="i5.html">i5.html</a></li>
+            <li><a href="i5a.html">i5a.html</a></li>
+            <li><a href="i6.html">i6.html</a></li>
+        </ul>
+    </nav>
+    
+    <div class="main-content">
+        <h1>视频编辑器</h1>
+        <p>请选择上方导航菜单开始操作</p>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 创建样式元素
+        const style = document.createElement('style');
+        style.textContent = `
+            .navbar {
+                width: 100%;
+                background: #1a1a1a;
+                position: fixed;
+                top: 0;
+                z-index: 1000;
+                padding: 12px 0;
+            }
+            
+            .nav-menu {
+                list-style: none;
+                display: flex;
+                justify-content: center;
+                gap: 20px;
+                margin: 0;
+                padding: 0 15px;
+                flex-wrap: wrap;
+            }
+            
+            .nav-menu a {
+                color: white;
+                text-decoration: none;
+                font-family: Arial, sans-serif;
+                font-size: 0.9rem;
+                padding: 8px 12px;
+                border-radius: 4px;
+                transition: all 0.3s;
+            }
+            
+            .nav-menu a:hover {
+                color: #4CAF50;
+                background: rgba(255,255,255,0.1);
+            }
+            
+            @media (max-width: 768px) {
+                .nav-menu {
+                    gap: 10px;
+                    justify-content: flex-start;
+                    overflow-x: auto;
+                    -webkit-overflow-scrolling: touch;
+                    padding-bottom: 5px;
+                }
+                
+                .nav-menu::-webkit-scrollbar {
+                    height: 4px;
+                }
+                
+                .nav-menu::-webkit-scrollbar-thumb {
+                    background: #4CAF50;
+                }
+            }
+            
+            body {
+                padding-top: 56px;
+                min-height: 100vh;
+                margin: 0;
+                background: #f0f0f0;
+                touch-action: manipulation;
+            }
+            
+            .main-content {
+                max-width: 1200px;
+                width: 100%;
+                padding: 20px;
+                text-align: center;
+            }
+        `;
+        
+        // 插入到文档头部
+        document.head.appendChild(style);
+    });
+    </script>
+</body>
+</html>

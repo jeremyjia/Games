@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多区块垂直拖动</title>
+    <style>
+        /* 通用容器样式 */
+        .scroll-container {
+            position: fixed;
+            width: 200px;
+            height: 300px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            overflow: hidden;
+            touch-action: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* 第一个容器定位 */
+        #container1 {
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* 第二个容器定位 */
+        #container2 {
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .draggable-content {
+            position: absolute;
+            width: 100%;
+            cursor: grab;
+            user-select: none;
+            transition: transform 0.2s;
+        }
+
+        .draggable-content.active {
+            cursor: grabbing;
+            transition: none;
+        }
+
+        /* 不同内容样式 */
+        #content1 {
+            height: 600px;
+            background: linear-gradient(180deg, #2196F3, #4CAF50);
+        }
+
+        #content2 {
+            height: 800px;
+            background: linear-gradient(180deg, #FF5722, #FFC107);
+        }
+
+        .scroll-hint {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1), transparent);
+            pointer-events: none;
+        }
+        .scroll-hint.bottom { bottom: 0; transform: rotate(180deg); }
+    </style>
+</head>
+<body>
+    <!-- 第一个可拖动容器 -->
+    <div class="scroll-container" id="container1">
+        <div class="scroll-hint top"></div>
+        <div class="scroll-hint bottom"></div>
+        <div class="draggable-content" id="content1">
+            <div style="padding: 20px; color: white;">
+                <h3>蓝色区块</h3>
+                <p>上下拖动查看内容</p>
+                <div style="height: 400px"></div>
+                <p>底部内容1</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第二个可拖动容器 -->
+    <div class="scroll-container" id="container2">
+        <div class="scroll-hint top"></div>
+        <div class="scroll-hint bottom"></div>
+        <div class="draggable-content" id="content2">
+            <div style="padding: 20px; color: white;">
+                <h3>橙色区块</h3>
+                <p>上下拖动查看内容</p>
+                <div style="height: 600px"></div>
+                <p>底部内容2</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class DraggableVertical {
+            constructor(containerId, contentId) {
+                this.container = document.getElementById(containerId);
+                this.content = document.getElementById(contentId);
+                this.isDragging = false;
+                this.startY = 0;
+                this.currentScroll = 0;
+                this.velocity = 0;
+                this.lastPos = 0;
+                this.lastTime = 0;
+                
+                this.init();
+            }
+
+            init() {
+                this.updateScrollRange();
+                this.addEventListeners();
+                window.addEventListener('resize', () => this.handleResize());
+            }
+
+            updateScrollRange() {
+                const containerHeight = this.container.offsetHeight;
+                const contentHeight = this.content.offsetHeight;
+                this.maxY = containerHeight - contentHeight;
+            }
+
+            addEventListeners() {
+                const startDrag = (e) => this.handleStart(e);
+                const moveHandler = (e) => this.handleMove(e);
+                const endDrag = () => this.handleEnd();
+
+                this.content.addEventListener('mousedown', startDrag);
+                this.content.addEventListener('touchstart', startDrag);
+                document.addEventListener('mousemove', moveHandler);
+                document.addEventListener('touchmove', moveHandler, { passive: false });
+                document.addEventListener('mouseup', endDrag);
+                document.addEventListener('touchend', endDrag);
+                document.addEventListener('touchcancel', endDrag);
+            }
+
+            handleStart(e) {
+                this.isDragging = true;
+                this.startY = this.getClientY(e);
+                this.currentScroll = this.content.offsetTop;
+                this.content.classList.add('active');
+                e.preventDefault();
+
+                this.velocity = 0;
+                this.lastPos = this.currentScroll;
+                this.lastTime = Date.now();
+            }
+
+            handleMove(e) {
+                if (!this.isDragging) return;
+
+                const deltaY = this.getClientY(e) - this.startY;
+                let newPosition = this.currentScroll + deltaY;
+
+                // 边界约束和弹性效果
+                newPosition = this.applyBoundary(newPosition);
+                this.content.style.top = `${newPosition}px`;
+
+                // 速度计算
+                const currentTime = Date.now();
+                if (this.lastTime !== 0) {
+                    const deltaTime = currentTime - this.lastTime;
+                    this.velocity = (newPosition - this.lastPos) / deltaTime;
+                }
+                this.lastPos = newPosition;
+                this.lastTime = currentTime;
+            }
+
+            handleEnd() {
+                this.isDragging = false;
+                this.content.classList.remove('active');
+                this.applyInertia();
+            }
+
+            applyBoundary(position) {
+                let newPosition = Math.min(0, Math.max(this.maxY, position));
+                
+                // 弹性效果
+                if (newPosition > 0 || newPosition < this.maxY) {
+                    const overshoot = newPosition > 0 ? 
+                        newPosition : 
+                        newPosition - this.maxY;
+                    newPosition -= overshoot * 0.3;
+                }
+                return newPosition;
+            }
+
+            applyInertia() {
+                if (Math.abs(this.velocity) < 0.1) return;
+
+                const animate = () => {
+                    if (!this.isDragging && Math.abs(this.velocity) >= 0.1) {
+                        let newPosition = this.content.offsetTop + this.velocity * 16;
+                        newPosition = this.applyBoundary(newPosition);
+                        
+                        this.content.style.top = `${newPosition}px`;
+                        this.velocity *= 0.92;
+                        
+                        requestAnimationFrame(animate);
+                    }
+                };
+                requestAnimationFrame(animate);
+            }
+
+            handleResize() {
+                this.updateScrollRange();
+                const currentTop = parseFloat(this.content.style.top) || 0;
+                this.content.style.top = `${Math.min(0, Math.max(this.maxY, currentTop))}px`;
+            }
+
+            getClientY(e) {
+                return e.touches ? e.touches[0].clientY : e.clientY;
+            }
+        }
+
+        // 初始化两个独立实例
+        const draggable1 = new DraggableVertical('container1', 'content1');
+        const draggable2 = new DraggableVertical('container2', 'content2');
+    </script>
+</body>
+</html>

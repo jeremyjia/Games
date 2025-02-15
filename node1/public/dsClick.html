@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .contour {
+            position: absolute;
+            border: 2px solid red;
+            background-color: transparent;
+            pointer-events: none; /* 允许点击穿透 */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            transform: translate(-20px, -20px);
+        }
+        #dataPanel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div id="dataPanel">点击数据将显示在这里</div>
+
+    <script>
+        // 存储轮廓数据的数组
+        const clickData = [];
+
+        // 点击事件处理
+        document.addEventListener('click', function(e) {
+            // 获取点击坐标
+            const x = e.clientX;
+            const y = e.clientY;
+            
+            // 创建轮廓元素
+            createContour(x, y);
+            
+            // 记录数据
+            const timestamp = new Date().toISOString();
+            clickData.push({ x, y, timestamp });
+            
+            // 更新数据显示
+            updateDataDisplay();
+        });
+
+        // 创建可视化轮廓
+        function createContour(x, y) {
+            const contour = document.createElement('div');
+            contour.className = 'contour';
+            contour.style.left = `${x}px`;
+            contour.style.top = `${y}px`;
+            
+            document.body.appendChild(contour);
+            
+            // 添加自动消失动画
+            setTimeout(() => {
+                contour.remove();
+            }, 1000);
+        }
+
+        // 更新数据面板显示
+        function updateDataDisplay() {
+            const dataPanel = document.getElementById('dataPanel');
+            dataPanel.innerHTML = '<strong>最近5次点击：</strong><br>';
+            
+            clickData.slice(-5).reverse().forEach(point => {
+                dataPanel.innerHTML += 
+                    `X: ${point.x}, Y: ${point.y}<br>
+                    ${point.timestamp}<br><br>`;
+            });
+        }
+
+        // 导出数据功能
+        function exportData() {
+            const dataStr = JSON.stringify(clickData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'click_data.json';
+            a.click();
+        }
+
+        // 添加导出按钮
+        const exportBtn = document.createElement('button');
+        exportBtn.textContent = '导出数据';
+        exportBtn.style.position = 'fixed';
+        exportBtn.style.top = '20px';
+        exportBtn.style.left = '20px';
+        exportBtn.onclick = exportData;
+        document.body.appendChild(exportBtn);
+    </script>
+</body>
+</html>

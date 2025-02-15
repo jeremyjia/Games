@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Walking Puppet</title>
+    <style>
+        #puppet-container {
+    position: relative;
+    width: 100px;
+    height: 150px;
+    margin: 50px auto;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    overflow: hidden;
+}
+
+.puppet {
+    position: absolute;
+    width: 50px;
+    height: 100px;
+    bottom: 0;
+    left: 25px;
+    background-color: #333;
+    border-radius: 10px;
+}
+
+.leg {
+    position: absolute;
+    width: 10px;
+    height: 30px;
+    background-color: #333;
+    bottom: 0;
+}
+
+.left-leg {
+    left: 15px;
+}
+
+.right-leg {
+    right: 15px;
+}
+
+@keyframes walk {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(20px);
+    }
+}
+
+.walking {
+    animation: walk 2s infinite;
+}
+    </style>
+</head>
+<body>
+    <div id="puppet-container"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('puppet-container');
+
+    // Create puppet body
+    const puppet = document.createElement('div');
+    puppet.classList.add('puppet');
+
+    // Create legs
+    const leftLeg = document.createElement('div');
+    leftLeg.classList.add('leg', 'left-leg');
+
+    const rightLeg = document.createElement('div');
+    rightLeg.classList.add('leg', 'right-leg');
+
+    // Append legs to puppet
+    puppet.appendChild(leftLeg);
+    puppet.appendChild(rightLeg);
+
+    // Append puppet to container
+    container.appendChild(puppet);
+
+    // Add walking animation to puppet
+    puppet.classList.add('walking');
+
+    // Optionally, you can animate the legs separately for a more realistic walk
+    // This requires more complex timing and keyframe animations
+});
+    </script>
+</body>
+</html>

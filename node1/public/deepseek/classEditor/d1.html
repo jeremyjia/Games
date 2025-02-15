@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JS类设计工坊</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 40px 0 0;
+            font-family: Arial;
+            min-height: 100vh;
+        }
+
+        #nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: #333;
+            color: white;
+            padding: 10px;
+            z-index: 1000;
+        }
+
+        .draggable {
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            min-width: 200px;
+        }
+
+        .drag-header {
+            background: #f0f0f0;
+            padding: 8px;
+            cursor: move;
+            border-bottom: 1px solid #ddd;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .content {
+            padding: 10px;
+        }
+
+        #codeEditor {
+            top: 60px;
+            left: 20px;
+            width: 300px;
+        }
+
+        #classToolbar {
+            top: 60px;
+            right: 20px;
+        }
+
+        #generateToolbar {
+            top: 200px;
+            right: 20px;
+        }
+
+        #canvas {
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            min-height: 200px;
+        }
+
+        button {
+            margin: 5px;
+            padding: 8px 12px;
+            background: #4CAF50;
+            border: none;
+            color: white;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button.active {
+            background: #1B5E20;
+            box-shadow: 0 0 0 2px #4CAF50,
+                        0 0 12px rgba(76,175,80,0.5);
+            transform: scale(1.05);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            margin: 5px 0;
+            padding: 8px;
+            border: 1px solid #ddd;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <nav id="nav">
+        <a href="https://www.deepseek.com" style="color: white; text-decoration: none;">DeepSeek 首页</a>
+        <a href="#" style="color: rgb(114, 196, 244); text-decoration: none;">d1.html v3.11</a>
+        <a href=".." style="color: rgb(237, 87, 170); text-decoration: none;">[..]</a>
+    </nav>
+
+    <div id="codeEditor" class="draggable">
+        <div class="drag-header">代码编辑器</div>
+        <div class="content">
+            <textarea id="codeArea"></textarea>
+            <div class="button-group">
+                <button onclick="updateClassCode()">更新代码</button>
+                <button onclick="clearCode()" style="background: #f44336;">清除代码</button>
+                <button onclick="replaceCode()" style="background: #2196F3;">替换字符串</button>
+                <button onclick="clearN()" style="background: #2381d9;">清除\n</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="classToolbar" class="draggable">
+        <div class="drag-header">类工具箱</div>
+        <div class="content">
+            <button data-class="Animal" data-code="class Animal {\n  constructor(name) {\n    this.name = name;\n  }\n\n  speak() {\n    return '...';\n  }\n}">Animal</button>
+            <button data-class="Car" data-code="class Car {\n  constructor(brand) {\n    this.brand = brand;\n  }\n\n  drive() {\n    return 'Driving';\n  }\n}">Car</button>
+        </div>
+    </div>
+
+    <div id="generateToolbar" class="draggable">
+        <div class="drag-header">实例生成器</div>
+        <div class="content">
+            <button onclick="generateInstance(0)">创建Animal</button>
+            <button onclick="generateInstance(1)">创建Car</button>
+        </div>
+    </div>
+
+    <div id="canvas"></div>
+
+    <script>
+        // 拖拽功能
+        let dragElement = null;
+        let posX = 0, posY = 0;
+
+        document.querySelectorAll('.draggable').forEach(element => {
+            const header = element.querySelector('.drag-header');
+            
+            function startDrag(e) {
+                dragElement = element;
+                posX = (e.clientX || e.touches[0].clientX) - element.offsetLeft;
+                posY = (e.clientY || e.touches[0].clientY) - element.offsetTop;
+            }
+
+            function doDrag(e) {
+                if (!dragElement) return;
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                
+                if (clientX && clientY) {
+                    dragElement.style.left = (clientX - posX) + 'px';
+                    dragElement.style.top = (clientY - posY) + 'px';
+                }
+            }
+
+            function stopDrag() {
+                dragElement = null;
+            }
+
+            header.addEventListener('mousedown', startDrag);
+            header.addEventListener('touchstart', startDrag);
+            document.addEventListener('mousemove', doDrag);
+            document.addEventListener('touchmove', doDrag);
+            document.addEventListener('mouseup', stopDrag);
+            document.addEventListener('touchend', stopDrag);
+        });
+
+        // 类代码管理
+        let currentClassBtn = null;
+        
+        document.querySelectorAll('#classToolbar button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#classToolbar button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentClassBtn = btn;
+                document.getElementById('codeArea').value = btn.dataset.code;
+            });
+        });
+
+        function updateClassCode() {
+            if (currentClassBtn) {
+                currentClassBtn.dataset.code = document.getElementById('codeArea').value;
+            }
+        }
+
+        function clearCode() {
+            document.getElementById('codeArea').value = '';
+        }
+
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function clearN(){
+            try {
+                const find = '\\n';
+                const replaceWith = '';
+                const textarea = document.getElementById('codeArea');
+                const regex = new RegExp(escapeRegExp(find), 'g');
+                textarea.value = textarea.value.replace(regex, replaceWith);
+            } catch (e) {
+                alert('替换失败：' + e.message);
+            }
+        }
+        function replaceCode() {
+            const find = prompt('请输入要查找的字符串：');
+            if (find === null) return;
+            
+            const replaceWith = prompt('请输入替换后的字符串：') || '';
+            const textarea = document.getElementById('codeArea');
+            
+            try {
+                const regex = new RegExp(escapeRegExp(find), 'g');
+                textarea.value = textarea.value.replace(regex, replaceWith);
+            } catch (e) {
+                alert('替换失败：' + e.message);
+            }
+        }
+
+        // 实例生成
+        function generateInstance(index) {
+            const classBtn = document.querySelectorAll('#classToolbar button')[index];
+            try {
+                const ClassConstructor = new Function(`return ${classBtn.dataset.code}`)();
+                const instance = new ClassConstructor();
+                
+                const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(instance))
+                    .filter(m => typeof instance[m] === 'function' && m !== 'constructor');
+                
+                const instanceDiv = document.createElement('div');
+                instanceDiv.className = 'instance';
+                instanceDiv.innerHTML = `
+                    <h3>${classBtn.textContent} 实例</h3>
+                    <ul>
+                        ${methods.map(m => `<li>${m}()</li>`).join('')}
+                    </ul>
+                `;
+                
+                document.getElementById('canvas').appendChild(instanceDiv);
+            } catch (e) {
+                alert('生成实例失败: ' + e.message);
+            }
+        }
+    </script>
+</body>
+</html>

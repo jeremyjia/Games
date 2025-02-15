@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>简单场景编辑器</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        #container {
+            display: grid;
+            grid-template-columns: 120px 1fr 200px;
+            height: 100vh;
+        }
+        #toolbar { background: #f0f0f0; padding: 10px; }
+        #canvas-container { position: relative; }
+        #main-canvas { border: 1px solid #ccc; }
+        #property-panel { background: #f8f8f8; padding: 10px; }
+        .obj-type { 
+            padding: 8px; 
+            margin: 4px; 
+            border: 1px solid #ccc;
+            cursor: move;
+            background: white;
+        }
+        .prop-item { margin: 10px 0; }
+        #main-canvas {
+            display: block;
+            border: 2px solid #333;
+            background: #87CEEB;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <!-- 左侧工具栏 -->
+        <div id="toolbar">
+            <div class="obj-type" data-type="car">🚗 汽车</div>
+            <div class="obj-type" data-type="cloud">☁️ 云</div>
+            <div class="obj-type" data-type="tree">🌳 树</div>
+        </div>
+
+        <!-- 主画布 -->
+        <div id="canvas-container">
+            <canvas id="main-canvas"></canvas>
+        </div>
+
+        <!-- 右侧属性面板 -->
+        <div id="property-panel">
+            <h3>属性</h3>
+            <div id="props-content"></div>
+            <button onclick="exportData()">导出数据</button>
+            <pre id="output"></pre>
+        </div>
+    </div>
+
+<script>
+const canvas = document.getElementById('main-canvas');
+const ctx = canvas.getContext('2d');
+let isDragging = false;
+let selectedObj = null;
+let offsetX = 0, offsetY = 0;
+
+// 初始化画布尺寸
+canvas.width = 800;
+canvas.height = 600;
+
+// 场景数据
+const scene = {
+    background: '#87CEEB',
+    objects: []
+};
+
+// 对象模板
+const templates = {
+    car: { width: 60, height: 30, color: '#FF4500' },
+    cloud: { width: 80, height: 40, color: '#FFFFFF', density: 0.7 },
+    tree: { width: 40, height: 80, color: '#228B22', trunkColor: '#8B4513' }
+};
+
+// 初始化事件监听
+document.querySelectorAll('.obj-type').forEach(item => {
+    item.addEventListener('mousedown', startAddObject);
+});
+
+canvas.addEventListener('mousedown', startDrag);
+canvas.addEventListener('mousemove', dragObject);
+canvas.addEventListener('mouseup', endDrag);
+canvas.addEventListener('click', selectObject);
+
+// 主渲染循环
+function render() {
+    console.log(2);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 绘制背景
+    ctx.fillStyle = scene.background;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // 绘制对象
+    scene.objects.forEach(obj => {
+        ctx.fillStyle = obj.color;
+        switch(obj.type) {
+            case 'car':
+                ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
+                break;
+            case 'cloud':
+                drawCloud(obj);
+                break;
+            case 'tree':
+                drawTree(obj);
+                break;
+        }
+        
+        // 绘制选中框
+        if (obj === selectedObj) {
+            ctx.strokeStyle = '#FF0000';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(obj.x-2, obj.y-2, obj.width+4, obj.height+4);
+        }
+    });
+}
+
+// 修复坐标计算问题
+function startAddObject(e) {
+    const type = e.target.dataset.type;
+    const rect = canvas.getBoundingClientRect();
+    
+    // 计算正确的画布坐标
+    const scaleX = canvas.width / canvas.offsetWidth;
+    const scaleY = canvas.height / canvas.offsetHeight;
+    
+    const x = (e.clientX - rect.left) * scaleX - templates[type].width/2;
+    const y = (e.clientY - rect.top) * scaleY - templates[type].height/2;
+    
+    const newObj = {
+        type,
+        x: Math.max(0, Math.min(x, canvas.width - templates[type].width)),  // 边界限制
+        y: Math.max(0, Math.min(y, canvas.height - templates[type].height)),
+        ...templates[type]
+    };
+    
+    scene.objects.push(newObj);
+    console.log('Added:', newObj);  // 调试日志
+    render();
+}
+// 添加初始化检查
+canvas.width = 800;
+canvas.height = 600;
+console.log('Canvas size:', canvas.width, canvas.height);  // 确认尺寸
+// 添加帧率监控
+let lastRender = Date.now();
+function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 绘制背景
+    ctx.fillStyle = scene.background;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // 绘制所有对象
+    scene.objects.forEach(obj => {
+        ctx.save();
+        drawObject(obj);
+        ctx.restore();
+    });
+    
+    // 绘制选中框
+    if (selectedObj) {
+        ctx.strokeStyle = '#FF0000';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(
+            selectedObj.x - 2,
+            selectedObj.y - 2,
+            selectedObj.width + 4,
+            selectedObj.height + 4
+        );
+    }
+    
+    // 显示帧率
+    const now = Date.now();
+    const fps = 1000 / (now - lastRender);
+    lastRender = now;
+    ctx.fillStyle = '#000';
+    ctx.fillText(`FPS: ${fps.toFixed(1)}`, 10, 20);
+}
+
+// 添加事件监听容错
+window.addEventListener('load', () => {
+    document.querySelectorAll('.obj-type').forEach(item => {
+        item.addEventListener('mousedown', startAddObject);
+    });
+});
+// 选择对象
+function selectObject(e) {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    selectedObj = scene.objects.find(obj => 
+        x > obj.x && x < obj.x + obj.width &&
+        y > obj.y && y < obj.y + obj.height
+    );
+    
+    updatePropertyPanel();
+    render();
+}
+
+// 更新属性面板
+function updatePropertyPanel() {
+    const panel = document.getElementById('props-content');
+    if (!selectedObj) {
+        panel.innerHTML = '请选择对象';
+        return;
+    }
+    
+    let html = `
+        <div class="prop-item">
+            <label>X: <input type="number" value="${selectedObj.x}" 
+                   onchange="updateProp('x', this.value)"></label>
+        </div>
+        <div class="prop-item">
+            <label>Y: <input type="number" value="${selectedObj.y}" 
+                   onchange="updateProp('y', this.value)"></label>
+        </div>
+        <div class="prop-item">
+            <label>颜色: <input type="color" value="${selectedObj.color}" 
+                   onchange="updateProp('color', this.value)"></label>
+        </div>
+    `;
+    
+    if (selectedObj.type === 'cloud') {
+        html += `
+            <div class="prop-item">
+                <label>密度: 
+                <input type="range" min="0" max="1" step="0.1" 
+                       value="${selectedObj.density}" 
+                       onchange="updateProp('density', this.value)">
+                </label>
+            </div>
+        `;
+    }
+    
+    panel.innerHTML = html;
+}
+
+// 更新对象属性
+function updateProp(prop, value) {
+    if (!selectedObj) return;
+    selectedObj[prop] = (prop === 'x' || prop === 'y') ? 
+        parseInt(value) : value;
+    render();
+}
+
+// 拖动功能
+function startDrag(e) {
+    console.log(3)
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    selectedObj = scene.objects.find(obj => 
+        x > obj.x && x < obj.x + obj.width &&
+        y > obj.y && y < obj.y + obj.height
+    );
+    
+    if (selectedObj) {
+        isDragging = true;
+        offsetX = x - selectedObj.x;
+        offsetY = y - selectedObj.y;
+    }
+}
+
+function dragObject(e) {
+    if (!isDragging || !selectedObj) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    selectedObj.x = e.clientX - rect.left - offsetX;
+    selectedObj.y = e.clientY - rect.top - offsetY;
+    
+    render();
+}
+
+function endDrag() {
+    isDragging = false;
+    updatePropertyPanel();
+}
+
+// 绘制云朵 
+function drawCloud(obj) {
+    ctx.fillStyle = obj.color;
+    
+    // 创建组合路径
+    ctx.beginPath();
+    
+    // 主云体（三个重叠圆）
+    ctx.arc(obj.x + 25, obj.y + 20, 20, 0, Math.PI * 2);  // 左圆
+    ctx.arc(obj.x + 50, obj.y + 15, 25, 0, Math.PI * 2);  // 中心圆
+    ctx.arc(obj.x + 75, obj.y + 20, 20, 0, Math.PI * 2);  // 右圆
+    
+    // 填充路径
+    ctx.fill();
+}
+
+// 绘制树木（调整坐标计算）
+function drawTree(obj) {
+    // 树干（调整位置到中心）
+    ctx.fillStyle = obj.trunkColor;
+    ctx.fillRect(
+        obj.x + obj.width/2 - 5,  // 居中
+        obj.y + obj.height - 30,  // 底部留出空间
+        10, 
+        30
+    );
+    
+    // 树冠（调整位置）
+    ctx.fillStyle = obj.color;
+    ctx.beginPath();
+    ctx.arc(
+        obj.x + obj.width/2,     // 中心X
+        obj.y + obj.height - 50, // 中心Y
+        25,                      // 半径
+        0, 
+        Math.PI * 2
+    );
+    ctx.fill();
+}
+// 导出数据
+function exportData() {
+    const output = {
+        background: scene.background,
+        objects: scene.objects.map(obj => ({
+            type: obj.type,
+            x: obj.x,
+            y: obj.y,
+            color: obj.color,
+            ...(obj.density && { density: obj.density })
+        }))
+    };
+    
+    document.getElementById('output').textContent = 
+        JSON.stringify(output, null, 2);
+}
+
+// 初始渲染
+render();
+console.log(1);
+</script>
+</body>
+</html>

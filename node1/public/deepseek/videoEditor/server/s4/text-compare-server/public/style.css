@@ -1,0 +1,74 @@
+body {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.text-boxes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+textarea {
+    width: 100%;
+    height: 200px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    resize: vertical;
+}
+
+.buttons {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+#diffResult {
+    min-height: 100px;
+    padding: 15px;
+    border: 2px solid #ddd;
+    background-color: #f9f9f9;
+    white-space: pre-wrap;
+    transition: background-color 0.3s ease;
+}
+.added {
+    background-color: #9feb9f !important;
+    border-bottom: 2px solid #4CAF50;
+    padding: 2px 0;
+}
+
+.removed {
+    background-color: #ffb3b3 !important;
+    text-decoration: line-through;
+    padding: 2px 0; 
+}
+
+.download-link {
+    display: inline-block;
+    margin-top: 10px;
+    color: #2196F3;
+    text-decoration: none;
+    padding: 8px 15px;
+    border: 1px solid #2196F3;
+    border-radius: 4px;
+}
+
+.download-link:hover {
+    background-color: #e3f2fd;
+}

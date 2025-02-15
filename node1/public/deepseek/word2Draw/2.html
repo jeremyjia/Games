@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能绘画工具</title>
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            touch-action: none;
+        }
+        canvas { 
+            border: 1px solid #ccc; 
+            background: #f8f8f8;
+        }
+        #inputArea {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            padding: 8px;
+            background: rgba(255,255,255,0.9);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .toolbar {
+            position: fixed;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 5px;
+            user-select: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .toolbar-header {
+            background: #f0f0f0;
+            padding: 8px;
+            cursor: move;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .toolbar button {
+            margin: 3px;
+            padding: 8px 12px;
+            min-width: 45px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            transition: all 0.2s;
+        }
+        .toolbar button:active {
+            background: #f0f0f0;
+        }
+        #objToolbar { top: 20px; left: 20px; }
+        #numToolbar { top: 20px; right: 20px; }
+        .scale-control {
+            display: block;
+            width: 100%;
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px solid #eee;
+        }
+        input[type="text"] {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 60%;
+            margin-right: 5px;
+        }
+        button {
+            padding: 10px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div class="toolbar" id="objToolbar">
+        <div class="toolbar-header">🛠️ 工具</div>
+        <button onclick="insertText('房子')">🏠 房子</button>
+        <button onclick="insertText('狗')">🐶 狗</button>
+        <button onclick="insertText('树')">🌳 树</button>
+        <div class="scale-control">
+            <button onclick="scaleSelected(1.2)">➕</button>
+            <button onclick="scaleSelected(0.8)">➖</button>
+        </div>
+    </div>
+
+    <div class="toolbar" id="numToolbar">
+        <div class="toolbar-header">🔢 数字</div>
+        <button onclick="insertText('1')">1</button>
+        <button onclick="insertText('2')">2</button>
+        <button onclick="insertText('3')">3</button>
+        <button onclick="insertText('4')">4</button>
+    </div>
+
+    <div id="inputArea">
+        <input type="text" id="command" placeholder="输入绘画指令（示例：画两座红色房子）">
+        <button onclick="parseCommand()">绘制</button>
+        <button onclick="deleteSelected()" style="background:#dc3545">删除</button>
+    </div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let objects = [];
+let selectedObj = null;
+let isDragging = false;
+let dragType = 'move';
+let startDistance = null;
+
+// 初始化画布
+function initCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight - 120;
+}
+initCanvas();
+window.addEventListener('resize', initCanvas);
+
+// 图形对象类
+class Shape {
+    constructor(type, x, y, color) {
+        this.type = type;
+        this.x = x;
+        this.y = y;
+        this.size = 60;
+        this.color = color || '#333';
+        this.selected = false;
+    }
+
+    contains(x, y) {
+        const padding = 10;
+        return x > this.x - padding && 
+               x < this.x + this.size + padding && 
+               y > this.y - padding && 
+               y < this.y + this.size + padding;
+    }
+}
+
+// 自然语言解析
+function parseCommand() {
+    const text = document.getElementById('command').value.toLowerCase();
+    const regex = /(?:画|绘)?(\d+|两|三|四)?[只个座辆]*(红|红色|蓝|蓝色|绿|绿色)?(房子|狗|树)/g;
+    let match;
+    
+    while ((match = regex.exec(text)) !== null) {
+        let count = match[1] ? chineseToNumber(match[1]) : 1;
+        let color = getColorCode(match[2]);
+        let type = match[3];
+        
+        for (let i = 0; i < count; i++) {
+            let x = Math.random() * (canvas.width - 100) + 50;
+            let y = Math.random() * (canvas.height - 100) + 50;
+            objects.push(new Shape(type, x, y, color));
+        }
+    }
+    draw();
+}
+
+// 颜色转换
+function getColorCode(color) {
+    const colors = {
+        '红': '#ff4444', '红色': '#ff4444',
+        '蓝': '#4477ff', '蓝色': '#4477ff',
+        '绿': '#44cc44', '绿色': '#44cc44'
+    };
+    return colors[color] || '#333';
+}
+
+// 中文数字转换
+function chineseToNumber(ch) {
+    const map = { '两': 2, '三': 3, '四': 4 };
+    return map[ch] || parseInt(ch) || 1;
+}
+
+// 绘制图形
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    objects.forEach(obj => {
+        ctx.save();
+        ctx.translate(obj.x + obj.size/2, obj.y + obj.size/2);
+        
+        // 绘制图形主体
+        ctx.fillStyle = obj.color;
+        switch(obj.type) {
+            case '房子':
+                drawHouse(obj.size);
+                break;
+            case '狗':
+                drawDog(obj.size);
+                break;
+            case '树':
+                drawTree(obj.size);
+                break;
+        }
+        
+        // 绘制选中状态
+        if (obj.selected) {
+            ctx.strokeStyle = '#007bff';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.strokeRect(-obj.size/2 -5, -obj.size/2 -5, obj.size +10, obj.size +10);
+            
+            // 绘制缩放控制点
+            ctx.fillStyle = '#007bff';
+            ctx.beginPath();
+            ctx.arc(obj.size/2 +10, obj.size/2 +10, 6, 0, Math.PI*2);
+            ctx.fill();
+        }
+        ctx.restore();
+    });
+}
+
+// 绘制房子
+function drawHouse(size) {
+    const roofHeight = size * 0.4;
+    // 主体
+    ctx.fillRect(-size/2, -size/2, size, size);
+    // 屋顶
+    ctx.beginPath();
+    ctx.moveTo(-size/2, -size/2);
+    ctx.lineTo(0, -size/2 - roofHeight);
+    ctx.lineTo(size/2, -size/2);
+    ctx.closePath();
+    ctx.fill();
+}
+
+// 绘制狗
+function drawDog(size) {
+    ctx.beginPath();
+    // 身体
+    ctx.ellipse(0, 0, size*0.4, size*0.3, 0, 0, Math.PI*2);
+    // 头部
+    ctx.ellipse(size*0.3, -size*0.1, size*0.15, size*0.15, 0, 0, Math.PI*2);
+    ctx.fill();
+}
+
+// 绘制树
+function drawTree(size) {
+    // 树干
+    ctx.fillRect(-size/8, -size/2, size/4, size);
+    // 树冠
+    ctx.beginPath();
+    ctx.arc(0, -size/2, size/3, 0, Math.PI*2);
+    ctx.fill();
+}
+
+// 事件处理
+function getPosition(e) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+        x: (e.clientX || e.touches[0].clientX) - rect.left,
+        y: (e.clientY || e.touches[0].clientY) - rect.top
+    };
+}
+
+canvas.addEventListener('mousedown', handleStart);
+canvas.addEventListener('touchstart', handleStart);
+
+function handleStart(e) {
+    e.preventDefault();
+    const pos = getPosition(e);
+    
+    // 检测多点触控
+    if (e.touches?.length === 2) {
+        startDistance = getTouchDistance(e.touches);
+        selectedObj = objects.find(obj => obj.contains(pos.x, pos.y));
+        if (selectedObj) dragType = 'scale';
+        return;
+    }
+
+    // 选择对象
+    selectedObj = objects.find(obj => obj.contains(pos.x, pos.y));
+    if (selectedObj) {
+        selectedObj.selected = !selectedObj.selected;
+        isDragging = true;
+        dragType = 'move';
+        draw();
+    }
+}
+
+window.addEventListener('mousemove', handleMove);
+window.addEventListener('touchmove', handleMove);
+
+function handleMove(e) {
+    if (!isDragging || !selectedObj) return;
+    e.preventDefault();
+    
+    // 处理缩放
+    if (dragType === 'scale' && e.touches?.length === 2) {
+        const newDistance = getTouchDistance(e.touches);
+        const scale = newDistance / startDistance;
+        scaleSelected(scale);
+        startDistance = newDistance;
+        return;
+    }
+
+    // 处理移动
+    const pos = getPosition(e);
+    selectedObj.x = pos.x - selectedObj.size/2;
+    selectedObj.y = pos.y - selectedObj.size/2;
+    draw();
+}
+
+window.addEventListener('mouseup', () => isDragging = false);
+window.addEventListener('touchend', () => {
+    isDragging = false;
+    startDistance = null;
+});
+
+// 缩放功能
+function scaleSelected(scaleFactor) {
+    objects.forEach(obj => {
+        if (obj.selected) {
+            const newSize = obj.size * scaleFactor;
+            obj.size = Math.max(20, Math.min(200, newSize));
+        }
+    });
+    draw();
+}
+
+function getTouchDistance(touches) {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx*dx + dy*dy);
+}
+
+// 工具条拖动
+function makeDraggable(elm) {
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    const header = elm.querySelector('.toolbar-header');
+    
+    header.addEventListener('mousedown', dragStart);
+    header.addEventListener('touchstart', dragStart);
+
+    function dragStart(e) {
+        e.preventDefault();
+        pos3 = (e.clientX || e.touches[0].clientX);
+        pos4 = (e.clientY || e.touches[0].clientY);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('touchmove', drag);
+        document.addEventListener('mouseup', dragEnd);
+        document.addEventListener('touchend', dragEnd);
+    }
+
+    function drag(e) {
+        e.preventDefault();
+        pos1 = (e.clientX || e.touches[0].clientX) - pos3;
+        pos2 = (e.clientY || e.touches[0].clientY) - pos4;
+        pos3 = e.clientX || e.touches[0].clientX;
+        pos4 = e.clientY || e.touches[0].clientY;
+        elm.style.top = (elm.offsetTop + pos2) + "px";
+        elm.style.left = (elm.offsetLeft + pos1) + "px";
+    }
+
+    function dragEnd() {
+        document.removeEventListener('mousemove', drag);
+        document.removeEventListener('touchmove', drag);
+    }
+}
+
+makeDraggable(document.getElementById('objToolbar'));
+makeDraggable(document.getElementById('numToolbar'));
+
+// 文本插入
+function insertText(text) {
+    const input = document.getElementById('command');
+    const start = input.selectionStart;
+    input.value = input.value.slice(0, start) + text + input.value.slice(start);
+    input.focus();
+    input.setSelectionRange(start + text.length, start + text.length);
+}
+
+// 删除选中
+function deleteSelected() {
+    objects = objects.filter(obj => !obj.selected);
+    draw();
+}
+</script>
+</body>
+</html>

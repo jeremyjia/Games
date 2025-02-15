@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enhanced Word Generator</title>
+    <style>
+        @import 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css';
+
+        body { max-width: 800px; margin: 20px auto; padding: 20px; }
+        .toolbar { 
+            background: #f5f5f5; 
+            padding: 10px; 
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .article-title { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 10px 0; 
+            font-size: 1.2em;
+        }
+        .paragraph-container { 
+            border: 1px solid #ddd; 
+            padding: 15px; 
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .paragraph-title, .paragraph-body {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+        }
+        .paragraph-title { font-weight: bold; }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover { background: #0056b3; }
+        #generateBtn { background: #28a745; }
+        #generateBtn:hover { background: #218838; }
+
+        .file-input { display: none; }
+        .paragraph-controls { 
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .control-btn {
+            padding: 5px 10px;
+            font-size: 0.9em;
+        }
+        .delete-btn { background: #dc3545; }
+        .insert-btn { background: #17a2b8; }
+        .preview-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            z-index: 1000;
+        }
+
+        .preview-content {
+            width: 80%;
+            height: 90%;
+            background: white;
+            margin: 2% auto;
+            padding: 20px;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-iframe {
+            flex: 1;
+            border: none;
+            margin-top: 10px;
+        }
+
+        .preview-toolbar {
+            display: flex;
+            gap: 10px;
+            padding: 10px 0;
+        }
+
+        .image-container {
+            margin: 20px 0;
+            border: 2px dashed #ddd;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .image-preview {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .image-preview button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .image-caption {
+            width: 100%;
+            padding: 8px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            border: 1px solid #ddd;
+        }
+        /* 添加上传按钮样式 */
+        .image-upload-btn {
+            background: #17a2b8;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .image-upload-btn:hover {
+            background: #138496;
+        }
+           .code-container {
+       background: #f8f9fa;
+       border: 2px solid #bdc3c7;
+       border-radius: 6px;
+       padding: 15px;
+       margin: 15px 0;
+       position: relative;
+   }
+   .code-header {
+       display: flex;
+       justify-content: space-between;
+       margin-bottom: 10px;
+   }
+   .code-filename {
+       font-weight: bold;
+       color: #2c3e50;
+   }
+   .language-select {
+       padding: 5px;
+       border-radius: 3px;
+       border: 1px solid #ddd;
+   }
+   pre {
+       margin: 0;
+       white-space: pre-wrap;
+   }
+   .code-content {
+       font-family: 'Courier New', monospace;
+       color: #2c3e50;
+       background: #fff;
+       padding: 10px;
+       border-radius: 4px;
+   }
+   .server-files-modal {
+    position: fixed;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 2000;
+    display: none;
+}
+
+.server-files-header {
+    padding: 12px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+    cursor: move;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 8px 8px 0 0;
+}
+
+.server-files-content {
+    padding: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.file-item:hover {
+    background: #f8f9fa;
+}
+
+.file-icon {
+    width: 24px;
+    margin-right: 10px;
+    content: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAhFJREFUeNqkk79Lw0Acx++9a1JJq6m0Dv5AUUQHRRQVHPwDHJxExEFBcHQRJwfBwUFBEMFZJxEHwUEQHPwLFBxEVCwqWqy1SWvS5tf13rvjfE1ajQMf3rvk7nPv+77cJYgxxt9sPM+jMAyBZVnAGAOe5wFjDMqyDEVRBNls9k8AQRAgx3GgUqmgdDqNisUiSqVSCMdxJMuyqG3b+HA4oNVqBQghXwBBFKGmaSiXyyFZlpFpmqhWqyFJkhDDMEiSJNRut9F4PEbH4xH5vu8DEGUZNRoNlM/nQb/fB4PBANRqNVQsFhHDMEhVVdTpdNA5m6ZpCAAAIc/zQBAE0G630WQyAfP5HNRqNVSv11E8HkeqqqJut4t2ux3a7/cYhBCCOI6D4/EYTKdTsFwuQbVaRc1mE8XjcZRIJFCv10O73Q7Zto0BABD6vg8OhwOYzWZgsViASqWCWq0WisViKJlMIk3T0Ha7Ra7rYgAARL7vY9d1wWKxAIvFApTLZdRut1E0GkWpVArpuo42mw3yPA8DACD0PA87jgOWyyVYLpegVCqhTqeDIpEISqfTyDAMtF6vked5GAAAIXEcDO0LmM/nIJ/Po263i0KhEMpkMsg0TbRarZDv+xgAACHGGDuOg1erFZjNZiCXy6Fer4dCoRDKZrNoPB4jy7JQEAT4C0AIYd/3sW3bYDqdgmw2i/r9PgqHwyiXyyHDMNBkMkFBEOD/AdB1HWuahjKZDBoMBigSiSDKMAxkmiYKggD/EWC1WmFd11E6nUbD4RBFo1FEmaaJRqMRopRi8A/ANE1sGAZKpVJoNBqheDyOKMMwkK7r6Hw+Y/AHYLlcYk3TUDKZRKZpong8jijDMJCmaeh0OmHwB2A+n2NN01AikUCj0Qglk0lE6bqOVFVFp9MJgz8A0+kUq6qK4vE4Go/HKJVKIUrTNKSqKjoejxj8AXjPZrPvQqHwTqfT7xdFUZ7v93vx5XJ5DgaD3e12e/wIMACVK2C+Z8RgYAAAAABJRU5ErkJggg==');
+}
+ 
+
+.file-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+}
+
+/* 在style部分添加 */
+.example-btn {
+    padding: 8px 12px;
+    margin: 5px;
+    background: #17a2b8;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.example-btn:hover {
+    background: #138496;
+}
+
+.example-text-group {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+}
+.example-category {
+    margin: 15px 0;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+.example-item {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+}
+
+.example-item button.delete-btn {
+    padding: 3px 8px;
+    margin-left: 5px;
+    border-radius: 50%;
+}
+    </style>
+    <!-- 在index.html的head部分添加 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</head>
+<body>
+    <div class="toolbar">
+        
+
+        <button onclick="addParagraph()">➕ 新建段落</button>
+        <label class="code-upload-btn">
+                   📁 导入代码
+                   <input type="file" 
+                         id="codeUpload" 
+                         class="file-input" 
+                         accept=".js,.html,.css,.py,.java" 
+                         onchange="handleCodeUpload(event)"
+                         multiple>
+               </label>
+
+        <button onclick="document.getElementById('fileInput').click()">📥 导入JSON</button>
+        <input type="file" id="fileInput" class="file-input" accept=".json">
+        <button onclick="exportJson()">📤 导出JSON</button>
+        <button id="generateBtn" onclick="generateDoc()">生成Word文档</button>
+        <button onclick="generateHtml()">生成HTML预览</button>
+
+        <label class="image-upload-btn">
+            <input type="file" 
+                   id="imageUpload" 
+                   class="file-input" 
+                   accept="image/*" 
+                   onchange="handleImageUpload(event)">
+            📷 插入图片
+        </label>
+        <button onclick="showServerFiles()">📂 服务器上的文件</button>
+        <button onclick="showExampleTexts()">📂 实例文本</button>
+
+    </div>
+    <input type="text" 
+           id="articleTitle" 
+           class="article-title" 
+           placeholder="请输入文章主标题">
+
+    <div id="paragraphsContainer"></div>
+
+    <!-- 在body底部添加预览模态框 -->
+    <div class="preview-modal" id="previewModal">
+        <div class="preview-content">
+            <div class="preview-toolbar">
+                <button onclick="downloadHtml()">下载HTML</button>
+                <button onclick="closePreview()">关闭</button>
+            </div>
+            <iframe class="preview-iframe" id="previewFrame"></iframe>
+        </div>
+    </div>
+    <!-- index.html 新增部分 -->
+    <div class="server-files-modal" id="serverFilesModal">
+        <div class="server-files-header">
+            <h3>服务器文件</h3>
+            <button onclick="closeServerFiles()">×</button>
+        </div>
+        <div class="server-files-content" id="serverFilesContent"></div>
+    </div>
+
+    <!-- 在index.html的body底部添加示例文本模态框 -->
+<div class="server-files-modal" id="exampleTextsModal">
+    <div class="server-files-header">
+        <h3>示例文本</h3>
+        <button onclick="closeExampleTexts()">×</button>
+    </div>
+    <div class="server-files-content" id="exampleTextsContent"></div>
+</div>
+
+    <script src="script.js"></script>
+</body>
+</html>

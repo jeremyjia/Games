@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可上下拖动的DIV</title>
+    <style>
+        .scroll-container {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 200px;
+            height: 300px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            overflow: hidden;
+            touch-action: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .draggable-content {
+            position: absolute;
+            height: 600px; /* 内容高度大于容器 */
+            width: 100%;
+            background: linear-gradient(180deg, #2196F3, #4CAF50);
+            cursor: grab;
+            user-select: none;
+            transition: transform 0.2s;
+        }
+
+        .draggable-content.active {
+            cursor: grabbing;
+            transition: none;
+        }
+
+        /* 垂直滚动提示 */
+        .scroll-hint {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background: linear-gradient(
+                to bottom, 
+                rgba(0,0,0,0.1) 0%, 
+                transparent 100%
+            );
+            pointer-events: none;
+        }
+        .scroll-hint.bottom {
+            bottom: 0;
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="scroll-container">
+        <div class="scroll-hint top"></div>
+        <div class="scroll-hint bottom"></div>
+        <div class="draggable-content" id="dragContent">
+            <div style="padding: 20px; color: white;">
+                <h2>上下滚动内容</h2>
+                <p>拖动查看完整内容</p>
+                <div style="height: 400px"></div>
+                <p>到底部了</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const container = document.querySelector('.scroll-container');
+            const content = document.getElementById('dragContent');
+            
+            // 计算可移动范围
+            let minY = 0;
+            let maxY = 0;
+            function updateScrollRange() {
+                const containerHeight = container.offsetHeight;
+                const contentHeight = content.offsetHeight;
+                maxY = containerHeight - contentHeight;
+            }
+            updateScrollRange();
+
+            // 拖动状态
+            let isDragging = false;
+            let startY = 0;
+            let currentScroll = 0;
+            let velocity = 0;
+            let lastPos = 0;
+            let lastTime = 0;
+
+            // 统一坐标获取
+            const getClientY = e => e.touches ? e.touches[0].clientY : e.clientY;
+
+            // 开始拖动
+            const startDrag = e => {
+                isDragging = true;
+                startY = getClientY(e);
+                currentScroll = content.offsetTop;
+                content.classList.add('active');
+                e.preventDefault();
+                
+                // 重置惯性参数
+                velocity = 0;
+                lastPos = currentScroll;
+                lastTime = Date.now();
+            };
+
+            // 处理移动
+            const handleMove = e => {
+                if (!isDragging) return;
+
+                const deltaY = getClientY(e) - startY;
+                let newPosition = currentScroll + deltaY;
+
+                // 边界约束
+                newPosition = Math.min(0, Math.max(maxY, newPosition));
+                
+                // 弹性效果
+                if (newPosition > 0 || newPosition < maxY) {
+                    const overshoot = newPosition > 0 ? 
+                        newPosition : 
+                        newPosition - maxY;
+                    newPosition -= overshoot * 0.3;
+                }
+
+                content.style.top = `${newPosition}px`;
+                
+                // 计算速度
+                const currentTime = Date.now();
+                if (lastTime !== 0) {
+                    const deltaTime = currentTime - lastTime;
+                    velocity = (newPosition - lastPos) / deltaTime;
+                }
+                lastPos = newPosition;
+                lastTime = currentTime;
+            };
+
+            // 惯性滚动
+            const applyInertia = () => {
+                if (Math.abs(velocity) < 0.1) return;
+
+                let newPosition = content.offsetTop + velocity * 16;
+                newPosition = Math.min(0, Math.max(maxY, newPosition));
+                
+                content.style.top = `${newPosition}px`;
+                velocity *= 0.92; // 摩擦系数
+                
+                requestAnimationFrame(applyInertia);
+            };
+
+            // 结束拖动
+            const endDrag = () => {
+                isDragging = false;
+                content.classList.remove('active');
+                applyInertia();
+            };
+
+            // 事件绑定
+            content.addEventListener('mousedown', startDrag);
+            content.addEventListener('touchstart', startDrag);
+
+            document.addEventListener('mousemove', handleMove);
+            document.addEventListener('touchmove', handleMove, { passive: false });
+
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchend', endDrag);
+            document.addEventListener('touchcancel', endDrag);
+
+            // 响应式处理
+            window.addEventListener('resize', () => {
+                updateScrollRange();
+                const currentTop = parseFloat(content.style.top) || 0;
+                content.style.top = `${Math.min(0, Math.max(maxY, currentTop))}px`;
+            });
+        })();
+    </script>
+</body>
+</html>

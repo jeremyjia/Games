@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>中国象棋摆棋程序</title>
+    <style>
+        :root {
+            --wood-color: #c19a6b;
+            --dark-wood: #8b6914;
+            --gold: #ffd700;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #f4e7d3;
+            font-family: "楷体", "KaiTi", cursive;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            gap: 30px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        #chessboard {
+            width: 720px;
+            height: 800px;
+            background: 
+                linear-gradient(to right, var(--wood-color), var(--dark-wood)),
+                repeating-linear-gradient(45deg, transparent 25%, rgba(0,0,0,0.1) 50%, transparent 100%);
+            border: 15px solid var(--dark-wood);
+            border-radius: 10px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3), inset 0 0 30px rgba(0,0,0,0.2);
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            position: relative;
+        }
+
+        .cell {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .cell::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 1px solid rgba(0,0,0,0.15);
+            box-sizing: border-box;
+        }
+
+        /* 九宫格斜线 */
+        .cell[data-row="0"][data-col="3"]::before,
+        .cell[data-row="0"][data-col="5"]::before,
+        .cell[data-row="2"][data-col="3"]::before,
+        .cell[data-row="2"][data-col="5"]::before,
+        .cell[data-row="9"][data-col="3"]::before,
+        .cell[data-row="9"][data-col="5"]::before,
+        .cell[data-row="7"][data-col="3"]::before,
+        .cell[data-row="7"][data-col="5"]::before {
+            content: '';
+            position: absolute;
+            width: 70%;
+            height: 70%;
+            background: 
+                linear-gradient(135deg, transparent 45%, #000 50%, transparent 55%),
+                linear-gradient(45deg, transparent 45%, #000 50%, transparent 55%);
+        }
+
+        .piece {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            font-size: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            transition: transform 0.3s;
+            position: relative;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            user-select: none;
+            z-index: 2;
+        }
+
+        .piece::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+        }
+
+        .piece.red {
+            background: linear-gradient(160deg, #c00000, #a00000);
+            color: #fff;
+            border: 2px solid #800000;
+            box-shadow: 0 5px 15px rgba(192,0,0,0.3), inset 0 -3px 8px rgba(0,0,0,0.2);
+        }
+
+        .piece.black {
+            background: linear-gradient(160deg, #2c2c2c, #1a1a1a);
+            color: #fff;
+            border: 2px solid #000;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3), inset 0 -3px 8px rgba(0,0,0,0.3);
+        }
+
+        .river {
+            grid-row: 5 / 6;
+            grid-column: 1 / 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 50px;
+            font-size: 32px;
+            color: var(--dark-wood);
+            writing-mode: vertical-lr;
+            text-orientation: upright;
+            letter-spacing: -15px;
+            background: linear-gradient(to right, transparent 20%, rgba(255,255,255,0.3) 50%, transparent 80%);
+        }
+
+        .controls {
+            background: rgba(255,255,255,0.9);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            min-width: 300px;
+        }
+
+        button {
+            background: linear-gradient(to bottom, var(--wood-color), var(--dark-wood));
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            margin: 8px 0;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        .piece-palette {
+            margin-top: 25px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .palette-piece {
+            font-size: 28px;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.3s;
+            background: rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        .palette-piece.selected {
+            transform: scale(1.15);
+            box-shadow: 0 0 15px var(--gold);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="chessboard"></div>
+        
+        <div class="controls">
+            <button onclick="initBoard()">初始化棋盘</button>
+            <button onclick="clearBoard()">清空棋盘</button>
+            <button onclick="randomLayout()">随机摆棋</button>
+            <button onclick="saveLayout()">保存棋局</button>
+            <button onclick="loadLayout()">加载棋局</button>
+
+            <div class="piece-palette">
+                <div>
+                    <div style="color:#c00000; margin:15px 0">红方棋子</div>
+                    <div class="palette-piece red" data-color="red" data-type="0">帥</div>
+                    <div class="palette-piece red" data-color="red" data-type="1">仕</div>
+                    <div class="palette-piece red" data-color="red" data-type="2">相</div>
+                    <div class="palette-piece red" data-color="red" data-type="3">俥</div>
+                    <div class="palette-piece red" data-color="red" data-type="4">傌</div>
+                    <div class="palette-piece red" data-color="red" data-type="5">炮</div>
+                    <div class="palette-piece red" data-color="red" data-type="6">兵</div>
+                </div>
+                <div>
+                    <div style="color:#2c2c2c; margin:15px 0">黑方棋子</div>
+                    <div class="palette-piece black" data-color="black" data-type="0">將</div>
+                    <div class="palette-piece black" data-color="black" data-type="1">士</div>
+                    <div class="palette-piece black" data-color="black" data-type="2">象</div>
+                    <div class="palette-piece black" data-color="black" data-type="3">車</div>
+                    <div class="palette-piece black" data-color="black" data-type="4">馬</div>
+                    <div class="palette-piece black" data-color="black" data-type="5">砲</div>
+                    <div class="palette-piece black" data-color="black" data-type="6">卒</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const pieceChars = {
+            red: ['帥', '仕', '相', '俥', '傌', '炮', '兵'],
+            black: ['將', '士', '象', '車', '馬', '砲', '卒']
+        };
+
+        let selectedPiece = null;
+        let boardState = Array(10).fill().map(() => Array(9).fill(null));
+
+        function createBoard() {
+            const board = document.getElementById('chessboard');
+            board.innerHTML = '';
+
+            // 创建棋盘格子
+            for (let row = 0; row < 10; row++) {
+                for (let col = 0; col < 9; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    cell.addEventListener('dragover', handleDragOver);
+                    cell.addEventListener('drop', handleDrop);
+                    cell.addEventListener('click', handleCellClick);
+                    board.appendChild(cell);
+                }
+            }
+
+            // 添加楚河汉界
+            const river = document.createElement('div');
+            river.className = 'river';
+            river.innerHTML = '楚 河<br>漢 界';
+            board.appendChild(river);
+        }
+
+        function createPiece(color, type) {
+            const piece = document.createElement('div');
+            piece.className = `piece ${color}`;
+            piece.textContent = pieceChars[color][type];
+            piece.draggable = true;
+            piece.addEventListener('dragstart', handleDragStart);
+            piece.addEventListener('dragend', () => piece.style.opacity = '1');
+            return piece;
+        }
+
+        function handleDragStart(e) {
+            const piece = e.target;
+            piece.style.opacity = '0.7';
+            e.dataTransfer.setData('text/plain', JSON.stringify({
+                row: piece.parentElement.dataset.row,
+                col: piece.parentElement.dataset.col,
+                color: piece.classList.contains('red') ? 'red' : 'black',
+                type: pieceChars[piece.classList.contains('red') ? 'red' : 'black'].indexOf(piece.textContent)
+            }));
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+            const targetCell = e.target.closest('.cell');
+            
+            if (targetCell) {
+                // 移除原位置棋子
+                const sourceCell = document.querySelector(
+                    `[data-row="${data.row}"][data-col="${data.col}"]`
+                );
+                sourceCell.querySelector('.piece')?.remove();
+                boardState[data.row][data.col] = null;
+
+                // 放置到新位置
+                if (!boardState[targetCell.dataset.row][targetCell.dataset.col]) {
+                    const piece = createPiece(data.color, data.type);
+                    targetCell.appendChild(piece);
+                    boardState[targetCell.dataset.row][targetCell.dataset.col] = {
+                        color: data.color,
+                        type: data.type
+                    };
+                }
+            }
+        }
+
+        function handleCellClick(e) {
+            const cell = e.target.closest('.cell');
+            if (!cell) return;
+
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+
+            if (selectedPiece) {
+                if (!boardState[row][col]) {
+                    const piece = createPiece(selectedPiece.color, selectedPiece.type);
+                    cell.appendChild(piece);
+                    boardState[row][col] = selectedPiece;
+                }
+                clearSelection();
+            } else {
+                const existingPiece = cell.querySelector('.piece');
+                if (existingPiece) {
+                    existingPiece.remove();
+                    boardState[row][col] = null;
+                }
+            }
+        }
+
+        function initBoard() {
+            clearBoard();
+            // 红方棋子
+            const redPieces = [
+                [0, 0, 3], [0, 1, 1], [0, 2, 2], [0, 3, 5], [0, 4, 0],
+                [0, 5, 5], [0, 6, 2], [0, 7, 1], [0, 8, 3],
+                [2, 1, 4], [2, 7, 4],
+                [3, 0, 6], [3, 2, 6], [3, 4, 6], [3, 6, 6], [3, 8, 6]
+            ];
+            
+            // 黑方棋子
+            const blackPieces = [
+                [9, 0, 3], [9, 1, 1], [9, 2, 2], [9, 3, 5], [9, 4, 0],
+                [9, 5, 5], [9, 6, 2], [9, 7, 1], [9, 8, 3],
+                [7, 1, 4], [7, 7, 4],
+                [6, 0, 6], [6, 2, 6], [6, 4, 6], [6, 6, 6], [6, 8, 6]
+            ];
+
+            [...redPieces, ...blackPieces].forEach(([row, col, type]) => {
+                const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                const color = row < 5 ? 'red' : 'black';
+                const piece = createPiece(color, type);
+                cell.appendChild(piece);
+                boardState[row][col] = { color, type };
+            });
+        }
+
+        function clearBoard() {
+            document.querySelectorAll('.piece').forEach(p => p.remove());
+            boardState = Array(10).fill().map(() => Array(9).fill(null));
+            clearSelection();
+        }
+
+        function randomLayout() {
+            clearBoard();
+            for (let i = 0; i < 30; i++) {
+                const row = Math.floor(Math.random() * 10);
+                const col = Math.floor(Math.random() * 9);
+                const color = Math.random() > 0.5 ? 'red' : 'black';
+                const type = Math.floor(Math.random() * 7);
+                
+                if (!boardState[row][col]) {
+                    const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                    const piece = createPiece(color, type);
+                    cell.appendChild(piece);
+                    boardState[row][col] = { color, type };
+                }
+            }
+        }
+
+        function saveLayout() {
+            const simplified = boardState.map(row => 
+                row.map(cell => cell ? `${cell.color[0]}${cell.type}` : null)
+            );
+            localStorage.setItem('chessLayout', JSON.stringify(simplified));
+            alert('棋局已保存！');
+        }
+
+        function loadLayout() {
+            const saved = localStorage.getItem('chessLayout');
+            if (!saved) return alert('没有找到保存的棋局');
+            
+            clearBoard();
+            const layout = JSON.parse(saved);
+            layout.forEach((row, rowIndex) => {
+                row.forEach((cell, colIndex) => {
+                    if (cell) {
+                        const color = cell[0] === 'r' ? 'red' : 'black';
+                        const type = parseInt(cell[1]);
+                        const piece = createPiece(color, type);
+                        const cellElem = document.querySelector(
+                            `[data-row="${rowIndex}"][data-col="${colIndex}"]`
+                        );
+                        cellElem.appendChild(piece);
+                        boardState[rowIndex][colIndex] = { color, type };
+                    }
+                });
+            });
+        }
+
+        function clearSelection() {
+            document.querySelectorAll('.palette-piece').forEach(p => p.classList.remove('selected'));
+            selectedPiece = null;
+        }
+
+        // 初始化
+        createBoard();
+        document.querySelectorAll('.palette-piece').forEach(piece => {
+            piece.addEventListener('click', function() {
+                document.querySelectorAll('.palette-piece').forEach(p => p.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedPiece = {
+                    color: this.dataset.color,
+                    type: parseInt(this.dataset.type)
+                };
+            });
+        });
+    </script>
+</body>
+</html>

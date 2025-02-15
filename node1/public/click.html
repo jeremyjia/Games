@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fill Polygon by Clicking</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="polygonCanvas" width="600" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById('polygonCanvas');
+        const ctx = canvas.getContext('2d');
+        let points = [];
+
+        canvas.addEventListener('click', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            // Add the clicked point to the points array
+            points.push({ x, y });
+
+            // Redraw the points and lines to show the current polygon
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.strokeStyle = 'red';
+            ctx.stroke();
+
+            // Draw small circles at each point for better visualization
+            ctx.fillStyle = 'blue';
+            points.forEach(point => ctx.beginPath() && ctx.arc(point.x, point.y, 3, 0, Math.PI * 2) && ctx.fill());
+        });
+
+        canvas.addEventListener('dblclick', (event) => {
+            if (points.length < 3) {
+                alert('You need at least 3 points to form a polygon!');
+                return;
+            }
+
+            // Close the polygon by adding the first point again at the end
+            points.push(points[0]);
+
+            // Fill the polygon
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.closePath();
+            ctx.fillStyle = 'green';
+            ctx.fill();
+
+            // Optionally, stroke the polygon's border for better visualization
+            ctx.strokeStyle = 'black';
+            ctx.stroke();
+
+            // Reset the points array for a new polygon
+            points = [];
+        });
+    </script>
+</body>
+</html>

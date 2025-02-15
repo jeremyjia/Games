@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音乐播放器</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        nav ul { list-style-type: none; padding: 0; }
+        nav ul li { display: inline; margin-right: 10px; }
+        .window { 
+            display: none; 
+            position: absolute; 
+            padding: 10px; 
+            background: white; 
+            border: 1px solid #ccc; 
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); 
+        }
+        .beats { display: flex; }
+        .beat-container { margin: 5px; padding: 10px; border-radius: 5px; }
+        .beat-button { width: 20px; height: 20px; margin: 2px; border: none; border-radius: 3px; }
+        .controls { margin-bottom: 10px; }
+        #bpm { width: 50px; margin-left: 5px; }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li>首页</li>
+            <li>说明</li>
+            <li>信息</li>
+        </ul>
+    </nav>
+    <button id="openWindow">打开播放器</button>
+    <div id="playerWindow" class="window">
+        <div class="controls">
+            <button id="playButton">播放</button>
+            <label for="bpm">速度：</label>
+            <input type="number" id="bpm" value="60" min="20" max="200"> BPM
+        </div>
+        <div class="beats">
+            <!-- 拍子按钮将在这里动态生成 -->
+        </div>
+    </div>
+
+    <script>
+        class MusicPlayer {
+            constructor() {
+                this.bpm = 60; // 默认速度
+                this.interval = null; // 定时器
+                this.currentBeat = 0; // 当前拍子
+                this.init();
+            }
+
+            init() {
+                // 打开播放器窗口
+                document.getElementById('openWindow').addEventListener('click', () => {
+                    document.getElementById('playerWindow').style.display = 'block';
+                });
+
+                // 播放/暂停按钮
+                document.getElementById('playButton').addEventListener('click', () => this.togglePlay());
+
+                // BPM 设置
+                document.getElementById('bpm').addEventListener('change', (e) => {
+                    this.bpm = e.target.value;
+                    if (this.interval) {
+                        clearInterval(this.interval);
+                        this.startPlayback();
+                    }
+                });
+
+                // 创建拍子按钮
+                this.createBeats();
+            }
+
+            // 创建拍子按钮
+            createBeats() {
+                const beatsContainer = document.querySelector('.beats');
+                for (let i = 0; i < 4; i++) {
+                    const container = document.createElement('div');
+                    container.className = 'beat-container';
+                    container.style.backgroundColor = `hsl(${i * 90}, 100%, 85%)`;
+                    for (let j = 0; j < 4; j++) {
+                        const button = document.createElement('button');
+                        button.className = 'beat-button';
+                        container.appendChild(button);
+                    }
+                    beatsContainer.appendChild(container);
+                }
+            }
+
+            // 播放/暂停切换
+            togglePlay() {
+                if (this.interval) {
+                    clearInterval(this.interval);
+                    this.interval = null;
+                    document.getElementById('playButton').textContent = '播放';
+                } else {
+                    this.startPlayback();
+                    document.getElementById('playButton').textContent = '暂停';
+                }
+            }
+
+            // 开始播放
+            startPlayback() {
+                const beatDuration = 60000 / this.bpm / 4; // 每个拍子的间隔时间
+                this.interval = setInterval(() => {
+                    this.updateBeats();
+                }, beatDuration);
+            }
+
+            // 更新拍子按钮颜色
+            updateBeats() {
+                const buttons = document.querySelectorAll('.beat-button');
+                buttons.forEach((button, index) => {
+                    button.style.backgroundColor = index === this.currentBeat % 16 ? 'blue' : 'gray';
+                });
+                this.currentBeat++;
+            }
+        }
+
+        // 初始化音乐播放器
+        document.addEventListener('DOMContentLoaded', () => new MusicPlayer());
+    </script>
+</body>
+</html>

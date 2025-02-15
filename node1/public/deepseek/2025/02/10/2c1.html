@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简谱编辑系统</title>
+</head>
+<body>
+    <button id="create-window-btn">新建窗口</button>
+    <div id="windows-container"></div>
+
+    <script>
+        class JianpuEditor {
+            constructor() {
+                this.windows = [];
+                this.windowCounter = 0;
+                this.init();
+            }
+
+            init() {
+                const createWindowBtn = document.getElementById('create-window-btn');
+                createWindowBtn.addEventListener('click', () => this.createWindow());
+            }
+
+            createWindow() {
+                this.windowCounter++;
+                const windowId = `window-${this.windowCounter}`;
+
+                // 创建窗口容器
+                const windowContainer = document.createElement('div');
+                windowContainer.id = windowId;
+                windowContainer.style.position = 'absolute';
+                windowContainer.style.width = '300px';
+                windowContainer.style.height = '400px';
+                windowContainer.style.backgroundColor = '#f0f0f0';
+                windowContainer.style.border = '1px solid #ccc';
+                windowContainer.style.borderRadius = '8px';
+                windowContainer.style.boxShadow = '2px 2px 10px rgba(0, 0, 0, 0.1)';
+                windowContainer.style.padding = '10px';
+                windowContainer.style.display = 'flex';
+                windowContainer.style.flexDirection = 'column';
+                windowContainer.style.zIndex = this.windowCounter;
+
+                // 使窗口可拖动
+                let isDragging = false;
+                let offsetX, offsetY;
+                windowContainer.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    offsetX = e.offsetX;
+                    offsetY = e.offsetY;
+                });
+                document.addEventListener('mousemove', (e) => {
+                    if (isDragging) {
+                        windowContainer.style.left = `${e.pageX - offsetX}px`;
+                        windowContainer.style.top = `${e.pageY - offsetY}px`;
+                    }
+                });
+                document.addEventListener('mouseup', () => {
+                    isDragging = false;
+                });
+
+                // 创建工具栏
+                const toolbar = document.createElement('div');
+                toolbar.style.display = 'flex';
+                toolbar.style.gap = '5px';
+                toolbar.style.marginBottom = '10px';
+
+                const exampleButtons = [
+                    { label: '示例1', content: "1 2 3 4 5 6 7 0" },
+                    { label: '示例2', content: "1' 2'' 3''' 4, 5,, 6,,," },
+                    { label: '示例3', content: "4/ 5/ 6/ 7,/ 1''/" },
+                ];
+
+                exampleButtons.forEach(example => {
+                    const button = document.createElement('button');
+                    button.innerText = example.label;
+                    button.addEventListener('click', () => {
+                        textarea.value = example.content;
+                        this.renderJianpu(windowId);
+                    });
+                    toolbar.appendChild(button);
+                });
+
+                // 创建文本框
+                const textarea = document.createElement('textarea');
+                textarea.style.flex = '1';
+                textarea.style.marginBottom = '10px';
+                textarea.style.padding = '5px';
+                textarea.style.border = '1px solid #ccc';
+                textarea.style.borderRadius = '4px';
+                textarea.addEventListener('input', () => this.renderJianpu(windowId));
+
+                // 创建画布
+                const canvas = document.createElement('canvas');
+                canvas.width = 280;
+                canvas.height = 100;
+                canvas.style.border = '1px solid #ccc';
+                canvas.style.borderRadius = '4px';
+
+                // 添加到窗口
+                windowContainer.appendChild(toolbar);
+                windowContainer.appendChild(textarea);
+                windowContainer.appendChild(canvas);
+
+                // 添加到页面
+                document.getElementById('windows-container').appendChild(windowContainer);
+
+                // 保存窗口引用
+                this.windows.push({ id: windowId, textarea, canvas });
+
+                // 更新窗口管理工具栏
+                this.updateWindowManager();
+            }
+
+            renderJianpu(windowId) {
+                const windowData = this.windows.find(w => w.id === windowId);
+                if (!windowData) return;
+
+                const { textarea, canvas } = windowData;
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                const input = textarea.value;
+                const notes = input.split(' ');
+
+                let x = 10;
+                let y = 50;
+
+                notes.forEach(note => {
+                    if (note === '0') {
+                        // 休止符
+                        ctx.fillText('0', x, y);
+                        x += 20;
+                    } else {
+                        // 处理音符
+                        const baseNote = note.replace(/[',/.-]/g, '');
+                        ctx.fillText(baseNote, x, y);
+
+                        // 处理高低8度
+                        if (note.includes("'")) {
+                            const dots = note.match(/'/g).length;
+                            for (let i = 0; i < dots; i++) {
+                                ctx.fillText('.', x + 5, y - 10 * (i + 1));
+                            }
+                        } else if (note.includes(',')) {
+                            const dots = note.match(/,/g).length;
+                            for (let i = 0; i < dots; i++) {
+                                ctx.fillText('.', x + 5, y + 10 * (i + 1));
+                            }
+                        }
+
+                        // 处理时值
+                        if (note.includes('/')) {
+                            const lines = note.match(/\//g).length;
+                            for (let i = 0; i < lines; i++) {
+                                ctx.fillRect(x - 5, y + 5 + i * 5, 20, 2);
+                            }
+                        } else if (note.includes('-')) {
+                            const lines = note.match(/-/g).length;
+                            ctx.fillRect(x - 5, y + 5, 20 * lines, 2);
+                        }
+
+                        x += 30;
+                    }
+                });
+            }
+
+            updateWindowManager() {
+                const manager = document.getElementById('window-manager');
+                if (!manager) {
+                    const newManager = document.createElement('div');
+                    newManager.id = 'window-manager';
+                    newManager.style.position = 'fixed';
+                    newManager.style.bottom = '10px';
+                    newManager.style.right = '10px';
+                    newManager.style.display = 'flex';
+                    newManager.style.gap = '5px';
+                    document.body.appendChild(newManager);
+                }
+
+                const managerContainer = document.getElementById('window-manager');
+                managerContainer.innerHTML = '';
+
+                this.windows.forEach((window, index) => {
+                    const button = document.createElement('button');
+                    button.innerText = `窗口 ${index + 1}`;
+                    button.addEventListener('click', () => {
+                        const windowElement = document.getElementById(window.id);
+                        windowElement.style.display = windowElement.style.display === 'none' ? 'block' : 'none';
+                    });
+                    managerContainer.appendChild(button);
+                });
+            }
+        }
+
+        // 初始化编辑器
+        new JianpuEditor();
+    </script>
+</body>
+</html>

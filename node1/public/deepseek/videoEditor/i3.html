@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网页视频编辑器</title>
+    <style>
+        /* 基础样式 */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            touch-action: manipulation;
+        }
+
+        /* 画布容器 */
+        #canvas-container {
+            position: relative;
+            margin: 20px auto;
+            max-width: 100%;
+            touch-action: none;
+        }
+
+        /* 可拖拽工具条 */
+        .toolbar {
+            position: fixed;
+            background: rgba(255,255,255,0.95);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 120px;
+            touch-action: none;
+            backdrop-filter: blur(5px);
+        }
+
+        .toolbar-header {
+            cursor: move;
+            padding: 8px;
+            background: #f8f9fa;
+            margin: -10px -10px 10px;
+            border-radius: 6px 6px 0 0;
+            font-weight: bold;
+            user-select: none;
+        }
+
+        .toolbar button {
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+            padding: 8px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .toolbar button:hover {
+            background: #f8f9fa;
+        }
+
+        .toolbar button.active {
+            background: #007bff;
+            color: white;
+            border-color: #006fe6;
+        }
+
+        /* 视频控制条 */
+        #videoControls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.95);
+            padding: 12px 20px;
+            border-radius: 25px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            max-width: 90%;
+            max-height: 80vh;
+            overflow: auto;
+        }
+
+        #timeline {
+            width: 300px;
+            height: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container">
+        <canvas id="mainCanvas"></canvas>
+    </div>
+
+    <!-- 工具条系统 -->
+    <div class="toolbar" id="frameToolbar" style="left:20px; top:20px">
+        <div class="toolbar-header">🎞️ 帧管理</div>
+        <button onclick="addFrame()">➕ 添加帧</button>
+        <button onclick="deleteFrame()">➖ 删除帧</button>
+    </div>
+
+    <div class="toolbar" id="drawToolbar" style="left:20px; top:120px">
+        <div class="toolbar-header">🎨 绘图工具</div>
+        <button data-tool="line" class="active">📏 直线</button>
+        <button data-tool="circle">⭕ 圆形</button>
+        <button data-tool="rect">⬜ 矩形</button>
+        <button data-tool="triangle">🔺 三角形</button>
+    </div>
+
+    <div class="toolbar" id="sceneToolbar" style="left:20px; top:260px">
+        <div class="toolbar-header">🌄 场景</div>
+        <button data-scene="forest">🌲 树林</button>
+        <button data-scene="beach">🏖️ 海边</button>
+        <button data-scene="road">🛣️ 马路</button>
+    </div>
+
+    <!-- 视频控制 -->
+    <div id="videoControls" class="toolbar">
+        <input type="file" id="videoInput" accept="video/*" hidden>
+        <button onclick="document.getElementById('videoInput').click()">📁 导入视频</button>
+        <button id="playBtn">▶️ 播放</button>
+        <input type="range" id="timeline" min="0" max="100" step="0.1">
+        <button onclick="generateJSON()">💾 生成JSON</button>
+    </div>
+
+    <!-- JSON输出模态框 -->
+    <div id="jsonModal" class="modal">
+        <pre id="jsonOutput"></pre>
+        <button onclick="closeModal()" style="margin-top:15px">关闭</button>
+    </div>
+
+    <script>
+        // 初始化核心元素
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d');
+        let currentTool = 'line';
+        let currentScene = null;
+        let frames = [];
+        let currentFrameIndex = 0;
+        let isDrawing = false;
+        let currentShape = null;
+
+        // 视频相关变量
+        const videoElement = document.createElement('video');
+        let isPlaying = false;
+        let videoReady = false;
+
+        // 初始化画布尺寸
+        function resizeCanvas() {
+            canvas.width = Math.min(window.innerWidth * 0.9, 1280);
+            canvas.height = Math.min(window.innerHeight * 0.7, 720);
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // 工具条拖拽功能
+        document.querySelectorAll('.toolbar').forEach(toolbar => {
+            let isDragging = false;
+            let startX, startY, initialLeft, initialTop;
+
+            toolbar.querySelector('.toolbar-header').addEventListener('mousedown', startDrag);
+            toolbar.querySelector('.toolbar-header').addEventListener('touchstart', e => {
+                e.preventDefault();
+                startDrag(e.touches[0]);
+            });
+
+            function startDrag(e) {
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                initialLeft = parseFloat(toolbar.style.left) || 20;
+                initialTop = parseFloat(toolbar.style.top) || 20;
+                document.body.style.userSelect = 'none';
+            }
+
+            function move(e) {
+                if (!isDragging) return;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                const deltaX = clientX - startX;
+                const deltaY = clientY - startY;
+                
+                toolbar.style.left = Math.max(0, Math.min(window.innerWidth - toolbar.offsetWidth, initialLeft + deltaX)) + 'px';
+                toolbar.style.top = Math.max(0, Math.min(window.innerHeight - toolbar.offsetHeight, initialTop + deltaY)) + 'px';
+            }
+
+            function endDrag() {
+                isDragging = false;
+                document.body.style.userSelect = '';
+            }
+
+            document.addEventListener('mousemove', move);
+            document.addEventListener('touchmove', move, { passive: false });
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchend', endDrag);
+        });
+
+        // 绘图功能实现
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('touchstart', e => {
+            e.preventDefault();
+            startDrawing(e.touches[0]);
+        });
+
+        function startDrawing(e) {
+            if (!videoReady && !currentScene) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const startX = e.clientX - rect.left;
+            const startY = e.clientY - rect.top;
+
+            currentShape = {
+                type: currentTool,
+                points: [[startX, startY]],
+                color: '#000000',
+                lineWidth: 2
+            };
+
+            isDrawing = true;
+
+            function updateDrawing(e) {
+                if (!isDrawing) return;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const x = clientX - rect.left;
+                const y = clientY - rect.top;
+
+                currentShape.points[1] = [x, y];
+                redrawCanvas();
+                drawPreview();
+            }
+
+            function endDrawing() {
+                isDrawing = false;
+                if (currentShape.points.length > 1) {
+                    frames[currentFrameIndex].shapes.push({...currentShape});
+                }
+                redrawCanvas();
+                removeListeners();
+            }
+
+            function removeListeners() {
+                canvas.removeEventListener('mousemove', updateDrawing);
+                canvas.removeEventListener('touchmove', updateDrawing);
+                canvas.removeEventListener('mouseup', endDrawing);
+                canvas.removeEventListener('touchend', endDrawing);
+            }
+
+            canvas.addEventListener('mousemove', updateDrawing);
+            canvas.addEventListener('touchmove', updateDrawing, { passive: false });
+            canvas.addEventListener('mouseup', endDrawing);
+            canvas.addEventListener('touchend', endDrawing);
+        }
+
+        function drawPreview() {
+            ctx.save();
+            ctx.strokeStyle = currentShape.color;
+            ctx.lineWidth = currentShape.lineWidth;
+            ctx.setLineDash([5, 5]);
+            drawShape(currentShape);
+            ctx.restore();
+        }
+
+        // 图形绘制函数
+        function drawShape(shape) {
+            ctx.beginPath();
+            ctx.strokeStyle = shape.color;
+            ctx.lineWidth = shape.lineWidth;
+
+            switch(shape.type) {
+                case 'line':
+                    ctx.moveTo(...shape.points[0]);
+                    ctx.lineTo(...shape.points[1]);
+                    break;
+                case 'rect':
+                    const [start, end] = shape.points;
+                    ctx.rect(start[0], start[1], end[0]-start[0], end[1]-start[1]);
+                    break;
+                case 'circle':
+                    const [center, edge] = shape.points;
+                    const radius = Math.hypot(edge[0]-center[0], edge[1]-center[1]);
+                    ctx.arc(center[0], center[1], radius, 0, Math.PI*2);
+                    break;
+                case 'triangle':
+                    const [p1, p2] = shape.points;
+                    const midX = (p1[0] + p2[0])/2;
+                    ctx.moveTo(midX, p1[1]);
+                    ctx.lineTo(p1[0], p2[1]);
+                    ctx.lineTo(p2[0], p2[1]);
+                    ctx.closePath();
+                    break;
+            }
+            ctx.stroke();
+        }
+
+        // 视频功能实现
+        document.getElementById('videoInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const url = URL.createObjectURL(file);
+            
+            videoElement.src = url;
+            videoElement.muted = true; // 移动端需要静音
+            videoElement.playsInline = true;
+            
+            videoElement.addEventListener('loadedmetadata', () => {
+                canvas.width = videoElement.videoWidth;
+                canvas.height = videoElement.videoHeight;
+                videoReady = true;
+                initFrames();
+            });
+        });
+
+        document.getElementById('playBtn').addEventListener('click', () => {
+            if (!videoReady) return;
+            isPlaying = !isPlaying;
+            isPlaying ? videoElement.play() : videoElement.pause();
+            document.getElementById('playBtn').textContent = isPlaying ? '⏸️ 暂停' : '▶️ 播放';
+            if (isPlaying) drawVideoFrame();
+        });
+
+        function drawVideoFrame() {
+            if (!isPlaying) return;
+            ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            drawSceneBackground(currentScene);
+            frames[currentFrameIndex].shapes.forEach(shape => drawShape(shape));
+            requestAnimationFrame(drawVideoFrame);
+        }
+
+        // 场景系统
+        function drawSceneBackground(scene) {
+            if (!scene) return;
+            
+            ctx.save();
+            switch(scene) {
+                case 'forest':
+                    ctx.fillStyle = '#228B22';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    // 绘制树木
+                    for(let i = 0; i < 15; i++) {
+                        const x = Math.random() * canvas.width;
+                        const treeHeight = 80 + Math.random()*70;
+                        // 树干
+                        ctx.fillStyle = '#8B4513';
+                        ctx.fillRect(x - 8, canvas.height - treeHeight, 16, treeHeight);
+                        // 树冠
+                        ctx.beginPath();
+                        ctx.arc(x, canvas.height - treeHeight - 30, 40, 0, Math.PI*2);
+                        ctx.fillStyle = '#006400';
+                        ctx.fill();
+                    }
+                    break;
+                    
+                case 'beach':
+                    // 渐变背景
+                    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                    gradient.addColorStop(0, '#87CEEB');
+                    gradient.addColorStop(0.6, '#F4A460');
+                    gradient.addColorStop(1, '#FFD700');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    // 海浪效果
+                    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+                    for(let i = 0; i < 5; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(-50, canvas.height*0.6 + i*20);
+                        ctx.bezierCurveTo(
+                            canvas.width*0.3, canvas.height*0.5 + i*20,
+                            canvas.width*0.7, canvas.height*0.7 + i*20,
+                            canvas.width+50, canvas.height*0.6 + i*20
+                        );
+                        ctx.stroke();
+                    }
+                    break;
+                    
+                case 'road':
+                    ctx.fillStyle = '#A9A9A9';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    // 道路标线
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.setLineDash([20, 30]);
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(canvas.width/2, 0);
+                    ctx.lineTo(canvas.width/2, canvas.height);
+                    ctx.stroke();
+                    break;
+            }
+            ctx.restore();
+        }
+
+        // 帧管理系统
+        function initFrames() {
+            frames = [{
+                background: null,
+                shapes: [],
+                duration: 1000
+            }];
+            currentFrameIndex = 0;
+        }
+
+        function addFrame() {
+            frames.push({
+                background: currentScene,
+                shapes: [],
+                duration: 1000
+            });
+            currentFrameIndex = frames.length - 1;
+            redrawCanvas();
+        }
+
+        function deleteFrame() {
+            if (frames.length > 1) {
+                frames.splice(currentFrameIndex, 1);
+                currentFrameIndex = Math.min(currentFrameIndex, frames.length - 1);
+                redrawCanvas();
+            }
+        }
+
+        // 工具选择
+        document.querySelectorAll('[data-tool]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentTool = this.dataset.tool;
+            });
+        });
+
+        // 场景选择
+        document.querySelectorAll('[data-scene]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                currentScene = this.dataset.scene;
+                frames[currentFrameIndex].background = currentScene;
+                redrawCanvas();
+            });
+        });
+
+        // JSON生成
+        function generateJSON() {
+            const output = {
+                meta: {
+                    width: canvas.width,
+                    height: canvas.height,
+                    frames: frames.length,
+                    duration: frames.reduce((sum, f) => sum + f.duration, 0)
+                },
+                frames: frames.map(frame => ({
+                    duration: frame.duration,
+                    background: frame.background,
+                    shapes: frame.shapes.map(shape => ({
+                        type: shape.type,
+                        points: shape.points,
+                        color: shape.color,
+                        lineWidth: shape.lineWidth
+                    }))
+                }))
+            };
+            
+            document.getElementById('jsonOutput').textContent = JSON.stringify(output, null, 2);
+            document.getElementById('jsonModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('jsonModal').style.display = 'none';
+        }
+
+        // 初始设置
+        initFrames();
+        setInterval(() => {
+            if (!videoReady) return;
+            document.getElementById('timeline').value = 
+                (videoElement.currentTime / videoElement.duration) * 100;
+        }, 100);
+    </script>
+</body>
+</html>

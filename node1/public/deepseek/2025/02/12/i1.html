@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player</title>
+</head>
+<body>
+    <button id="showPlayer">显示播放器</button>
+
+    <script>
+        class MusicPlayer {
+            constructor() {
+                this.isPlaying = false;
+                this.bpm = 60;
+                this.currentBeat = 0;
+                this.currentStep = 0;
+                this.timer = null;
+                this.createStyles();
+                this.createWindow();
+                this.createTransport();
+                this.createBeats();
+                this.addEventListeners();
+            }
+
+            createStyles() {
+                const style = document.createElement('style');
+                style.textContent = `
+                    .floating-window {
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        width: 300px;
+                        background: white;
+                        border: 1px solid #ccc;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                        display: none;
+                    }
+                    .header {
+                        padding: 10px;
+                        background: #f0f0f0;
+                        cursor: move;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+                    .close-btn {
+                        cursor: pointer;
+                        padding: 0 5px;
+                    }
+                    .controls {
+                        padding: 10px;
+                    }
+                    .beats-container {
+                        display: flex;
+                        gap: 10px;
+                        padding: 10px;
+                    }
+                    .beat {
+                        display: flex;
+                        gap: 2px;
+                    }
+                    .step {
+                        width: 20px;
+                        height: 40px;
+                        border: 1px solid #ddd;
+                        transition: background 0.1s;
+                    }
+                    input[type="number"] {
+                        width: 60px;
+                        margin-left: 10px;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            createWindow() {
+                this.window = document.createElement('div');
+                this.window.className = 'floating-window';
+                this.window.innerHTML = `
+                    <div class="header">
+                        <span>音乐播放器</span>
+                        <span class="close-btn">×</span>
+                    </div>
+                    <div class="controls">
+                        <button class="play-btn">播放</button>
+                        BPM: <input type="number" value="60" min="40" max="200">
+                    </div>
+                    <div class="beats-container"></div>
+                `;
+                document.body.appendChild(this.window);
+            }
+
+            createTransport() {
+                this.playBtn = this.window.querySelector('.play-btn');
+                this.bpmInput = this.window.querySelector('input[type="number"]');
+            }
+
+            createBeats() {
+                const container = this.window.querySelector('.beats-container');
+                for (let i = 0; i < 4; i++) {
+                    const beat = document.createElement('div');
+                    beat.className = 'beat';
+                    for (let j = 0; j < 4; j++) {
+                        const step = document.createElement('div');
+                        step.className = 'step';
+                        step.style.backgroundColor = this.getStepColor(j);
+                        beat.appendChild(step);
+                    }
+                    container.appendChild(beat);
+                }
+                this.steps = container.querySelectorAll('.step');
+            }
+
+            getStepColor(index) {
+                const colors = ['#ff6666', '#66ff66', '#6666ff', '#ffcc66'];
+                return colors[index % 4];
+            }
+
+            addEventListeners() {
+                // 窗口拖动逻辑
+                let isDragging = false;
+                let startX, startY, startLeft, startTop;
+
+                const header = this.window.querySelector('.header');
+                const onMouseMove = (e) => {
+                    if (!isDragging) return;
+                    const dx = (e.clientX || e.touches[0].clientX) - startX;
+                    const dy = (e.clientY || e.touches[0].clientY) - startY;
+                    this.window.style.left = startLeft + dx + 'px';
+                    this.window.style.top = startTop + dy + 'px';
+                };
+
+                const startDrag = (e) => {
+                    isDragging = true;
+                    startX = e.clientX || e.touches[0].clientX;
+                    startY = e.clientY || e.touches[0].clientY;
+                    startLeft = this.window.offsetLeft;
+                    startTop = this.window.offsetTop;
+                };
+
+                const stopDrag = () => isDragging = false;
+
+                header.addEventListener('mousedown', startDrag);
+                header.addEventListener('touchstart', startDrag);
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('touchmove', onMouseMove);
+                document.addEventListener('mouseup', stopDrag);
+                document.addEventListener('touchend', stopDrag);
+
+                // 其他事件
+                this.playBtn.addEventListener('click', () => this.togglePlay());
+                this.bpmInput.addEventListener('change', () => {
+                    this.bpm = parseInt(this.bpmInput.value) || 60;
+                    if (this.isPlaying) {
+                        this.stop();
+                        this.play();
+                    }
+                });
+                this.window.querySelector('.close-btn').addEventListener('click', () => {
+                    this.window.style.display = 'none';
+                    this.stop();
+                });
+            }
+
+            togglePlay() {
+                this.isPlaying ? this.stop() : this.play();
+            }
+
+            play() {
+                this.isPlaying = true;
+                this.playBtn.textContent = '停止';
+                const interval = 60000 / (this.bpm * 4); // 每1/4拍的时间
+                this.timer = setInterval(() => this.updateSteps(), interval);
+            }
+
+            stop() {
+                this.isPlaying = false;
+                this.playBtn.textContent = '播放';
+                clearInterval(this.timer);
+                this.resetSteps();
+            }
+
+            updateSteps() {
+                this.resetSteps();
+                const activeIndex = this.currentBeat * 4 + this.currentStep;
+                this.steps[activeIndex].style.backgroundColor = '#ffff00';
+
+                this.currentStep = (this.currentStep + 1) % 4;
+                if (this.currentStep === 0) {
+                    this.currentBeat = (this.currentBeat + 1) % 4;
+                }
+            }
+
+            resetSteps() {
+                this.steps.forEach((step, index) => {
+                    step.style.backgroundColor = this.getStepColor(index % 4);
+                });
+            }
+        }
+
+        // 初始化
+        const showBtn = document.getElementById('showPlayer');
+        let player = null;
+
+        showBtn.addEventListener('click', () => {
+            if (!player) player = new MusicPlayer();
+            player.window.style.display = 'block';
+        });
+    </script>
+</body>
+</html>

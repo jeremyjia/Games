@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waveform Visualizer Code</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 20px;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+        }
+
+        .code-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #252526;
+            border-radius: 4px;
+            padding: 20px;
+            position: relative;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin: 0;
+            tab-size: 4;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .copy-btn {
+            background-color: #007acc;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+        }
+
+        .copy-btn:hover {
+            background-color: #0062a3;
+        }
+
+        .language-tag {
+            color: #569cd6;
+            font-weight: bold;
+        }
+
+        .scroll-container {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        /* Syntax highlighting */
+        .tag { color: #569cd6; }
+        .attr { color: #9cdcfe; }
+        .value { color: #ce9178; }
+        .comment { color: #6a9955; }
+        .function { color: #dcdcaa; }
+    </style>
+</head>
+<body>
+    <div class="code-container">
+        <div class="code-header">
+            <span class="language-tag">HTML</span>
+            <button class="copy-btn" onclick="copyCode()">Copy Code</button>
+        </div>
+        <div class="scroll-container">
+            <pre id="codeContent"><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;MP3 Waveform Visualizer&lt;/title&gt;
+    &lt;style&gt;
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        #container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        #waveform {
+            background-color: white;
+            border: 1px solid #ccc;
+            margin: 20px 0;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div id="container"&gt;
+        &lt;div class="controls"&gt;
+            &lt;input type="file" id="audioFile" accept="audio/mp3"&gt;
+            &lt;audio id="audioPlayer" controls&gt;&lt;/audio&gt;
+        &lt;/div&gt;
+        &lt;canvas id="waveform"&gt;&lt;/canvas&gt;
+    &lt;/div&gt;
+
+    &lt;script&gt;
+        const audioFile = document.getElementById('audioFile');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const canvas = document.getElementById('waveform');
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas dimensions
+        canvas.width = 800;
+        canvas.height = 200;
+
+        audioFile.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const url = URL.createObjectURL(file);
+            audioPlayer.src = url;
+            
+            // Read and process audio file
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                audioContext.decodeAudioData(e.target.result, function(buffer) {
+                    drawWaveform(buffer);
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        function drawWaveform(buffer) {
+            const data = buffer.getChannelData(0); // Get left channel
+            const step = Math.ceil(data.length / canvas.width);
+            const amp = canvas.height / 2;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.strokeStyle = '#2196F3';
+            ctx.lineWidth = 2;
+
+            for(let i = 0; i < canvas.width; i++) {
+                let min = 1.0;
+                let max = -1.0;
+                
+                for(let j = 0; j < step; j++) {
+                    const index = i * step + j;
+                    if(index >= data.length) break;
+                    const datum = data[index];
+                    
+                    if(datum < min) min = datum;
+                    if(datum > max) max = datum;
+                }
+
+                const x = i;
+                const y = (1 + min) * amp;
+                const height = (max - min) * amp;
+
+                ctx.moveTo(x, y);
+                ctx.lineTo(x, y + height);
+            }
+
+            ctx.stroke();
+        }
+
+        // Click canvas to play/pause
+        canvas.addEventListener('click', function() {
+            if(audioPlayer.paused) {
+                audioPlayer.play();
+            } else {
+                audioPlayer.pause();
+            }
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+        </div>
+    </div>
+
+    <script>
+        function copyCode() {
+            const codeContent = document.getElementById('codeContent');
+            const range = document.createRange();
+            range.selectNode(codeContent);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            document.execCommand('copy');
+            window.getSelection().removeAllRanges();
+            
+            // Show feedback
+            const btn = document.querySelector('.copy-btn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(() => {
+                btn.textContent = originalText;
+            }, 2000);
+        }
+
+        // Add basic syntax highlighting
+        const code = document.getElementById('codeContent');
+        const html = code.innerHTML;
+        const highlighted = html
+            .replace(/&lt;(\/?)(\w+)/g, '&lt;<span class="tag">$1$2</span>')
+            .replace(/(\w+)=/g, '<span class="attr">$1</span>=')
+            .replace(/&quot;(.*?)&quot;/g, '<span class="value">&quot;$1&quot;</span>')
+            .replace(/\/\/(.*)/g, '<span class="comment">//$1</span>')
+            .replace(/function (\w+)/g, 'function <span class="function">$1</span>');
+        code.innerHTML = highlighted;
+    </script>
+</body>
+</html>
