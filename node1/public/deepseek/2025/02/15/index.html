@@ -205,7 +205,41 @@ function initEventListeners() {
         }
     });
 }
+// 添加在 redrawCanvas 函数之前
+function drawBackground() {
+    const { ctx, canvas, backgroundImage } = editorState;
+    
+    // 先填充白色背景
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    // 如果有背景图片则绘制
+    if (backgroundImage) {
+        // 计算图片适配画布的最佳比例
+        const imgRatio = backgroundImage.naturalWidth / backgroundImage.naturalHeight;
+        const canvasRatio = canvas.width / canvas.height;
+        
+        let renderWidth, renderHeight, offsetX = 0, offsetY = 0;
+
+        if (imgRatio > canvasRatio) {
+            // 图片更宽，按高度适配
+            renderHeight = canvas.height;
+            renderWidth = backgroundImage.naturalWidth * (renderHeight / backgroundImage.naturalHeight);
+            offsetX = (canvas.width - renderWidth) / 2;
+        } else {
+            // 图片更高，按宽度适配
+            renderWidth = canvas.width;
+            renderHeight = backgroundImage.naturalHeight * (renderWidth / backgroundImage.naturalWidth);
+            offsetY = (canvas.height - renderHeight) / 2;
+        }
+
+        ctx.drawImage(
+            backgroundImage,
+            offsetX, offsetY,
+            renderWidth, renderHeight
+        );
+    }
+}
 
 function handleDoubleClick(e) {
     const pos = getCanvasMousePos(e);
