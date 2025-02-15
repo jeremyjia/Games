@@ -121,6 +121,32 @@
         top: -40px;
         background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" fill="%2307c160"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>') center/contain no-repeat;
     }
+    
+/* 添加方向按钮样式 */
+.direction-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0;
+}
+
+.arrow-btn {
+    width: 50px;
+    height: 40px;
+    font-size: 20px;
+    background: #f0f0f0;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+@media (max-width: 768px) {
+    .arrow-btn {
+        width: 60px;
+        height: 50px;
+        font-size: 24px;
+    }
+}
     </style>
 </head>
 <body>
@@ -154,6 +180,16 @@
                                              <option value="center" selected>居中</option>
                                              <option value="right">右对齐</option>
                     </select>
+
+                    <div class="direction-controls">
+                        <button class="arrow-btn" onclick="moveText('up')">↑</button>
+                        <div>
+                            <button class="arrow-btn" onclick="moveText('left')">←</button>
+                            <button class="arrow-btn" onclick="moveText('right')">→</button>
+                        </div>
+                        <button class="arrow-btn" onclick="moveText('down')">↓</button>
+                    </div>
+
                     <button onclick="addTextLayer()">添加文字</button>
                     <button onclick="clearAllText()">清除文字</button>
                 </div>
@@ -273,6 +309,38 @@ function clearLocalStorage() {
     localStorage.removeItem('editorState');
     showAlert('已清除本地保存数据');
     location.reload();
+}
+
+// 添加移动控制函数
+function moveText(direction) {
+    if (editorState.selectedTextIndex === -1) return;
+    
+    const text = editorState.textLayers[editorState.selectedTextIndex];
+    const step = 5; // 移动步长
+    
+    // 边界限制参数
+    const minX = 50;
+    const maxX = editorState.canvas.width - 50;
+    const minY = 50;
+    const maxY = editorState.canvas.height - 50;
+
+    switch(direction) {
+        case 'left':
+            text.position.x = Math.max(minX, text.position.x - step);
+            break;
+        case 'right':
+            text.position.x = Math.min(maxX, text.position.x + step);
+            break;
+        case 'up':
+            text.position.y = Math.max(minY, text.position.y - step);
+            break;
+        case 'down':
+            text.position.y = Math.min(maxY, text.position.y + step);
+            break;
+    }
+    
+    redrawCanvas();
+    saveToLocalStorage();
 }
 
 // 事件监听
@@ -965,7 +1033,7 @@ let initialDistance = null;
             e.preventDefault();
         }
     });
-    
+
 </script>
 </body>
 </html>
