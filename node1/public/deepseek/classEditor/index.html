@@ -20,6 +20,8 @@
             background: #333;
             color: white;
             padding: 10px;
+            display: flex;
+            gap: 15px;
         }
 
         .nav a {
@@ -28,7 +30,7 @@
         }
 
         .draggable {
-            z-index: 1; 
+            z-index: 1;
             position: absolute;
             background: white;
             border: 1px solid #ccc;
@@ -46,7 +48,11 @@
 
         .toolbar-content {
             padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
         }
+
         #id_4_draw_canvase {
             z-index: 0;
             position: fixed;
@@ -57,8 +63,8 @@
             background: white;
             border: 1px solid #ccc;
             border-radius: 5px;
-            z-index: 1;
         }
+
         #id_4_code_editor {
             top: 60px;
             left: 20px;
@@ -69,19 +75,14 @@
         #id_4_class_toolbar {
             top: 60px;
             right: 20px;
+            width: 320px;
             z-index: 10;
         }
 
-        #instanceToolbar {
-            top: 200px;
-            right: 20px;
-        }
-
         #id_4_object_toolbar {
-            position: absolute;  /* 改为绝对定位与类工具栏一致 */
-            top: 320px;         /* 位于类工具栏下方 */
-            right: 20px;        /* 右侧对齐 */
-            width: 300px;       /* 与类工具栏同宽 */
+            top: 320px;
+            right: 20px;
+            width: 300px;
             height: 150px;
             background: white;
             padding: 10px;
@@ -96,16 +97,27 @@
             color: white;
             border-radius: 3px;
             cursor: pointer;
+            flex: 1 1 45%;
+        }
+
+        hr {
+            width: 100%;
+            margin: 8px 0;
+            border: 0;
+            border-top: 1px solid #ddd;
         }
 
         @media (max-width: 600px) {
             .draggable {
-                width: 90%;
+                width: 90% !important;
                 left: 5% !important;
                 right: 5% !important;
             }
             #id_4_code_editor {
                 top: 120px;
+            }
+            #id_4_class_toolbar {
+                top: 340px;
             }
         }
 
@@ -120,11 +132,25 @@
             z-index: 2;
         }
 
-        /* 修改文本域尺寸适配 */
         #id_4_code_editor textarea {
             width: 100%;
-            height: calc(100% - 30px); /* 扣除标题栏高度 */
+            height: calc(100% - 30px);
             resize: none;
+            border: none;
+            padding: 8px;
+            font-family: monospace;
+        }
+
+        .method-item {
+            padding: 5px;
+            margin: 3px 0;
+            background: #f8f8f8;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .method-item:hover {
+            background: #e0e0e0;
         }
     </style>
 </head>
@@ -138,10 +164,11 @@
         <a href="d1.md">d1.md</a>
     </div>
     <canvas id="id_4_draw_canvase"></canvas>
+    
     <div class="draggable" id="id_4_code_editor">
         <div class="toolbar-header">代码编辑器</div>
-        <textarea style="width:100%; height: 160px; resize: none"></textarea>
-        <div class="resize-handle"></div> <!-- 新增调整手柄 -->
+        <textarea></textarea>
+        <div class="resize-handle"></div>
     </div>
 
     <div class="draggable" id="id_4_class_toolbar">
@@ -150,13 +177,8 @@
             <button data-class="0">Class1</button>
             <button data-class="1">Class2</button>
             <button data-class="2">Class3</button>
-            <button id="updateBtn">更新</button>
-        </div>
-    </div>
-
-    <div class="draggable" id="instanceToolbar">
-        <div class="toolbar-header">实例生成</div>
-        <div class="toolbar-content">
+            <button id="updateBtn">更新类</button>
+            <hr>
             <button data-instance="0">生成Class1</button>
             <button data-instance="1">生成Class2</button>
             <button data-instance="2">生成Class3</button>
@@ -169,105 +191,90 @@
     </div>
 
     <script>
+        // 初始化画布
+        const canvas = document.getElementById('id_4_draw_canvase');
         let ctx = null;
+        
         function initCanvas() {
-            const canvas = document.getElementById('id_4_draw_canvase');
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
-            ctx = canvas.getContext('2d');  // 初始化全局上下文
+            ctx = canvas.getContext('2d');
         }
-        document.querySelectorAll('.resize-handle').forEach(handle => {
-            let isResizing = false;
-            let startX, startY;
-            let startWidth, startHeight;
-            const editor = handle.closest('.draggable');
-
-            function startResize(e) {
-                isResizing = true;
-                startX = (e.clientX || e.touches[0].clientX);
-                startY = (e.clientY || e.touches[0].clientY);
-                startWidth = editor.offsetWidth;
-                startHeight = editor.offsetHeight;
-                editor.style.transition = 'none';
-            }
-
-            function doResize(e) {
-                if (!isResizing) return;
-                const currentX = (e.clientX || e.touches[0].clientX);
-                const currentY = (e.clientY || e.touches[0].clientY);
-                
-                // 计算新尺寸（限制最小尺寸）
-                const newWidth = Math.max(200, startWidth + (currentX - startX));
-                const newHeight = Math.max(150, startHeight + (currentY - startY));
-                
-                editor.style.width = `${newWidth}px`;
-                editor.style.height = `${newHeight}px`;
-            }
-
-            function stopResize() {
-                isResizing = false;
-                editor.style.transition = 'all 0.3s';
-            }
-
-            // 桌面端事件
-            handle.addEventListener('mousedown', startResize);
-            document.addEventListener('mousemove', doResize);
-            document.addEventListener('mouseup', stopResize);
-            
-            // 移动端事件
-            handle.addEventListener('touchstart', startResize);
-            document.addEventListener('touchmove', doResize);
-            document.addEventListener('touchend', stopResize);
-        });
-        
         window.addEventListener('load', initCanvas);
         window.addEventListener('resize', initCanvas);
+
+        // 元素调整功能
+        document.querySelectorAll('.resize-handle').forEach(handle => {
+            let isResizing = false;
+            let startX, startY, startWidth, startHeight;
+            const editor = handle.closest('.draggable');
+
+            const handleEvent = {
+                start: (e) => {
+                    isResizing = true;
+                    startX = (e.clientX || e.touches[0].clientX);
+                    startY = (e.clientY || e.touches[0].clientY);
+                    startWidth = editor.offsetWidth;
+                    startHeight = editor.offsetHeight;
+                    editor.style.transition = 'none';
+                },
+                move: (e) => {
+                    if (!isResizing) return;
+                    const currentX = (e.clientX || e.touches[0].clientX);
+                    const currentY = (e.clientY || e.touches[0].clientY);
+                    
+                    editor.style.width = `${Math.max(200, startWidth + (currentX - startX))}px`;
+                    editor.style.height = `${Math.max(150, startHeight + (currentY - startY))}px`;
+                },
+                end: () => {
+                    isResizing = false;
+                    editor.style.transition = 'all 0.3s';
+                }
+            };
+
+            handle.addEventListener('mousedown', handleEvent.start);
+            document.addEventListener('mousemove', handleEvent.move);
+            document.addEventListener('mouseup', handleEvent.end);
+            handle.addEventListener('touchstart', handleEvent.start);
+            document.addEventListener('touchmove', handleEvent.move);
+            document.addEventListener('touchend', handleEvent.end);
+        });
 
         // 拖拽功能
         document.querySelectorAll('.draggable').forEach(element => {
             let isDragging = false;
-            let currentX = 0;
-            let currentY = 0;
-            let initialX = 0;
-            let initialY = 0;
+            let initialX = 0, initialY = 0;
 
-            function startDrag(e) {
-                initialX = e.clientX || e.touches[0].clientX;
-                initialY = e.clientY || e.touches[0].clientY;
-                isDragging = true;
-                element.style.transition = 'none';
-            }
+            const dragHandler = {
+                start: (e) => {
+                    initialX = (e.clientX || e.touches[0].clientX);
+                    initialY = (e.clientY || e.touches[0].clientY);
+                    isDragging = true;
+                    element.style.transition = 'none';
+                },
+                move: (e) => {
+                    if (!isDragging) return;
+                    const currentX = (e.clientX || e.touches[0].clientX);
+                    const currentY = (e.clientY || e.touches[0].clientY);
+                    
+                    element.style.left = `${element.offsetLeft + (currentX - initialX)}px`;
+                    element.style.top = `${element.offsetTop + (currentY - initialY)}px`;
+                    
+                    initialX = currentX;
+                    initialY = currentY;
+                },
+                end: () => {
+                    isDragging = false;
+                    element.style.transition = 'all 0.3s';
+                }
+            };
 
-            function duringDrag(e) {
-                if (!isDragging) return;
-                e.preventDefault();
-                
-                const currentX = e.clientX || e.touches[0].clientX;
-                const currentY = e.clientY || e.touches[0].clientY;
-                
-                const deltaX = currentX - initialX;
-                const deltaY = currentY - initialY;
-                
-                element.style.left = `${element.offsetLeft + deltaX}px`;
-                element.style.top = `${element.offsetTop + deltaY}px`;
-                
-                initialX = currentX;
-                initialY = currentY;
-            }
-
-            function stopDrag() {
-                isDragging = false;
-                element.style.transition = 'all 0.3s';
-            }
-
-            element.querySelector('.toolbar-header').addEventListener('mousedown', startDrag);
-            element.querySelector('.toolbar-header').addEventListener('touchstart', startDrag);
-            
-            document.addEventListener('mousemove', duringDrag);
-            document.addEventListener('touchmove', duringDrag);
-            
-            document.addEventListener('mouseup', stopDrag);
-            document.addEventListener('touchend', stopDrag);
+            element.querySelector('.toolbar-header').addEventListener('mousedown', dragHandler.start);
+            element.querySelector('.toolbar-header').addEventListener('touchstart', dragHandler.start);
+            document.addEventListener('mousemove', dragHandler.move);
+            document.addEventListener('touchmove', dragHandler.move);
+            document.addEventListener('mouseup', dragHandler.end);
+            document.addEventListener('touchend', dragHandler.end);
         });
 
         // 类管理系统
@@ -278,7 +285,7 @@
                 }
                 
                 clearCanvas(cx) { 
-                    cx.clearRect(0, 0, cx.canvas.width, cx.canvas.height); // 清除整个画布
+                    cx.clearRect(0, 0, cx.canvas.width, cx.canvas.height);
                 }
                     
                 drawCircle(cx) { 
@@ -300,52 +307,55 @@
                     this.value++;
                 }
                 
-                show_a_movable_window(cx) {
-                    //show a movable_window
+                showValue() {
+                    alert('Current value: ' + this.value);
                 }
             }`,
 
             `class Class3 {
-    constructor(name) {
-        this.name = name || 'Default';
-    }
-    
-    greet() {
-        console.log(\`Hello from \${this.name}\`);
-    }
-    
-    static staticMethod() {
-        console.log('This is static');
-    }
-}`
+                constructor(name) {
+                    this.name = name || 'Default';
+                }
+                
+                greet() {
+                    console.log(\`Hello from \${this.name}\`);
+                }
+                
+                static staticMethod() {
+                    console.log('This is static');
+                }
+            }`
         ];
 
         // 初始化代码编辑器
         const textarea = document.querySelector('textarea');
         document.querySelectorAll('[data-class]').forEach(btn => {
             btn.addEventListener('click', () => {
+                document.querySelectorAll('[data-class]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
                 textarea.value = classTemplates[btn.dataset.class];
             });
         });
 
-        // 更新按钮
+        // 类更新系统
         document.getElementById('updateBtn').addEventListener('click', () => {
             const index = document.querySelector('[data-class].active')?.dataset.class;
             if (index !== undefined) {
                 classTemplates[index] = textarea.value;
+                alert('类定义已更新');
             }
         });
 
-        // 实例生成器
+        // 实例生成与操作
         document.querySelectorAll('[data-instance]').forEach(btn => {
             btn.addEventListener('click', async () => {
-                const classIndex = btn.dataset.instance;
                 try {
-                    const cls = await createClass(classTemplates[classIndex]);
+                    const cls = await createClass(classTemplates[btn.dataset.instance]);
                     const instance = new cls();
                     showMethods(instance);
                 } catch (e) {
-                    console.error('类创建失败:', e);
+                    console.error('实例创建失败:', e);
+                    alert('类定义有误，请检查语法');
                 }
             });
         });
@@ -353,8 +363,7 @@
         function createClass(code) {
             return new Promise((resolve, reject) => {
                 try {
-                    const fn = new Function(`return ${code}`)();
-                    resolve(fn);
+                    resolve(new Function(`return ${code}`)());
                 } catch (e) {
                     reject(e);
                 }
@@ -369,27 +378,19 @@
                 .filter(m => m !== 'constructor' && typeof instance[m] === 'function')
                 .forEach(m => {
                     const div = document.createElement('div');
+                    div.className = 'method-item';
                     div.textContent = m;
-                    div.style.padding = '5px';
-                    div.style.borderBottom = '1px solid #fee';
-                    
                     div.addEventListener('click', () => {
-                        instance[m](ctx); // 点击执行方法
-                        if (m === 'drawCircle') {
-                            // 可以在这里添加额外的画布更新逻辑
+                        try {
+                            instance[m](ctx);
+                            if (m === 'drawCircle') ctx.stroke();
+                        } catch (e) {
+                            console.error('方法执行失败:', e);
                         }
                     });
                     methodList.appendChild(div);
                 });
         }
-
-        // 初始化激活状态
-        document.querySelectorAll('[data-class]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('[data-class]').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            });
-        });
     </script>
 </body>
 </html>
