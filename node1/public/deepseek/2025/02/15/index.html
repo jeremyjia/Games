@@ -192,10 +192,10 @@ function initEventListeners() {
     // 画布交互事件
     const canvas = editorState.canvas;
     canvas.addEventListener('dblclick', handleDoubleClick);
-    canvas.addEventListener('mousedown', handleMouseDown);
-    canvas.addEventListener('mousemove', handleMouseMove);
-    canvas.addEventListener('mouseup', handleMouseUp);
-    canvas.addEventListener('mouseleave', handleMouseUp);
+    canvas.addEventListener('mousedown', handleCanvasMouseDown);
+    canvas.addEventListener('mousemove', handleCanvasMouseMove);
+    canvas.addEventListener('mouseup', handleCanvasMouseUp);
+    canvas.addEventListener('mouseleave', handleCanvasMouseUp);
 
     // 文字输入实时更新
     document.getElementById('textContent').addEventListener('input', function(e) {
