@@ -287,7 +287,7 @@ function handleCanvasMouseDown(e) {
                        .scale(text.scale);
                    
                    // 转换点到本地坐标系
-                   const inverse = transform.invert();
+                   const inverse = transform. inverse();
                    const localPos = inverse.transformPoint(new DOMPoint(pos.x, pos.y));
                    
                    // 检测控制点区域
@@ -327,6 +327,7 @@ document.getElementById('fontSize').addEventListener('input', function() {
         redrawCanvas();
     }
 });
+
 function handleCanvasMouseMove(e) {
     if (!editorState.transformType) return;
     
@@ -340,14 +341,22 @@ function handleCanvasMouseMove(e) {
 
     switch(editorState.transformType) {
         case 'move':
-            currentText.position.x = editorState.initialTextState.position.x + delta.x;
-            currentText.position.y = editorState.initialTextState.position.y + delta.y;
+            const angle = editorState.initialTextState.rotation;
+            const dx = delta.x;
+            const dy = delta.y;
+            
+            // 转换增量到本地坐标系
+            const localDx = dx * Math.cos(-angle) - dy * Math.sin(-angle);
+            const localDy = dx * Math.sin(-angle) + dy * Math.cos(-angle);
+            
+            currentText.position.x = editorState.initialTextState.position.x + localDx;
+            currentText.position.y = editorState.initialTextState.position.y + localDy;
             break;
             
         case 'rotate':
             const center = currentText.position;
-            const angle = Math.atan2(pos.y - center.y, pos.x - center.x);
-            currentText.rotation = angle - Math.PI/2;
+            const angleRotate = Math.atan2(pos.y - center.y, pos.x - center.x);
+            currentText.rotation = angleRotate - Math.PI/2;
             break;
             
         case 'resize':
@@ -359,7 +368,6 @@ function handleCanvasMouseMove(e) {
     saveState();
     redrawCanvas();
 }
-
 
 function drawText(text, index) {
     const ctx = editorState.ctx;
@@ -495,7 +503,7 @@ function isPointInText(point, text) {
         .scale(text.scale);
     
     // 转换点到本地坐标系
-    const inverse = transform.invert();
+    const inverse = transform. inverse();
     const localPoint = inverse.transformPoint(new DOMPoint(point.x, point.y));
     
     // 测量文字尺寸
