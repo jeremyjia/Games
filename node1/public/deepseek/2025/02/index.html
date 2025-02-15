@@ -127,12 +127,18 @@
                 
                 li.appendChild(a);
 
+                    // 添加title属性
+                if (item.title) {
+                        a.title = item.title;  // 新增代码
+                    }
+
                 if (item.children) {
                     const submenu = document.createElement('ul');
                     submenu.className = 'submenu';
                     item.children.forEach(child => {
                         submenu.appendChild(this.createMenuItem(child));
                     });
+
                     li.appendChild(submenu);
                 }
 
@@ -218,11 +224,13 @@
                 },
                 {
                     text: '[14]',
-                    href: '14'
+                    href: '14',
+                    title: '14 info'
                 },
                 {
                     text: '[15]',
-                    href: '15'
+                    href: '15',
+                    title: '微信封面图片编辑'
                 },
                 {
                     text: '深度求索',

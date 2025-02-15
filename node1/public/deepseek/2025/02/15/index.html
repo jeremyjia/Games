@@ -127,6 +127,7 @@
                     <h3>📥 输出设置</h3>
                     <button onclick="exportImage()">下载封面 (900×383)</button>
                     <button onclick="toggleGrid()">切换参考线</button>
+                    <button onclick="clearLocalStorage()">清除本地数据</button>
                 </div>
             </div>
 
@@ -138,6 +139,7 @@
 <script>
 // 初始化状态
 const editorState = {
+    version: 1,
     canvas: document.getElementById('editorCanvas'),
     ctx: null,
     backgroundImage: null,
@@ -168,11 +170,71 @@ const textPrototype = {
 (function init() {
     editorState.ctx = editorState.canvas.getContext('2d');
     initEventListeners();
+    loadFromLocalStorage(); // 新增加载逻辑
     requestAnimationFrame(redrawCanvas);
     saveState();
 })();
 
+function saveToLocalStorage() {
+    const stateToSave = {
+        version: editorState.version,
+        background: editorState.backgroundImage?.src || null,
+        texts: editorState.textLayers.map(text => ({
+            content: text.content,
+            color: text.color,
+            fontSize: text.fontSize,
+            position: text.position,
+            rotation: text.rotation,
+            scale: text.scale,
+            textAlign: text.textAlign
+        })),
+        showGrid: editorState.showGrid
+    };
+    localStorage.setItem('editorState', JSON.stringify(stateToSave));
+}
 
+function loadFromLocalStorage() {
+    const saved = localStorage.getItem('editorState');
+    if (!saved) return;
+
+    try {
+        const data = JSON.parse(saved);
+        // 加载背景图片
+        if (data.background) {
+            const img = new Image();
+            img.onload = () => {
+                editorState.backgroundImage = img;
+                redrawCanvas();
+            };
+            img.src = data.background;
+        }
+        
+        // 加载文字层
+        if (data.texts) {
+            editorState.textLayers = data.texts.map(t => ({
+                ...textPrototype,
+                ...t,
+                position: t.position || { x: 450, y: 300 }
+            }));
+        }
+        
+        // 加载其他设置
+        if (data.showGrid !== undefined) {
+            editorState.showGrid = data.showGrid;
+        }
+        
+        showAlert('已加载上次保存的数据');
+    } catch (e) {
+        console.error('加载数据失败:', e);
+        showAlert('加载保存数据失败', 'warning');
+    }
+}
+
+function clearLocalStorage() {
+    localStorage.removeItem('editorState');
+    showAlert('已清除本地保存数据');
+    location.reload();
+}
 
 // 事件监听
 function initEventListeners() {
@@ -196,6 +258,10 @@ function initEventListeners() {
     canvas.addEventListener('mousemove', handleCanvasMouseMove);
     canvas.addEventListener('mouseup', handleCanvasMouseUp);
     canvas.addEventListener('mouseleave', handleCanvasMouseUp);
+    
+    document.getElementById('textColor').addEventListener('change', saveToLocalStorage);
+    document.getElementById('fontSize').addEventListener('change', saveToLocalStorage);
+    document.getElementById('textAlign').addEventListener('change', saveToLocalStorage);
 
     // 文字输入实时更新
     document.getElementById('textContent').addEventListener('input', function(e) {
@@ -254,16 +320,24 @@ function handleDoubleClick(e) {
     if (selectedIndex > -1) {
         editorState.selectedTextIndex = selectedIndex;
         const text = editorState.textLayers[selectedIndex];
+        
+        // 同步到输入控件
         document.getElementById('textContent').value = text.content;
         document.getElementById('textColor').value = text.color;
         document.getElementById('fontSize').value = text.fontSize;
         document.getElementById('textAlign').value = text.textAlign;
+        
         redrawCanvas();
+        saveToLocalStorage(); // 保存状态变更
     }
 }
 
+
+
+
 function handleCanvasMouseDown(e) {
     const pos = getCanvasMousePos(e);
+    let hitControlPoint = false;
     
     // 检测控制点点击
     editorState.controlPoints.forEach(point => {
@@ -272,7 +346,24 @@ function handleCanvasMouseDown(e) {
             editorState.dragging = true;
             editorState.initialMousePos = pos;
             editorState.initialTextState = {...editorState.textLayers[editorState.selectedTextIndex]};
+            hitControlPoint = true;
             return;
+        }
+
+        if (!hitControlPoint) {
+            let hitText = false;
+            editorState.textLayers.forEach((text, index) => {
+                if (isPointInText(pos, text)) {
+                    editorState.selectedTextIndex = index;
+                    hitText = true;
+                }
+            });
+            
+            if (!hitText) {
+                editorState.selectedTextIndex = -1;
+                // 清空输入框
+                document.getElementById('textContent').value = '';
+            }
         }
     });
     
@@ -314,7 +405,12 @@ document.getElementById('textColor').addEventListener('input', function() {
             editorState.initialTextState = {...text};
         }
     });
-    
+    // 保存初始状态
+    editorState.initialMousePos = pos;
+    if (editorState.selectedTextIndex > -1) {
+        editorState.initialTextState = 
+            {...editorState.textLayers[editorState.selectedTextIndex]};
+    }
     redrawCanvas();
 
     // 新增：如果点击空白处则取消选择
@@ -449,6 +545,7 @@ function updateTextAlignment() {
         editorState.textLayers[editorState.selectedTextIndex].textAlign = align;
         redrawCanvas();
     }
+    saveToLocalStorage();
 }
 
 // 状态管理
@@ -599,6 +696,7 @@ function addTextLayer() {
 
     textInput.value = '';
     redrawCanvas();
+    saveToLocalStorage();
 }
 
 
@@ -650,12 +748,14 @@ function showAlert(message, type = 'info') {
 function resetBackground() {
     editorState.backgroundImage = null;
     redrawCanvas();
+    saveToLocalStorage();
 }
 
 function clearAllText() {
     editorState.textLayers = [];
     editorState.selectedTextIndex = -1; // 重置选中状态
     redrawCanvas();
+    saveToLocalStorage();
 }
 
 function toggleGrid() {
