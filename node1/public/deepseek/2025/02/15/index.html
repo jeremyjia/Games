@@ -297,12 +297,14 @@ function drawText(text) {
     ctx.rotate(text.rotation);
     ctx.scale(text.scale, text.scale);
     
-    // 绘制文字
-    ctx.font = `${text.fontSize}px ${text.fontFamily}`;
+    // 设置文字样式
+    ctx.font = `${text.fontSize}px ${text.fontFamily || 'sans-serif'}`;
     ctx.fillStyle = text.color;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(text.content, text.offset.x, text.offset.y);
+    ctx.textAlign = text.textAlign || 'center';    // 保存对齐参数
+    ctx.textBaseline = text.textBaseline || 'middle'; // 保存基线参数
+    
+    // 绘制文字
+    ctx.fillText(text.content, text.offset.x || 0, text.offset.y || 0);
     
     // 绘制控制点
     if (editorState.selectedTextIndex === textLayers.indexOf(text)) {
@@ -332,6 +334,16 @@ function drawText(text) {
     
     ctx.restore();
 }
+function getCanvasMousePos(event) {
+    const canvas = editorState.canvas;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+        x: (event.clientX - rect.left) * scaleX,
+        y: (event.clientY - rect.top) * scaleY
+    };
+}
 
 function createControlPoint(x, y, type) {
     return {
@@ -340,6 +352,61 @@ function createControlPoint(x, y, type) {
         type: type,
         region: new Path2D()
     };
+}
+function isPointInText(point, text) {
+    const ctx = editorState.ctx;
+    ctx.save();  // 保存当前画布状态
+    
+    // 应用文本变换矩阵
+    ctx.translate(text.position.x, text.position.y);
+    ctx.rotate(text.rotation);
+    ctx.scale(text.scale, text.scale);
+    
+    // 设置文字测量样式
+    ctx.font = `${text.fontSize}px ${text.fontFamily || 'sans-serif'}`;
+    
+    // 创建文字测量路径
+    const metrics = ctx.measureText(text.content);
+    const width = metrics.width;
+    const height = text.fontSize;
+    
+    // 创建包含点击检测的路径（考虑对齐方式）
+    const path = new Path2D();
+    const xOffset = text.offset.x || 0;
+    const yOffset = text.offset.y || 0;
+    
+    // 根据textAlign和textBaseline计算实际绘制位置
+    const alignMap = {
+        'left': -width/2,
+        'center': 0,
+        'right': width/2
+    };
+    
+    const baselineMap = {
+        'top': height/2,
+        'middle': 0,
+        'bottom': -height/2
+    };
+    
+    path.rect(
+        xOffset + (alignMap[text.textAlign] || 0) - width/2,
+        yOffset + (baselineMap[text.textBaseline] || 0) - height/2,
+        width,
+        height
+    );
+
+    // 转换点击坐标到当前变换空间
+    const inverseMatrix = ctx.getTransform().invert();
+    const transformedPoint = {
+        x: point.x * inverseMatrix.a + point.y * inverseMatrix.c + inverseMatrix.e,
+        y: point.x * inverseMatrix.b + point.y * inverseMatrix.d + inverseMatrix.f
+    };
+
+    // 检测点击是否在路径内
+    const isHit = ctx.isPointInPath(path, transformedPoint.x, transformedPoint.y);
+    
+    ctx.restore();  // 恢复画布状态
+    return isHit;
 }
 
 
