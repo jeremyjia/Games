@@ -95,25 +95,29 @@
         <div class="editor-panel">
             <div class="toolbar">
                 <!-- 图片控制 -->
-                <div class="control-group">
+                <div class="control-group image-controls">
                     <h3>🖼️ 图片操作</h3>
                     <input type="file" id="imageUpload" accept="image/*" hidden>
-                    <button onclick="document.getElementById('imageUpload').click()">
-                        上传图片
-                    </button>
+                    <button onclick="document.getElementById('imageUpload').click()">上传图片</button>
                     <button onclick="resetBackground()">移除背景</button>
                 </div>
 
                 <!-- 文字控制 -->
-                <div class="control-group">
+                <div class="control-group text-controls">
                     <h3>✍️ 文字编辑</h3>
                     <input type="text" id="textContent" placeholder="输入文字内容">
                     <div style="margin: 10px 0">
                         <label>颜色：</label>
                         <input type="color" id="textColor" value="#2d2d2d">
                         <label>大小：</label>
-                        <input type="number" id="fontSize" value="36" min="24" max="72" step="2">
+                        <input type="number" id="fontSize" value="36" min="12" max="120" step="2">
                     </div>
+                    <label>对齐：</label>
+                    <select id="textAlign" onchange="updateTextAlignment()">
+                                             <option value="left">左对齐</option>
+                                             <option value="center" selected>居中</option>
+                                             <option value="right">右对齐</option>
+                    </select>
                     <button onclick="addTextLayer()">添加文字</button>
                     <button onclick="clearAllText()">清除文字</button>
                 </div>
@@ -139,6 +143,7 @@ const editorState = {
     backgroundImage: null,
     textLayers: [],
     showGrid: true,
+    history: [],
     selectedTextIndex: -1,  // 新增：当前选中的文字索引
     dragging: false,        // 新增：拖拽状态
     transformType: null, // 'move', 'rotate', 'resize'
@@ -151,14 +156,26 @@ const textPrototype = {
     content: "",
     color: "#2d2d2d",
     fontSize: 36,
-    position: { x: 450, y: 300 },
+    position: { x: 0, y: 0 },
     rotation: 0,
     scale: 1,
-    offset: { x: 0, y: 0 }
+    padding: 10,
+    fontFamily: "'Microsoft YaHei', sans-serif",
+    textAlign: "center",
+    textBaseline: "middle"
 };
 // 系统初始化
 (function init() {
     editorState.ctx = editorState.canvas.getContext('2d');
+    saveState(); // 初始化保存状态
+    
+    // 清洗现有文本数据
+    editorState.textLayers = editorState.textLayers.map(text => ({
+        ...textPrototype,
+        ...text,
+        position: text.position || { x: 450, y: 300 }
+    }));
+    
     initEventListeners();
     redrawCanvas();
 })();
@@ -189,6 +206,8 @@ function initEventListeners() {
     canvas.addEventListener('mouseup', handleCanvasMouseUp);
     canvas.addEventListener('mouseleave', handleCanvasMouseUp);
     // 新增属性实时更新
+    document.getElementById('textContent').addEventListener('input', handleTextInput);
+    document.getElementById('textAlign').addEventListener('change', updateSelectedText);
     document.getElementById('textColor').addEventListener('change', updateSelectedText);
     document.getElementById('fontSize').addEventListener('input', updateSelectedText);
     canvas.addEventListener('dblclick', handleDoubleClick);
@@ -196,6 +215,7 @@ function initEventListeners() {
 
 function handleDoubleClick(e) {
     const pos = getCanvasMousePos(e);
+    let found = false;
     editorState.textLayers.forEach((text, index) => {
         if (isPointInText(pos, text)) {
             editorState.selectedTextIndex = index;
@@ -203,7 +223,9 @@ function handleDoubleClick(e) {
             document.getElementById('textContent').focus();
             redrawCanvas();
         }
+        found = true;
     });
+    if (!found) editorState.selectedTextIndex = -1;
 }
 
 
@@ -214,20 +236,34 @@ function handleCanvasMouseDown(e) {
     editorState.controlPoints.forEach(point => {
         if (isPointInControl(pos, point)) {
             editorState.transformType = point.type;
+            editorState.dragging = true;
             editorState.initialMousePos = pos;
             editorState.initialTextState = {...editorState.textLayers[editorState.selectedTextIndex]};
             return;
         }
     });
+    
     function isPointInControl(pos, control) {
-    const ctx = editorState.ctx;
-    ctx.save();
-    ctx.translate(text.position.x, text.position.y);
-    ctx.rotate(text.rotation);
-    const point = ctx.isPointInPath(control.region, pos.x, pos.y);
-    ctx.restore();
-    return point;
-}
+        const text = editorState.textLayers[editorState.selectedTextIndex];
+                   const ctx = editorState.ctx;
+                   
+                   // 创建变换矩阵
+                   const transform = new DOMMatrix()
+                       .translate(text.position.x, text.position.y)
+                       .rotate(text.rotation * 180 / Math.PI)
+                       .scale(text.scale);
+                   
+                   // 转换点到本地坐标系
+                   const inverse = transform.invert();
+                   const localPos = inverse.transformPoint(new DOMPoint(pos.x, pos.y));
+                   
+                   // 检测控制点区域
+                   const controlSize = 10;
+                   return localPos.x >= control.x - controlSize && 
+                          localPos.x <= control.x + controlSize &&
+                          localPos.y >= control.y - controlSize && 
+                          localPos.y <= control.y + controlSize;
+    }
 
 // 实时更新文字属性
 document.getElementById('textColor').addEventListener('input', function() {
@@ -248,6 +284,8 @@ document.getElementById('textColor').addEventListener('input', function() {
     
     redrawCanvas();
 }
+
+
 document.getElementById('fontSize').addEventListener('input', function() {
     if (editorState.selectedTextIndex >= 0) {
         const text = editorState.textLayers[editorState.selectedTextIndex];
@@ -260,6 +298,7 @@ function handleCanvasMouseMove(e) {
     if (!editorState.transformType) return;
     
     const currentText = editorState.textLayers[editorState.selectedTextIndex];
+    if (!currentText) return;
     const pos = getCanvasMousePos(e);
     const delta = {
         x: pos.x - editorState.initialMousePos.x,
@@ -284,7 +323,7 @@ function handleCanvasMouseMove(e) {
             currentText.fontSize = editorState.initialTextState.fontSize * currentText.scale;
             break;
     }
-    
+    saveState();
     redrawCanvas();
 }
 
@@ -293,46 +332,104 @@ function drawText(text) {
     ctx.save();
     
     // 应用变换
-    ctx.translate(text.position.x, text.position.y);
-    ctx.rotate(text.rotation);
-    ctx.scale(text.scale, text.scale);
+    ctx.setTransform(
+        text.scale * Math.cos(text.rotation), 
+        text.scale * Math.sin(text.rotation),
+        -text.scale * Math.sin(text.rotation),
+        text.scale * Math.cos(text.rotation),
+        text.position.x,
+        text.position.y
+    );
     
     // 设置文字样式
-    ctx.font = `${text.fontSize}px ${text.fontFamily || 'sans-serif'}`;
+    ctx.font = `${text.fontSize}px ${text.fontFamily}`;
     ctx.fillStyle = text.color;
-    ctx.textAlign = text.textAlign || 'center';    // 保存对齐参数
-    ctx.textBaseline = text.textBaseline || 'middle'; // 保存基线参数
+    ctx.textAlign = text.textAlign;
+    ctx.textBaseline = text.textBaseline;
     
-    // 绘制文字
-    ctx.fillText(text.content, text.offset.x || 0, text.offset.y || 0);
+    // 测量文字尺寸
+    const metrics = ctx.measureText(text.content);
+    const textWidth = metrics.width;
+    const textHeight = text.fontSize;
     
-    // 绘制控制点
-    if (editorState.selectedTextIndex === textLayers.indexOf(text)) {
-        const metrics = ctx.measureText(text.content);
-        const width = metrics.width;
-        const height = text.fontSize;
-        
-        // 绘制包围盒
-        ctx.strokeStyle = '#07c160';
-        ctx.setLineDash([5, 3]);
-        ctx.strokeRect(-width/2 -5, -height/2 -5, width + 10, height + 10);
-        
-        // 生成控制点
-        editorState.controlPoints = [
-            createControlPoint(width/2 + 10, 0, 'rotate'),
-            createControlPoint(width/2 + 20, 0, 'resize')
-        ];
-        
-        // 绘制控制点
-        editorState.controlPoints.forEach(point => {
-            ctx.fillStyle = '#07c160';
-            ctx.beginPath();
-            ctx.arc(point.x, point.y, 5, 0, Math.PI*2);
-            ctx.fill();
-        });
+    // 计算绘制位置（考虑对齐方式）
+    let xPos = 0;
+    switch(text.textAlign) {
+        case 'left': xPos = -textWidth/2; break;
+        case 'right': xPos = textWidth/2; break;
+        default: xPos = 0;
     }
     
+    ctx.fillText(text.content, xPos, 0);
+    
+    // 绘制控制点和边界框（当选中时）
+    if (editorState.textLayers.indexOf(text) === editorState.selectedTextIndex) {
+        // 绘制边界框
+        ctx.strokeStyle = '#07c160';
+        ctx.setLineDash([5, 3]);
+        ctx.strokeRect(-textWidth/2 - text.padding, -textHeight/2 - text.padding, 
+                       textWidth + text.padding*2, textHeight + text.padding*2);
+        
+        // 绘制旋转控制点（顶部）
+        drawControlHandle(ctx, 0, -textHeight/2 - text.padding - 20, 'rotate');
+        // 绘制缩放控制点（右侧）
+        drawControlHandle(ctx, textWidth/2 + text.padding + 10, 0, 'resize');
+    }
+     
     ctx.restore();
+}
+function drawControlHandle(ctx, x, y, type) {
+    ctx.fillStyle = type === 'rotate' ? '#07c160' : '#ff3b30';
+    ctx.beginPath();
+    ctx.arc(x, y, 6, 0, Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+}
+
+function handleTextInput(e) {
+    if (editorState.selectedTextIndex >= 0) {
+        editorState.textLayers[editorState.selectedTextIndex].content = e.target.value;
+        redrawCanvas();
+    }
+}
+
+function updateTextAlignment() {
+    if (editorState.selectedTextIndex >= 0) {
+        const align = document.getElementById('textAlign').value;
+        editorState.textLayers[editorState.selectedTextIndex].textAlign = align;
+        redrawCanvas();
+    }
+}
+
+// 状态管理
+function saveState() {
+    editorState.history.push({
+        textLayers: JSON.parse(JSON.stringify(editorState.textLayers)),
+        backgroundImage: editorState.backgroundImage?.src
+    });
+    // 保持最多50个历史状态
+    if (editorState.history.length > 50) editorState.history.shift();
+}
+
+function undoLastAction() {
+    if (editorState.history.length > 1) {
+        editorState.history.pop(); // 移除当前状态
+        const prevState = editorState.history[editorState.history.length-1];
+        editorState.textLayers = JSON.parse(JSON.stringify(prevState.textLayers));
+        if (prevState.backgroundImage) {
+            const img = new Image();
+            img.src = prevState.backgroundImage;
+            img.onload = () => {
+                editorState.backgroundImage = img;
+                redrawCanvas();
+            };
+        } else {
+            editorState.backgroundImage = null;
+        }
+        redrawCanvas();
+    }
 }
 function getCanvasMousePos(event) {
     const canvas = editorState.canvas;
@@ -354,6 +451,10 @@ function createControlPoint(x, y, type) {
     };
 }
 function isPointInText(point, text) {
+    if (!text || typeof text.position === 'undefined') {
+        console.warn('Invalid text object:', text);
+        return false;
+    }
     const ctx = editorState.ctx;
     ctx.save();  // 保存当前画布状态
     
@@ -457,11 +558,11 @@ function addTextLayer() {
     } else {
         // 添加新文字
         editorState.textLayers.push({
+            ...textPrototype, // 合并原型默认值
             content,
             color: document.getElementById('textColor').value,
             fontSize: parseInt(document.getElementById('fontSize').value),
-            position: { x: 450, y: 300 },
-            fontFamily: "'Microsoft YaHei', sans-serif"
+            position: { x: 450, y: 300 } // 显式覆盖位置
         });
     }
 
