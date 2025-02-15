@@ -1,9 +1,45 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta charset="UTF-8">
     <title>微信封面编辑器 - 完整版</title>
     <style>
+         @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .toolbar {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-group {
+                padding: 12px;
+            }
+            
+            button {
+                padding: 12px;
+                margin: 4px 2px;
+                font-size: 14px;
+            }
+            
+            #editorCanvas {
+                max-width: 100%;
+                height: auto!important;
+            }
+            
+            input, select {
+                font-size: 16px!important; /* 防止iOS缩放 */
+            }
+        }
+        
+        /* 优化控制点触摸区域 */
+        .control-point {
+            width: 30px!important;
+            height: 30px!important;
+            margin: -15px;
+        }
         :root {
             --primary-color: #07c160;
             --bg-color: #f5f5f5;
@@ -170,6 +206,9 @@ const textPrototype = {
 (function init() {
     editorState.ctx = editorState.canvas.getContext('2d');
     initEventListeners();
+    initTouchListeners(); // 新增触摸监听
+    adaptCanvasSize();
+    window.addEventListener('resize', adaptCanvasSize);
     loadFromLocalStorage(); // 新增加载逻辑
     requestAnimationFrame(redrawCanvas);
     saveState();
@@ -265,6 +304,13 @@ function initEventListeners() {
     document.getElementById('fontSize').addEventListener('change', saveToLocalStorage);
     document.getElementById('textAlign').addEventListener('change', saveToLocalStorage);
 
+    
+    canvas.addEventListener('touchstart', handleTouchStart, {passive: false});
+    canvas.addEventListener('touchmove', handleTouchMove, {passive: false});
+    canvas.addEventListener('touchend', handleTouchEnd);
+    canvas.addEventListener('touchcancel', handleTouchEnd);
+
+
     // 文字输入实时更新
     document.getElementById('textContent').addEventListener('input', function(e) {
         if (editorState.selectedTextIndex > -1) {
@@ -272,7 +318,30 @@ function initEventListeners() {
             redrawCanvas();
         }
     });
+
+    // 优化文字输入体验
+    document.getElementById('textContent').addEventListener('focus', function() {
+        window.scrollTo(0, this.offsetTop - 100); // 自动滚动到输入框
+    });
+
 }
+
+function handleTouchStart(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        handleCanvasMouseDown(touch);
+    }
+
+    function handleTouchMove(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        handleCanvasMouseMove(touch);
+    }
+
+    function handleTouchEnd(e) {
+        handleCanvasMouseUp();
+    }
+
 // 添加在 redrawCanvas 函数之前
 function drawBackground() {
     const { ctx, canvas, backgroundImage } = editorState;
@@ -650,16 +719,41 @@ function undoLastAction() {
 }
 
 
-function getCanvasMousePos(event) {
-    const rect = editorState.canvas.getBoundingClientRect();
-    // 考虑画布实际渲染尺寸与逻辑尺寸的差异
-    const scaleX = editorState.canvas.width / rect.width;
-    const scaleY = editorState.canvas.height / rect.height;
-    return {
-        x: (event.clientX - rect.left) * scaleX,
-        y: (event.clientY - rect.top) * scaleY
-    };
-}
+
+    // 更新坐标获取方法
+    function getCanvasMousePos(event) {
+        const rect = editorState.canvas.getBoundingClientRect();
+        let clientX, clientY;
+        
+        if (event.touches) {
+            clientX = event.touches[0].clientX;
+            clientY = event.touches[0].clientY;
+        } else {
+            clientX = event.clientX;
+            clientY = event.clientY;
+        }
+        
+        const scaleX = editorState.canvas.width / rect.width;
+        const scaleY = editorState.canvas.height / rect.height;
+        
+        return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
+        };
+    }
+
+ // 动态调整画布大小
+ function adaptCanvasSize() {
+        const canvas = editorState.canvas;
+        const container = document.querySelector('.container');
+        const maxWidth = container.clientWidth;
+        const aspectRatio = 900 / 383;
+        
+        canvas.style.width = Math.min(maxWidth, 900) + 'px';
+        canvas.style.height = (canvas.clientWidth / aspectRatio) + 'px';
+    }
+
+
 function createControlPoint(x, y, type) {
     return {
         x: x,
@@ -843,6 +937,35 @@ function exportImage() {
     link.href = editorState.canvas.toDataURL('image/jpeg', 0.92);
     link.click();
 }
+
+// 添加手势缩放支持
+let initialDistance = null;
+    document.addEventListener('touchstart', function(e) {
+        if (e.touches.length === 2) {
+            initialDistance = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+        }
+    });
+
+    document.addEventListener('touchmove', function(e) {
+        if (e.touches.length === 2 && editorState.selectedTextIndex !== -1) {
+            const currentDistance = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+            
+            const scale = currentDistance / initialDistance;
+            const text = editorState.textLayers[editorState.selectedTextIndex];
+            text.scale = Math.max(0.5, Math.min(3, text.scale * scale));
+            initialDistance = currentDistance;
+            
+            redrawCanvas();
+            e.preventDefault();
+        }
+    });
+    
 </script>
 </body>
 </html>
