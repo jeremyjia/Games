@@ -308,10 +308,13 @@ function drawBackground() {
         );
     }
 }
+
+
 function handleKeyDown(e) {
     if (editorState.selectedTextIndex === -1) return;
     
     const step = 5; // 移动步长
+    const rotateStep = 1 * Math.PI / 180; // 1度的弧度值
     const text = editorState.textLayers[editorState.selectedTextIndex];
     
     // 边界限制参数
@@ -320,12 +323,32 @@ function handleKeyDown(e) {
     const minY = 50;
     const maxY = editorState.canvas.height - 50;
 
+    // 添加Delete键处理
+    if (e.key === 'Delete') {
+        editorState.textLayers.splice(editorState.selectedTextIndex, 1);
+        editorState.selectedTextIndex = -1;
+        redrawCanvas();
+        saveToLocalStorage();
+        e.preventDefault();
+        return;
+    }
+
     switch(e.key) {
         case 'ArrowLeft':
-            text.position.x = Math.max(minX, text.position.x - step);
+            if (e.shiftKey) {
+                // Shift + 左方向键：逆时针旋转
+                text.rotation -= rotateStep;
+            } else {
+                // 普通左方向键：左移
+                text.position.x = Math.max(minX, text.position.x - step);
+            }
             break;
         case 'ArrowRight':
-            text.position.x = Math.min(maxX, text.position.x + step);
+            if (e.shiftKey) { 
+                text.rotation += rotateStep;
+            } else { 
+                text.position.x = Math.min(maxX, text.position.x + step);
+            }
             break;
         case 'ArrowUp':
             text.position.y = Math.max(minY, text.position.y - step);
@@ -337,10 +360,19 @@ function handleKeyDown(e) {
             return; // 非方向键不处理
     }
     
+    // 规范化旋转角度到0-2π范围
+    text.rotation = text.rotation % (2 * Math.PI);
+    if (text.rotation < 0) {
+        text.rotation += 2 * Math.PI;
+    }
+    
     e.preventDefault(); // 阻止页面滚动
     redrawCanvas();
     saveToLocalStorage();
 }
+
+
+
 function handleDoubleClick(e) {
     const pos = getCanvasMousePos(e);
     let selectedIndex = -1;
