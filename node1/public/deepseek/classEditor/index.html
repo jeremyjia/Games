@@ -187,6 +187,7 @@
             <button data-class="1">Class2</button>
             <button data-class="2">Class3</button>
             <button id="updateBtn">更新类</button>
+            <button id="toggleEditorBtn">Toggle Editor</button>
             <hr>
             <button id="generateInstanceBtn">生成实例</button>
         </div>
@@ -376,6 +377,12 @@
                 console.error('实例创建失败:', e);
                 alert('类定义有误，请检查语法');
             }
+        });
+
+        // Toggle Editor功能
+        document.getElementById('toggleEditorBtn').addEventListener('click', function() {
+            const editor = document.getElementById('id_4_code_editor');
+            editor.style.display = editor.style.display === 'none' ? 'block' : 'none';
         });
 
         function createClass(code) {
