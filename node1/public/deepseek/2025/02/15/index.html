@@ -170,10 +170,58 @@
         .direction-controls {
             padding: 12px;
         }
+        .nav-menu {
+            background: var(--primary-color);
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .nav-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+        }
+
+        .nav-item {
+            padding: 15px 25px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 6px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .nav-list {
+                flex-direction: column;
+            }
+            
+            .nav-item {
+                padding: 12px 20px;
+                text-align: center;
+            }
+        }
+
     </style>
 </head>
 <body>
     <div class="container">
+        <nav class="nav-menu">
+            <ul class="nav-list">
+                <li class="nav-item" onclick="showHome()">🏠 首页</li>
+                <li class="nav-item" onclick="window.location.href='..'">[..]</li>
+                <li class="nav-item" onclick="window.location.href='c1.html'">c1.html</li>
+                <li class="nav-item" onclick="window.location.href='readme.md'">readme.md</li>
+
+                <!-- 可以继续添加更多菜单项 -->
+            </ul>
+        </nav>
         <h1>🎨 微信封面编辑器</h1>
         <div class="alert" id="alertBox"></div>
         
@@ -235,7 +283,13 @@
     </div>
 
 <script>
-
+// 新增菜单功能函数
+function showHome() {
+        // 这里可以添加首页相关的功能
+        showAlert('已返回首页');
+        // 示例：滚动到顶部
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    }
 let panelDragging = false;
 let panelOffset = { x: 0, y: 0 };
 const directionPanel = document.getElementById('directionPanel');
