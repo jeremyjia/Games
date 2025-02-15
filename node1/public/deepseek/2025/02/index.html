@@ -19,17 +19,22 @@
         .menu-items {
             display: flex;
             list-style: none;
+            flex-wrap: wrap;
         }
 
         .menu-item {
             position: relative;
+            text-align: center;
         }
 
         .menu-item a {
+            display: block;
+            padding: 1rem;
             color: white;
             text-decoration: none;
-            padding: 1rem;
-            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .submenu {
@@ -55,47 +60,53 @@
             cursor: pointer;
         }
 
-        @media (max-width: 768px) {
-            .menu-items {
-                display: none;
-                flex-direction: column;
-                width: 100%;
+        @media (max-width: 400px) {
+            .menu-item {
+                width: 33.33%;
+                border: 1px solid #555;
             }
-
-            .mobile-menu-toggle {
-                display: block;
-            }
-
-            .menu-item:hover .submenu {
-                display: none;
+            
+            .menu-item:nth-child(n+4) {
+                width: 25%;  /* 修改为25%宽度 */
+                font-size: 0.7rem;  /* 微调字体大小 */
             }
 
             .submenu {
                 position: static;
-                background: #555;
-                padding-left: 1rem;
+                width: 100%;
+                background: #666;
             }
 
-            .nav-menu.active .menu-items {
-                display: flex;
+            .menu-item.active .submenu {
+                display: block;
+                width: 100vw;
+                margin-left: -1rem;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
             }
         }
     </style>
 </head>
 <body>
     <nav class="nav-container"></nav>
-    <p>
-        设计一个JavaScript类可以实现导航菜单。
-在设计一个网页测试这个类，随便添加几个实例。其中有一个菜单项连接到deep sick的主页。
-在手机上可以完美原型。
-    </p>
-
+    <p>第二行开始显示四项菜单项。</p>
     <script>
         class NavMenu {
             constructor(config) {
-                this.config = config;
+                // 使用深拷贝避免污染原始配置
+                this.config = JSON.parse(JSON.stringify(config));
+                this.config.items[2].children = [
+                    { 
+                        text: '深度求索', 
+                        href: 'https://www.deepseek.com', 
+                        title: '前往深度求索主页' 
+                    }
+                ];
                 this.init();
                 this.bindEvents();
+                this.handleResize();
             }
 
             init() {
@@ -122,15 +133,11 @@
                 li.className = 'menu-item';
                 
                 const a = document.createElement('a');
-                a.href = item.href;
+                a.href = item.href || '#';  // 安全处理href
                 a.textContent = item.text;
-                
-                li.appendChild(a);
+                if (item.title) a.title = item.title;
 
-                    // 添加title属性
-                if (item.title) {
-                        a.title = item.title;  // 新增代码
-                    }
+                li.appendChild(a);
 
                 if (item.children) {
                     const submenu = document.createElement('ul');
@@ -138,7 +145,6 @@
                     item.children.forEach(child => {
                         submenu.appendChild(this.createMenuItem(child));
                     });
-
                     li.appendChild(submenu);
                 }
 
@@ -146,114 +152,74 @@
             }
 
             bindEvents() {
-                this.toggleButton.addEventListener('click', () => this.toggleMenu());
-                
-                // 移动端子菜单切换
+                // 菜单切换按钮事件
+                this.toggleButton.addEventListener('click', () => {
+                    this.menuItems.style.display = this.menuItems.style.display === 'none' 
+                        ? 'flex' 
+                        : 'none';
+                });
+
+                // 子菜单交互逻辑
                 this.menuItems.querySelectorAll('.menu-item').forEach(item => {
-                    if (item.querySelector('.submenu')) {
-                        item.addEventListener('click', (e) => {
-                            if (window.innerWidth <= 768) {
-                                e.preventDefault();
-                                item.classList.toggle('active');
-                                item.querySelector('.submenu').style.display = 
-                                    item.classList.contains('active') ? 'block' : 'none';
-                            }
+                    const submenu = item.querySelector('.submenu');
+                    if (!submenu) return;
+
+                    item.addEventListener('click', (e) => {
+                        if (window.innerWidth > 400) return;
+                        
+                        e.preventDefault();  // 阻止默认行为
+                        e.stopPropagation();
+                        item.classList.toggle('active');
+                    });
+                });
+
+                // 点击外部区域关闭菜单
+                window.addEventListener('click', () => {
+                    if (window.innerWidth <= 400) {
+                        this.menuItems.querySelectorAll('.menu-item').forEach(item => {
+                            item.classList.remove('active');
                         });
                     }
                 });
 
+                // 响应式处理
                 window.addEventListener('resize', () => this.handleResize());
             }
 
-            toggleMenu() {
-                this.nav.classList.toggle('active');
-            }
-
             handleResize() {
-                if (window.innerWidth > 768) {
-                    this.nav.classList.remove('active');
+                if (window.innerWidth > 400) {
+                    this.menuItems.style.display = 'flex';
                     this.menuItems.querySelectorAll('.submenu').forEach(sub => {
-                        sub.style.display = 'none';
+                        sub.style.display = '';
                     });
+                } else {
+                    this.menuItems.style.display = 'none';
                 }
             }
         }
 
-        // 创建菜单配置
+        // 初始化配置
         const menuConfig = {
             items: [
-                {
-                    text: '首页',
-                    href: '/'
-                },
-                {
-                    text: '[..]',
-                    href: '..'
-                },
-                {
-                    text: '[2025/02]->',
-                    href: '#'
-                },
-                {
-                    text: '[03]',
-                    href: '03'
-                },
-                {
-                    text: '[04]',
-                    href: '04'
-                },
-                {
-                    text: '[08]',
-                    href: '08'
-                },
-                {
-                    text: '[10]',
-                    href: '10'
-                },
-                {
-                    text: '[11]',
-                    href: '11'
-                },
-                {
-                    text: '[12]',
-                    href: '12'
-                },
-                {
-                    text: '[13]',
-                    href: '13'
-                },
-                {
-                    text: '[14]',
-                    href: '14',
-                    title: '14 info'
-                },
-                {
-                    text: '[15]',
-                    href: '15',
-                    title: '微信封面图片编辑'
-                },
-                {
-                    text: '深度求索',
-                    href: 'https://www.deepseek.com'
-                },
-                {
-                    text: '产品',
-                    href: '#',
-                    children: [
-                        { text: '产品1', href: '#' },
-                        { text: '产品2', href: '#' }
-                    ]
-                },
-                {
-                    text: '联系我们',
-                    href: '#contact'
-                }
+                { text: '首页', href: '/' },
+                { text: '[..]', href: '..' },
+                { text: '[2025/02]->', href: '#' },
+                { text: '[03]', href: '03' },
+                { text: '[04]', href: '04' },
+                { text: '[08]', href: '08' },
+                { text: '[10]', href: '10' },
+                { text: '[11]', href: '11' },
+                { text: '[12]', href: '12' },
+                { text: '[13]', href: '13' },
+                { text: '[14]', href: '14' },
+                { text: '[15]', href: '15' },
+                { text: '[16]', href: '16' }
             ]
         };
 
-        // 初始化导航菜单
-        const navMenu = new NavMenu(menuConfig);
-        document.querySelector('.nav-container').appendChild(navMenu.nav);
+        const nav = new NavMenu(menuConfig);
+        nav.toggleButton.click();
+        document.querySelector('.nav-container').appendChild(nav.nav);
     </script>
 </body>
 </html>
