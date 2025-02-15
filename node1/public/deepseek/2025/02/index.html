@@ -46,10 +46,6 @@
             left: 0;
         }
 
-        .menu-item:hover .submenu {
-            display: block;
-        }
-
         .mobile-menu-toggle {
             display: none;
             background: none;
@@ -60,31 +56,49 @@
             cursor: pointer;
         }
 
+        /* 桌面端样式 */
+        @media (min-width: 401px) {
+            .menu-item:hover .submenu {
+                display: block;
+            }
+            .mobile-menu-toggle {
+                display: none !important;
+            }
+        }
+
+        /* 移动端样式 */
         @media (max-width: 400px) {
+            .menu-items {
+                display: flex !important;
+                flex-direction: column;
+            }
+            
             .menu-item {
-                width: 33.33%;
-                border: 1px solid #555;
+                width: 100%;
+                border-bottom: 1px solid #555;
             }
             
             .menu-item:nth-child(n+4) {
-                width: 25%;  /* 修改为25%宽度 */
-                font-size: 0.7rem;  /* 微调字体大小 */
+                width: 100%;
+                font-size: 0.9rem;
             }
 
             .submenu {
                 position: static;
                 width: 100%;
                 background: #666;
+                display: none;
             }
 
             .menu-item.active .submenu {
                 display: block;
-                width: 100vw;
-                margin-left: -1rem;
             }
 
             .mobile-menu-toggle {
                 display: block;
+                position: absolute;
+                right: 0;
+                top: 0;
             }
         }
     </style>
@@ -95,7 +109,6 @@
     <script>
         class NavMenu {
             constructor(config) {
-                // 使用深拷贝避免污染原始配置
                 this.config = JSON.parse(JSON.stringify(config));
                 this.config.items[2].children = [
                     { 
@@ -115,7 +128,7 @@
                 
                 this.toggleButton = document.createElement('button');
                 this.toggleButton.className = 'mobile-menu-toggle';
-                this.toggleButton.innerHTML = '☰';
+                this.toggleButton.innerHTML = '×';
                 
                 this.menuItems = document.createElement('ul');
                 this.menuItems.className = 'menu-items';
@@ -133,7 +146,7 @@
                 li.className = 'menu-item';
                 
                 const a = document.createElement('a');
-                a.href = item.href || '#';  // 安全处理href
+                a.href = item.href || '#';
                 a.textContent = item.text;
                 if (item.title) a.title = item.title;
 
@@ -152,14 +165,15 @@
             }
 
             bindEvents() {
-                // 菜单切换按钮事件
+                // 移动端菜单切换
                 this.toggleButton.addEventListener('click', () => {
-                    this.menuItems.style.display = this.menuItems.style.display === 'none' 
-                        ? 'flex' 
-                        : 'none';
+                    this.menuItems.style.display = 
+                        this.menuItems.style.display === 'none' ? 'flex' : 'none';
+                    this.toggleButton.innerHTML = 
+                        this.menuItems.style.display === 'none' ? '☰' : '×';
                 });
 
-                // 子菜单交互逻辑
+                // 子菜单交互
                 this.menuItems.querySelectorAll('.menu-item').forEach(item => {
                     const submenu = item.querySelector('.submenu');
                     if (!submenu) return;
@@ -167,33 +181,33 @@
                     item.addEventListener('click', (e) => {
                         if (window.innerWidth > 400) return;
                         
-                        e.preventDefault();  // 阻止默认行为
+                        e.preventDefault();
                         e.stopPropagation();
                         item.classList.toggle('active');
                     });
                 });
 
-                // 点击外部区域关闭菜单
-                window.addEventListener('click', () => {
+                // 点击外部关闭子菜单
+                document.addEventListener('click', (e) => {
                     if (window.innerWidth <= 400) {
                         this.menuItems.querySelectorAll('.menu-item').forEach(item => {
-                            item.classList.remove('active');
+                            if (!item.contains(e.target)) {
+                                item.classList.remove('active');
+                            }
                         });
                     }
                 });
 
-                // 响应式处理
                 window.addEventListener('resize', () => this.handleResize());
             }
 
             handleResize() {
                 if (window.innerWidth > 400) {
                     this.menuItems.style.display = 'flex';
-                    this.menuItems.querySelectorAll('.submenu').forEach(sub => {
-                        sub.style.display = '';
-                    });
+                    this.toggleButton.style.display = 'none';
                 } else {
-                    this.menuItems.style.display = 'none';
+                    this.menuItems.style.display = 'flex'; // 移动端默认展开
+                    this.toggleButton.style.display = 'block';
                 }
             }
         }
@@ -212,13 +226,11 @@
                 { text: '[12]', href: '12' },
                 { text: '[13]', href: '13' },
                 { text: '[14]', href: '14' },
-                { text: '[15]', href: '15' },
-                { text: '[16]', href: '16' }
+                { text: '[15]', href: '15' }, 
             ]
         };
 
         const nav = new NavMenu(menuConfig);
-        nav.toggleButton.click();
         document.querySelector('.nav-container').appendChild(nav.nav);
     </script>
 </body>
