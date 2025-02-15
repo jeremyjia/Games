@@ -147,6 +147,29 @@
         font-size: 24px;
     }
 }
+
+.direction-panel {
+            display: none;
+            position: fixed;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            cursor: move;
+            user-select: none;
+        }
+        
+        .panel-header {
+            padding: 8px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 8px 8px 0 0;
+            text-align: center;
+        }
+        
+        .direction-controls {
+            padding: 12px;
+        }
     </style>
 </head>
 <body>
@@ -180,16 +203,7 @@
                                              <option value="center" selected>居中</option>
                                              <option value="right">右对齐</option>
                     </select>
-
-                    <div class="direction-controls">
-                        <button class="arrow-btn" onclick="moveText('up')">↑</button>
-                        <div>
-                            <button class="arrow-btn" onclick="moveText('left')">←</button>
-                            <button class="arrow-btn" onclick="moveText('right')">→</button>
-                        </div>
-                        <button class="arrow-btn" onclick="moveText('down')">↓</button>
-                    </div>
-
+ 
                     <button onclick="addTextLayer()">添加文字</button>
                     <button onclick="clearAllText()">清除文字</button>
                 </div>
@@ -206,9 +220,27 @@
             <!-- 画布区域 -->
             <canvas id="editorCanvas" width="900" height="383"></canvas>
         </div>
+
+        <div class="direction-panel" id="directionPanel">
+            <div class="panel-header">↔ 位置调整</div>
+            <div class="direction-controls">
+                <button class="arrow-btn" onclick="moveText('up')">↑</button>
+                <div>
+                    <button class="arrow-btn" onclick="moveText('left')">←</button>
+                    <button class="arrow-btn" onclick="moveText('right')">→</button>
+                </div>
+                <button class="arrow-btn" onclick="moveText('down')">↓</button>
+            </div>
+        </div>
     </div>
 
 <script>
+
+let panelDragging = false;
+let panelOffset = { x: 0, y: 0 };
+const directionPanel = document.getElementById('directionPanel');
+
+
 // 初始化状态
 const editorState = {
     version: 1,
@@ -240,6 +272,7 @@ const textPrototype = {
 };
 // 系统初始化
 (function init() {
+    initPanelDrag();
     editorState.ctx = editorState.canvas.getContext('2d');
     initEventListeners();
     initTouchListeners(); // 新增触摸监听
@@ -249,7 +282,41 @@ const textPrototype = {
     requestAnimationFrame(redrawCanvas);
     saveState();
 })();
+function initPanelDrag() {
+    const header = directionPanel.querySelector('.panel-header');
+    
+    // 鼠标事件
+    header.addEventListener('mousedown', startDrag);
+    document.addEventListener('mousemove', handleDrag);
+    document.addEventListener('mouseup', stopDrag);
+    
+    // 触摸事件
+    header.addEventListener('touchstart', startDrag);
+    document.addEventListener('touchmove', handleDrag);
+    document.addEventListener('touchend', stopDrag);
 
+    function startDrag(e) {
+        panelDragging = true;
+        const rect = directionPanel.getBoundingClientRect();
+        panelOffset = {
+            x: (e.clientX || e.touches[0].clientX) - rect.left,
+            y: (e.clientY || e.touches[0].clientY) - rect.top
+        };
+    }
+
+    function handleDrag(e) {
+        if (!panelDragging) return;
+        const x = (e.clientX || e.touches[0].clientX) - panelOffset.x;
+        const y = (e.clientY || e.touches[0].clientY) - panelOffset.y;
+        
+        directionPanel.style.left = `${x}px`;
+        directionPanel.style.top = `${y}px`;
+    }
+
+    function stopDrag() {
+        panelDragging = false;
+    }
+}
 function saveToLocalStorage() {
     const stateToSave = {
         version: editorState.version,
@@ -621,9 +688,32 @@ document.getElementById('textColor').addEventListener('input', function() {
         editorState.selectedTextIndex = -1;
         redrawCanvas();
     }
+
+    // 选中文字后显示面板
+    if (editorState.selectedTextIndex !== -1) {
+        showDirectionPanel(e);
+    } else {
+        directionPanel.style.display = 'none';
+    }
 }
 
-
+function showDirectionPanel(e) {
+    directionPanel.style.display = 'block';
+    
+    // 初始位置设置
+    const canvasRect = editorState.canvas.getBoundingClientRect();
+    const panelWidth = 120;
+    const panelHeight = 160;
+    
+    let x = canvasRect.right - panelWidth - 20;
+    let y = canvasRect.top + 20;
+    
+    // 如果首次显示，定位在画布右侧
+    if (!directionPanel.style.left) {
+        directionPanel.style.left = `${x}px`;
+        directionPanel.style.top = `${y}px`;
+    }
+}
 document.getElementById('fontSize').addEventListener('input', function() {
     if (editorState.selectedTextIndex >= 0) {
         const text = editorState.textLayers[editorState.selectedTextIndex];
@@ -870,6 +960,9 @@ function isPointInText(point, text) {
 function handleCanvasMouseUp() {
     editorState.dragging = false;
     editorState.transformType = null;  // 新增这行代码
+    if (editorState.selectedTextIndex === -1) {
+        directionPanel.style.display = 'none';
+    }
 }
 function updateSelectedText() {
     if (editorState.selectedTextIndex === -1) return;
@@ -984,6 +1077,7 @@ function clearAllText() {
     editorState.selectedTextIndex = -1; // 重置选中状态
     redrawCanvas();
     saveToLocalStorage();
+    directionPanel.style.display = 'none';
 }
 
 function toggleGrid() {
