@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>微信封面编辑器 - 完整版</title>
+    <style>
+        :root {
+            --primary-color: #07c160;
+            --bg-color: #f5f5f5;
+        }
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            padding: 20px;
+            background: var(--bg-color);
+            min-width: 320px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .editor-panel {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-top: 20px;
+        }
+        canvas {
+            border: 2px dashed #ddd;
+            margin: 20px 0;
+            background: repeating-conic-gradient(#f8f9fa 0% 25%, white 0% 50%) 50%/20px 20px;
+        }
+        .toolbar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .control-group {
+            background: #f8f9fa;
+            padding: 18px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+        input[type="text"], 
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin: 6px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 4px;
+        }
+        button:hover {
+            background: #05964a;
+            transform: translateY(-1px);
+        }
+        .alert {
+            padding: 10px;
+            background: #fff3cd;
+            border-radius: 4px;
+            margin: 10px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 微信封面编辑器</h1>
+        <div class="alert" id="alertBox"></div>
+        
+        <div class="editor-panel">
+            <div class="toolbar">
+                <!-- 图片控制 -->
+                <div class="control-group">
+                    <h3>🖼️ 图片操作</h3>
+                    <input type="file" id="imageUpload" accept="image/*" hidden>
+                    <button onclick="document.getElementById('imageUpload').click()">
+                        上传图片
+                    </button>
+                    <button onclick="resetBackground()">移除背景</button>
+                </div>
+
+                <!-- 文字控制 -->
+                <div class="control-group">
+                    <h3>✍️ 文字编辑</h3>
+                    <input type="text" id="textContent" placeholder="输入文字内容">
+                    <div style="margin: 10px 0">
+                        <label>颜色：</label>
+                        <input type="color" id="textColor" value="#2d2d2d">
+                        <label>大小：</label>
+                        <input type="number" id="fontSize" value="36" min="24" max="72" step="2">
+                    </div>
+                    <button onclick="addTextLayer()">添加文字</button>
+                    <button onclick="clearAllText()">清除文字</button>
+                </div>
+
+                <!-- 输出控制 -->
+                <div class="control-group">
+                    <h3>📥 输出设置</h3>
+                    <button onclick="exportImage()">下载封面 (900×383)</button>
+                    <button onclick="toggleGrid()">切换参考线</button>
+                </div>
+            </div>
+
+            <!-- 画布区域 -->
+            <canvas id="editorCanvas" width="900" height="383"></canvas>
+        </div>
+    </div>
+
+<script>
+// 初始化状态
+const editorState = {
+    canvas: document.getElementById('editorCanvas'),
+    ctx: null,
+    backgroundImage: null,
+    textLayers: [],
+    showGrid: true
+};
+
+// 系统初始化
+(function init() {
+    editorState.ctx = editorState.canvas.getContext('2d');
+    initEventListeners();
+    redrawCanvas();
+})();
+
+// 事件监听
+function initEventListeners() {
+    // 图片上传
+    document.getElementById('imageUpload').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+            loadImageFile(file);
+        }
+    });
+
+    // 快捷键支持
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'z') {
+            undoLastAction();
+        }
+    });
+}
+
+// 核心功能函数
+function loadImageFile(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+            editorState.backgroundImage = img;
+            showAlert('图片上传成功');
+            redrawCanvas();
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function addTextLayer() {
+    const textInput = document.getElementById('textContent');
+    const content = textInput.value.trim();
+    
+    if (!content) {
+        showAlert('请输入文字内容', 'warning');
+        return;
+    }
+
+    editorState.textLayers.push({
+        content,
+        color: document.getElementById('textColor').value,
+        fontSize: parseInt(document.getElementById('fontSize').value),
+        position: { x: 450, y: 300 }, // 默认位置
+        fontFamily: "'Microsoft YaHei', sans-serif"
+    });
+
+    textInput.value = '';
+    redrawCanvas();
+}
+
+function redrawCanvas() {
+    const { ctx, canvas } = editorState;
+    
+    // 清空画布
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 绘制背景
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // 绘制背景图片
+    if (editorState.backgroundImage) {
+        const img = editorState.backgroundImage;
+        const scale = Math.min(
+            canvas.width / img.width,
+            canvas.height / img.height
+        );
+        const width = img.width * scale;
+        const height = img.height * scale;
+        
+        ctx.drawImage(
+            img,
+            (canvas.width - width) / 2,
+            (canvas.height - height) / 2,
+            width,
+            height
+        );
+    }
+
+    // 绘制文字层
+    editorState.textLayers.forEach(text => {
+        ctx.save();
+        ctx.font = `${text.fontSize}px ${text.fontFamily}`;
+        ctx.fillStyle = text.color;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text.content, text.position.x, text.position.y);
+        ctx.restore();
+    });
+
+    // 绘制参考线
+    if (editorState.showGrid) {
+        drawReferenceGuides();
+    }
+}
+
+// 辅助功能
+function drawReferenceGuides() {
+    const { ctx, canvas } = editorState;
+    ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
+    ctx.setLineDash([5, 5]);
+    
+    // 中心线
+    ctx.beginPath();
+    ctx.moveTo(canvas.width/2, 0);
+    ctx.lineTo(canvas.width/2, canvas.height);
+    ctx.stroke();
+    
+    // 安全区域
+    ctx.strokeStyle = 'rgba(0, 150, 255, 0.3)';
+    ctx.strokeRect(50, 50, canvas.width-100, canvas.height-100);
+}
+
+function showAlert(message, type = 'info') {
+    const alertBox = document.getElementById('alertBox');
+    alertBox.style.display = 'block';
+    alertBox.textContent = message;
+    alertBox.className = `alert ${type}`;
+    setTimeout(() => alertBox.style.display = 'none', 3000);
+}
+
+// 控制功能
+function resetBackground() {
+    editorState.backgroundImage = null;
+    redrawCanvas();
+}
+
+function clearAllText() {
+    editorState.textLayers = [];
+    redrawCanvas();
+}
+
+function toggleGrid() {
+    editorState.showGrid = !editorState.showGrid;
+    redrawCanvas();
+}
+
+function undoLastAction() {
+    if (editorState.textLayers.length > 0) {
+        editorState.textLayers.pop();
+        redrawCanvas();
+    }
+}
+
+// 导出图片
+function exportImage() {
+    const link = document.createElement('a');
+    link.download = `wechat-cover-${Date.now()}.jpg`;
+    link.href = editorState.canvas.toDataURL('image/jpeg', 0.92);
+    link.click();
+}
+</script>
+</body>
+</html>
