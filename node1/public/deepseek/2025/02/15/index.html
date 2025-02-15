@@ -277,26 +277,25 @@ function handleCanvasMouseDown(e) {
     });
     
     function isPointInControl(pos, control) {
-        const text = editorState.textLayers[editorState.selectedTextIndex];
-                   const ctx = editorState.ctx;
-                   
-                   // 创建变换矩阵
-                   const transform = new DOMMatrix()
-                       .translate(text.position.x, text.position.y)
-                       .rotate(text.rotation * 180 / Math.PI)
-                       .scale(text.scale);
-                   
-                   // 转换点到本地坐标系
-                   const inverse = transform. inverse();
-                   const localPos = inverse.transformPoint(new DOMPoint(pos.x, pos.y));
-                   
-                   // 检测控制点区域
-                   const controlSize = 10;
-                   return localPos.x >= control.x - controlSize && 
-                          localPos.x <= control.x + controlSize &&
-                          localPos.y >= control.y - controlSize && 
-                          localPos.y <= control.y + controlSize;
-    }
+    // 简化控制点检测，使用屏幕坐标系
+    const text = editorState.textLayers[editorState.selectedTextIndex];
+    const controlSize = 20; // 增大检测区域
+    
+    // 计算控制点的实际屏幕坐标
+    const transform = new DOMMatrix()
+        .translate(text.position.x, text.position.y)
+        .rotate(text.rotation)
+        .scale(text.scale);
+    
+    const controlPoint = transform.transformPoint(new DOMPoint(control.x, control.y));
+    
+    return (
+        pos.x >= controlPoint.x - controlSize &&
+        pos.x <= controlPoint.x + controlSize &&
+        pos.y >= controlPoint.y - controlSize &&
+        pos.y <= controlPoint.y + controlSize
+    );
+}
 
 // 实时更新文字属性
 document.getElementById('textColor').addEventListener('input', function() {
@@ -334,54 +333,55 @@ document.getElementById('fontSize').addEventListener('input', function() {
         redrawCanvas();
     }
 });
-
+ 
 function handleCanvasMouseMove(e) {
-    // 修改判断条件，增加 dragging 状态检查
-    if (!editorState.dragging || !editorState.transformType) return;     
+    if (!editorState.dragging || !editorState.transformType) return;
     const currentText = editorState.textLayers[editorState.selectedTextIndex];
     if (!currentText) return;
     const pos = getCanvasMousePos(e);
 
-     // 使用更精确的坐标转换
-     const transform = new DOMMatrix()
-        .translate(currentText.position.x, currentText.position.y)
-        .rotate(currentText.rotation)
-        .scale(currentText.scale);
-
-    const inverse = transform.inverse();
-    const currentPoint = inverse.transformPoint(new DOMPoint(pos.x, pos.y));
-    const initialPoint = inverse.transformPoint(new DOMPoint(
-        editorState.initialMousePos.x,
-        editorState.initialMousePos.y
-    ));
-
+    // 获取当前缩放比例
+    const scale = currentText.scale;
+    
+    // 计算基于缩放后的增量
     const delta = {
-        x: currentPoint.x - initialPoint.x,
-        y: currentPoint.y - initialPoint.y
+        x: (pos.x - editorState.initialMousePos.x) / scale,
+        y: (pos.y - editorState.initialMousePos.y) / scale
     };
 
     switch(editorState.transformType) {
         case 'move':
-            currentText.position.x = editorState.initialTextState.position.x + delta.x * currentText.scale;
-            currentText.position.y = editorState.initialTextState.position.y + delta.y * currentText.scale;
+            currentText.position.x = editorState.initialTextState.position.x + delta.x;
+            currentText.position.y = editorState.initialTextState.position.y + delta.y;
+                // 添加边界限制
+            currentText.position.x = Math.max(50, Math.min(editorState.canvas.width - 50, currentText.position.x));
+            currentText.position.y = Math.max(50, Math.min(editorState.canvas.height - 50, currentText.position.y));
             break;
-            
+
         case 'rotate':
-            const center = currentText.position;
-            const angleRotate = Math.atan2(pos.y - center.y, pos.x - center.x);
-            currentText.rotation = angleRotate - Math.PI/2;
+            // 计算基于中心点的旋转角度
+            const centerX = currentText.position.x;
+            const centerY = currentText.position.y;
+            const angle = Math.atan2(pos.y - centerY, pos.x - centerX);
+            currentText.rotation = angle - Math.PI/2; // 调整初始角度偏移
             break;
-            
+
         case 'resize':
-            const scaleDelta = delta.x / 100;
-            currentText.scale = Math.max(0.5, editorState.initialTextState.scale + scaleDelta);
-            currentText.fontSize = editorState.initialTextState.fontSize * currentText.scale;
+            // 计算基于中心的缩放
+            const baseSize = editorState.initialTextState.fontSize;
+            const baseScale = editorState.initialTextState.scale;
+            const distance = Math.sqrt(delta.x**2 + delta.y**2);
+            const scale = Math.max(0.5, Math.min(3, baseScale + distance/100));
+            currentText.scale = scale;
+            currentText.fontSize = baseSize * scale;
             break;
     }
-    saveState();
+    
+    // 立即重绘画布
     redrawCanvas();
 }
 
+ 
 function drawText(text, index) {
     const ctx = editorState.ctx;
     ctx.save();
@@ -389,7 +389,7 @@ function drawText(text, index) {
     // 应用变换矩阵
     ctx.translate(text.position.x, text.position.y);
     ctx.rotate(text.rotation);
-    ctx.scale(text.scale, text.scale);
+    ctx.scale(text.scale, text.scale); // 确保缩放应用在正确顺序
 
     // 设置文字样式
     ctx.font = `${text.fontSize}px ${text.fontFamily}`;
@@ -403,17 +403,17 @@ function drawText(text, index) {
     // 绘制选中状态
     if (index === editorState.selectedTextIndex) {
         const metrics = ctx.measureText(text.content);
-        const padding = 8;
+        const padding = text.padding || 10; // 添加默认值
         
         // 绘制边界框
         ctx.strokeStyle = '#07c160';
         ctx.lineWidth = 2;
         ctx.setLineDash([5, 3]);
         ctx.strokeRect(
-            -metrics.width/2 - padding,
-            -text.fontSize/2 - padding,
-            metrics.width + padding*2,
-            text.fontSize + padding*2
+            -metrics.width/2 - padding,    // 使用动态 padding
+            -text.fontSize/2 - padding,    // 使用动态 padding
+            metrics.width + padding*2,     // 使用动态 padding
+            text.fontSize + padding*2      // 使用动态 padding
         );
 
         // 绘制控制点
@@ -489,12 +489,14 @@ function undoLastAction() {
 
 function getCanvasMousePos(event) {
     const rect = editorState.canvas.getBoundingClientRect();
+    // 考虑画布实际渲染尺寸与逻辑尺寸的差异
+    const scaleX = editorState.canvas.width / rect.width;
+    const scaleY = editorState.canvas.height / rect.height;
     return {
-        x: (event.clientX - rect.left) * (editorState.canvas.width / rect.width),
-        y: (event.clientY - rect.top) * (editorState.canvas.height / rect.height)
+        x: (event.clientX - rect.left) * scaleX,
+        y: (event.clientY - rect.top) * scaleY
     };
 }
-
 function createControlPoint(x, y, type) {
     return {
         x: x,
