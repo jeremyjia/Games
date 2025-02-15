@@ -152,6 +152,14 @@
         .method-item:hover {
             background: #e0e0e0;
         }
+        button.active {
+            background: #45a049;
+            box-shadow: 0 0 0 2px #2d662f;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
     </style>
 </head>
 <body>
@@ -331,8 +339,17 @@
         const textarea = document.querySelector('textarea');
         document.querySelectorAll('[data-class]').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('[data-class]').forEach(b => b.classList.remove('active'));
+                // 移除所有按钮的高亮
+                document.querySelectorAll('[data-class]').forEach(b => {
+                    b.classList.remove('active');
+                    b.style.order = "";  // 重置排序
+                });
+                
+                // 添加当前按钮的高亮
                 btn.classList.add('active');
+                
+                // 将被选中的按钮移动到最前面
+                btn.style.order = -1;
                 textarea.value = classTemplates[btn.dataset.class];
             });
         });
