@@ -310,12 +310,19 @@ document.getElementById('textColor').addEventListener('input', function() {
         if (isPointInText(pos, text)) {
             editorState.selectedTextIndex = index;
             editorState.transformType = 'move';
+            editorState.dragging = true; // 添加这一行
             editorState.initialMousePos = pos;
             editorState.initialTextState = {...text};
         }
     });
     
     redrawCanvas();
+
+    // 新增：如果点击空白处则取消选择
+    if (!editorState.transformType && editorState.selectedTextIndex !== -1) {
+        editorState.selectedTextIndex = -1;
+        redrawCanvas();
+    }
 }
 
 
@@ -329,28 +336,34 @@ document.getElementById('fontSize').addEventListener('input', function() {
 });
 
 function handleCanvasMouseMove(e) {
-    if (!editorState.transformType) return;
-    
+    // 修改判断条件，增加 dragging 状态检查
+    if (!editorState.dragging || !editorState.transformType) return;     
     const currentText = editorState.textLayers[editorState.selectedTextIndex];
     if (!currentText) return;
     const pos = getCanvasMousePos(e);
+
+     // 使用更精确的坐标转换
+     const transform = new DOMMatrix()
+        .translate(currentText.position.x, currentText.position.y)
+        .rotate(currentText.rotation)
+        .scale(currentText.scale);
+
+    const inverse = transform.inverse();
+    const currentPoint = inverse.transformPoint(new DOMPoint(pos.x, pos.y));
+    const initialPoint = inverse.transformPoint(new DOMPoint(
+        editorState.initialMousePos.x,
+        editorState.initialMousePos.y
+    ));
+
     const delta = {
-        x: pos.x - editorState.initialMousePos.x,
-        y: pos.y - editorState.initialMousePos.y
+        x: currentPoint.x - initialPoint.x,
+        y: currentPoint.y - initialPoint.y
     };
 
     switch(editorState.transformType) {
         case 'move':
-            const angle = editorState.initialTextState.rotation;
-            const dx = delta.x;
-            const dy = delta.y;
-            
-            // 转换增量到本地坐标系
-            const localDx = dx * Math.cos(-angle) - dy * Math.sin(-angle);
-            const localDy = dx * Math.sin(-angle) + dy * Math.cos(-angle);
-            
-            currentText.position.x = editorState.initialTextState.position.x + localDx;
-            currentText.position.y = editorState.initialTextState.position.y + localDy;
+            currentText.position.x = editorState.initialTextState.position.x + delta.x * currentText.scale;
+            currentText.position.y = editorState.initialTextState.position.y + delta.y * currentText.scale;
             break;
             
         case 'rotate':
@@ -529,6 +542,7 @@ function isPointInText(point, text) {
 
 function handleCanvasMouseUp() {
     editorState.dragging = false;
+    editorState.transformType = null;  // 新增这行代码
 }
 function updateSelectedText() {
     if (editorState.selectedTextIndex === -1) return;
@@ -638,6 +652,7 @@ function resetBackground() {
 
 function clearAllText() {
     editorState.textLayers = [];
+    editorState.selectedTextIndex = -1; // 重置选中状态
     redrawCanvas();
 }
 
