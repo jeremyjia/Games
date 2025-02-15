@@ -258,6 +258,8 @@ function initEventListeners() {
     canvas.addEventListener('mousemove', handleCanvasMouseMove);
     canvas.addEventListener('mouseup', handleCanvasMouseUp);
     canvas.addEventListener('mouseleave', handleCanvasMouseUp);
+
+    document.addEventListener('keydown', handleKeyDown);
     
     document.getElementById('textColor').addEventListener('change', saveToLocalStorage);
     document.getElementById('fontSize').addEventListener('change', saveToLocalStorage);
@@ -306,7 +308,39 @@ function drawBackground() {
         );
     }
 }
+function handleKeyDown(e) {
+    if (editorState.selectedTextIndex === -1) return;
+    
+    const step = 5; // 移动步长
+    const text = editorState.textLayers[editorState.selectedTextIndex];
+    
+    // 边界限制参数
+    const minX = 50;
+    const maxX = editorState.canvas.width - 50;
+    const minY = 50;
+    const maxY = editorState.canvas.height - 50;
 
+    switch(e.key) {
+        case 'ArrowLeft':
+            text.position.x = Math.max(minX, text.position.x - step);
+            break;
+        case 'ArrowRight':
+            text.position.x = Math.min(maxX, text.position.x + step);
+            break;
+        case 'ArrowUp':
+            text.position.y = Math.max(minY, text.position.y - step);
+            break;
+        case 'ArrowDown':
+            text.position.y = Math.min(maxY, text.position.y + step);
+            break;
+        default:
+            return; // 非方向键不处理
+    }
+    
+    e.preventDefault(); // 阻止页面滚动
+    redrawCanvas();
+    saveToLocalStorage();
+}
 function handleDoubleClick(e) {
     const pos = getCanvasMousePos(e);
     let selectedIndex = -1;
