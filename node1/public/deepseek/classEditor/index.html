@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JavaScript类设计器</title>
     <style>
+        /* 保持原有样式不变 */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -187,9 +188,7 @@
             <button data-class="2">Class3</button>
             <button id="updateBtn">更新类</button>
             <hr>
-            <button data-instance="0">生成Class1</button>
-            <button data-instance="1">生成Class2</button>
-            <button data-instance="2">生成Class3</button>
+            <button id="generateInstanceBtn">生成实例</button>
         </div>
     </div>
 
@@ -285,7 +284,7 @@
             document.addEventListener('touchend', dragHandler.end);
         });
 
-        // 类管理系统
+        // 类模板
         const classTemplates = [
             `class Class1 {
                 constructor() {
@@ -335,20 +334,15 @@
             }`
         ];
 
-        // 初始化代码编辑器
+        // 类选择器
         const textarea = document.querySelector('textarea');
         document.querySelectorAll('[data-class]').forEach(btn => {
             btn.addEventListener('click', () => {
-                // 移除所有按钮的高亮
                 document.querySelectorAll('[data-class]').forEach(b => {
                     b.classList.remove('active');
-                    b.style.order = "";  // 重置排序
+                    b.style.order = "";
                 });
-                
-                // 添加当前按钮的高亮
                 btn.classList.add('active');
-                
-                // 将被选中的按钮移动到最前面
                 btn.style.order = -1;
                 textarea.value = classTemplates[btn.dataset.class];
             });
@@ -356,25 +350,32 @@
 
         // 类更新系统
         document.getElementById('updateBtn').addEventListener('click', () => {
-            const index = document.querySelector('[data-class].active')?.dataset.class;
-            if (index !== undefined) {
-                classTemplates[index] = textarea.value;
+            const activeBtn = document.querySelector('[data-class].active');
+            if (activeBtn) {
+                classTemplates[activeBtn.dataset.class] = textarea.value;
                 alert('类定义已更新');
+            } else {
+                alert('请先选择要更新的类');
             }
         });
 
-        // 实例生成与操作
-        document.querySelectorAll('[data-instance]').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                try {
-                    const cls = await createClass(classTemplates[btn.dataset.instance]);
-                    const instance = new cls();
-                    showMethods(instance);
-                } catch (e) {
-                    console.error('实例创建失败:', e);
-                    alert('类定义有误，请检查语法');
-                }
-            });
+        // 实例生成系统
+        document.getElementById('generateInstanceBtn').addEventListener('click', async () => {
+            const activeBtn = document.querySelector('[data-class].active');
+            if (!activeBtn) {
+                alert('请先选择一个类');
+                return;
+            }
+
+            try {
+                const classIndex = activeBtn.dataset.class;
+                const cls = await createClass(classTemplates[classIndex]);
+                const instance = new cls();
+                showMethods(instance);
+            } catch (e) {
+                console.error('实例创建失败:', e);
+                alert('类定义有误，请检查语法');
+            }
         });
 
         function createClass(code) {
