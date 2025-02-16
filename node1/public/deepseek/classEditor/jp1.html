@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音乐简谱绘制器</title>
+    <style>
+        body {
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        #inputBox {
+            width: 100%;
+            height: 80px;
+            margin-bottom: 15px;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+        }
+        #canvasContainer {
+            overflow-x: auto;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        canvas {
+            background-color: white;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 14px;
+            margin: 5px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .toolbar {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <textarea id="inputBox" placeholder="输入简谱示例：&#10;1' 2 3- 4// 5, 6' 7 0"></textarea>
+    
+    <div class="toolbar">
+        <button onclick="createSimpleNotes()">简单音符</button>
+        <button onclick="createHighLowNotes()">高低八度</button>
+        <button onclick="createDurationNotes()">时值示例</button>
+        <button onclick="createRestNotes()">休止符</button>
+        <button onclick="createMixedNotes()">混合示例</button>
+        <button onclick="drawSheetMusic()" style="background-color: #008CBA">绘制乐谱</button>
+    </div>
+
+    <div id="canvasContainer">
+        <canvas id="musicCanvas"></canvas>
+    </div>
+
+<script>
+// 示例生成函数
+function createSimpleNotes() {
+    const notes = Array.from({length: 8}, () => Math.floor(Math.random()*7+1));
+    document.getElementById('inputBox').value = notes.join(' ');
+}
+
+function createHighLowNotes() {
+    const modifiers = ["", "'", "''", ",", ",,"];
+    const notes = Array.from({length: 8}, () => 
+        `${Math.floor(Math.random()*7+1)}${modifiers[Math.floor(Math.random()*modifiers.length)]}`
+    );
+    document.getElementById('inputBox').value = notes.join(' ');
+}
+
+function createDurationNotes() {
+    const durations = ["/", "//", "-", "--", "---"];
+    const notes = Array.from({length: 8}, () => {
+        const note = Math.random() > 0.2 ? Math.floor(Math.random()*7+1) : 0;
+        return `${note}${durations[Math.floor(Math.random()*durations.length)]}`;
+    });
+    document.getElementById('inputBox').value = notes.join(' ');
+}
+
+function createRestNotes() {
+    const notes = Array.from({length: 8}, () => 
+        Math.random() > 0.5 ? Math.floor(Math.random()*7+1) : 0
+    );
+    document.getElementById('inputBox').value = notes.join(' ');
+}
+
+function createMixedNotes() {
+    const parts = ["", "'", ",", "/", "//", "-", "--"];
+    const notes = Array.from({length: 12}, () => {
+        const note = Math.random() > 0.2 ? Math.floor(Math.random()*7+1) : 0;
+        return `${note}${parts[Math.floor(Math.random()*parts.length)]}`;
+    });
+    document.getElementById('inputBox').value = notes.join(' ');
+}
+
+// 乐谱绘制核心逻辑
+function drawSheetMusic() {
+    const input = document.getElementById('inputBox').value.trim();
+    const canvas = document.getElementById('musicCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // 清空画布
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 初始化参数
+    const noteWidth = 50;
+    const xPadding = 30;
+    const yBase = 80;
+    let xPos = xPadding;
+    
+    // 设置样式
+    ctx.font = "28px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#333";
+    
+    // 解析输入
+    const notes = input.split(/\s+/).filter(n => n);
+    
+    // 设置画布尺寸
+    canvas.width = notes.length * noteWidth + xPadding * 2;
+    canvas.height = 160;
+
+    // 绘制五线谱基准线
+    ctx.strokeStyle = "#666";
+    ctx.lineWidth = 1;
+    for(let i=0; i<5; i++) {
+        const y = yBase - 20 + i*10;
+        ctx.beginPath();
+        ctx.moveTo(xPadding, y);
+        ctx.lineTo(canvas.width - xPadding, y);
+        ctx.stroke();
+    }
+
+    // 绘制音符
+    notes.forEach(note => {
+        const parsed = parseNote(note);
+        drawNote(ctx, xPos, yBase, parsed);
+        xPos += noteWidth;
+    });
+}
+
+function parseNote(noteStr) {
+    const note = {
+        value: '0',
+        octave: 0,
+        duration: 4,
+        lines: 0,
+        rightLines: 0
+    };
+
+    const match = noteStr.match(/([\d])([',]*)([\/-]*)/);
+    if (!match) return note;
+
+    note.value = match[1];
+    const octaveMod = match[2];
+    const durationMod = match[3];
+
+    // 处理八度
+    note.octave = octaveMod.split("'").length - octaveMod.split(",").length - 1;
+
+    // 处理时值
+    if(durationMod.includes('/')) {
+        note.duration = 8;
+        note.lines = durationMod.length;
+    } 
+    else if(durationMod.includes('-')) {
+        note.duration = durationMod.length >= 3 ? 1 : 2;
+        note.rightLines = durationMod.length;
+    }
+
+    return note;
+}
+
+function drawNote(ctx, x, y, note) {
+    // 绘制音符主体
+    if(note.value !== '0') {
+        // 调整音高位置
+        const pitchOffset = -note.octave * 10;
+        
+        // 绘制音符数字
+        ctx.fillText(note.value, x, y + pitchOffset);
+
+        // 绘制八度点
+        if(note.octave !== 0) {
+            ctx.beginPath();
+            ctx.arc(x, y + pitchOffset + (note.octave > 0 ? -18 : 18), 
+                   3, 0, Math.PI*2);
+            ctx.fill();
+        }
+
+        // 绘制减时线
+        if(note.lines > 0) {
+            ctx.strokeStyle = "#333";
+            ctx.lineWidth = 2;
+            for(let i=0; i<note.lines; i++) {
+                ctx.beginPath();
+                ctx.moveTo(x-15, y + pitchOffset + 15 + i*5);
+                ctx.lineTo(x+15, y + pitchOffset + 15 + i*5);
+                ctx.stroke();
+            }
+        }
+    } 
+    else {
+        // 绘制休止符（方形）
+        ctx.fillStyle = "#333";
+        ctx.fillRect(x-10, y-8, 20, 16);
+        ctx.fillStyle = "#333";
+    }
+
+    // 绘制增时线
+    if(note.rightLines > 0) {
+        ctx.strokeStyle = "#333";
+        ctx.lineWidth = 2;
+        for(let i=0; i<note.rightLines; i++) {
+            ctx.beginPath();
+            ctx.moveTo(x+15 + i*12, y-5);
+            ctx.lineTo(x+15 + i*12, y+5);
+            ctx.stroke();
+        }
+    }
+}
+</script>
+</body>
+</html>
