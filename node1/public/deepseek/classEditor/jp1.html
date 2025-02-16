@@ -197,6 +197,14 @@ class CMusicNotationApp {
         const navList = document.createElement('ul');
         navList.className = 'nav-menu';
         
+        // 新增首页链接
+        const homeItem = document.createElement('li');
+        const homeLink = document.createElement('a');
+        homeLink.href = 'index.html';
+        homeLink.textContent = '返回首页';
+        homeItem.appendChild(homeLink);
+        navList.appendChild(homeItem);
+
         const deepseekItem = document.createElement('li');
         const deepseekLink = document.createElement('a');
         deepseekLink.href = 'https://www.deepseek.com';
@@ -211,7 +219,7 @@ class CMusicNotationApp {
         this.navWindow.appendChild(header);
         this.navWindow.appendChild(content);
         document.body.appendChild(this.navWindow);
-
+ 
         this.initDrag(this.navWindow);
     }
 
@@ -229,8 +237,8 @@ class CMusicNotationApp {
         // 关闭按钮
         const closeBtn = document.createElement('button');
         closeBtn.className = 'close-btn';
-        closeBtn.textContent = '×';
-        closeBtn.addEventListener('click', () => this.toggleWindow());
+        closeBtn.textContent = '×'; 
+        closeBtn.addEventListener('click', () => this.toggleWindow('musicWindow'));
         header.appendChild(closeBtn);
         
         // 窗口内容容器
@@ -260,9 +268,8 @@ class CMusicNotationApp {
         this.window.appendChild(header);
         this.window.appendChild(content);
         document.body.appendChild(this.window);
-        
-        // 初始化拖动功能
-        this.initDrag();
+         
+        this.initDrag(this.window);
     }
 
     createButtons() {
@@ -281,32 +288,18 @@ class CMusicNotationApp {
             this.toolbar.appendChild(btn);
         });
     }
-
-    initDrag() {
-        const header = this.window.querySelector('.window-header');
+    
+    initDrag(targetWindow) {  // 修改方法以接收目标窗口参数
+        const header = targetWindow.querySelector('.window-header');
         let isDragging = false;
         let startX, startY, startLeft, startTop;
 
-        header.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            startX = e.clientX;
-            startY = e.clientY;
-            const rect = targetWindow.getBoundingClientRect();
-            startLeft = rect.left;
-            startTop = rect.top;
-            
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', onMouseUp);
-        });
-
-        
         const onMouseMove = (e) => {
             if (!isDragging) return;
             const dx = e.clientX - startX;
             const dy = e.clientY - startY;
             targetWindow.style.left = `${startLeft + dx}px`;
             targetWindow.style.top = `${startTop + dy}px`;
-            targetWindow.style.transform = 'none';
         };
 
         const onMouseUp = () => {
@@ -315,7 +308,24 @@ class CMusicNotationApp {
             document.removeEventListener('mouseup', onMouseUp);
         };
 
-        
+        header.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            
+            // 获取当前实际位置
+            const rect = targetWindow.getBoundingClientRect();
+            startLeft = rect.left;
+            startTop = rect.top;
+            
+            // 移除transform并更新定位方式
+            targetWindow.style.transform = 'none';
+            targetWindow.style.left = `${startLeft}px`;
+            targetWindow.style.top = `${startTop}px`;
+            
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        });
     }
 
     toggleWindow(windowType) {
@@ -324,7 +334,8 @@ class CMusicNotationApp {
             navWindow: this.navWindow
         };
         const targetWindow = windowMap[windowType];
-        targetWindow.style.display = targetWindow.style.display === 'none' ? 'block' : 'none';
+        const currentDisplay = window.getComputedStyle(targetWindow).display;
+        targetWindow.style.display = currentDisplay === 'none' ? 'block' : 'none';
         
         // 提升当前窗口的z-index
         document.querySelectorAll('.floating-window').forEach(win => {
@@ -332,7 +343,6 @@ class CMusicNotationApp {
         });
         targetWindow.style.zIndex = 1002;
     }
-
 
     bindEvents() {
         let drawTimeout;
@@ -458,7 +468,5 @@ new CMusicNotationApp();
 </body>
 </html>
 <!--
-把浮动移动窗口封装成一个类。实现所有前面的功能，
-在工具条上再添加一个按钮，点这个按钮可以弹出另一个移动窗口
-上面有一个导航菜单，有一个链接到deepSeek主页的菜单项。
+打开简谱工具 need to click 2 times to let the window show up. should be 1 time.
 -->
