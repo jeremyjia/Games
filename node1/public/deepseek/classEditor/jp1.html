@@ -404,8 +404,23 @@ class CMusicNotationApp {
     }
 
     drawTextNote(ctx, x, y, note) {
+        const _tntc = {
+            noteWidth: 80,
+            baseY: 250,
+            canvasPadding: 40,
+            fontSize: 36,
+            highOctaveDotOffset: 15,
+            lowOctaveDotOffset: 15,
+            slashVerticalOffset: 20,
+            octaveDotSpacing: 10,
+            slashLineSpacing: 6,
+            slashLineLength: 24,
+            dashHorizontalOffset: 25,
+            dashLineLength: 14,
+            dashLineSpacing: 20
+        };
         ctx.save();
-        ctx.font = `${this.CONFIG.fontSize}px Arial`;
+        ctx.font = `${_tntc.fontSize}px Arial`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
@@ -413,11 +428,11 @@ class CMusicNotationApp {
         ctx.fillText(note.value, x, y);
 
         if (note.highOctave > 0) {
-            const noteTop = y - this.CONFIG.fontSize/2;
-            const startY = noteTop - this.CONFIG.highOctaveDotOffset;
+            const noteTop = y - _tntc.fontSize/2;
+            const startY = noteTop - _tntc.highOctaveDotOffset;
             for (let i = 0; i < note.highOctave; i++) {
                 ctx.beginPath();
-                ctx.arc(x, startY - i * this.CONFIG.octaveDotSpacing, 3, 0, Math.PI * 2);
+                ctx.arc(x, startY - i * _tntc.octaveDotSpacing, 3, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
@@ -425,23 +440,23 @@ class CMusicNotationApp {
         if (note.slash > 0) {
             ctx.strokeStyle = '#000';
             ctx.lineWidth = 2;
-            const baseY = y + this.CONFIG.slashVerticalOffset;
+            const baseY = y + _tntc.slashVerticalOffset;
             for (let i = 0; i < note.slash; i++) {
                 ctx.beginPath();
-                ctx.moveTo(x - this.CONFIG.slashLineLength/2, baseY + i * this.CONFIG.slashLineSpacing);
-                ctx.lineTo(x + this.CONFIG.slashLineLength/2, baseY + i * this.CONFIG.slashLineSpacing);
+                ctx.moveTo(x - _tntc.slashLineLength/2, baseY + i * _tntc.slashLineSpacing);
+                ctx.lineTo(x + _tntc.slashLineLength/2, baseY + i * _tntc.slashLineSpacing);
                 ctx.stroke();
             }
         }
 
         if (note.lowOctave > 0) {
             const slashHeight = note.slash > 0 
-                ? this.CONFIG.slashVerticalOffset + (note.slash - 1) * this.CONFIG.slashLineSpacing 
+                ? _tntc.slashVerticalOffset + (note.slash - 1) * _tntc.slashLineSpacing 
                 : 0;
-            const baseY = y + slashHeight + this.CONFIG.lowOctaveDotOffset;
+            const baseY = y + slashHeight + _tntc.lowOctaveDotOffset;
             for (let i = 0; i < note.lowOctave; i++) {
                 ctx.beginPath();
-                ctx.arc(x, baseY + i * this.CONFIG.octaveDotSpacing, 3, 0, Math.PI * 2);
+                ctx.arc(x, baseY + i * _tntc.octaveDotSpacing, 3, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
@@ -449,17 +464,18 @@ class CMusicNotationApp {
         if (note.dash > 0) {
             ctx.strokeStyle = '#000';
             ctx.lineWidth = 2;
-            const baseX = x + this.CONFIG.dashHorizontalOffset;
+            const baseX = x + _tntc.dashHorizontalOffset;
             for (let i = 0; i < note.dash; i++) {
-                const lineX = baseX + i * (this.CONFIG.dashLineLength + 6);
+                const lineX = baseX + i * (_tntc.dashLineLength + 6);
                 ctx.beginPath();
                 ctx.moveTo(lineX, y);
-                ctx.lineTo(lineX + this.CONFIG.dashLineLength, y);
+                ctx.lineTo(lineX + _tntc.dashLineLength, y);
                 ctx.stroke();
             }
         }
         ctx.restore();
     }
+    
 }
 
 // 初始化应用
