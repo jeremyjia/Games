@@ -55,7 +55,6 @@
         <button onclick="createDurationNotes()">时值示例</button>
         <button onclick="createRestNotes()">休止符</button>
         <button onclick="createMixedNotes()">混合示例</button>
-        <button onclick="drawSheetMusic()" style="background-color: #008CBA">绘制乐谱</button>
     </div>
 
     <div id="canvasContainer">
@@ -229,9 +228,13 @@ function drawNote(ctx, x, y, note) {
         }
     }
 }
+
+document.getElementById('inputBox').addEventListener('input', drawSheetMusic);
+drawSheetMusic();
 </script>
 </body>
 </html>
 <!--
   绘制乐谱 按钮 不要了，直接检测文本框变化画谱
+
 -->
