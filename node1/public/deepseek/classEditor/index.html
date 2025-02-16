@@ -436,23 +436,23 @@
                     cx.fillStyle = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
                     cx.fill();
                 }
-                drawMyName(ctx) {
-                    ctx.save();
-                    ctx.font = "24px Arial";
-                    ctx.fillStyle = "#2196F3";
-                    ctx.textBaseline = "middle";
-                    ctx.textAlign = "center";
+                drawMyName(cx) {
+                    cx.save();
+                    cx.font = "24px Arial";
+                    cx.fillStyle = "#2196F3";
+                    cx.textBaseline = "middle";
+                    cx.textAlign = "center";
                     
-                    const x = ctx.canvas.width/4;
-                    const y = ctx.canvas.height/4;
-                    ctx.fillText(this.name, x, y);
+                    const x = cx.canvas.width/4;
+                    const y = cx.canvas.height/4;
+                    cx.fillText(this.name, x, y);
                     
-                    ctx.shadowColor = "rgba(0,0,0,0.3)";
-                    ctx.shadowOffsetX = 2;
-                    ctx.shadowOffsetY = 2;
-                    ctx.shadowBlur = 4;
+                    cx.shadowColor = "rgba(0,0,0,0.3)";
+                    cx.shadowOffsetX = 2;
+                    cx.shadowOffsetY = 2;
+                    cx.shadowBlur = 4;
  
-                    ctx.restore();
+                    cx.restore();
                 }
             }`,
 
@@ -492,7 +492,7 @@
         };
     }
 
-    drawTextNote(ctx, x, y, note) {
+    drawTextNote(cx, x, y, note) {
         const _tntc = {
             noteWidth: 80,
             baseY: 250,
@@ -509,41 +509,41 @@
             dashLineSpacing: 20          // 改为水平间距
         };
         
-        ctx.save();
-        ctx.font = _tntc.fontSize + "px Arial";
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
+        cx.save();
+        cx.font = _tntc.fontSize + "px Arial";
+        cx.textAlign = 'center';
+        cx.textBaseline = 'middle';
 
-        ctx.fillStyle = note.isRest ? '#FF4444' : '#000';
-        ctx.fillText(note.value, x, y);
+        cx.fillStyle = note.isRest ? '#FF4444' : '#000';
+        cx.fillText(note.value, x, y);
 
         // 高音点绘制（保持不变）...
         if (note.highOctave > 0) {
             const noteTop = y - _tntc.fontSize/2;
             const startY = noteTop - _tntc.highOctaveDotOffset;
             for (let i = 0; i < note.highOctave; i++) {
-                ctx.beginPath();
-                ctx.arc(x, startY - i * _tntc.octaveDotSpacing, 3, 0, Math.PI * 2);
-                ctx.fill();
+                cx.beginPath();
+                cx.arc(x, startY - i * _tntc.octaveDotSpacing, 3, 0, Math.PI * 2);
+                cx.fill();
             }
         }
 
         // 斜杠绘制（保持不变）...
         if (note.slash > 0) {
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 2;
+            cx.strokeStyle = '#000';
+            cx.lineWidth = 2;
             const baseY = y + _tntc.underlineOffset;
             for (let i = 0; i < note.slash; i++) {
-                ctx.beginPath();
-                ctx.moveTo(
+                cx.beginPath();
+                cx.moveTo(
                     x - _tntc.underlineLength/2, 
                     baseY + i * _tntc.underlineSpacing
                 );
-                ctx.lineTo(
+                cx.lineTo(
                     x + _tntc.underlineLength/2, 
                     baseY + i * _tntc.underlineSpacing
                 );
-                ctx.stroke();
+                cx.stroke();
             }
         }
 
@@ -554,47 +554,47 @@
                 : 0;
             const baseY = y + slashHeight + _tntc.lowOctaveDotOffset;
             for (let i = 0; i < note.lowOctave; i++) {
-                ctx.beginPath();
-                ctx.arc(x, baseY + i * _tntc.octaveDotSpacing, 3, 0, Math.PI * 2);
-                ctx.fill();
+                cx.beginPath();
+                cx.arc(x, baseY + i * _tntc.octaveDotSpacing, 3, 0, Math.PI * 2);
+                cx.fill();
             }
         }
 
         // 修改后的右侧横杠绘制（水平排列）
         if (note.dash > 0) {
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 2;
+            cx.strokeStyle = '#000';
+            cx.lineWidth = 2;
             const baseX = x + _tntc.dashHorizontalOffset;
             const baseY = y;  // 保持同一水平线
             for (let i = 0; i < note.dash; i++) {
-                ctx.beginPath();
-                ctx.moveTo(
+                cx.beginPath();
+                cx.moveTo(
                     baseX + i * _tntc.dashLineSpacing,
                     baseY
                 );
-                ctx.lineTo(
+                cx.lineTo(
                     baseX + i * _tntc.dashLineSpacing + _tntc.dashLineLength,
                     baseY
                 );
-                ctx.stroke();
+                cx.stroke();
             }
         }
-        ctx.restore();
+        cx.restore();
     }
 
-    drawNoteTest(ctx) {
-        ctx.save();
+    drawNoteTest(cx) {
+        cx.save();
         const ns = ["1---","2//","3//","4//","1,,","5,","2'","7,,-","2''---"]; 
         for(let i =0; i < ns.length; i++) { 
             const parsed = this.parseNote(ns[i]);
             this.drawTextNote(
-                ctx,
+                cx,
                 50 + i * 50,
                 100,
                 parsed
             );
         }
-        ctx.restore();
+        cx.restore();
     }
 
     // ... 
