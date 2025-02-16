@@ -436,19 +436,37 @@
                     cx.fillStyle = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
                     cx.fill();
                 }
+                drawMyName(ctx) {
+                    ctx.save();
+                    ctx.font = "24px Arial";
+                    ctx.fillStyle = "#2196F3";
+                    ctx.textBaseline = "middle";
+                    ctx.textAlign = "center";
+                    
+                    const x = ctx.canvas.width/4;
+                    const y = ctx.canvas.height/4;
+                    ctx.fillText(this.name, x, y);
+                    
+                    ctx.shadowColor = "rgba(0,0,0,0.3)";
+                    ctx.shadowOffsetX = 2;
+                    ctx.shadowOffsetY = 2;
+                    ctx.shadowBlur = 4;
+ 
+                    ctx.restore();
+                }
             }`,
 
             `class Class2 {
-                constructor() {
-                    this.value = 0;
-                    this.name = "class2_name"; 
-                }
-                
-                increment() {
-                    this.value++;
-                }
-                parseNote(noteStr) {
-        // 保持原有解析逻辑，确保//解析为slash=2
+    constructor() {
+        this.value = 0;
+        this.name = "class2_name"; 
+    }
+    
+    increment() {
+        this.value++;
+    }
+
+    parseNote(noteStr) {
         const numMatch = noteStr.match(/^[0-7]/);
         if (!numMatch) return { value: '0', highOctave: 0, lowOctave: 0, slash: 0, dash: 0 };
         
@@ -474,127 +492,114 @@
         };
     }
 
-                drawTextNote(ctx, x, y, note) {
-                    const _tntc = {
-                        noteWidth: 80,
-                        baseY: 250,
-                        canvasPadding: 40,
-                        fontSize: 36,
-                        highOctaveDotOffset: 15,
-                        lowOctaveDotOffset: 15,
-                        slashVerticalOffset: 20,
-                        octaveDotSpacing: 10,
-                        slashLineSpacing: 6,
-                        slashLineLength: 24,
-                        dashHorizontalOffset: 25,
-                        dashLineLength: 14,
-                        dashLineSpacing: 20,
-                        // 新增下划线绘制参数
-                        underlineOffset: 25,    // 下划线基线偏移
-                        underlineSpacing: 8,    // 下划线间距
-                        underlineLength: 24    // 下划线长度
-                    };
-                    ctx.save();
-                    ctx.font ="" +  _tntc.fontSize + "px Arial";
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
+    drawTextNote(ctx, x, y, note) {
+        const _tntc = {
+            noteWidth: 80,
+            baseY: 250,
+            canvasPadding: 40,
+            fontSize: 36,
+            highOctaveDotOffset: 15,
+            lowOctaveDotOffset: 15,
+            slashVerticalOffset: 20,
+            octaveDotSpacing: 10,
+            slashLineSpacing: 6,
+            slashLineLength: 24,
+            dashHorizontalOffset: 25,    // 调整参数
+            dashLineLength: 14,          // 调整参数
+            dashLineSpacing: 20          // 改为水平间距
+        };
+        
+        ctx.save();
+        ctx.font = _tntc.fontSize + "px Arial";
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
 
-                    ctx.fillStyle = note.isRest ? '#FF4444' : '#000';
-                    ctx.fillText(note.value, x, y);
+        ctx.fillStyle = note.isRest ? '#FF4444' : '#000';
+        ctx.fillText(note.value, x, y);
 
-                    if (note.highOctave > 0) {
-                        const noteTop = y - _tntc.fontSize/2;
-                        const startY = noteTop - _tntc.highOctaveDotOffset;
-                        for (let i = 0; i < note.highOctave; i++) {
-                            ctx.beginPath();
-                            ctx.arc(x, startY - i * _tntc.octaveDotSpacing, 3, 0, Math.PI * 2);
-                            ctx.fill();
-                        }
-                    }
+        // 高音点绘制（保持不变）...
+        if (note.highOctave > 0) {
+            const noteTop = y - _tntc.fontSize/2;
+            const startY = noteTop - _tntc.highOctaveDotOffset;
+            for (let i = 0; i < note.highOctave; i++) {
+                ctx.beginPath();
+                ctx.arc(x, startY - i * _tntc.octaveDotSpacing, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
 
-                    if (note.slash > 0) {
-                        ctx.strokeStyle = '#000';
-                        ctx.lineWidth = 2;
-                        const baseY = y + _tntc.underlineOffset;
-                        for (let i = 0; i < note.slash; i++) {
-                            ctx.beginPath();
-                            ctx.moveTo(
-                                x - _tntc.underlineLength/2, 
-                                baseY + i * _tntc.underlineSpacing
-                            );
-                            ctx.lineTo(
-                                x + _tntc.underlineLength/2, 
-                                baseY + i * _tntc.underlineSpacing
-                            );
-                            ctx.stroke();
-                        }
-                    }
+        // 斜杠绘制（保持不变）...
+        if (note.slash > 0) {
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            const baseY = y + _tntc.underlineOffset;
+            for (let i = 0; i < note.slash; i++) {
+                ctx.beginPath();
+                ctx.moveTo(
+                    x - _tntc.underlineLength/2, 
+                    baseY + i * _tntc.underlineSpacing
+                );
+                ctx.lineTo(
+                    x + _tntc.underlineLength/2, 
+                    baseY + i * _tntc.underlineSpacing
+                );
+                ctx.stroke();
+            }
+        }
 
-                    if (note.lowOctave > 0) {
-                        const slashHeight = note.slash > 0 
-                            ? _tntc.slashVerticalOffset + (note.slash - 1) * _tntc.slashLineSpacing 
-                            : 0;
-                        const baseY = y + slashHeight + _tntc.lowOctaveDotOffset;
-                        for (let i = 0; i < note.lowOctave; i++) {
-                            ctx.beginPath();
-                            ctx.arc(x, baseY + i * _tntc.octaveDotSpacing, 3, 0, Math.PI * 2);
-                            ctx.fill();
-                        }
-                    }
+        // 低音点绘制（保持不变）...
+        if (note.lowOctave > 0) {
+            const slashHeight = note.slash > 0 
+                ? _tntc.slashVerticalOffset + (note.slash - 1) * _tntc.slashLineSpacing 
+                : 0;
+            const baseY = y + slashHeight + _tntc.lowOctaveDotOffset;
+            for (let i = 0; i < note.lowOctave; i++) {
+                ctx.beginPath();
+                ctx.arc(x, baseY + i * _tntc.octaveDotSpacing, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
 
-                    // 右侧横杠绘制（根据dash数量）
-                    if (note.dash > 0) {
-                        ctx.strokeStyle = '#000';
-                        ctx.lineWidth = 2;
-                        const baseX = x + _tntc.dashHorizontalOffset;
-                        for (let i = 0; i < note.dash; i++) {
-                            const lineY = y - i * _tntc.dashLineSpacing;
-                            ctx.beginPath();
-                            ctx.moveTo(baseX, lineY);
-                            ctx.lineTo(baseX + _tntc.dashLineLength, lineY);
-                            ctx.stroke();
-                        }
-                    }
-                    ctx.restore();
-                }
-    
-                drawNoteTest(ctx) {
-                    ctx.save();
-                    const ns = ["1---","2//","3//","4//","1,,","5,","2'","7,,-","2''---"]; 
-                    for(let i =0; i < ns.length; i++) { 
-                        const parsed = this.parseNote(ns[i]);
-                        this.drawTextNote(
-                            ctx,
-                            50 + i * 50,
-                            100,
-                            parsed
-                        );
-                    
-                    }
-                    
-                    ctx.restore();
-                }
-                drawMyName(ctx) {
-                    ctx.save();
-                    ctx.font = "24px Arial";
-                    ctx.fillStyle = "#2196F3";
-                    ctx.textBaseline = "middle";
-                    ctx.textAlign = "center";
-                    
-                    const x = ctx.canvas.width/2;
-                    const y = ctx.canvas.height/2;
-                    ctx.fillText(this.name, x, y);
-                    
-                    ctx.shadowColor = "rgba(0,0,0,0.3)";
-                    ctx.shadowOffsetX = 2;
-                    ctx.shadowOffsetY = 2;
-                    ctx.shadowBlur = 4;
- 
-                    ctx.restore();
-                }
-            }`
-            
-            ,
+        // 修改后的右侧横杠绘制（水平排列）
+        if (note.dash > 0) {
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            const baseX = x + _tntc.dashHorizontalOffset;
+            const baseY = y;  // 保持同一水平线
+            for (let i = 0; i < note.dash; i++) {
+                ctx.beginPath();
+                ctx.moveTo(
+                    baseX + i * _tntc.dashLineSpacing,
+                    baseY
+                );
+                ctx.lineTo(
+                    baseX + i * _tntc.dashLineSpacing + _tntc.dashLineLength,
+                    baseY
+                );
+                ctx.stroke();
+            }
+        }
+        ctx.restore();
+    }
+
+    drawNoteTest(ctx) {
+        ctx.save();
+        const ns = ["1---","2//","3//","4//","1,,","5,","2'","7,,-","2''---"]; 
+        for(let i =0; i < ns.length; i++) { 
+            const parsed = this.parseNote(ns[i]);
+            this.drawTextNote(
+                ctx,
+                50 + i * 50,
+                100,
+                parsed
+            );
+        }
+        ctx.restore();
+    }
+
+    // ... 
+}` 
+ ,
 
            `class Class3 {
         constructor(name) {
@@ -786,6 +791,6 @@
 
 让
 Class2 
-drawNoteTest 
-正确 画 "2//" ： 音符下面有2横线 
+drawNoteTest  
+"1---" : 实现不对， 应该是 1 - - - ，现在是 三个横线是上下叠加的，应该是一字摆开
 -->
