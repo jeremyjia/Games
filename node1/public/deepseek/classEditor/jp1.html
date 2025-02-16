@@ -6,7 +6,7 @@
 </head>
 <body>
 <script>
-class MusicNotationApp {
+class CMusicNotationApp {
     constructor() {
         this.CONFIG = {
             noteWidth: 80,
@@ -33,9 +33,9 @@ class MusicNotationApp {
         };
 
         this.initStyles();
-        this.createDOM();
+        this.createToolbar();
+        this.createFloatingWindow();
         this.bindEvents();
-        this.drawSheetMusic();
     }
 
     initStyles() {
@@ -44,6 +44,42 @@ class MusicNotationApp {
             body {
                 padding: 20px;
                 font-family: Arial, sans-serif;
+                margin-bottom: 60px; /* 给底部工具条留空间 */
+            }
+            #mainToolbar {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: #f0f0f0;
+                padding: 10px;
+                border-top: 1px solid #ccc;
+                z-index: 1000;
+            }
+            .floating-window {
+                position: fixed;
+                left: 50%;
+                top: 50px;
+                transform: translateX(-50%);
+                width: 90%;
+                max-width: 800px;
+                background: white;
+                border: 1px solid #ccc;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                z-index: 1001;
+                display: none;
+            }
+            .window-header {
+                padding: 10px;
+                background: #f8f8f8;
+                border-bottom: 1px solid #ddd;
+                cursor: move;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .window-content {
+                padding: 15px;
             }
             #inputBox {
                 width: 100%;
@@ -80,7 +116,15 @@ class MusicNotationApp {
             button:hover {
                 background-color: #45a049;
             }
+            .close-btn {
+                background: #ff4444;
+                padding: 5px 10px;
+            }
             @media (max-width: 600px) {
+                .floating-window {
+                    width: 95%;
+                    top: 20px;
+                }
                 #inputBox { height: 120px; }
                 button { padding: 8px 16px; }
             }
@@ -88,9 +132,40 @@ class MusicNotationApp {
         document.head.appendChild(style);
     }
 
-    createDOM() {
-        this.container = document.createElement('div');
+    createToolbar() {
+        this.mainToolbar = document.createElement('div');
+        this.mainToolbar.id = 'mainToolbar';
         
+        const toggleBtn = document.createElement('button');
+        toggleBtn.textContent = '打开简谱工具';
+        toggleBtn.addEventListener('click', () => this.toggleWindow());
+        
+        this.mainToolbar.appendChild(toggleBtn);
+        document.body.appendChild(this.mainToolbar);
+    }
+
+    createFloatingWindow() {
+        // 创建窗口容器
+        this.window = document.createElement('div');
+        this.window.className = 'floating-window';
+        
+        // 窗口标题栏
+        const header = document.createElement('div');
+        header.className = 'window-header';
+        header.innerHTML = `<span>简谱编辑工具</span>`;
+        
+        // 关闭按钮
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'close-btn';
+        closeBtn.textContent = '×';
+        closeBtn.addEventListener('click', () => this.toggleWindow());
+        header.appendChild(closeBtn);
+        
+        // 窗口内容容器
+        const content = document.createElement('div');
+        content.className = 'window-content';
+        
+        // 创建原有界面元素
         this.inputBox = document.createElement('textarea');
         this.inputBox.id = 'inputBox';
         this.inputBox.placeholder = '输入简谱示例：\n1\' 2 3- 4// 5, 6\' 7 0';
@@ -106,10 +181,16 @@ class MusicNotationApp {
 
         this.createButtons();
         
-        this.container.appendChild(this.inputBox);
-        this.container.appendChild(this.toolbar);
-        this.container.appendChild(this.canvasContainer);
-        document.body.appendChild(this.container);
+        content.appendChild(this.inputBox);
+        content.appendChild(this.toolbar);
+        content.appendChild(this.canvasContainer);
+        
+        this.window.appendChild(header);
+        this.window.appendChild(content);
+        document.body.appendChild(this.window);
+        
+        // 初始化拖动功能
+        this.initDrag();
     }
 
     createButtons() {
@@ -127,6 +208,43 @@ class MusicNotationApp {
             btn.addEventListener('click', () => this.createExample(example.type));
             this.toolbar.appendChild(btn);
         });
+    }
+
+    initDrag() {
+        const header = this.window.querySelector('.window-header');
+        let isDragging = false;
+        let startX, startY, startLeft, startTop;
+
+        header.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            const rect = this.window.getBoundingClientRect();
+            startLeft = rect.left;
+            startTop = rect.top;
+            
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        });
+
+        const onMouseMove = (e) => {
+            if (!isDragging) return;
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            this.window.style.left = `${startLeft + dx}px`;
+            this.window.style.top = `${startTop + dy}px`;
+            this.window.style.transform = 'none'; // 移除居中定位
+        };
+
+        const onMouseUp = () => {
+            isDragging = false;
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+    }
+
+    toggleWindow() {
+        this.window.style.display = this.window.style.display === 'none' ? 'block' : 'none';
     }
 
     bindEvents() {
@@ -197,7 +315,6 @@ class MusicNotationApp {
         ctx.fillStyle = note.isRest ? '#FF4444' : '#000';
         ctx.fillText(note.value, x, y);
 
-        // 绘制高八度点
         if (note.highOctave > 0) {
             const noteTop = y - this.CONFIG.fontSize/2;
             const startY = noteTop - this.CONFIG.highOctaveDotOffset;
@@ -208,7 +325,6 @@ class MusicNotationApp {
             }
         }
 
-        // 绘制减时线
         if (note.slash > 0) {
             ctx.strokeStyle = '#000';
             ctx.lineWidth = 2;
@@ -221,7 +337,6 @@ class MusicNotationApp {
             }
         }
 
-        // 绘制低八度点
         if (note.lowOctave > 0) {
             const slashHeight = note.slash > 0 
                 ? this.CONFIG.slashVerticalOffset + (note.slash - 1) * this.CONFIG.slashLineSpacing 
@@ -234,7 +349,6 @@ class MusicNotationApp {
             }
         }
 
-        // 绘制增时线
         if (note.dash > 0) {
             ctx.strokeStyle = '#000';
             ctx.lineWidth = 2;
@@ -252,7 +366,7 @@ class MusicNotationApp {
 }
 
 // 初始化应用
-new MusicNotationApp();
+new CMusicNotationApp();
 </script>
 </body>
 </html>
