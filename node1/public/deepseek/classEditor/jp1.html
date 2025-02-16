@@ -3,382 +3,256 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>音乐简谱绘制器</title>
-    <style>
-        body {
-            padding: 20px;
-            font-family: Arial, sans-serif;
-        }
-        #inputBox {
-            width: 100%;
-            height: 80px;
-            margin-bottom: 15px;
-            padding: 10px;
-            box-sizing: border-box;
-            border: 2px solid #ccc;
-            border-radius: 4px;
-        }
-        #canvasContainer {
-            overflow-x: auto;
-            margin-top: 20px;
-            border: 1px solid #ddd;
-            padding: 10px;
-        }
-        canvas {
-            background-color: white;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 14px;
-            margin: 5px;
-            cursor: pointer;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .toolbar {
-            margin: 10px 0;
-        }
-        @media (max-width: 600px) {
-            #inputBox { height: 120px; }
-            button { padding: 8px 16px; }
-        }
-    </style>
 </head>
 <body>
-    <textarea id="inputBox" placeholder="输入简谱示例：&#10;1' 2 3- 4// 5, 6' 7 0"></textarea>
-    
-    <div class="toolbar">
-        <button onclick="createExample('simple')">简单音符</button>
-        <button onclick="createExample('octave')">高低八度</button>
-        <button onclick="createExample('duration')">时值示例</button>
-        <button onclick="createExample('rest')">休止符</button>
-        <button onclick="createExample('mixed')">混合示例</button>
-    </div>
-
-    <div id="canvasContainer">
-        <canvas id="musicCanvas"></canvas>
-    </div>
-
 <script>
-const CONFIG = {
-    noteWidth: 80,
-    baseY: 250,
-    canvasPadding: 40,
-    fontSize: 36,
-    highOctaveDotOffset: 15,        // 高八度点距离音符顶部的偏移
-    lowOctaveDotOffset: 15,         // 低八度点距离减时线底部的偏移
-    slashVerticalOffset: 20,        // 减时线垂直偏移
-    octaveDotSpacing: 10,           // 八度点垂直间距
-    slashLineSpacing: 6,            
-    slashLineLength: 24,            
-    dashHorizontalOffset: 25,       // 增大右侧起始偏移量
-    dashLineLength: 14,            // 略微加长横线
-    dashLineSpacing: 20            // 增大间距（长度14+间隔6）
-};
+class MusicNotationApp {
+    constructor() {
+        this.CONFIG = {
+            noteWidth: 80,
+            baseY: 250,
+            canvasPadding: 40,
+            fontSize: 36,
+            highOctaveDotOffset: 15,
+            lowOctaveDotOffset: 15,
+            slashVerticalOffset: 20,
+            octaveDotSpacing: 10,
+            slashLineSpacing: 6,
+            slashLineLength: 24,
+            dashHorizontalOffset: 25,
+            dashLineLength: 14,
+            dashLineSpacing: 20
+        };
 
-const EXAMPLES = {
-    simple: "1 2 3 4 5 6 7 0",
-    octave: "1'' 2' 3 4, 5,, 6 7' 0",
-    duration: "1/ 2// 3- 4--- 5 6/ 7 0--",
-    rest: "0 0/ 0- 0-- 0 0// 0 0---",
-    mixed: "1' 2// 3,, 4- 0 5''/ 6-- 7,,"
-};
+        this.EXAMPLES = {
+            simple: "1 2 3 4 5 6 7 0",
+            octave: "1'' 2' 3 4, 5,, 6 7' 0",
+            duration: "1/ 2// 3- 4--- 5 6/ 7 0--",
+            rest: "0 0/ 0- 0-- 0 0// 0 0---",
+            mixed: "1' 2// 3,, 4- 0 5''/ 6-- 7,,"
+        };
 
-function createExample(type) {
-    document.getElementById('inputBox').value = EXAMPLES[type];
-    drawSheetMusic();
-}
-
-// 示例生成函数
-function createSimpleNotes() {
-    const notes = Array.from({length: 8}, () => Math.floor(Math.random()*7+1));
-    document.getElementById('inputBox').value = notes.join(' ');
-}
-
-function createHighLowNotes() {
-    const modifiers = ["", "'", "''", ",", ",,"];
-    const notes = Array.from({length: 8}, () => 
-        `${Math.floor(Math.random()*7+1)}${modifiers[Math.floor(Math.random()*modifiers.length)]}`
-    );
-    document.getElementById('inputBox').value = notes.join(' ');
-}
-
-function createDurationNotes() {
-    const durations = ["/", "//", "-", "--", "---"];
-    const notes = Array.from({length: 8}, () => {
-        const note = Math.random() > 0.2 ? Math.floor(Math.random()*7+1) : 0;
-        return `${note}${durations[Math.floor(Math.random()*durations.length)]}`;
-    });
-    document.getElementById('inputBox').value = notes.join(' ');
-}
-
-function createRestNotes() {
-    const notes = Array.from({length: 8}, () => 
-        Math.random() > 0.5 ? Math.floor(Math.random()*7+1) : 0
-    );
-    document.getElementById('inputBox').value = notes.join(' ');
-}
-
-function createMixedNotes() {
-    const parts = ["", "'", ",", "/", "//", "-", "--"];
-    const notes = Array.from({length: 12}, () => {
-        const note = Math.random() > 0.2 ? Math.floor(Math.random()*7+1) : 0;
-        return `${note}${parts[Math.floor(Math.random()*parts.length)]}`;
-    });
-    document.getElementById('inputBox').value = notes.join(' ');
-}
-
-function drawSheetMusic() {
-    const input = document.getElementById('inputBox').value.trim();
-    const canvas = document.getElementById('musicCanvas');
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const notes = input.split(/\s+/).filter(n => n);
-    canvas.width = Math.max(800, notes.length * CONFIG.noteWidth + CONFIG.canvasPadding * 2);
-    canvas.height = 400;  // 降低画布高度
-
-    notes.forEach((noteStr, index) => {
-        const parsed = parseNote(noteStr);
-        drawTextNote(ctx, 
-            CONFIG.canvasPadding + index * CONFIG.noteWidth,
-            CONFIG.baseY,
-            parsed
-        );
-    });
-}
-
-function drawTextNote(ctx, x, y, note) {
-    ctx.save();
-    ctx.font = `${CONFIG.fontSize}px Arial`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-    // 绘制主音符
-    ctx.fillStyle = note.isRest ? '#FF4444' : '#000';
-    ctx.fillText(note.value, x, y);
-
-    // 绘制高八度点（在音符顶部上方）
-    if (note.highOctave > 0) {
-        const noteTop = y - CONFIG.fontSize/2;
-        const startY = noteTop - CONFIG.highOctaveDotOffset;
-        ctx.fillStyle = '#000';
-        for (let i = 0; i < note.highOctave; i++) {
-            ctx.beginPath();
-            ctx.arc(
-                x,
-                startY - i * CONFIG.octaveDotSpacing,
-                3, 0, Math.PI * 2
-            );
-            ctx.fill();
-        }
+        this.initStyles();
+        this.createDOM();
+        this.bindEvents();
+        this.drawSheetMusic();
     }
 
-    // 绘制减时线
-    if (note.slash > 0) {
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 2;
-        const baseY = y + CONFIG.slashVerticalOffset;
+    initStyles() {
+        const style = document.createElement('style');
+        style.textContent = `
+            body {
+                padding: 20px;
+                font-family: Arial, sans-serif;
+            }
+            #inputBox {
+                width: 100%;
+                height: 80px;
+                margin-bottom: 15px;
+                padding: 10px;
+                box-sizing: border-box;
+                border: 2px solid #ccc;
+                border-radius: 4px;
+            }
+            #canvasContainer {
+                overflow-x: auto;
+                margin-top: 20px;
+                border: 1px solid #ddd;
+                padding: 10px;
+            }
+            canvas {
+                background-color: white;
+            }
+            .toolbar {
+                margin: 10px 0;
+            }
+            button {
+                padding: 10px 20px;
+                font-size: 14px;
+                margin: 5px;
+                cursor: pointer;
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                transition: background 0.3s;
+            }
+            button:hover {
+                background-color: #45a049;
+            }
+            @media (max-width: 600px) {
+                #inputBox { height: 120px; }
+                button { padding: 8px 16px; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    createDOM() {
+        this.container = document.createElement('div');
         
-        for (let i = 0; i < note.slash; i++) {
-            ctx.beginPath();
-            ctx.moveTo(
-                x - CONFIG.slashLineLength/2,
-                baseY + i * CONFIG.slashLineSpacing
-            );
-            ctx.lineTo(
-                x + CONFIG.slashLineLength/2,
-                baseY + i * CONFIG.slashLineSpacing
-            );
-            ctx.stroke();
-        }
-    }
-
-    // 绘制低八度点（在减时线下方）
-    if (note.lowOctave > 0) {
-        const slashHeight = note.slash > 0 
-            ? CONFIG.slashVerticalOffset + (note.slash - 1) * CONFIG.slashLineSpacing 
-            : 0;
-        const baseY = y + slashHeight + CONFIG.lowOctaveDotOffset;
-        ctx.fillStyle = '#000';
-        for (let i = 0; i < note.lowOctave; i++) {
-            ctx.beginPath();
-            ctx.arc(
-                x,
-                baseY + i * CONFIG.octaveDotSpacing,
-                3, 0, Math.PI * 2
-            );
-            ctx.fill();
-        }
-    }
-
-    // 绘制增时线（带间距优化版）
-    if (note.dash > 0) {
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 2;
-        const baseX = x + CONFIG.dashHorizontalOffset; // 直接使用偏移量
+        this.inputBox = document.createElement('textarea');
+        this.inputBox.id = 'inputBox';
+        this.inputBox.placeholder = '输入简谱示例：\n1\' 2 3- 4// 5, 6\' 7 0';
         
-        // 线性排列（非居中）
-        for (let i = 0; i < note.dash; i++) {
-            const lineX = baseX + i * (CONFIG.dashLineLength + 6);
-            ctx.beginPath();
-            ctx.moveTo(lineX, y);
-            ctx.lineTo(lineX + CONFIG.dashLineLength, y);
-            ctx.stroke();
-        }
+        this.toolbar = document.createElement('div');
+        this.toolbar.className = 'toolbar';
+        
+        this.canvasContainer = document.createElement('div');
+        this.canvasContainer.id = 'canvasContainer';
+        this.canvas = document.createElement('canvas');
+        this.canvas.id = 'musicCanvas';
+        this.canvasContainer.appendChild(this.canvas);
+
+        this.createButtons();
+        
+        this.container.appendChild(this.inputBox);
+        this.container.appendChild(this.toolbar);
+        this.container.appendChild(this.canvasContainer);
+        document.body.appendChild(this.container);
     }
-    ctx.restore();
-}
-function drawMusicalNote(ctx, x, note) {
-    const yPosition = CONFIG.baseY - 
-        (note.value === '0' ? 0 : (note.value - 1) * 2) * CONFIG.staffLineSpace / 2 +
-        note.octave * 7 * CONFIG.staffLineSpace;
 
-    // 绘制音符
-    if (!note.isRest) {
-        ctx.beginPath();
-        ctx.arc(x, yPosition, CONFIG.noteRadius, 0, Math.PI * 2);
-        ctx.fillStyle = "#000";
-        ctx.fill();
+    createButtons() {
+        const examples = [
+            { text: '简单音符', type: 'simple' },
+            { text: '高低八度', type: 'octave' },
+            { text: '时值示例', type: 'duration' },
+            { text: '休止符', type: 'rest' },
+            { text: '混合示例', type: 'mixed' }
+        ];
 
-        // 绘制符干
-        ctx.fillRect(x + CONFIG.noteRadius - 2, yPosition - 30, 4, 30);
+        examples.forEach(example => {
+            const btn = document.createElement('button');
+            btn.textContent = example.text;
+            btn.addEventListener('click', () => this.createExample(example.type));
+            this.toolbar.appendChild(btn);
+        });
+    }
 
-        // 绘制附加符号
-        if (note.duration === 8) {
-            for (let i = 0; i < note.durationLines; i++) {
-                ctx.fillRect(x + 15, yPosition - 20 + i * 8, 20, CONFIG.durationLineHeight);
+    bindEvents() {
+        let drawTimeout;
+        this.inputBox.addEventListener('input', () => {
+            clearTimeout(drawTimeout);
+            drawTimeout = setTimeout(() => this.drawSheetMusic(), 300);
+        });
+    }
+
+    createExample(type) {
+        this.inputBox.value = this.EXAMPLES[type];
+        this.drawSheetMusic();
+    }
+
+    drawSheetMusic() {
+        const input = this.inputBox.value.trim();
+        const ctx = this.canvas.getContext('2d');
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        const notes = input.split(/\s+/).filter(n => n);
+        this.canvas.width = Math.max(800, notes.length * this.CONFIG.noteWidth + this.CONFIG.canvasPadding * 2);
+        this.canvas.height = 400;
+
+        notes.forEach((noteStr, index) => {
+            const parsed = this.parseNote(noteStr);
+            this.drawTextNote(
+                ctx,
+                this.CONFIG.canvasPadding + index * this.CONFIG.noteWidth,
+                this.CONFIG.baseY,
+                parsed
+            );
+        });
+    }
+
+    parseNote(noteStr) {
+        const numMatch = noteStr.match(/^\d/);
+        if (!numMatch) return { value: '0', highOctave: 0, lowOctave: 0, slash: 0, dash: 0 };
+        
+        const symbols = noteStr.slice(1);
+        let highOctave = 0, lowOctave = 0, slash = 0, dash = 0;
+
+        for (const c of symbols) {
+            switch(c) {
+                case "'": highOctave++; break;
+                case ",": lowOctave++; break;
+                case "/": slash++; break;
+                case "-": dash++; break;
             }
         }
-    } else {
-        // 绘制休止符（改进样式）
+
+        return {
+            value: numMatch[0],
+            highOctave: highOctave,
+            lowOctave: lowOctave,
+            slash: slash,
+            dash: dash,
+            isRest: numMatch[0] === '0'
+        };
+    }
+
+    drawTextNote(ctx, x, y, note) {
         ctx.save();
-        ctx.translate(x, yPosition);
-        ctx.fillStyle = "#000";
-        ctx.beginPath();
-        ctx.moveTo(-10, -8);
-        ctx.lineTo(10, -8);
-        ctx.lineTo(10, 8);
-        ctx.lineTo(-10, 8);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
-    }
+        ctx.font = `${this.CONFIG.fontSize}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
 
-    // 绘制增时线
-    if (note.extendLines > 0) {
-        ctx.strokeStyle = "#000";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        for (let i = 0; i < note.extendLines; i++) {
-            ctx.moveTo(x + 20 + i * 15, yPosition);
-            ctx.lineTo(x + 30 + i * 15, yPosition);
-        }
-        ctx.stroke();
-    }
-}
+        ctx.fillStyle = note.isRest ? '#FF4444' : '#000';
+        ctx.fillText(note.value, x, y);
 
- 
-function parseNote(noteStr) {
-    const numMatch = noteStr.match(/^\d/);
-    if (!numMatch) return { value: '0', highOctave: 0, lowOctave: 0, slash: 0, dash: 0 };
-    
-    const symbols = noteStr.slice(1);
-    let highOctave = 0, lowOctave = 0, slash = 0, dash = 0;
-
-    for (const c of symbols) {
-        switch(c) {
-            case "'": highOctave++; break;
-            case ",": lowOctave++; break;
-            case "/": slash++; break;
-            case "-": dash++; break;
-        }
-    }
-
-    return {
-        value: numMatch[0],
-        highOctave,
-        lowOctave,
-        slash,
-        dash,
-        isRest: numMatch[0] === '0'
-    };
-}
-
-
-
-function drawNote(ctx, x, y, note) {
-    // 绘制音符主体
-    if(note.value !== '0') {
-        // 调整音高位置
-        const pitchOffset = -note.octave * 10;
-        
-        // 绘制音符数字
-        ctx.fillText(note.value, x, y + pitchOffset);
-
-        // 绘制八度点
-        if(note.octave !== 0) {
-            ctx.beginPath();
-            ctx.arc(x, y + pitchOffset + (note.octave > 0 ? -18 : 18), 
-                   3, 0, Math.PI*2);
-            ctx.fill();
+        // 绘制高八度点
+        if (note.highOctave > 0) {
+            const noteTop = y - this.CONFIG.fontSize/2;
+            const startY = noteTop - this.CONFIG.highOctaveDotOffset;
+            for (let i = 0; i < note.highOctave; i++) {
+                ctx.beginPath();
+                ctx.arc(x, startY - i * this.CONFIG.octaveDotSpacing, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
 
         // 绘制减时线
-        if(note.lines > 0) {
-            ctx.strokeStyle = "#333";
+        if (note.slash > 0) {
+            ctx.strokeStyle = '#000';
             ctx.lineWidth = 2;
-            for(let i=0; i<note.lines; i++) {
+            const baseY = y + this.CONFIG.slashVerticalOffset;
+            for (let i = 0; i < note.slash; i++) {
                 ctx.beginPath();
-                ctx.moveTo(x-15, y + pitchOffset + 15 + i*5);
-                ctx.lineTo(x+15, y + pitchOffset + 15 + i*5);
+                ctx.moveTo(x - this.CONFIG.slashLineLength/2, baseY + i * this.CONFIG.slashLineSpacing);
+                ctx.lineTo(x + this.CONFIG.slashLineLength/2, baseY + i * this.CONFIG.slashLineSpacing);
                 ctx.stroke();
             }
         }
-    } 
-    else {
-        // 绘制休止符（方形）
-        ctx.fillStyle = "#333";
-        ctx.fillRect(x-10, y-8, 20, 16);
-        ctx.fillStyle = "#333";
-    }
 
-    // 绘制增时线
-    if(note.rightLines > 0) {
-        ctx.strokeStyle = "#333";
-        ctx.lineWidth = 2;
-        for(let i=0; i<note.rightLines; i++) {
-            ctx.beginPath();
-            ctx.moveTo(x+15 + i*12, y-5);
-            ctx.lineTo(x+15 + i*12, y+5);
-            ctx.stroke();
+        // 绘制低八度点
+        if (note.lowOctave > 0) {
+            const slashHeight = note.slash > 0 
+                ? this.CONFIG.slashVerticalOffset + (note.slash - 1) * this.CONFIG.slashLineSpacing 
+                : 0;
+            const baseY = y + slashHeight + this.CONFIG.lowOctaveDotOffset;
+            for (let i = 0; i < note.lowOctave; i++) {
+                ctx.beginPath();
+                ctx.arc(x, baseY + i * this.CONFIG.octaveDotSpacing, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
+
+        // 绘制增时线
+        if (note.dash > 0) {
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            const baseX = x + this.CONFIG.dashHorizontalOffset;
+            for (let i = 0; i < note.dash; i++) {
+                const lineX = baseX + i * (this.CONFIG.dashLineLength + 6);
+                ctx.beginPath();
+                ctx.moveTo(lineX, y);
+                ctx.lineTo(lineX + this.CONFIG.dashLineLength, y);
+                ctx.stroke();
+            }
+        }
+        ctx.restore();
     }
 }
 
-// 优化输入处理
-let drawTimeout;
-document.getElementById('inputBox').addEventListener('input', () => {
-    clearTimeout(drawTimeout);
-    drawTimeout = setTimeout(drawSheetMusic, 300);
-});
-
-// 初始绘制
-drawSheetMusic();
+// 初始化应用
+new MusicNotationApp();
 </script>
 </body>
 </html>
-<!--
-  升级
-  5/, 6//,,  画好了。
-  3': 文本 “3” 上面 画1个点, 1个点再上移动一点
-  1'': 文本 “1” 上面 画两个点, 两个点再上移动一点
-  6,,：文本 “6” 下面  画两个点， 两个点再下移动一点 
-  7--- 文本 “7” 右边两横线 之间要有空隙
--->
