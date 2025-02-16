@@ -703,12 +703,23 @@
                     });
                 });
 
-        // 更新按钮处理
-        document.getElementById('updateBtn').addEventListener('click', () => {
+        document.getElementById('updateBtn').addEventListener('click', async () => {
             const activeBtn = document.querySelector('[data-class].active');
             if (activeBtn) {
-                classTemplates[activeBtn.dataset.class] = textarea.value;
-                alert('类定义已更新');
+                const classIndex = activeBtn.dataset.class;
+                classTemplates[classIndex] = textarea.value;
+
+                try {
+                    // 重新创建类实例
+                    const cls = await createClass(classTemplates[classIndex]);
+                    classInstances[classIndex] = new cls();
+                    // 更新方法列表
+                    showMethods(classInstances[classIndex]);
+                    alert('类定义已更新并刷新方法列表');
+                } catch (e) {
+                    alert('类定义错误: ' + e.message);
+                    console.error(e);
+                }
             } else {
                 alert('请先选择要更新的类');
             }
@@ -759,31 +770,7 @@
 <!--
 
 
-需求说明
+ 
 
- 用 1 2 3 4 5 6 7  0 代表音符
- 音符连1个","表示低一个8度，连两个","表示低两个8度，以此类推 (例如：1， 2，，)
- 音符一个"'"表示高一个八度，连两个"'"，表示高两个八度，以此类推 (例如：3' 4'' )
- 0 代表休止音符
- 音符连一个 "/" 表示八分音符     (例如：5/ 6'/  7,/ 0/ )    
-   绘制成： 音符下面有一横线  高1个8度音在顶上画1点。高两个8度，在顶上画两个点，以此类推。低8度在底部画点。
- 音符连两个 "//" 表示16分音符   (例如：3// 4'//  5,,// 0// 1//)
-   绘制成： 音符下面有2横线  高1个8度音在顶上画1点。高两个8度，在顶上画两个点，以此类推。低8度在底部画点。
- 没有斜杠，也没有横杠。代表四分音符  (例如：5 4 3 1 2 0 7, 6'')
-   绘制成： 音符  高1个8度音在顶上画1点。高两个8度，在顶上画两个点，以此类推。低8度在底部画点。
- 音符连三个横杠代表全音符  (例如：5--- 0--- 7,--- 6,,--- 1'--- 3''---)
-   绘制成： 音符 右边 3 横杠  高1个8度音在顶上画1点。高两个8度，在顶上画两个点，以此类推。低8度在底部画点。
- 音符连一个横杠代表二分音符  (例如：5- 3,- 2'- 1- 0- 7,,- 1''-)
-   绘制成： 音符 右边 2 横杠   高1个8度音在顶上画1点。高两个8度，在顶上画两个点，以此类推。低8度在底部画点。
-
-乐曲由 小节 组成。每个小节的时值总和要符合拍号要求
-小节拍号类型：
-2/4拍： 以4分音符为1拍，1个小节有2拍
-3/4拍： 以4分音符为1拍，1个小节有3拍
-4/4拍： 以4分音符为1拍，1个小节有4拍
-3/8拍： 以8分音符为1拍，1个小节有6拍
-
-让 
-drawNoteTest  
-"2//": 实现不对， should have 2 underlines.
+when refresh class, showMethods should upatde too
 -->
