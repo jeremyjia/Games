@@ -35,6 +35,7 @@ class CMusicNotationApp {
         this.initStyles();
         this.createToolbar();
         this.createFloatingWindow();
+        this.createNavigationWindow(); // 新增导航窗口
         this.bindEvents();
     }
 
@@ -129,6 +130,29 @@ class CMusicNotationApp {
                 button { padding: 8px 16px; }
             }
         `;
+        const navStyle =  `
+            /* 保持原有样式不变，新增导航窗口样式 */
+            .nav-content {
+                padding: 20px;
+            }
+            .nav-menu {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+            .nav-menu li {
+                margin: 10px 0;
+            }
+            .nav-menu a {
+                color: #06c;
+                text-decoration: none;
+                font-size: 16px;
+            }
+            .nav-menu a:hover {
+                text-decoration: underline;
+            }
+        `;
+        style.textContent += navStyle;
         document.head.appendChild(style);
     }
 
@@ -138,11 +162,59 @@ class CMusicNotationApp {
         
         const toggleBtn = document.createElement('button');
         toggleBtn.textContent = '打开简谱工具';
-        toggleBtn.addEventListener('click', () => this.toggleWindow());
+        toggleBtn.addEventListener('click', () => this.toggleWindow('musicWindow'));
+        
+        // 新增导航按钮
+        const navBtn = document.createElement('button');
+        navBtn.textContent = '打开导航菜单';
+        navBtn.addEventListener('click', () => this.toggleWindow('navWindow'));
         
         this.mainToolbar.appendChild(toggleBtn);
+        this.mainToolbar.appendChild(navBtn);
         document.body.appendChild(this.mainToolbar);
     }
+
+
+    createNavigationWindow() {
+        this.navWindow = document.createElement('div');
+        this.navWindow.className = 'floating-window';
+        this.navWindow.style.display = 'none';
+        this.navWindow.dataset.windowType = 'navWindow';
+
+        const header = document.createElement('div');
+        header.className = 'window-header';
+        header.innerHTML = `<span>导航菜单</span>`;
+
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'close-btn';
+        closeBtn.textContent = '×';
+        closeBtn.addEventListener('click', () => this.toggleWindow('navWindow'));
+        
+        const content = document.createElement('div');
+        content.className = 'nav-content';
+        
+        // 创建导航菜单
+        const navList = document.createElement('ul');
+        navList.className = 'nav-menu';
+        
+        const deepseekItem = document.createElement('li');
+        const deepseekLink = document.createElement('a');
+        deepseekLink.href = 'https://www.deepseek.com';
+        deepseekLink.target = '_blank';
+        deepseekLink.textContent = 'DeepSeek 主页';
+        
+        deepseekItem.appendChild(deepseekLink);
+        navList.appendChild(deepseekItem);
+        content.appendChild(navList);
+
+        header.appendChild(closeBtn);
+        this.navWindow.appendChild(header);
+        this.navWindow.appendChild(content);
+        document.body.appendChild(this.navWindow);
+
+        this.initDrag(this.navWindow);
+    }
+
 
     createFloatingWindow() {
         // 创建窗口容器
@@ -219,7 +291,7 @@ class CMusicNotationApp {
             isDragging = true;
             startX = e.clientX;
             startY = e.clientY;
-            const rect = this.window.getBoundingClientRect();
+            const rect = targetWindow.getBoundingClientRect();
             startLeft = rect.left;
             startTop = rect.top;
             
@@ -227,13 +299,14 @@ class CMusicNotationApp {
             document.addEventListener('mouseup', onMouseUp);
         });
 
+        
         const onMouseMove = (e) => {
             if (!isDragging) return;
             const dx = e.clientX - startX;
             const dy = e.clientY - startY;
-            this.window.style.left = `${startLeft + dx}px`;
-            this.window.style.top = `${startTop + dy}px`;
-            this.window.style.transform = 'none'; // 移除居中定位
+            targetWindow.style.left = `${startLeft + dx}px`;
+            targetWindow.style.top = `${startTop + dy}px`;
+            targetWindow.style.transform = 'none';
         };
 
         const onMouseUp = () => {
@@ -241,11 +314,25 @@ class CMusicNotationApp {
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
         };
+
+        
     }
 
-    toggleWindow() {
-        this.window.style.display = this.window.style.display === 'none' ? 'block' : 'none';
+    toggleWindow(windowType) {
+        const windowMap = {
+            musicWindow: this.window,
+            navWindow: this.navWindow
+        };
+        const targetWindow = windowMap[windowType];
+        targetWindow.style.display = targetWindow.style.display === 'none' ? 'block' : 'none';
+        
+        // 提升当前窗口的z-index
+        document.querySelectorAll('.floating-window').forEach(win => {
+            win.style.zIndex = 1001;
+        });
+        targetWindow.style.zIndex = 1002;
     }
+
 
     bindEvents() {
         let drawTimeout;
@@ -370,3 +457,8 @@ new CMusicNotationApp();
 </script>
 </body>
 </html>
+<!--
+把浮动移动窗口封装成一个类。实现所有前面的功能，
+在工具条上再添加一个按钮，点这个按钮可以弹出另一个移动窗口
+上面有一个导航菜单，有一个链接到deepSeek主页的菜单项。
+-->
