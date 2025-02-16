@@ -500,7 +500,6 @@
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
 
-        // 只检测当前激活类的实例
         const activeBtn = document.querySelector('[data-class].active');
         if (!activeBtn) return;
         
@@ -514,6 +513,10 @@
             instance.selectedBox = hitIndex;
             dragStartX = mouseX;
             dragStartY = mouseY;
+            
+            // 立即清除并重绘画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            selectedInstance.drawAllBoxs(ctx);  // 新增的立即重绘
         }
     }
 
@@ -540,9 +543,9 @@
 
     function handleCanvasUp() {
         if(isDraggingBox && selectedInstance) {
-            selectedInstance.selectedBox = -1;  // 重置选中状态
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            selectedInstance.drawAllBoxs(ctx);   // 立即重绘
+            selectedInstance.drawAllBoxs(ctx);  // 新增的释放时重绘
+            selectedInstance.selectedBox = -1;  // 重置选中状态
         }
         isDraggingBox = false;
         selectedInstance = null;
@@ -775,5 +778,5 @@
 </html>
 <!--
 
-when box is clicked, it should change color to blue. when mouseup the color should change back
+when box is clicked, it should change color to blue. even not move
 -->
