@@ -220,6 +220,17 @@
             border-top: 1px solid #e2e8f0;
             padding: 10px;
         }
+        button.class-btn-0 { background: #2196F3; }
+        button.class-btn-0:hover { background: #1976D2; }
+        button.class-btn-0.active { background: #0D47A1; }
+
+        button.class-btn-1 { background: #FF9800; }
+        button.class-btn-1:hover { background: #F57C00; }
+        button.class-btn-1.active { background: #E65100; }
+
+        button.class-btn-2 { background: #9C27B0; }
+        button.class-btn-2:hover { background: #7B1FA2; }
+        button.class-btn-2.active { background: #4A148C; }
     </style>
 
 </head>
@@ -242,6 +253,7 @@
             <textarea></textarea>
             <div class="editor-toolbar">
                 <button id="updateBtn">refresh</button>
+                <button id="addClassBtn">Add Class</button> <!-- 新增按钮 -->
             </div>
             <div class="resize-handle"></div>
         </div>
@@ -251,9 +263,9 @@
         <div class="toolbar-header">类工具箱</div>
         <div class="toolbar-content">
             <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-                <button data-class="0">Class1</button>
-                <button data-class="1">Class2</button>
-                <button data-class="2">Class3</button>
+                <button data-class="0" class="class-btn-0">Class1</button>
+                <button data-class="1" class="class-btn-1">Class2</button>
+                <button data-class="2" class="class-btn-2">Class3</button>
                 <button id="toggleEditorBtn">Toggle Editor</button>
             </div>
             <hr>
@@ -264,13 +276,42 @@
     </div>
 
     <script>
-        // 在全局添加实例存储对象
-        const classInstances = {
-            0: null,
-            1: null,
-            2: null // 对应Class3的实例存储
-        };
+        // 修改classInstances为数组
+        const classInstances = [];
 
+        // 添加新建类功能
+        document.getElementById('addClassBtn').addEventListener('click', async function() {
+            const classCode = textarea.value;
+            try {
+                const cls = new Function(`return ${classCode}`)();
+                classTemplates.push(classCode);
+                const newClassIndex = classTemplates.length - 1;
+
+                // 创建新按钮
+                const newButton = document.createElement('button');
+                newButton.textContent = `Class${newClassIndex + 1}`;
+                newButton.setAttribute('data-class', newClassIndex);
+                newButton.classList.add(`class-btn-${newClassIndex % 3}`); // 循环使用3种颜色
+                
+                // 插入到toggle按钮前
+                const container = document.querySelector('#id_4_class_toolbar > .toolbar-content > div:first-child');
+                container.insertBefore(newButton, document.getElementById('toggleEditorBtn'));
+
+                // 绑定点击事件
+                newButton.addEventListener('click', async () => {
+                    document.querySelectorAll('[data-class]').forEach(b => b.classList.remove('active'));
+                    newButton.classList.add('active');
+                    textarea.value = classTemplates[newClassIndex];
+                    classInstances[newClassIndex] = classInstances[newClassIndex] || new cls();
+                    showMethods(classInstances[newClassIndex]);
+                });
+
+                classInstances[newClassIndex] = new cls();
+                alert('Class added successfully!');
+            } catch (e) {
+                alert('Error creating class: ' + e.message);
+            }
+        });
 
         const canvas = document.getElementById('id_4_draw_canvase');
         let ctx = null;
@@ -796,5 +837,6 @@
 </html>
 <!--
 
-let left KEY and right key can move the selected box
+add a new button to code editor, when click this button, used the code inside the code editor to add a new class.
+
 -->
