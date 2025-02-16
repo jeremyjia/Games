@@ -77,9 +77,9 @@ const CONFIG = {
     octaveDotSpacing: 10,           // 八度点垂直间距
     slashLineSpacing: 6,            
     slashLineLength: 24,            
-    dashHorizontalOffset: 20,       
-    dashLineLength: 12,             
-    dashLineSpacing: 12             // 增大增时线间距
+    dashHorizontalOffset: 24,       // 增大右侧起始偏移量
+    dashLineLength: 14,            // 略微加长横线
+    dashLineSpacing: 20            // 增大间距（长度14+间隔6）
 };
 
 const EXAMPLES = {
@@ -218,26 +218,24 @@ function drawTextNote(ctx, x, y, note) {
         }
     }
 
-    // 绘制增时线（带间距）
+    // 绘制增时线（带间距优化版）
     if (note.dash > 0) {
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 2;
         const baseX = x + CONFIG.dashHorizontalOffset;
         
+        // 新增加间距计算逻辑
+        const totalWidth = (CONFIG.dashLineLength + 6) * note.dash - 6;
+        const startX = baseX - totalWidth/2 + CONFIG.dashLineLength/2;
+
         for (let i = 0; i < note.dash; i++) {
+            const lineX = startX + i * (CONFIG.dashLineLength + 6);
             ctx.beginPath();
-            ctx.moveTo(
-                baseX + i * CONFIG.dashLineSpacing,
-                y
-            );
-            ctx.lineTo(
-                baseX + i * CONFIG.dashLineSpacing + CONFIG.dashLineLength,
-                y
-            );
+            ctx.moveTo(lineX, y);
+            ctx.lineTo(lineX + CONFIG.dashLineLength, y);
             ctx.stroke();
         }
     }
-
     ctx.restore();
 }
 function drawMusicalNote(ctx, x, note) {
