@@ -352,9 +352,27 @@
                 }
                 
                 drawMyName(ctx) {
-                    // use ctx to show my name.
+                    ctx.save();  // 保存当前绘图状态
+                    ctx.font = "24px Arial";
+                    ctx.fillStyle = "#2196F3";
+                    ctx.textBaseline = "middle";
+                    ctx.textAlign = "center";
+                    
+                    // 在画布中央绘制名称
+                    const x = ctx.canvas.width/2;
+                    const y = ctx.canvas.height/2;
+                    ctx.fillText(this.name, x, y);
+                    
+                    // 添加文字阴影效果
+                    ctx.shadowColor = "rgba(0,0,0,0.3)";
+                    ctx.shadowOffsetX = 2;
+                    ctx.shadowOffsetY = 2;
+                    ctx.shadowBlur = 4;
+                    ctx.restore();  // 恢复原始绘图状态
                 }
-            }`,
+            }`
+            
+            ,
 
             `class Class3 {
                 constructor(name) {
