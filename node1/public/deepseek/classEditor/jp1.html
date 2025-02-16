@@ -77,7 +77,7 @@ const CONFIG = {
     octaveDotSpacing: 10,           // 八度点垂直间距
     slashLineSpacing: 6,            
     slashLineLength: 24,            
-    dashHorizontalOffset: 24,       // 增大右侧起始偏移量
+    dashHorizontalOffset: 25,       // 增大右侧起始偏移量
     dashLineLength: 14,            // 略微加长横线
     dashLineSpacing: 20            // 增大间距（长度14+间隔6）
 };
@@ -222,14 +222,11 @@ function drawTextNote(ctx, x, y, note) {
     if (note.dash > 0) {
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 2;
-        const baseX = x + CONFIG.dashHorizontalOffset;
+        const baseX = x + CONFIG.dashHorizontalOffset; // 直接使用偏移量
         
-        // 新增加间距计算逻辑
-        const totalWidth = (CONFIG.dashLineLength + 6) * note.dash - 6;
-        const startX = baseX - totalWidth/2 + CONFIG.dashLineLength/2;
-
+        // 线性排列（非居中）
         for (let i = 0; i < note.dash; i++) {
-            const lineX = startX + i * (CONFIG.dashLineLength + 6);
+            const lineX = baseX + i * (CONFIG.dashLineLength + 6);
             ctx.beginPath();
             ctx.moveTo(lineX, y);
             ctx.lineTo(lineX + CONFIG.dashLineLength, y);
