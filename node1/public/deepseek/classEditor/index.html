@@ -344,14 +344,15 @@
             `class Class2 {
                 constructor() {
                     this.value = 0;
+                    this.name = "class2_name";
                 }
                 
                 increment() {
                     this.value++;
                 }
                 
-                showValue() {
-                    alert('Current value: ' + this.value);
+                drawMyName(ctx) {
+                    // use ctx to show my name.
                 }
             }`,
 
