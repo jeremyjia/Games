@@ -207,6 +207,48 @@
             margin-top: 5px;
         }
     </style>
+    <style>
+        /* Add these styles to the existing CSS */
+        #id_4_code_editor textarea {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            color: #2d333a;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            transition: all 0.2s ease;
+        }
+    
+        #id_4_code_editor textarea:focus {
+            background-color: #ffffff;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+            outline: none;
+        }
+    
+        #updateBtn {
+            background: #4a5568 !important;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+    
+        #updateBtn:hover {
+            background: #2d3748 !important;
+            transform: translateY(-1px);
+        }
+    
+        #updateBtn:active {
+            background: #1a202c !important;
+            transform: translateY(0);
+        }
+    
+        .editor-toolbar {
+            background: #f8fafc !important;
+            border-top: 1px solid #e2e8f0;
+            padding: 10px;
+        }
+    </style>
 </head>
 <body>
     <div class="nav">
