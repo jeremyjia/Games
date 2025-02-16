@@ -539,6 +539,11 @@
     }
 
     function handleCanvasUp() {
+        if(isDraggingBox && selectedInstance) {
+            selectedInstance.selectedBox = -1;  // 重置选中状态
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            selectedInstance.drawAllBoxs(ctx);   // 立即重绘
+        }
         isDraggingBox = false;
         selectedInstance = null;
     }
@@ -629,20 +634,21 @@
             cx.fillStyle = '#FF5722';
             cx.strokeStyle = '#333';
             this.boxs.forEach((point, index) => {
-
                 cx.beginPath();
                 cx.rect(
-                    point.x - this.boxSize/2, 
-                    point.y - this.boxSize/2, 
-                    this.boxSize, 
+                    point.x - this.boxSize/2,
+                    point.y - this.boxSize/2,
+                    this.boxSize,
                     this.boxSize
                 );
-                
+
+                // 修改后的颜色逻辑
                 if(index === this.selectedBox) {
-                    cx.fillStyle = '#2196F3';
+                    cx.fillStyle = '#2196F3'; // 选中时蓝色
                 } else {
+                    // 未选中时保持渐变
                     const gradient = cx.createLinearGradient(
-                        point.x - this.boxSize/2, 
+                        point.x - this.boxSize/2,
                         point.y - this.boxSize/2,
                         point.x + this.boxSize/2,
                         point.y + this.boxSize/2
@@ -769,8 +775,5 @@
 </html>
 <!--
 
-
- 
-
-when refresh class, showMethods should upatde too
+when box is clicked, it should change color to blue. when mouseup the color should change back
 -->
