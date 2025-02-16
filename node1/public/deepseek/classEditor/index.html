@@ -226,6 +226,7 @@
 <body>
     <div class="nav">
         <a href="https://www.deepseek.com">前往DeepSeek</a>
+        <a href="temp.html">temp.html</a>
         <a href="c1.html">c1.html</a>
         <a href="d1.html">d1.html</a>
         <a href="d2.html">d2.html</a>
@@ -262,6 +263,14 @@
     </div>
 
     <script>
+        // 在全局添加实例存储对象
+        const classInstances = {
+            0: null,
+            1: null,
+            2: null // 对应Class3的实例存储
+        };
+
+
         const canvas = document.getElementById('id_4_draw_canvase');
         let ctx = null;
         
@@ -364,20 +373,21 @@
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
 
-        // 检查所有Class3实例
-        document.querySelectorAll('[data-class="2"].active').forEach(async btn => {
-            const cls = await createClass(classTemplates[2]);
-            const instance = new cls();
-            
-            const hitIndex = instance.checkHitBox(mouseX, mouseY);
-            if(hitIndex > -1) {
-                isDraggingBox = true;
-                selectedInstance = instance;
-                instance.selectedBox = hitIndex;
-                dragStartX = mouseX;
-                dragStartY = mouseY;
-            }
-        });
+        // 只检测当前激活类的实例
+        const activeBtn = document.querySelector('[data-class].active');
+        if (!activeBtn) return;
+        
+        const instance = classInstances[activeBtn.dataset.class];
+        if (!instance) return;
+
+        const hitIndex = instance.checkHitBox(mouseX, mouseY);
+        if(hitIndex > -1) {
+            isDraggingBox = true;
+            selectedInstance = instance;
+            instance.selectedBox = hitIndex;
+            dragStartX = mouseX;
+            dragStartY = mouseY;
+        }
     }
 
     function handleCanvasMove(e) {
@@ -454,7 +464,9 @@
                     ctx.shadowBlur = 4;
                     ctx.restore();
                 }
-            }`,
+            }`
+            
+            ,
 
            `class Class3 {
         constructor(name) {
@@ -469,13 +481,14 @@
         }
         
         draw_boxs(cx) {
-            this.x += this.dx;
-            this.n++;
-            if(this.n > 10){
+            if(this.n>5){
                 this.n = 0;
                 this.x = 10;
-                this.y += 50;
+                this.y += 10;
             }
+            this.x += this.dx;
+            this.n++;
+
             this.boxs.push({ 
                 x: this.x, 
                 y: this.y,
@@ -489,6 +502,7 @@
             cx.fillStyle = '#FF5722';
             cx.strokeStyle = '#333';
             this.boxs.forEach((point, index) => {
+
                 cx.beginPath();
                 cx.rect(
                     point.x - this.boxSize/2, 
@@ -533,7 +547,7 @@
         }
     }`
 
-    
+
             ,
         ];
 
@@ -553,18 +567,14 @@
                 // 加载类模板
                 textarea.value = classTemplates[btn.dataset.class];
 
-                try {
-                    // 自动生成实例
-                    const classIndex = btn.dataset.class;
+                const classIndex = btn.dataset.class;
+                if (!classInstances[classIndex]) {
                     const cls = await createClass(classTemplates[classIndex]);
-                    const instance = new cls();
-                    showMethods(instance);
-                } catch (e) {
-                    console.error('实例创建失败:', e);
-                    alert('类定义有误，请检查语法');
+                    classInstances[classIndex] = new cls();
                 }
-            });
-        });
+                showMethods(classInstances[classIndex]);
+                    });
+                });
 
         // 更新按钮处理
         document.getElementById('updateBtn').addEventListener('click', () => {
