@@ -81,7 +81,6 @@
             z-index: 10;
         }
 
-        /* 新增编辑器工具栏样式 */
         .editor-toolbar {
             padding: 8px 5px;
             background: #f5f5f5;
@@ -101,48 +100,21 @@
             transition: background 0.3s, box-shadow 0.3s;
         }
 
-        /* Class1 - 蓝色系 */
-        button[data-class="0"] {
-            background: #2196F3;
-        }
-        button[data-class="0"]:hover {
-            background: #1976D2;
-        }
-        button[data-class="0"].active {
-            background: #0D47A1;
-            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.5);
-        }
+        button[data-class="0"] { background: #2196F3; }
+        button[data-class="0"]:hover { background: #1976D2; }
+        button[data-class="0"].active { background: #0D47A1; }
 
-        /* Class2 - 橙色系 */
-        button[data-class="1"] {
-            background: #FF9800;
-        }
-        button[data-class="1"]:hover {
-            background: #F57C00;
-        }
-        button[data-class="1"].active {
-            background: #E65100;
-            box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.5);
-        }
+        button[data-class="1"] { background: #FF9800; }
+        button[data-class="1"]:hover { background: #F57C00; }
+        button[data-class="1"].active { background: #E65100; }
 
-        /* Class3 - 紫色系 */
-        button[data-class="2"] {
-            background: #9C27B0;
-        }
-        button[data-class="2"]:hover {
-            background: #7B1FA2;
-        }
-        button[data-class="2"].active {
-            background: #4A148C;
-            box-shadow: 0 0 0 2px rgba(156, 39, 176, 0.5);
-        }
+        button[data-class="2"] { background: #9C27B0; }
+        button[data-class="2"]:hover { background: #7B1FA2; }
+        button[data-class="2"].active { background: #4A148C; }
 
-        /* 功能按钮保持绿色系 */
-        #generateInstanceBtn,
         #toggleEditorBtn {
             background: #4CAF50;
         }
-        #generateInstanceBtn:hover,
         #toggleEditorBtn:hover {
             background: #45a049;
         }
@@ -181,7 +153,7 @@
 
         #id_4_code_editor textarea {
             width: 100%;
-            height: calc(100% - 85px) !important;  /* 调整高度 */
+            height: calc(100% - 85px) !important;
             resize: none;
             border: none;
             padding: 8px;
@@ -249,6 +221,7 @@
             padding: 10px;
         }
     </style>
+
 </head>
 <body>
     <div class="nav">
@@ -282,7 +255,6 @@
                 <button id="toggleEditorBtn">Toggle Editor</button>
             </div>
             <hr>
-            <button id="generateInstanceBtn">生成实例</button>
             <div class="method-list-container">
                 <div id="methodList"></div>
             </div>
@@ -290,7 +262,6 @@
     </div>
 
     <script>
-        // 保持原有JavaScript代码不变
         const canvas = document.getElementById('id_4_draw_canvase');
         let ctx = null;
         
@@ -302,6 +273,7 @@
         window.addEventListener('load', initCanvas);
         window.addEventListener('resize', initCanvas);
 
+        // 窗口大小调整处理
         document.querySelectorAll('.resize-handle').forEach(handle => {
             let isResizing = false;
             let startX, startY, startWidth, startHeight;
@@ -338,6 +310,7 @@
             document.addEventListener('touchend', handleEvent.end);
         });
 
+        // 拖拽处理
         document.querySelectorAll('.draggable').forEach(element => {
             let isDragging = false;
             let initialX = 0, initialY = 0;
@@ -374,6 +347,7 @@
             document.addEventListener('touchend', dragHandler.end);
         });
 
+        // 类模板定义
         const classTemplates = [
             `class Class1 {
                 constructor() {
@@ -425,11 +399,21 @@
 
             `class Class3 {
                 constructor(name) {
+                    this.x = 10;
+                    this.y = 10;
+                    this.dx = 50;
+                    this.boxs = [];
                     this.name = name || 'Default';
+
                 }
                 
                 greet() {
                     console.log(\`Hello from \${this.name}\`);
+                }
+                draw_boxs(cx) {
+                    this.x += this.dx;
+                    this.boxs.push({this.x,this.y});
+                    // use points in boxs draw rectangle at, width = 20, height = 20;
                 }
                 
                 static staticMethod() {
@@ -439,18 +423,35 @@
         ];
 
         const textarea = document.querySelector('textarea');
+
+        // 类按钮点击处理
         document.querySelectorAll('[data-class]').forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', async () => {
+                // 更新按钮状态
                 document.querySelectorAll('[data-class]').forEach(b => {
                     b.classList.remove('active');
                     b.style.order = "";
                 });
                 btn.classList.add('active');
                 btn.style.order = -1;
+
+                // 加载类模板
                 textarea.value = classTemplates[btn.dataset.class];
+
+                try {
+                    // 自动生成实例
+                    const classIndex = btn.dataset.class;
+                    const cls = await createClass(classTemplates[classIndex]);
+                    const instance = new cls();
+                    showMethods(instance);
+                } catch (e) {
+                    console.error('实例创建失败:', e);
+                    alert('类定义有误，请检查语法');
+                }
             });
         });
 
+        // 更新按钮处理
         document.getElementById('updateBtn').addEventListener('click', () => {
             const activeBtn = document.querySelector('[data-class].active');
             if (activeBtn) {
@@ -461,29 +462,13 @@
             }
         });
 
-        document.getElementById('generateInstanceBtn').addEventListener('click', async () => {
-            const activeBtn = document.querySelector('[data-class].active');
-            if (!activeBtn) {
-                alert('请先选择一个类');
-                return;
-            }
-
-            try {
-                const classIndex = activeBtn.dataset.class;
-                const cls = await createClass(classTemplates[classIndex]);
-                const instance = new cls();
-                showMethods(instance);
-            } catch (e) {
-                console.error('实例创建失败:', e);
-                alert('类定义有误，请检查语法');
-            }
-        });
-
+        // 编辑器切换
         document.getElementById('toggleEditorBtn').addEventListener('click', function() {
             const editor = document.getElementById('id_4_code_editor');
             editor.style.display = editor.style.display === 'none' ? 'block' : 'none';
         });
 
+        // 类创建函数
         function createClass(code) {
             return new Promise((resolve, reject) => {
                 try {
@@ -494,6 +479,7 @@
             });
         }
 
+        // 显示方法列表
         function showMethods(instance) {
             const methodList = document.getElementById('methodList');
             methodList.innerHTML = '';

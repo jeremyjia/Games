@@ -221,7 +221,7 @@
             padding: 10px;
         }
     </style>
-    
+
 </head>
 <body>
     <div class="nav">
@@ -399,17 +399,59 @@
 
             `class Class3 {
                 constructor(name) {
+                    this.n = 0;
+                    this.x = 10;
+                    this.y = 10;
+                    this.dx = 50;
+                    this.boxs = [];
                     this.name = name || 'Default';
                 }
                 
                 greet() {
-                    console.log(\`Hello from \${this.name}\`);
+                    console.log("Hello from ${this.name}");
+                }
+                
+                draw_boxs(cx) {
+                    this.x += this.dx;
+                    this.n ++;
+                    if(this.n>10){
+                        this.n = 0;
+                        this.x = 10;
+                        this.y += 50;
+                    }
+                    // 修正对象语法并添加坐标点
+                    this.boxs.push({ x: this.x, y: this.y });
+                    
+                    // 绘制所有矩形
+                    cx.fillStyle = '#FF5722';  // 橙色填充
+                    cx.strokeStyle = '#333';  // 黑色边框
+                    this.boxs.forEach(point => {
+                        cx.beginPath();
+                        // 绘制矩形（位置，宽高20x20）
+                        cx.rect(point.x - 10, point.y - 10, 20, 20); // 中心对齐坐标点
+                        // 添加渐变效果
+                        const gradient = cx.createLinearGradient(
+                            point.x - 10, 
+                            point.y - 10,
+                            point.x + 20,
+                            point.y + 20
+                        );
+                        gradient.addColorStop(0, '#FF9800');
+                        gradient.addColorStop(1, '#FF5722');
+                        cx.fillStyle = gradient;
+                        
+                        cx.fill();
+                        cx.stroke();
+                    });
                 }
                 
                 static staticMethod() {
                     console.log('This is static');
                 }
             }`
+
+
+            ,
         ];
 
         const textarea = document.querySelector('textarea');
