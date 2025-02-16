@@ -81,64 +81,15 @@
             z-index: 10;
         }
 
-        /* 更新后的按钮样式 */
         button {
             margin: 2px;
             padding: 5px 10px;
+            background: #4CAF50;
             border: none;
             color: white;
             border-radius: 3px;
             cursor: pointer;
             flex: none;
-            transition: background 0.3s, box-shadow 0.3s;
-        }
-
-        /* Class1 - 蓝色系 */
-        button[data-class="0"] {
-            background: #2196F3;
-        }
-        button[data-class="0"]:hover {
-            background: #1976D2;
-        }
-        button[data-class="0"].active {
-            background: #0D47A1;
-            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.5);
-        }
-
-        /* Class2 - 橙色系 */
-        button[data-class="1"] {
-            background: #FF9800;
-        }
-        button[data-class="1"]:hover {
-            background: #F57C00;
-        }
-        button[data-class="1"].active {
-            background: #E65100;
-            box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.5);
-        }
-
-        /* Class3 - 紫色系 */
-        button[data-class="2"] {
-            background: #9C27B0;
-        }
-        button[data-class="2"]:hover {
-            background: #7B1FA2;
-        }
-        button[data-class="2"].active {
-            background: #4A148C;
-            box-shadow: 0 0 0 2px rgba(156, 39, 176, 0.5);
-        }
-
-        /* 功能按钮保持绿色系 */
-        #updateBtn, 
-        #generateInstanceBtn, 
-        #toggleEditorBtn {
-            background: #4CAF50;
-        }
-        #updateBtn:hover, 
-        #generateInstanceBtn:hover, 
-        #toggleEditorBtn:hover {
-            background: #45a049;
         }
 
         hr {
@@ -192,6 +143,15 @@
 
         .method-item:hover {
             background: #e0e0e0;
+        }
+
+        button.active {
+            background: #45a049;
+            box-shadow: 0 0 0 2px #2d662f;
+        }
+
+        button:hover {
+            background: #45a049;
         }
 
         .method-list-container {
