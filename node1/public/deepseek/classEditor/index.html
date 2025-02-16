@@ -773,10 +773,28 @@
                     methodList.appendChild(div);
                 });
         }
+        document.addEventListener('keydown', (e) => {
+            if (!selectedInstance || selectedInstance.selectedBox === null) return;
+
+            const step = 5; // 每次移动5像素
+            let dx = 0, dy = 0;
+
+            switch(e.key) {
+                case 'ArrowLeft':  dx = -step; break;
+                case 'ArrowRight': dx = step; break;
+                case 'ArrowUp':    dy = -step; break;
+                case 'ArrowDown': dy = step; break;
+                default: return;
+            }
+
+            selectedInstance.moveSelectedBox(dx, dy);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            selectedInstance.drawAllBoxs(ctx);
+        });
     </script>
 </body>
 </html>
 <!--
 
-when box is clicked, it should change color to blue. even not move
+let left KEY and right key can move the selected box
 -->
