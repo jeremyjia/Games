@@ -39,10 +39,40 @@
             min-width: 60px;
             text-align: center;
             user-select: none;
+            position: relative; /* Add positioning context */
         }
         .ds_button:hover {
             background: #2d3748;
             transform: translateY(-1px);
+        }
+        .ds_menu {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background: #444;
+            border-radius: 4px;
+            padding: 8px;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 150px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1001;
+        }
+
+        .ds_menu.active {
+            display: flex;
+        }
+
+        .ds_menu_item {
+            padding: 8px;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .ds_menu_item:hover {
+            background: #555;
         }
     </style>
 </head>
@@ -120,13 +150,10 @@
     const toolbar = app.createToolbar(document.body, 'mainToolbar');
 
     // 添加按钮
-    const settingsBtn = app.addButton(toolbar, 'settingsBtn', 'Settings');
+    const menuBtn = app.addButton(toolbar, 'menuBtn', 'Settings');
     const coordDisplay = app.addButton(toolbar, 'coordDisplay', '0:0');
 
-    // 事件处理
-    settingsBtn.addEventListener('click', function() {
-        alert('Settings button clicked!');
-    });
+     
 
     // 优化后的坐标更新处理
     const updateCoordinates = app.throttle((e) => {
@@ -158,6 +185,58 @@
         canvas.height = rect.height * dpr;
         canvas.getContext('2d').scale(dpr, dpr);
     });
+
+    // After creating menuBtn in existing code
+    const menu = document.createElement('div');
+    menu.className = 'ds_menu';
+
+    // Menu items
+    ['DeepSeek Home', 'classEditor', 'Close'].forEach(text => {
+        const item = document.createElement('div');
+        item.className = 'ds_menu_item';
+        item.textContent = text;
+        if (text === 'DeepSeek Home') {
+            item.addEventListener('click', () => {
+                window.location.href = 'https://www.deepseek.com';
+                menu.classList.remove('active');
+            });
+        } 
+        else if (text === 'classEditor'){
+            item.addEventListener('click', () => {
+                window.location.href = 'classEditor';
+                menu.classList.remove('active');
+            }); 
+        }
+        else if (text === 'Close') {
+            item.addEventListener('click', () => menu.classList.remove('active'));
+        }
+        
+        
+        menu.appendChild(item);
+    });
+
+    menuBtn.appendChild(menu);
+
+    // Toggle menu
+    menuBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        menu.classList.toggle('active');
+    });
+
+    // Close menu on outside click
+    document.addEventListener('click', (e) => {
+        if (!menuBtn.contains(e.target)) {
+            menu.classList.remove('active');
+        }
+    });
+
+    // Close on ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            menu.classList.remove('active');
+        }
+    });
+
 </script>
 </body>
 </html>
