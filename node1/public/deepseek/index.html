@@ -65,7 +65,27 @@
             justify-content: space-between;
             align-items: center;
         }
-        
+        .ds_window_header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.current-mode {
+    color: #4CAF50;
+    font-weight: bold;
+    font-size: 0.9em;
+    background: rgba(76, 175, 80, 0.15);
+    padding: 2px 8px;
+    border-radius: 12px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.8; }
+    50% { opacity: 1; }
+    100% { opacity: 0.8; }
+}
         .ds_window_title {
             color: #fff;
             font-weight: bold;
@@ -167,6 +187,27 @@
         .ds_menu_item:hover {
             background: #555;
         }
+        .ds_subtoolbar {
+    display: flex;
+    background: #3a3a3a;
+    padding: 4px;
+    border-bottom: 1px solid #555;
+}
+
+.ds_subtoolbar .ds_button {
+    flex: 1;
+    margin: 0 2px;
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+.ds_subtoolbar .ds_button.active {
+    background: #2b6cb0;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+.ds_window_header {
+    transition: all 0.3s ease;
+}
     </style>
 </head>
 <body>
@@ -435,9 +476,14 @@ const musicConfigManager = new MusicConfigManager();
     const textarea = document.createElement('textarea');
     textarea.className = 'ds_textarea';
     textarea.placeholder = 'Type your notes here...';
-    
+     
+// 创建模式显示元素
+const modeDisplay = document.createElement('div');
+modeDisplay.className = 'current-mode';
+modeDisplay.textContent = 'Mode1';  // 默认模式
     // Assemble window
     windowHeader.appendChild(windowTitle);
+    windowHeader.appendChild(modeDisplay);  // 添加模式显示
     windowHeader.appendChild(windowClose);
     movableWindow.appendChild(windowHeader);
     windowContent.appendChild(textarea);
@@ -475,15 +521,11 @@ const musicConfigManager = new MusicConfigManager();
     
     textarea.addEventListener('input', function() {
         const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height); // 使用实际画布尺寸
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // 使用实际画布尺寸  
         
-        const lines = this.value.split('\n');
-        lines.forEach((line, index) => {
-            const cx = canvas.getContext('2d');
-            const ns = line.split(' '); 
-            const msc = new CBlDSMusic();
-            msc.testDrawNotes(cx, ns, 33, 54 + index * 20, 33);
-        });
+        const msc = new CBlDSMusic();
+        msc.testDrawNotes(ctx,modeDisplay.textContent,this.value, 33, 54, 33);
+ 
     });
 
     function dragStart(e) {
@@ -533,13 +575,49 @@ const musicConfigManager = new MusicConfigManager();
     // 添加按钮
     const menuBtn = app.addButton(toolbar, 'menuBtn', 'Settings');
     const coordDisplay = app.addButton(toolbar, 'coordDisplay', '0:0');
-    coordDisplay.onclick = function(e){
-        const cx = canvas.getContext('2d');
-        const ns = ["1---","2//","3//","4//","1,,","5,","2'","7,,-","2''---"]; 
-        const msc = new CBlDSMusic();
-        msc.testDrawNotes(cx,ns,33,54,55);
+    coordDisplay.onclick = function(e){ 
     }
      
+    function createSubToolbar() {
+    const toolbar = document.createElement('div');
+    toolbar.className = 'ds_subtoolbar';
+    
+    const buttons = [
+        {id: 'mode1', text: 'Mode1'},
+        {id: 'mode2', text: 'Mode2'}, 
+        {id: 'mode3', text: 'Mode3'},
+        {id: 'mode4', text: 'Mode4',fnClick:function(){alert(this.id);}}, 
+    ];
+
+    buttons.forEach((btn, index) => {
+        const button = document.createElement('div');
+        button.className = `ds_button ${index === 0 ? 'active' : ''}`;
+        button.id = btn.id;
+        button.textContent = btn.text;
+        
+        button.addEventListener('click', function() {
+            // 移除所有按钮的active状态
+            toolbar.querySelectorAll('.ds_button').forEach(b => 
+                b.classList.remove('active'));
+            // 设置当前按钮为active
+            this.classList.add('active');
+
+             // 更新标题栏模式显示
+             modeDisplay.textContent = btn.text;
+            // 添加视觉反馈
+            modeDisplay.style.animation = 'none';
+            void modeDisplay.offsetWidth; // 触发重绘
+            modeDisplay.style.animation = 'pulse 2s infinite';
+            textarea.dispatchEvent(new Event('input'));
+            if(btn.fnClick){btn.fnClick();}
+             
+        });
+        
+        toolbar.appendChild(button);
+    });
+
+    return toolbar;
+}
 
     // 优化后的坐标更新处理
     const updateCoordinates = app.throttle((e) => {
@@ -622,7 +700,10 @@ const musicConfigManager = new MusicConfigManager();
             menu.classList.remove('active');
         }
     });
-
+    const windowHeader1 = movableWindow.querySelector('.ds_window_header');
+    const windowContent1 = movableWindow.querySelector('.ds_window_content');
+    const subToolbar = createSubToolbar();
+    movableWindow.insertBefore(subToolbar, windowContent1);
 </script>
 <!-- 在body末尾添加音乐配置窗口 -->
 <div class="ds_window" id="musicConfigWindow">

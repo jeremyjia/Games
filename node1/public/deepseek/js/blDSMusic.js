@@ -1,8 +1,3 @@
-/*
- 当1个8分音符紧跟着一个l字母，就把它和下一个8分音符相连的意思就是他们下面的横杠是连在一起的。
-例如：1,,/l 2/,  ；  5/l   6/ 
-
-*/
 
 class CBlDSMusic {
     constructor() {
@@ -10,15 +5,111 @@ class CBlDSMusic {
         this.conf = musicConfigManager.getConfig();
     }
 
-    testDrawNotes(cx,ns,x,y,dx){  
-        cx.beginPath();
-        cx.arc(x, y, 20, 0, Math.PI * 2);
-        cx.fillStyle = '#ff11f2';
-        cx.fill();
+    testDrawNotes(cx,mode,txt,x0,y0,dx){
+        let x = x0;
+        let y = y0;   
         cx.fillText(this.version,x,y);
-        this.#drawNotes(cx,ns,x,y,dx);
+        x += dx*5;
+        cx.fillText(" : " + mode ,x,y);
+        y += 20; 
+        const lines = txt.split('\n');
+        lines.forEach(line => {
+            y += 20 *3;
+            if(mode=="Mode1"){ 
+                this.#drawNotes(cx,line,x,y,dx); 
+            } else if(mode=="Mode2"){
+                this.#drawSentence(cx,line,x,y,dx);  
+            }
+            else{ 
+                cx.fillText(line,x,y);
+            }
+        }); 
+ 
+    } 
+ 
+    #drawSentence(cx, line, x, y, dx) {
+        const measures = line.split('|').filter(m => m.trim() !== '');
+        let currentX = x;
+        for (const measure of measures) {
+            const total = this.#calculateMeasureDuration(measure);
+            const isTotalFour = Math.abs(total - 4) < 1e-6;
+            const notes = measure.split(' ').filter(n => n.trim() !== '');
+            const noteData = [];
+            let measureStartX = currentX;
+
+            // 绘制每个音符并记录数据
+            notes.forEach(noteStr => {
+                const parsed = this.#parseNote(noteStr);
+                const displayText = noteStr;
+                const textWidth = cx.measureText(displayText).width;
+                cx.fillStyle = isTotalFour ? '#FF0000' : '#000000';
+               // cx.fillText(displayText, currentX, y);
+                this.#drawTextNote(cx,currentX,y,displayText);
+                noteData.push({ x: currentX, width: textWidth, slash: parsed.slash });
+                currentX += textWidth + dx;
+            });
+
+            // 绘制总时长
+            const totalText = `[${total.toFixed(2)}]`;
+            cx.fillText(totalText, currentX, y);
+            currentX += cx.measureText(totalText).width + dx;
+
+            // 绘制符尾线
+            this.#drawMeasureBeams(cx, noteData, y);
+        }
     }
-    #drawNotes(cx,ns,x,y,dx){ 
+
+    #drawMeasureBeams(cx, noteData, y) {
+        if (noteData.length === 0) return;
+
+        let currentSlash = noteData[0].slash;
+        let groupStartX = noteData[0].x;
+        let groupEndX = noteData[0].x + noteData[0].width;
+
+        for (let i = 1; i < noteData.length; i++) {
+            if (noteData[i].slash === currentSlash) {
+                groupEndX = noteData[i].x + noteData[i].width;
+            } else {
+                this.#drawBeamGroup(cx, currentSlash, groupStartX, groupEndX, y);
+                currentSlash = noteData[i].slash;
+                groupStartX = noteData[i].x;
+                groupEndX = noteData[i].x + noteData[i].width;
+            }
+        }
+        this.#drawBeamGroup(cx, currentSlash, groupStartX, groupEndX, y);
+    }
+
+    #drawBeamGroup(cx, slash, startX, endX, y) {
+        if (slash === 0) return;
+
+        const config = this.conf;
+        const baseY = y + config.fontSize / 2 + config.slashVerticalOffset;
+        cx.strokeStyle = '#000';
+        cx.lineWidth = config.slashLineWidth || 2;
+
+        for (let i = 0; i < slash; i++) {
+            const lineY = baseY + i * config.slashLineSpacing;
+            cx.beginPath();
+            cx.moveTo(startX, lineY);
+            cx.lineTo(endX, lineY);
+            cx.stroke();
+        }
+    }
+
+    #calculateMeasureDuration(measureStr) {
+        const notes = measureStr.split(' ').filter(n => n.trim() !== '');
+        let total = 0;
+        for (const noteStr of notes) {
+            const parsed = this.#parseNote(noteStr);
+            const baseDuration = 1 / (2 ** parsed.slash);
+            const duration = baseDuration * (2 - (1 / (2 ** parsed.dash)));
+            total += duration;
+        }
+        return total;
+    }
+
+    #drawNotes(cx,line,x,y,dx){ 
+        const ns = line.split(' ');
         cx.save(); 
         for(let i =0; i < ns.length; i++) { 
             const parsed = this.#parseNote(ns[i]);
