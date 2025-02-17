@@ -205,7 +205,7 @@
               const key = `${nr},${nc}`;
               if (!visited.has(key)) {
                 visited.add(key);
-                queue.push({ row: nr, col: nc, viaJump: true }); //Jeremy fixed it
+                queue.push({ row: nr, col: nc, viaJump: 100 }); //Jeremy fixed it
               }
             } else {
               const jr = nr + dir.dr, jc = nc + dir.dc;
@@ -219,7 +219,7 @@
               }
             }
           } else {
-            if (board[nr][nc].type === "piece") {
+            if (board[nr][nc].type === "piece" && viaJump!==100) {
               const jr = nr + dir.dr, jc = nc + dir.dc;
               if (isValidHex(jr, jc) && board[jr][jc]?.type === "empty") {
                 const key = `${jr},${jc}`;
