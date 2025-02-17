@@ -1,13 +1,3 @@
-<!--
-帮我做一个网页。网页上没有style内容，body是空的。
-生成一个JavaScript类，生成所有的style和DOM.
-有一个固定在网页底部的工具条。
-工具条上有一个按钮，
-点这个按钮会弹出一个浮动可移动窗口,
-窗口上有一个导航菜单，
-有一个菜单项连接到DeepSeek主页。
-手机上可以完美运行。
--->
 <!DOCTYPE html>
 <html>
 <head>
@@ -15,11 +5,159 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DeepSeek Toolbar</title>
     <script src="js/blDSClass.js"></script>
+    <style>
+        /* 集中样式管理 */
+        .ds_canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #f0f0f0;
+            z-index: 1;
+        }
+        .ds_toolbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #333;
+            color: #fff;
+            padding: 10px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-start;
+        }
+        .ds_button {
+            background: #4a5568;
+            color: #f1f1f1;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 60px;
+            text-align: center;
+            user-select: none;
+        }
+        .ds_button:hover {
+            background: #2d3748;
+            transform: translateY(-1px);
+        }
+    </style>
 </head>
 <body>
-<script> 
+<script>
+    class DeepSeekApp {
+        constructor() {
+            this.styleAdded = false;
+            this.addBaseStyles();
+        }
+
+        addBaseStyles() {
+            if (this.styleAdded) return;
+            // 基础样式已移至<head>的style标签
+            this.styleAdded = true;
+        }
+
+        createCanvas(parentElement, id) {
+            const canvas = document.createElement('canvas');
+            canvas.id = id;
+            canvas.className = 'ds_canvas';
+            parentElement.appendChild(canvas);
+            
+            // 处理高清显示
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            canvas.getContext('2d').scale(dpr, dpr);
+            
+            return canvas;
+        }
+
+        createToolbar(parentElement, id) {
+            const toolbar = document.createElement('div');
+            toolbar.id = id;
+            toolbar.className = 'ds_toolbar';
+            parentElement.appendChild(toolbar);
+            return toolbar;
+        }
+
+        addButton(parentElement, id, text) {
+            const button = document.createElement('div');
+            button.id = id;
+            button.className = 'ds_button';
+            button.textContent = text;
+            parentElement.appendChild(button);
+            return button;
+        }
+
+        // 节流函数优化性能
+        throttle(func, limit = 100) {
+            let lastFunc;
+            let lastRan;
+            return function(...args) {
+                if (!lastRan) {
+                    func.apply(this, args);
+                    lastRan = Date.now();
+                } else {
+                    clearTimeout(lastFunc);
+                    lastFunc = setTimeout(() => {
+                        if ((Date.now() - lastRan) >= limit) {
+                            func.apply(this, args);
+                            lastRan = Date.now();
+                        }
+                    }, limit - (Date.now() - lastRan));
+                }
+            };
+        }
+    }
+
     // 初始化应用
-    new CBlDSApp();
+    const app = new DeepSeekApp();
+    const canvas = app.createCanvas(document.body, 'mainCanvas');
+    const toolbar = app.createToolbar(document.body, 'mainToolbar');
+
+    // 添加按钮
+    const settingsBtn = app.addButton(toolbar, 'settingsBtn', 'Settings');
+    const coordDisplay = app.addButton(toolbar, 'coordDisplay', '0:0');
+
+    // 事件处理
+    settingsBtn.addEventListener('click', function() {
+        alert('Settings button clicked!');
+    });
+
+    // 优化后的坐标更新处理
+    const updateCoordinates = app.throttle((e) => {
+        const rect = canvas.getBoundingClientRect();
+        const getClientPos = (event) => ({
+            x: event.touches ? event.touches[0].clientX : event.clientX,
+            y: event.touches ? event.touches[0].clientY : event.clientY
+        });
+
+        const pos = getClientPos(e);
+        const mouseX = pos.x - rect.left;
+        const mouseY = pos.y - rect.top;
+        
+        coordDisplay.textContent = `${Math.round(mouseX)}:${Math.round(mouseY)}`;
+    }, 50);
+
+    // 支持触摸和鼠标事件
+    canvas.addEventListener('mousemove', updateCoordinates);
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault(); // 阻止触摸滚动
+        updateCoordinates(e);
+    }, { passive: false });
+
+    // 窗口大小调整处理
+    window.addEventListener('resize', () => {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        canvas.getContext('2d').scale(dpr, dpr);
+    });
 </script>
 </body>
 </html>
