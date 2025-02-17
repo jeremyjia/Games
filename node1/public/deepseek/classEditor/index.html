@@ -113,12 +113,33 @@
         button[data-class="2"].active { background: #4A148C; }
 
         #toggleEditorBtn {
-            background: #4CAF50;
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); 
         }
         #toggleEditorBtn:hover {
             background: #45a049;
         }
+        #addClassBtn {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
 
+        #addClassBtn:hover {
+            background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transform: translateY(-1px);
+        }
+
+        #addClassBtn:active {
+            background: linear-gradient(135deg, #3d8b40 0%, #2d6d2f 100%);
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
         hr {
             width: 100%;
             margin: 8px 0;
@@ -320,14 +341,14 @@
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
             ctx = canvas.getContext('2d');
-            ctx.drawNoteTest = function(cx,ns) {
+            ctx.drawNoteTest = function(cx,ns,x,y,dx) {
                     cx.save(); 
                     for(let i =0; i < ns.length; i++) { 
                         const parsed = cx.parseNote(ns[i]);
                         cx.drawTextNote(
                             cx,
-                            50 + i * 50,
-                            100,
+                            x + i * dx,
+                            y,
                             parsed
                         );
                     }
@@ -635,11 +656,14 @@
                 constructor() {
                     this.value = 0;
                     this.name = "class2_name"; 
+                    this.x = 50;
+                    this.y = 50;
+                    this.dx = 50;
                 }
                  
                 Test(cx) { 
                     const ns = ["1---","2//","3//","4//","1,,","5,","2'","7,,-","2''---"]; 
-                    cx.drawNoteTest(cx,ns); 
+                    cx.drawNoteTest(cx,ns,this.x,this.y,this.dx); 
                 } 
             }` 
         ,
@@ -837,6 +861,5 @@
 </html>
 <!--
 
-add a new button to code editor, when click this button, used the code inside the code editor to add a new class.
-
+addClassBtn, set a beautiful color for it.
 -->
