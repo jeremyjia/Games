@@ -5,8 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DeepSeek Toolbar</title>
     <script src="js/blDSClass.js"></script>
+    <script src="js/blDSMusic.js"></script>
     <style>
-        /* 集中样式管理 */
+        .ds_window {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #444;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1002;
+            display: none;
+            width: 300px;
+            min-height: 200px;
+            flex-direction: column;
+        }
+        
+        .ds_window_header {
+            background: #333;
+            padding: 10px;
+            border-radius: 6px 6px 0 0;
+            cursor: move;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .ds_window_title {
+            color: #fff;
+            font-weight: bold;
+        }
+        
+        .ds_window_content {
+            flex: 1;
+            padding: 10px;
+        }
+        
+        .ds_textarea {
+            width: 95%;
+            height: 150px;
+            background: #555;
+            border: 1px solid #666;
+            color: #fff;
+            padding: 8px;
+            border-radius: 4px;
+            resize: vertical;
+        }
+        
+        .ds_window_close {
+            color: #fff;
+            cursor: pointer;
+            padding: 0 5px;
+        }
         .ds_canvas {
             position: fixed;
             top: 0;
@@ -149,10 +200,120 @@
     const canvas = app.createCanvas(document.body, 'mainCanvas');
     const toolbar = app.createToolbar(document.body, 'mainToolbar');
 
+    const windowBtn = app.addButton(toolbar, 'windowBtn', 'Notes');
+    
+    // Create movable window
+    const movableWindow = document.createElement('div');
+    movableWindow.className = 'ds_window';
+    
+    // Window header
+    const windowHeader = document.createElement('div');
+    windowHeader.className = 'ds_window_header';
+    
+    const windowTitle = document.createElement('div');
+    windowTitle.className = 'ds_window_title';
+    windowTitle.textContent = 'Notes Window';
+    
+    const windowClose = document.createElement('div');
+    windowClose.className = 'ds_window_close';
+    windowClose.innerHTML = '&times;';
+    
+    // Window content
+    const windowContent = document.createElement('div');
+    windowContent.className = 'ds_window_content';
+    const textarea = document.createElement('textarea');
+    textarea.className = 'ds_textarea';
+    textarea.placeholder = 'Type your notes here...';
+    
+    // Assemble window
+    windowHeader.appendChild(windowTitle);
+    windowHeader.appendChild(windowClose);
+    movableWindow.appendChild(windowHeader);
+    windowContent.appendChild(textarea);
+    movableWindow.appendChild(windowContent);
+    document.body.appendChild(movableWindow);
+    
+    // Toggle window visibility
+    windowBtn.addEventListener('click', () => {
+        movableWindow.style.display = movableWindow.style.display === 'none' ? 'flex' : 'none';
+    });
+    
+    // Close window
+    windowClose.addEventListener('click', () => {
+        movableWindow.style.display = 'none';
+    });
+    
+    // Make window draggable
+    let isDragging = false;
+    let currentX = 0;
+    let currentY = 0;
+    let initialX = 0;
+    let initialY = 0;
+    let xOffset = 0;
+    let yOffset = 0;
+    
+    windowHeader.addEventListener('mousedown', dragStart);
+    document.addEventListener('mouseup', dragEnd);
+    document.addEventListener('mousemove', drag);
+    
+    // Touch events for mobile
+    windowHeader.addEventListener('touchstart', dragStart);
+    document.addEventListener('touchend', dragEnd);
+    document.addEventListener('touchmove', drag);
+    
+    function dragStart(e) {
+        if (e.type === 'touchstart') {
+            initialX = e.touches[0].clientX - xOffset;
+            initialY = e.touches[0].clientY - yOffset;
+        } else {
+            initialX = e.clientX - xOffset;
+            initialY = e.clientY - yOffset;
+        }
+        
+        if (e.target === windowHeader) {
+            isDragging = true;
+        }
+    }
+    
+    function dragEnd(e) {
+        initialX = currentX;
+        initialY = currentY;
+        isDragging = false;
+    }
+    
+    function drag(e) {
+        if (isDragging) {
+            e.preventDefault();
+            
+            if (e.type === 'touchmove') {
+                currentX = e.touches[0].clientX - initialX;
+                currentY = e.touches[0].clientY - initialY;
+            } else {
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+            }
+            
+            xOffset = currentX;
+            yOffset = currentY;
+            
+            setTranslate(currentX, currentY, movableWindow);
+        }
+    }
+    
+    function setTranslate(xPos, yPos, el) {
+        el.style.transform = `translate(${xPos}px, ${yPos}px)`;
+    }
+
+
     // 添加按钮
     const menuBtn = app.addButton(toolbar, 'menuBtn', 'Settings');
     const coordDisplay = app.addButton(toolbar, 'coordDisplay', '0:0');
-
+    coordDisplay.onclick = function(e){
+        const cx = canvas.getContext('2d');
+        const ns = ["1---","2//","3//","4//","1,,","5,","2'","7,,-","2''---"]; 
+        const msc = new CBlDSMusic();
+        msc.drawTest(cx,ns,33,54,55);
+    }
      
 
     // 优化后的坐标更新处理
@@ -173,7 +334,7 @@
     // 支持触摸和鼠标事件
     canvas.addEventListener('mousemove', updateCoordinates);
     canvas.addEventListener('touchmove', (e) => {
-        e.preventDefault(); // 阻止触摸滚动
+        e.preventDfault(); // 阻止触摸滚动
         updateCoordinates(e);
     }, { passive: false });
 
