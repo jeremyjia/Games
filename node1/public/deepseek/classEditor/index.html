@@ -297,7 +297,7 @@
     </div>
 
     <script>
-        // 修改classInstances为数组
+        
         const classInstances = [];
 
         // 添加新建类功能
@@ -554,13 +554,20 @@
 
     // Canvas事件监听
     canvas.addEventListener('mousedown', handleCanvasDown);
+    canvas.addEventListener('touchstart', handleCanvasDown, { passive: false });
     canvas.addEventListener('mousemove', handleCanvasMove);
+    canvas.addEventListener('touchmove', handleCanvasMove, { passive: false });
     canvas.addEventListener('mouseup', handleCanvasUp);
+    canvas.addEventListener('touchend', handleCanvasUp);
 
     function handleCanvasDown(e) {
+        e.preventDefault(); // 防止触摸滚动
         const rect = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
+        // 统一处理鼠标和触摸坐标
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const mouseX = clientX - rect.left;
+        const mouseY = clientY - rect.top;
 
         const activeBtn = document.querySelector('[data-class].active');
         if (!activeBtn) return;
@@ -583,11 +590,16 @@
     }
 
     function handleCanvasMove(e) {
+        e.preventDefault(); // 防止触摸滚动
         if(!isDraggingBox) return;
 
         const rect = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
+        // 统一处理坐标
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        const mouseX = clientX - rect.left;
+        const mouseY = clientY - rect.top;
 
         const dx = mouseX - dragStartX;
         const dy = mouseY - dragStartY;
@@ -604,6 +616,9 @@
     }
 
     function handleCanvasUp() {
+        if(e.type === 'touchend') {
+            e.preventDefault();
+        }
         if(isDraggingBox && selectedInstance) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             selectedInstance.drawAllBoxs(ctx);  // 新增的释放时重绘
@@ -860,6 +875,6 @@
 </body>
 </html>
 <!--
-
-addClassBtn, set a beautiful color for it.
+can't move boxs on cell phone
+ 
 -->
