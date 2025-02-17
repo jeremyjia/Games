@@ -43,11 +43,12 @@ class CBlDSMusic {
                 const displayText = noteStr;
                 const textWidth = cx.measureText(displayText).width;
                 cx.fillStyle = isTotalFour ? '#FF0000' : '#000000';
-               // cx.fillText(displayText, currentX, y);
-                this.#drawTextNote(cx,currentX,y,displayText);
+               // cx.fillText(displayText, currentX, y); should like drawTextNote to do ... 
+                
                 noteData.push({ x: currentX, width: textWidth, slash: parsed.slash });
                 currentX += textWidth + dx;
             });
+            this.#drawNotes(cx,measure,x,y,dx);
 
             // 绘制总时长
             const totalText = `[${total.toFixed(2)}]`;
