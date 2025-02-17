@@ -7,6 +7,38 @@
     <script src="js/blDSClass.js"></script>
     <script src="js/blDSMusic.js"></script>
     <style>
+        /* 在现有样式中添加以下内容 */
+.config-item {
+    margin: 6px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px;
+    background: #555;
+    border-radius: 4px;
+}
+
+.config-item label {
+    color: #fff;
+    margin-right: 10px;
+}
+
+.config-item input {
+    width: 70px;
+    padding: 3px;
+    background: #666;
+    border: 1px solid #777;
+    color: #fff;
+    border-radius: 3px;
+}
+
+.ds_window_footer {
+    padding: 8px;  
+    background: #333;
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
         .ds_window {
             position: fixed;
             top: 50%;
@@ -18,7 +50,9 @@
             z-index: 1002;
             display: none;
             width: 300px;
-            min-height: 200px;
+            min-height: 180px;
+            max-height: 70vh;   /* 添加最大高度限制 */
+            overflow-y: auto;   /* 添加滚动条 */
             flex-direction: column;
         }
         
@@ -41,7 +75,14 @@
             flex: 1;
             padding: 10px;
         }
-        
+        .ds_window_content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .ds_window_content::-webkit-scrollbar-thumb {
+            background: #666;
+            border-radius: 3px;
+        }
         .ds_textarea {
             width: 95%;
             height: 150px;
@@ -83,11 +124,12 @@
         .ds_button {
             background: #4a5568;
             color: #f1f1f1;
-            padding: 8px 16px;
+            padding: 6px 12px;
             border-radius: 4px;
             cursor: pointer;
             transition: all 0.2s ease;
-            min-width: 60px;
+            font-size: 13px;    /* 减小字体大小 */
+            min-width: 40px;
             text-align: center;
             user-select: none;
             position: relative; /* Add positioning context */
@@ -195,11 +237,180 @@
         }
     }
 
+
+// 配置管理器类（添加在DeepSeekApp类之后）
+class MusicConfigManager {
+    constructor() {
+        this.defaultConfig = {
+            noteWidth: 80,
+            baseY: 250,
+            canvasPadding: 40,
+            fontSize: 36,
+            highOctaveDotOffset: 15,
+            lowOctaveDotOffset: 24,
+            slashVerticalOffset: 5,         
+            slashLineSpacing: 10,           
+            slashLineLength: 24,
+            octaveDotSpacing: 10,
+            dashHorizontalOffset: 25,
+            dashLineLength: 14,
+            dashLineSpacing: 20 
+        };
+        this.currentConfig = {...this.defaultConfig}; 
+        // 延迟初始化直到元素存在
+        this.configWindow = null;
+        this.configContent = null;
+        this.initWhenReady();
+    }
+    // 新增方法：等待元素加载完成
+    initWhenReady() {
+        const checkExist = setInterval(() => {
+            if (document.getElementById('musicConfigContent')) {
+                clearInterval(checkExist);
+                this.initConfigWindow();
+            }
+        }, 100);
+    }
+    // 修改后的初始化方法
+    initConfigWindow() {
+        this.configWindow = document.getElementById('musicConfigWindow');
+        this.configContent = document.getElementById('musicConfigContent');
+        
+        // 确保元素存在后再操作
+        if (!this.configContent) {
+            console.error('Configuration content element not found!');
+            return;
+        }
+        
+        this.populateConfigForm();
+        this.initWindowBehavior();
+    }
+    // 生成配置表单
+    populateConfigForm() {
+        this.configContent.innerHTML = Object.entries(this.currentConfig)
+            .map(([key, value]) => `
+                <div class="config-item">
+                    <label>${this.formatConfigKey(key)}:</label>
+                    <input type="number" 
+                           data-key="${key}" 
+                           value="${value}"
+                           min="0"
+                           max="500"
+                           step="1">
+                </div>`
+            ).join('');
+    }
+
+    // 初始化窗口行为
+    initWindowBehavior() {
+        // 窗口拖拽逻辑
+        const dragHandler = {
+            isDragging: false,
+            startX: 0,
+            startY: 0,
+            startOffsetX: 0,
+            startOffsetY: 0,
+            
+            start: (e) => {
+                const rect = this.configWindow.getBoundingClientRect();
+                this.dragHandler.startX = e.clientX || e.touches[0].clientX;
+                this.dragHandler.startY = e.clientY || e.touches[0].clientY;
+                this.dragHandler.startOffsetX = rect.left;
+                this.dragHandler.startOffsetY = rect.top;
+                this.dragHandler.isDragging = true;
+            },
+            
+            move: (e) => {
+                if (!this.dragHandler.isDragging) return;
+                const currentX = e.clientX || e.touches[0].clientX;
+                const currentY = e.clientY || e.touches[0].clientY;
+                
+                const deltaX = currentX - this.dragHandler.startX;
+                const deltaY = currentY - this.dragHandler.startY;
+                
+                this.configWindow.style.left = `${this.dragHandler.startOffsetX + deltaX}px`;
+                this.configWindow.style.top = `${this.dragHandler.startOffsetY + deltaY}px`;
+            },
+            
+            end: () => {
+                this.dragHandler.isDragging = false;
+            }
+        };
+
+        this.dragHandler = dragHandler;
+        
+        // 事件监听
+        this.configWindow.querySelector('.ds_window_header')
+            .addEventListener('mousedown', dragHandler.start.bind(this));
+        
+        document.addEventListener('mousemove', dragHandler.move.bind(this));
+        document.addEventListener('mouseup', dragHandler.end.bind(this));
+
+        // 保存配置
+        document.getElementById('saveMusicConfig').addEventListener('click', () => {
+            this.saveConfig();
+            textarea.dispatchEvent(new Event('input'));
+        });
+
+        // 重置配置
+        document.getElementById('resetMusicConfig').addEventListener('click', () => {
+            this.currentConfig = {...this.defaultConfig};
+            this.populateConfigForm();
+        });
+
+        // 关闭窗口
+        this.configWindow.querySelector('.ds_window_close')
+            .addEventListener('click', () => {
+                this.configWindow.style.display = 'none';
+            });
+    }
+
+    // 保存配置
+    saveConfig() {
+    const inputs = this.configContent.querySelectorAll('input');
+    inputs.forEach(input => {
+        const inputVal = parseInt(input.value, 10);
+        const maxVal = parseInt(input.max, 10);
+        const minVal = parseInt(input.min, 10);
+        // 将值限制在min和max之间
+        const value = Math.min(Math.max(inputVal, minVal), maxVal);
+        this.currentConfig[input.dataset.key] = value;
+        input.value = value; // 确保显示有效值
+    });
+}
+
+    // 格式化配置项名称
+    formatConfigKey(key) {
+        return key.replace(/([A-Z])/g, ' $1')
+                  .replace(/^./, str => str.toUpperCase());
+    }
+
+    // 获取当前配置
+    getConfig() {
+        return {...this.currentConfig};
+    }
+}
+
+
+
+const musicConfigManager = new MusicConfigManager();
     // 初始化应用
     const app = new DeepSeekApp();
     const canvas = app.createCanvas(document.body, 'mainCanvas');
     const toolbar = app.createToolbar(document.body, 'mainToolbar');
-
+    // 在工具栏添加配置按钮（添加在现有按钮代码之后）
+    const configBtn = app.addButton(toolbar, 'musicConfigBtn', 'Music Config');
+    configBtn.addEventListener('click', () => {
+        const configWindow = document.getElementById('musicConfigWindow');
+        configWindow.style.display = 'flex';
+        
+        // 初次显示时居中
+        if (!configWindow.style.left) {
+            configWindow.style.left = '50%';
+            configWindow.style.top = '50%';
+            configWindow.style.transform = 'translate(-50%, -50%)';
+        }
+    });
     const windowBtn = app.addButton(toolbar, 'windowBtn', 'Notes');
     
     // Create movable window
@@ -261,27 +472,20 @@
     windowHeader.addEventListener('touchstart', dragStart);
     document.addEventListener('touchend', dragEnd);
     document.addEventListener('touchmove', drag);
+    
     textarea.addEventListener('input', function() {
         const ctx = canvas.getContext('2d');
-        // Clear canvas using CSS dimensions to handle HiDPI scaling
-        ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // 使用实际画布尺寸
         
-        // Set text styling
-        ctx.fillStyle = '#000000'; // Visible color against light background
-        ctx.font = '14px Arial';   // Appropriate font size
-        ctx.textBaseline = 'top';  // Align text from the top
-
-        // Split text into lines and draw each line
         const lines = this.value.split('\n');
         lines.forEach((line, index) => {
-            //ctx.fillText(line, 20, 20 + index * 20); // 20px line height
-            
             const cx = canvas.getContext('2d');
             const ns = line.split(' '); 
             const msc = new CBlDSMusic();
-            msc.drawTest(cx,ns,33,54 + index * 20,33);
+            msc.drawTest(cx, ns, 33, 54 + index * 20, 33);
         });
     });
+
     function dragStart(e) {
         if (e.type === 'touchstart') {
             initialX = e.touches[0].clientX - xOffset;
@@ -355,7 +559,7 @@
     // 支持触摸和鼠标事件
     canvas.addEventListener('mousemove', updateCoordinates);
     canvas.addEventListener('touchmove', (e) => {
-        e.preventDfault(); // 阻止触摸滚动
+        e.preventDefault(); // 阻止触摸滚动
         updateCoordinates(e);
     }, { passive: false });
 
@@ -420,5 +624,17 @@
     });
 
 </script>
+<!-- 在body末尾添加音乐配置窗口 -->
+<div class="ds_window" id="musicConfigWindow">
+    <div class="ds_window_header">
+        <div class="ds_window_title">Music Config Settings</div>
+        <div class="ds_window_close">&times;</div>
+    </div>
+    <div class="ds_window_content" id="musicConfigContent"></div>
+    <div class="ds_window_footer">
+        <button class="ds_button" id="saveMusicConfig">Save</button>
+        <button class="ds_button" id="resetMusicConfig">Reset</button>
+    </div>
+</div>
 </body>
 </html>

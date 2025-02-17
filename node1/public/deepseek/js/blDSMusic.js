@@ -1,6 +1,7 @@
 class CBlDSMusic {
     constructor() {
-        this.version = "CBlDSMusic v0.13";
+        this.version = "CBlDSMusic v0.14"; 
+        this.conf = musicConfigManager.getConfig();
     }
 
     drawTest(cx,ns,x,y,dx){  
@@ -50,21 +51,7 @@ class CBlDSMusic {
         };
     }
     #drawTextNote = function(cx, x, y, note) {
-        const _tntc = {
-            noteWidth: 80,
-            baseY: 250,
-            canvasPadding: 40,
-            fontSize: 36,
-            highOctaveDotOffset: 15,
-            lowOctaveDotOffset: 15,
-            slashVerticalOffset: 5,         // 调整为更靠近音符
-            slashLineSpacing: 10,           // 增加横线间距
-            slashLineLength: 24,
-            octaveDotSpacing: 10,
-            dashHorizontalOffset: 25,
-            dashLineLength: 14,
-            dashLineSpacing: 20
-        };
+        const _tntc = this.conf;
                 
         cx.save();
         cx.font = _tntc.fontSize + "px Arial";
