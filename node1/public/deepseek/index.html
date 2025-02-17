@@ -235,7 +235,8 @@
     
     // Toggle window visibility
     windowBtn.addEventListener('click', () => {
-        movableWindow.style.display = movableWindow.style.display === 'none' ? 'flex' : 'none';
+        const currentDisplay = window.getComputedStyle(movableWindow).display;
+        movableWindow.style.display = currentDisplay === 'none' ? 'flex' : 'none';
     });
     
     // Close window
