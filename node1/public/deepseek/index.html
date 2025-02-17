@@ -261,7 +261,27 @@
     windowHeader.addEventListener('touchstart', dragStart);
     document.addEventListener('touchend', dragEnd);
     document.addEventListener('touchmove', drag);
-    
+    textarea.addEventListener('input', function() {
+        const ctx = canvas.getContext('2d');
+        // Clear canvas using CSS dimensions to handle HiDPI scaling
+        ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+        
+        // Set text styling
+        ctx.fillStyle = '#000000'; // Visible color against light background
+        ctx.font = '14px Arial';   // Appropriate font size
+        ctx.textBaseline = 'top';  // Align text from the top
+
+        // Split text into lines and draw each line
+        const lines = this.value.split('\n');
+        lines.forEach((line, index) => {
+            //ctx.fillText(line, 20, 20 + index * 20); // 20px line height
+            
+            const cx = canvas.getContext('2d');
+            const ns = line.split(' '); 
+            const msc = new CBlDSMusic();
+            msc.drawTest(cx,ns,33,54 + index * 20,33);
+        });
+    });
     function dragStart(e) {
         if (e.type === 'touchstart') {
             initialX = e.touches[0].clientX - xOffset;
