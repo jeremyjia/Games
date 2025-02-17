@@ -1,26 +1,32 @@
+/*
+ 当1个8分音符紧跟着一个l字母，就把它和下一个8分音符相连的意思就是他们下面的横杠是连在一起的。
+例如：1,,/l 2/,  ；  5/l   6/ 
+
+*/
+
 class CBlDSMusic {
     constructor() {
         this.version = "CBlDSMusic v0.14"; 
         this.conf = musicConfigManager.getConfig();
     }
 
-    drawTest(cx,ns,x,y,dx){  
+    testDrawNotes(cx,ns,x,y,dx){  
         cx.beginPath();
         cx.arc(x, y, 20, 0, Math.PI * 2);
         cx.fillStyle = '#ff11f2';
         cx.fill();
         cx.fillText(this.version,x,y);
-        this.#drawMusic(cx,ns,x,y,dx);
+        this.#drawNotes(cx,ns,x,y,dx);
     }
-    #drawMusic(cx,ns,x,y,dx){ 
+    #drawNotes(cx,ns,x,y,dx){ 
         cx.save(); 
         for(let i =0; i < ns.length; i++) { 
             const parsed = this.#parseNote(ns[i]);
             this.#drawTextNote(
                 cx,
                 x + i * dx,
-                            y,
-                            parsed
+                y,
+                parsed
             );
         }
         cx.restore();
