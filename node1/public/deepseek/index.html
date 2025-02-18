@@ -545,11 +545,25 @@ modeDisplay.textContent = 'Mode1';  // 默认模式
     
     textarea.addEventListener('input', function() {
         const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height); // 使用实际画布尺寸  
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         
         const msc = new CBlDSMusic();
-        msc.testDrawNotes(ctx,modeDisplay.textContent,this.value, 33, 54, 33);
- 
+        msc.testDrawNotes(ctx, modeDisplay.textContent, this.value, 33, 54, 33);
+
+        // Add configuration display
+        const config = musicConfigManager.getConfig();
+        ctx.font = '12px Arial';
+        ctx.fillStyle = '#333';
+        ctx.textBaseline = 'bottom';
+        ctx.textAlign = 'left';
+        
+        const lineHeight = 14;
+        let yPosition = canvas.clientHeight - 55;
+        
+        Object.entries(config).forEach(([key, value], index) => {
+                const text = `${musicConfigManager.formatConfigKey(key)}: ${value}`;
+                ctx.fillText(text, 10, yPosition - (index * lineHeight));
+        });
     });
 
     function dragStart(e) {
