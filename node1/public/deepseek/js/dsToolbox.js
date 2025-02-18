@@ -1,12 +1,11 @@
 class DeepSeekToolbox {
     constructor() { 
-        this.floatingWindow = null;
-        this.windowMask = null;
+        this.floatingWindows = []; // 存储所有窗口实例
         this.init();
     }
 
     init() {
-        this.#createStyle(); 
+        this.#createStyle();
     }
 
     #createStyle() {
@@ -49,8 +48,6 @@ class DeepSeekToolbox {
                     opacity: 0.7;
                 }
             }
-        `;
-        const style_4_floating_window = `
             .ds-floating-window {
                 position: fixed;
                 top: 50%;
@@ -61,12 +58,10 @@ class DeepSeekToolbox {
                 border-radius: 12px;
                 box-shadow: 0 4px 20px rgba(0,0,0,0.15);
                 z-index: 1001;
-                display: none;
                 opacity: 0;
-                transition: opacity 0.3s;
+                transition: opacity 0.3s, left 0.1s, top 0.1s;
             }
             .ds-floating-window.active {
-                display: block;
                 opacity: 1;
             }
             .window-header {
@@ -75,6 +70,8 @@ class DeepSeekToolbox {
                 align-items: center;
                 padding: 16px;
                 border-bottom: 1px solid #eee;
+                cursor: move;
+                user-select: none;
             }
             .window-close {
                 cursor: pointer;
@@ -93,31 +90,19 @@ class DeepSeekToolbox {
                 bottom: 0;
                 background: rgba(0,0,0,0.4);
                 z-index: 1000;
-                display: none;
-        }`;
-        style.textContent  += style_4_floating_window;
-
-        const style_4_moving_header = `/* 在原有的CSS中添加以下样式 */
-            .window-header {
-                cursor: move;
-                user-select: none;
             }
-
-            .ds-floating-window {
-                transition: left 0.1s, top 0.1s; /* 添加平滑移动效果 */
-        }`;
-        style.textContent += style_4_moving_header;
+        `;
         document.head.appendChild(style);
     }
 
-    createToolbar(parentElement,styleClass) {
+    createToolbar(parentElement, styleClass) {
         const tb = document.createElement('div');
         tb.className = styleClass; 
         parentElement.appendChild(tb);
         return tb;
     }
 
-    addButtons(parentElement,cBtnStyle,bts) {
+    addButtons(parentElement, cBtnStyle, bts) {
         bts.forEach(btnConfig => {
             const button = document.createElement('button');
             button.className = cBtnStyle;
@@ -128,15 +113,12 @@ class DeepSeekToolbox {
     }
     
     createFloatingWindow(content = '默认内容') {
-        // 先清除旧窗口
-        this.#removeExistingWindow();
-
-        // 创建新窗口
+        // 创建窗口和独立遮罩层
         const windowEl = document.createElement('div');
-        windowEl.className = 'ds-floating-window';
+        const windowMask = document.createElement('div');
         
-        windowEl.style.left = '50%';
-        windowEl.style.top = '50%';
+        windowEl.className = 'ds-floating-window';
+        windowMask.className = 'window-mask';
         
         windowEl.innerHTML = `
             <div class="window-header">
@@ -146,47 +128,50 @@ class DeepSeekToolbox {
             <div class="window-content">${content}</div>
         `;
 
-        // 创建新遮罩层
-        this.windowMask = document.createElement('div');
-        this.windowMask.className = 'window-mask';
+        document.body.append(windowMask, windowEl);
 
-        document.body.append(this.windowMask, windowEl);
+        // 存储实例
+        const windowInstance = {
+            windowEl,
+            windowMask,
+            isActive: true
+        };
+        this.floatingWindows.push(windowInstance);
 
-        // 绑定事件 (保持原有逻辑)
-        windowEl.querySelector('.window-close').onclick = () => 
-            this.toggleWindow(false);
-        this.windowMask.onclick = () => this.toggleWindow(false);
+        // 绑定事件
+        windowEl.querySelector('.window-close').addEventListener('click', () => 
+            this.#closeWindow(windowInstance)
+        );
+        windowMask.addEventListener('click', () => this.#closeWindow(windowInstance));
 
-        // 拖拽功能 (保持原有逻辑)
+        // 初始化显示
+        windowEl.classList.add('active');
+        windowMask.style.display = 'block';
+
+        // 添加拖拽
         this.#addDragSupport(windowEl);
-
-        this.floatingWindow = windowEl;
-        this.toggleWindow(true);
     }
 
-    #removeExistingWindow() {
-        if (this.floatingWindow) {
-            this.floatingWindow.remove();
-            this.floatingWindow = null;
-        }
-        if (this.windowMask) {
-            this.windowMask.remove();
-            this.windowMask = null;
-        }
+    #closeWindow(instance) {
+        instance.windowEl.remove();
+        instance.windowMask.remove();
+        this.floatingWindows = this.floatingWindows.filter(
+            win => win !== instance
+        );
     }
-    toggleWindow(show) {
-        if (!this.floatingWindow || !this.windowMask) return;
-    
-        const shouldShow = show ?? !this.floatingWindow.classList.contains('active');
-        
-        this.floatingWindow.classList.toggle('active', shouldShow);
-        this.windowMask.style.display = shouldShow ? 'block' : 'none';
-    }
+
     #addDragSupport(windowEl) {
         const header = windowEl.querySelector('.window-header');
         let isDragging = false;
         let startX, startY, initialX, initialY;
-    
+
+        const handleMove = (clientX, clientY) => {
+            const dx = clientX - startX;
+            const dy = clientY - startY;
+            windowEl.style.left = `${initialX + dx}px`;
+            windowEl.style.top = `${initialY + dy}px`;
+        };
+
         const startDrag = (e) => {
             isDragging = true;
             const rect = windowEl.getBoundingClientRect();
@@ -195,27 +180,23 @@ class DeepSeekToolbox {
             startX = e.clientX || e.touches[0].clientX;
             startY = e.clientY || e.touches[0].clientY;
         };
-    
+
         const duringDrag = (e) => {
             if (!isDragging) return;
-            const currentX = e.clientX || e.touches[0].clientX;
-            const currentY = e.clientY || e.touches[0].clientY;
-            const dx = currentX - startX;
-            const dy = currentY - startY;
-            windowEl.style.left = `${initialX + dx}px`;
-            windowEl.style.top = `${initialY + dy}px`;
+            handleMove(
+                e.clientX || e.touches[0].clientX,
+                e.clientY || e.touches[0].clientY
+            );
         };
-    
-        const stopDrag = () => {
-            isDragging = false;
-        };
-    
+
+        const stopDrag = () => isDragging = false;
+
         // 桌面端事件
         header.addEventListener('mousedown', startDrag);
         document.addEventListener('mousemove', duringDrag);
         document.addEventListener('mouseup', stopDrag);
-    
-        // 移动端触摸事件
+
+        // 移动端事件
         header.addEventListener('touchstart', startDrag);
         document.addEventListener('touchmove', duringDrag);
         document.addEventListener('touchend', stopDrag);
