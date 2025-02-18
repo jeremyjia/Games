@@ -5,7 +5,6 @@ class DeepSeekToolbox {
         this.windowMask = null;
         this.init();
     }
-
     init() {
         this.#createStyle();
     }
@@ -62,6 +61,7 @@ class DeepSeekToolbox {
                 z-index: 1001;
                 opacity: 0;
                 transition: opacity 0.3s;
+                min-height: 150px;
             }
             .ds-floating-window.active {
                 opacity: 1;
@@ -118,10 +118,12 @@ class DeepSeekToolbox {
         const windowEl = document.createElement('div');
         windowEl.className = 'ds-floating-window';
         
-        const posOffset = this.floatingWindows.length * 20;
-        windowEl.style.transform = `translate(calc(-50% + ${posOffset}px), calc(-50% + ${posOffset}px))`;
+        // 修改偏移量计算为50px
+        const posOffset = this.floatingWindows.length * 50;
+        windowEl.style.transform = `translate(calc(-50% + ${posOffset}px), calc(-50% + ${posOffset}px)`;
         windowEl.style.zIndex = 1001 + this.floatingWindows.length;
 
+        // 保持其他逻辑不变
         windowEl.innerHTML = `
             <div class="window-header">
                 <div>浮动窗口</div>
@@ -130,14 +132,14 @@ class DeepSeekToolbox {
             <div class="window-content">${content}</div>
         `;
 
+        // 保持遮罩层逻辑不变
         if (!this.windowMask) {
             this.windowMask = document.createElement('div');
             this.windowMask.className = 'window-mask';
             document.body.appendChild(this.windowMask);
             
             this.windowMask.addEventListener('click', () => {
-                const topWindow = this.floatingWindows[this.floatingWindows.length - 1];
-                if (topWindow) this.#closeWindow(topWindow);
+                this.floatingWindows.forEach(win => this.#closeWindow(win));
             });
         }
 
@@ -145,6 +147,7 @@ class DeepSeekToolbox {
         const windowInstance = { windowEl };
         this.floatingWindows.push(windowInstance);
 
+        // 保持关闭逻辑
         windowEl.querySelector('.window-close').addEventListener('click', () => 
             this.#closeWindow(windowInstance)
         );
@@ -152,7 +155,6 @@ class DeepSeekToolbox {
         this.#addDragSupport(windowEl);
         windowEl.classList.add('active');
     }
-
     #closeWindow(instance) {
         instance.windowEl.remove();
         this.floatingWindows = this.floatingWindows.filter(win => win !== instance);
