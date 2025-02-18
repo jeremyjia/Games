@@ -99,13 +99,42 @@ class DeepSeekToolbox {
             const button = document.createElement('button');
             button.className = cBtnStyle;
             button.innerHTML = `${btnConfig.icon}<span>${btnConfig.text}</span>`;
-            button.onclick = btnConfig.action;
+            button.onclick = function(_btnc){
+                return function(){
+                    if(_btnc.action){
+                        _btnc.action(_btnc.id);
+                    }
+                }
+            }(btnConfig);
             parentElement.appendChild(button);
         });
     }
-    
-    createFloatingWindow(content = '默认内容') {
+    #toggleWindow(windowElement) {
+        const isActive = windowElement.classList.contains('active');
+        if (isActive) {
+            windowElement.classList.remove('active');
+        } else {
+            // 计算当前所有活动窗口的最大zIndex
+            const activeWindows = document.querySelectorAll('.ds-floating-window.active');
+            let maxZ = 1001; // 默认基础z-index
+            activeWindows.forEach(win => {
+                const zIndex = parseInt(window.getComputedStyle(win).zIndex, 10);
+                if (!isNaN(zIndex) && zIndex > maxZ) {
+                    maxZ = zIndex;
+                }
+            });
+            windowElement.style.zIndex = maxZ + 1; // 确保在最前
+            windowElement.classList.add('active');
+        }
+    }
+    createFloatingWindow(id,content = '默认内容') {
+        var r = document.getElementById(id);
+        if(r){
+            this.#toggleWindow(r); 
+            return r;
+        } 
         const windowEl = document.createElement('div');
+        windowEl.id = id;
         windowEl.className = 'ds-floating-window';
         
         // 修改偏移量计算为50px
@@ -134,6 +163,8 @@ class DeepSeekToolbox {
 
         this.#addDragSupport(windowEl);
         windowEl.classList.add('active');
+
+        return windowEl;
     }
     #closeWindow(instance) {
         instance.windowEl.remove();
