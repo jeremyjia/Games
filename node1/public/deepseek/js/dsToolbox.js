@@ -1,8 +1,7 @@
  
 class DeepSeekToolbox {
     constructor() { 
-        this.floatingWindows = [];
-        this.windowMask = null;
+        this.floatingWindows = []; 
         this.init();
     }
     init() {
@@ -83,16 +82,7 @@ class DeepSeekToolbox {
             }
             .window-content {
                 padding: 16px;
-            }
-            .window-mask {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0,0,0,0.4);
-                z-index: 1000;
-            }
+            } 
         `;
         document.head.appendChild(style);
     }
@@ -131,17 +121,7 @@ class DeepSeekToolbox {
             </div>
             <div class="window-content">${content}</div>
         `;
-
-        // 保持遮罩层逻辑不变
-        if (!this.windowMask) {
-            this.windowMask = document.createElement('div');
-            this.windowMask.className = 'window-mask';
-            document.body.appendChild(this.windowMask);
-            
-            this.windowMask.addEventListener('click', () => {
-                this.floatingWindows.forEach(win => this.#closeWindow(win));
-            });
-        }
+ 
 
         document.body.appendChild(windowEl);
         const windowInstance = { windowEl };
@@ -158,11 +138,7 @@ class DeepSeekToolbox {
     #closeWindow(instance) {
         instance.windowEl.remove();
         this.floatingWindows = this.floatingWindows.filter(win => win !== instance);
-        
-        if (this.floatingWindows.length === 0 && this.windowMask) {
-            this.windowMask.remove();
-            this.windowMask = null;
-        }
+         
     }
 
     #addDragSupport(windowEl) {
