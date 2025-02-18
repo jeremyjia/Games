@@ -8,29 +8,45 @@
 </head>
 <body>
 <script>
+const dsToolBox = new DeepSeekToolbox();
 const bts = [
-        {
-            icon: '🏠',
-            text: '工具箱A',
-            action: () => { 
-                dsToolBox.createFloatingWindow(`
-                    <h3>欢迎使用DeepSeek工具箱</h3>
-                    <p>版本：1.0.0</p>
-                    <p>功能持续开发中...</p>
-                `);
-            }
-        },
-        {
-             
-        },
-        { 
+    {
+        icon: '🏠',
+        text: '工具箱A',
+        action: () => { 
+            dsToolBox.createFloatingWindow(`
+                <h3>欢迎使用DeepSeek工具箱A</h3>
+                <p>版本：1.0.0</p>
+                <p>功能持续开发中...</p>
+            `);
         }
+    },
+    {
+        icon: '📦',
+        text: '工具箱B',
+        action: () => { 
+            dsToolBox.createFloatingWindow(`
+                <h3>高级工具套件B</h3>
+                <p>版本：2.1.3</p>
+                <p>数据分析专用工具集</p>
+            `);
+        }
+    },
+    { 
+        icon: '🛠️',
+        text: '工具箱C',
+        action: () => { 
+            dsToolBox.createFloatingWindow(`
+                <h3>开发者工具套件C</h3>
+                <p>版本：3.0.0-beta</p>
+                <p>调试与开发工具集合</p>
+            `);
+        }
+    }
 ];
 
-const dsToolBox = new DeepSeekToolbox();
 const toolbar1 = dsToolBox.createToolbar(document.body,'c_toolbar_fixed_at_bottom');
 dsToolBox.addButtons(toolbar1,'',bts);
-
 </script>
 </body>
 </html>

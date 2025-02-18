@@ -1,6 +1,7 @@
 class DeepSeekToolbox {
     constructor() { 
-        this.floatingWindow = null; // 窗口实例引用
+        this.floatingWindow = null;
+        this.windowMask = null;
         this.init();
     }
 
@@ -96,6 +97,16 @@ class DeepSeekToolbox {
         }`;
         style.textContent  += style_4_floating_window;
 
+        const style_4_moving_header = `/* 在原有的CSS中添加以下样式 */
+            .window-header {
+                cursor: move;
+                user-select: none;
+            }
+
+            .ds-floating-window {
+                transition: left 0.1s, top 0.1s; /* 添加平滑移动效果 */
+        }`;
+        style.textContent += style_4_moving_header;
         document.head.appendChild(style);
     }
 
@@ -115,42 +126,98 @@ class DeepSeekToolbox {
             parentElement.appendChild(button);
         });
     }
+    
     createFloatingWindow(content = '默认内容') {
-        if (!this.floatingWindow) {
-            // 创建窗口结构
-            const windowEl = document.createElement('div');
-            windowEl.className = 'ds-floating-window';
-            
-            // 添加窗口内容
-            windowEl.innerHTML = `
-                <div class="window-header">
-                    <div>浮动窗口</div>
-                    <div class="window-close">×</div>
-                </div>
-                <div class="window-content">${content}</div>
-            `;
-            
-            // 创建遮罩层
-            this.windowMask = document.createElement('div');
-            this.windowMask.className = 'window-mask';
-            
-            document.body.append(this.windowMask, windowEl);
-            
-            // 绑定关闭事件
-            windowEl.querySelector('.window-close').onclick = () => 
-                this.toggleWindow(false);
-            this.windowMask.onclick = () => this.toggleWindow(false);
-            
-            this.floatingWindow = windowEl;
-        }
+        // 先清除旧窗口
+        this.#removeExistingWindow();
+
+        // 创建新窗口
+        const windowEl = document.createElement('div');
+        windowEl.className = 'ds-floating-window';
         
-        // 切换显示状态
-        this.toggleWindow();
+        windowEl.style.left = '50%';
+        windowEl.style.top = '50%';
+        
+        windowEl.innerHTML = `
+            <div class="window-header">
+                <div>浮动窗口</div>
+                <div class="window-close">×</div>
+            </div>
+            <div class="window-content">${content}</div>
+        `;
+
+        // 创建新遮罩层
+        this.windowMask = document.createElement('div');
+        this.windowMask.className = 'window-mask';
+
+        document.body.append(this.windowMask, windowEl);
+
+        // 绑定事件 (保持原有逻辑)
+        windowEl.querySelector('.window-close').onclick = () => 
+            this.toggleWindow(false);
+        this.windowMask.onclick = () => this.toggleWindow(false);
+
+        // 拖拽功能 (保持原有逻辑)
+        this.#addDragSupport(windowEl);
+
+        this.floatingWindow = windowEl;
+        this.toggleWindow(true);
+    }
+
+    #removeExistingWindow() {
+        if (this.floatingWindow) {
+            this.floatingWindow.remove();
+            this.floatingWindow = null;
+        }
+        if (this.windowMask) {
+            this.windowMask.remove();
+            this.windowMask = null;
+        }
     }
     toggleWindow(show) {
+        if (!this.floatingWindow || !this.windowMask) return;
+    
         const shouldShow = show ?? !this.floatingWindow.classList.contains('active');
         
         this.floatingWindow.classList.toggle('active', shouldShow);
         this.windowMask.style.display = shouldShow ? 'block' : 'none';
+    }
+    #addDragSupport(windowEl) {
+        const header = windowEl.querySelector('.window-header');
+        let isDragging = false;
+        let startX, startY, initialX, initialY;
+    
+        const startDrag = (e) => {
+            isDragging = true;
+            const rect = windowEl.getBoundingClientRect();
+            initialX = rect.left;
+            initialY = rect.top;
+            startX = e.clientX || e.touches[0].clientX;
+            startY = e.clientY || e.touches[0].clientY;
+        };
+    
+        const duringDrag = (e) => {
+            if (!isDragging) return;
+            const currentX = e.clientX || e.touches[0].clientX;
+            const currentY = e.clientY || e.touches[0].clientY;
+            const dx = currentX - startX;
+            const dy = currentY - startY;
+            windowEl.style.left = `${initialX + dx}px`;
+            windowEl.style.top = `${initialY + dy}px`;
+        };
+    
+        const stopDrag = () => {
+            isDragging = false;
+        };
+    
+        // 桌面端事件
+        header.addEventListener('mousedown', startDrag);
+        document.addEventListener('mousemove', duringDrag);
+        document.addEventListener('mouseup', stopDrag);
+    
+        // 移动端触摸事件
+        header.addEventListener('touchstart', startDrag);
+        document.addEventListener('touchmove', duringDrag);
+        document.addEventListener('touchend', stopDrag);
     }
 }
