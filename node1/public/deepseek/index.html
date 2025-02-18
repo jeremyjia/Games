@@ -655,13 +655,13 @@ modeDisplay.textContent = 'Mode1';  // 默认模式
     menu.className = 'ds_menu';
 
     // Menu items
-    ['DeepSeek Home', 'classEditor', 'Close'].forEach(text => {
+    ['2025', 'classEditor', 'sandBox',"index0"].forEach(text => {
         const item = document.createElement('div');
         item.className = 'ds_menu_item';
         item.textContent = text;
-        if (text === 'DeepSeek Home') {
+        if (text === '2025') {
             item.addEventListener('click', () => {
-                window.location.href = 'https://www.deepseek.com';
+                window.location.href = '2025';
                 menu.classList.remove('active');
             });
         } 
@@ -671,8 +671,17 @@ modeDisplay.textContent = 'Mode1';  // 默认模式
                 menu.classList.remove('active');
             }); 
         }
-        else if (text === 'Close') {
-            item.addEventListener('click', () => menu.classList.remove('active'));
+        else if (text === 'sandBox'){
+            item.addEventListener('click', () => {
+                window.location.href = 'classEditor';
+                menu.classList.remove('active');
+            }); 
+        }
+        else if (text === 'index0') {
+            item.addEventListener('click', () => {
+                window.location.href = 'index0.html';
+                menu.classList.remove('active');
+            }); 
         }
         
         
