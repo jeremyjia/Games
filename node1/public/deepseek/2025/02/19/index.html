@@ -65,14 +65,14 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.2);
-            /* 新增定位属性 */
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%) scale(0.95);
+            /* 移除transform定位 */
+            left: 20px;
+            top: 20px;
+            transform: scale(0.95);
         }
         .ds-floating-window.active {
             opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
+            transform: scale(1);
         }
         .window-header {
             display: flex;
@@ -183,8 +183,11 @@
                 this.#toggleWindow(existingWindow.element);
                 return existingWindow.element;
             }
-
+            // 设置初始居中定位
             const windowEl = this.#createWindowElement(id, title, content);
+                windowEl.style.left = '50%';
+                windowEl.style.top = '50%';
+                windowEl.style.transform = 'translate(-50%, -50%) scale(0.95)';
             this.#setupWindowBehavior(windowEl, id);
             
             this.windowStack.push({
@@ -254,6 +257,8 @@
                 startX = e.clientX || e.touches[0].clientX;
                 startY = e.clientY || e.touches[0].clientY;
                 
+                // 移除可能影响定位的transform
+                windowEl.style.transform = 'none';
                 windowEl.style.transition = 'none';
                 this.#bringToFront(windowEl);
             };
@@ -268,6 +273,7 @@
                 const dx = clientX - startX;
                 const dy = clientY - startY;
                 
+                // 直接更新元素位置
                 windowEl.style.left = `${initialX + dx}px`;
                 windowEl.style.top = `${initialY + dy}px`;
             };
