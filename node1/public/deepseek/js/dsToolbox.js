@@ -192,7 +192,6 @@ class DeepSeekToolbox {
             startX = e.clientX || e.touches[0].clientX;
             startY = e.clientY || e.touches[0].clientY;
             
-            // 移除transform并设置实际位置
             windowEl.style.transform = 'none';
             windowEl.style.left = `${initialX}px`;
             windowEl.style.top = `${initialY}px`;
@@ -200,6 +199,12 @@ class DeepSeekToolbox {
 
         const duringDrag = (e) => {
             if (!isDragging) return;
+            
+            // 新增：阻止触摸滚动
+            if (e.type === 'touchmove' && e.cancelable) {
+                e.preventDefault();
+            }
+            
             handleMove(
                 e.clientX || e.touches[0].clientX,
                 e.clientY || e.touches[0].clientY
@@ -208,12 +213,13 @@ class DeepSeekToolbox {
 
         const stopDrag = () => isDragging = false;
 
+        // 修改事件监听器，添加 passive 选项
         header.addEventListener('mousedown', startDrag);
         document.addEventListener('mousemove', duringDrag);
         document.addEventListener('mouseup', stopDrag);
 
-        header.addEventListener('touchstart', startDrag);
-        document.addEventListener('touchmove', duringDrag);
-        document.addEventListener('touchend', stopDrag);
+        header.addEventListener('touchstart', startDrag, { passive: false });
+        document.addEventListener('touchmove', duringDrag, { passive: false });
+        document.addEventListener('touchend', stopDrag, { passive: false });
     }
 } 
