@@ -208,6 +208,12 @@
 .ds_window_header {
     transition: all 0.3s ease;
 }
+#musicConfigWindow {
+    /* Remove: transform: translate(-50%, -50%); 
+    left: 0;
+    top: 0;
+    */
+}
     </style>
 </head>
 <body>
@@ -344,49 +350,65 @@ class MusicConfigManager {
 
     // 初始化窗口行为
     initWindowBehavior() {
-        // 窗口拖拽逻辑
+        const configWindow = this.configWindow; // Capture DOM reference
+         
         const dragHandler = {
-            isDragging: false,
-            startX: 0,
-            startY: 0,
-            startOffsetX: 0,
-            startOffsetY: 0,
-            
-            start: (e) => {
-                const rect = this.configWindow.getBoundingClientRect();
-                this.dragHandler.startX = e.clientX || e.touches[0].clientX;
-                this.dragHandler.startY = e.clientY || e.touches[0].clientY;
-                this.dragHandler.startOffsetX = rect.left;
-                this.dragHandler.startOffsetY = rect.top;
-                this.dragHandler.isDragging = true;
-            },
-            
-            move: (e) => {
-                if (!this.dragHandler.isDragging) return;
-                const currentX = e.clientX || e.touches[0].clientX;
-                const currentY = e.clientY || e.touches[0].clientY;
-                
-                const deltaX = currentX - this.dragHandler.startX;
-                const deltaY = currentY - this.dragHandler.startY;
-                
-                this.configWindow.style.left = `${this.dragHandler.startOffsetX + deltaX}px`;
-                this.configWindow.style.top = `${this.dragHandler.startOffsetY + deltaY}px`;
-            },
-            
-            end: () => {
-                this.dragHandler.isDragging = false;
+        isDragging: false,
+        startX: 0,
+        startY: 0,
+        startTranslateX: 0,
+        startTranslateY: 0,
+
+        start: (e) => {
+            const rect = configWindow.getBoundingClientRect();
+            const style = window.getComputedStyle(configWindow);
+            const transform = style.transform;
+
+            let translateX = 0, translateY = 0;
+            if (transform && transform !== 'none') {
+                const matrix = transform.match(/matrix\((.+)\)/);
+                if (matrix) {
+                    const values = matrix[1].split(', ');
+                    translateX = parseFloat(values[4]);
+                    translateY = parseFloat(values[5]);
+                }
             }
-        };
 
-        this.dragHandler = dragHandler;
-        
-        // 事件监听
-        this.configWindow.querySelector('.ds_window_header')
-            .addEventListener('mousedown', dragHandler.start.bind(this));
-        
-        document.addEventListener('mousemove', dragHandler.move.bind(this));
-        document.addEventListener('mouseup', dragHandler.end.bind(this));
+            dragHandler.startX = e.clientX || e.touches[0].clientX;
+            dragHandler.startY = e.clientY || e.touches[0].clientY;
+            dragHandler.startTranslateX = translateX;
+            dragHandler.startTranslateY = translateY;
+            dragHandler.isDragging = true;
+        },
 
+        move: (e) => {
+            if (!dragHandler.isDragging) return;
+            const currentX = e.clientX || e.touches[0].clientX;
+            const currentY = e.clientY || e.touches[0].clientY;
+
+            const deltaX = currentX - dragHandler.startX;
+            const deltaY = currentY - dragHandler.startY;
+
+            configWindow.style.transform = 
+                `translate(${dragHandler.startTranslateX + deltaX}px, 
+                 ${dragHandler.startTranslateY + deltaY}px)`;
+        },
+
+        end: () => {
+            dragHandler.isDragging = false;
+        }
+    };
+
+        configWindow.querySelector('.ds_window_header')
+            .addEventListener('mousedown', dragHandler.start);
+        configWindow.querySelector('.ds_window_header')
+            .addEventListener('touchstart', dragHandler.start);
+
+        document.addEventListener('mousemove', dragHandler.move);
+        document.addEventListener('touchmove', dragHandler.move);
+        document.addEventListener('mouseup', dragHandler.end);
+        document.addEventListener('touchend', dragHandler.end);
+        
         // 保存配置
         document.getElementById('saveMusicConfig').addEventListener('click', () => {
             this.saveConfig();
@@ -439,23 +461,26 @@ const musicConfigManager = new MusicConfigManager();
     const app = new DeepSeekApp();
     const canvas = app.createCanvas(document.body, 'mainCanvas');
     const toolbar = app.createToolbar(document.body, 'mainToolbar');
+
     // 在工具栏添加配置按钮（添加在现有按钮代码之后）
     const configBtn = app.addButton(toolbar, 'musicConfigBtn', 'Music Config');
-    // 修改后的配置按钮点击事件
+    
+    // Update the configBtn click handler
     configBtn.addEventListener('click', () => {
         const configWindow = document.getElementById('musicConfigWindow');
-        const currentDisplay = window.getComputedStyle(configWindow).display;
-        
-        // 切换显示状态
-        configWindow.style.display = currentDisplay === 'none' ? 'flex' : 'none';
-
-        // 初次显示时居中
-        if (configWindow.style.display === 'flex' && !configWindow.style.left) {
-            configWindow.style.left = '50%';
-            configWindow.style.top = '50%';
-            configWindow.style.transform = 'translate(-50%, -50%)';
+        if (window.getComputedStyle(configWindow).display === 'none') {
+            // Center window when first shown
+            configWindow.style.display = 'flex';
+            const rect = configWindow.getBoundingClientRect();
+            const centerX = window.innerWidth/2 - rect.width/2;
+            const centerY = window.innerHeight/2 - rect.height/2;
+            configWindow.style.transform = `translate(${centerX}px, ${centerY}px)`;
+        } else {
+            configWindow.style.display = 'none';
         }
     });
+
+
     const windowBtn = app.addButton(toolbar, 'windowBtn', 'Notes');
     
     // Create movable window
