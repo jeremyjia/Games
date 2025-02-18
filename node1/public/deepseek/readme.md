@@ -1,3 +1,5 @@
+ 
+
 2025/2/19 1:39am
 设计一个JavaScript类。名字叫DeepSeek工具箱。
 

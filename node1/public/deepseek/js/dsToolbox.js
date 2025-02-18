@@ -21,7 +21,7 @@ class DeepSeekToolbox {
                 left: 0;
                 right: 0;
                 height: 60px;
-                background: #ffffff;
+                background:rgb(152, 204, 243);
                 display: flex;
                 justify-content: space-around;
                 align-items: center;

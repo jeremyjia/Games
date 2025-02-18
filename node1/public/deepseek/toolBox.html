@@ -28,13 +28,16 @@ const bts = [
         icon: '📦',
         text: '工具箱B',
         action: (_id) => { 
-            dsToolBox.createFloatingWindow(
+            const tba = dsToolBox.createFloatingWindow(
               _id,
               `
                 <h3>高级工具套件B</h3>
                 <p>版本：2.1.3</p>
                 <p>数据分析专用工具集</p>
             `);
+            if(!tba.tb1){
+              tba.tb1 = dsToolBox.createToolbar(tba,'c_toolbar_fixed_at_bottom');
+            }
         }
     },
     { 
