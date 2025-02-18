@@ -8,56 +8,77 @@
 </head>
 <body>
 <script>
+// 初始化工具箱
 const dsToolBox = new DeepSeekToolbox();
-const bts = [
+
+// 工具栏配置
+const tools = [
     {
-        id : "id_4_toolbox_a",
-        icon: '🏠',
-        text: '工具箱A',
-        action: (_id) => {  
-            dsToolBox.createFloatingWindow(_id,
-            `
-                <h3>欢迎使用DeepSeek工具箱A</h3>
-                <p>版本：1.0.0</p>
-                <p>功能持续开发中...</p>
-            `);
+        id: "toolbox_ai",
+        icon: '🤖',
+        text: 'AI 助手',
+        action: (id) => {
+            const window = dsToolBox.createFloatingWindow(
+                id,
+                `<div class="ai-assistant">
+                    <p>当前模型：DeepSeek-R1</p>
+                    <textarea placeholder="输入您的问题..."></textarea>
+                    <button class="ask-button">提问</button>
+                </div>`,
+                'DeepSeek AI 助手'
+            );
         }
     },
     {
-        id : "id_4_toolbox_b",
-        icon: '📦',
-        text: '工具箱B',
-        action: (_id) => { 
-            const tba = dsToolBox.createFloatingWindow(
-              _id,
-              `
-                <h3>高级工具套件B</h3>
-                <p>版本：2.1.3</p>
-                <p>数据分析专用工具集</p>
-            `);
-            if(!tba.tb1){
-              tba.tb1 = dsToolBox.createToolbar(tba,'c_toolbar_fixed_at_bottom');
+        id: "toolbox_analytics",
+        icon: '📊',
+        text: '数据分析',
+        action: (id) => {
+            const window = dsToolBox.createFloatingWindow(
+                id,
+                `<div class="data-analytics">
+                    <div class="chart-placeholder"></div>
+                    <div class="toolbar">
+                        <button>导入数据</button>
+                        <button>生成报告</button>
+                    </div>
+                </div>`,
+                '数据分析套件'
+            );
+            if (!window.toolbar) {
+                window.toolbar = dsToolBox.createToolbar(
+                    window.querySelector('.data-analytics'),
+                    'c_toolbar_inside_window'
+                );
+                dsToolBox.addButtons(window.toolbar, 'c_toolbar_btn', [
+                    { icon: '📁', text: '打开', action: () => {} },
+                    { icon: '📈', text: '分析', action: () => {} },
+                    { icon: '📤', text: '导出', action: () => {} }
+                ]);
             }
         }
     },
-    { 
-        id : "id_4_toolbox_c",
-        icon: '🛠️',
-        text: '工具箱C',
-        action: (_id) => { 
+    {
+        id: "toolbox_settings",
+        icon: '⚙️',
+        text: '设置',
+        action: (id) => {
             dsToolBox.createFloatingWindow(
-              _id,
-              `
-                <h3>开发者工具套件C</h3>
-                <p>版本：3.0.0-beta</p>
-                <p>调试与开发工具集合</p>
-            `);
+                id,
+                `<div class="settings-panel">
+                    <h3>系统设置</h3>
+                    <label><input type="checkbox"> 暗黑模式</label>
+                    <label><input type="range"> 透明度调节</label>
+                </div>`,
+                '系统设置'
+            );
         }
     }
 ];
 
-const toolbar1 = dsToolBox.createToolbar(document.body,'c_toolbar_fixed_at_bottom');
-dsToolBox.addButtons(toolbar1,'c_toolbar_btn',bts);
+// 创建主工具栏
+const mainToolbar = dsToolBox.createToolbar(document.body, 'c_toolbar_fixed_at_bottom');
+dsToolBox.addButtons(mainToolbar, 'c_toolbar_btn', tools);
 </script>
 </body>
 </html>

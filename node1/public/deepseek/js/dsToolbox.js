@@ -1,225 +1,297 @@
  
 class DeepSeekToolbox {
-    constructor() { 
-        this.floatingWindows = []; 
+    constructor() {
+        this.windowStack = [];
         this.init();
     }
     init() {
         this.#createStyle();
+        this.#createGlobalListeners();
     }
 
+    #createGlobalListeners() {
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.ds-floating-window')) {
+                const windowEl = e.target.closest('.ds-floating-window');
+                this.#bringToFront(windowEl);
+            }
+        });
+    }
     #createStyle() {
         const style = document.createElement('style');
         style.textContent = `
-            body {
-                margin: 0;
-                padding: 0 0 60px 0;
-            }
-            .c_toolbar_fixed_at_bottom {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                height: 60px;
-                background:rgb(152, 204, 243);
-                display: flex;
-                justify-content: space-around;
-                align-items: center;
-                box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-                z-index: 1000;
-            }
-            .c_toolbar_btn {
-                padding: 12px;
-                border: none;
-                background: none;
-                font-size: 24px;
-                cursor: pointer;
-                transition: opacity 0.3s;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
-            .c_toolbar_btn span {
-                font-size: 12px;
-                margin-top: 4px;
-            }
-            @media (hover: hover) {
-                .c_toolbar_btn:hover {
-                    opacity: 0.7;
-                }
-            }
+            /* 基础样式 */
+        body {
+            margin: 0;
+            padding: 0 0 60px 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        
+        /* 底部工具栏样式 */
+        .c_toolbar_fixed_at_bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(145deg, #98ccf3, #6baed6);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -2px 15px rgba(0,0,0,0.15);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .c_toolbar_btn {
+            padding: 12px 18px;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #2c3e50;
+        }
+
+        .c_toolbar_btn span {
+            font-size: 12px;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        .c_toolbar_btn.active {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-5px);
+        }
+
+        /* 浮动窗口样式 */
+        .ds-floating-window {
+            position: fixed;
+            background: rgba(255,255,255,0.98);
+            min-width: 320px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            z-index: 1001;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            /* 移除transform定位 */
+            left: 20px;
+            top: 20px;
+            transform: scale(0.95);
+        }
+        .ds-floating-window.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .window-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 24px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            cursor: move;
+            user-select: none;
+            background: rgba(255,255,255,0.9);
+            border-radius: 16px 16px 0 0;
+        }
+
+        .window-title {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .window-close {
+            cursor: pointer;
+            font-size: 28px;
+            line-height: 1;
+            padding: 4px 12px;
+            color: #7f8c8d;
+            transition: color 0.2s;
+        }
+
+        .window-close:hover {
+            color: #e74c3c;
+        }
+
+        .window-content {
+            padding: 24px;
+            max-height: 70vh;
+            overflow-y: auto;
+            color: #34495e;
+            line-height: 1.6;
+        }
+
+        /* 窗口内工具栏样式 */
+        .c_toolbar_inside_window {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(145deg, #98ccf3, #6baed6);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-radius: 0 0 16px 16px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 480px) {
             .ds-floating-window {
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: white;
-                min-width: 300px;
-                border-radius: 12px;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-                z-index: 1001;
-                opacity: 0;
-                transition: opacity 0.3s;
-                min-height: 150px;
+                width: 90vw;
+                min-width: auto;
             }
-            .ds-floating-window.active {
-                opacity: 1;
-            }
-            .window-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 16px;
-                border-bottom: 1px solid #eee;
-                cursor: move;
-                user-select: none;
-            }
-            .window-close {
-                cursor: pointer;
-                font-size: 24px;
-                line-height: 1;
-                padding: 0 8px;
-            }
-            .window-content {
-                padding: 16px;
-            } 
+        }
         `;
         document.head.appendChild(style);
     }
 
+    // 工具栏创建方法
     createToolbar(parentElement, styleClass) {
         const tb = document.createElement('div');
-        tb.className = styleClass; 
+        tb.className = styleClass;
         parentElement.appendChild(tb);
         return tb;
     }
 
-    addButtons(parentElement, cBtnStyle, bts) {
-        bts.forEach(btnConfig => {
-            const button = document.createElement('button');
-            button.className = cBtnStyle;
-            button.innerHTML = `${btnConfig.icon}<span>${btnConfig.text}</span>`;
-            button.onclick = function(_btnc){
-                return function(){
-                    if(_btnc.action){
-                        _btnc.action(_btnc.id);
-                    }
-                }
-            }(btnConfig);
-            parentElement.appendChild(button);
+
+    // 按钮组添加方法
+    addButtons(parentElement, styleClass, buttonsConfig) {
+        buttonsConfig.forEach(config => {
+            const btn = document.createElement('button');
+            btn.className = styleClass;
+            btn.innerHTML = `${config.icon}<span>${config.text}</span>`;
+            btn.onclick = () => config.action(config.id);
+            parentElement.appendChild(btn);
         });
     }
-    #toggleWindow(windowElement) {
-        const isActive = windowElement.classList.contains('active');
-        if (isActive) {
-            windowElement.classList.remove('active');
-        } else {
-            // 计算当前所有活动窗口的最大zIndex
-            const activeWindows = document.querySelectorAll('.ds-floating-window.active');
-            let maxZ = 1001; // 默认基础z-index
-            activeWindows.forEach(win => {
-                const zIndex = parseInt(window.getComputedStyle(win).zIndex, 10);
-                if (!isNaN(zIndex) && zIndex > maxZ) {
-                    maxZ = zIndex;
-                }
-            });
-            windowElement.style.zIndex = maxZ + 1; // 确保在最前
-            windowElement.classList.add('active');
+    #toggleWindow(windowEl) {
+        windowEl.classList.toggle('active');
+        if (windowEl.classList.contains('active')) {
+            this.#bringToFront(windowEl);
         }
     }
-    createFloatingWindow(id,content = '默认内容') {
-        var r = document.getElementById(id);
-        if(r){
-            this.#toggleWindow(r); 
-            return r;
-        } 
+
+    // 浮动窗口管理
+    createFloatingWindow(id, content = '', title = 'DeepSeek Toolbox') {
+        let existingWindow = this.windowStack.find(w => w.id === id);
+        if (existingWindow) {
+            this.#toggleWindow(existingWindow.element);
+            return existingWindow.element;
+        }
+        // 设置初始居中定位
+        const windowEl = this.#createWindowElement(id, title, content);
+            windowEl.style.left = '50%';
+            windowEl.style.top = '50%';
+            windowEl.style.transform = 'translate(-50%, -50%) scale(0.95)';
+        this.#setupWindowBehavior(windowEl, id);
+        
+        this.windowStack.push({
+            id: id,
+            element: windowEl,
+            zIndex: 1001 + this.windowStack.length
+        });
+
+        return windowEl;
+    }
+    #createWindowElement(id, title, content) {
         const windowEl = document.createElement('div');
         windowEl.id = id;
         windowEl.className = 'ds-floating-window';
-        
-        // 修改偏移量计算为50px
-        const posOffset = this.floatingWindows.length * 50;
-        windowEl.style.transform = `translate(calc(-50% + ${posOffset}px), calc(-50% + ${posOffset}px)`;
-        windowEl.style.zIndex = 1001 + this.floatingWindows.length;
-
-        // 保持其他逻辑不变
         windowEl.innerHTML = `
             <div class="window-header">
-                <div>浮动窗口</div>
+                <div class="window-title">${title}</div>
                 <div class="window-close">×</div>
             </div>
             <div class="window-content">${content}</div>
         `;
- 
-
         document.body.appendChild(windowEl);
-        const windowInstance = { windowEl };
-        this.floatingWindows.push(windowInstance);
-
-        // 保持关闭逻辑
-        windowEl.querySelector('.window-close').addEventListener('click', () => 
-            this.#closeWindow(windowInstance)
-        );
-
-        this.#addDragSupport(windowEl);
-        windowEl.classList.add('active');
-
         return windowEl;
     }
+    #addCloseHandler(windowEl, id) {
+        windowEl.querySelector('.window-close').addEventListener('click', () => {
+            windowEl.classList.remove('active');
+            setTimeout(() => {
+                windowEl.remove();
+                this.windowStack = this.windowStack.filter(w => w.id !== id);
+            }, 300);
+        });
+    }
+    #bringToFront(windowEl) {
+        const maxZ = Math.max(...this.windowStack.map(w => w.zIndex), 1001);
+        windowEl.style.zIndex = maxZ + 1;
+    }
+
+    #setupWindowBehavior(windowEl, id) {
+        this.#addDragSupport(windowEl);
+        this.#addCloseHandler(windowEl, id);
+        setTimeout(() => windowEl.classList.add('active'), 10);
+        this.#bringToFront(windowEl);
+    }
+
+
     #closeWindow(instance) {
         instance.windowEl.remove();
         this.floatingWindows = this.floatingWindows.filter(win => win !== instance);
          
     }
-
+    // 拖拽功能实现
     #addDragSupport(windowEl) {
-        const header = windowEl.querySelector('.window-header');
-        let isDragging = false;
-        let startX, startY, initialX, initialY;
+            const header = windowEl.querySelector('.window-header');
+            let isDragging = false;
+            let startX, startY, initialX, initialY;
 
-        const handleMove = (clientX, clientY) => {
-            const dx = clientX - startX;
-            const dy = clientY - startY;
-            windowEl.style.left = `${initialX + dx}px`;
-            windowEl.style.top = `${initialY + dy}px`;
-        };
+            const startDrag = (e) => {
+                isDragging = true;
+                const rect = windowEl.getBoundingClientRect();
+                initialX = rect.left;
+                initialY = rect.top;
+                startX = e.clientX || e.touches[0].clientX;
+                startY = e.clientY || e.touches[0].clientY;
+                
+                // 移除可能影响定位的transform
+                windowEl.style.transform = 'none';
+                windowEl.style.transition = 'none';
+                this.#bringToFront(windowEl);
+            };
 
-        const startDrag = (e) => {
-            isDragging = true;
-            const rect = windowEl.getBoundingClientRect();
-            initialX = rect.left;
-            initialY = rect.top;
-            startX = e.clientX || e.touches[0].clientX;
-            startY = e.clientY || e.touches[0].clientY;
-            
-            windowEl.style.transform = 'none';
-            windowEl.style.left = `${initialX}px`;
-            windowEl.style.top = `${initialY}px`;
-        };
-
-        const duringDrag = (e) => {
-            if (!isDragging) return;
-            
-            // 新增：阻止触摸滚动
-            if (e.type === 'touchmove' && e.cancelable) {
+            const duringDrag = (e) => {
+                if (!isDragging) return;
                 e.preventDefault();
-            }
-            
-            handleMove(
-                e.clientX || e.touches[0].clientX,
-                e.clientY || e.touches[0].clientY
-            );
-        };
+                
+                const clientX = e.clientX || e.touches[0].clientX;
+                const clientY = e.clientY || e.touches[0].clientY;
+                
+                const dx = clientX - startX;
+                const dy = clientY - startY;
+                
+                // 直接更新元素位置
+                windowEl.style.left = `${initialX + dx}px`;
+                windowEl.style.top = `${initialY + dy}px`;
+            };
 
-        const stopDrag = () => isDragging = false;
+            const endDrag = () => {
+                isDragging = false;
+                windowEl.style.transition = '';
+            };
 
-        // 修改事件监听器，添加 passive 选项
-        header.addEventListener('mousedown', startDrag);
-        document.addEventListener('mousemove', duringDrag);
-        document.addEventListener('mouseup', stopDrag);
+            // 桌面端事件
+            header.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', duringDrag);
+            document.addEventListener('mouseup', endDrag);
 
-        header.addEventListener('touchstart', startDrag, { passive: false });
-        document.addEventListener('touchmove', duringDrag, { passive: false });
-        document.addEventListener('touchend', stopDrag, { passive: false });
+            // 移动端事件
+            header.addEventListener('touchstart', startDrag, { passive: false });
+            document.addEventListener('touchmove', duringDrag, { passive: false });
+            document.addEventListener('touchend', endDrag);
     }
+
+        
 } 
