@@ -1,6 +1,8 @@
+ 
 class DeepSeekToolbox {
     constructor() { 
-        this.floatingWindows = []; // 存储所有窗口实例
+        this.floatingWindows = [];
+        this.windowMask = null;
         this.init();
     }
 
@@ -59,7 +61,7 @@ class DeepSeekToolbox {
                 box-shadow: 0 4px 20px rgba(0,0,0,0.15);
                 z-index: 1001;
                 opacity: 0;
-                transition: opacity 0.3s, left 0.1s, top 0.1s;
+                transition: opacity 0.3s;
             }
             .ds-floating-window.active {
                 opacity: 1;
@@ -113,13 +115,13 @@ class DeepSeekToolbox {
     }
     
     createFloatingWindow(content = '默认内容') {
-        // 创建窗口和独立遮罩层
         const windowEl = document.createElement('div');
-        const windowMask = document.createElement('div');
-        
         windowEl.className = 'ds-floating-window';
-        windowMask.className = 'window-mask';
         
+        const posOffset = this.floatingWindows.length * 20;
+        windowEl.style.transform = `translate(calc(-50% + ${posOffset}px), calc(-50% + ${posOffset}px))`;
+        windowEl.style.zIndex = 1001 + this.floatingWindows.length;
+
         windowEl.innerHTML = `
             <div class="window-header">
                 <div>浮动窗口</div>
@@ -128,36 +130,37 @@ class DeepSeekToolbox {
             <div class="window-content">${content}</div>
         `;
 
-        document.body.append(windowMask, windowEl);
+        if (!this.windowMask) {
+            this.windowMask = document.createElement('div');
+            this.windowMask.className = 'window-mask';
+            document.body.appendChild(this.windowMask);
+            
+            this.windowMask.addEventListener('click', () => {
+                const topWindow = this.floatingWindows[this.floatingWindows.length - 1];
+                if (topWindow) this.#closeWindow(topWindow);
+            });
+        }
 
-        // 存储实例
-        const windowInstance = {
-            windowEl,
-            windowMask,
-            isActive: true
-        };
+        document.body.appendChild(windowEl);
+        const windowInstance = { windowEl };
         this.floatingWindows.push(windowInstance);
 
-        // 绑定事件
         windowEl.querySelector('.window-close').addEventListener('click', () => 
             this.#closeWindow(windowInstance)
         );
-        windowMask.addEventListener('click', () => this.#closeWindow(windowInstance));
 
-        // 初始化显示
-        windowEl.classList.add('active');
-        windowMask.style.display = 'block';
-
-        // 添加拖拽
         this.#addDragSupport(windowEl);
+        windowEl.classList.add('active');
     }
 
     #closeWindow(instance) {
         instance.windowEl.remove();
-        instance.windowMask.remove();
-        this.floatingWindows = this.floatingWindows.filter(
-            win => win !== instance
-        );
+        this.floatingWindows = this.floatingWindows.filter(win => win !== instance);
+        
+        if (this.floatingWindows.length === 0 && this.windowMask) {
+            this.windowMask.remove();
+            this.windowMask = null;
+        }
     }
 
     #addDragSupport(windowEl) {
@@ -179,6 +182,11 @@ class DeepSeekToolbox {
             initialY = rect.top;
             startX = e.clientX || e.touches[0].clientX;
             startY = e.clientY || e.touches[0].clientY;
+            
+            // 移除transform并设置实际位置
+            windowEl.style.transform = 'none';
+            windowEl.style.left = `${initialX}px`;
+            windowEl.style.top = `${initialY}px`;
         };
 
         const duringDrag = (e) => {
@@ -191,14 +199,12 @@ class DeepSeekToolbox {
 
         const stopDrag = () => isDragging = false;
 
-        // 桌面端事件
         header.addEventListener('mousedown', startDrag);
         document.addEventListener('mousemove', duringDrag);
         document.addEventListener('mouseup', stopDrag);
 
-        // 移动端事件
         header.addEventListener('touchstart', startDrag);
         document.addEventListener('touchmove', duringDrag);
         document.addEventListener('touchend', stopDrag);
     }
-}
+} 
