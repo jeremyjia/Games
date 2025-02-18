@@ -573,7 +573,7 @@ modeDisplay.textContent = 'Mode1';  // 默认模式
 
 
     // 添加按钮
-    const menuBtn = app.addButton(toolbar, 'menuBtn', 'Settings');
+    const menuBtn = app.addButton(toolbar, 'menuBtn', '[menu]');
     const coordDisplay = app.addButton(toolbar, 'coordDisplay', '0:0');
     coordDisplay.onclick = function(e){ 
     }
@@ -673,7 +673,7 @@ modeDisplay.textContent = 'Mode1';  // 默认模式
         }
         else if (text === 'sandBox'){
             item.addEventListener('click', () => {
-                window.location.href = 'classEditor';
+                window.location.href = 'sandBox';
                 menu.classList.remove('active');
             }); 
         }
