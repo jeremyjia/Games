@@ -65,13 +65,15 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.2);
+            /* 新增定位属性 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
         }
-
         .ds-floating-window.active {
             opacity: 1;
-            transform: translate(-50%, -50%) scale(1) !important;
+            transform: translate(-50%, -50%) scale(1);
         }
-
         .window-header {
             display: flex;
             justify-content: space-between;
