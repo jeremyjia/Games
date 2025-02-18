@@ -441,12 +441,16 @@ const musicConfigManager = new MusicConfigManager();
     const toolbar = app.createToolbar(document.body, 'mainToolbar');
     // 在工具栏添加配置按钮（添加在现有按钮代码之后）
     const configBtn = app.addButton(toolbar, 'musicConfigBtn', 'Music Config');
+    // 修改后的配置按钮点击事件
     configBtn.addEventListener('click', () => {
         const configWindow = document.getElementById('musicConfigWindow');
-        configWindow.style.display = 'flex';
+        const currentDisplay = window.getComputedStyle(configWindow).display;
         
+        // 切换显示状态
+        configWindow.style.display = currentDisplay === 'none' ? 'flex' : 'none';
+
         // 初次显示时居中
-        if (!configWindow.style.left) {
+        if (configWindow.style.display === 'flex' && !configWindow.style.left) {
             configWindow.style.left = '50%';
             configWindow.style.top = '50%';
             configWindow.style.transform = 'translate(-50%, -50%)';
