@@ -11,18 +11,19 @@
 const bts = [
         {
             icon: '🏠',
-            text: '主页',
-            action: () => alert('主页按钮点击')
+            text: '工具箱A',
+            action: () => { 
+                dsToolBox.createFloatingWindow(`
+                    <h3>欢迎使用DeepSeek工具箱</h3>
+                    <p>版本：1.0.0</p>
+                    <p>功能持续开发中...</p>
+                `);
+            }
         },
         {
-            icon: '🔍',
-            text: '搜索',
-            action: () => alert('搜索功能触发')
+             
         },
-        {
-            icon: '⚙️',
-            text: '设置',
-            action: () => alert('设置面板打开')
+        { 
         }
 ];
 
