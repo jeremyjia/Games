@@ -120,14 +120,15 @@
             padding: 0 5px;
         }
         .ds_canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #f0f0f0;
-            z-index: 1;
-        }
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #f5f9ff; /* Soft blueish background */
+        z-index: 1;
+        transition: background 0.3s ease;
+    }
         .ds_toolbar {
             position: fixed;
             bottom: 0;
@@ -215,6 +216,51 @@
     */
 }
     </style>
+    <style>
+        /* 添加新的字体和动画定义 */
+        @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap');
+        
+        @keyframes glow {
+            0% { filter: drop-shadow(0 0 5px #00a8ff); }
+            50% { filter: drop-shadow(0 0 20px #0066ff); }
+            100% { filter: drop-shadow(0 0 5px #00a8ff); }
+        }
+         
+        /* 添加星空背景效果 */
+        .canvas_container {
+            background: linear-gradient(135deg, #f5f9ff 0%, #e6f0ff 100%);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* 添加以下样式 */
+.starfield_container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2222;  
+    overflow: hidden;
+}
+
+.star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    animation: twinkle 1.5s infinite alternate;
+}
+
+@keyframes twinkle {
+    0% { opacity: 0.3; }
+    100% { opacity: 1; }
+}
+        </style>
+         
+        
+         
 </head>
 <body>
 <script>
@@ -460,6 +506,15 @@ const musicConfigManager = new MusicConfigManager();
     // 初始化应用
     const app = new DeepSeekApp();
     const canvas = app.createCanvas(document.body, 'mainCanvas');
+    
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    ctx.font = '24px Arial';
+    ctx.fillStyle = '#666';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('和 DeepSeek 一起奔向未来！', rect.width / 2, rect.height / 2);
+
     const toolbar = app.createToolbar(document.body, 'mainToolbar');
 
     // 在工具栏添加配置按钮（添加在现有按钮代码之后）
@@ -693,7 +748,7 @@ modeDisplay.textContent = 'Mode1';  // 默认模式
     menu.className = 'ds_menu';
 
     // Menu items
-    ['2025', 'classEditor', 'sandBox',"index0"].forEach(text => {
+    ['dsToolBox','2025', 'classEditor', 'sandBox',"index0"].forEach(text => {
         const item = document.createElement('div');
         item.className = 'ds_menu_item';
         item.textContent = text;
@@ -703,6 +758,12 @@ modeDisplay.textContent = 'Mode1';  // 默认模式
                 menu.classList.remove('active');
             });
         } 
+        else if (text === 'dsToolBox'){
+            item.addEventListener('click', () => {
+                window.location.href = 'toolBox.html';
+                menu.classList.remove('active');
+            }); 
+        }
         else if (text === 'classEditor'){
             item.addEventListener('click', () => {
                 window.location.href = 'classEditor';
@@ -751,7 +812,58 @@ modeDisplay.textContent = 'Mode1';  // 默认模式
     const windowContent1 = movableWindow.querySelector('.ds_window_content');
     const subToolbar = createSubToolbar();
     movableWindow.insertBefore(subToolbar, windowContent1);
+
+
+     // 创建星空背景（修正版）
+function createStarfield(container) {
+    // 移除重复的函数定义
+    const starCount = Math.floor(window.innerWidth * window.innerHeight / 1000);
+    
+    for (let i = 0; i < starCount; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        
+        // 随机位置
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 100}%`;
+        
+        // 随机动画参数
+        star.style.animationDelay = `${Math.random() * 2}s`;
+        star.style.animationDuration = `${0.5 + Math.random() * 2}s`;
+        
+        container.appendChild(star);
+    }
+}
+
+// 初始化代码
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.querySelector('.starfield_container'); // 修正选择器
+    if (container) {
+        createStarfield(container);
+        
+        // 添加视差效果
+        document.addEventListener('mousemove', (e) => { // 改为监听整个文档
+            const stars = container.querySelectorAll('.star');
+            const speed = 0.05;
+            
+            stars.forEach(star => {
+                const x = (e.clientX / window.innerWidth - 0.5) * 20;
+                const y = (e.clientY / window.innerHeight - 0.5) * 20;
+                star.style.transform = `translate(${x}px, ${y}px)`;
+            });
+        });
+    }
+});
+
+
 </script>
+<div>
+    <canvas id="mainCanvas"></canvas>
+    <div style="border: 1px red solid;">和 DeepSeek 一起奔向未来！</div>
+</div>
+ 
+<div class="starfield_container"></div>
+
 <!-- 在body末尾添加音乐配置窗口 -->
 <div class="ds_window" id="musicConfigWindow">
     <div class="ds_window_header">
