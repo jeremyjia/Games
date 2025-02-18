@@ -408,7 +408,7 @@ class MusicConfigManager {
         document.addEventListener('touchmove', dragHandler.move);
         document.addEventListener('mouseup', dragHandler.end);
         document.addEventListener('touchend', dragHandler.end);
-        
+
         // 保存配置
         document.getElementById('saveMusicConfig').addEventListener('click', () => {
             this.saveConfig();
@@ -465,16 +465,11 @@ const musicConfigManager = new MusicConfigManager();
     // 在工具栏添加配置按钮（添加在现有按钮代码之后）
     const configBtn = app.addButton(toolbar, 'musicConfigBtn', 'Music Config');
     
-    // Update the configBtn click handler
     configBtn.addEventListener('click', () => {
         const configWindow = document.getElementById('musicConfigWindow');
         if (window.getComputedStyle(configWindow).display === 'none') {
-            // Center window when first shown
+            // Simply show the window - CSS will handle centering
             configWindow.style.display = 'flex';
-            const rect = configWindow.getBoundingClientRect();
-            const centerX = window.innerWidth/2 - rect.width/2;
-            const centerY = window.innerHeight/2 - rect.height/2;
-            configWindow.style.transform = `translate(${centerX}px, ${centerY}px)`;
         } else {
             configWindow.style.display = 'none';
         }
