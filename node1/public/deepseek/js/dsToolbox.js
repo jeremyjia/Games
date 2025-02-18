@@ -150,6 +150,14 @@ class DeepSeekToolbox {
             }
         }
         `;
+        const cvStyle = `/* Canvas 基础样式 */
+        .test-canvas {
+            border: 2px solid #2c3e50;
+            background: #ffffff;
+            margin: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }`;
+        style.textContent += cvStyle;
         document.head.appendChild(style);
     }
 
@@ -159,6 +167,12 @@ class DeepSeekToolbox {
         tb.className = styleClass;
         parentElement.appendChild(tb);
         return tb;
+    }
+    createCanvas(parentElement, styleClass) {
+        const cv = document.createElement('canvas');
+        cv.className = styleClass;
+        parentElement.appendChild(cv);
+        return cv;
     }
 
 
@@ -293,5 +307,4 @@ class DeepSeekToolbox {
             document.addEventListener('touchend', endDrag);
     }
 
-        
 } 

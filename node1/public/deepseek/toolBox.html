@@ -79,6 +79,26 @@ const tools = [
 // 创建主工具栏
 const mainToolbar = dsToolBox.createToolbar(document.body, 'c_toolbar_fixed_at_bottom');
 dsToolBox.addButtons(mainToolbar, 'c_toolbar_btn', tools);
+
+// 测试createCanvas功能
+const testCanvas = dsToolBox.createCanvas(document.body, 'test-canvas');
+testCanvas.width = 400;
+testCanvas.height = 200;
+
+const ctx = testCanvas.getContext('2d');
+ctx.font = '24px "Helvetica Neue"';
+ctx.fillStyle = '#2c3e50';
+ctx.textAlign = 'center';
+ctx.textBaseline = 'middle';
+ctx.fillText('Hello World', testCanvas.width/2, testCanvas.height/2);
+
+// 添加装饰图形
+ctx.beginPath();
+ctx.arc(testCanvas.width/2, testCanvas.height/2, 80, 0, Math.PI*2);
+ctx.strokeStyle = '#6baed6';
+ctx.lineWidth = 3;
+ctx.stroke();
+
 </script>
 </body>
 </html>
