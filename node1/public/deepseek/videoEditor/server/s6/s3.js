@@ -28,19 +28,25 @@ app.post('/export', async (req, res) => {
     let frameCount = 0;
     data.scenes.forEach(scene => {
       for (let i = 0; i < scene.duration; i++) {
-        const canvas = createCanvas(1024, 768);
-        const ctx = canvas.getContext('2d');
-        renderScene(scene, ctx);
-        const framePath = path.join(tmpDir, `frame_${frameCount.toString().padStart(4, '0')}.png`);
-        fs.writeFileSync(framePath, canvas.toBuffer());
-        frameCount++;
+        try {
+          const canvas = createCanvas(1024, 768);
+          const ctx = canvas.getContext('2d');
+          renderScene(scene, ctx);
+          const framePath = path.join(tmpDir, `frame_${frameCount.toString().padStart(4, '0')}.png`);
+          fs.writeFileSync(framePath, canvas.toBuffer());
+          frameCount++;
+        } catch (e) {
+          console.error(`生成第 ${frameCount} 帧失败 (场景: ${scene.name})：`, e.message);
+          throw e; // 可选择终止处理或跳过此帧
+        }
       }
     });
 
     // 使用FFmpeg生成视频
     execSync(
       `${ffmpeg} -y -framerate ${fps} -i ${path.join(tmpDir, 'frame_%04d.png')} ` +
-      `-c:v libx264 -pix_fmt yuv420p ${outputPath}`
+      `-c:v libx264 -pix_fmt yuv420p ${outputPath}`,
+      { stdio: 'inherit' }  // 显示FFmpeg输出信息
     );
 
     // 发送视频文件并清理临时文件
