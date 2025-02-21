@@ -143,6 +143,11 @@
 </head>
 <body>
     <div id="preview"><canvas id="previewCanvas"></canvas></div>
+    <!-- 对象属性窗口 -->
+    <div class="draggable-window" id="propertyWindow" style="left: 20px; top: 400px;">
+        <div class="window-header">对象属性</div>
+        <div class="window-content" id="propertyContent"></div>
+    </div>
     <!-- 场景管理窗口 -->
     <div class="draggable-window" id="sceneWindow" style="left: 20px; top: 20px;">
         <div class="window-header">场景管理</div>
@@ -225,6 +230,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             makeDraggable(document.getElementById('sceneWindow'));
             makeDraggable(document.getElementById('objectWindow'));
+            makeDraggable(document.getElementById('propertyWindow'));
         });
 
     document.getElementById('frameRate').addEventListener('change', function(e) {
@@ -273,37 +279,63 @@ function selectObject(id) {
     const obj = editor.currentScene.objects.find(o => o.id === id);
     renderObjectEditor(obj);
 }
+// 更新对象属性方法
+function updateObjectText(id, value) {
+    const obj = editor.currentScene.objects.find(o => o.id == id);
+    obj.text = value;
+    updatePreview();
+}
 
+function updateObjectPosition(id, axis, value) {
+    const obj = editor.currentScene.objects.find(o => o.id == id);
+    obj[axis] = parseInt(value);
+    updatePreview();
+}
+
+function updateObjectProp(id, prop, value) {
+    const obj = editor.currentScene.objects.find(o => o.id == id);
+    obj[prop] = value;
+    updatePreview();
+}
+
+function deleteObject(id) {
+    editor.currentScene.objects = editor.currentScene.objects.filter(o => o.id != id);
+    document.getElementById('propertyWindow').style.display = 'none';
+    renderSceneEditor();
+    updatePreview();
+}
 function renderObjectEditor(obj) {
-    const container = document.getElementById('sceneEdit');
-    container.innerHTML += `
+    const container = document.getElementById('propertyContent');
+    container.innerHTML = `
         <div class="section">
-            <h4>对象属性</h4>
+            <h4>${obj.text}</h4>
             <div class="form-group">
                 <label>文本内容：</label>
-                <input value="${obj.text}" onchange="updateObjectText(${obj.id}, this.value)">
+                <input value="${obj.text}" onchange="updateObjectText('${obj.id}', this.value)">
             </div>
             <div class="form-group">
                 <label>X坐标：</label>
-                <input type="number" value="${obj.x}" onchange="updateObjectPosition(${obj.id}, 'x', this.value)">
+                <input type="number" value="${obj.x}" onchange="updateObjectPosition('${obj.id}', 'x', this.value)">
             </div>
             <div class="form-group">
                 <label>Y坐标：</label>
-                <input type="number" value="${obj.y}" onchange="updateObjectPosition(${obj.id}, 'y', this.value)">
+                <input type="number" value="${obj.y}" onchange="updateObjectPosition('${obj.id}', 'y', this.value)">
             </div>
             <div class="form-group">
                 <label>字体大小：</label>
-                <input type="number" value="${obj.size}" onchange="updateObjectProp(${obj.id}, 'size', this.value)">
+                <input type="number" value="${obj.size}" onchange="updateObjectProp('${obj.id}', 'size', this.value)">
             </div>
             <div class="form-group">
                 <label>颜色：</label>
                 <input type="color" value="#${hexColor(obj.color)}" 
-                       onchange="updateObjectProp(${obj.id}, 'color', rgbToArray(this.value))">
+                    onchange="updateObjectProp('${obj.id}', 'color', rgbToArray(this.value))">
             </div>
+            <button class="delete-btn" onclick="deleteObject('${obj.id}')">删除对象</button>
         </div>
     `;
+    // 显示属性窗口
+    document.getElementById('propertyWindow').style.display = 'block';
 }
-
 // 辅助函数
 function hexColor(rgbStr) {
     const rgb = rgbStr.split(',').map(Number);
@@ -312,7 +344,10 @@ function hexColor(rgbStr) {
 
 function rgbToArray(hex) {
     const bigint = parseInt(hex.slice(1), 16);
-    return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255].join(',');
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return `${r},${g},${b}`;
 }
 function deleteScene(number) {
             if (!confirm("确定要删除这个场景吗？")) return;
