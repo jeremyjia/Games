@@ -70,7 +70,11 @@
             margin: 2px 0;
             background: #eee;
         }
-
+        .scene-item.active {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+        }
         @media (max-width: 768px) {
             body {
                 grid-template-columns: 1fr;
@@ -315,6 +319,7 @@ function rgbToArray(hex) {
 
         function selectScene(number) {
             editor.currentScene = editor.data.frames.find(s => s.number === number);
+            renderSceneList();  // 新增这行以刷新列表状态
             renderSceneEditor();
             updatePreview();
         }
@@ -333,7 +338,8 @@ function rgbToArray(hex) {
         function renderSceneList() {
             const list = document.getElementById('sceneList');
             list.innerHTML = editor.data.frames.map(scene => `
-                <div class="scene-item" onclick="selectScene(${scene.number})">
+                <div class="scene-item ${editor.currentScene?.number === scene.number ? 'active' : ''}" 
+                    onclick="selectScene(${scene.number})">
                     场景 ${scene.number} (${scene.time}s)
                 </div>
             `).join('');
