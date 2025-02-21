@@ -155,6 +155,7 @@
             filter: brightness(1.1);
         }
     </style>
+    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.10.0/dist/ffmpeg.min.js"></script>
 </head>
 <body>
     <div id="preview"><canvas id="previewCanvas"></canvas></div>
@@ -179,6 +180,7 @@
             <div style="display: flex; gap: 5px; margin-top: 10px;">
                 <button onclick="playPreview()" style="flex:1;">播放预览</button>
                 <button onclick="stopPreview()" style="background:#ff4444;">停止</button>
+                <button onclick="exportMP4()" style="background:#2196F3;">导出MP4</button>
             </div>
         </div>
     </div>
@@ -218,7 +220,112 @@
     </div>
 
     <script>
-        function updateJSONView() {
+        const { createFFmpeg, fetchFile } = FFmpeg;
+        const ffmpeg = createFFmpeg({
+            log: true,
+            progress: ({ ratio }) => {
+                document.getElementById('exportProgress').style.width = `${ratio * 100}%`;
+            }
+        });
+
+        async function exportMP4() {
+            try {
+                if (!ffmpeg.isLoaded) {
+                    await ffmpeg.load();
+                }
+
+                // 创建进度条
+                const progressBar = document.createElement('div');
+                progressBar.style = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 3px;
+                    background: #f0f0f0;
+                    z-index: 1000;
+                `;
+                const progressInner = document.createElement('div');
+                progressInner.id = 'exportProgress';
+                progressInner.style = `
+                    width: 0%;
+                    height: 100%;
+                    background: #00FF7F;
+                    transition: width 0.3s;
+                `;
+                progressBar.appendChild(progressInner);
+                document.body.appendChild(progressBar);
+
+                // 计算视频参数
+                const fps = editor.data.rate;
+                const duration = editor.data.frames.reduce((sum, scene) => sum + scene.time, 0);
+                const totalFrames = Math.ceil(duration * fps);
+                
+                // 禁用所有按钮
+                document.querySelectorAll('button').forEach(btn => btn.disabled = true);
+
+                // 生成帧序列
+                for (let i = 0; i < totalFrames; i++) {
+                    const time = i / fps;
+                    let accumulated = 0;
+                    let currentScene = editor.data.frames[0];
+                    
+                    // 查找当前场景
+                    for (const scene of editor.data.frames) {
+                        if (time < accumulated + scene.time) {
+                            currentScene = scene;
+                            break;
+                        }
+                        accumulated += scene.time;
+                    }
+
+                    // 渲染场景
+                    editor.renderer.render(currentScene);
+                    
+                    // 捕获Canvas为PNG
+                    const canvas = document.getElementById('previewCanvas');
+                    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                    ffmpeg.FS('writeFile', 
+                        `frame${i.toString().padStart(6, '0')}.png`, 
+                        await fetchFile(blob)
+                    );
+                }
+
+                // 运行ffmpeg命令
+                await ffmpeg.run(
+                    '-framerate', fps.toString(),
+                    '-i', 'frame%06d.png',
+                    '-c:v', 'libx264',
+                    '-pix_fmt', 'yuv420p',
+                    '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2', // 确保分辨率是偶数
+                    '-y',
+                    'output.mp4'
+                );
+
+                // 生成下载链接
+                const data = ffmpeg.FS('readFile', 'output.mp4');
+                const url = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `video-${Date.now()}.mp4`;
+                document.body.appendChild(a);
+                a.click();
+                
+                // 清理资源
+                URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                document.body.removeChild(progressBar);
+                ffmpeg.FS('unlink', 'output.mp4');
+            } catch (err) {
+                console.error(err);
+                alert('视频导出失败: ' + err.message);
+            } finally {
+                document.querySelectorAll('button').forEach(btn => btn.disabled = false);
+            }
+        }
+            
+
+        function updateJSONView() { 
             const json = editor.exportJSON();
             document.getElementById('jsonContent').textContent = json;
         }
@@ -412,10 +519,10 @@ function rgbToArray(hex) {
         class VideoEditor {
             constructor() {
                 this.data = {
-                    version: "0.0.1",
-                    width: 1024,
-                    height: 768,
-                    rate: 1,
+                    version: "0.0.11",
+                    width: 1280,  // 改为常见视频尺寸
+                    height: 720,
+                    rate: 30,     // 改为常规帧率
                     frames: []
                 };
                 this.currentScene = null;
