@@ -326,6 +326,7 @@ function rgbToArray(hex) {
 
         function updateSceneProp(prop, value) {
             editor.currentScene[prop] = isNaN(value) ? value : Number(value);
+            renderSceneList();  // 新增场景列表刷新
             updatePreview();
         }
 
@@ -354,7 +355,13 @@ function rgbToArray(hex) {
                 <div class="form-group">
                     <label>持续时间 (秒):</label>
                     <input type="number" value="${scene.time}" 
-                           onchange="updateSceneProp('time', this.value)">
+                        onchange="updateSceneProp('time', this.value)">
+                </div>
+                <div class="form-group">
+                    <label>背景颜色:</label>
+                    <input type="color" 
+                        value="#${hexColor(scene.backgroundColor)}" 
+                        onchange="updateSceneProp('backgroundColor', rgbToArray(this.value))">
                 </div>
                 <h4>对象列表</h4>
                 <div class="object-list">
@@ -367,7 +374,6 @@ function rgbToArray(hex) {
                 <button onclick="addTextObject()">添加文本</button>
             `;
         }
-
         function updatePreview() {
             if (editor.currentScene) {
                 editor.renderer.render(editor.currentScene);
