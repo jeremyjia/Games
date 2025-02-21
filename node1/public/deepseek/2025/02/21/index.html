@@ -18,19 +18,20 @@
         .piano {
             display: flex;
             position: relative;
-            width: 95%;
+            width: 190%;
             max-width: 600px;
             height: 200px;
+            overflow-x: auto; /* 添加横向滚动 */
         }
 
-        .white-key {
-            flex: 1;
+        .white-key { 
             background-color: white;
             border: 1px solid #ccc;
             border-radius: 0 0 5px 5px;
             margin: 0 1px;
             touch-action: none;
             transition: background-color 0.1s;
+            flex: 0 0 7.14%; /* 14个白键各占约7.14% */
         }
 
         .black-key {
@@ -53,30 +54,35 @@
         }
 
         /* 黑键位置 */
-        .black-key:nth-child(1) { left: 11.3%; }
-        .black-key:nth-child(2) { left: 25.6%; }
-        .black-key:nth-child(3) { left: 54.1%; }
-        .black-key:nth-child(4) { left: 68.4%; }
-        .black-key:nth-child(5) { left: 82.7%; }
+        .black-key:nth-child(1) { left: 5.5%; }   /* C#4 */
+        .black-key:nth-child(2) { left: 12.8%; }  /* D#4 */
+        .black-key:nth-child(3) { left: 27.4%; }  /* F#4 */
+        .black-key:nth-child(4) { left: 34.7%; }  /* G#4 */
+        .black-key:nth-child(5) { left: 42%; }    /* A#4 */
+        .black-key:nth-child(6) { left: 54.5%; }  /* C#5 */
+        .black-key:nth-child(7) { left: 61.8%; }  /* D#5 */
+        .black-key:nth-child(8) { left: 76.4%; }  /* F#5 */
+        .black-key:nth-child(9) { left: 83.7%; }  /* G#5 */
+        .black-key:nth-child(10) { left: 91%; }   /* A#5 */
             </style>
 </head>
 <body>
     <div class="piano">
-        <!-- 黑键 -->
-        <div class="black-key" data-note="C#4"></div>
-        <div class="black-key" data-note="D#4"></div>
-        <div class="black-key" data-note="F#4"></div>
-        <div class="black-key" data-note="G#4"></div>
-        <div class="black-key" data-note="A#4"></div>
+        <!-- 新增黑键 -->
+        <div class="black-key" data-note="C#5"></div>
+        <div class="black-key" data-note="D#5"></div>
+        <div class="black-key" data-note="F#5"></div>
+        <div class="black-key" data-note="G#5"></div>
+        <div class="black-key" data-note="A#5"></div>
         
-        <!-- 白键 -->
-        <div class="white-key" data-note="C4"></div>
-        <div class="white-key" data-note="D4"></div>
-        <div class="white-key" data-note="E4"></div>
-        <div class="white-key" data-note="F4"></div>
-        <div class="white-key" data-note="G4"></div>
-        <div class="white-key" data-note="A4"></div>
-        <div class="white-key" data-note="B4"></div>
+        <!-- 新增白键 -->
+        <div class="white-key" data-note="C5"></div>
+        <div class="white-key" data-note="D5"></div>
+        <div class="white-key" data-note="E5"></div>
+        <div class="white-key" data-note="F5"></div>
+        <div class="white-key" data-note="G5"></div>
+        <div class="white-key" data-note="A5"></div>
+        <div class="white-key" data-note="B5"></div>
     </div>
 
     <script>
@@ -96,7 +102,20 @@
             'G#4': 415.30,
             'A4': 440.00,
             'A#4': 466.16,
-            'B4': 493.88
+            'B4': 493.88,
+            
+            'C5': 523.25,
+            'C#5': 554.37,
+            'D5': 587.33,
+            'D#5': 622.25,
+            'E5': 659.26,
+            'F5': 698.46,
+            'F#5': 739.99,
+            'G5': 783.99,
+            'G#5': 830.61,
+            'A5': 880.00,
+            'A#5': 932.33,
+            'B5': 987.77
         };
 
         // 创建振荡器
