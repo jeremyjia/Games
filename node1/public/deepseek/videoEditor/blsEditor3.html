@@ -148,6 +148,12 @@
             height: 100%;
             object-fit: contain;
         }
+        button {
+            transition: background 0.2s;
+        }
+        button:hover {
+            filter: brightness(1.1);
+        }
     </style>
 </head>
 <body>
@@ -170,7 +176,10 @@
         <div class="window-header">JSON数据</div>
         <div class="window-content">
             <pre id="jsonContent"></pre>
-            <button onclick="updateJSONView()" style="margin-top: 10px;">刷新数据</button>
+            <div style="display: flex; gap: 5px; margin-top: 10px;">
+                <button onclick="playPreview()" style="flex:1;">播放预览</button>
+                <button onclick="stopPreview()" style="background:#ff4444;">停止</button>
+            </div>
         </div>
     </div>
     <!-- 对象列表窗口 -->
@@ -270,14 +279,19 @@
             
             if (isPlaying) {
                 startTime = Date.now();
-                button.textContent = '停止预览';
+                button.textContent = '暂停预览';
                 animate();
             } else {
                 cancelAnimationFrame(animationFrameId);
-                button.textContent = '播放预览';
+                button.textContent = '继续播放';
             }
         }
-
+        function stopPreview() {
+            isPlaying = false;
+            cancelAnimationFrame(animationFrameId);
+            document.querySelector('button[onclick="playPreview()"]').textContent = '播放预览';
+            editor.renderer.render(editor.currentScene); // 重置到初始状态
+        }
         function animate() {
             if (!isPlaying) return;
 
