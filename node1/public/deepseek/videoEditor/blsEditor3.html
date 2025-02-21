@@ -257,75 +257,84 @@
     document.getElementById('frameRate').addEventListener('change', function(e) {
         editor.data.rate = parseInt(e.target.value) || 1;
     });
+        
         let isPlaying = false;
-let startTime;
+        let startTime;
+        let animationFrameId;
 
-function playPreview() {
-    if (!editor.currentScene) return;
-    
-    isPlaying = !isPlaying;
-    if (isPlaying) {
-        startTime = Date.now();
-        animate();
-    }
-}
-
-function animate() {
-    if (!isPlaying) return;
-
-    const elapsed = (Date.now() - startTime) / 1000;
-    const totalDuration = editor.data.frames.reduce((sum, scene) => sum + scene.time, 0);
-    
-    // 循环播放逻辑
-    if (elapsed >= totalDuration) {
-        startTime = Date.now();
-    }
-    
-    // 计算当前场景
-    let accumulated = 0;
-    let currentScene;
-    for (const scene of editor.data.frames) {
-        if (elapsed >= accumulated && elapsed < accumulated + scene.time) {
-            currentScene = scene;
-            break;
+        function playPreview() {
+            if (!editor.currentScene) return;
+            
+            isPlaying = !isPlaying;
+            const button = document.querySelector('button[onclick="playPreview()"]');
+            
+            if (isPlaying) {
+                startTime = Date.now();
+                button.textContent = '停止预览';
+                animate();
+            } else {
+                cancelAnimationFrame(animationFrameId);
+                button.textContent = '播放预览';
+            }
         }
-        accumulated += scene.time;
-    }
 
-    editor.renderer.render(currentScene || editor.data.frames[0]);
-    requestAnimationFrame(animate);
-}
+        function animate() {
+            if (!isPlaying) return;
 
-function selectObject(id) {
-    const obj = editor.currentScene.objects.find(o => o.id === id);
-    renderObjectEditor(obj);
-}
-// 更新对象属性方法
-function updateObjectText(id, value) {
-    const obj = editor.currentScene.objects.find(o => o.id == id);
-    obj.text = value;
-    updatePreview();
-}
+            const elapsed = (Date.now() - startTime) / 1000;
+            const totalDuration = editor.data.frames.reduce((sum, scene) => sum + scene.time, 0);
 
-function updateObjectPosition(id, axis, value) {
-    const obj = editor.currentScene.objects.find(o => o.id == id);
-    obj[axis] = parseInt(value);
-    updatePreview();
-}
+            // 播放结束处理
+            if (elapsed >= totalDuration) {
+                isPlaying = false;
+                document.querySelector('button[onclick="playPreview()"]').textContent = '播放预览';
+                return;
+            }
 
-function updateObjectProp(id, prop, value) {
-    const obj = editor.currentScene.objects.find(o => o.id == id);
-    obj[prop] = value;
-    updatePreview();
-    updateJSONView(); // 新增
-}
+            // 计算当前场景
+            let accumulated = 0;
+            let currentScene;
+            for (const scene of editor.data.frames) {
+                if (elapsed >= accumulated && elapsed < accumulated + scene.time) {
+                    currentScene = scene;
+                    break;
+                }
+                accumulated += scene.time;
+            }
 
-function deleteObject(id) {
-    editor.currentScene.objects = editor.currentScene.objects.filter(o => o.id != id);
-    document.getElementById('propertyWindow').style.display = 'none';
-    renderSceneEditor();
-    updatePreview();
-}
+            editor.renderer.render(currentScene || editor.data.frames[0]);
+            animationFrameId = requestAnimationFrame(animate);
+        }
+        function selectObject(id) {
+            const obj = editor.currentScene.objects.find(o => o.id === id);
+            renderObjectEditor(obj);
+        }
+        // 更新对象属性方法
+        function updateObjectText(id, value) {
+            const obj = editor.currentScene.objects.find(o => o.id == id);
+            obj.text = value;
+            updatePreview();
+        }
+
+        function updateObjectPosition(id, axis, value) {
+            const obj = editor.currentScene.objects.find(o => o.id == id);
+            obj[axis] = parseInt(value);
+            updatePreview();
+        }
+
+        function updateObjectProp(id, prop, value) {
+            const obj = editor.currentScene.objects.find(o => o.id == id);
+            obj[prop] = value;
+            updatePreview();
+            updateJSONView(); // 新增
+        }
+
+        function deleteObject(id) {
+            editor.currentScene.objects = editor.currentScene.objects.filter(o => o.id != id);
+            document.getElementById('propertyWindow').style.display = 'none';
+            renderSceneEditor();
+            updatePreview();
+        }
 function renderObjectEditor(obj) {
     const container = document.getElementById('propertyContent');
     container.innerHTML = `
