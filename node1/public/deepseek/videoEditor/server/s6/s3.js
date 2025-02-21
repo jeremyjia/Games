@@ -1,7 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const { createCanvas } = require('canvas');
-const ffmpeg = require('ffmpeg-static');
+const ffmpeg = require('fluent-ffmpeg');
 const { execSync } = require('child_process');
 const path = require('path');
 const app = express();
@@ -13,7 +13,6 @@ if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true, force: true });
 app.use(express.json());
 app.use(express.static('public'));
 
-// 新增视频生成路由
 app.post('/export', async (req, res) => {
   const data = req.body;
   const fps = data.fps || 1;
@@ -21,45 +20,64 @@ app.post('/export', async (req, res) => {
   const outputPath = path.join(tmpDir, 'output.mp4');
 
   try {
-    // 创建临时目录
-    if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
+    if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
 
-    // 生成所有帧
     let frameCount = 0;
-    data.scenes.forEach(scene => {
-      for (let i = 0; i < scene.duration; i++) {
-        try {
+    for (const scene of data.scenes) {
+      try {
+        // 验证背景颜色格式
+        if (!/^#([A-Fa-f0-9]{3,4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$/.test(scene.background)) {
+          throw new Error(`无效的背景颜色格式: ${scene.background}`);
+        }
+
+        for (let i = 0; i < scene.duration; i++) {
           const canvas = createCanvas(1024, 768);
           const ctx = canvas.getContext('2d');
-          renderScene(scene, ctx);
+          
+          // 使用try-catch包裹单个帧的生成
+          try {
+            renderScene(scene, ctx);
+          } catch (renderError) {
+            console.error(`场景渲染失败 (${scene.name} 第${i+1}帧):`, renderError.message);
+            throw renderError;
+          }
+
           const framePath = path.join(tmpDir, `frame_${frameCount.toString().padStart(4, '0')}.png`);
           fs.writeFileSync(framePath, canvas.toBuffer());
           frameCount++;
-        } catch (e) {
-          console.error(`生成第 ${frameCount} 帧失败 (场景: ${scene.name})：`, e.message);
-          throw e; // 可选择终止处理或跳过此帧
         }
+      } catch (sceneError) {
+        console.error(`场景处理失败: ${scene.name}`, sceneError.message);
+        throw sceneError;
       }
-    });
+    }
 
-    // 使用FFmpeg生成视频
-    execSync(
-      `${ffmpeg} -y -framerate ${fps} -i ${path.join(tmpDir, 'frame_%04d.png')} ` +
-      `-c:v libx264 -pix_fmt yuv420p ${outputPath}`,
-      { stdio: 'inherit' }  // 显示FFmpeg输出信息
-    );
+    // 转换路径分隔符为FFmpeg兼容格式
+    const inputPattern = path.join(tmpDir, 'frame_%04d.png').replace(/\\/g, '/');
+    
+    ffmpeg()
+      .input(inputPattern)
+      .inputFPS(fps)
+      .videoCodec('libx264')
+      .outputOptions('-pix_fmt yuv420p')
+      .save(outputPath)
+      .on('end', () => {
+        res.download(outputPath, () => {
+          fs.rmSync(tmpDir, { recursive: true, force: true });
+        });
+      })
+      .on('error', (err) => {
+        console.error('FFmpeg错误:', err.message);
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+        res.status(500).send(`视频生成失败: ${err.message}`);
+      });
 
-    // 发送视频文件并清理临时文件
-    res.download(outputPath, () => {
-      fs.rmSync(tmpDir, { recursive: true, force: true });
-    });
   } catch (error) {
-    console.error('视频生成失败:', error);
+    console.error('处理流程错误:', error.message);
     fs.rmSync(tmpDir, { recursive: true, force: true });
-    res.status(500).send('视频生成失败');
+    res.status(500).send(`处理失败: ${error.message}`);
   }
 });
-
 function renderScene(scene, ctx) {
   // 背景
   ctx.fillStyle = scene.background || '#FFFFFF';
