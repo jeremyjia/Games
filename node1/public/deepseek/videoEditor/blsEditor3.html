@@ -128,6 +128,15 @@
                 order: -1;
             }
         }
+        pre {
+            background: #f8f8f8;
+            padding: 10px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
         /* 原有样式保持不变，新增canvas样式 */
         #preview {
             background: #000;
@@ -156,7 +165,14 @@
             <button onclick="addScene()" style="margin-top: 10px;">添加场景</button>
         </div>
     </div>
-
+    <!-- JSON查看窗口 -->
+    <div class="draggable-window" id="jsonWindow" style="left: 400px; top: 20px;">
+        <div class="window-header">JSON数据</div>
+        <div class="window-content">
+            <pre id="jsonContent"></pre>
+            <button onclick="updateJSONView()" style="margin-top: 10px;">刷新数据</button>
+        </div>
+    </div>
     <!-- 对象列表窗口 -->
     <div class="draggable-window" id="objectWindow" style="left: 20px; top: 200px;">
         <div class="window-header">对象列表</div>
@@ -193,6 +209,10 @@
     </div>
 
     <script>
+        function updateJSONView() {
+            const json = editor.exportJSON();
+            document.getElementById('jsonContent').textContent = json;
+        }
     function makeDraggable(windowElement) {
             let isDragging = false;
             let startX, startY, initialX, initialY;
@@ -231,6 +251,7 @@
             makeDraggable(document.getElementById('sceneWindow'));
             makeDraggable(document.getElementById('objectWindow'));
             makeDraggable(document.getElementById('propertyWindow'));
+            makeDraggable(document.getElementById('jsonWindow'));
         });
 
     document.getElementById('frameRate').addEventListener('change', function(e) {
@@ -296,6 +317,7 @@ function updateObjectProp(id, prop, value) {
     const obj = editor.currentScene.objects.find(o => o.id == id);
     obj[prop] = value;
     updatePreview();
+    updateJSONView(); // 新增
 }
 
 function deleteObject(id) {
@@ -349,7 +371,7 @@ function rgbToArray(hex) {
     const b = bigint & 255;
     return `${r},${g},${b}`;
 }
-function deleteScene(number) {
+        function deleteScene(number) {
             if (!confirm("确定要删除这个场景吗？")) return;
             
             editor.deleteScene(number);
@@ -362,6 +384,7 @@ function deleteScene(number) {
                 renderSceneList();
                 updatePreview();
             }
+            updateJSONView(); // 新增
         }
         class VideoEditor {
             constructor() {
@@ -430,6 +453,7 @@ function deleteScene(number) {
             importJSON(json) {
                 this.data = JSON.parse(json);
                 this.initCanvas();
+                updateJSONView(); // 新增
             }
         }
 
@@ -466,6 +490,7 @@ function deleteScene(number) {
             const scene = editor.addScene();
             renderSceneList();
             selectScene(scene.number);
+            updateJSONView(); // 新增
         }
 
         function selectScene(number) {
@@ -566,6 +591,7 @@ function deleteScene(number) {
         editor.addScene();
         renderSceneList();
         selectScene(1);
+        updateJSONView(); // 新增
     </script>
 </body>
 </html>
