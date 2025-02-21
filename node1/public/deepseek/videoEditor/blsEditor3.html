@@ -31,6 +31,9 @@
             padding: 10px;
             border-radius: 5px;
         }
+        .edit-panel {
+            display: none; /* 隐藏原始面板，改用浮动窗口 */
+        }
 
         .section {
             margin-bottom: 15px;
@@ -93,6 +96,29 @@
             color: white;
             font-weight: bold;
         }
+        .draggable-window {
+            position: fixed;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            min-width: 280px;
+            z-index: 100;
+        }
+
+        .window-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px 5px 0 0;
+            cursor: move;
+            user-select: none;
+        }
+
+        .window-content {
+            padding: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
         @media (max-width: 768px) {
             body {
                 grid-template-columns: 1fr;
@@ -117,6 +143,21 @@
 </head>
 <body>
     <div id="preview"><canvas id="previewCanvas"></canvas></div>
+    <!-- 场景管理窗口 -->
+    <div class="draggable-window" id="sceneWindow" style="left: 20px; top: 20px;">
+        <div class="window-header">场景管理</div>
+        <div class="window-content">
+            <div class="scene-list" id="sceneList"></div>
+            <button onclick="addScene()" style="margin-top: 10px;">添加场景</button>
+        </div>
+    </div>
+
+    <!-- 对象列表窗口 -->
+    <div class="draggable-window" id="objectWindow" style="left: 20px; top: 200px;">
+        <div class="window-header">对象列表</div>
+        <div class="window-content" id="objectListContent"></div>
+    </div>
+
     <div class="edit-panel">
         <div class="section">
             <h3>全局设置</h3>
@@ -147,7 +188,45 @@
     </div>
 
     <script>
-    
+    function makeDraggable(windowElement) {
+            let isDragging = false;
+            let startX, startY, initialX, initialY;
+
+            const header = windowElement.querySelector('.window-header');
+            
+            header.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+
+            function startDrag(e) {
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                initialX = windowElement.offsetLeft;
+                initialY = windowElement.offsetTop;
+                windowElement.style.transition = 'none';
+            }
+
+            function drag(e) {
+                if (!isDragging) return;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                windowElement.style.left = `${initialX + dx}px`;
+                windowElement.style.top = `${initialY + dy}px`;
+            }
+
+            function stopDrag() {
+                isDragging = false;
+                windowElement.style.transition = 'all 0.2s';
+            }
+        }
+
+        // 初始化窗口拖拽
+        window.addEventListener('DOMContentLoaded', () => {
+            makeDraggable(document.getElementById('sceneWindow'));
+            makeDraggable(document.getElementById('objectWindow'));
+        });
+
     document.getElementById('frameRate').addEventListener('change', function(e) {
         editor.data.rate = parseInt(e.target.value) || 1;
     });
@@ -387,7 +466,7 @@ function deleteScene(number) {
 
         function renderSceneEditor() {
             const scene = editor.currentScene;
-            const container = document.getElementById('sceneEdit');
+            const container = document.getElementById('objectListContent');
             if (!scene) return;
 
             container.innerHTML = `
@@ -413,6 +492,7 @@ function deleteScene(number) {
                 <button onclick="addTextObject()">添加文本</button>
             `;
         }
+      
         function updatePreview() {
             if (editor.currentScene) {
                 editor.renderer.render(editor.currentScene);
