@@ -70,6 +70,24 @@
             margin: 2px 0;
             background: #eee;
         }
+        .scene-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            margin: 4px 0;
+        }
+        .delete-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .delete-btn:hover {
+            background: #cc0000;
+        }
         .scene-item.active {
             background-color: var(--primary-color);
             color: white;
@@ -217,7 +235,20 @@ function rgbToArray(hex) {
     const bigint = parseInt(hex.slice(1), 16);
     return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255].join(',');
 }
-
+function deleteScene(number) {
+            if (!confirm("确定要删除这个场景吗？")) return;
+            
+            editor.deleteScene(number);
+            
+            // 如果没有任何场景，自动创建新场景
+            if (editor.data.frames.length === 0) {
+                const newScene = editor.addScene();
+                selectScene(newScene.number);
+            } else {
+                renderSceneList();
+                updatePreview();
+            }
+        }
         class VideoEditor {
             constructor() {
                 this.data = {
@@ -237,7 +268,13 @@ function rgbToArray(hex) {
                 canvas.width = this.data.width;
                 canvas.height = this.data.height;
             }
-
+            deleteScene(number) {
+                this.data.frames = this.data.frames.filter(s => s.number !== number);
+                // 如果删除的是当前场景，切换到第一个场景
+                if (this.currentScene?.number === number) {
+                    this.currentScene = this.data.frames[0] || null;
+                }
+            }
             addScene(time = 5) {
                 const newScene = {
                     number: Date.now(), // 改用时间戳作为唯一ID
@@ -339,9 +376,11 @@ function rgbToArray(hex) {
         function renderSceneList() {
             const list = document.getElementById('sceneList');
             list.innerHTML = editor.data.frames.map(scene => `
-                <div class="scene-item ${editor.currentScene?.number === scene.number ? 'active' : ''}" 
-                    onclick="selectScene(${scene.number})">
-                    场景 ${scene.number} (${scene.time}s)
+                <div class="scene-item ${editor.currentScene?.number === scene.number ? 'active' : ''}">
+                    <div onclick="selectScene(${scene.number})" style="flex-grow:1;">
+                        场景 ${scene.number} (${scene.time}s)
+                    </div>
+                    <button class="delete-btn" onclick="deleteScene(${scene.number})">×</button>
                 </div>
             `).join('');
         }
