@@ -5,27 +5,36 @@
   <title>Video Editor</title>
   <link href="https://cdn.jsdelivr.net/npm/jsoneditor@9.5.6/dist/jsoneditor.min.css" rel="stylesheet">
   <style>
-    /* 新增可拖动窗口样式 */
     .window {
-      position: absolute;
-      width: 600px;
-      height: 80vh;
+      position: fixed;
       background: white;
       border: 1px solid #ccc;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      z-index: 1000;
-      resize: both;
+      min-width: 300px;
+      min-height: 200px;
       overflow: hidden;
     }
-
     .window-header {
-      padding: 8px;
+      padding: 8px 32px 8px 12px;
       background: #f5f5f5;
       border-bottom: 1px solid #ddd;
       cursor: move;
+      position: relative;
       user-select: none;
     }
+    .window-close {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 18px;
+      color: #666;
+    }
 
+    .window-close:hover {
+      color: #333;
+    }
     .window-content {
       height: calc(100% - 35px);
     }
@@ -49,12 +58,7 @@
     button {
       padding: 8px 16px;
       margin-right: 10px;
-    }
-    .window {
-      /* 保持原有属性不变 */
-      min-width: 300px;
-      min-height: 200px;
-    }
+    } 
     #videoWindow {
       width: 800px;
       height: 600px;
@@ -82,8 +86,8 @@
     <canvas id="canvas"></canvas>
   </div>
 <!-- 在index.html的body末尾添加视频播放窗口 -->
-<div class="window" id="videoWindow" style="left: 650px; top: 60px; display: none; width: 800px; height: 600px;">
-  <div class="window-header">视频预览 (拖动我)</div>
+<div class="window preview-window" id="videoWindow" style="left: 650px; top: 60px; display: none; width: 800px; height: 600px;">
+  <div class="window-header">视频预览 <span class="window-close">×</span></div>
   <div class="window-content" style="position: relative; height: calc(100% - 35px);">
     <video id="videoPreview" controls style="width: 100%; height: 90%;"></video>
     <button onclick="downloadVideo()" 
@@ -96,6 +100,88 @@
 
   <script src="https://cdn.jsdelivr.net/npm/jsoneditor@9.5.6/dist/jsoneditor.min.js"></script>
   <script>
+    // 统一窗口管理逻辑
+class WindowManager {
+  constructor() {
+    this.windows = new Set();
+    this.activeWindow = null;
+    this.init();
+  }
+
+  init() {
+    document.addEventListener('mousedown', this.handleMouseDown.bind(this));
+    document.addEventListener('mousemove', this.handleMouseMove.bind(this));
+    document.addEventListener('mouseup', this.handleMouseUp.bind(this));
+    
+    // 初始化现有窗口
+    document.querySelectorAll('.window').forEach(window => this.registerWindow(window));
+  }
+
+  registerWindow(windowElement) {
+    if (!this.windows.has(windowElement)) {
+      this.windows.add(windowElement);
+      this.addCloseHandler(windowElement);
+    }
+  }
+
+  addCloseHandler(windowElement) {
+    const closeBtn = windowElement.querySelector('.window-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        windowElement.style.display = 'none';
+      });
+    }
+  }
+
+  handleMouseDown(e) {
+    const header = e.target.closest('.window-header');
+    if (!header) return;
+
+    const windowElement = header.parentElement;
+    this.activeWindow = windowElement;
+    
+    const rect = windowElement.getBoundingClientRect();
+    this.offset = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    };
+    
+    // 置顶窗口
+    this.bringToFront(windowElement);
+  }
+
+  handleMouseMove(e) {
+    if (!this.activeWindow) return;
+    
+    const x = e.clientX - this.offset.x;
+    const y = e.clientY - this.offset.y;
+    
+    this.activeWindow.style.left = `${x}px`;
+    this.activeWindow.style.top = `${y}px`;
+  }
+
+  handleMouseUp() {
+    this.activeWindow = null;
+  }
+
+  bringToFront(windowElement) {
+    const currentMaxZ = Math.max(...[...this.windows].map(w => 
+      parseInt(w.style.zIndex) || 1000));
+    
+    windowElement.style.zIndex = currentMaxZ + 1;
+  }
+}
+
+// 初始化窗口管理
+let windowManager;
+
+document.addEventListener('DOMContentLoaded', () => {
+  windowManager = new WindowManager();
+  
+  // 注册动态创建的窗口（如果有）
+  const videoWindow = document.getElementById('videoWindow');
+  if (videoWindow) windowManager.registerWindow(videoWindow);
+});
     let currentVideoUrl = null;
     function showVideoWindow() {
   const videoWindow = document.getElementById('videoWindow');
@@ -361,7 +447,27 @@ function initWindowDrag() {
   document.querySelectorAll('.window').forEach(setupWindowDrag);
 }
 
-
+window.addEventListener('load', () => {
+  initWindowDrag();
+  
+  // 关闭按钮处理（可选）
+  document.querySelectorAll('.window').forEach(window => {
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '×';
+    closeBtn.style.cssText = `
+      position: absolute;
+      right: 8px;
+      top: 5px;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #666;
+    `;
+    closeBtn.onclick = () => window.style.display = 'none';
+    window.querySelector('.window-header').appendChild(closeBtn);
+  });
+});
   </script>
 </body>
 </html>
