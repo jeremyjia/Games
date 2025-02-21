@@ -1,8 +1,7 @@
 
 class CBlDSMusic {
     constructor() {
-        this.version = "CBlDSMusic v0.14"; 
-        this.conf = musicConfigManager.getConfig();
+        this.version = "CBlDSMusic v0.15";  
     }
 
     testDrawNotes(cx,mode,txt,x0,y0,dx){

@@ -340,11 +340,7 @@
         function initCanvas() {
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
-            ctx = canvas.getContext('2d');
-            ctx.drawNoteTest = function(cx,ns,x,y,dx) {  
-                    const msc = new CBlDSMusic();
-                    msc.drawTest(cx,ns,x,y,dx);
-            };
+            ctx = canvas.getContext('2d'); 
             
         }
         window.addEventListener('load', initCanvas);
@@ -494,7 +490,7 @@
         }
     }
 
-    function handleCanvasUp() {
+    function handleCanvasUp(e) {
         if(e.type === 'touchend') {
             e.preventDefault();
         }
@@ -556,8 +552,7 @@
                 }
                  
                 #f1(cx) { 
-                    const ns = ["1---","2//","3//","4//","1,,","5,","2'","7,,-","2''---"]; 
-                    cx.drawNoteTest(cx,ns,this.x,this.y,this.dx); 
+                    const ns = ["1---","2//","3//","4//","1,,","5,","2'","7,,-","2''---"];  
                 } 
                 Test(cx) { 
                     this.#f1(cx);
