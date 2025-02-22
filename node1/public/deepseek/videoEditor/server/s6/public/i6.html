@@ -599,7 +599,7 @@ function addExample2() {
         workingData = JSON.parse(JSON.stringify(example)); // 新增初始化
         generateSceneButtons(); // 新增场景列表刷新
     }
-
+    let isResizingControlPoint = false;
     let selectedElement = null;
 let isDraggingElement = false;
 let isResizingElement = false;
@@ -754,6 +754,7 @@ function handleCanvasMouseDown(e) {
   if (selectedElement) {
     isResizingElement = checkControlPoint(selectedElement, x, y);
     if (isResizingElement) {
+      isResizingControlPoint = true; // 新增标志位
       dragStartX = x;
       dragStartY = y;
       originalElementState = JSON.parse(JSON.stringify(selectedElement));
@@ -883,6 +884,7 @@ function handleCanvasMouseMove(e) {
 }
 
 function handleCanvasMouseUp() {
+  isResizingControlPoint = false; // 重置标志位
   if (selectedElement) {
     const original = JSON.stringify(originalElementState);
     const current = JSON.stringify(selectedElement);
@@ -1144,6 +1146,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const options = {
       mode: 'code',
       onChange: () => { 
+        if (isResizingControlPoint) return; // 新增判断
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
           // 同步workingData到编辑器的最新状态
