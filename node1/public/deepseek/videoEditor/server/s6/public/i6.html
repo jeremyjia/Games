@@ -5,6 +5,11 @@
   <title>Video Editor</title>
   <link href="https://cdn.jsdelivr.net/npm/jsoneditor@9.5.6/dist/jsoneditor.min.css" rel="stylesheet">
   <style>
+    body {
+  overflow: auto;
+  min-width: 100vw;
+  min-height: 100vh;
+}
     .window {
       transition: box-shadow 0.2s, opacity 0.2s;
     }
@@ -167,7 +172,7 @@
   background: #007bff;
   color: white;
 }
-.color-picker-window .window-content {
+.c_4_settings_window .window-content {
   padding: 15px;
 }
 
@@ -183,12 +188,12 @@
     <button class = "c_play_button" id="playButton" onclick="togglePlay()">Play</button>
     <button onclick="exportVideo()">Export Video</button> <!-- 新增按钮 -->
     <button id="toggleEditorBtn" onclick="toggleEditorWindow()">Toggle Editor</button>
-    <button onclick="toggleColorPickerWindow()">调色板</button>
+    <button onclick="toggleSettingsWindow()">settings</button>
   </div>
-  <div class="window color-picker-window" id="colorPickerWindow" 
+  <div class="window c_4_settings_window" id="id_4_settings_window" 
      style="left: 350px; top: 60px; display: none; width: 260px; height: 120px;">
   <div class="window-header">
-    背景颜色设置
+    settings
     <span class="window-close">×</span>
   </div>
   <div class="window-content" style="padding: 15px; text-align: center;">
@@ -232,15 +237,33 @@
 
   <script src="https://cdn.jsdelivr.net/npm/jsoneditor@9.5.6/dist/jsoneditor.min.js"></script>
   <script>
-    function toggleColorPickerWindow() {
-  const colorWindow = document.getElementById('colorPickerWindow');
+    let workingData = {
+      scenes: []
+    };
+
+   
+function toggleSettingsWindow() {
+  const colorWindow = document.getElementById('id_4_settings_window');
   const isVisible = colorWindow.style.display !== 'none';
   
+  // 新增数据校验
+  if (!workingData || !workingData.scenes || workingData.scenes.length === 0) {
+    alert('请先创建或加载项目');
+    return;
+  }
+
   if (!isVisible) {
     if (isPlaying) {
       alert('请先停止播放再进行编辑');
       return;
     }
+    
+    // 新增当前场景索引校验
+    if (currentSceneIndex < 0 || currentSceneIndex >= workingData.scenes.length) {
+      alert('当前场景无效');
+      return;
+    }
+
     // 初始化颜色值为当前场景背景色
     const currentScene = workingData.scenes[currentSceneIndex];
     document.getElementById('bgColorInput').value = currentScene.background || '#ffffff';
@@ -249,6 +272,7 @@
   colorWindow.style.display = isVisible ? 'none' : 'block';
   windowManager.bringToFront(colorWindow);
 }
+
 function applyBackgroundColor() {
   if (isPlaying) {
     alert('请先停止播放再进行编辑');
@@ -710,8 +734,7 @@ canvas.addEventListener('mousedown', handleCanvasMouseDown);
 canvas.addEventListener('mousemove', handleCanvasMouseMove);
 canvas.addEventListener('mouseup', handleCanvasMouseUp);
 document.addEventListener('keydown', handleKeyDown);
- 
-let workingData = null; // 新增临时数据变量
+  
  
  
 function handleCanvasMouseDown(e) {
@@ -915,24 +938,38 @@ function checkControlPoint(element, x, y) {
     // 统一窗口管理逻辑
 class WindowManager {
   constructor() {
-        this.windows = new Set();
-        this.activeWindow = null;
-        this.isResizing = false;
-        this.initialWidth = 0;
-        this.initialHeight = 0;
-        this.startX = 0;
-        this.startY = 0;
-        this.init();
+    this.windows = new Set();
+    this.activeWindow = null;
+    this.isResizing = false;
+    this.offset = { x: 0, y: 0 };
+    this.initialWidth = 0;
+    this.initialHeight = 0;
+    this.startX = 0;
+    this.startY = 0;
+    this.init();
   }
 
   init() {
-        document.addEventListener('mousedown', this.handleMouseDown.bind(this));
-        document.addEventListener('mousemove', this.handleMouseMove.bind(this));
-        document.addEventListener('mouseup', this.handleMouseUp.bind(this));
-        
-        document.querySelectorAll('.window').forEach(window => this.registerWindow(window));
+    document.addEventListener('mousedown', this.handleMouseDown.bind(this));
+    document.addEventListener('mousemove', this.handleMouseMove.bind(this));
+    document.addEventListener('mouseup', this.handleMouseUp.bind(this));
+    
+    document.querySelectorAll('.window').forEach(window => {
+      this.registerWindow(window);
+      this.addCloseButton(window);  // Add close button programmatically
+    });
+  }
+  addCloseButton(windowElement) {
+    const closeBtn = document.createElement('span');
+    closeBtn.className = 'window-close';
+    closeBtn.innerHTML = '&times;';
+    closeBtn.onclick = () => windowElement.style.display = 'none';
+    
+    const header = windowElement.querySelector('.window-header');
+    if (header) {
+      header.appendChild(closeBtn);
     }
-
+  }
     registerWindow(windowElement) {
         if (!this.windows.has(windowElement)) {
             this.windows.add(windowElement);
@@ -997,15 +1034,30 @@ class WindowManager {
             this.activeWindow.style.width = `${newWidth}px`;
             this.activeWindow.style.height = `${newHeight}px`;
             return;
+        } else if (this.activeWindow) 
+        {
+            const x = e.clientX - this.offset.x;
+            const y = e.clientY - this.offset.y;
+            this.activeWindow.style.left = `${x}px`;
+            this.activeWindow.style.top = `${y}px`;
         }
+        
+        this.updateDocumentSize();
 
-        if (!this.activeWindow) return;
-
-        const x = e.clientX - this.offset.x;
-        const y = e.clientY - this.offset.y;
-        this.activeWindow.style.left = `${x}px`;
-        this.activeWindow.style.top = `${y}px`;
     }
+    updateDocumentSize() {
+        let maxRight = 0;
+        let maxBottom = 0;
+
+        this.windows.forEach(window => {
+          const rect = window.getBoundingClientRect();
+          maxRight = Math.max(maxRight, rect.right);
+          maxBottom = Math.max(maxBottom, rect.bottom);
+        });
+
+        document.body.style.minWidth = `${maxRight + 50}px`;
+        document.body.style.minHeight = `${maxBottom + 50}px`;
+  }
   
     
     handleMouseUp() {
@@ -1063,6 +1115,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (window.getComputedStyle(editorWindow).display !== 'none') {
         toggleBtn.classList.add('active');
       }
+      workingData = {
+        scenes: [],
+        fps: 30
+      };
+      
   });
 
 
@@ -1116,37 +1173,16 @@ function downloadVideo() {
     document.addEventListener('mousemove', drag);
     document.addEventListener('mouseup', dragEnd);
 
-    function dragStart(e) {
-      initialX = e.clientX - xOffset;
-      initialY = e.clientY - yOffset;
-
-      if (e.target === header) {
-        isDragging = true;
-      }
+    function dragStart(e) { 
     }
 
-    function drag(e) {
-      if (isDragging) {
-        e.preventDefault();
-        currentX = e.clientX - initialX;
-        currentY = e.clientY - initialY;
-
-        xOffset = currentX;
-        yOffset = currentY;
-
-        setTranslate(currentX, currentY, windowElement);
-      }
+    function drag(e) { 
     }
 
-    function setTranslate(xPos, yPos, el) {
-      el.style.left = xPos + 'px';
-      el.style.top = yPos + 'px';
+    function setTranslate(xPos, yPos, el) { 
     }
 
-    function dragEnd(e) {
-      initialX = currentX;
-      initialY = currentY;
-      isDragging = false;
+    function dragEnd(e) { 
     }
 
     // 以下保持原有逻辑不变...
@@ -1435,66 +1471,11 @@ function stopAnimation() {
     btn.disabled = false;
   });
 }
-function initWindowDrag() {
-  function setupWindowDrag(windowElement) {
-    let isDragging = false;
-    let currentX = 0;
-    let currentY = 0;
-    let initialX = 0;
-    let initialY = 0;
-
-    const header = windowElement.querySelector('.window-header');
-
-    header.addEventListener('mousedown', dragStart);
-    document.addEventListener('mousemove', drag);
-    document.addEventListener('mouseup', dragEnd);
-
-    function dragStart(e) {
-      initialX = e.clientX - windowElement.offsetLeft;
-      initialY = e.clientY - windowElement.offsetTop;
-      isDragging = true;
-    }
-
-    function drag(e) {
-      if (isDragging) {
-        e.preventDefault();
-        currentX = e.clientX - initialX;
-        currentY = e.clientY - initialY;
-
-        windowElement.style.left = `${currentX}px`;
-        windowElement.style.top = `${currentY}px`;
-      }
-    }
-
-    function dragEnd() {
-      isDragging = false;
-    }
-  }
-
-  // 为所有窗口初始化拖动
-  document.querySelectorAll('.window').forEach(setupWindowDrag);
-}
-
+ 
 window.addEventListener('load', () => {
-  initWindowDrag();
+   
+  windowManager.updateDocumentSize();
   
-  // 关闭按钮处理（可选）
-  document.querySelectorAll('.window').forEach(window => {
-    const closeBtn = document.createElement('button');
-    closeBtn.textContent = '×';
-    closeBtn.style.cssText = `
-      position: absolute;
-      right: 8px;
-      top: 5px;
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      color: #666;
-    `;
-    closeBtn.onclick = () => window.style.display = 'none';
-    window.querySelector('.window-header').appendChild(closeBtn);
-  });
 });
   </script>
 </body>
