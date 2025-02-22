@@ -175,8 +175,8 @@
       <span class="window-close">×</span>
     </div>
     <div class="window-toolbar">
-      <button class="toolbar-btn" onclick="addExample1()">Simple Example</button>
-      <button class="toolbar-btn" onclick="addExample2()">Complex Example</button>
+      <button class="toolbar-btn" onclick="addExample1()">ex1</button>
+      <button class="toolbar-btn" onclick="addExample2()">ex2</button>
       <button class="toolbar-btn" onclick="addExample3()">ex3</button>
     </div>
     <div id="id_4_scene_manager"> 
@@ -643,27 +643,53 @@ class WindowManager {
 // 初始化窗口管理
 let windowManager;
 
+let debounceTimer; 
 document.addEventListener('DOMContentLoaded', () => {
-  windowManager = new WindowManager();
-  
-  // 注册动态创建的窗口（如果有）
-  const videoWindow = document.getElementById('videoWindow');
-  if (videoWindow) windowManager.registerWindow(videoWindow);
+    windowManager = new WindowManager();
+    
+    // 初始化JSON编辑器
+    const container = document.getElementById('editor');
+    const options = { mode: 'code' };
+    editor = new JSONEditor(container, options);
+    fetch('/data')
+    .then(res => res.json())
+    .then(data => {
+      editor.set(data);
+      setupEditorResize();
+      generateSceneButtons();
+    })
+    .catch(() => {
+      editor.set(initialData);
+      setupEditorResize();
+      generateSceneButtons();
+    });
 
-  
-  const editorWindow = document.getElementById('editorWindow');
-  const toggleBtn = document.getElementById('toggleEditorBtn');
-  if (window.getComputedStyle(editorWindow).display !== 'none') {
-    toggleBtn.classList.add('active');
-  }
-});
-    let currentVideoUrl = null;
-    function showVideoWindow() {
-  const videoWindow = document.getElementById('videoWindow');
-  videoWindow.style.display = 'block';
-  // 将视频窗口置于最前
-  document.querySelectorAll('.window').forEach(w => w.style.zIndex = 1000);
-  videoWindow.style.zIndex = 1001;
+    editor.on('change', () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      generateSceneButtons();
+    }, 500);
+  });
+    // 注册动态创建的窗口（如果有）
+    const videoWindow = document.getElementById('videoWindow');
+    if (videoWindow) windowManager.registerWindow(videoWindow);
+
+    
+    const editorWindow = document.getElementById('editorWindow');
+    const toggleBtn = document.getElementById('toggleEditorBtn');
+    if (window.getComputedStyle(editorWindow).display !== 'none') {
+      toggleBtn.classList.add('active');
+    }
+  });
+
+
+      let currentVideoUrl = null;
+      function showVideoWindow() {
+    const videoWindow = document.getElementById('videoWindow');
+    videoWindow.style.display = 'block';
+    // 将视频窗口置于最前
+    document.querySelectorAll('.window').forEach(w => w.style.zIndex = 1000);
+    videoWindow.style.zIndex = 1001;
 }
 
 function cleanupVideo() {
@@ -739,10 +765,7 @@ function downloadVideo() {
     let currentSceneIndex = 0;
     let startTime = null;
     
-    // 初始化编辑器
-    const container = document.getElementById('editor');
-    const options = { mode: 'code' };
-    editor = new JSONEditor(container, options);
+    
     function setupEditorResize() {
     const editorWindow = document.getElementById('editorWindow');
     const observer = new ResizeObserver(() => {
@@ -760,19 +783,7 @@ function downloadVideo() {
     observer.observe(editorWindow);
   }
 
-  
-  fetch('/data')
-  .then(res => res.json())
-  .then(data => {
-    editor.set(data);
-    setupEditorResize();
-    generateSceneButtons();
-  })
-  .catch(() => {
-    editor.set(initialData);
-    setupEditorResize();
-    generateSceneButtons();
-  });
+   
 
     // 保存数据
     function saveData() {
@@ -782,14 +793,7 @@ function downloadVideo() {
         body: JSON.stringify(editor.get())
       });
     }
-    let debounceTimer;
-editor.on('change', () => {
-  clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => {
-    generateSceneButtons();
-  }, 500);
-});
-
+    
 [addExample1, addExample2, addExample3].forEach(fn => {
   const original = fn;
   fn = function() {
