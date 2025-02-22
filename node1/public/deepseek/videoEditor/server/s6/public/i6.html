@@ -840,7 +840,12 @@ function handleCanvasMouseMove(e) {
         }
         break;
     }
-    
+    // 实时更新 workingData
+    const currentScene = workingData.scenes[currentSceneIndex];
+    const elementIndex = currentScene.elements.findIndex(el => el === originalElementState);
+    if (elementIndex !== -1) {
+      currentScene.elements[elementIndex] = selectedElement;
+    }
     editor.set(workingData);
     renderScene(workingData.scenes[currentSceneIndex]);
     return;
@@ -898,6 +903,17 @@ function handleCanvasMouseUp() {
   isDraggingElement = false;
   isResizingElement = false;
   renderScene(workingData.scenes[currentSceneIndex]);
+  if (selectedElement) {
+    // 强制同步最新数据
+    workingData = JSON.parse(JSON.stringify(editor.get()));
+    saveData();
+    
+    // 刷新元素引用
+    const currentScene = workingData.scenes[currentSceneIndex];
+    selectedElement = currentScene.elements.find(el => 
+      JSON.stringify(el) === JSON.stringify(selectedElement)
+    );
+  }
 }
 function handleKeyDown(e) {
   if (e.key === 'Delete' && selectedElement) {
@@ -1347,8 +1363,7 @@ function renderScene(scene) {
       const handler = elementHandlers[selectedElement.type];
       handler?.drawSelection(ctx, selectedElement);
       ctx.restore();
-    }
-
+    } 
   } catch (error) {
     console.error('渲染错误:', error);
   }
