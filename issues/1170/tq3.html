@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中国水晶跳棋</title>
+  <style>
+    canvas {
+      border: 1px solid black;
+      display: block;
+      margin: 0 auto;
+      background-color: #f0f0f0;
+    }
+    #status {
+      text-align: center;
+      font-size: 24px;
+      margin: 20px 0;
+    }
+    #player-select {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 20px 0;
+    }
+    .player-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    #game-controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 10px 0;
+    }
+    #load-file {
+      display: none;
+    }
+    button {
+      padding: 5px 15px;
+    }
+  </style>
+</head>
+<body>
+  <div id="player-select">
+    <div class="player-checkbox">
+      <input type="checkbox" id="red" checked>
+      <label for="red" style="color:red">红方</label>
+    </div>
+    <div class="player-checkbox">
+      <input type="checkbox" id="blue" checked>
+      <label for="blue" style="color:blue">蓝方</label>
+    </div>
+    <div class="player-checkbox">
+      <input type="checkbox" id="green" checked>
+      <label for="green" style="color:green">绿方</label>
+    </div>
+    <div class="player-checkbox">
+      <input type="checkbox" id="yellow" checked>
+      <label for="yellow" style="color:#cc0">黄方</label>
+    </div>
+    <button onclick="initGame()">重新开始</button>
+  </div>
+  <div id="game-controls">
+    <button onclick="saveGame()">保存游戏</button>
+    <button onclick="document.getElementById('load-file').click()">加载游戏</button>
+    <input type="file" id="load-file" accept=".json" onchange="loadGame(event)">
+  </div>
+  <div id="status">当前玩家：<span id="current-player">红方</span></div>
+  <canvas id="board" width="900" height="900"></canvas>
+
+  <script>
+    const canvas = document.getElementById("board");
+    const ctx = canvas.getContext("2d");
+    const statusText = document.getElementById("current-player");
+
+    // 游戏参数
+    const GAME_VERSION = 1.1;
+    const hexSize = 25;
+    const rows = 17;
+    const cols = 17;
+    const board = [];
+
+    // 游戏状态
+    let players = [];
+    let activePlayers = [];
+    let currentPlayerIndex = 0;
+    let selectedPiece = null;
+    let validMoves = [];
+
+    // 初始化玩家
+    function initPlayers() {
+      players = [];
+      activePlayers = [];
+      const config = [
+        { id: "red", color: "red", dir: "y", delta: -1 },
+        { id: "blue", color: "blue", dir: "y", delta: 1 },
+        { id: "green", color: "green", dir: "x", delta: -1 },
+        { id: "yellow", color: "yellow", dir: "x", delta: 1 }
+      ];
+
+      config.forEach((cfg, idx) => {
+        if (document.getElementById(cfg.id).checked) {
+          const player = {
+            ...cfg,
+            pieces: [],
+            startArea: [],
+            targetArea: [],
+            index: activePlayers.length
+          };
+          players.push(player);
+          activePlayers.push(idx);
+        }
+      });
+    }
+
+    // 初始化棋盘
+    function initBoard() {
+      // 清空棋盘
+      for (let i = 0; i < rows; i++) {
+        board[i] = [];
+        for (let j = 0; j < cols; j++) {
+          board[i][j] = isValidHex(i, j) ? { type: "empty" } : null;
+        }
+      }
+
+      // 初始化玩家区域
+      players.forEach(player => initPlayerArea(player));
+    }
+
+    function isValidHex(row, col) {
+      const center = Math.floor(rows / 2);
+      return Math.abs(col - center) + Math.abs(row - center) <= center;
+    }
+
+    function initPlayerArea(player) {
+      const center = Math.floor(rows / 2);
+      const dir = player.dir;
+      const delta = player.delta;
+
+      // 初始化起始区域
+      for (let row = 0; row < 3; row++) {
+        const offset = 8 - row;
+        for (let i = -row; i <= row; i++) {
+          let x, y;
+          if (dir === "y") {
+            x = center + i;
+            y = center + delta * offset;
+          } else {
+            x = center + delta * offset;
+            y = center + i;
+          }
+          if (isValidHex(y, x)) {
+            board[y][x] = { type: "piece", player: player.index };
+            player.pieces.push({ x, y });
+            player.startArea.push({ x, y });
+          }
+        }
+      }
+
+      // 初始化目标区域
+      const targetDelta = -delta;
+      for (let row = 0; row < 3; row++) {
+        const offset = 8 - row;
+        for (let i = -row; i <= row; i++) {
+          let x, y;
+          if (dir === "y") {
+            x = center + i;
+            y = center + targetDelta * offset;
+          } else {
+            x = center + targetDelta * offset;
+            y = center + i;
+          }
+          if (isValidHex(y, x)) {
+            player.targetArea.push({ x, y });
+          }
+        }
+      }
+    }
+
+    // 绘制逻辑
+    function drawHex(x, y, size, color) {
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI / 3) * i;
+        ctx.lineTo(x + size * Math.cos(angle), y + size * Math.sin(angle));
+      }
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    function drawBoard() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          if (!board[i][j]) continue;
+          
+          const x = centerX + (j - 8) * hexSize * 1.5;
+          const y = centerY + (i - 8) * hexSize * Math.sqrt(3);
+          
+          // 绘制背景
+          let bgColor = "#ddd";
+          if (selectedPiece?.row === i && selectedPiece?.col === j) {
+            bgColor = "#ff9999";
+          } else if (validMoves.some(m => m.row === i && m.col === j)) {
+            bgColor = "#99ff99";
+          }
+          drawHex(x, y, hexSize, bgColor);
+
+          // 绘制棋子
+          if (board[i][j].type === "piece") {
+            const player = players.find(p => p.index === board[i][j].player);
+            drawHex(x, y, hexSize * 0.8, player.color);
+          }
+        }
+      }
+    }
+
+    // 游戏逻辑
+    function getHexPosition(mouseX, mouseY) {
+      const rect = canvas.getBoundingClientRect();
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      let minDist = Infinity;
+      let nearest = null;
+
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          if (!board[i][j]) continue;
+          
+          const hexX = centerX + (j - 8) * hexSize * 1.5;
+          const hexY = centerY + (i - 8) * hexSize * Math.sqrt(3);
+          const dist = Math.hypot(mouseX - rect.left - hexX, mouseY - rect.top - hexY);
+          
+          if (dist < hexSize && dist < minDist) {
+            minDist = dist;
+            nearest = { row: i, col: j };
+          }
+        }
+      }
+      return nearest;
+    }
+
+    function calculateValidMoves(startRow, startCol) {
+      const moves = [];
+      const visited = new Set();
+      const queue = [{ row: startRow, col: startCol, viaJump: false }];
+      visited.add(`${startRow},${startCol}`);
+
+      while (queue.length) {
+        const { row, col, viaJump } = queue.shift();
+
+        if (!(row === startRow && col === startCol)) {
+          moves.push({ row, col });
+        }
+
+        const directions = [
+          { dr: -1, dc: 0 }, { dr: 1, dc: 0 },   // 上下
+          { dr: 0, dc: -1 }, { dr: 0, dc: 1 },   // 左右
+          { dr: -1, dc: 1 }, { dr: 1, dc: -1 },   // 右上/左下
+          { dr: 1, dc: 1 }, { dr: -1, dc: -1 }
+        ];
+
+        for (const dir of directions) {
+          const nr = row + dir.dr, nc = col + dir.dc;
+          if (!isValidHex(nr, nc) || !board[nr][nc]) continue;
+
+          if (!viaJump) {
+            if (board[nr][nc].type === "empty") {
+              const key = `${nr},${nc}`;
+              if (!visited.has(key)) {
+                visited.add(key);
+                queue.push({ row: nr, col: nc, viaJump: 666 });  //Jeremy fixed it
+              }
+            } else {
+              const jr = nr + dir.dr, jc = nc + dir.dc;
+              if (isValidHex(jr, jc) && board[jr][jc]?.type === "empty") {
+                const key = `${jr},${jc}`;
+                if (!visited.has(key)) {
+                  visited.add(key);
+                  queue.push({ row: jr, col: jc, viaJump: true });
+                }
+              }
+            }
+          } else {
+            if (board[nr][nc].type === "piece" && viaJump!==666) {
+              const jr = nr + dir.dr, jc = nc + dir.dc;
+              if (isValidHex(jr, jc) && board[jr][jc]?.type === "empty") {
+                const key = `${jr},${jc}`;
+                if (!visited.has(key)) {
+                  visited.add(key);
+                  queue.push({ row: jr, col: jc, viaJump: true });
+                }
+              }
+            }
+          }
+        }
+      }
+      return moves;
+    }
+
+    function movePiece(fromRow, fromCol, toRow, toCol) {
+      const playerIndex = board[fromRow][fromCol].player;
+      const player = players.find(p => p.index === playerIndex);
+      
+      board[fromRow][fromCol] = { type: "empty" };
+      board[toRow][toCol] = { type: "piece", player: playerIndex };
+
+      const pieceIndex = player.pieces.findIndex(
+        p => p.x === fromCol && p.y === fromRow
+      );
+      player.pieces[pieceIndex] = { x: toCol, y: toRow };
+    }
+
+    function checkWin(player) {
+      return player.pieces.every(piece =>
+        player.targetArea.some(t => t.x === piece.x && t.y === piece.y)
+      );
+    }
+
+    // 保存/加载功能
+    function saveGame() {
+      const gameState = {
+        version: GAME_VERSION,
+        players: players.map(player => ({
+          color: player.color,
+          pieces: player.pieces,
+          startArea: player.startArea,
+          targetArea: player.targetArea,
+          active: activePlayers.includes(player.index)
+        })),
+        board: board.map(row => 
+          row.map(cell => {
+            if (!cell) return null;
+            return {
+              type: cell.type,
+              player: cell.player
+            };
+          })
+        ),
+        currentPlayerIndex: currentPlayerIndex
+      };
+
+      const blob = new Blob([JSON.stringify(gameState, null, 2)], {type: "application/json"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Checkers_${new Date().toISOString().slice(0,16).replace(/[:T-]/g,'')}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    async function loadGame(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        
+        if (!validateGameData(data)) {
+          alert("无效的存档文件");
+          return;
+        }
+
+        // 恢复玩家状态
+        activePlayers.length = 0;
+        players = data.players.map((p, idx) => {
+          const player = {
+            color: p.color,
+            pieces: p.pieces,
+            startArea: p.startArea,
+            targetArea: p.targetArea,
+            index: idx,
+            dir: p.color === 'red' ? 'y' : 
+                 p.color === 'blue' ? 'y' :
+                 p.color === 'green' ? 'x' : 'x',
+            delta: p.color === 'red' ? -1 : 
+                   p.color === 'blue' ? 1 :
+                   p.color === 'green' ? -1 : 1
+          };
+          if (p.active) activePlayers.push(idx);
+          return player;
+        });
+
+        // 恢复棋盘
+        board.length = 0;
+        data.board.forEach((row, i) => {
+          board[i] = row.map(cell => cell ? {...cell} : null);
+        });
+
+        // 恢复游戏状态
+        currentPlayerIndex = data.currentPlayerIndex;
+        updateStatus();
+        drawBoard();
+        
+      } catch (error) {
+        console.error("加载失败:", error);
+        alert("文件读取错误");
+      }
+    }
+
+    function validateGameData(data) {
+      const required = ['version', 'players', 'board', 'currentPlayerIndex'];
+      if (!required.every(f => f in data)) return false;
+      if (data.version > GAME_VERSION) return false;
+      if (data.board.length !== rows || data.board.some(r => r.length !== cols)) return false;
+      return true;
+    }
+
+    // 事件处理
+    canvas.addEventListener("click", (e) => {
+      const pos = getHexPosition(e.clientX, e.clientY);
+      if (!pos) return;
+
+      const currentPlayer = players[currentPlayerIndex];
+      
+      if (selectedPiece) {
+        if (validMoves.some(m => m.row === pos.row && m.col === pos.col)) {
+          movePiece(selectedPiece.row, selectedPiece.col, pos.row, pos.col);
+          if (checkWin(currentPlayer)) {
+            alert(`${currentPlayer.color} 胜利！`);
+            initGame();
+            return;
+          }
+          nextPlayer();
+        }
+        selectedPiece = null;
+        validMoves = [];
+      } else if (
+        board[pos.row][pos.col].type === "piece" &&
+        board[pos.row][pos.col].player === currentPlayer.index
+      ) {
+        selectedPiece = pos;
+        validMoves = calculateValidMoves(pos.row, pos.col);
+      }
+      drawBoard();
+    });
+
+    function nextPlayer() {
+      currentPlayerIndex = (currentPlayerIndex + 1) % activePlayers.length;
+      updateStatus();
+    }
+
+    function updateStatus() {
+      statusText.textContent = `当前玩家：${players[currentPlayerIndex].color}`;
+    }
+
+    // 初始化游戏
+    function initGame() {
+      initPlayers();
+      initBoard();
+      currentPlayerIndex = 0;
+      selectedPiece = null;
+      validMoves = [];
+      updateStatus();
+      drawBoard();
+    }
+
+    // 启动游戏
+    initGame();
+  </script>
+</body>
+</html>
