@@ -6,13 +6,14 @@
   <link href="https://cdn.jsdelivr.net/npm/jsoneditor@9.5.6/dist/jsoneditor.min.css" rel="stylesheet">
   <style>
     .window {
-      position: fixed;
+      position: absolute;
       background: white;
       border: 1px solid #ccc;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       min-width: 300px;
       min-height: 200px;
-      overflow: hidden;
+      overflow: hidden; 
+      resize: none; /* 禁用CSS默认resize */
     }
     .window-header {
       padding: 8px 32px 8px 12px;
@@ -67,6 +68,17 @@
     #videoPreview {
       background: black;
     }
+    .window-resize-handle {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 12px;
+        height: 12px;
+        cursor: nwse-resize;
+        background: transparent;
+        z-index: 1;
+    }
+
   </style>
 </head>
 <body>
@@ -103,26 +115,31 @@
     // 统一窗口管理逻辑
 class WindowManager {
   constructor() {
-    this.windows = new Set();
-    this.activeWindow = null;
-    this.init();
+        this.windows = new Set();
+        this.activeWindow = null;
+        this.isResizing = false;
+        this.initialWidth = 0;
+        this.initialHeight = 0;
+        this.startX = 0;
+        this.startY = 0;
+        this.init();
   }
 
   init() {
-    document.addEventListener('mousedown', this.handleMouseDown.bind(this));
-    document.addEventListener('mousemove', this.handleMouseMove.bind(this));
-    document.addEventListener('mouseup', this.handleMouseUp.bind(this));
-    
-    // 初始化现有窗口
-    document.querySelectorAll('.window').forEach(window => this.registerWindow(window));
-  }
-
-  registerWindow(windowElement) {
-    if (!this.windows.has(windowElement)) {
-      this.windows.add(windowElement);
-      this.addCloseHandler(windowElement);
+        document.addEventListener('mousedown', this.handleMouseDown.bind(this));
+        document.addEventListener('mousemove', this.handleMouseMove.bind(this));
+        document.addEventListener('mouseup', this.handleMouseUp.bind(this));
+        
+        document.querySelectorAll('.window').forEach(window => this.registerWindow(window));
     }
-  }
+
+    registerWindow(windowElement) {
+        if (!this.windows.has(windowElement)) {
+            this.windows.add(windowElement);
+            this.addCloseHandler(windowElement);
+            this.addResizeHandle(windowElement); // 添加调整手柄
+        }
+    }
 
   addCloseHandler(windowElement) {
     const closeBtn = windowElement.querySelector('.window-close');
@@ -133,37 +150,67 @@ class WindowManager {
     }
   }
 
-  handleMouseDown(e) {
-    const header = e.target.closest('.window-header');
-    if (!header) return;
+  addResizeHandle(windowElement) {
+        const resizeHandle = document.createElement('div');
+        resizeHandle.className = 'window-resize-handle';
+        windowElement.appendChild(resizeHandle);
+    }
+  
+    handleMouseDown(e) {
+        const resizeHandle = e.target.closest('.window-resize-handle');
+        if (resizeHandle) {
+            const windowElement = resizeHandle.parentElement;
+            this.isResizing = true;
+            this.activeWindow = windowElement;
+            this.initialWidth = windowElement.offsetWidth;
+            this.initialHeight = windowElement.offsetHeight;
+            this.startX = e.clientX;
+            this.startY = e.clientY;
+            this.bringToFront(windowElement);
+            e.preventDefault();
+            return;
+        }
 
-    const windowElement = header.parentElement;
-    this.activeWindow = windowElement;
-    
-    const rect = windowElement.getBoundingClientRect();
-    this.offset = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
-    
-    // 置顶窗口
-    this.bringToFront(windowElement);
-  }
+        const header = e.target.closest('.window-header');
+        if (!header) return;
 
-  handleMouseMove(e) {
-    if (!this.activeWindow) return;
-    
-    const x = e.clientX - this.offset.x;
-    const y = e.clientY - this.offset.y;
-    
-    this.activeWindow.style.left = `${x}px`;
-    this.activeWindow.style.top = `${y}px`;
-  }
+        const windowElement = header.parentElement;
+        this.activeWindow = windowElement;
+        const rect = windowElement.getBoundingClientRect();
+        this.offset = {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+        this.bringToFront(windowElement);
+    }
 
-  handleMouseUp() {
-    this.activeWindow = null;
-  }
+    handleMouseMove(e) {
+        if (this.isResizing) {
+            const deltaX = e.clientX - this.startX;
+            const deltaY = e.clientY - this.startY;
+            const minSize = 100; // 最小窗口尺寸
+            
+            const newWidth = Math.max(minSize, this.initialWidth + deltaX);
+            const newHeight = Math.max(minSize, this.initialHeight + deltaY);
+            
+            this.activeWindow.style.width = `${newWidth}px`;
+            this.activeWindow.style.height = `${newHeight}px`;
+            return;
+        }
 
+        if (!this.activeWindow) return;
+
+        const x = e.clientX - this.offset.x;
+        const y = e.clientY - this.offset.y;
+        this.activeWindow.style.left = `${x}px`;
+        this.activeWindow.style.top = `${y}px`;
+    }
+  
+    
+    handleMouseUp() {
+        this.activeWindow = null;
+        this.isResizing = false;
+    }
   bringToFront(windowElement) {
     const currentMaxZ = Math.max(...[...this.windows].map(w => 
       parseInt(w.style.zIndex) || 1000));
