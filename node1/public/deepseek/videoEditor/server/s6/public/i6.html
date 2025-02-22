@@ -836,6 +836,7 @@ function checkControlPoint(element, x, y) {
           if (!scene) return;
           
           currentSceneIndex = index; // 新增：更新当前场景索引
+          selectedElement = null; // 新增：重置选中状态
           if (isPlaying) stopAnimation();
           renderScene(scene);
           
