@@ -840,6 +840,7 @@ function handleCanvasMouseMove(e) {
         break;
     }
     
+    editor.set(workingData);
     renderScene(workingData.scenes[currentSceneIndex]);
     return;
   }
@@ -909,6 +910,7 @@ function handleKeyDown(e) {
       // 同步更新到编辑器和保存
       editor.update(workingData);
       saveData();
+      editor.set(workingData);
       renderScene(currentScene);
     }
   }
