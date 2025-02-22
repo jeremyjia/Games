@@ -466,6 +466,7 @@ function addExample2() {
       }
     }
 
+    let audioElement = null;
     // 统一窗口管理逻辑
 class WindowManager {
   constructor() {
@@ -763,9 +764,22 @@ function downloadVideo() {
     function playAnimation(timestamp) {
       const data = editor.get();
       const scenes = data.scenes;
-      const fps = data.fps || 1;
+      const fps = data.fps || 30; // 默认30帧
 
-      if (!startTime) startTime = timestamp;
+      if (!startTime) {
+        startTime = timestamp;
+        // 初始化音频播放
+        if (data.audio) {
+          // 清理之前的音频
+          if (audioElement) {
+            audioElement.pause();
+            audioElement = null;
+          }
+          audioElement = new Audio(data.audio);
+          audioElement.loop = true; // 循环播放
+          audioElement.play().catch(e => console.error('音频播放失败:', e));
+        }
+      }
       
       const elapsed = timestamp - startTime;
       const frameDuration = 1000 / fps;
@@ -789,12 +803,15 @@ function downloadVideo() {
       animationFrame = requestAnimationFrame(playAnimation);
     }
 
-    // 停止动画
     function stopAnimation() {
       cancelAnimationFrame(animationFrame);
       startTime = null;
+      // 停止音频
+      if (audioElement) {
+        audioElement.pause();
+        audioElement.currentTime = 0;
+      }
     }
-    
     function exportVideo() {
   const data = editor.get();
   const btn = event.target;
