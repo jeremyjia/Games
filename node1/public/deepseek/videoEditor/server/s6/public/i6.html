@@ -248,6 +248,7 @@
       };
       editor.set(example);
       stopAnimation(); // 新增：加载示例时停止当前动画
+      workingData = JSON.parse(JSON.stringify(example)); // 新增初始化
       generateSceneButtons(); // 新增场景列表刷新
     }
 
@@ -284,6 +285,7 @@ function addExample2() {
   };
   editor.set(example);
   stopAnimation(); // 新增：加载示例时停止当前动画
+  workingData = JSON.parse(JSON.stringify(example)); // 新增初始化
   generateSceneButtons(); // 新增场景列表刷新
 }
     function addExample3() {
@@ -516,6 +518,7 @@ function addExample2() {
         };
         editor.set(example);
         stopAnimation(); // 新增：加载示例时停止当前动画
+        workingData = JSON.parse(JSON.stringify(example)); // 新增初始化
         generateSceneButtons(); // 新增场景列表刷新
     }
 
@@ -756,20 +759,21 @@ function handleCanvasMouseUp() {
 
 function handleKeyDown(e) {
   if (e.key === 'Delete' && selectedElement) {
-    const data = editor.get();
-    const currentScene = data.scenes[currentSceneIndex];
+    // 使用 workingData 而不是重新获取数据
+    const currentScene = workingData.scenes[currentSceneIndex];
     const index = currentScene.elements.findIndex(el => el === selectedElement);
     
     if (index !== -1) {
       currentScene.elements.splice(index, 1);
       selectedElement = null;
-      editor.update(data);
-      renderScene(currentScene);
+      
+      // 同步更新到编辑器和保存
+      editor.update(workingData);
       saveData();
+      renderScene(currentScene);
     }
   }
 }
-
 
 function checkControlPoint(element, x, y) {
   const threshold = 8; // 增大检测范围
