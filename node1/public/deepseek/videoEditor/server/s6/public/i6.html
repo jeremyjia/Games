@@ -800,11 +800,11 @@ function checkControlPoint(element, x, y) {
         btn.textContent = `场景 ${index + 1}`;
         
         btn.onclick = () => {
-          // 从当前编辑器数据获取最新场景
           const currentData = editor.get();
           const scene = currentData.scenes[index];
           if (!scene) return;
           
+          currentSceneIndex = index; // 新增：更新当前场景索引
           if (isPlaying) stopAnimation();
           renderScene(scene);
           
