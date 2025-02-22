@@ -510,6 +510,262 @@ function addExample2() {
         stopAnimation(); // 新增：加载示例时停止当前动画
         generateSceneButtons(); // 新增场景列表刷新
     }
+
+    let selectedElement = null;
+let isDraggingElement = false;
+let isResizingElement = false;
+let dragStartX = 0;
+let dragStartY = 0;
+let originalElementState = null;
+const elementHandlers = {
+  circle: {
+    contains: (element, x, y) => {
+      const dx = x - element.x;
+      const dy = y - element.y;
+      return dx*dx + dy*dy <= element.radius*element.radius;
+    },
+    drawSelection: (ctx, element) => {
+      ctx.strokeStyle = '#00ff00';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(element.x, element.y, element.radius, 0, Math.PI*2);
+      ctx.stroke();
+      
+      // 绘制调整控制点
+      ctx.fillStyle = '#ff0000';
+      ctx.beginPath();
+      ctx.arc(element.x + element.radius, element.y, 5, 0, Math.PI*2);
+      ctx.fill();
+    }
+  },
+  triangle: {
+    contains: (element, x, y) => {
+      // 使用重心坐标法判断点是否在三角形内
+      const area = 0.5 * (-element.y2*element.x3 + element.y1*(-element.x2 + element.x3) 
+                   + element.x1*(element.y2 - element.y3) + element.x2*element.y3);
+      const s = 1/(2*area)*(element.y1*element.x3 - element.x1*element.y3 
+                 + (element.y3 - element.y1)*x + (element.x1 - element.x3)*y);
+      const t = 1/(2*area)*(element.x1*element.y2 - element.y1*element.x2 
+                 + (element.y1 - element.y2)*x + (element.x2 - element.x1)*y);
+      return s > 0 && t > 0 && (1-s-t) > 0;
+    },
+    drawSelection: (ctx, element) => {
+      ctx.strokeStyle = '#00ff00';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(element.x1, element.y1);
+      ctx.lineTo(element.x2, element.y2);
+      ctx.lineTo(element.x3, element.y3);
+      ctx.closePath();
+      ctx.stroke();
+      
+      // 绘制控制点
+      const points = [
+        {x: element.x1, y: element.y1},
+        {x: element.x2, y: element.y2},
+        {x: element.x3, y: element.y3}
+      ];
+      points.forEach(p => {
+        ctx.fillStyle = '#ff0000';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 5, 0, Math.PI*2);
+        ctx.fill();
+      });
+    }
+  },
+  line: {
+    contains: (element, x, y) => {
+      // 判断点到线段的距离
+      const A = x - element.x1;
+      const B = y - element.y1;
+      const C = element.x2 - element.x1;
+      const D = element.y2 - element.y1;
+
+      const dot = A * C + B * D;
+      const lenSq = C * C + D * D;
+      let param = -1;
+      if (lenSq !== 0) param = dot / lenSq;
+
+      let xx, yy;
+      if (param < 0) {
+        xx = element.x1;
+        yy = element.y1;
+      } else if (param > 1) {
+        xx = element.x2;
+        yy = element.y2;
+      } else {
+        xx = element.x1 + param * C;
+        yy = element.y1 + param * D;
+      }
+
+      const dx = x - xx;
+      const dy = y - yy;
+      return Math.sqrt(dx*dx + dy*dy) < 5;
+    },
+    drawSelection: (ctx, element) => {
+      ctx.strokeStyle = '#00ff00';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(element.x1, element.y1);
+      ctx.lineTo(element.x2, element.y2);
+      ctx.stroke();
+      
+      // 绘制控制点
+      ctx.fillStyle = '#ff0000';
+      [element.x1, element.x2].forEach((x, i) => {
+        const y = i === 0 ? element.y1 : element.y2;
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, Math.PI*2);
+        ctx.fill();
+      });
+    }
+  }
+};
+
+// 新增事件监听
+canvas.addEventListener('mousedown', handleCanvasMouseDown);
+canvas.addEventListener('mousemove', handleCanvasMouseMove);
+canvas.addEventListener('mouseup', handleCanvasMouseUp);
+document.addEventListener('keydown', handleKeyDown);
+
+function handleCanvasMouseDown(e) {
+  if (!isPlaying) {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const data = editor.get();
+    const currentScene = data.scenes[currentSceneIndex];
+    
+    // 查找点击的元素
+    for (let i = currentScene.elements.length - 1; i >= 0; i--) {
+      const element = currentScene.elements[i];
+      const handler = elementHandlers[element.type];
+      if (handler && handler.contains(element, x, y)) {
+        selectedElement = element;
+        originalElementState = JSON.parse(JSON.stringify(element));
+        dragStartX = x;
+        dragStartY = y;
+        
+        // 检查是否点击了控制点
+        if (checkControlPoint(element, x, y)) {
+          isResizingElement = true;
+        } else {
+          isDraggingElement = true;
+        }
+        
+        renderScene(currentScene);
+        return;
+      }
+    }
+    
+    // 没有选中元素则取消选择
+    selectedElement = null;
+    renderScene(currentScene);
+  }
+}
+
+function handleCanvasMouseMove(e) {
+  if ((isDraggingElement || isResizingElement) && selectedElement) {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const dx = x - dragStartX;
+    const dy = y - dragStartY;
+
+    if (isDraggingElement) {
+      // 移动元素
+      switch(selectedElement.type) {
+        case 'circle':
+          selectedElement.x += dx;
+          selectedElement.y += dy;
+          break;
+        case 'triangle':
+          selectedElement.x1 += dx;
+          selectedElement.y1 += dy;
+          selectedElement.x2 += dx;
+          selectedElement.y2 += dy;
+          selectedElement.x3 += dx;
+          selectedElement.y3 += dy;
+          break;
+        case 'line':
+          selectedElement.x1 += dx;
+          selectedElement.y1 += dy;
+          selectedElement.x2 += dx;
+          selectedElement.y2 += dy;
+          break;
+      }
+    } else if (isResizingElement) {
+      // 调整元素大小
+      switch(selectedElement.type) {
+        case 'circle':
+          const mx = selectedElement.x;
+          const my = selectedElement.y;
+          selectedElement.radius = Math.sqrt((x - mx)**2 + (y - my)**2);
+          break;
+        case 'line':
+          // 判断哪个端点被拖动
+          const d1 = Math.hypot(x - selectedElement.x1, y - selectedElement.y1);
+          const d2 = Math.hypot(x - selectedElement.x2, y - selectedElement.y2);
+          if (d1 < d2) {
+            selectedElement.x1 = x;
+            selectedElement.y1 = y;
+          } else {
+            selectedElement.x2 = x;
+            selectedElement.y2 = y;
+          }
+          break;
+      }
+    }
+
+    dragStartX = x;
+    dragStartY = y;
+    renderScene(editor.get().scenes[currentSceneIndex]);
+  }
+}
+
+function handleCanvasMouseUp() {
+  isDraggingElement = false;
+  isResizingElement = false;
+  if (selectedElement && originalElementState) {
+    // 更新JSON数据
+    const data = editor.get();
+    editor.set(data);
+    saveData();
+  }
+}
+
+function handleKeyDown(e) {
+  if (e.key === 'Delete' && selectedElement) {
+    const data = editor.get();
+    const currentScene = data.scenes[currentSceneIndex];
+    const index = currentScene.elements.indexOf(selectedElement);
+    if (index !== -1) {
+      currentScene.elements.splice(index, 1);
+      editor.set(data);
+      saveData();
+      selectedElement = null;
+      renderScene(currentScene);
+    }
+  }
+}
+
+function checkControlPoint(element, x, y) {
+  const threshold = 5;
+  switch(element.type) {
+    case 'circle':
+      return Math.hypot(x - (element.x + element.radius), y - element.y) < threshold;
+    case 'line':
+      return Math.hypot(x - element.x1, y - element.y1) < threshold || 
+             Math.hypot(x - element.x2, y - element.y2) < threshold;
+    case 'triangle':
+      return Math.hypot(x - element.x1, y - element.y1) < threshold ||
+             Math.hypot(x - element.x2, y - element.y2) < threshold ||
+             Math.hypot(x - element.x3, y - element.y3) < threshold;
+  }
+  return false;
+}
+
     function toggleEditorWindow() {
       const editorWindow = document.getElementById('editorWindow');
       const btn = document.getElementById('toggleEditorBtn');
@@ -883,6 +1139,13 @@ function renderScene(scene) {
           break;
       }
     });
+    if (selectedElement) {
+      const handler = elementHandlers[selectedElement.type];
+      if (handler && handler.drawSelection) {
+        handler.drawSelection(ctx, selectedElement);
+      }
+    }
+
   } catch (error) {
     console.error('渲染错误:', error);
   }
