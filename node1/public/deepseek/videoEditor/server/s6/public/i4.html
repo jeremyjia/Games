@@ -64,7 +64,13 @@
       width: 800px;
       height: 600px;
     }
-
+    #editor {
+    width: 100%;
+    height: 100%;
+  }
+  .jsoneditor-outer {
+    height: calc(100% - 30px) !important;
+  }
     #videoPreview {
       background: black;
     }
@@ -315,17 +321,32 @@ function downloadVideo() {
     const container = document.getElementById('editor');
     const options = { mode: 'code' };
     editor = new JSONEditor(container, options);
-
-    // 加载初始数据
-    fetch('/data')
-      .then(res => res.json())
-      .then(data => editor.set(data))
-      .catch(() => editor.set({
-        meta: { version: "2.0", totalFrames: 750, totalScenes: 25 },
-        audio: "",
-        scenes: [],
-        fps: 1
-      }));
+    function setupEditorResize() {
+    const editorWindow = document.getElementById('editorWindow');
+    const observer = new ResizeObserver(() => {
+      if (editor && editor.aceEditor) {
+        const container = editor.container;
+        const modes = container.querySelector('.jsoneditor-modes');
+        const content = container.querySelector('.jsoneditor-outer');
+        
+        if (modes && content) {
+          content.style.height = `calc(100% - ${modes.offsetHeight}px)`;
+        }
+        setTimeout(() => editor.aceEditor.resize(), 10);
+      }
+    });
+    observer.observe(editorWindow);
+  }
+  fetch('/data')
+    .then(res => res.json())
+    .then(data => {
+      editor.set(data);
+      setupEditorResize(); // 初始化尺寸监听
+    })
+    .catch(() => {
+      editor.set(initialData);
+      setupEditorResize();
+    });
 
     // 保存数据
     function saveData() {
