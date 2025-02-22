@@ -84,7 +84,27 @@
         background: transparent;
         z-index: 1;
     }
+    button {
+      padding: 8px 16px;
+      margin-right: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
 
+    button.active {
+      background-color: #4CAF50;
+    }
+
+    button.active:hover {
+      background-color: #45a049;
+    }
   </style>
 </head>
 <body>
@@ -92,7 +112,7 @@
     <button onclick="saveData()">Save</button>
     <button onclick="playAnimation()">Play</button>
     <button onclick="exportVideo()">Export Video</button> <!-- 新增按钮 -->
-    <button onclick="toggleEditorWindow()">Toggle Editor</button> <!-- 新增切换按钮 -->
+    <button id="toggleEditorBtn" onclick="toggleEditorWindow()">Toggle Editor</button>
   </div>
   
   <div class="window" id="editorWindow" style="left: 20px; top: 60px">
@@ -124,13 +144,16 @@
   <script>
     function toggleEditorWindow() {
       const editorWindow = document.getElementById('editorWindow');
+      const btn = document.getElementById('toggleEditorBtn');
       const currentDisplay = window.getComputedStyle(editorWindow).display;
       
       if (currentDisplay === 'none') {
         editorWindow.style.display = 'block';
         windowManager.bringToFront(editorWindow);
+        btn.classList.add('active');
       } else {
         editorWindow.style.display = 'none';
+        btn.classList.remove('active');
       }
     }
 
@@ -251,6 +274,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // 注册动态创建的窗口（如果有）
   const videoWindow = document.getElementById('videoWindow');
   if (videoWindow) windowManager.registerWindow(videoWindow);
+
+  
+  const editorWindow = document.getElementById('editorWindow');
+  const toggleBtn = document.getElementById('toggleEditorBtn');
+  if (window.getComputedStyle(editorWindow).display !== 'none') {
+    toggleBtn.classList.add('active');
+  }
 });
     let currentVideoUrl = null;
     function showVideoWindow() {
