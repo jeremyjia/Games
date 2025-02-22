@@ -92,13 +92,17 @@
     <button onclick="saveData()">Save</button>
     <button onclick="playAnimation()">Play</button>
     <button onclick="exportVideo()">Export Video</button> <!-- 新增按钮 -->
+    <button onclick="toggleEditorWindow()">Toggle Editor</button> <!-- 新增切换按钮 -->
   </div>
   
-  <!-- 可拖动窗口结构 -->
   <div class="window" id="editorWindow" style="left: 20px; top: 60px">
-    <div class="window-header">JSON Editor (拖动我)</div>
+    <div class="window-header">
+      JSON Editor 
+      <span class="window-close">×</span>
+    </div>
     <div class="window-content" id="editor"></div>
   </div>
+
 
   <div id="container">
     <canvas id="canvas"></canvas>
@@ -118,6 +122,18 @@
 
   <script src="https://cdn.jsdelivr.net/npm/jsoneditor@9.5.6/dist/jsoneditor.min.js"></script>
   <script>
+    function toggleEditorWindow() {
+      const editorWindow = document.getElementById('editorWindow');
+      const currentDisplay = window.getComputedStyle(editorWindow).display;
+      
+      if (currentDisplay === 'none') {
+        editorWindow.style.display = 'block';
+        windowManager.bringToFront(editorWindow);
+      } else {
+        editorWindow.style.display = 'none';
+      }
+    }
+
     // 统一窗口管理逻辑
 class WindowManager {
   constructor() {
@@ -151,6 +167,7 @@ class WindowManager {
     const closeBtn = windowElement.querySelector('.window-close');
     if (closeBtn) {
       closeBtn.addEventListener('click', () => {
+        e.stopPropagation(); // 防止触发拖动事件
         windowElement.style.display = 'none';
       });
     }
