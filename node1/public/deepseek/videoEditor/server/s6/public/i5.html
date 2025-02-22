@@ -507,32 +507,36 @@ function addExample2() {
       }
     }
 
+    
     function generateSceneButtons() {
-  const container = document.getElementById('id_4_scene_list');
-  container.innerHTML = '';
-  
-  const data = editor.get();
-  if (!data.scenes) return;
+      const container = document.getElementById('id_4_scene_list');
+      container.innerHTML = '';
+      
+      const data = editor.get();
+      if (!data.scenes) return;
 
-  data.scenes.forEach((scene, index) => {
-    const btn = document.createElement('button');
-    btn.className = 'scene-btn';
-    btn.textContent = `场景 ${index + 1}`;
-    btn.title = scene.name || `未命名场景 ${index + 1}`;
-    
-    btn.onclick = () => {
-      // 切换场景时停止播放
-      if (isPlaying) stopAnimation();
-      renderScene(scene);
-      // 移除所有激活状态
-      document.querySelectorAll('.scene-btn').forEach(b => b.classList.remove('active'));
-      // 设置当前激活按钮
-      btn.classList.add('active');
-    };
-    
-    container.appendChild(btn);
-  });
-}
+      data.scenes.forEach((_, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'scene-btn';
+        btn.textContent = `场景 ${index + 1}`;
+        
+        btn.onclick = () => {
+          // 从当前编辑器数据获取最新场景
+          const currentData = editor.get();
+          const scene = currentData.scenes[index];
+          if (!scene) return;
+          
+          if (isPlaying) stopAnimation();
+          renderScene(scene);
+          
+          document.querySelectorAll('.scene-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        };
+        
+        container.appendChild(btn);
+      });
+    }
+
 
     let audioElement = null;
     // 统一窗口管理逻辑
@@ -652,37 +656,40 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 初始化JSON编辑器
     const container = document.getElementById('editor');
-    const options = { mode: 'code' };
+    const options = {
+      mode: 'code',
+      onChange: () => { // 改用onChange回调
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          generateSceneButtons();
+        }, 500);
+      }
+    };
     editor = new JSONEditor(container, options);
-    fetch('/data')
-    .then(res => res.json())
-    .then(data => {
-      editor.set(data);
-      setupEditorResize();
-      generateSceneButtons();
-    })
-    .catch(() => {
-      editor.set(initialData);
-      setupEditorResize();
-      generateSceneButtons();
-    });
-
-    editor.on('change', () => {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-      generateSceneButtons();
-    }, 500);
-  });
-    // 注册动态创建的窗口（如果有）
-    const videoWindow = document.getElementById('videoWindow');
-    if (videoWindow) windowManager.registerWindow(videoWindow);
-
     
-    const editorWindow = document.getElementById('editorWindow');
-    const toggleBtn = document.getElementById('toggleEditorBtn');
-    if (window.getComputedStyle(editorWindow).display !== 'none') {
-      toggleBtn.classList.add('active');
-    }
+    fetch('/data')
+      .then(res => res.json())
+      .then(data => {
+        editor.set(data);
+        setupEditorResize();
+        generateSceneButtons();
+      })
+      .catch(() => {
+        editor.set(initialData);
+        setupEditorResize();
+        generateSceneButtons();
+      });
+        
+      // 注册动态创建的窗口（如果有）
+      const videoWindow = document.getElementById('videoWindow');
+      if (videoWindow) windowManager.registerWindow(videoWindow);
+
+      
+      const editorWindow = document.getElementById('editorWindow');
+      const toggleBtn = document.getElementById('toggleEditorBtn');
+      if (window.getComputedStyle(editorWindow).display !== 'none') {
+        toggleBtn.classList.add('active');
+      }
   });
 
 
