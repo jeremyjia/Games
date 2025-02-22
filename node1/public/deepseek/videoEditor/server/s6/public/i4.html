@@ -124,12 +124,19 @@
       background: #d0d0d0;
     }
 
+    .c_play_button.active {
+      background-color: #dc3545;
+    }
+
+    .c_play_button.active:hover {
+      background-color: #c82333;
+    }
   </style>
 </head>
 <body>
   <div class="controls">
     <button onclick="saveData()">Save</button>
-    <button onclick="playAnimation()">Play</button>
+    <button class = "c_play_button" id="playButton" onclick="togglePlay()">Play</button>
     <button onclick="exportVideo()">Export Video</button> <!-- 新增按钮 -->
     <button id="toggleEditorBtn" onclick="toggleEditorWindow()">Toggle Editor</button>
   </div>
@@ -714,9 +721,6 @@ function downloadVideo() {
       });
     }
 
-    // 动画渲染和播放逻辑保持原样...
-    // ...（保持原有的renderScene和playAnimation函数不变）
-    
     
     // 动画渲染
     function renderScene(scene) {
@@ -760,58 +764,46 @@ function downloadVideo() {
       });
     }
 
-    // 播放动画
-    function playAnimation(timestamp) {
-      const data = editor.get();
-      const scenes = data.scenes;
-      const fps = data.fps || 30; // 默认30帧
+    let isPlaying = false;
 
-      if (!startTime) {
-        startTime = timestamp;
-        // 初始化音频播放
-        if (data.audio) {
-          // 清理之前的音频
-          if (audioElement) {
-            audioElement.pause();
-            audioElement = null;
-          }
-          audioElement = new Audio(data.audio);
-          audioElement.loop = true; // 循环播放
-          audioElement.play().catch(e => console.error('音频播放失败:', e));
-        }
+    function togglePlay() {
+      if (isPlaying) {
+        stopAnimation();
+      } else {
+        playAnimation();
       }
-      
-      const elapsed = timestamp - startTime;
-      const frameDuration = 1000 / fps;
-      const totalDuration = scenes.reduce((acc, scene) => 
-        acc + (scene.duration * frameDuration), 0);
-      
-      const currentTime = elapsed % totalDuration;
-      
-      let accumulated = 0;
-      let currentScene = scenes[0];
-      
-      for (const scene of scenes) {
-        accumulated += scene.duration * frameDuration;
-        if (currentTime < accumulated) {
-          currentScene = scene;
-          break;
-        }
-      }
-
-      renderScene(currentScene);
-      animationFrame = requestAnimationFrame(playAnimation);
+      updateButtonState();
     }
 
+    function updateButtonState() {
+      const btn = document.getElementById('playButton');
+      btn.textContent = isPlaying ? 'Stop' : 'Play';
+      btn.classList.toggle('active', isPlaying);
+    }
+    
+    function playAnimation() {
+      if (!isPlaying) {
+        isPlaying = true;
+        updateButtonState();
+        startTime = null;
+        animationFrame = requestAnimationFrame(animate);
+      }
+    }
+
+    
     function stopAnimation() {
-      cancelAnimationFrame(animationFrame);
-      startTime = null;
-      // 停止音频
-      if (audioElement) {
-        audioElement.pause();
-        audioElement.currentTime = 0;
+      if (isPlaying) {
+        isPlaying = false;
+        updateButtonState();
+        cancelAnimationFrame(animationFrame);
+        startTime = null;
+        if (audioElement) {
+          audioElement.pause();
+          audioElement.currentTime = 0;
+        }
       }
     }
+
     function exportVideo() {
   const data = editor.get();
   const btn = event.target;
