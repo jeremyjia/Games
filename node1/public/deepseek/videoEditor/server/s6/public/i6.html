@@ -6,6 +6,14 @@
   <link href="https://cdn.jsdelivr.net/npm/jsoneditor@9.5.6/dist/jsoneditor.min.css" rel="stylesheet">
   <style>
     .window {
+      transition: box-shadow 0.2s, opacity 0.2s;
+    }
+    .window.active {
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      opacity: 0.95;
+    }
+
+    .window {
       position: absolute;
       background: white;
       border: 1px solid #ccc;
@@ -621,17 +629,24 @@ const elementHandlers = {
     }
   }
 };
-// 渲染选中状态
+
 elementHandlers.circle.drawSelection = (ctx, element) => {
   ctx.strokeStyle = '#00ff00';
+  ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.arc(element.x, element.y, element.radius, 0, Math.PI*2);
   ctx.stroke();
-  // 绘制控制点
-  ctx.fillStyle = 'red';
+  
+  // 绘制调整控制点
+  ctx.fillStyle = '#ff0000';
   ctx.beginPath();
   ctx.arc(element.x + element.radius, element.y, 5, 0, Math.PI*2);
   ctx.fill();
+};
+elementHandlers.circle.contains = (element, x, y) => {
+  const dx = x - element.x;
+  const dy = y - element.y;
+  return dx*dx + dy*dy <= element.radius*element.radius + 100; // 增加检测容差
 };
 // 新增事件监听
 canvas.addEventListener('mousedown', handleCanvasMouseDown);
@@ -641,132 +656,145 @@ document.addEventListener('keydown', handleKeyDown);
  
 let workingData = null; // 新增临时数据变量
  
+ 
 function handleCanvasMouseDown(e) {
+  if (isPlaying) {
+    alert('请先停止播放再进行编辑');
+    return;
+  }
   if (!isPlaying) {
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
-    workingData = JSON.parse(JSON.stringify(editor.get())); // 深拷贝当前数据
+    workingData = JSON.parse(JSON.stringify(editor.get()));
     const currentScene = workingData.scenes[currentSceneIndex];
     
-    // 查找点击的元素
+    // 优先检测控制点
+    if (selectedElement) {
+      isResizingElement = checkControlPoint(selectedElement, x, y);
+      if (isResizingElement) {
+        dragStartX = x;
+        dragStartY = y;
+        originalElementState = JSON.parse(JSON.stringify(selectedElement));
+        return;
+      }
+    }
+
+    // 检测元素点击
     for (let i = currentScene.elements.length - 1; i >= 0; i--) {
       const element = currentScene.elements[i];
       const handler = elementHandlers[element.type];
-      if (handler && handler.contains(element, x, y)) {
+      if (handler?.contains(element, x, y)) {
         selectedElement = element;
         originalElementState = JSON.parse(JSON.stringify(element));
+        isDraggingElement = true;
         dragStartX = x;
         dragStartY = y;
         
-        // 检查控制点...
+        // 立即渲染选中状态
         renderScene(currentScene);
         return;
       }
     }
+    
+    // 点击空白处取消选择
     selectedElement = null;
     renderScene(currentScene);
   }
 }
-
+ 
 
 function handleCanvasMouseMove(e) {
-  if ((isDraggingElement || isResizingElement) && selectedElement) {
-    const x = e.clientX - canvas.getBoundingClientRect().left;
-    const y = e.clientY - canvas.getBoundingClientRect().top;
-
-    if (isDraggingElement) {
-      const dx = x - dragStartX;
-      const dy = y - dragStartY;
-      // 移动元素
-      switch(selectedElement.type) {
-        case 'circle':
-          selectedElement.x += dx;
-          selectedElement.y += dy;
-          break;
-        case 'triangle':
-          selectedElement.x1 += dx;
-          selectedElement.y1 += dy;
-          selectedElement.x2 += dx;
-          selectedElement.y2 += dy;
-          selectedElement.x3 += dx;
-          selectedElement.y3 += dy;
-          break;
-        case 'line':
-          selectedElement.x1 += dx;
-          selectedElement.y1 += dy;
-          selectedElement.x2 += dx;
-          selectedElement.y2 += dy;
-          break;
-      }
-    } else if (isResizingElement) {
-      // 调整元素大小
-      switch(selectedElement.type) {
-        case 'circle':
-          selectedElement.radius = Math.hypot(x - selectedElement.x, y - selectedElement.y);
-          break;
-        case 'line':
-          // 判断哪个端点被拖动
-          const d1 = Math.hypot(x - selectedElement.x1, y - selectedElement.y1);
-          const d2 = Math.hypot(x - selectedElement.x2, y - selectedElement.y2);
-          if (d1 < d2) {
-            selectedElement.x1 = x;
-            selectedElement.y1 = y;
-          } else {
-            selectedElement.x2 = x;
-            selectedElement.y2 = y;
-          }
-          break;
-      }
+  if (isDraggingElement && selectedElement) {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const deltaX = x - dragStartX;
+    const deltaY = y - dragStartY;
+    
+    switch(selectedElement.type) {
+      case 'circle':
+        selectedElement.x += deltaX;
+        selectedElement.y += deltaY;
+        break;
+      case 'line':
+        selectedElement.x1 += deltaX;
+        selectedElement.y1 += deltaY;
+        selectedElement.x2 += deltaX;
+        selectedElement.y2 += deltaY;
+        break;
+      case 'triangle':
+        selectedElement.x1 += deltaX;
+        selectedElement.y1 += deltaY;
+        selectedElement.x2 += deltaX;
+        selectedElement.y2 += deltaY;
+        selectedElement.x3 += deltaX;
+        selectedElement.y3 += deltaY;
+        break;
     }
-
+    
     dragStartX = x;
     dragStartY = y;
-    renderScene(workingData.scenes[currentSceneIndex]); // 使用临时数据渲染
+    renderScene(workingData.scenes[currentSceneIndex]);
   }
 }
+
+
 function handleCanvasMouseUp() {
+  if (selectedElement) {
+    const data = editor.get();
+    editor.update(data);
+    saveData();
+  }
   isDraggingElement = false;
   isResizingElement = false;
-  if (selectedElement && originalElementState) {
-    editor.set(workingData); // 更新编辑器数据
-    saveData();
-    workingData = null; // 清除临时数据
-  }
 }
+
 
 function handleKeyDown(e) {
   if (e.key === 'Delete' && selectedElement) {
     const data = editor.get();
     const currentScene = data.scenes[currentSceneIndex];
-    const index = currentScene.elements.indexOf(selectedElement);
+    const index = currentScene.elements.findIndex(el => el === selectedElement);
+    
     if (index !== -1) {
       currentScene.elements.splice(index, 1);
-      editor.set(data);
-      saveData();
       selectedElement = null;
+      editor.update(data);
       renderScene(currentScene);
+      saveData();
     }
   }
 }
 
+
 function checkControlPoint(element, x, y) {
-  const threshold = 5;
+  const threshold = 8; // 增大检测范围
   switch(element.type) {
     case 'circle':
-      const controlX = element.x + element.radius;
-      return Math.hypot(x - controlX, y - element.y) < threshold;
+      return Math.abs(
+        Math.hypot(x - (element.x + element.radius), y - element.y) - element.radius
+      ) < threshold;
+      
     case 'line':
-      return Math.hypot(x - element.x1, y - element.y1) < threshold || 
-             Math.hypot(x - element.x2, y - element.y2) < threshold;
+      const d1 = Math.hypot(x - element.x1, y - element.y1);
+      const d2 = Math.hypot(x - element.x2, y - element.y2);
+      this.resizingEnd = d1 < d2 ? 'x1y1' : 'x2y2';
+      return Math.min(d1, d2) < threshold;
+
     case 'triangle':
-      return [element.x1, element.x2, element.x3].some((px, i) => 
-        Math.hypot(x - px, y - [element.y1, element.y2, element.y3][i]) < threshold
-      );
-    default: return false;
+      // 添加三角形顶点检测
+      return ['x1', 'x2', 'x3'].some((prop, i) => {
+        const px = element[prop];
+        const py = element[`y${i+1}`];
+        return Math.hypot(x - px, y - py) < threshold;
+      });
   }
+  return false;
 }
+
 
     function toggleEditorWindow() {
       const editorWindow = document.getElementById('editorWindow');
@@ -974,15 +1002,22 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 
-      let currentVideoUrl = null;
-      function showVideoWindow() {
-    const videoWindow = document.getElementById('videoWindow');
-    videoWindow.style.display = 'block';
-    // 将视频窗口置于最前
-    document.querySelectorAll('.window').forEach(w => w.style.zIndex = 1000);
-    videoWindow.style.zIndex = 1001;
+  let currentVideoUrl = null;
+function registerDynamicWindow() {  // 添加了function关键字
+  document.querySelectorAll('.window').forEach(window => {
+    if (!windowManager.windows.has(window)) {
+      windowManager.registerWindow(window);
+    }
+  });
 }
 
+// 在显示视频窗口时调用
+function showVideoWindow() {
+  const videoWindow = document.getElementById('videoWindow');
+  videoWindow.style.display = 'block';
+  windowManager.registerDynamicWindow();
+  windowManager.bringToFront(videoWindow);
+}
 function cleanupVideo() {
   if (currentVideoUrl) {
     URL.revokeObjectURL(currentVideoUrl);
@@ -1142,10 +1177,12 @@ function renderScene(scene) {
       }
     });
     if (selectedElement) {
+      ctx.save();
+      ctx.globalAlpha = 0.3;
+      ctx.fillStyle = '#00ff00';
       const handler = elementHandlers[selectedElement.type];
-      if (handler && handler.drawSelection) {
-        handler.drawSelection(ctx, selectedElement);
-      }
+      handler?.drawSelection(ctx, selectedElement);
+      ctx.restore();
     }
 
   } catch (error) {
@@ -1241,6 +1278,10 @@ function renderScene(scene) {
       ctx.fillText(`data_fps: ${Math.round(data_fps)}`, 10, 20);
       ctx.fillText(`Scene: ${sceneNumber}`, 10, 30);
       ctx.fillText(`Frame: ${frameNumber}`, 10, 40); // New line
+      if (selectedElement) {
+        ctx.fillText(`Editing: ${selectedElement.type}`, 10, 50);
+      }
+
       ctx.restore();
     }
 
