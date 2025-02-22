@@ -611,7 +611,7 @@ const elementHandlers = {
     contains: (element, x, y) => {
       const dx = x - element.x;
       const dy = y - element.y;
-      return dx*dx + dy*dy <= element.radius*element.radius;
+      return dx*dx + dy*dy <= element.radius*element.radius + 400; // 增加检测容差
     },
     drawSelection: (ctx, element) => {
       ctx.strokeStyle = '#00ff00';
@@ -629,14 +629,14 @@ const elementHandlers = {
   },
   triangle: {
     contains: (element, x, y) => {
-      // 使用重心坐标法判断点是否在三角形内
+      // 增加5像素的检测容差
       const area = 0.5 * (-element.y2*element.x3 + element.y1*(-element.x2 + element.x3) 
                    + element.x1*(element.y2 - element.y3) + element.x2*element.y3);
       const s = 1/(2*area)*(element.y1*element.x3 - element.x1*element.y3 
                  + (element.y3 - element.y1)*x + (element.x1 - element.x3)*y);
       const t = 1/(2*area)*(element.x1*element.y2 - element.y1*element.x2 
                  + (element.y1 - element.y2)*x + (element.x2 - element.x1)*y);
-      return s > 0 && t > 0 && (1-s-t) > 0;
+      return s > -0.1 && t > -0.1 && (1-s-t) > -0.1; // 增加容差
     },
     drawSelection: (ctx, element) => {
       ctx.strokeStyle = '#00ff00';
@@ -664,7 +664,7 @@ const elementHandlers = {
   },
   line: {
     contains: (element, x, y) => {
-      // 判断点到线段的距离
+      // 增加10像素的检测容差
       const A = x - element.x1;
       const B = y - element.y1;
       const C = element.x2 - element.x1;
@@ -689,7 +689,7 @@ const elementHandlers = {
 
       const dx = x - xx;
       const dy = y - yy;
-      return Math.sqrt(dx*dx + dy*dy) < 5;
+      return Math.sqrt(dx*dx + dy*dy) < 10; // 增加容差
     },
     drawSelection: (ctx, element) => {
       ctx.strokeStyle = '#00ff00';
@@ -736,64 +736,124 @@ canvas.addEventListener('mouseup', handleCanvasMouseUp);
 document.addEventListener('keydown', handleKeyDown);
   
  
- 
 function handleCanvasMouseDown(e) {
   if (isPlaying) {
     alert('请先停止播放再进行编辑');
     return;
   }
-  if (!isPlaying) {
+  e.preventDefault(); // 阻止默认行为
+  
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  
+  workingData = JSON.parse(JSON.stringify(editor.get()));
+  const currentScene = workingData.scenes[currentSceneIndex];
+  
+  // 优先检测控制点
+  if (selectedElement) {
+    isResizingElement = checkControlPoint(selectedElement, x, y);
+    if (isResizingElement) {
+      dragStartX = x;
+      dragStartY = y;
+      originalElementState = JSON.parse(JSON.stringify(selectedElement));
+      return;
+    }
+  }
+
+  // 检测元素点击（从后向前检测）
+  for (let i = currentScene.elements.length - 1; i >= 0; i--) {
+    const element = currentScene.elements[i];
+    const handler = elementHandlers[element.type];
+    if (handler?.contains(element, x, y)) {
+      selectedElement = element;
+      originalElementState = JSON.parse(JSON.stringify(element));
+      isDraggingElement = true;
+      dragStartX = x;
+      dragStartY = y;
+      
+      // 立即渲染选中状态
+      renderScene(currentScene);
+      return;
+    }
+  }
+  
+  // 点击空白处取消选择
+  selectedElement = null;
+  renderScene(currentScene);
+}
+ // 修改 handleCanvasMouseMove 函数
+function handleCanvasMouseMove(e) {
+  e.preventDefault();
+  
+  if (isResizingElement && selectedElement) {
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
-    workingData = JSON.parse(JSON.stringify(editor.get()));
-    const currentScene = workingData.scenes[currentSceneIndex];
-    
-    // 优先检测控制点
-    if (selectedElement) {
-      isResizingElement = checkControlPoint(selectedElement, x, y);
-      if (isResizingElement) {
-        dragStartX = x;
-        dragStartY = y;
-        originalElementState = JSON.parse(JSON.stringify(selectedElement));
-        return;
-      }
-    }
-
-    // 检测元素点击
-    for (let i = currentScene.elements.length - 1; i >= 0; i--) {
-      const element = currentScene.elements[i];
-      const handler = elementHandlers[element.type];
-      if (handler?.contains(element, x, y)) {
-        selectedElement = element;
-        originalElementState = JSON.parse(JSON.stringify(element));
-        isDraggingElement = true;
-        dragStartX = x;
-        dragStartY = y;
+    // 根据元素类型调整大小
+    switch (selectedElement.type) {
+      case 'circle':
+        // 计算新的半径
+        const dx = x - selectedElement.x;
+        const dy = y - selectedElement.y;
+        selectedElement.radius = Math.sqrt(dx*dx + dy*dy);
+        break;
         
-        // 立即渲染选中状态
-        renderScene(currentScene);
-        return;
-      }
+      case 'line':
+        // 更新对应的端点坐标
+        if (this.resizingEnd === 'x1y1') {
+          selectedElement.x1 = x;
+          selectedElement.y1 = y;
+        } else {
+          selectedElement.x2 = x;
+          selectedElement.y2 = y;
+        }
+        break;
+        
+      case 'triangle':
+        // 找到最近的顶点进行更新
+        const points = [
+          {x: selectedElement.x1, y: selectedElement.y1},
+          {x: selectedElement.x2, y: selectedElement.y2},
+          {x: selectedElement.x3, y: selectedElement.y3}
+        ];
+        
+        // 找到距离最近的顶点
+        let minDist = Infinity;
+        let closestPoint = null;
+        points.forEach((p, i) => {
+          const dist = Math.hypot(x - p.x, y - p.y);
+          if (dist < minDist) {
+            minDist = dist;
+            closestPoint = i;
+          }
+        });
+        
+        // 更新对应的顶点坐标
+        if (closestPoint !== null && minDist < 20) {
+          const prop = `x${closestPoint + 1}`;
+          const yProp = `y${closestPoint + 1}`;
+          selectedElement[prop] = x;
+          selectedElement[yProp] = y;
+        }
+        break;
     }
     
-    // 点击空白处取消选择
-    selectedElement = null;
-    renderScene(currentScene);
+    renderScene(workingData.scenes[currentSceneIndex]);
+    return;
   }
-}
- 
 
-function handleCanvasMouseMove(e) {
+  // 原有拖拽逻辑保持不变
   if (isDraggingElement && selectedElement) {
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const xPos = e.clientX - rect.left;
+    const yPos = e.clientY - rect.top;
     
-    const deltaX = x - dragStartX;
-    const deltaY = y - dragStartY;
-    
+    const deltaX = xPos - dragStartX;
+    const deltaY = yPos - dragStartY;
+
+    // 更新元素位置
     switch(selectedElement.type) {
       case 'circle':
         selectedElement.x += deltaX;
@@ -815,27 +875,30 @@ function handleCanvasMouseMove(e) {
         break;
     }
     
-    dragStartX = x;
-    dragStartY = y;
+    dragStartX = xPos;
+    dragStartY = yPos;
     renderScene(workingData.scenes[currentSceneIndex]);
   }
 }
 
-
+// 修改 handleCanvasMouseUp 函数
 function handleCanvasMouseUp() {
   if (selectedElement) {
+    // 检查是否有修改
+    const original = JSON.stringify(originalElementState);
+    const current = JSON.stringify(selectedElement);
+    
+    if (original !== current) {
       editor.update(workingData);
-      saveData(); // 保存最新数据
+      saveData();
+    }
   }
+  
   isDraggingElement = false;
   isResizingElement = false;
-  const data = editor.get();
-  renderScene(data.scenes[currentSceneIndex]);
-  
-  if (selectedElement) {
-    renderScene(workingData.scenes[currentSceneIndex]);
-  }
+  renderScene(workingData.scenes[currentSceneIndex]);
 }
+ 
 
 
 function handleKeyDown(e) {
@@ -1480,5 +1543,5 @@ window.addEventListener('load', () => {
   </script>
 </body>
 </html>
-<!--升级：在画布上可以toggle一个移动窗口，在窗口上可以修改画布背景颜色
+<!--元素控制点无法移动
 -->
