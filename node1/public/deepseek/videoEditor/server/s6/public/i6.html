@@ -627,15 +627,17 @@ canvas.addEventListener('mousedown', handleCanvasMouseDown);
 canvas.addEventListener('mousemove', handleCanvasMouseMove);
 canvas.addEventListener('mouseup', handleCanvasMouseUp);
 document.addEventListener('keydown', handleKeyDown);
-
+ 
+let workingData = null; // 新增临时数据变量
+ 
 function handleCanvasMouseDown(e) {
   if (!isPlaying) {
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
-    const data = editor.get();
-    const currentScene = data.scenes[currentSceneIndex];
+    workingData = JSON.parse(JSON.stringify(editor.get())); // 深拷贝当前数据
+    const currentScene = workingData.scenes[currentSceneIndex];
     
     // 查找点击的元素
     for (let i = currentScene.elements.length - 1; i >= 0; i--) {
@@ -647,23 +649,16 @@ function handleCanvasMouseDown(e) {
         dragStartX = x;
         dragStartY = y;
         
-        // 检查是否点击了控制点
-        if (checkControlPoint(element, x, y)) {
-          isResizingElement = true;
-        } else {
-          isDraggingElement = true;
-        }
-        
+        // 检查控制点...
         renderScene(currentScene);
         return;
       }
     }
-    
-    // 没有选中元素则取消选择
     selectedElement = null;
     renderScene(currentScene);
   }
 }
+
 
 function handleCanvasMouseMove(e) {
   if ((isDraggingElement || isResizingElement) && selectedElement) {
@@ -720,18 +715,16 @@ function handleCanvasMouseMove(e) {
 
     dragStartX = x;
     dragStartY = y;
-    renderScene(editor.get().scenes[currentSceneIndex]);
+    renderScene(workingData.scenes[currentSceneIndex]); // 使用临时数据渲染
   }
 }
-
 function handleCanvasMouseUp() {
   isDraggingElement = false;
   isResizingElement = false;
   if (selectedElement && originalElementState) {
-    // 更新JSON数据
-    const data = editor.get();
-    editor.set(data);
+    editor.set(workingData); // 更新编辑器数据
     saveData();
+    workingData = null; // 清除临时数据
   }
 }
 
