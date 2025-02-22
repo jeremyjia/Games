@@ -204,12 +204,14 @@
 
   <script src="https://cdn.jsdelivr.net/npm/jsoneditor@9.5.6/dist/jsoneditor.min.js"></script>
   <script>
+    let lastFrameTime = null;
+
     function addExample1() {
       const example = {
         "scenes": [
           {
-            "background": "#ffffff",
-            "duration": 60,
+            "background": "#11ffff",
+            "duration": 3,
             "elements": [
               {
                 "type": "circle",
@@ -219,11 +221,25 @@
                 "color": "#ff0000"
               }
             ]
+          },
+          {
+            "background": "#ff11ff",
+            "duration": 4,
+            "elements": [
+              {
+                "type": "circle",
+                "x": 200,
+                "y": 100,
+                "radius": 50,
+                "color": "#ff0000"
+              }
+            ]
           }
         ],
-        "fps": 30
+        "fps": 1
       };
       editor.set(example);
+      stopAnimation(); // 新增：加载示例时停止当前动画
       generateSceneButtons(); // 新增场景列表刷新
     }
 
@@ -259,6 +275,7 @@ function addExample2() {
     "fps": 60
   };
   editor.set(example);
+  stopAnimation(); // 新增：加载示例时停止当前动画
   generateSceneButtons(); // 新增场景列表刷新
 }
     function addExample3() {
@@ -490,6 +507,7 @@ function addExample2() {
           "fps": 1
         };
         editor.set(example);
+        stopAnimation(); // 新增：加载示例时停止当前动画
         generateSceneButtons(); // 新增场景列表刷新
     }
     function toggleEditorWindow() {
@@ -506,7 +524,12 @@ function addExample2() {
         btn.classList.remove('active');
       }
     }
-
+    function updateActiveSceneButton(index) {
+      const buttons = document.querySelectorAll('#id_4_scene_list .scene-btn');
+      buttons.forEach((btn, i) => {
+        btn.classList.toggle('active', i === index);
+      });
+    }
     
     function generateSceneButtons() {
       const container = document.getElementById('id_4_scene_list');
@@ -813,49 +836,56 @@ function downloadVideo() {
 });
 
 function renderScene(scene) {
-  try{
+  if (!scene) return;
+  
+  try {
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     
-    // 设置画布尺寸
     canvas.width = 1024;
     canvas.height = 768;
 
-    // 绘制背景
-    ctx.fillStyle = scene.background;
+    // 验证背景颜色
+    ctx.fillStyle = scene.background || '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 绘制元素
-    scene.elements.forEach(element => {
-      ctx.fillStyle = element.color;
+    (scene.elements || []).forEach(element => {
+      if (!element) return;
       
+      ctx.fillStyle = element.color || '#000000';
+      ctx.strokeStyle = element.color || '#000000';
+
       switch(element.type) {
         case 'circle':
-          ctx.beginPath();
-          ctx.arc(element.x, element.y, element.radius, 0, Math.PI * 2);
-          ctx.fill();
+          if (typeof element.x === 'number' && typeof element.y === 'number') {
+            ctx.beginPath();
+            ctx.arc(element.x, element.y, element.radius || 0, 0, Math.PI * 2);
+            ctx.fill();
+          }
           break;
         case 'triangle':
-          ctx.beginPath();
-          ctx.moveTo(element.x1, element.y1);
-          ctx.lineTo(element.x2, element.y2);
-          ctx.lineTo(element.x3, element.y3);
-          ctx.closePath();
-          ctx.fill();
+          if ([element.x1, element.y1, element.x2, element.y2, element.x3, element.y3].every(Number.isFinite)) {
+            ctx.beginPath();
+            ctx.moveTo(element.x1, element.y1);
+            ctx.lineTo(element.x2, element.y2);
+            ctx.lineTo(element.x3, element.y3);
+            ctx.closePath();
+            ctx.fill();
+          }
           break;
         case 'line':
-          ctx.beginPath();
-          ctx.moveTo(element.x1, element.y1);
-          ctx.lineTo(element.x2, element.y2);
-          ctx.stroke();
+          if ([element.x1, element.y1, element.x2, element.y2].every(Number.isFinite)) {
+            ctx.beginPath();
+            ctx.moveTo(element.x1, element.y1);
+            ctx.lineTo(element.x2, element.y2);
+            ctx.stroke();
+          }
           break;
       }
     });
-
-  }catch (error) {
-    console.error('渲染场景失败:', error);
+  } catch (error) {
+    console.error('渲染错误:', error);
   }
-  
 }
 
     let isPlaying = false;
@@ -876,42 +906,81 @@ function renderScene(scene) {
     }
     
     function animate(timestamp) {
-      if (!startTime) startTime = timestamp;
-      const data = editor.get();
-      
-      // Calculate total duration in frames
-      const totalFrames = data.scenes.reduce((sum, scene) => sum + scene.duration * data.fps, 0);
-      const elapsed = (timestamp - startTime) / 1000; // in seconds
-      let elapsedFrames = elapsed * data.fps;
+  if (!isPlaying) return;
 
-      // Prevent exceeding total frames
-      if (elapsedFrames >= totalFrames) {
-        stopAnimation();
-        return;
-      }
-
-      // Find current scene
-      let accumulated = 0;
-      let currentSceneIndex = 0; // 添加索引追踪
-      let currentScene = data.scenes[0];
-      for (let i = 0; i < data.scenes.length; i++) {
-        const scene = data.scenes[i];
-        const sceneFrames = scene.duration * data.fps;
-        if (elapsedFrames < accumulated + sceneFrames) { // 修改为严格小干
-          currentScene = scene;
-          currentSceneIndex = i;
-          break;
-        }
-        accumulated += sceneFrames;
-      }
-
-      console.log(`Rendering scene ${currentSceneIndex + 1}`); // 调试输出
-      renderScene(currentScene);
-
-      if (isPlaying) {
-        animationFrame = requestAnimationFrame(animate);
-      }
+  try {
+    if (!startTime) startTime = timestamp;
+    const data = editor.get();
+    
+    // 确保数据有效性
+    if (!data.scenes || data.scenes.length === 0 || !data.fps || data.fps <= 0) {
+      stopAnimation();
+      return;
     }
+
+    let currentFPS = 0;
+    if (lastFrameTime !== null) {
+      const delta = timestamp - lastFrameTime;
+      currentFPS = 1000 / delta;
+    }
+    lastFrameTime = timestamp;
+
+    const totalFrames = data.scenes.reduce((sum, scene) => sum + (scene.duration || 0) * data.fps, 0);
+    const elapsed = (timestamp - startTime) / 1000;
+    let elapsedFrames = elapsed * data.fps;
+
+    if (elapsedFrames >= totalFrames) {
+      stopAnimation();
+      return;
+    }
+
+    let accumulated = 0;
+    let currentSceneIndex = 0;
+    let currentScene = data.scenes[0];
+    for (let i = 0; i < data.scenes.length; i++) {
+      const scene = data.scenes[i];
+      const sceneFrames = (scene.duration || 0) * data.fps;
+      if (elapsedFrames < accumulated + sceneFrames) {
+        currentScene = scene;
+        currentSceneIndex = i;
+        break;
+      }
+      accumulated += sceneFrames;
+    }
+
+    updateActiveSceneButton(currentSceneIndex);
+ 
+
+    renderScene(currentScene);
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    drawDebugInfo(ctx, currentFPS, data.fps, currentSceneIndex + 1, Math.floor(elapsedFrames));
+    
+    animationFrame = requestAnimationFrame(animate);
+  } catch (error) {
+    console.error('动画错误:', error);
+    stopAnimation();
+  }
+}
+   
+    function drawDebugInfo(ctx, current_fps, data_fps, sceneNumber, frameNumber) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.fillRect(5, 5, 120, 50); // Increased height to 50
+      
+      ctx.font = '14px Arial';
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = '#fff';
+      
+      ctx.fillText(`current_fps: ${Math.round(current_fps)}`, 10, 10);
+      ctx.fillText(`data_fps: ${Math.round(data_fps)}`, 10, 20);
+      ctx.fillText(`Scene: ${sceneNumber}`, 10, 30);
+      ctx.fillText(`Frame: ${frameNumber}`, 10, 40); // New line
+      ctx.restore();
+    }
+
+
+
 
 function playAnimation() {
   if (!isPlaying) {
@@ -942,6 +1011,7 @@ function stopAnimation() {
     updateButtonState();
     cancelAnimationFrame(animationFrame);
     startTime = null;
+    lastFrameTime = null;  // 重置FPS计算
 
     // Pause and reset audio
     if (audioElement) {
@@ -954,6 +1024,7 @@ function stopAnimation() {
     if (data.scenes.length > 0) {
       currentSceneIndex = 0;
       renderScene(data.scenes[0]);
+      updateActiveSceneButton(0);
     }
   }
 }
