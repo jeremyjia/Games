@@ -284,7 +284,7 @@ function applyBackgroundColor() {
   
   // 更新数据
   currentScene.background = color;
-  editor.update(workingData);
+  editor.set(workingData);
   saveData();
   
   // 立即渲染
@@ -881,16 +881,14 @@ function handleCanvasMouseMove(e) {
   }
 }
 
-// 修改 handleCanvasMouseUp 函数
 function handleCanvasMouseUp() {
   if (selectedElement) {
-    // 检查是否有修改
     const original = JSON.stringify(originalElementState);
     const current = JSON.stringify(selectedElement);
     
     if (original !== current) {
-      editor.update(workingData);
-      saveData();
+      editor.set(workingData); // 同步到JSON编辑器
+      saveData(); // 保存最新的workingData
     }
   }
   
@@ -898,9 +896,6 @@ function handleCanvasMouseUp() {
   isResizingElement = false;
   renderScene(workingData.scenes[currentSceneIndex]);
 }
- 
-
-
 function handleKeyDown(e) {
   if (e.key === 'Delete' && selectedElement) {
     // 使用 workingData 而不是重新获取数据
@@ -1146,9 +1141,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('editor');
     const options = {
       mode: 'code',
-      onChange: () => { // 改用onChange回调
+      onChange: () => { 
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
+          // 同步workingData到编辑器的最新状态
+          workingData = JSON.parse(JSON.stringify(editor.get()));
           generateSceneButtons();
         }, 500);
       }
@@ -1274,15 +1271,14 @@ function downloadVideo() {
 
    
 
-    // 保存数据
-    function saveData() {
-      fetch('/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editor.get())
-      });
-    }
-    
+  function saveData() {
+    fetch('/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(workingData)
+    });
+  }
+      
 [addExample1, addExample2, addExample3].forEach(fn => {
   const original = fn;
   fn = function() {
@@ -1543,5 +1539,5 @@ window.addEventListener('load', () => {
   </script>
 </body>
 </html>
-<!--元素控制点无法移动
+<!--元素控制点移动后，元素没有真的变
 -->
