@@ -780,29 +780,75 @@ function downloadVideo() {
       btn.textContent = isPlaying ? 'Stop' : 'Play';
       btn.classList.toggle('active', isPlaying);
     }
-    
-    function playAnimation() {
-      if (!isPlaying) {
-        isPlaying = true;
-        updateButtonState();
-        startTime = null;
-        animationFrame = requestAnimationFrame(animate);
-      }
+    function animate(timestamp) {
+  if (!startTime) startTime = timestamp;
+  const data = editor.get();
+  const totalFrames = data.scenes.reduce((sum, scene) => sum + scene.duration * data.fps, 0);
+  const elapsedFrames = (timestamp - startTime) * data.fps / 1000;
+
+  if (elapsedFrames >= totalFrames) {
+    stopAnimation();
+    return;
+  }
+
+  let accumulated = 0;
+  let sceneIndex = 0;
+  for (const scene of data.scenes) {
+    const sceneFrames = scene.duration * data.fps;
+    if (elapsedFrames <= accumulated + sceneFrames) {
+      currentSceneIndex = sceneIndex;
+      renderScene(scene);
+      break;
     }
+    accumulated += sceneFrames;
+    sceneIndex++;
+  }
+
+  if (isPlaying) {
+    animationFrame = requestAnimationFrame(animate);
+  }
+}
+function playAnimation() {
+  if (!isPlaying) {
+    const data = editor.get();
+    isPlaying = true;
+    updateButtonState();
+    startTime = null;
+    
+    // 初始化音频播放
+    if (data.audio && !audioElement) {
+      audioElement = new Audio(data.audio);
+      audioElement.addEventListener('canplay', () => {
+        audioElement.play();
+        animationFrame = requestAnimationFrame(animate);
+      });
+    } else {
+      animationFrame = requestAnimationFrame(animate);
+    }
+  }
+}
 
     
-    function stopAnimation() {
-      if (isPlaying) {
-        isPlaying = false;
-        updateButtonState();
-        cancelAnimationFrame(animationFrame);
-        startTime = null;
-        if (audioElement) {
-          audioElement.pause();
-          audioElement.currentTime = 0;
-        }
-      }
+function stopAnimation() {
+  if (isPlaying) {
+    isPlaying = false;
+    updateButtonState();
+    cancelAnimationFrame(animationFrame);
+    startTime = null;
+    
+    if (audioElement) {
+      audioElement.pause();
+      audioElement.currentTime = 0;
     }
+    
+    // 重置到第一帧
+    const data = editor.get();
+    if (data.scenes.length > 0) {
+      currentSceneIndex = 0;
+      renderScene(data.scenes[0]);
+    }
+  }
+}
 
     function exportVideo() {
   const data = editor.get();
