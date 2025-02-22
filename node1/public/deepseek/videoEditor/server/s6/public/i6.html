@@ -167,6 +167,14 @@
   background: #007bff;
   color: white;
 }
+.color-picker-window .window-content {
+  padding: 15px;
+}
+
+#bgColorInput {
+  vertical-align: middle;
+  cursor: pointer;
+}
   </style>
 </head>
 <body>
@@ -175,8 +183,20 @@
     <button class = "c_play_button" id="playButton" onclick="togglePlay()">Play</button>
     <button onclick="exportVideo()">Export Video</button> <!-- 新增按钮 -->
     <button id="toggleEditorBtn" onclick="toggleEditorWindow()">Toggle Editor</button>
+    <button onclick="toggleColorPickerWindow()">调色板</button>
   </div>
-  
+  <div class="window color-picker-window" id="colorPickerWindow" 
+     style="left: 350px; top: 60px; display: none; width: 260px; height: 120px;">
+  <div class="window-header">
+    背景颜色设置
+    <span class="window-close">×</span>
+  </div>
+  <div class="window-content" style="padding: 15px; text-align: center;">
+    <input type="color" id="bgColorInput" style="width: 80px; height: 40px;">
+    <button onclick="applyBackgroundColor()" style="margin-left: 10px;">应用</button>
+    <div style="margin-top: 10px; font-size: 12px; color: #666;">点击颜色选择</div>
+  </div>
+</div>
   <div class="window" id="editorWindow" style="left: 20px; top: 60px">
     <div class="window-header">
       JSON Editor 
@@ -212,6 +232,40 @@
 
   <script src="https://cdn.jsdelivr.net/npm/jsoneditor@9.5.6/dist/jsoneditor.min.js"></script>
   <script>
+    function toggleColorPickerWindow() {
+  const colorWindow = document.getElementById('colorPickerWindow');
+  const isVisible = colorWindow.style.display !== 'none';
+  
+  if (!isVisible) {
+    if (isPlaying) {
+      alert('请先停止播放再进行编辑');
+      return;
+    }
+    // 初始化颜色值为当前场景背景色
+    const currentScene = workingData.scenes[currentSceneIndex];
+    document.getElementById('bgColorInput').value = currentScene.background || '#ffffff';
+  }
+  
+  colorWindow.style.display = isVisible ? 'none' : 'block';
+  windowManager.bringToFront(colorWindow);
+}
+function applyBackgroundColor() {
+  if (isPlaying) {
+    alert('请先停止播放再进行编辑');
+    return;
+  }
+  
+  const color = document.getElementById('bgColorInput').value;
+  const currentScene = workingData.scenes[currentSceneIndex];
+  
+  // 更新数据
+  currentScene.background = color;
+  editor.update(workingData);
+  saveData();
+  
+  // 立即渲染
+  renderScene(currentScene);
+}
     let lastFrameTime = null;
 
     function addExample1() {
@@ -754,6 +808,10 @@ function handleCanvasMouseUp() {
   isResizingElement = false;
   const data = editor.get();
   renderScene(data.scenes[currentSceneIndex]);
+  
+  if (selectedElement) {
+    renderScene(workingData.scenes[currentSceneIndex]);
+  }
 }
 
 
@@ -1441,5 +1499,5 @@ window.addEventListener('load', () => {
   </script>
 </body>
 </html>
-<!--升级：在画布上可编辑对象，选择后移动，删除，改大小
+<!--升级：在画布上可以toggle一个移动窗口，在窗口上可以修改画布背景颜色
 -->
