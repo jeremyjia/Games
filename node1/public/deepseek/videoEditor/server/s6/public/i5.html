@@ -813,44 +813,49 @@ function downloadVideo() {
 });
 
 function renderScene(scene) {
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
-  
-  // 设置画布尺寸
-  canvas.width = 1024;
-  canvas.height = 768;
-
-  // 绘制背景
-  ctx.fillStyle = scene.background;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // 绘制元素
-  scene.elements.forEach(element => {
-    ctx.fillStyle = element.color;
-    ctx.strokeStyle = element.color;
+  try{
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
     
-    switch(element.type) {
-      case 'circle':
-        ctx.beginPath();
-        ctx.arc(element.x, element.y, element.radius, 0, Math.PI * 2);
-        ctx.fill();
-        break;
-      case 'triangle':
-        ctx.beginPath();
-        ctx.moveTo(element.x1, element.y1);
-        ctx.lineTo(element.x2, element.y2);
-        ctx.lineTo(element.x3, element.y3);
-        ctx.closePath();
-        ctx.fill();
-        break;
-      case 'line':
-        ctx.beginPath();
-        ctx.moveTo(element.x1, element.y1);
-        ctx.lineTo(element.x2, element.y2);
-        ctx.stroke();
-        break;
-    }
-  });
+    // 设置画布尺寸
+    canvas.width = 1024;
+    canvas.height = 768;
+
+    // 绘制背景
+    ctx.fillStyle = scene.background;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 绘制元素
+    scene.elements.forEach(element => {
+      ctx.fillStyle = element.color;
+      
+      switch(element.type) {
+        case 'circle':
+          ctx.beginPath();
+          ctx.arc(element.x, element.y, element.radius, 0, Math.PI * 2);
+          ctx.fill();
+          break;
+        case 'triangle':
+          ctx.beginPath();
+          ctx.moveTo(element.x1, element.y1);
+          ctx.lineTo(element.x2, element.y2);
+          ctx.lineTo(element.x3, element.y3);
+          ctx.closePath();
+          ctx.fill();
+          break;
+        case 'line':
+          ctx.beginPath();
+          ctx.moveTo(element.x1, element.y1);
+          ctx.lineTo(element.x2, element.y2);
+          ctx.stroke();
+          break;
+      }
+    });
+
+  }catch (error) {
+    console.error('渲染场景失败:', error);
+  }
+  
 }
 
     let isPlaying = false;
@@ -871,39 +876,42 @@ function renderScene(scene) {
     }
     
     function animate(timestamp) {
-  if (!startTime) startTime = timestamp;
-  const data = editor.get();
-  
-  // Calculate total duration in frames
-  const totalFrames = data.scenes.reduce((sum, scene) => sum + scene.duration * data.fps, 0);
-  const elapsed = (timestamp - startTime) / 1000; // in seconds
-  const elapsedFrames = elapsed * data.fps;
+      if (!startTime) startTime = timestamp;
+      const data = editor.get();
+      
+      // Calculate total duration in frames
+      const totalFrames = data.scenes.reduce((sum, scene) => sum + scene.duration * data.fps, 0);
+      const elapsed = (timestamp - startTime) / 1000; // in seconds
+      let elapsedFrames = elapsed * data.fps;
 
-  if (elapsedFrames >= totalFrames) {
-    stopAnimation();
-    return;
-  }
+      // Prevent exceeding total frames
+      if (elapsedFrames >= totalFrames) {
+        stopAnimation();
+        return;
+      }
 
-  // Find current scene
-  let accumulated = 0;
-  let currentScene = data.scenes[0];
-  for (const scene of data.scenes) {
-    const sceneFrames = scene.duration * data.fps;
-    if (elapsedFrames <= accumulated + sceneFrames) {
-      currentScene = scene;
-      break;
+      // Find current scene
+      let accumulated = 0;
+      let currentSceneIndex = 0; // 添加索引追踪
+      let currentScene = data.scenes[0];
+      for (let i = 0; i < data.scenes.length; i++) {
+        const scene = data.scenes[i];
+        const sceneFrames = scene.duration * data.fps;
+        if (elapsedFrames < accumulated + sceneFrames) { // 修改为严格小干
+          currentScene = scene;
+          currentSceneIndex = i;
+          break;
+        }
+        accumulated += sceneFrames;
+      }
+
+      console.log(`Rendering scene ${currentSceneIndex + 1}`); // 调试输出
+      renderScene(currentScene);
+
+      if (isPlaying) {
+        animationFrame = requestAnimationFrame(animate);
+      }
     }
-    accumulated += sceneFrames;
-  }
-
-  // Render current scene
-  renderScene(currentScene);
-
-  // Continue animation if still playing
-  if (isPlaying) {
-    animationFrame = requestAnimationFrame(animate);
-  }
-}
 
 function playAnimation() {
   if (!isPlaying) {
