@@ -744,12 +744,13 @@ function handleCanvasMouseMove(e) {
 
 function handleCanvasMouseUp() {
   if (selectedElement) {
-    const data = editor.get();
-    editor.update(data);
-    saveData();
+      editor.update(workingData);
+      saveData(); // 保存最新数据
   }
   isDraggingElement = false;
   isResizingElement = false;
+  const data = editor.get();
+  renderScene(data.scenes[currentSceneIndex]);
 }
 
 
