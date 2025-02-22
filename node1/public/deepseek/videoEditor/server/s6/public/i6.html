@@ -621,7 +621,18 @@ const elementHandlers = {
     }
   }
 };
-
+// 渲染选中状态
+elementHandlers.circle.drawSelection = (ctx, element) => {
+  ctx.strokeStyle = '#00ff00';
+  ctx.beginPath();
+  ctx.arc(element.x, element.y, element.radius, 0, Math.PI*2);
+  ctx.stroke();
+  // 绘制控制点
+  ctx.fillStyle = 'red';
+  ctx.beginPath();
+  ctx.arc(element.x + element.radius, element.y, 5, 0, Math.PI*2);
+  ctx.fill();
+};
 // 新增事件监听
 canvas.addEventListener('mousedown', handleCanvasMouseDown);
 canvas.addEventListener('mousemove', handleCanvasMouseMove);
@@ -662,13 +673,12 @@ function handleCanvasMouseDown(e) {
 
 function handleCanvasMouseMove(e) {
   if ((isDraggingElement || isResizingElement) && selectedElement) {
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const dx = x - dragStartX;
-    const dy = y - dragStartY;
+    const x = e.clientX - canvas.getBoundingClientRect().left;
+    const y = e.clientY - canvas.getBoundingClientRect().top;
 
     if (isDraggingElement) {
+      const dx = x - dragStartX;
+      const dy = y - dragStartY;
       // 移动元素
       switch(selectedElement.type) {
         case 'circle':
@@ -694,9 +704,7 @@ function handleCanvasMouseMove(e) {
       // 调整元素大小
       switch(selectedElement.type) {
         case 'circle':
-          const mx = selectedElement.x;
-          const my = selectedElement.y;
-          selectedElement.radius = Math.sqrt((x - mx)**2 + (y - my)**2);
+          selectedElement.radius = Math.hypot(x - selectedElement.x, y - selectedElement.y);
           break;
         case 'line':
           // 判断哪个端点被拖动
@@ -747,16 +755,17 @@ function checkControlPoint(element, x, y) {
   const threshold = 5;
   switch(element.type) {
     case 'circle':
-      return Math.hypot(x - (element.x + element.radius), y - element.y) < threshold;
+      const controlX = element.x + element.radius;
+      return Math.hypot(x - controlX, y - element.y) < threshold;
     case 'line':
       return Math.hypot(x - element.x1, y - element.y1) < threshold || 
              Math.hypot(x - element.x2, y - element.y2) < threshold;
     case 'triangle':
-      return Math.hypot(x - element.x1, y - element.y1) < threshold ||
-             Math.hypot(x - element.x2, y - element.y2) < threshold ||
-             Math.hypot(x - element.x3, y - element.y3) < threshold;
+      return [element.x1, element.x2, element.x3].some((px, i) => 
+        Math.hypot(x - px, y - [element.y1, element.y2, element.y3][i]) < threshold
+      );
+    default: return false;
   }
-  return false;
 }
 
     function toggleEditorWindow() {
