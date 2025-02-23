@@ -183,12 +183,12 @@ echo     const touchEndX = e.touches[0].clientX; >> snake.js
 echo     const touchEndY = e.touches[0].clientY; >> snake.js
 echo     const dx = touchEndX - this.touchStartX; >> snake.js
 echo     const dy = touchEndY - this.touchStartY; >> snake.js
-echo     if (Math.abs(dx) > Math.abs(dy)) { >> snake.js
-echo       if (dx > 0 && this.direction !== 'left') this.direction = 'right'; >> snake.js
-echo       else if (dx < 0 && this.direction !== 'right') this.direction = 'left'; >> snake.js
+echo     if (Math.abs(dx) ^> Math.abs(dy)) { >> snake.js
+echo       if (dx ^> 0 ^&^& this.direction !== 'left') this.direction = 'right'; >> snake.js
+echo       else if (dx < 0 ^&^& this.direction !== 'right') this.direction = 'left'; >> snake.js
 echo     } else { >> snake.js
-echo       if (dy > 0 && this.direction !== 'up') this.direction = 'down'; >> snake.js
-echo       else if (dy < 0 && this.direction !== 'down') this.direction = 'up'; >> snake.js
+echo       if (dy ^> 0 ^&^& this.direction !== 'up') this.direction = 'down'; >> snake.js
+echo       else if (dy < 0 ^&^& this.direction !== 'down') this.direction = 'up'; >> snake.js
 echo     } >> snake.js
 echo   } >> snake.js
 
@@ -200,13 +200,13 @@ echo       case 'down': head.y++; break; >> snake.js
 echo       case 'left': head.x--; break; >> snake.js
 echo       case 'right': head.x++; break; >> snake.js
 echo     } >> snake.js
-echo     if (head.x < 0 || head.x >= this.tileCount || head.y < 0 || head.y >= this.tileCount || this.checkCollision(head)) { >> snake.js
+echo     if (head.x ^< 0 ^|^| head.x ^>= this.tileCount ^|^| head.y ^< 0 ^|^| head.y ^>= this.tileCount ^|^| this.checkCollision(head)) { >> snake.js
 echo       clearInterval(this.gameLoop); >> snake.js
 echo       alert('Game Over! Score: ' + this.score); >> snake.js
 echo       return; >> snake.js
 echo     } >> snake.js
 echo     this.snake.unshift(head); >> snake.js
-echo     if (head.x === this.food.x && head.y === this.food.y) { >> snake.js
+echo     if (head.x === this.food.x ^&^& head.y === this.food.y) { >> snake.js
 echo       this.score += 10; >> snake.js
 echo       this.generateFood(); >> snake.js
 echo     } else { >> snake.js
@@ -216,7 +216,7 @@ echo     this.draw(); >> snake.js
 echo   } >> snake.js
 
 echo   checkCollision(head) { >> snake.js
-echo     return this.snake.some((segment, index) =^> index !== 0 && segment.x === head.x && segment.y === head.y); >> snake.js
+echo     return this.snake.some((segment, index) =^> index !== 0 ^&^& segment.x === head.x ^&^& segment.y === head.y); >> snake.js
 echo   } >> snake.js
 
 echo   generateFood() { >> snake.js
@@ -224,7 +224,7 @@ echo     this.food = { >> snake.js
 echo       x: Math.floor(Math.random() * this.tileCount), >> snake.js
 echo       y: Math.floor(Math.random() * this.tileCount) >> snake.js
 echo     }; >> snake.js
-echo     while (this.snake.some(segment =^> segment.x === this.food.x && segment.y === this.food.y)) { >> snake.js
+echo     while (this.snake.some(segment =^> segment.x === this.food.x ^&^& segment.y === this.food.y)) { >> snake.js
 echo       this.food = { >> snake.js
 echo         x: Math.floor(Math.random() * this.tileCount), >> snake.js
 echo         y: Math.floor(Math.random() * this.tileCount) >> snake.js
