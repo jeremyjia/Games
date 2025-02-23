@@ -35,9 +35,10 @@ cd js
 echo class AppClass { > appClass.js
 echo   static currentWindows = {}; >> appClass.js
  
-echo   static createWindow(content) { >> appClass.js
+echo   static createWindow(id, content) { >> appClass.js
 echo     const win = document.createElement('div'); >> appClass.js
 echo     win.className = 'draggable-window'; >> appClass.js
+echo     win.dataset.windowId = id; >> appClass.js
 echo     const left = Math.floor( Math.random() * (window.innerWidth - 300) ) + 50; >> appClass.js
 echo     const top = Math.floor( Math.random() * (window.innerHeight - 200) ) + 50; >> appClass.js
 echo     win.style.left = `^${left}px`; >> appClass.js
@@ -76,8 +77,11 @@ echo     }); >> appClass.js
 
 echo     // 关闭按钮逻辑 >> appClass.js
 echo     win.querySelector('.close-btn').addEventListener('click', () =^> { >> appClass.js
+echo       const id = win.dataset.windowId; >> appClass.js
 echo       win.remove(); >> appClass.js
-echo       if (AppClass.currentWindows[id]) delete AppClass.currentWindows[id]; >> appClass.js
+echo       if (AppClass.currentWindows[id]) { >> appClass.js
+echo         delete AppClass.currentWindows[id]; >> appClass.js
+echo       } >> appClass.js
 echo     }); >> appClass.js
 
 echo     return win; >> appClass.js
@@ -85,10 +89,10 @@ echo   } >> appClass.js
 
 echo   static toggleWindow(id, content) { >> appClass.js
 echo     if (AppClass.currentWindows[id]) { >> appClass.js
-echo       AppClass.currentWindows[id].remove(); >> appClass.js
-echo       delete AppClass.currentWindows[id]; >> appClass.js
+echo       const win = AppClass.currentWindows[id]; >> appClass.js
+echo       win.style.display = win.style.display === 'none' ? 'block' : 'none'; >> appClass.js
 echo     } else { >> appClass.js
-echo       const win = AppClass.createWindow(content); >> appClass.js
+echo       const win = AppClass.createWindow(id, content); >> appClass.js
 echo       AppClass.currentWindows[id] = win; >> appClass.js
 echo     } >> appClass.js
 echo   } >> appClass.js
