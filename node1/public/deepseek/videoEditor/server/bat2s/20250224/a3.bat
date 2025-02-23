@@ -34,7 +34,7 @@ mkdir js
 cd js
 echo class AppClass { > appClass.js
 echo   static currentWindow = null; >> appClass.js
-echo >> appClass.js
+ 
 echo   static createWindow(content) { >> appClass.js
 echo     if (AppClass.currentWindow) { >> appClass.js
 echo       AppClass.currentWindow.remove(); >> appClass.js
