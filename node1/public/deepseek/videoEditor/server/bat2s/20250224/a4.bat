@@ -157,9 +157,9 @@ echo     this.bindEvents(); >> snake.js
 echo   } >> snake.js
 
 echo   bindEvents() { >> snake.js
-echo     document.addEventListener('keydown', (e) => this.handleKey(e)); >> snake.js
-echo     this.canvas.addEventListener('touchstart', (e) => this.handleTouchStart(e), false); >> snake.js
-echo     this.canvas.addEventListener('touchmove', (e) => this.handleTouchMove(e), false); >> snake.js
+echo     document.addEventListener('keydown', (e) =^> this.handleKey(e)); >> snake.js
+echo     this.canvas.addEventListener('touchstart', (e) =^> this.handleTouchStart(e), false); >> snake.js
+echo     this.canvas.addEventListener('touchmove', (e) =^> this.handleTouchMove(e), false); >> snake.js
 echo   } >> snake.js
 
 echo   handleKey(e) { >> snake.js
@@ -216,7 +216,7 @@ echo     this.draw(); >> snake.js
 echo   } >> snake.js
 
 echo   checkCollision(head) { >> snake.js
-echo     return this.snake.some((segment, index) => index !== 0 && segment.x === head.x && segment.y === head.y); >> snake.js
+echo     return this.snake.some((segment, index) =^> index !== 0 && segment.x === head.x && segment.y === head.y); >> snake.js
 echo   } >> snake.js
 
 echo   generateFood() { >> snake.js
@@ -224,7 +224,7 @@ echo     this.food = { >> snake.js
 echo       x: Math.floor(Math.random() * this.tileCount), >> snake.js
 echo       y: Math.floor(Math.random() * this.tileCount) >> snake.js
 echo     }; >> snake.js
-echo     while (this.snake.some(segment => segment.x === this.food.x && segment.y === this.food.y)) { >> snake.js
+echo     while (this.snake.some(segment =^> segment.x === this.food.x && segment.y === this.food.y)) { >> snake.js
 echo       this.food = { >> snake.js
 echo         x: Math.floor(Math.random() * this.tileCount), >> snake.js
 echo         y: Math.floor(Math.random() * this.tileCount) >> snake.js
@@ -236,7 +236,7 @@ echo   draw() { >> snake.js
 echo     this.ctx.fillStyle = 'black'; >> snake.js
 echo     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height); >> snake.js
 echo     this.ctx.fillStyle = 'lime'; >> snake.js
-echo     this.snake.forEach(segment => { >> snake.js
+echo     this.snake.forEach(segment =^> { >> snake.js
 echo       this.ctx.fillRect(segment.x * this.gridSize, segment.y * this.gridSize, this.gridSize - 2, this.gridSize - 2); >> snake.js
 echo     }); >> snake.js
 echo     this.ctx.fillStyle = 'red'; >> snake.js
