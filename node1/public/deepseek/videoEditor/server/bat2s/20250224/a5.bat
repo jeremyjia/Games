@@ -132,18 +132,26 @@ echo   static openWindow2() { >> appClass.js
 echo     AppClass.toggleWindow('window2', '^<p^>这是第二个窗口内容^</p^>'); >> appClass.js
 echo   } >> appClass.js
 
-echo   static openWindow3() {  >> appClass.js
-echo     const sg = new SnakeGame();  >> appClass.js
-echo     const win = AppClass.toggleWindow('window3', sg.createUI());  >> appClass.js
+echo   static openWindow3() { >> appClass.js
+echo     const sg = new SnakeGame(); >> appClass.js
+echo     const win = AppClass.toggleWindow('window3', sg.createUI()); >> appClass.js
 echo   } >> appClass.js
 echo } >> appClass.js
 
 REM 生成snake.js
 echo class SnakeGame { > snake.js
 echo   constructor() { >> snake.js
-echo     this.canvasId = 'snakeCanvas-' + Date.now(); >> snake.js
-echo     setTimeout(() =^> { >> snake.js
-echo       this.canvas = document.getElementById(this.canvasId); >> snake.js
+echo     this.canvas = null; >> snake.js
+echo     this.initGame(); >> snake.js
+echo   } >> snake.js
+
+echo   createUI() { >> snake.js
+echo     return '^<canvas id="snakeCanvas" width="400" height="400"^>^</canvas^>'; >> snake.js
+echo   } >> snake.js
+
+echo   initGame() { >> snake.js
+echo     setTimeout(^(^) =^> { >> snake.js
+echo       this.canvas = document.getElementById('snakeCanvas'); >> snake.js
 echo       if (!this.canvas) return; >> snake.js
 echo       this.ctx = this.canvas.getContext('2d'); >> snake.js
 echo       this.gridSize = 20; >> snake.js
@@ -156,13 +164,9 @@ echo         { x: 3, y: 5 } >> snake.js
 echo       ]; >> snake.js
 echo       this.food = { x: 10, y: 10 }; >> snake.js
 echo       this.score = 0; >> snake.js
-echo       this.gameLoop = setInterval(() =^> this.update(), 100); >> snake.js
+echo       this.gameLoop = setInterval(^(^) =^> this.update(), 100); >> snake.js
 echo       this.bindEvents(); >> snake.js
 echo     }, 0); >> snake.js
-echo   } >> snake.js
-
-echo   createUI() { >> snake.js
-echo     return `^<canvas id="^${this.canvasId}" width="400" height="400"^>^</canvas^>`; >> snake.js
 echo   } >> snake.js
 
 echo   bindEvents() { >> snake.js
