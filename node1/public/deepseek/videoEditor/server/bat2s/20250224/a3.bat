@@ -4,22 +4,22 @@ mkdir my-node-server
 cd my-node-server
 mkdir public
 
-REM 生成server.js
-echo const express = require('express'); > server.js
-echo const app = express(); >> server.js
-echo app.use(express.static('public')); >> server.js
-echo const port = 3006; >> server.js
-echo app.listen(port, ^(^) =^> { >> server.js
-echo   console.log(`Server is running on http://localhost:${port}`); >> server.js
-echo }); >> server.js
+REM 生成index.js
+echo const express = require('express'); > index.js
+echo const app = express(); >> index.js
+echo app.use(express.static('public')); >> index.js
+echo const port = 3006; >> index.js
+echo app.listen(port, ^(^) =^> { >> index.js
+echo   console.log(`Server is running on http://localhost:${port}`); >> index.js
+echo }); >> index.js
 
 REM 生成package.json
 echo { > package.json
 echo   "name": "mobile-node-server", >> package.json
 echo   "version": "1.0.0", >> package.json
-echo   "main": "server.js", >> package.json
+echo   "main": "index.js", >> package.json
 echo   "scripts": { >> package.json
-echo     "start": "node server.js" >> package.json
+echo     "start": "node index.js" >> package.json
 echo   }, >> package.json
 echo   "dependencies": { >> package.json
 echo     "express": "^4.18.2" >> package.json
