@@ -28,7 +28,6 @@ echo } >> package.json
 
 REM 生成移动友好主页和JS类
 cd public
- 
 
 REM 生成JavaScript类文件
 mkdir js
@@ -39,6 +38,10 @@ echo   static currentWindows = {}; >> appClass.js
 echo   static createWindow(content) { >> appClass.js
 echo     const win = document.createElement('div'); >> appClass.js
 echo     win.className = 'draggable-window'; >> appClass.js
+echo     const left = Math.floor( Math.random() * (window.innerWidth - 300) ) + 50; >> appClass.js
+echo     const top = Math.floor( Math.random() * (window.innerHeight - 200) ) + 50; >> appClass.js
+echo     win.style.left = `^${left}px`; >> appClass.js
+echo     win.style.top = `^${top}px`; >> appClass.js
 echo     win.innerHTML = ` >> appClass.js
 echo       ^<div class="window-header"^> >> appClass.js
 echo         ^<span^>弹出窗口^</span^> >> appClass.js
@@ -172,6 +175,4 @@ echo ^</body^> >> index.html
 echo ^</html^> >> index.html
 
 REM 返回根目录并安装依赖
-cd ..
-REM npm install
-REM npm start
+cd .. 
