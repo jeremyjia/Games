@@ -225,7 +225,7 @@ echo       case 'down': head.y++; break; >> snake.js
 echo       case 'left': head.x--; break; >> snake.js
 echo       case 'right': head.x++; break; >> snake.js
 echo     } >> snake.js
-echo     if (head.x < 0 ^|^| head.x ^>= this.tileCount ^|^| head.y < 0 ^|^| head.y ^>= this.tileCount ^|^| this.checkCollision(head)) { >> snake.js
+echo     if (head.x ^< 0 ^|^| head.x ^>= this.tileCount ^|^| head.y ^< 0 ^|^| head.y ^>= this.tileCount ^|^| this.checkCollision(head)) { >> snake.js
 echo       this.gameOver(); >> snake.js
 echo       return; >> snake.js
 echo     } >> snake.js
