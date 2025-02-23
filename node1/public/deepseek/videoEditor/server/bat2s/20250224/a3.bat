@@ -34,7 +34,7 @@ mkdir js
 cd js
 echo class AppClass { > appClass.js
 echo   static currentWindows = {}; >> appClass.js
- 
+
 echo   static createWindow(id, content) { >> appClass.js
 echo     const win = document.createElement('div'); >> appClass.js
 echo     win.className = 'draggable-window'; >> appClass.js
@@ -52,36 +52,58 @@ echo       ^<div class="window-content"^>^${content}^</div^> >> appClass.js
 echo     `; >> appClass.js
 echo     document.body.appendChild(win); >> appClass.js
 
-echo     // 窗口拖动逻辑 >> appClass.js
+echo     // 统一的事件处理逻辑 >> appClass.js
 echo     let isDragging = false; >> appClass.js
 echo     let startX, startY, initialX, initialY; >> appClass.js
 echo     const header = win.querySelector('.window-header'); >> appClass.js
 
-echo     header.addEventListener('mousedown', (e) =^> { >> appClass.js
+echo     const startDrag = (clientX, clientY) =^> { >> appClass.js
 echo       isDragging = true; >> appClass.js
-echo       startX = e.clientX; >> appClass.js
-echo       startY = e.clientY; >> appClass.js
+echo       startX = clientX; >> appClass.js
+echo       startY = clientY; >> appClass.js
 echo       initialX = win.offsetLeft; >> appClass.js
 echo       initialY = win.offsetTop; >> appClass.js
+echo     }; >> appClass.js
+
+echo     const moveDrag = (clientX, clientY) =^> { >> appClass.js
+echo       if (!isDragging) return; >> appClass.js
+echo       win.style.left = `^${initialX + clientX - startX}px`; >> appClass.js
+echo       win.style.top = `^${initialY + clientY - startY}px`; >> appClass.js
+echo     }; >> appClass.js
+
+echo     const endDrag = () =^> { >> appClass.js
+echo       isDragging = false; >> appClass.js
+echo     }; >> appClass.js
+
+echo     // 鼠标事件 >> appClass.js
+echo     header.addEventListener('mousedown', (e) =^> { >> appClass.js
+echo       startDrag(e.clientX, e.clientY); >> appClass.js
 echo     }); >> appClass.js
 
 echo     document.addEventListener('mousemove', (e) =^> { >> appClass.js
-echo       if (!isDragging) return; >> appClass.js
-echo       win.style.left = `^${initialX + e.clientX - startX}px`; >> appClass.js
-echo       win.style.top = `^${initialY + e.clientY - startY}px`; >> appClass.js
+echo       moveDrag(e.clientX, e.clientY); >> appClass.js
 echo     }); >> appClass.js
 
-echo     document.addEventListener('mouseup', () =^> { >> appClass.js
-echo       isDragging = false; >> appClass.js
-echo     }); >> appClass.js
+echo     document.addEventListener('mouseup', endDrag); >> appClass.js
+
+echo     // 触摸事件处理 >> appClass.js
+echo     header.addEventListener('touchstart', (e) =^> { >> appClass.js
+echo       e.preventDefault(); >> appClass.js
+echo       startDrag(e.touches[0].clientX, e.touches[0].clientY); >> appClass.js
+echo     }, { passive: false }); >> appClass.js
+
+echo     document.addEventListener('touchmove', (e) =^> { >> appClass.js
+echo       e.preventDefault(); >> appClass.js
+echo       moveDrag(e.touches[0].clientX, e.touches[0].clientY); >> appClass.js
+echo     }, { passive: false }); >> appClass.js
+
+echo     document.addEventListener('touchend', endDrag); >> appClass.js
 
 echo     // 关闭按钮逻辑 >> appClass.js
 echo     win.querySelector('.close-btn').addEventListener('click', () =^> { >> appClass.js
 echo       const id = win.dataset.windowId; >> appClass.js
 echo       win.remove(); >> appClass.js
-echo       if (AppClass.currentWindows[id]) { >> appClass.js
-echo         delete AppClass.currentWindows[id]; >> appClass.js
-echo       } >> appClass.js
+echo       delete AppClass.currentWindows[id]; >> appClass.js
 echo     }); >> appClass.js
 
 echo     return win; >> appClass.js
@@ -107,7 +129,7 @@ echo   } >> appClass.js
 echo } >> appClass.js
 cd ..
 
-REM 生成增强版主页
+REM 生成增强版主页（保持不变）
 echo ^<!DOCTYPE html^> > index.html
 echo ^<html lang="en"^> >> index.html
 echo ^<head^> >> index.html
@@ -179,4 +201,5 @@ echo ^</body^> >> index.html
 echo ^</html^> >> index.html
 
 REM 返回根目录并安装依赖
+cd .. 
 cd .. 
