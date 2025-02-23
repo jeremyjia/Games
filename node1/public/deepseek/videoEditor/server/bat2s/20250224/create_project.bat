@@ -120,8 +120,8 @@ echo module.exports = { generateVideo }; > utils\videoGenerator.js
 
 REM 初始化项目并安装依赖
 cd ..
-call npm init -y
-call npm install express ffmpeg-static fluent-ffmpeg
+REM call npm init -y
+REM call npm install express ffmpeg-static fluent-ffmpeg
 
 echo 项目创建完成！
 echo 请将帧图片（1.jpg, 2.jpg等）放入 frames 目录
