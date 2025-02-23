@@ -111,14 +111,17 @@ echo     }); >> appClass.js
 echo     return win; >> appClass.js
 echo   } >> appClass.js
 
+REM 生成appClass.js（修正后的toggleWindow方法）
 echo   static toggleWindow(id, content) { >> appClass.js
+echo     let win; >> appClass.js
 echo     if (AppClass.currentWindows[id]) { >> appClass.js
-echo       const win = AppClass.currentWindows[id]; >> appClass.js
+echo       win = AppClass.currentWindows[id]; >> appClass.js
 echo       win.style.display = win.style.display === 'none' ? 'block' : 'none'; >> appClass.js
 echo     } else { >> appClass.js
-echo       const win = AppClass.createWindow(id, content); >> appClass.js
+echo       win = AppClass.createWindow(id, content); >> appClass.js
 echo       AppClass.currentWindows[id] = win; >> appClass.js
 echo     } >> appClass.js
+echo     return win; >> appClass.js
 echo   } >> appClass.js
 
 echo   static openWindow1() { >> appClass.js
