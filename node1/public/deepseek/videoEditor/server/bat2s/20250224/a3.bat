@@ -29,17 +29,14 @@ echo } >> package.json
 REM 生成移动友好主页和JS类
 cd public
  
+
 REM 生成JavaScript类文件
 mkdir js
 cd js
 echo class AppClass { > appClass.js
-echo   static currentWindow = null; >> appClass.js
+echo   static currentWindows = {}; >> appClass.js
  
 echo   static createWindow(content) { >> appClass.js
-echo     if (AppClass.currentWindow) { >> appClass.js
-echo       AppClass.currentWindow.remove(); >> appClass.js
-echo       AppClass.currentWindow = null; >> appClass.js
-echo     } >> appClass.js
 echo     const win = document.createElement('div'); >> appClass.js
 echo     win.className = 'draggable-window'; >> appClass.js
 echo     win.innerHTML = ` >> appClass.js
@@ -77,18 +74,28 @@ echo     }); >> appClass.js
 echo     // 关闭按钮逻辑 >> appClass.js
 echo     win.querySelector('.close-btn').addEventListener('click', () =^> { >> appClass.js
 echo       win.remove(); >> appClass.js
-echo       AppClass.currentWindow = null; >> appClass.js
+echo       if (AppClass.currentWindows[id]) delete AppClass.currentWindows[id]; >> appClass.js
 echo     }); >> appClass.js
 
-echo     AppClass.currentWindow = win; >> appClass.js
+echo     return win; >> appClass.js
+echo   } >> appClass.js
+
+echo   static toggleWindow(id, content) { >> appClass.js
+echo     if (AppClass.currentWindows[id]) { >> appClass.js
+echo       AppClass.currentWindows[id].remove(); >> appClass.js
+echo       delete AppClass.currentWindows[id]; >> appClass.js
+echo     } else { >> appClass.js
+echo       const win = AppClass.createWindow(content); >> appClass.js
+echo       AppClass.currentWindows[id] = win; >> appClass.js
+echo     } >> appClass.js
 echo   } >> appClass.js
 
 echo   static openWindow1() { >> appClass.js
-echo     this.createWindow('^<p^>这是第一个窗口内容^</p^>'); >> appClass.js
+echo     AppClass.toggleWindow('window1', '^<p^>这是第一个窗口内容^</p^>'); >> appClass.js
 echo   } >> appClass.js
 
 echo   static openWindow2() { >> appClass.js
-echo     this.createWindow('^<p^>这是第二个窗口内容^</p^>'); >> appClass.js
+echo     AppClass.toggleWindow('window2', '^<p^>这是第二个窗口内容^</p^>'); >> appClass.js
 echo   } >> appClass.js
 echo } >> appClass.js
 cd ..
