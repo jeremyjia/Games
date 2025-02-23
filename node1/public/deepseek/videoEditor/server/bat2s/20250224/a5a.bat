@@ -33,7 +33,7 @@ REM 生成JavaScript类文件
 mkdir js
 cd js
 
-REM 生成appClass.js
+REM 生成appClass.js（更新后的openWindow3方法）
 echo class AppClass { > appClass.js
 echo   static currentWindows = {}; >> appClass.js
 
@@ -111,7 +111,6 @@ echo     }); >> appClass.js
 echo     return win; >> appClass.js
 echo   } >> appClass.js
 
-REM 生成appClass.js（修正后的toggleWindow方法）
 echo   static toggleWindow(id, content) { >> appClass.js
 echo     let win; >> appClass.js
 echo     if (AppClass.currentWindows[id]) { >> appClass.js
@@ -132,37 +131,28 @@ echo   static openWindow2() { >> appClass.js
 echo     AppClass.toggleWindow('window2', '^<p^>这是第二个窗口内容^</p^>'); >> appClass.js
 echo   } >> appClass.js
 
-echo   static openWindow3() {  >> appClass.js
-echo     const sg = new SnakeGame();  >> appClass.js
-echo     const win = AppClass.toggleWindow('window3', sg.createUI());  >> appClass.js
+echo   static openWindow3() { >> appClass.js
+echo     const win = AppClass.toggleWindow('window3', sg.createUI()); >> appClass.js
 echo   } >> appClass.js
 echo } >> appClass.js
 
-REM 生成snake.js
+REM 生成snake.js（添加sg对象）
 echo class SnakeGame { > snake.js
-echo   constructor() { >> snake.js
-echo     this.canvasId = 'snakeCanvas-' + Date.now(); >> snake.js
-echo     setTimeout(() =^> { >> snake.js
-echo       this.canvas = document.getElementById(this.canvasId); >> snake.js
-echo       if (!this.canvas) return; >> snake.js
-echo       this.ctx = this.canvas.getContext('2d'); >> snake.js
-echo       this.gridSize = 20; >> snake.js
-echo       this.tileCount = this.canvas.width / this.gridSize; >> snake.js
-echo       this.direction = 'right'; >> snake.js
-echo       this.snake = [ >> snake.js
-echo         { x: 5, y: 5 }, >> snake.js
-echo         { x: 4, y: 5 }, >> snake.js
-echo         { x: 3, y: 5 } >> snake.js
-echo       ]; >> snake.js
-echo       this.food = { x: 10, y: 10 }; >> snake.js
-echo       this.score = 0; >> snake.js
-echo       this.gameLoop = setInterval(() =^> this.update(), 100); >> snake.js
-echo       this.bindEvents(); >> snake.js
-echo     }, 0); >> snake.js
-echo   } >> snake.js
-
-echo   createUI() { >> snake.js
-echo     return `^<canvas id="^${this.canvasId}" width="400" height="400"^>^</canvas^>`; >> snake.js
+echo   constructor(canvas) { >> snake.js
+echo     this.canvas = canvas; >> snake.js
+echo     this.ctx = canvas.getContext('2d'); >> snake.js
+echo     this.gridSize = 20; >> snake.js
+echo     this.tileCount = canvas.width / this.gridSize; >> snake.js
+echo     this.direction = 'right'; >> snake.js
+echo     this.snake = [ >> snake.js
+echo       { x: 5, y: 5 }, >> snake.js
+echo       { x: 4, y: 5 }, >> snake.js
+echo       { x: 3, y: 5 } >> snake.js
+echo     ]; >> snake.js
+echo     this.food = { x: 10, y: 10 }; >> snake.js
+echo     this.score = 0; >> snake.js
+echo     this.gameLoop = setInterval(() =^> this.update(), 100); >> snake.js
+echo     this.bindEvents(); >> snake.js
 echo   } >> snake.js
 
 echo   bindEvents() { >> snake.js
@@ -253,6 +243,19 @@ echo     this.ctx.fillRect(this.food.x * this.gridSize, this.food.y * this.gridS
 echo   } >> snake.js
 echo } >> snake.js
 
+echo const sg = { >> snake.js
+echo   createUI() { >> snake.js
+echo     const content = '^<canvas id="snakeCanvas" width="400" height="400"^>^</canvas^>'; >> snake.js
+echo     setTimeout(() =^> { >> snake.js
+echo       const canvas = document.getElementById('snakeCanvas'); >> snake.js
+echo       if (canvas) { >> snake.js
+echo         new SnakeGame(canvas); >> snake.js
+echo       } >> snake.js
+echo     }, 0); >> snake.js
+echo     return content; >> snake.js
+echo   } >> snake.js
+echo }; >> snake.js
+
 cd ..
 
 REM 生成增强版主页
@@ -331,4 +334,4 @@ echo ^</html^> >> index.html
 
 REM 返回根目录并安装依赖
 cd .. 
-cd ..
+cd ..  
