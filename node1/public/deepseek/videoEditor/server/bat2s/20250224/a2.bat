@@ -69,16 +69,16 @@ echo       isDragging = false; >> appClass.js
 echo     }); >> appClass.js
  
 echo     // 关闭按钮逻辑 >> appClass.js
-echo     win.querySelector('.close-btn').addEventListener('click', () => { >> appClass.js
+echo     win.querySelector('.close-btn').addEventListener('click', () =^> { >> appClass.js
 echo       win.remove(); >> appClass.js
 echo     }); >> appClass.js
 echo   } >> appClass.js
  
-echo   static openWindow1() { >> appClass.js
+echo   static function openWindow1() { >> appClass.js
 echo     this.createWindow('^<p^>这是第一个窗口内容^</p^>'); >> appClass.js
 echo   } >> appClass.js
  
-echo   static openWindow2() { >> appClass.js
+echo   static function openWindow2() { >> appClass.js
 echo     this.createWindow('^<p^>这是第二个窗口内容^</p^>'); >> appClass.js
 echo   } >> appClass.js
 echo } >> appClass.js
