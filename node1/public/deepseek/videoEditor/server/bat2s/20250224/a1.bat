@@ -9,7 +9,7 @@ echo const express = require('express'); > server.js
 echo const app = express(); >> server.js
 echo app.use(express.static('public')); >> server.js
 echo const port = 3006; >> server.js
-echo app.listen(port, () => { >> server.js
+echo app.listen(port, ^(^) => { >> server.js
 echo   console.log(`Server is running on http://localhost:${port}`); >> server.js
 echo }); >> server.js
 
