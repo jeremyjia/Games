@@ -140,8 +140,8 @@ echo ^<body^> >> index.html
 echo   ^<div class="container"^> >> index.html
 echo     ^<h1^>📱 移动测试就绪^</h1^> >> index.html
 echo     ^<div class="btn-group"^> >> index.html
-echo       ^<button onclick="AppClass.openWindow1()"^>打开窗口1^</button^> >> index.html
-echo       ^<button onclick="AppClass.openWindow2()"^>打开窗口2^</button^> >> index.html
+echo       ^<button onclick="AppClass.openWindow1()"^>win1^</button^> >> index.html
+echo       ^<button onclick="AppClass.openWindow2()"^>win2^</button^> >> index.html
 echo     ^</div^> >> index.html
 echo     ^<p^>恭喜！您的Node.js服务器已在端口3006成功运行。^</p^> >> index.html
 echo     ^<p^>在移动设备访问时请确保：^</p^> >> index.html
