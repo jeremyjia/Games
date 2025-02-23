@@ -136,6 +136,8 @@ echo } >> appClass.js
 REM 生成snake.js（更新版）
 echo class SnakeGame { > snake.js
 echo   constructor() { >> snake.js
+echo     this.tileCount = 20; >> snake.js   
+echo     this.gridSize = 400 / this.tileCount; >> snake.js   
 echo     this.canvas = null; >> snake.js
 echo     this.startBtn = null; >> snake.js
 echo     this.gameLoop = null; >> snake.js
