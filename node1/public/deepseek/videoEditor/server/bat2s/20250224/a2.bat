@@ -44,12 +44,12 @@ echo       ^</div^> >> appClass.js
 echo       ^<div class="window-content"^>${content}^</div^> >> appClass.js
 echo     `; >> appClass.js
 echo     document.body.appendChild(win); >> appClass.js
-echo >> appClass.js
+ 
 echo     // 窗口拖动逻辑 >> appClass.js
 echo     let isDragging = false; >> appClass.js
 echo     let startX, startY, initialX, initialY; >> appClass.js
 echo     const header = win.querySelector('.window-header'); >> appClass.js
-echo >> appClass.js
+ 
 echo     header.addEventListener('mousedown', (e) =^> { >> appClass.js
 echo       isDragging = true; >> appClass.js
 echo       startX = e.clientX; >> appClass.js
@@ -57,27 +57,27 @@ echo       startY = e.clientY; >> appClass.js
 echo       initialX = win.offsetLeft; >> appClass.js
 echo       initialY = win.offsetTop; >> appClass.js
 echo     }); >> appClass.js
-echo >> appClass.js
+ 
 echo     document.addEventListener('mousemove', (e) =^> { >> appClass.js
 echo       if (!isDragging) return; >> appClass.js
 echo       win.style.left = `${initialX + e.clientX - startX}px`; >> appClass.js
 echo       win.style.top = `${initialY + e.clientY - startY}px`; >> appClass.js
 echo     }); >> appClass.js
-echo >> appClass.js
+ 
 echo     document.addEventListener('mouseup', () =^> { >> appClass.js
 echo       isDragging = false; >> appClass.js
 echo     }); >> appClass.js
-echo >> appClass.js
+ 
 echo     // 关闭按钮逻辑 >> appClass.js
 echo     win.querySelector('.close-btn').addEventListener('click', () => { >> appClass.js
 echo       win.remove(); >> appClass.js
 echo     }); >> appClass.js
 echo   } >> appClass.js
-echo >> appClass.js
+ 
 echo   static openWindow1() { >> appClass.js
 echo     this.createWindow('^<p^>这是第一个窗口内容^</p^>'); >> appClass.js
 echo   } >> appClass.js
-echo >> appClass.js
+ 
 echo   static openWindow2() { >> appClass.js
 echo     this.createWindow('^<p^>这是第二个窗口内容^</p^>'); >> appClass.js
 echo   } >> appClass.js
