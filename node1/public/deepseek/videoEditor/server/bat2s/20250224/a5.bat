@@ -9,7 +9,7 @@ echo const express = require('express'); > index.js
 echo const app = express(); >> index.js
 echo app.use(express.static('public')); >> index.js
 echo const port = 3006; >> index.js
-echo app.listen(port, ^(^) => { >> index.js
+echo app.listen(port, ^(^) =^> { >> index.js
 echo   console.log(`Server is running on http://localhost:${port}`); >> index.js
 echo }); >> index.js
 
@@ -151,14 +151,14 @@ echo       { x: 3, y: 5 } >> snake.js
 echo     ]; >> snake.js
 echo     this.food = { x: 10, y: 10 }; >> snake.js
 echo     this.score = 0; >> snake.js
-echo     this.gameLoop = setInterval(() => this.update(), 100); >> snake.js
+echo     this.gameLoop = setInterval(() =^> this.update(), 100); >> snake.js
 echo     this.bindEvents(); >> snake.js
 echo   } >> snake.js
 
 echo   bindEvents() { >> snake.js
-echo     document.addEventListener('keydown', (e) => this.handleKey(e)); >> snake.js
-echo     this.canvas.addEventListener('touchstart', (e) => this.handleTouchStart(e), false); >> snake.js
-echo     this.canvas.addEventListener('touchmove', (e) => this.handleTouchMove(e), false); >> snake.js
+echo     document.addEventListener('keydown', (e) =^> this.handleKey(e)); >> snake.js
+echo     this.canvas.addEventListener('touchstart', (e) =^> this.handleTouchStart(e), false); >> snake.js
+echo     this.canvas.addEventListener('touchmove', (e) =^> this.handleTouchMove(e), false); >> snake.js
 echo   } >> snake.js
 
 echo   handleKey(e) { >> snake.js
@@ -215,7 +215,7 @@ echo     this.draw(); >> snake.js
 echo   } >> snake.js
 
 echo   checkCollision(head) { >> snake.js
-echo     return this.snake.some((segment, index) => index !== 0 ^&^& segment.x === head.x ^&^& segment.y === head.y); >> snake.js
+echo     return this.snake.some((segment, index) =^> index !== 0 ^&^& segment.x === head.x ^&^& segment.y === head.y); >> snake.js
 echo   } >> snake.js
 
 echo   generateFood() { >> snake.js
@@ -223,7 +223,7 @@ echo     this.food = { >> snake.js
 echo       x: Math.floor(Math.random() * this.tileCount), >> snake.js
 echo       y: Math.floor(Math.random() * this.tileCount) >> snake.js
 echo     }; >> snake.js
-echo     while (this.snake.some(segment => segment.x === this.food.x ^&^& segment.y === this.food.y)) { >> snake.js
+echo     while (this.snake.some(segment =^> segment.x === this.food.x ^&^& segment.y === this.food.y)) { >> snake.js
 echo       this.food = { >> snake.js
 echo         x: Math.floor(Math.random() * this.tileCount), >> snake.js
 echo         y: Math.floor(Math.random() * this.tileCount) >> snake.js
@@ -235,7 +235,7 @@ echo   draw() { >> snake.js
 echo     this.ctx.fillStyle = 'black'; >> snake.js
 echo     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height); >> snake.js
 echo     this.ctx.fillStyle = 'lime'; >> snake.js
-echo     this.snake.forEach(segment => { >> snake.js
+echo     this.snake.forEach(segment =^> { >> snake.js
 echo       this.ctx.fillRect(segment.x * this.gridSize, segment.y * this.gridSize, this.gridSize - 2, this.gridSize - 2); >> snake.js
 echo     }); >> snake.js
 echo     this.ctx.fillStyle = 'red'; >> snake.js
@@ -246,7 +246,7 @@ echo } >> snake.js
 echo const sg = { >> snake.js
 echo   createUI() { >> snake.js
 echo     const content = '^<canvas id="snakeCanvas" width="400" height="400"^>^</canvas^>'; >> snake.js
-echo     setTimeout(() => { >> snake.js
+echo     setTimeout(() =^> { >> snake.js
 echo       const canvas = document.getElementById('snakeCanvas'); >> snake.js
 echo       if (canvas) { >> snake.js
 echo         new SnakeGame(canvas); >> snake.js
