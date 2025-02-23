@@ -1,14 +1,3 @@
-现有一个a3.bat 文件，
-运行这个文件可以生成一个Nodejs后端程序可以启动网络服务,端口：3006.
-这个网络服务的默认静态主页。手机上可完美测试。
-主页上有两个按钮，点击时分别弹出不同的可移动窗口
-批处理文件，生成了所有的文件结构和文件。
-
-现想升级 a3.bat 为 a4.bat, 实现以下任务：
-1. 在 public 下 生成 目录 js , 在 js 目录下生成 snake.js 
-2. 主页上添加第3个按钮，点击时弹出新的可移动窗口，可玩贪吃蛇。通过 snake.js 里设计的类实现。 
-
-a3.bat 内容：
 @echo off
 REM 创建项目目录和文件结构
 mkdir my-node-server
@@ -43,6 +32,8 @@ cd public
 REM 生成JavaScript类文件
 mkdir js
 cd js
+
+REM 生成appClass.js
 echo class AppClass { > appClass.js
 echo   static currentWindows = {}; >> appClass.js
 
@@ -137,10 +128,125 @@ echo   } >> appClass.js
 echo   static openWindow2() { >> appClass.js
 echo     AppClass.toggleWindow('window2', '^<p^>这是第二个窗口内容^</p^>'); >> appClass.js
 echo   } >> appClass.js
+
+echo   static openWindow3() { >> appClass.js
+echo     const content = '^<canvas id="snakeCanvas" width="400" height="400"^>^</canvas^>'; >> appClass.js
+echo     const win = AppClass.toggleWindow('window3', content); >> appClass.js
+echo     const canvas = win.querySelector('#snakeCanvas'); >> appClass.js
+echo     new SnakeGame(canvas); >> appClass.js
+echo   } >> appClass.js
 echo } >> appClass.js
+
+REM 生成snake.js
+echo class SnakeGame { > snake.js
+echo   constructor(canvas) { >> snake.js
+echo     this.canvas = canvas; >> snake.js
+echo     this.ctx = canvas.getContext('2d'); >> snake.js
+echo     this.gridSize = 20; >> snake.js
+echo     this.tileCount = canvas.width / this.gridSize; >> snake.js
+echo     this.direction = 'right'; >> snake.js
+echo     this.snake = [ >> snake.js
+echo       { x: 5, y: 5 }, >> snake.js
+echo       { x: 4, y: 5 }, >> snake.js
+echo       { x: 3, y: 5 } >> snake.js
+echo     ]; >> snake.js
+echo     this.food = { x: 10, y: 10 }; >> snake.js
+echo     this.score = 0; >> snake.js
+echo     this.gameLoop = setInterval(() =^> this.update(), 100); >> snake.js
+echo     this.bindEvents(); >> snake.js
+echo   } >> snake.js
+
+echo   bindEvents() { >> snake.js
+echo     document.addEventListener('keydown', (e) => this.handleKey(e)); >> snake.js
+echo     this.canvas.addEventListener('touchstart', (e) => this.handleTouchStart(e), false); >> snake.js
+echo     this.canvas.addEventListener('touchmove', (e) => this.handleTouchMove(e), false); >> snake.js
+echo   } >> snake.js
+
+echo   handleKey(e) { >> snake.js
+echo     switch(e.key) { >> snake.js
+echo       case 'ArrowUp': if (this.direction !== 'down') this.direction = 'up'; break; >> snake.js
+echo       case 'ArrowDown': if (this.direction !== 'up') this.direction = 'down'; break; >> snake.js
+echo       case 'ArrowLeft': if (this.direction !== 'right') this.direction = 'left'; break; >> snake.js
+echo       case 'ArrowRight': if (this.direction !== 'left') this.direction = 'right'; break; >> snake.js
+echo     } >> snake.js
+echo   } >> snake.js
+
+echo   handleTouchStart(e) { >> snake.js
+echo     e.preventDefault(); >> snake.js
+echo     this.touchStartX = e.touches[0].clientX; >> snake.js
+echo     this.touchStartY = e.touches[0].clientY; >> snake.js
+echo   } >> snake.js
+
+echo   handleTouchMove(e) { >> snake.js
+echo     e.preventDefault(); >> snake.js
+echo     const touchEndX = e.touches[0].clientX; >> snake.js
+echo     const touchEndY = e.touches[0].clientY; >> snake.js
+echo     const dx = touchEndX - this.touchStartX; >> snake.js
+echo     const dy = touchEndY - this.touchStartY; >> snake.js
+echo     if (Math.abs(dx) > Math.abs(dy)) { >> snake.js
+echo       if (dx > 0 && this.direction !== 'left') this.direction = 'right'; >> snake.js
+echo       else if (dx < 0 && this.direction !== 'right') this.direction = 'left'; >> snake.js
+echo     } else { >> snake.js
+echo       if (dy > 0 && this.direction !== 'up') this.direction = 'down'; >> snake.js
+echo       else if (dy < 0 && this.direction !== 'down') this.direction = 'up'; >> snake.js
+echo     } >> snake.js
+echo   } >> snake.js
+
+echo   update() { >> snake.js
+echo     let head = { ...this.snake[0] }; >> snake.js
+echo     switch(this.direction) { >> snake.js
+echo       case 'up': head.y--; break; >> snake.js
+echo       case 'down': head.y++; break; >> snake.js
+echo       case 'left': head.x--; break; >> snake.js
+echo       case 'right': head.x++; break; >> snake.js
+echo     } >> snake.js
+echo     if (head.x < 0 || head.x >= this.tileCount || head.y < 0 || head.y >= this.tileCount || this.checkCollision(head)) { >> snake.js
+echo       clearInterval(this.gameLoop); >> snake.js
+echo       alert('Game Over! Score: ' + this.score); >> snake.js
+echo       return; >> snake.js
+echo     } >> snake.js
+echo     this.snake.unshift(head); >> snake.js
+echo     if (head.x === this.food.x && head.y === this.food.y) { >> snake.js
+echo       this.score += 10; >> snake.js
+echo       this.generateFood(); >> snake.js
+echo     } else { >> snake.js
+echo       this.snake.pop(); >> snake.js
+echo     } >> snake.js
+echo     this.draw(); >> snake.js
+echo   } >> snake.js
+
+echo   checkCollision(head) { >> snake.js
+echo     return this.snake.some((segment, index) => index !== 0 && segment.x === head.x && segment.y === head.y); >> snake.js
+echo   } >> snake.js
+
+echo   generateFood() { >> snake.js
+echo     this.food = { >> snake.js
+echo       x: Math.floor(Math.random() * this.tileCount), >> snake.js
+echo       y: Math.floor(Math.random() * this.tileCount) >> snake.js
+echo     }; >> snake.js
+echo     while (this.snake.some(segment => segment.x === this.food.x && segment.y === this.food.y)) { >> snake.js
+echo       this.food = { >> snake.js
+echo         x: Math.floor(Math.random() * this.tileCount), >> snake.js
+echo         y: Math.floor(Math.random() * this.tileCount) >> snake.js
+echo       }; >> snake.js
+echo     } >> snake.js
+echo   } >> snake.js
+
+echo   draw() { >> snake.js
+echo     this.ctx.fillStyle = 'black'; >> snake.js
+echo     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height); >> snake.js
+echo     this.ctx.fillStyle = 'lime'; >> snake.js
+echo     this.snake.forEach(segment => { >> snake.js
+echo       this.ctx.fillRect(segment.x * this.gridSize, segment.y * this.gridSize, this.gridSize - 2, this.gridSize - 2); >> snake.js
+echo     }); >> snake.js
+echo     this.ctx.fillStyle = 'red'; >> snake.js
+echo     this.ctx.fillRect(this.food.x * this.gridSize, this.food.y * this.gridSize, this.gridSize - 2, this.gridSize - 2); >> snake.js
+echo   } >> snake.js
+echo } >> snake.js
+
 cd ..
 
-REM 生成增强版主页（保持不变）
+REM 生成增强版主页
 echo ^<!DOCTYPE html^> > index.html
 echo ^<html lang="en"^> >> index.html
 echo ^<head^> >> index.html
@@ -190,6 +296,7 @@ echo     } >> index.html
 echo     .window-content { >> index.html
 echo       padding: 1rem; >> index.html
 echo     } >> index.html
+echo     #snakeCanvas { background: black; } >> index.html
 echo   ^</style^> >> index.html
 echo ^</head^> >> index.html
 echo ^<body^> >> index.html
@@ -198,6 +305,7 @@ echo     ^<h1^>📱 移动测试就绪^</h1^> >> index.html
 echo     ^<div class="btn-group"^> >> index.html
 echo       ^<button onclick="AppClass.openWindow1()"^>win1^</button^> >> index.html
 echo       ^<button onclick="AppClass.openWindow2()"^>win2^</button^> >> index.html
+echo       ^<button onclick="AppClass.openWindow3()"^>Play Snake^</button^> >> index.html
 echo     ^</div^> >> index.html
 echo     ^<p^>恭喜！您的Node.js服务器已在端口3006成功运行。^</p^> >> index.html
 echo     ^<p^>在移动设备访问时请确保：^</p^> >> index.html
@@ -207,10 +315,11 @@ echo       ^<li^>使用服务器的真实IP地址访问^</li^> >> index.html
 echo       ^<li^>保持URL格式为：http://IP地址:3006^</li^> >> index.html
 echo     ^</ul^> >> index.html
 echo   ^</div^> >> index.html
+echo   ^<script src="/js/snake.js"^>^</script^> >> index.html
 echo   ^<script src="/js/appClass.js"^>^</script^> >> index.html
 echo ^</body^> >> index.html
 echo ^</html^> >> index.html
 
 REM 返回根目录并安装依赖
 cd .. 
-cd .. 
+cd ..
