@@ -9,7 +9,7 @@ echo const express = require('express'); > index.js
 echo const app = express(); >> index.js
 echo app.use(express.static('public')); >> index.js
 echo const port = 3006; >> index.js
-echo app.listen(port, () => { >> index.js
+echo app.listen(port, () =^> { >> index.js
 echo   console.log(`Server is running on http://localhost:${port}`); >> index.js
 echo }); >> index.js
 
@@ -58,7 +58,7 @@ echo     let isDragging = false; >> appClass.js
 echo     let startX, startY, initialX, initialY; >> appClass.js
 echo     const header = win.querySelector('.window-header'); >> appClass.js
 
-echo     const startDrag = (clientX, clientY) => { >> appClass.js
+echo     const startDrag = (clientX, clientY) =^> { >> appClass.js
 echo       isDragging = true; >> appClass.js
 echo       startX = clientX; >> appClass.js
 echo       startY = clientY; >> appClass.js
@@ -66,39 +66,39 @@ echo       initialX = win.offsetLeft; >> appClass.js
 echo       initialY = win.offsetTop; >> appClass.js
 echo     }; >> appClass.js
 
-echo     const moveDrag = (clientX, clientY) => { >> appClass.js
+echo     const moveDrag = (clientX, clientY) =^> { >> appClass.js
 echo       if (!isDragging) return; >> appClass.js
 echo       win.style.left = `^${initialX + clientX - startX}px`; >> appClass.js
 echo       win.style.top = `^${initialY + clientY - startY}px`; >> appClass.js
 echo     }; >> appClass.js
 
-echo     const endDrag = () => { >> appClass.js
+echo     const endDrag = () =^> { >> appClass.js
 echo       isDragging = false; >> appClass.js
 echo     }; >> appClass.js
 
-echo     header.addEventListener('mousedown', (e) => { >> appClass.js
+echo     header.addEventListener('mousedown', (e) =^> { >> appClass.js
 echo       startDrag(e.clientX, e.clientY); >> appClass.js
 echo     }); >> appClass.js
 
-echo     document.addEventListener('mousemove', (e) => { >> appClass.js
+echo     document.addEventListener('mousemove', (e) =^> { >> appClass.js
 echo       moveDrag(e.clientX, e.clientY); >> appClass.js
 echo     }); >> appClass.js
 
 echo     document.addEventListener('mouseup', endDrag); >> appClass.js
 
-echo     header.addEventListener('touchstart', (e) => { >> appClass.js
+echo     header.addEventListener('touchstart', (e) =^> { >> appClass.js
 echo       e.preventDefault(); >> appClass.js
 echo       startDrag(e.touches[0].clientX, e.touches[0].clientY); >> appClass.js
 echo     }, { passive: false }); >> appClass.js
 
-echo     document.addEventListener('touchmove', (e) => { >> appClass.js
+echo     document.addEventListener('touchmove', (e) =^> { >> appClass.js
 echo       e.preventDefault(); >> appClass.js
 echo       moveDrag(e.touches[0].clientX, e.touches[0].clientY); >> appClass.js
 echo     }, { passive: false }); >> appClass.js
 
 echo     document.addEventListener('touchend', endDrag); >> appClass.js
 
-echo     win.querySelector('.close-btn').addEventListener('click', () => { >> appClass.js
+echo     win.querySelector('.close-btn').addEventListener('click', () =^> { >> appClass.js
 echo       const id = win.dataset.windowId; >> appClass.js
 echo       win.remove(); >> appClass.js
 echo       delete AppClass.currentWindows[id]; >> appClass.js
@@ -140,20 +140,20 @@ echo     this.canvas = null; >> snake.js
 echo     this.startBtn = null; >> snake.js
 echo     this.gameLoop = null; >> snake.js
 
-echo     setTimeout(() => { >> snake.js
+echo     setTimeout(() =^> { >> snake.js
 echo       this.canvas = document.getElementById('snakeCanvas'); >> snake.js
 echo       this.startBtn = document.getElementById('startBtn'); >> snake.js
-echo       this.startBtn.addEventListener('click', () => this.startGame()); >> snake.js
+echo       this.startBtn.addEventListener('click', () =^> this.startGame()); >> snake.js
 
-echo       document.addEventListener('keydown', (e) => { >> snake.js
+echo       document.addEventListener('keydown', (e) =^> { >> snake.js
 echo         if (this.gameLoop) this.handleKey(e); >> snake.js
 echo       }); >> snake.js
 
-echo       this.canvas.addEventListener('touchstart', (e) => { >> snake.js
+echo       this.canvas.addEventListener('touchstart', (e) =^> { >> snake.js
 echo         if (this.gameLoop) this.handleTouchStart(e); >> snake.js
 echo       }, false); >> snake.js
 
-echo       this.canvas.addEventListener('touchmove', (e) => { >> snake.js
+echo       this.canvas.addEventListener('touchmove', (e) =^> { >> snake.js
 echo         if (this.gameLoop) this.handleTouchMove(e); >> snake.js
 echo       }, false); >> snake.js
 echo     }, 0); >> snake.js
@@ -183,7 +183,7 @@ echo     if (!this.ctx) { >> snake.js
 echo       this.ctx = this.canvas.getContext('2d'); >> snake.js
 echo     } >> snake.js
 
-echo     this.gameLoop = setInterval(() => this.update(), 100); >> snake.js
+echo     this.gameLoop = setInterval(() =^> this.update(), 100); >> snake.js
 echo     this.startBtn.textContent = 'Restart Game'; >> snake.js
 echo   } >> snake.js
 
@@ -208,8 +208,8 @@ echo     const touchEndX = e.touches[0].clientX; >> snake.js
 echo     const touchEndY = e.touches[0].clientY; >> snake.js
 echo     const dx = touchEndX - this.touchStartX; >> snake.js
 echo     const dy = touchEndY - this.touchStartY; >> snake.js
-echo     if (Math.abs(dx) > Math.abs(dy)) { >> snake.js
-echo       if (dx > 0 ^&^& this.direction !== 'left') this.direction = 'right'; >> snake.js
+echo     if (Math.abs(dx) ^> Math.abs(dy)) { >> snake.js
+echo       if (dx ^> 0 ^&^& this.direction !== 'left') this.direction = 'right'; >> snake.js
 echo       else if (dx < 0 ^&^& this.direction !== 'right') this.direction = 'left'; >> snake.js
 echo     } else { >> snake.js
 echo       if (dy > 0 ^&^& this.direction !== 'up') this.direction = 'down'; >> snake.js
@@ -225,7 +225,7 @@ echo       case 'down': head.y++; break; >> snake.js
 echo       case 'left': head.x--; break; >> snake.js
 echo       case 'right': head.x++; break; >> snake.js
 echo     } >> snake.js
-echo     if (head.x < 0 || head.x >= this.tileCount || head.y < 0 || head.y >= this.tileCount || this.checkCollision(head)) { >> snake.js
+echo     if (head.x < 0 ^|^| head.x >= this.tileCount ^|^| head.y < 0 ^|^| head.y >= this.tileCount ^|^| this.checkCollision(head)) { >> snake.js
 echo       this.gameOver(); >> snake.js
 echo       return; >> snake.js
 echo     } >> snake.js
@@ -240,7 +240,7 @@ echo     this.draw(); >> snake.js
 echo   } >> snake.js
 
 echo   checkCollision(head) { >> snake.js
-echo     return this.snake.some((segment, index) => index !== 0 ^&^& segment.x === head.x ^&^& segment.y === head.y); >> snake.js
+echo     return this.snake.some((segment, index) =^> index !== 0 ^&^& segment.x === head.x ^&^& segment.y === head.y); >> snake.js
 echo   } >> snake.js
 
 echo   generateFood() { >> snake.js
@@ -248,7 +248,7 @@ echo     this.food = { >> snake.js
 echo       x: Math.floor(Math.random() * this.tileCount), >> snake.js
 echo       y: Math.floor(Math.random() * this.tileCount) >> snake.js
 echo     }; >> snake.js
-echo     while (this.snake.some(segment => segment.x === this.food.x ^&^& segment.y === this.food.y)) { >> snake.js
+echo     while (this.snake.some(segment =^> segment.x === this.food.x ^&^& segment.y === this.food.y)) { >> snake.js
 echo       this.food = { >> snake.js
 echo         x: Math.floor(Math.random() * this.tileCount), >> snake.js
 echo         y: Math.floor(Math.random() * this.tileCount) >> snake.js
@@ -260,7 +260,7 @@ echo   draw() { >> snake.js
 echo     this.ctx.fillStyle = 'black'; >> snake.js
 echo     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height); >> snake.js
 echo     this.ctx.fillStyle = 'lime'; >> snake.js
-echo     this.snake.forEach(segment => { >> snake.js
+echo     this.snake.forEach(segment =^> { >> snake.js
 echo       this.ctx.fillRect(segment.x * this.gridSize, segment.y * this.gridSize, this.gridSize - 2, this.gridSize - 2); >> snake.js
 echo     }); >> snake.js
 echo     this.ctx.fillStyle = 'red'; >> snake.js
