@@ -354,20 +354,23 @@ echo     } >> index.html
 echo     #snakeCanvas { background: black; } >> index.html
 echo     .control-buttons { >> index.html
 echo       margin-top: 10px; >> index.html
-echo       display: flex; >> index.html
-echo       gap: 5px; >> index.html
-echo       flex-wrap: wrap; >> index.html
-echo       justify-content: center; >> index.html
+echo       display: grid; >> index.html
+echo       grid-template-columns: repeat(3, 1fr); >> index.html
+echo       justify-items: center; >> index.html
+echo       gap: 8px; >> index.html
 echo     } >> index.html
+echo     #upBtn { grid-row: 1; grid-column: 2; } >> index.html
+echo     #leftBtn { grid-row: 2; grid-column: 1; } >> index.html
+echo     #downBtn { grid-row: 2; grid-column: 2; } >> index.html
+echo     #rightBtn { grid-row: 2; grid-column: 3; } >> index.html
+
 echo     .control-buttons button { >> index.html
-echo       padding: 10px; >> index.html
-echo       font-size: 20px; >> index.html
-echo       min-width: 50px; >> index.html
+echo       padding: 15px; >> index.html
+echo       font-size: 24px; >> index.html
+echo       min-width: 60px; >> index.html
+echo       aspect-ratio: 1; >> index.html
 echo       background: #4CAF50; >> index.html
-echo       border: none; >> index.html
-echo       border-radius: 4px; >> index.html
-echo       color: white; >> index.html
-echo       cursor: pointer; >> index.html
+echo       border-radius: 8px; >> index.html
 echo     } >> index.html
 echo     .control-buttons button:hover { >> index.html
 echo       background: #45a049; >> index.html
