@@ -43,7 +43,7 @@ echo     const left = Math.floor( Math.random() * (window.innerWidth - 300) ) + 
 echo     const top = Math.floor( Math.random() * (window.innerHeight - 200) ) + 50; >> appClass.js
 echo     win.style.left = `\${left}px`; >> appClass.js
 echo     win.style.top = `\${top}px`; >> appClass.js
-echo     win.innerHTML = \` >> appClass.js
+echo     win.innerHTML = `\ >> appClass.js
 echo       <div class="window-header"> >> appClass.js
 echo         <span>弹出窗口</span> >> appClass.js
 echo         <button class="close-btn">×</button> >> appClass.js
