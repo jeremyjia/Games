@@ -52,6 +52,7 @@ echo       btn.onclick = () =^> this.togglePlugin(name); >> main.js
 echo       toolbar.appendChild(btn); >> main.js
 echo     }); >> main.js
 echo     document.body.appendChild(toolbar); >> main.js
+echo   } >> main.js
 echo   togglePlugin(name) { >> main.js
 echo     if (!this.plugins[name]) { >> main.js
 echo       import(`/plugIns/${name}`).then(module =^> { >> main.js
@@ -67,6 +68,7 @@ echo     } else { >> main.js
 echo       this.plugins[name].window.toggleVisibility(); >> main.js
 echo     } >> main.js
 echo   } >> main.js
+echo } >> main.js
 echo new PluginManager(); >> main.js
 
 mkdir plugIns
