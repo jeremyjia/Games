@@ -81,14 +81,12 @@ echo     this.window = new FloatingWindow(content, { title: 'Plugin 1' }); >> p1
 echo   } >> p1.js
 echo } >> p1.js
 echo window.p1 = p1; >> p1.js
-
-mkdir plugIns
-cd plugIns
+ 
 echo class p2 { > p2.js
 echo   showUI() { >> p2.js
 echo     const content = document.createElement('div'); >> p2.js
 echo     content.innerHTML = '^<h1^>Plugin 2^</h1^>'; >> p2.js
-echo     this.window = new FloatingWindow(content, { title: 'Plugin 1' }); >> p2.js
+echo     this.window = new FloatingWindow(content, { title: 'Plugin 2' }); >> p2.js
 echo   } >> p2.js
 echo } >> p2.js
 echo window.p2 = p2; >> p2.js
