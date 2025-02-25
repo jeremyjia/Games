@@ -1,103 +1,120 @@
 @echo off
-mkdir public 2>nul
-mkdir public\plugIns 2>nul
+setlocal enabledelayedexpansion
 
-echo const express = require('express')^; > server.js
-echo const fs = require('fs')^; >> server.js
-echo const path = require('path')^; >> server.js
-echo const app = express()^; >> server.js
-echo app.use(express.static('public'))^; >> server.js
-echo app.get('/plugins', (req, res) =^> ^{ >> server.js
-echo   const pluginDir = path.join(__dirname, 'public', 'plugIns')^; >> server.js
-echo   fs.readdir(pluginDir, (err, files) =^> ^{ >> server.js
-echo     if (err) return res.status(500).json([])^; >> server.js
-echo     res.json(files.filter(f => f.endsWith('.js'))^; >> server.js
-echo   })^; >> server.js
-echo })^; >> server.js
-echo app.listen(3000, () => console.log('Server running on port 3000'))^; >> server.js
+mkdir myNodeApp
+cd myNodeApp
 
-echo ^<!DOCTYPE html^> > public\index.html
-echo ^<html^> >> public\index.html
-echo ^<head^> >> public\index.html
-echo   ^<meta charset="UTF-8"^> >> public\index.html
-echo   ^<meta name="viewport" content="width=device-width, initial-scale=1.0"^> >> public\index.html
-echo   ^<title^>Plugin System^</title^> >> public\index.html
-echo ^</head^> >> public\index.html
-echo ^<body^> >> public\index.html
-echo   ^<script src="main.js"^>^</script^> >> public\index.html
-echo ^</body^> >> public\index.html
-echo ^</html^> >> public\index.html
+echo const express = require('express'); > index.js
+echo const fs = require('fs'); >> index.js
+echo const path = require('path'); >> index.js
+echo const app = express(); >> index.js
+echo app.use(express.static('public')); >> index.js
+echo app.get('/plugins', (req, res) =^> { >> index.js
+echo   fs.readdir('public/plugIns', (err, files) =^> { >> index.js
+echo     res.json(files.filter(f =^> f.endsWith('.js'))); >> index.js
+echo   }); >> index.js
+echo }); >> index.js
+echo app.listen(3000, () =^> console.log('Server running on port 3000')); >> index.js
 
-echo // Dynamic DOM and Style creation > public\main.js
-echo document.addEventListener('DOMContentLoaded', async () => ^{ >> public\main.js
-echo   const toolbar = document.createElement('div')^; >> public\main.js
-echo   toolbar.style.cssText = 'position:fixed;left:0;top:0;background:^#333;padding:10px;z-index:1000;'^; >> public\main.js
-echo   document.body.appendChild(toolbar)^; >> public\main.js
-echo   const plugins = await fetch('/plugins').then(res => res.json())^; >> public\main.js
-echo   plugins.forEach(name => ^{ >> public\main.js
-echo     const btn = document.createElement('button')^; >> public\main.js
-echo     btn.textContent = name.replace('.js', '')^; >> public\main.js
-echo     btn.style.cssText = 'margin:0 5px;padding:5px 10px;'^; >> public\main.js
-echo     let pluginInstance = null^; >> public\main.js
-echo     btn.addEventListener('click', async () => ^{ >> public\main.js
-echo       if (!pluginInstance) { >> public\main.js
-echo         const module = await import(`./plugIns/${name}`)^; >> public\main.js
-echo         pluginInstance = new module.default()^; >> public\main.js
-echo         pluginInstance.showUI()^; >> public\main.js
-echo       } else { >> public\main.js
-echo         pluginInstance.uiContainer.hidden = ^!pluginInstance.uiContainer.hidden^; >> public\main.js
-echo       } >> public\main.js
-echo     })^; >> public\main.js
-echo     toolbar.appendChild(btn)^; >> public\main.js
-echo   })^; >> public\main.js
-echo })^; >> public\main.js
+mkdir public
+cd public
 
-echo export default class Plugin1 { > public\plugIns\p1.js
-echo   showUI() { >> public\plugIns\p1.js
-echo     this.uiContainer = document.createElement('div')^; >> public\plugIns\p1.js
-echo     this.uiContainer.style.cssText = 'position:absolute;border:1px solid ^#ccc;background:white;padding:20px;'^; >> public\plugIns\p1.js
-echo     this.uiContainer.innerHTML = '^<h3^>Plugin 1^</h3^>^<p^>Sample content^</p^>'^; >> public\plugIns\p1.js
-echo     document.body.appendChild(this.uiContainer)^; >> public\plugIns\p1.js
-echo     this.makeDraggable(this.uiContainer)^; >> public\plugIns\p1.js
-echo   } >> public\plugIns\p1.js
-echo   makeDraggable(element) { >> public\plugIns\p1.js
-echo     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0^; >> public\plugIns\p1.js
-echo     element.addEventListener('mousedown', dragStart)^; >> public\plugIns\p1.js
-echo     function dragStart(e) { >> public\plugIns\p1.js
-echo       e.preventDefault()^; >> public\plugIns\p1.js
-echo       pos3 = e.clientX^; >> public\plugIns\p1.js
-echo       pos4 = e.clientY^; >> public\plugIns\p1.js
-echo       document.addEventListener('mouseup', dragEnd)^; >> public\plugIns\p1.js
-echo       document.addEventListener('mousemove', drag)^; >> public\plugIns\p1.js
-echo     } >> public\plugIns\p1.js
-echo     function drag(e) { >> public\plugIns\p1.js
-echo       pos1 = pos3 - e.clientX^; >> public\plugIns\p1.js
-echo       pos2 = pos4 - e.clientY^; >> public\plugIns\p1.js
-echo       pos3 = e.clientX^; >> public\plugIns\p1.js
-echo       pos4 = e.clientY^; >> public\plugIns\p1.js
-echo       element.style.top = (element.offsetTop - pos2) + 'px'^; >> public\plugIns\p1.js
-echo       element.style.left = (element.offsetLeft - pos1) + 'px'^; >> public\plugIns\p1.js
-echo     } >> public\plugIns\p1.js
-echo     function dragEnd() { >> public\plugIns\p1.js
-echo       document.removeEventListener('mouseup', dragEnd)^; >> public\plugIns\p1.js
-echo       document.removeEventListener('mousemove', drag)^; >> public\plugIns\p1.js
-echo     } >> public\plugIns\p1.js
-echo   } >> public\plugIns\p1.js
-echo } >> public\plugIns\p1.js
+echo ^<!DOCTYPE html^> > index.html
+echo ^<html^> >> index.html
+echo ^<head^> >> index.html
+echo   ^<meta charset="UTF-8"^> >> index.html
+echo   ^<meta name="viewport" content="width=device-width, initial-scale=1.0"^> >> index.html
+echo   ^<title^>Node App^</title^> >> index.html
+echo ^</head^> >> index.html
+echo ^<body^> >> index.html
+echo   ^<script src="main.js"^>^</script^> >> index.html
+echo ^</body^> >> index.html
+echo ^</html^> >> index.html
 
-echo export default class Plugin2 { > public\plugIns\p2.js
-echo   showUI() { >> public\plugIns\p2.js
-echo     this.uiContainer = document.createElement('div')^; >> public\plugIns\p2.js
-echo     this.uiContainer.style.cssText = 'position:absolute;border:1px solid ^#ccc;background:white;padding:20px;'^; >> public\plugIns\p2.js
-echo     this.uiContainer.innerHTML = '^<h3^>Plugin 2^</h3^>^<p^>Another plugin^</p^>'^; >> public\plugIns\p2.js
-echo     document.body.appendChild(this.uiContainer)^; >> public\plugIns\p2.js
-echo     this.makeDraggable(this.uiContainer)^; >> public\plugIns\p2.js
-echo   } >> public\plugIns\p2.js
-echo   makeDraggable(element) { >> public\plugIns\p2.js
-echo     // Same drag implementation as Plugin1 >> public\plugIns\p2.js
-echo   } >> public\plugIns\p2.js
-echo } >> public\plugIns\p2.js
+echo class PluginManager { > main.js
+echo   constructor() { >> main.js
+echo     this.plugins = {}; >> main.js
+echo     this.init(); >> main.js
+echo   } >> main.js
+echo   async init() { >> main.js
+echo     const response = await fetch('/plugins'); >> main.js
+echo     const plugins = await response.json(); >> main.js
+echo     this.createToolbar(plugins); >> main.js
+echo   } >> main.js
+echo   createToolbar(plugins) { >> main.js
+echo     const toolbar = document.createElement('div'); >> main.js
+echo     toolbar.style = 'position:fixed;bottom:0;width:100%%;background:#333;padding:10px;z-index:9999'; >> main.js
+echo     plugins.forEach(name =^> { >> main.js
+echo       const btn = document.createElement('button'); >> main.js
+echo       btn.textContent = name.replace('.js',''); >> main.js
+echo       btn.style.margin = '0 5px'; >> main.js
+echo       btn.onclick = () =^> this.togglePlugin(name); >> main.js
+echo       toolbar.appendChild(btn); >> main.js
+echo     }); >> main.js
+echo     document.body.appendChild(toolbar); >> main.js
+echo   } >> main.js
+echo   async togglePlugin(name) { >> main.js
+echo     if (!this.plugins[name]) { >> main.js
+echo       await import(`/plugIns/${name}`); >> main.js
+echo       this.plugins[name] = new window[name.replace('.js','')](); >> main.js
+echo       this.plugins[name].showUI(); >> main.js
+echo     } else { >> main.js
+echo       this.plugins[name].container.hidden = ^!this.plugins[name].container.hidden; >> main.js
+echo     } >> main.js
+echo   } >> main.js
+echo } >> main.js
+echo new PluginManager(); >> main.js
 
-echo Installation complete. Run following commands:
-echo npm install express
-echo node server.js
+mkdir plugIns
+cd plugIns
+
+echo class p1 { > p1.js
+echo   showUI() { >> p1.js
+echo     this.container = document.createElement('div'); >> p1.js
+echo     this.container.innerHTML = '^<h1^>Plugin 1^</h1^>'; >> p1.js
+echo     new FloatingWindow(this.container, { title: 'Plugin 1' }); >> p1.js
+echo   } >> p1.js
+echo } >> p1.js
+
+echo class p2 { > p2.js
+echo   showUI() { >> p2.js
+echo     this.container = document.createElement('div'); >> p2.js
+echo     this.container.innerHTML = '^<h1^>Plugin 2^</h1^>'; >> p2.js
+echo     new FloatingWindow(this.container, { title: 'Plugin 2' }); >> p2.js
+echo   } >> p2.js
+echo } >> p2.js
+
+cd ..
+mkdir util
+cd util
+
+echo class FloatingWindow { > floatingWindow.js
+echo   constructor(content, options = {}) { >> floatingWindow.js
+echo     this.window = document.createElement('div'); >> floatingWindow.js
+echo     this.window.style = 'position:absolute;border:1px solid #000;background:#fff;z-index:10000'; >> floatingWindow.js
+echo     this.header = document.createElement('div'); >> floatingWindow.js
+echo     this.header.textContent = options.title ^|^| 'Window'; >> floatingWindow.js
+echo     this.header.style = 'background:#ddd;padding:5px;cursor:move'; >> floatingWindow.js
+echo     this.content = content; >> floatingWindow.js
+echo     this.window.appendChild(this.header); >> floatingWindow.js
+echo     this.window.appendChild(this.content); >> floatingWindow.js
+echo     document.body.appendChild(this.window); >> floatingWindow.js
+echo     this.makeDraggable(); >> floatingWindow.js
+echo   } >> floatingWindow.js
+echo   makeDraggable() { >> floatingWindow.js
+echo     let isDragging = false; >> floatingWindow.js
+echo     let offset = [0,0]; >> floatingWindow.js
+echo     this.header.onmousedown = (e) =^> { >> floatingWindow.js
+echo       isDragging = true; >> floatingWindow.js
+echo       offset = [e.clientX - this.window.offsetLeft, e.clientY - this.window.offsetTop]; >> floatingWindow.js
+echo     }; >> floatingWindow.js
+echo     document.onmousemove = (e) =^> { >> floatingWindow.js
+echo       if (isDragging) { >> floatingWindow.js
+echo         this.window.style.left = (e.clientX - offset[0]) + 'px'; >> floatingWindow.js
+echo         this.window.style.top = (e.clientY - offset[1]) + 'px'; >> floatingWindow.js
+echo       } >> floatingWindow.js
+echo     }; >> floatingWindow.js
+echo     document.onmouseup = () =^> isDragging = false; >> floatingWindow.js
+echo   } >> floatingWindow.js
+echo } >> floatingWindow.js
+ 
