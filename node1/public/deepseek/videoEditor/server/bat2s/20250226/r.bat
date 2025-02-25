@@ -52,16 +52,17 @@ echo       btn.onclick = () =^> this.togglePlugin(name); >> main.js
 echo       toolbar.appendChild(btn); >> main.js
 echo     }); >> main.js
 echo     document.body.appendChild(toolbar); >> main.js
-echo   } >> main.js
-echo   async togglePlugin(name) { >> main.js
+echo   togglePlugin(name) { >> main.js
 echo     if (!this.plugins[name]) { >> main.js
-echo       import(`/plugIns/${name}`).then(() =^> { >> main.js
+echo       import(`/plugIns/${name}`).then(module =^> { >> main.js
 echo         const PluginClass = window[name.replace('.js','')]; >> main.js
+echo         if (!PluginClass) throw new Error('插件类未注册'); >> main.js
 echo         this.plugins[name] = new PluginClass(); >> main.js
 echo         this.plugins[name].showUI(); >> main.js
-echo         this.plugins[name].window.element.style.top = "50%%"; >> main.js
-echo         this.plugins[name].window.element.style.left = "50%%"; >> main.js
-echo       }); >> main.js
+echo         if (!this.plugins[name].window) { >> main.js
+echo           console.error('插件未正确初始化window属性'); >> main.js
+echo         } >> main.js
+echo       }).catch(err =^> console.error('加载失败:', err)); >> main.js
 echo     } else { >> main.js
 echo       this.plugins[name].window.toggleVisibility(); >> main.js
 echo     } >> main.js
@@ -70,29 +71,35 @@ echo new PluginManager(); >> main.js
 
 mkdir plugIns
 cd plugIns
-
 echo class p1 { > p1.js
 echo   showUI() { >> p1.js
-echo     this.container = document.createElement('div'); >> p1.js
-echo     this.container.innerHTML = '^<h1^>Plugin 1^</h1^>'; >> p1.js
-echo     new FloatingWindow(this.container, { title: 'Plugin 1' }); >> p1.js
+echo     const content = document.createElement('div'); >> p1.js
+echo     content.innerHTML = '^<h1^>Plugin 1^</h1^>'; >> p1.js
+echo     this.window = new FloatingWindow(content, { title: 'Plugin 1' }); >> p1.js
 echo   } >> p1.js
 echo } >> p1.js
+echo window.p1 = p1; >> p1.js
 
+mkdir plugIns
+cd plugIns
 echo class p2 { > p2.js
 echo   showUI() { >> p2.js
-echo     this.container = document.createElement('div'); >> p2.js
-echo     this.container.innerHTML = '^<h1^>Plugin 2^</h1^>'; >> p2.js
-echo     new FloatingWindow(this.container, { title: 'Plugin 2' }); >> p2.js
+echo     const content = document.createElement('div'); >> p2.js
+echo     content.innerHTML = '^<h1^>Plugin 2^</h1^>'; >> p2.js
+echo     this.window = new FloatingWindow(content, { title: 'Plugin 1' }); >> p2.js
 echo   } >> p2.js
 echo } >> p2.js
+echo window.p2 = p2; >> p2.js
 
 cd ..
 mkdir util
 cd util
 
 echo class FloatingWindow { > floatingWindow.js
-echo   constructor(content, options = {}) { >> floatingWindow.js
+echo   constructor(content, options) { >> floatingWindow.js
+echo     if (!content) throw new Error('必须提供内容参数'); >> floatingWindow.js
+echo     this.element = document.createElement('div'); >> floatingWindow.js
+echo     console.assert(this.element, '元素创建失败'); >> floatingWindow.js
 echo     this.window = document.createElement('div'); >> floatingWindow.js
 echo     this.window.style = 'position:absolute;border:1px solid #000;background:#fff;z-index:10000'; >> floatingWindow.js
 echo     this.header = document.createElement('div'); >> floatingWindow.js
