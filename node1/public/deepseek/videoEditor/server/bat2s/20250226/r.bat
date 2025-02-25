@@ -55,14 +55,17 @@ echo     document.body.appendChild(toolbar); >> main.js
 echo   } >> main.js
 echo   async togglePlugin(name) { >> main.js
 echo     if (!this.plugins[name]) { >> main.js
-echo       await import(`/plugIns/${name}`); >> main.js
-echo       this.plugins[name] = new window[name.replace('.js','')](); >> main.js
-echo       this.plugins[name].showUI(); >> main.js
+echo       import(`/plugIns/${name}`).then(() =^> { >> main.js
+echo         const PluginClass = window[name.replace('.js','')]; >> main.js
+echo         this.plugins[name] = new PluginClass(); >> main.js
+echo         this.plugins[name].showUI(); >> main.js
+echo         this.plugins[name].window.element.style.top = "50%%"; >> main.js
+echo         this.plugins[name].window.element.style.left = "50%%"; >> main.js
+echo       }); >> main.js
 echo     } else { >> main.js
-echo       this.plugins[name].container.hidden = ^!this.plugins[name].container.hidden; >> main.js
+echo       this.plugins[name].window.toggleVisibility(); >> main.js
 echo     } >> main.js
 echo   } >> main.js
-echo } >> main.js
 echo new PluginManager(); >> main.js
 
 mkdir plugIns
