@@ -25,7 +25,7 @@ class CanvasManager {
 
     createToolbar() {
         this.toolbar = document.createElement('div');
-        const tools = ['text', 'line', 'rect', 'triangle', 'circle'];
+        const tools = ['select', 'text', 'line', 'rect', 'triangle', 'circle']; // 添加选择工具
         tools.forEach(tool => {
             const btn = document.createElement('button');
             btn.textContent = tool;
@@ -41,7 +41,7 @@ class CanvasManager {
         Array.from(this.toolbar.children).forEach(btn => {
             btn.style.backgroundColor = btn === e.target ? '#99ccff' : '';
         });
-        this.currentTool = tool;
+        this.currentTool = tool === 'select' ? null : tool; // 选择工具设为null
         this.selectedObject = null;
         this.redrawCanvas();
     }
@@ -116,7 +116,6 @@ class CanvasManager {
                 this.tempObject.endY = pos.y;
                 break;
             case 'rect':
-                // 修正矩形坐标处理
                 const width = pos.x - this.tempObject.x;
                 const height = pos.y - this.tempObject.y;
                 this.tempObject.x = width < 0 ? pos.x : this.tempObject.x;
@@ -131,7 +130,6 @@ class CanvasManager {
                 );
                 break;
             case 'triangle':
-                // 修正三角形坐标处理
                 this.tempObject.points = [
                     { x: this.tempObject.x, y: pos.y },
                     { x: pos.x, y: pos.y },
@@ -146,11 +144,7 @@ class CanvasManager {
             const text = prompt('Enter text:', this.tempObject.text);
             if (text) this.tempObject.text = text;
         } else {
-            if (this.isObjectTooSmall(this.tempObject)) {
-                this.isDrawing = false;
-                this.tempObject = null;
-                return;
-            }
+            if (this.isObjectTooSmall(this.tempObject)) return;
         }
         this.objects.push(this.tempObject);
         this.isDrawing = false;
@@ -161,9 +155,7 @@ class CanvasManager {
         const MIN_SIZE = 5;
         switch (obj.type) {
             case 'line':
-                const dx = obj.endX - obj.x;
-                const dy = obj.endY - obj.y;
-                return Math.hypot(dx, dy) < MIN_SIZE;
+                return Math.hypot(obj.endX - obj.x, obj.endY - obj.y) < MIN_SIZE;
             case 'rect':
                 return obj.width < MIN_SIZE || obj.height < MIN_SIZE;
             case 'circle':
@@ -187,7 +179,6 @@ class CanvasManager {
             if (text) this.selectedObject.text = text;
         }
     }
-
 
     moveObject(pos) {
         this.selectedObject.x = pos.x - this.dragOffset.x;
@@ -242,27 +233,31 @@ class CanvasManager {
     }
 
     pointInTriangle(p, points) {
-        const area = 0.5 * (-points[1].y*points[2].x + points[0].y*(-points[1].x + points[2].x) +
-                            points[0].x*(points[1].y - points[2].y) + points[1].x*points[2].y);
-        const s = 1/(2*area)*(points[0].y*points[2].x - points[0].x*points[2].y +
-                             (points[2].y - points[0].y)*p.x + (points[0].x - points[2].x)*p.y);
-        const t = 1/(2*area)*(points[0].x*points[1].y - points[0].y*points[1].x +
-                             (points[0].y - points[1].y)*p.x + (points[1].x - points[0].x)*p.y);
-        return s > 0 && t > 0 && (1-s-t) > 0;
+        const area = 0.5 * (
+            (points[1].x - points[0].x) * (points[2].y - points[0].y) - 
+            (points[2].x - points[0].x) * (points[1].y - points[0].y)
+        );
+        if (Math.abs(area) < 1e-8) return false;
+
+        const s = (points[0].y * points[2].x - points[0].x * points[2].y + 
+                  (points[2].y - points[0].y) * p.x + 
+                  (points[0].x - points[2].x) * p.y) / (2 * area);
+        const t = (points[0].x * points[1].y - points[0].y * points[1].x + 
+                  (points[0].y - points[1].y) * p.x + 
+                  (points[1].x - points[0].x) * p.y) / (2 * area);
+
+        return s >= 0 && t >= 0 && (1 - s - t) >= 0; // 修正判断条件
     }
 
     redrawCanvas() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // 绘制已存在的对象
         this.objects.forEach(obj => this.drawObject(obj));
         
-        // 绘制正在创建中的临时对象
         if (this.isDrawing && this.tempObject) {
             this.drawObject(this.tempObject, true);
         }
 
-        // 绘制选中状态
         if (this.selectedObject) {
             this.ctx.strokeStyle = '#ff0000';
             this.ctx.setLineDash([5, 5]);
@@ -274,7 +269,6 @@ class CanvasManager {
             );
             this.ctx.setLineDash([]);
             
-            // 绘制调整手柄
             ['nw', 'ne', 'sw', 'se'].forEach(handle => {
                 const pos = this.getHandlePosition(handle);
                 this.ctx.fillStyle = '#ff0000';
@@ -282,11 +276,10 @@ class CanvasManager {
             });
         }
     }
-   
 
     drawObject(obj, isTemp = false) {
         this.ctx.fillStyle = obj.color || '#000000';
-        this.ctx.strokeStyle = isTemp ? '#888888' : obj.color || '#000000'; // 临时对象用灰色显示
+        this.ctx.strokeStyle = isTemp ? '#888888' : obj.color || '#000000';
         
         switch (obj.type) {
             case 'line':
@@ -315,7 +308,6 @@ class CanvasManager {
                 break;
         }
     }
-
 
     getHandlePosition(handle) {
         return {
@@ -357,7 +349,6 @@ class CanvasManager {
     }
 }
 
-// 初始化
 new CanvasManager();
 </script>
 </body>
