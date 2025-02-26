@@ -116,8 +116,13 @@ class CanvasManager {
                 this.tempObject.endY = pos.y;
                 break;
             case 'rect':
-                this.tempObject.width = pos.x - this.tempObject.x;
-                this.tempObject.height = pos.y - this.tempObject.y;
+                // 修正矩形坐标处理
+                const width = pos.x - this.tempObject.x;
+                const height = pos.y - this.tempObject.y;
+                this.tempObject.x = width < 0 ? pos.x : this.tempObject.x;
+                this.tempObject.y = height < 0 ? pos.y : this.tempObject.y;
+                this.tempObject.width = Math.abs(width);
+                this.tempObject.height = Math.abs(height);
                 break;
             case 'circle':
                 this.tempObject.radius = Math.hypot(
@@ -126,6 +131,7 @@ class CanvasManager {
                 );
                 break;
             case 'triangle':
+                // 修正三角形坐标处理
                 this.tempObject.points = [
                     { x: this.tempObject.x, y: pos.y },
                     { x: pos.x, y: pos.y },
@@ -140,7 +146,6 @@ class CanvasManager {
             const text = prompt('Enter text:', this.tempObject.text);
             if (text) this.tempObject.text = text;
         } else {
-            // 添加尺寸检查
             if (this.isObjectTooSmall(this.tempObject)) {
                 this.isDrawing = false;
                 this.tempObject = null;
@@ -153,15 +158,14 @@ class CanvasManager {
     }
 
     isObjectTooSmall(obj) {
-        const MIN_SIZE = 5; // 最小尺寸阈值
+        const MIN_SIZE = 5;
         switch (obj.type) {
             case 'line':
                 const dx = obj.endX - obj.x;
                 const dy = obj.endY - obj.y;
                 return Math.hypot(dx, dy) < MIN_SIZE;
             case 'rect':
-                return Math.abs(obj.width) < MIN_SIZE || 
-                       Math.abs(obj.height) < MIN_SIZE;
+                return obj.width < MIN_SIZE || obj.height < MIN_SIZE;
             case 'circle':
                 return obj.radius < MIN_SIZE;
             case 'triangle':
@@ -184,6 +188,7 @@ class CanvasManager {
         }
     }
 
+
     moveObject(pos) {
         this.selectedObject.x = pos.x - this.dragOffset.x;
         this.selectedObject.y = pos.y - this.dragOffset.y;
@@ -205,13 +210,22 @@ class CanvasManager {
 
     checkCollision(pos, obj) {
         switch (obj.type) {
-            case 'rect': return pos.x >= obj.x && pos.x <= obj.x + obj.width &&
-                              pos.y >= obj.y && pos.y <= obj.y + obj.height;
-            case 'circle': return Math.hypot(pos.x - obj.x, pos.y - obj.y) <= obj.radius;
-            case 'line': return this.pointToLineDistance(pos, obj) < 5;
-            case 'triangle': return this.pointInTriangle(pos, obj.points);
-            case 'text': return pos.x >= obj.x && pos.x <= obj.x + obj.width &&
-                               pos.y >= obj.y && pos.y <= obj.y + obj.height;
+            case 'rect': 
+                return pos.x >= obj.x && 
+                       pos.x <= obj.x + obj.width &&
+                       pos.y >= obj.y && 
+                       pos.y <= obj.y + obj.height;
+            case 'circle': 
+                return Math.hypot(pos.x - obj.x, pos.y - obj.y) <= obj.radius;
+            case 'line': 
+                return this.pointToLineDistance(pos, obj) < 5;
+            case 'triangle': 
+                return this.pointInTriangle(pos, obj.points);
+            case 'text': 
+                return pos.x >= obj.x && 
+                       pos.x <= obj.x + obj.width &&
+                       pos.y >= obj.y && 
+                       pos.y <= obj.y + obj.height;
         }
     }
 
