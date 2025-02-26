@@ -58,6 +58,7 @@ class NavigationMenu {
                     padding: 0;
                     list-style: none;
                     box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+                    z-index: 1000;
                 }
 
                 .submenu.active {
@@ -117,15 +118,31 @@ class NavigationMenu {
             const submenu = this.createSubmenu(itemData.submenu);
             li.append(a, submenu);
             
-            // 添加点击事件
-            a.addEventListener('click', (e) => {
-                e.preventDefault();
-                submenu.classList.toggle('active');
-                
-                // 关闭其他子菜单
-                document.querySelectorAll('.submenu').forEach(menu => {
-                    if (menu !== submenu) menu.classList.remove('active');
-                });
+            // 阻止默认点击行为
+            a.addEventListener('click', (e) => e.preventDefault());
+            
+            let timeoutId;
+            
+            // 鼠标进入显示子菜单
+            li.addEventListener('mouseenter', () => {
+                clearTimeout(timeoutId);
+                submenu.classList.add('active');
+                this.closeOtherSubmenus(submenu);
+            });
+            
+            // 鼠标离开延迟隐藏
+            li.addEventListener('mouseleave', () => {
+                timeoutId = setTimeout(() => {
+                    submenu.classList.remove('active');
+                }, 300);
+            });
+            
+            // 子菜单交互
+            submenu.addEventListener('mouseenter', () => clearTimeout(timeoutId));
+            submenu.addEventListener('mouseleave', () => {
+                timeoutId = setTimeout(() => {
+                    submenu.classList.remove('active');
+                }, 300);
             });
         } else {
             li.appendChild(a);
@@ -151,9 +168,31 @@ class NavigationMenu {
                 const subSubmenu = this.createSubmenu(item.submenu);
                 li.append(a, subSubmenu);
                 
-                a.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    subSubmenu.classList.toggle('active');
+                // 阻止默认点击行为
+                a.addEventListener('click', (e) => e.preventDefault());
+                
+                let subTimeout;
+                
+                // 鼠标进入显示子菜单
+                li.addEventListener('mouseenter', () => {
+                    clearTimeout(subTimeout);
+                    subSubmenu.classList.add('active');
+                    this.closeOtherSubmenus(subSubmenu);
+                });
+                
+                // 鼠标离开延迟隐藏
+                li.addEventListener('mouseleave', () => {
+                    subTimeout = setTimeout(() => {
+                        subSubmenu.classList.remove('active');
+                    }, 300);
+                });
+                
+                // 子菜单交互
+                subSubmenu.addEventListener('mouseenter', () => clearTimeout(subTimeout));
+                subSubmenu.addEventListener('mouseleave', () => {
+                    subTimeout = setTimeout(() => {
+                        subSubmenu.classList.remove('active');
+                    }, 300);
                 });
             } else {
                 li.appendChild(a);
@@ -163,6 +202,19 @@ class NavigationMenu {
         });
 
         return ul;
+    }
+
+    closeOtherSubmenus(currentSubmenu) {
+        const parentMenu = currentSubmenu.parentElement.closest('ul');
+        if (parentMenu) {
+            parentMenu.querySelectorAll('.submenu').forEach(menu => {
+                if (menu !== currentSubmenu) menu.classList.remove('active');
+            });
+        } else {
+            document.querySelectorAll('.nav-menu > ul > .menu-item > .submenu').forEach(menu => {
+                if (menu !== currentSubmenu) menu.classList.remove('active');
+            });
+        }
     }
 }
 
@@ -218,7 +270,7 @@ mainContent.innerHTML = `
 `;
 document.body.appendChild(mainContent);
 
-// 点击页面其他区域关闭所有子菜单
+// 点击页面其他区域关闭所有子菜单（保留增强体验）
 document.addEventListener('click', (e) => {
     if (!e.target.closest('.menu-item')) {
         document.querySelectorAll('.submenu').forEach(menu => {
