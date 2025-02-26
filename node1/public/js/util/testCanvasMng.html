@@ -139,10 +139,39 @@ class CanvasManager {
         if (this.currentTool === 'text') {
             const text = prompt('Enter text:', this.tempObject.text);
             if (text) this.tempObject.text = text;
+        } else {
+            // 添加尺寸检查
+            if (this.isObjectTooSmall(this.tempObject)) {
+                this.isDrawing = false;
+                this.tempObject = null;
+                return;
+            }
         }
         this.objects.push(this.tempObject);
         this.isDrawing = false;
         this.tempObject = null;
+    }
+
+    isObjectTooSmall(obj) {
+        const MIN_SIZE = 5; // 最小尺寸阈值
+        switch (obj.type) {
+            case 'line':
+                const dx = obj.endX - obj.x;
+                const dy = obj.endY - obj.y;
+                return Math.hypot(dx, dy) < MIN_SIZE;
+            case 'rect':
+                return Math.abs(obj.width) < MIN_SIZE || 
+                       Math.abs(obj.height) < MIN_SIZE;
+            case 'circle':
+                return obj.radius < MIN_SIZE;
+            case 'triangle':
+                const xs = obj.points.map(p => p.x);
+                const ys = obj.points.map(p => p.y);
+                return Math.max(...xs) - Math.min(...xs) < MIN_SIZE ||
+                       Math.max(...ys) - Math.min(...ys) < MIN_SIZE;
+            default:
+                return false;
+        }
     }
 
     selectObject(pos) {
@@ -273,7 +302,7 @@ class CanvasManager {
         }
     }
 
-    
+
     getHandlePosition(handle) {
         return {
             x: this.selectedObject.x + (handle.includes('e') ? this.selectedObject.width : 0),
