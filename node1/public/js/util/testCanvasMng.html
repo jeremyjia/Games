@@ -16,6 +16,8 @@ class CanvasManager {
         this.tempObject = null;
         this.dragging = false;
         this.resizeHandle = null;
+        this.pendingTextEdit = false;
+        this.pointerDownPos = { x: 0, y: 0 };
 
         this.createToolbar();
         this.createCanvas();
@@ -62,41 +64,32 @@ class CanvasManager {
 
     handlePointerDown(e) {
         const pos = this.getCanvasPos(e);
+        this.pointerDownPos = { x: pos.x, y: pos.y };
         
-        // 检查是否点击了调整手柄
         if (this.selectedObject && this.checkResizeHandle(pos)) {
             this.resizeHandle = this.getResizeHandle(pos);
             return;
         }
         
-        // 查找点击位置下的对象
         const clickedObject = this.findObjectAtPos(pos);
         
         if (clickedObject) {
-            if (clickedObject !== this.selectedObject) {
-                // 切换选择到新对象
-                this.selectedObject = clickedObject;
-                // 处理文本编辑
-                if (this.selectedObject.type === 'text') {
-                    const text = prompt('Edit text:', this.selectedObject.text);
-                    if (text !== null) this.selectedObject.text = text;
-                }
-            } else {
-                // 点击当前选中对象，准备拖动
-                this.dragging = true;
-                this.dragOffset = {
-                    x: pos.x - this.selectedObject.x,
-                    y: pos.y - this.selectedObject.y
-                };
+            this.selectedObject = clickedObject;
+            if (this.selectedObject.type === 'text') {
+                this.pendingTextEdit = true;
             }
+            this.dragging = true;
+            this.dragOffset = {
+                x: pos.x - this.selectedObject.x,
+                y: pos.y - this.selectedObject.y
+            };
             this.resizeHandle = null;
+            this.redrawCanvas();
             return;
         } else {
-            // 点击空白区域取消选择
             this.selectedObject = null;
         }
         
-        // 开始绘制新对象
         if (this.currentTool) {
             this.startDrawing(pos);
         }
@@ -120,13 +113,27 @@ class CanvasManager {
         this.redrawCanvas();
     }
 
+    handlePointerUp(e) {
+        const pos = this.getCanvasPos(e);
+        const dx = pos.x - this.pointerDownPos.x;
+        const dy = pos.y - this.pointerDownPos.y;
+        const isClick = (dx * dx + dy * dy) < 25;
 
-    handlePointerUp() {
         if (this.isDrawing) {
             this.finishDrawing();
         }
+
+        if (this.pendingTextEdit && this.selectedObject?.type === 'text' && isClick) {
+            const text = prompt('Edit text:', this.selectedObject.text);
+            if (text !== null) {
+                this.selectedObject.text = text;
+                this.redrawCanvas();
+            }
+        }
+
         this.dragging = false;
         this.resizeHandle = null;
+        this.pendingTextEdit = false;
     }
 
     startDrawing(pos) {
@@ -139,6 +146,7 @@ class CanvasManager {
             text: 'New Text',
             ...(this.currentTool === 'text' && { width: 100, height: 20 })
         };
+        if (this.currentTool === 'circle') this.tempObject.radius = 0;
     }
 
     continueDrawing(pos) {
@@ -148,12 +156,8 @@ class CanvasManager {
                 this.tempObject.endY = pos.y;
                 break;
             case 'rect':
-                const width = pos.x - this.tempObject.x;
-                const height = pos.y - this.tempObject.y;
-                this.tempObject.x = width < 0 ? pos.x : this.tempObject.x;
-                this.tempObject.y = height < 0 ? pos.y : this.tempObject.y;
-                this.tempObject.width = Math.abs(width);
-                this.tempObject.height = Math.abs(height);
+                this.tempObject.width = pos.x - this.tempObject.x;
+                this.tempObject.height = pos.y - this.tempObject.y;
                 break;
             case 'circle':
                 this.tempObject.radius = Math.hypot(
@@ -189,7 +193,7 @@ class CanvasManager {
             case 'line':
                 return Math.hypot(obj.endX - obj.x, obj.endY - obj.y) < MIN_SIZE;
             case 'rect':
-                return obj.width < MIN_SIZE || obj.height < MIN_SIZE;
+                return Math.abs(obj.width) < MIN_SIZE || Math.abs(obj.height) < MIN_SIZE;
             case 'circle':
                 return obj.radius < MIN_SIZE;
             case 'triangle':
@@ -202,32 +206,28 @@ class CanvasManager {
         }
     }
 
-    selectObject(pos) {
-        this.selectedObject = this.objects.slice().reverse().find(obj => 
-            this.checkCollision(pos, obj)
-        );
-        if (this.selectedObject?.type === 'text') {
-            const text = prompt('Edit text:', this.selectedObject.text);
-            if (text) this.selectedObject.text = text;
-        }
-    }
-
     moveObject(pos) {
         this.selectedObject.x = pos.x - this.dragOffset.x;
         this.selectedObject.y = pos.y - this.dragOffset.y;
     }
 
     resizeObject(pos) {
-        const handle = this.resizeHandle;
-        if (handle.includes('e')) this.selectedObject.width = pos.x - this.selectedObject.x;
-        if (handle.includes('s')) this.selectedObject.height = pos.y - this.selectedObject.y;
-        if (handle.includes('w')) {
-            this.selectedObject.width += this.selectedObject.x - pos.x;
-            this.selectedObject.x = pos.x;
-        }
-        if (handle.includes('n')) {
-            this.selectedObject.height += this.selectedObject.y - pos.y;
-            this.selectedObject.y = pos.y;
+        if (this.selectedObject.type === 'circle') {
+            const dx = pos.x - this.selectedObject.x;
+            const dy = pos.y - this.selectedObject.y;
+            this.selectedObject.radius = Math.max(1, Math.hypot(dx, dy));
+        } else {
+            const handle = this.resizeHandle;
+            if (handle.includes('e')) this.selectedObject.width = pos.x - this.selectedObject.x;
+            if (handle.includes('s')) this.selectedObject.height = pos.y - this.selectedObject.y;
+            if (handle.includes('w')) {
+                this.selectedObject.width += this.selectedObject.x - pos.x;
+                this.selectedObject.x = pos.x;
+            }
+            if (handle.includes('n')) {
+                this.selectedObject.height += this.selectedObject.y - pos.y;
+                this.selectedObject.y = pos.y;
+            }
         }
     }
 
@@ -278,7 +278,7 @@ class CanvasManager {
                   (points[0].y - points[1].y) * p.x + 
                   (points[1].x - points[0].x) * p.y) / (2 * area);
 
-        return s >= 0 && t >= 0 && (1 - s - t) >= 0; // 修正判断条件
+        return s >= 0 && t >= 0 && (s + t) <= 1;
     }
 
     redrawCanvas() {
@@ -293,12 +293,23 @@ class CanvasManager {
         if (this.selectedObject) {
             this.ctx.strokeStyle = '#ff0000';
             this.ctx.setLineDash([5, 5]);
-            this.ctx.strokeRect(
-                this.selectedObject.x - 2,
-                this.selectedObject.y - 2,
-                (this.selectedObject.width || 0) + 4,
-                (this.selectedObject.height || 0) + 4
-            );
+            
+            if (this.selectedObject.type === 'circle') {
+                const radius = this.selectedObject.radius;
+                this.ctx.strokeRect(
+                    this.selectedObject.x - radius - 2,
+                    this.selectedObject.y - radius - 2,
+                    radius * 2 + 4,
+                    radius * 2 + 4
+                );
+            } else {
+                this.ctx.strokeRect(
+                    this.selectedObject.x - 2,
+                    this.selectedObject.y - 2,
+                    (this.selectedObject.width || 0) + 4,
+                    (this.selectedObject.height || 0) + 4
+                );
+            }
             this.ctx.setLineDash([]);
             
             ['nw', 'ne', 'sw', 'se'].forEach(handle => {
@@ -342,9 +353,18 @@ class CanvasManager {
     }
 
     getHandlePosition(handle) {
+        if (this.selectedObject?.type === 'circle') {
+            const radius = this.selectedObject.radius;
+            switch (handle) {
+                case 'nw': return { x: this.selectedObject.x - radius, y: this.selectedObject.y - radius };
+                case 'ne': return { x: this.selectedObject.x + radius, y: this.selectedObject.y - radius };
+                case 'sw': return { x: this.selectedObject.x - radius, y: this.selectedObject.y + radius };
+                case 'se': return { x: this.selectedObject.x + radius, y: this.selectedObject.y + radius };
+            }
+        }
         return {
-            x: this.selectedObject.x + (handle.includes('e') ? this.selectedObject.width : 0),
-            y: this.selectedObject.y + (handle.includes('s') ? this.selectedObject.height : 0)
+            x: this.selectedObject.x + (handle.includes('e') ? (this.selectedObject.width || 0) : 0),
+            y: this.selectedObject.y + (handle.includes('s') ? (this.selectedObject.height || 0) : 0)
         };
     }
 
@@ -380,7 +400,7 @@ class CanvasManager {
         this.canvas.style.touchAction = 'none';
     }
 }
-//fix: 当已经有对象选择了，再点击鼠标可选择别的对象，原来对象取消选择
+
 new CanvasManager();
 </script>
 </body>
