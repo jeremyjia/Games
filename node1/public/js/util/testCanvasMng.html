@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+</head>
+<body>
+<script>
+class CanvasManager {
+    constructor() {
+        this.objects = [];
+        this.selectedObject = null;
+        this.currentTool = null;
+        this.isDrawing = false;
+        this.startX = 0;
+        this.startY = 0;
+        this.tempObject = null;
+        this.dragging = false;
+        this.resizeHandle = null;
+
+        this.createToolbar();
+        this.createCanvas();
+        this.bindEvents();
+        this.setupStyles();
+    }
+
+    createToolbar() {
+        this.toolbar = document.createElement('div');
+        const tools = ['text', 'line', 'rect', 'triangle', 'circle'];
+        tools.forEach(tool => {
+            const btn = document.createElement('button');
+            btn.textContent = tool;
+            btn.dataset.tool = tool;
+            btn.addEventListener('click', (e) => this.handleToolClick(e));
+            this.toolbar.appendChild(btn);
+        });
+        document.body.appendChild(this.toolbar);
+    }
+
+    handleToolClick(e) {
+        const tool = e.target.dataset.tool;
+        Array.from(this.toolbar.children).forEach(btn => {
+            btn.style.backgroundColor = btn === e.target ? '#99ccff' : '';
+        });
+        this.currentTool = tool;
+        this.selectedObject = null;
+        this.redrawCanvas();
+    }
+
+    createCanvas() {
+        this.canvas = document.createElement('canvas');
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight - 40;
+        this.ctx = this.canvas.getContext('2d');
+        document.body.appendChild(this.canvas);
+    }
+
+    bindEvents() {
+        this.canvas.addEventListener('pointerdown', e => this.handlePointerDown(e));
+        this.canvas.addEventListener('pointermove', e => this.handlePointerMove(e));
+        this.canvas.addEventListener('pointerup', e => this.handlePointerUp(e));
+    }
+
+    handlePointerDown(e) {
+        const pos = this.getCanvasPos(e);
+        if (this.selectedObject && this.checkResizeHandle(pos)) {
+            this.resizeHandle = this.getResizeHandle(pos);
+        } else if (this.selectedObject) {
+            this.dragging = true;
+            this.dragOffset = {
+                x: pos.x - this.selectedObject.x,
+                y: pos.y - this.selectedObject.y
+            };
+        } else if (this.currentTool) {
+            this.startDrawing(pos);
+        } else {
+            this.selectObject(pos);
+        }
+    }
+
+    handlePointerMove(e) {
+        const pos = this.getCanvasPos(e);
+        if (this.isDrawing) {
+            this.continueDrawing(pos);
+        } else if (this.dragging) {
+            this.moveObject(pos);
+        } else if (this.resizeHandle) {
+            this.resizeObject(pos);
+        }
+        this.redrawCanvas();
+    }
+
+    handlePointerUp() {
+        if (this.isDrawing) {
+            this.finishDrawing();
+        }
+        this.dragging = false;
+        this.resizeHandle = null;
+    }
+
+    startDrawing(pos) {
+        this.isDrawing = true;
+        this.tempObject = {
+            type: this.currentTool,
+            x: pos.x,
+            y: pos.y,
+            color: '#000000',
+            text: 'New Text',
+            ...(this.currentTool === 'text' && { width: 100, height: 20 })
+        };
+    }
+
+    continueDrawing(pos) {
+        switch (this.currentTool) {
+            case 'line':
+                this.tempObject.endX = pos.x;
+                this.tempObject.endY = pos.y;
+                break;
+            case 'rect':
+                this.tempObject.width = pos.x - this.tempObject.x;
+                this.tempObject.height = pos.y - this.tempObject.y;
+                break;
+            case 'circle':
+                this.tempObject.radius = Math.hypot(
+                    pos.x - this.tempObject.x,
+                    pos.y - this.tempObject.y
+                );
+                break;
+            case 'triangle':
+                this.tempObject.points = [
+                    { x: this.tempObject.x, y: pos.y },
+                    { x: pos.x, y: pos.y },
+                    { x: (this.tempObject.x + pos.x)/2, y: this.tempObject.y }
+                ];
+                break;
+        }
+    }
+
+    finishDrawing() {
+        if (this.currentTool === 'text') {
+            const text = prompt('Enter text:', this.tempObject.text);
+            if (text) this.tempObject.text = text;
+        }
+        this.objects.push(this.tempObject);
+        this.isDrawing = false;
+        this.tempObject = null;
+    }
+
+    selectObject(pos) {
+        this.selectedObject = this.objects.slice().reverse().find(obj => 
+            this.checkCollision(pos, obj)
+        );
+        if (this.selectedObject?.type === 'text') {
+            const text = prompt('Edit text:', this.selectedObject.text);
+            if (text) this.selectedObject.text = text;
+        }
+    }
+
+    moveObject(pos) {
+        this.selectedObject.x = pos.x - this.dragOffset.x;
+        this.selectedObject.y = pos.y - this.dragOffset.y;
+    }
+
+    resizeObject(pos) {
+        const handle = this.resizeHandle;
+        if (handle.includes('e')) this.selectedObject.width = pos.x - this.selectedObject.x;
+        if (handle.includes('s')) this.selectedObject.height = pos.y - this.selectedObject.y;
+        if (handle.includes('w')) {
+            this.selectedObject.width += this.selectedObject.x - pos.x;
+            this.selectedObject.x = pos.x;
+        }
+        if (handle.includes('n')) {
+            this.selectedObject.height += this.selectedObject.y - pos.y;
+            this.selectedObject.y = pos.y;
+        }
+    }
+
+    checkCollision(pos, obj) {
+        switch (obj.type) {
+            case 'rect': return pos.x >= obj.x && pos.x <= obj.x + obj.width &&
+                              pos.y >= obj.y && pos.y <= obj.y + obj.height;
+            case 'circle': return Math.hypot(pos.x - obj.x, pos.y - obj.y) <= obj.radius;
+            case 'line': return this.pointToLineDistance(pos, obj) < 5;
+            case 'triangle': return this.pointInTriangle(pos, obj.points);
+            case 'text': return pos.x >= obj.x && pos.x <= obj.x + obj.width &&
+                               pos.y >= obj.y && pos.y <= obj.y + obj.height;
+        }
+    }
+
+    pointToLineDistance(p, line) {
+        const dx = line.endX - line.x;
+        const dy = line.endY - line.y;
+        const t = ((p.x - line.x) * dx + (p.y - line.y) * dy) / (dx*dx + dy*dy);
+        const tClamped = Math.max(0, Math.min(1, t));
+        const proj = {
+            x: line.x + dx * tClamped,
+            y: line.y + dy * tClamped
+        };
+        return Math.hypot(p.x - proj.x, p.y - proj.y);
+    }
+
+    pointInTriangle(p, points) {
+        const area = 0.5 * (-points[1].y*points[2].x + points[0].y*(-points[1].x + points[2].x) +
+                            points[0].x*(points[1].y - points[2].y) + points[1].x*points[2].y);
+        const s = 1/(2*area)*(points[0].y*points[2].x - points[0].x*points[2].y +
+                             (points[2].y - points[0].y)*p.x + (points[0].x - points[2].x)*p.y);
+        const t = 1/(2*area)*(points[0].x*points[1].y - points[0].y*points[1].x +
+                             (points[0].y - points[1].y)*p.x + (points[1].x - points[0].x)*p.y);
+        return s > 0 && t > 0 && (1-s-t) > 0;
+    }
+
+    redrawCanvas() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        this.objects.forEach(obj => {
+            this.ctx.fillStyle = obj.color || '#000000';
+            this.ctx.strokeStyle = obj.color || '#000000';
+            
+            switch (obj.type) {
+                case 'line':
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(obj.x, obj.y);
+                    this.ctx.lineTo(obj.endX, obj.endY);
+                    this.ctx.stroke();
+                    break;
+                case 'rect':
+                    this.ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
+                    break;
+                case 'circle':
+                    this.ctx.beginPath();
+                    this.ctx.arc(obj.x, obj.y, obj.radius, 0, Math.PI*2);
+                    this.ctx.stroke();
+                    break;
+                case 'triangle':
+                    this.ctx.beginPath();
+                    obj.points.forEach((p, i) => 
+                        i === 0 ? this.ctx.moveTo(p.x, p.y) : this.ctx.lineTo(p.x, p.y));
+                    this.ctx.closePath();
+                    this.ctx.stroke();
+                    break;
+                case 'text':
+                    this.ctx.fillText(obj.text, obj.x, obj.y + 15);
+                    break;
+            }
+        });
+
+        if (this.selectedObject) {
+            this.ctx.strokeStyle = '#ff0000';
+            this.ctx.setLineDash([5, 5]);
+            this.ctx.strokeRect(
+                this.selectedObject.x - 2,
+                this.selectedObject.y - 2,
+                (this.selectedObject.width || 0) + 4,
+                (this.selectedObject.height || 0) + 4
+            );
+            this.ctx.setLineDash([]);
+            
+            // Draw resize handles
+            ['nw', 'ne', 'sw', 'se'].forEach(handle => {
+                const pos = this.getHandlePosition(handle);
+                this.ctx.fillStyle = '#ff0000';
+                this.ctx.fillRect(pos.x - 3, pos.y - 3, 6, 6);
+            });
+        }
+    }
+
+    getHandlePosition(handle) {
+        return {
+            x: this.selectedObject.x + (handle.includes('e') ? this.selectedObject.width : 0),
+            y: this.selectedObject.y + (handle.includes('s') ? this.selectedObject.height : 0)
+        };
+    }
+
+    checkResizeHandle(pos) {
+        return ['nw', 'ne', 'sw', 'se'].some(handle => {
+            const hPos = this.getHandlePosition(handle);
+            return Math.abs(pos.x - hPos.x) < 5 && Math.abs(pos.y - hPos.y) < 5;
+        });
+    }
+
+    getResizeHandle(pos) {
+        return ['nw', 'ne', 'sw', 'se'].find(handle => {
+            const hPos = this.getHandlePosition(handle);
+            return Math.abs(pos.x - hPos.x) < 5 && Math.abs(pos.y - hPos.y) < 5;
+        });
+    }
+
+    getCanvasPos(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        return {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+    }
+
+    setupStyles() {
+        this.toolbar.style.padding = '10px';
+        this.toolbar.style.backgroundColor = '#f0f0f0';
+        this.toolbar.querySelectorAll('button').forEach(btn => {
+            btn.style.margin = '0 5px';
+            btn.style.padding = '5px 10px';
+        });
+        this.canvas.style.touchAction = 'none';
+    }
+}
+
+// 初始化
+new CanvasManager();
+</script>
+</body>
+</html>
