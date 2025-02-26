@@ -207,8 +207,16 @@ class CanvasManager {
     }
 
     moveObject(pos) {
+        const dx = pos.x - this.selectedObject.x - this.dragOffset.x;
+        const dy = pos.y - this.selectedObject.y - this.dragOffset.y;
         this.selectedObject.x = pos.x - this.dragOffset.x;
         this.selectedObject.y = pos.y - this.dragOffset.y;
+        if (this.selectedObject.type === 'triangle') {
+            this.selectedObject.points.forEach(point => {
+                point.x += dx;
+                point.y += dy;
+            });
+        }
     }
 
     resizeObject(pos) {
@@ -216,7 +224,44 @@ class CanvasManager {
             const dx = pos.x - this.selectedObject.x;
             const dy = pos.y - this.selectedObject.y;
             this.selectedObject.radius = Math.max(1, Math.hypot(dx, dy));
-        } else {
+        }else if (this.selectedObject.type === 'triangle') {
+            const handle = this.resizeHandle;
+            const points = this.selectedObject.points;
+            let xs = points.map(p => p.x);
+            let ys = points.map(p => p.y);
+            let minX = Math.min(...xs);
+            let maxX = Math.max(...xs);
+            let minY = Math.min(...ys);
+            let maxY = Math.max(...ys);
+
+            switch (handle) {
+                case 'nw':
+                    minX = pos.x;
+                    minY = pos.y;
+                    break;
+                case 'ne':
+                    maxX = pos.x;
+                    minY = pos.y;
+                    break;
+                case 'sw':
+                    minX = pos.x;
+                    maxY = pos.y;
+                    break;
+                case 'se':
+                    maxX = pos.x;
+                    maxY = pos.y;
+                    break;
+            }
+
+            // 更新三角形的顶点以匹配新的包围盒
+            points[0].x = minX;      // 左下角
+            points[0].y = maxY;
+            points[1].x = maxX;      // 右下角
+            points[1].y = maxY;
+            points[2].x = (minX + maxX) / 2; // 顶点
+            points[2].y = minY;
+        }
+        else {
             const handle = this.resizeHandle;
             if (handle.includes('e')) this.selectedObject.width = pos.x - this.selectedObject.x;
             if (handle.includes('s')) this.selectedObject.height = pos.y - this.selectedObject.y;
@@ -361,11 +406,28 @@ class CanvasManager {
                 case 'sw': return { x: this.selectedObject.x - radius, y: this.selectedObject.y + radius };
                 case 'se': return { x: this.selectedObject.x + radius, y: this.selectedObject.y + radius };
             }
+        }else if (this.selectedObject?.type === 'triangle') {
+            const points = this.selectedObject.points;
+            const xs = points.map(p => p.x);
+            const ys = points.map(p => p.y);
+            const minX = Math.min(...xs);
+            const maxX = Math.max(...xs);
+            const minY = Math.min(...ys);
+            const maxY = Math.max(...ys);
+            switch (handle) {
+                case 'nw': return { x: minX, y: minY };
+                case 'ne': return { x: maxX, y: minY };
+                case 'sw': return { x: minX, y: maxY };
+                case 'se': return { x: maxX, y: maxY };
+                default: return { x: 0, y: 0 };
+            }
         }
-        return {
-            x: this.selectedObject.x + (handle.includes('e') ? (this.selectedObject.width || 0) : 0),
-            y: this.selectedObject.y + (handle.includes('s') ? (this.selectedObject.height || 0) : 0)
-        };
+        else{
+            return {
+                x: this.selectedObject.x + (handle.includes('e') ? (this.selectedObject.width || 0) : 0),
+                y: this.selectedObject.y + (handle.includes('s') ? (this.selectedObject.height || 0) : 0)
+            }; 
+        }
     }
 
     checkResizeHandle(pos) {
@@ -400,7 +462,7 @@ class CanvasManager {
         this.canvas.style.touchAction = 'none';
     }
 }
-
+//fix:三角形不能移动，不能改大小
 new CanvasManager();
 </script>
 </body>
