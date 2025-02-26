@@ -27,6 +27,7 @@ echo   ^<meta name="viewport" content="width=device-width, initial-scale=1.0"^> 
 echo   ^<title^>Node App^</title^> >> index.html
 echo ^</head^> >> index.html
 echo ^<body^> >> index.html
+echo   ^<script src="/util/floatingWindow.js"^>^</script^> >> index.html
 echo   ^<script src="main.js"^>^</script^> >> index.html
 echo ^</body^> >> index.html
 echo ^</html^> >> index.html
@@ -61,7 +62,7 @@ echo         if (!PluginClass) throw new Error('插件类未注册'); >> main.js
 echo         this.plugins[name] = new PluginClass(); >> main.js
 echo         this.plugins[name].showUI(); >> main.js
 echo         if (!this.plugins[name].window) { >> main.js
-echo           console.error('插件未正确初始化window属性'); >> main.js
+echo           console.error(' 插件未正确初始化 window 属性 ' ); >> main.js
 echo         } >> main.js
 echo       }).catch(err =^> console.error('加载失败:', err)); >> main.js
 echo     } else { >> main.js
@@ -77,7 +78,7 @@ echo class p1 { > p1.js
 echo   showUI() { >> p1.js
 echo     const content = document.createElement('div'); >> p1.js
 echo     content.innerHTML = '^<h1^>Plugin 1^</h1^>'; >> p1.js
-echo     this.window = new FloatingWindow(content, { title: 'Plugin 1' }); >> p1.js
+echo     this.window = new window.FloatingWindow(content, { title: 'Plugin 1' });  >> p1.js
 echo   } >> p1.js
 echo } >> p1.js
 echo window.p1 = p1; >> p1.js
@@ -86,7 +87,7 @@ echo class p2 { > p2.js
 echo   showUI() { >> p2.js
 echo     const content = document.createElement('div'); >> p2.js
 echo     content.innerHTML = '^<h1^>Plugin 2^</h1^>'; >> p2.js
-echo     this.window = new FloatingWindow(content, { title: 'Plugin 2' }); >> p2.js
+echo     this.window = new window.FloatingWindow(content, { title: 'Plugin 2' }); >> p2.js
 echo   } >> p2.js
 echo } >> p2.js
 echo window.p2 = p2; >> p2.js
@@ -94,12 +95,11 @@ echo window.p2 = p2; >> p2.js
 cd ..
 mkdir util
 cd util
-
+ 
 echo class FloatingWindow { > floatingWindow.js
 echo   constructor(content, options) { >> floatingWindow.js
 echo     if (!content) throw new Error('必须提供内容参数'); >> floatingWindow.js
-echo     this.element = document.createElement('div'); >> floatingWindow.js
-echo     console.assert(this.element, '元素创建失败'); >> floatingWindow.js
+echo     this.visible = true; >> floatingWindow.js
 echo     this.window = document.createElement('div'); >> floatingWindow.js
 echo     this.window.style = 'position:absolute;border:1px solid #000;background:#fff;z-index:10000'; >> floatingWindow.js
 echo     this.header = document.createElement('div'); >> floatingWindow.js
@@ -125,6 +125,10 @@ echo         this.window.style.top = (e.clientY - offset[1]) + 'px'; >> floating
 echo       } >> floatingWindow.js
 echo     }; >> floatingWindow.js
 echo     document.onmouseup = () =^> isDragging = false; >> floatingWindow.js
+echo   } >> floatingWindow.js
+echo   toggleVisibility() { >> floatingWindow.js
+echo     this.visible = !this.visible; >> floatingWindow.js
+echo     this.window.style.display = this.visible ? '' : 'none'; >> floatingWindow.js
 echo   } >> floatingWindow.js
 echo } >> floatingWindow.js
  
