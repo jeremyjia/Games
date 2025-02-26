@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>node1</title>
-    <script src="util/NavigationMenu.js"></script>
+    <script src="NavigationMenu.js"></script>
 </head>
 <body>
 <script>
@@ -14,8 +14,10 @@ const menuData = [
         text: '首页 v0.13',
         url: '/'
     }, 
-    {   text: 'js',  url: 'js/index.html'  },
-    {text: 'util',url: 'index.html'},  
+    {   text: 'js',  url: 'index.html'  },
+    {text: 'testCanvasMng',url: 'testCanvasMng.html'},  
+    {text: 'testFloatingWindow',url: 'testFloatingWindow.html'},  
+    {text: 'testNavigationMenu',url: 'testNavigationMenu.html'},  
 ];
 
 new NavigationMenu(menuData);
