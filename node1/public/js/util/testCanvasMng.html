@@ -211,38 +211,15 @@ class CanvasManager {
     redrawCanvas() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        this.objects.forEach(obj => {
-            this.ctx.fillStyle = obj.color || '#000000';
-            this.ctx.strokeStyle = obj.color || '#000000';
-            
-            switch (obj.type) {
-                case 'line':
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(obj.x, obj.y);
-                    this.ctx.lineTo(obj.endX, obj.endY);
-                    this.ctx.stroke();
-                    break;
-                case 'rect':
-                    this.ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
-                    break;
-                case 'circle':
-                    this.ctx.beginPath();
-                    this.ctx.arc(obj.x, obj.y, obj.radius, 0, Math.PI*2);
-                    this.ctx.stroke();
-                    break;
-                case 'triangle':
-                    this.ctx.beginPath();
-                    obj.points.forEach((p, i) => 
-                        i === 0 ? this.ctx.moveTo(p.x, p.y) : this.ctx.lineTo(p.x, p.y));
-                    this.ctx.closePath();
-                    this.ctx.stroke();
-                    break;
-                case 'text':
-                    this.ctx.fillText(obj.text, obj.x, obj.y + 15);
-                    break;
-            }
-        });
+        // 绘制已存在的对象
+        this.objects.forEach(obj => this.drawObject(obj));
+        
+        // 绘制正在创建中的临时对象
+        if (this.isDrawing && this.tempObject) {
+            this.drawObject(this.tempObject, true);
+        }
 
+        // 绘制选中状态
         if (this.selectedObject) {
             this.ctx.strokeStyle = '#ff0000';
             this.ctx.setLineDash([5, 5]);
@@ -254,7 +231,7 @@ class CanvasManager {
             );
             this.ctx.setLineDash([]);
             
-            // Draw resize handles
+            // 绘制调整手柄
             ['nw', 'ne', 'sw', 'se'].forEach(handle => {
                 const pos = this.getHandlePosition(handle);
                 this.ctx.fillStyle = '#ff0000';
@@ -262,7 +239,41 @@ class CanvasManager {
             });
         }
     }
+   
 
+    drawObject(obj, isTemp = false) {
+        this.ctx.fillStyle = obj.color || '#000000';
+        this.ctx.strokeStyle = isTemp ? '#888888' : obj.color || '#000000'; // 临时对象用灰色显示
+        
+        switch (obj.type) {
+            case 'line':
+                this.ctx.beginPath();
+                this.ctx.moveTo(obj.x, obj.y);
+                this.ctx.lineTo(obj.endX, obj.endY);
+                this.ctx.stroke();
+                break;
+            case 'rect':
+                this.ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
+                break;
+            case 'circle':
+                this.ctx.beginPath();
+                this.ctx.arc(obj.x, obj.y, obj.radius, 0, Math.PI*2);
+                this.ctx.stroke();
+                break;
+            case 'triangle':
+                this.ctx.beginPath();
+                obj.points.forEach((p, i) => 
+                    i === 0 ? this.ctx.moveTo(p.x, p.y) : this.ctx.lineTo(p.x, p.y));
+                this.ctx.closePath();
+                this.ctx.stroke();
+                break;
+            case 'text':
+                this.ctx.fillText(obj.text, obj.x, obj.y + 15);
+                break;
+        }
+    }
+
+    
     getHandlePosition(handle) {
         return {
             x: this.selectedObject.x + (handle.includes('e') ? this.selectedObject.width : 0),
