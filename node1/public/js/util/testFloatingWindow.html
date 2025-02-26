@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>浮动窗口测试</title>
+    <style>
+        #toolbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #f0f0f0;
+            padding: 10px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .floating-window {
+            position: fixed;
+            border: 1px solid #ccc;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            min-width: 300px;
+            min-height: 200px;
+        }
+
+        .window-title {
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            cursor: move;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .window-content {
+            padding: 15px;
+        }
+
+        .close-btn {
+            background: #ff4444;
+            border: none;
+            color: white;
+            padding: 2px 8px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .toggle-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="toolbar">
+        <button id="newWindow" class="toggle-btn">新建窗口</button>
+    </div>
+
+    <script>
+        class FloatingWindow {
+            constructor(title = '新窗口') {
+                this.windowId = Date.now();
+                this.isVisible = true;
+                this.createWindow(title);
+                this.addDragListeners();
+            }
+
+            createWindow(title) {
+                // 创建窗口容器
+                this.windowElement = document.createElement('div');
+                this.windowElement.className = 'floating-window';
+                this.windowElement.style.left = `${Math.random() * 300}px`;
+                this.windowElement.style.top = `${Math.random() * 300}px`;
+
+                // 窗口标题栏
+                const titleBar = document.createElement('div');
+                titleBar.className = 'window-title';
+                
+                // 标题文字
+                const titleText = document.createElement('span');
+                titleText.textContent = title;
+
+                // 关闭按钮
+                const closeBtn = document.createElement('button');
+                closeBtn.className = 'close-btn';
+                closeBtn.innerHTML = '×';
+                closeBtn.onclick = () => this.close();
+
+                // 组装元素
+                titleBar.appendChild(titleText);
+                titleBar.appendChild(closeBtn);
+                this.windowElement.appendChild(titleBar);
+                
+                // 内容区域
+                const content = document.createElement('div');
+                content.className = 'window-content';
+                content.innerHTML = `<p>窗口内容（${title}）</p>`;
+                this.windowElement.appendChild(content);
+
+                document.body.appendChild(this.windowElement);
+            }
+
+            addDragListeners() {
+                const titleBar = this.windowElement.querySelector('.window-title');
+                let isDragging = false;
+                let startX, startY, initialX, initialY;
+
+                const startDrag = (e) => {
+                    isDragging = true;
+                    const rect = this.windowElement.getBoundingClientRect();
+                    initialX = rect.left;
+                    initialY = rect.top;
+                    startX = e.clientX || e.touches[0].clientX;
+                    startY = e.clientY || e.touches[0].clientY;
+                    
+                    // 置顶窗口
+                    Array.from(document.querySelectorAll('.floating-window')).forEach(win => {
+                        win.style.zIndex = 1;
+                    });
+                    this.windowElement.style.zIndex = 100;
+                };
+
+                const duringDrag = (e) => {
+                    if (!isDragging) return;
+                    const currentX = e.clientX || e.touches[0].clientX;
+                    const currentY = e.clientY || e.touches[0].clientY;
+                    const dx = currentX - startX;
+                    const dy = currentY - startY;
+                    
+                    this.windowElement.style.left = `${initialX + dx}px`;
+                    this.windowElement.style.top = `${initialY + dy}px`;
+                };
+
+                const stopDrag = () => {
+                    isDragging = false;
+                };
+
+                // 鼠标事件
+                titleBar.addEventListener('mousedown', startDrag);
+                document.addEventListener('mousemove', duringDrag);
+                document.addEventListener('mouseup', stopDrag);
+
+                // 触摸事件
+                titleBar.addEventListener('touchstart', startDrag);
+                document.addEventListener('touchmove', duringDrag);
+                document.addEventListener('touchend', stopDrag);
+            }
+
+            toggleWin() {
+                this.isVisible = !this.isVisible;
+                this.windowElement.style.display = this.isVisible ? 'block' : 'none';
+            }
+
+            close() {
+                this.windowElement.remove();
+                const toggleBtn = document.querySelector(`[data-window-id="${this.windowId}"]`);
+                if (toggleBtn) toggleBtn.remove();
+            }
+        }
+
+        // 测试代码
+        const toolbar = document.getElementById('toolbar');
+        let windowCount = 1;
+
+        document.getElementById('newWindow').addEventListener('click', () => {
+            // 创建新窗口
+            const newWindow = new FloatingWindow(`窗口 ${windowCount}`);
+            
+            // 创建对应的切换按钮
+            const toggleBtn = document.createElement('button');
+            toggleBtn.className = 'toggle-btn';
+            toggleBtn.textContent = `窗口 ${windowCount}`;
+            toggleBtn.dataset.windowId = newWindow.windowId;
+            
+            toggleBtn.addEventListener('click', () => {
+                newWindow.toggleWin();
+            });
+
+            toolbar.appendChild(toggleBtn);
+            windowCount++;
+        });
+    </script>
+</body>
+</html>
