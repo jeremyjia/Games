@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+<script>
+class VideoEditor {
+    constructor() {
+        this.scenes = [];
+        this.currentSceneIndex = -1;
+        this.isPlaying = false;
+        this.currentFrame = 0;
+        this.animationId = null;
+        this.createViewportMeta();
+        this.initDOM();
+    }
+
+    createViewportMeta() {
+        const meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, initial-scale=1.0';
+        document.head.appendChild(meta);
+    }
+
+    initDOM() {
+        this.createSceneToolbar();
+        this.createCanvas();
+        this.createPlayToolbar();
+    }
+
+    createSceneToolbar() {
+        this.sceneToolbar = document.createElement('div');
+        this.sceneToolbar.style.cssText = `
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            padding: 5px;
+            background: #f0f0f0;
+        `;
+
+        const newSceneBtn = document.createElement('button');
+        newSceneBtn.textContent = '新建场景';
+        newSceneBtn.onclick = () => this.addScene();
+        this.sceneToolbar.appendChild(newSceneBtn);
+        document.body.appendChild(this.sceneToolbar);
+    }
+
+    addScene() {
+        const scene = {
+            id: Date.now(),
+            color: this.getRandomColor(),
+            duration: 30,
+            element: null,
+            btn: null
+        };
+
+        const container = document.createElement('div');
+        container.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: white;
+            padding: 3px;
+            border-radius: 3px;
+        `;
+
+        const sceneBtn = document.createElement('button');
+        sceneBtn.textContent = `场景 ${this.scenes.length + 1}`;
+        sceneBtn.style.backgroundColor = scene.color;
+        sceneBtn.onclick = () => this.selectScene(scene.id);
+
+        const durationInput = document.createElement('input');
+        durationInput.type = 'number';
+        durationInput.value = scene.duration;
+        durationInput.style.width = '60px';
+        durationInput.onchange = (e) => scene.duration = Math.max(1, parseInt(e.target.value) || 1);
+
+        const colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.value = scene.color;
+        colorInput.oninput = (e) => {
+            scene.color = e.target.value;
+            sceneBtn.style.backgroundColor = scene.color;
+            if (this.currentSceneIndex === this.scenes.indexOf(scene)) {
+                this.updateCanvasColor(scene.color);
+            }
+        };
+
+        container.appendChild(sceneBtn);
+        container.appendChild(durationInput);
+        container.appendChild(colorInput);
+        this.sceneToolbar.appendChild(container);
+
+        scene.element = container;
+        scene.btn = sceneBtn;
+        this.scenes.push(scene);
+        this.selectScene(scene.id);
+    }
+
+    selectScene(id) {
+        const index = this.scenes.findIndex(s => s.id === id);
+        this.scenes.forEach((s, i) => {
+            s.btn.style.border = i === index ? '3px solid #000' : '';
+        });
+        this.currentSceneIndex = index;
+        this.updateCanvasColor(this.scenes[index].color);
+    }
+
+    createCanvas() {
+        this.canvas = document.createElement('canvas');
+        this.canvas.width = 300;
+        this.canvas.height = 150;
+        this.canvas.style.cssText = `
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+            border: 2px solid #666;
+            margin: 10px;
+        `;
+        document.body.appendChild(this.canvas);
+        this.ctx = this.canvas.getContext('2d');
+    }
+
+    createPlayToolbar() {
+        this.playToolbar = document.createElement('div');
+        this.playToolbar.style.cssText = `
+            display: flex;
+            gap: 10px;
+            padding: 5px;
+            background: #f0f0f0;
+        `;
+
+        this.playBtn = document.createElement('button');
+        this.playBtn.textContent = '播放';
+        this.playBtn.onclick = () => this.togglePlay();
+
+        const fpsContainer = document.createElement('div');
+        fpsContainer.innerHTML = `
+            <label>帧率: <input type="number" value="30" min="1" style="width:50px"></label>
+        `;
+        this.fpsInput = fpsContainer.querySelector('input');
+
+        this.playToolbar.appendChild(this.playBtn);
+        this.playToolbar.appendChild(fpsContainer);
+        document.body.appendChild(this.playToolbar);
+    }
+
+    togglePlay() {
+        if (this.isPlaying) {
+            this.stopPlay();
+        } else {
+            this.startPlay();
+        }
+    }
+
+    startPlay() {
+        if (this.scenes.length === 0) return;
+        this.isPlaying = true;
+        this.playBtn.textContent = '停止';
+        this.currentFrame = 0;
+        this.playStart = performance.now();
+        this.animate();
+    }
+
+    stopPlay() {
+        this.isPlaying = false;
+        this.playBtn.textContent = '播放';
+        cancelAnimationFrame(this.animationId);
+    }
+
+    animate() {
+        if (!this.isPlaying) return;
+
+        const totalFrames = this.scenes.reduce((sum, s) => sum + s.duration, 0);
+        if (this.currentFrame >= totalFrames) {
+            this.stopPlay();
+            return;
+        }
+
+        const fps = parseInt(this.fpsInput.value) || 30;
+        const frameTime = 1000 / fps;
+        const now = performance.now();
+        const elapsed = now - this.playStart;
+
+        const targetFrame = Math.floor(elapsed / frameTime);
+        if (targetFrame > this.currentFrame) {
+            this.currentFrame = targetFrame;
+            this.updatePlayback();
+        }
+
+        this.animationId = requestAnimationFrame(() => this.animate());
+    }
+
+    updatePlayback() {
+        let accumulated = 0;
+        for (const scene of this.scenes) {
+            accumulated += scene.duration;
+            if (this.currentFrame < accumulated) {
+                this.updateCanvasColor(scene.color);
+                return;
+            }
+        }
+    }
+
+    updateCanvasColor(color) {
+        this.ctx.fillStyle = color;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    getRandomColor() {
+        return `hsl(${Math.random() * 360}, 70%, 60%)`;
+    }
+}
+
+// 初始化编辑器
+new VideoEditor();
+</script>
+</body>
+</html>
