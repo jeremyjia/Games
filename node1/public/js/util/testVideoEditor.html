@@ -25,7 +25,7 @@ class DraggableWindow {
             min-width: 300px;
         `;
 
-        // 标题栏
+        // Title bar with touch-action
         this.titleBar = document.createElement('div');
         this.titleBar.textContent = title;
         this.titleBar.style.cssText = `
@@ -34,9 +34,9 @@ class DraggableWindow {
             cursor: move;
             user-select: none;
             border-bottom: 1px solid #ddd;
+            touch-action: none; /* Prevent browser touch actions */
         `;
 
-        // 内容容器
         this.contentContainer = document.createElement('div');
         this.contentContainer.style.cssText = `
             padding: 10px;
@@ -53,8 +53,9 @@ class DraggableWindow {
 
     addDragListeners() {
         let isDragging = false;
-        let startX, startY, initialX, initialY;
+        let initialX, initialY;
 
+        // Mouse handlers
         const mouseDownHandler = (e) => {
             isDragging = true;
             initialX = e.clientX - this.windowElement.offsetLeft;
@@ -73,9 +74,37 @@ class DraggableWindow {
             isDragging = false;
         };
 
+        // Touch handlers
+        const touchStartHandler = (e) => {
+            e.preventDefault();
+            isDragging = true;
+            const touch = e.touches[0];
+            initialX = touch.clientX - this.windowElement.offsetLeft;
+            initialY = touch.clientY - this.windowElement.offsetTop;
+        };
+
+        const touchMoveHandler = (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            const newX = touch.clientX - initialX;
+            const newY = touch.clientY - initialY;
+            this.windowElement.style.left = `${newX}px`;
+            this.windowElement.style.top = `${newY}px`;
+        };
+
+        const touchEndHandler = () => {
+            isDragging = false;
+        };
+
+        // Add event listeners
         this.titleBar.addEventListener('mousedown', mouseDownHandler);
         document.addEventListener('mousemove', mouseMoveHandler);
         document.addEventListener('mouseup', mouseUpHandler);
+        
+        this.titleBar.addEventListener('touchstart', touchStartHandler);
+        document.addEventListener('touchmove', touchMoveHandler, { passive: false });
+        document.addEventListener('touchend', touchEndHandler);
     }
 
     toggleVisibility() {
@@ -274,7 +303,7 @@ class VideoEditor {
     selectScene(id) {
         const index = this.scenes.findIndex(s => s.id === id);
         this.scenes.forEach((s, i) => {
-            s.btn.style.border = i === index ? '3px solid #000' : '';
+            s.btn.style.border = i === index ? '5px solid #f00' : '';
         });
         this.currentSceneIndex = index;
         this.updateCanvasColor(this.scenes[index].color);
@@ -385,7 +414,7 @@ class VideoEditor {
         return `hsl(${Math.random() * 360}, 70%, 60%)`;
     }
 }
-//升级： 场景数据变化，视频数据窗口也变化
+//fix: can't move window on cell phone
 new VideoEditor();
 </script>
 </body>
