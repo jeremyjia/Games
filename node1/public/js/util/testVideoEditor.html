@@ -117,6 +117,7 @@ class VideoEditor {
     constructor() {
         this.scenes = [];
         this.currentSceneIndex = -1;
+        this.currentPlaySceneIndex = -1; // 新增：跟踪播放中的场景
         this.isPlaying = false;
         this.currentFrame = 0;
         this.animationId = null;
@@ -362,6 +363,7 @@ class VideoEditor {
         this.playBtn.textContent = '停止';
         this.currentFrame = 0;
         this.playStart = performance.now();
+        this.currentPlaySceneIndex = -1; // 重置播放场景跟踪
         this.animate();
     }
 
@@ -369,6 +371,25 @@ class VideoEditor {
         this.isPlaying = false;
         this.playBtn.textContent = '播放';
         cancelAnimationFrame(this.animationId);
+        this.clearPlayHighlights(); // 新增：清除播放高亮
+    }
+
+    // 新增：高亮当前播放场景
+    highlightSceneButton(index) {
+        this.scenes.forEach((scene, i) => {
+            if (i === index) {
+                scene.btn.style.outline = "2px solid #00f";
+                scene.btn.style.outlineOffset = "2px";
+            } else {
+                scene.btn.style.outline = "";
+            }
+        });
+    }
+    // 新增：清除播放高亮
+    clearPlayHighlights() {
+        this.scenes.forEach(scene => {
+            scene.btn.style.outline = "";
+        });
     }
 
     animate() {
@@ -396,11 +417,24 @@ class VideoEditor {
 
     updatePlayback() {
         let accumulated = 0;
-        for (const scene of this.scenes) {
-            accumulated += scene.duration;
+        let currentSceneIndex = -1;
+        
+        // 查找当前播放的场景
+        for (let i = 0; i < this.scenes.length; i++) {
+            accumulated += this.scenes[i].duration;
             if (this.currentFrame < accumulated) {
-                this.updateCanvasColor(scene.color);
-                return;
+                currentSceneIndex = i;
+                break;
+            }
+        }
+
+        if (currentSceneIndex !== -1) {
+            this.updateCanvasColor(this.scenes[currentSceneIndex].color);
+            
+            // 更新播放场景高亮
+            if (this.currentPlaySceneIndex !== currentSceneIndex) {
+                this.highlightSceneButton(currentSceneIndex);
+                this.currentPlaySceneIndex = currentSceneIndex;
             }
         }
     }
@@ -414,7 +448,7 @@ class VideoEditor {
         return `hsl(${Math.random() * 360}, 70%, 60%)`;
     }
 }
-//fix: can't move window on cell phone
+//升级：播放时，场景按钮跟着高亮
 new VideoEditor();
 </script>
 </body>
