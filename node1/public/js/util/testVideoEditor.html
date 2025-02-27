@@ -5,6 +5,85 @@
 </head>
 <body>
 <script>
+    class DraggableWindow {
+    constructor(title, content) {
+        this.isVisible = true;
+        this.createWindow(title, content);
+        this.addDragListeners();
+    }
+
+    createWindow(title, content) {
+        this.windowElement = document.createElement('div');
+        this.windowElement.style.cssText = `
+            position: fixed;
+            left: 20px;
+            top: 20px;
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+            min-width: 300px;
+        `;
+
+        // 标题栏
+        this.titleBar = document.createElement('div');
+        this.titleBar.textContent = title;
+        this.titleBar.style.cssText = `
+            padding: 8px;
+            background: #f0f0f0;
+            cursor: move;
+            user-select: none;
+            border-bottom: 1px solid #ddd;
+        `;
+
+        // 内容容器
+        this.contentContainer = document.createElement('div');
+        this.contentContainer.style.cssText = `
+            padding: 10px;
+            background: white;
+            max-height: 60vh;
+            overflow-y: auto;
+        `;
+        this.contentContainer.appendChild(content);
+
+        this.windowElement.appendChild(this.titleBar);
+        this.windowElement.appendChild(this.contentContainer);
+        document.body.appendChild(this.windowElement);
+    }
+
+    addDragListeners() {
+        let isDragging = false;
+        let startX, startY, initialX, initialY;
+
+        const mouseDownHandler = (e) => {
+            isDragging = true;
+            initialX = e.clientX - this.windowElement.offsetLeft;
+            initialY = e.clientY - this.windowElement.offsetTop;
+        };
+
+        const mouseMoveHandler = (e) => {
+            if (!isDragging) return;
+            const newX = e.clientX - initialX;
+            const newY = e.clientY - initialY;
+            this.windowElement.style.left = `${newX}px`;
+            this.windowElement.style.top = `${newY}px`;
+        };
+
+        const mouseUpHandler = () => {
+            isDragging = false;
+        };
+
+        this.titleBar.addEventListener('mousedown', mouseDownHandler);
+        document.addEventListener('mousemove', mouseMoveHandler);
+        document.addEventListener('mouseup', mouseUpHandler);
+    }
+
+    toggleVisibility() {
+        this.isVisible = !this.isVisible;
+        this.windowElement.style.display = this.isVisible ? 'block' : 'none';
+    }
+}
+
 class VideoEditor {
     constructor() {
         this.scenes = [];
@@ -22,9 +101,10 @@ class VideoEditor {
         meta.content = 'width=device-width, initial-scale=1.0';
         document.head.appendChild(meta);
     }
-
     initDOM() {
         this.createSceneToolbar();
+        this.sceneWindow = new DraggableWindow('场景管理', this.sceneToolbar);
+        this.createVideoManagerToolbar();
         this.createCanvas();
         this.createPlayToolbar();
     }
@@ -33,18 +113,48 @@ class VideoEditor {
         this.sceneToolbar = document.createElement('div');
         this.sceneToolbar.style.cssText = `
             display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            padding: 5px;
-            background: #f0f0f0;
+            flex-direction: column;
+            gap: 8px;
         `;
 
         const newSceneBtn = document.createElement('button');
         newSceneBtn.textContent = '新建场景';
+        newSceneBtn.style.cssText = `
+            padding: 6px 12px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        `;
         newSceneBtn.onclick = () => this.addScene();
         this.sceneToolbar.appendChild(newSceneBtn);
-        document.body.appendChild(this.sceneToolbar);
     }
+    createVideoManagerToolbar() {
+        this.videoManagerToolbar = document.createElement('div');
+        this.videoManagerToolbar.style.cssText = `
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            background: #e0e0e0;
+            border-bottom: 1px solid #ccc;
+        `;
+
+        const toggleWindowBtn = document.createElement('button');
+        toggleWindowBtn.textContent = '切换场景窗口';
+        toggleWindowBtn.style.cssText = `
+            padding: 6px 12px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        `;
+        toggleWindowBtn.onclick = () => this.sceneWindow.toggleVisibility();
+
+        this.videoManagerToolbar.appendChild(toggleWindowBtn);
+        document.body.appendChild(this.videoManagerToolbar);
+    } 
 
     addScene() {
         const scene = {
@@ -55,26 +165,37 @@ class VideoEditor {
             btn: null
         };
 
-        const container = document.createElement('div');
-        container.style.cssText = `
+        const sceneItem = document.createElement('div');
+        sceneItem.style.cssText = `
             display: flex;
+            gap: 8px;
+            padding: 8px;
+            background: #f8f8f8;
+            border-radius: 4px;
             align-items: center;
-            gap: 5px;
-            background: white;
-            padding: 3px;
-            border-radius: 3px;
         `;
 
         const sceneBtn = document.createElement('button');
         sceneBtn.textContent = `场景 ${this.scenes.length + 1}`;
-        sceneBtn.style.backgroundColor = scene.color;
+        sceneBtn.style.cssText = `
+            padding: 4px 8px;
+            background: ${scene.color};
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        `;
         sceneBtn.onclick = () => this.selectScene(scene.id);
 
         const durationInput = document.createElement('input');
         durationInput.type = 'number';
         durationInput.value = scene.duration;
-        durationInput.style.width = '60px';
-        durationInput.onchange = (e) => scene.duration = Math.max(1, parseInt(e.target.value) || 1);
+        durationInput.style.cssText = `
+            width: 60px;
+            padding: 4px;
+        `;
+        durationInput.onchange = (e) => {
+            scene.duration = Math.max(1, parseInt(e.target.value) || 1);
+        };
 
         const colorInput = document.createElement('input');
         colorInput.type = 'color';
@@ -87,17 +208,18 @@ class VideoEditor {
             }
         };
 
-        container.appendChild(sceneBtn);
-        container.appendChild(durationInput);
-        container.appendChild(colorInput);
-        this.sceneToolbar.appendChild(container);
+        sceneItem.appendChild(sceneBtn);
+        sceneItem.appendChild(durationInput);
+        sceneItem.appendChild(colorInput);
+        this.sceneToolbar.appendChild(sceneItem);
 
-        scene.element = container;
+        scene.element = sceneItem;
         scene.btn = sceneBtn;
         this.scenes.push(scene);
         this.selectScene(scene.id);
     }
 
+    
     selectScene(id) {
         const index = this.scenes.findIndex(s => s.id === id);
         this.scenes.forEach((s, i) => {
