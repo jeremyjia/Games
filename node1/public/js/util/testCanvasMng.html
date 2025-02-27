@@ -4,11 +4,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         #textInput {
-            position: absolute;
+            position: fixed;
             border: 1px solid #000;
             padding: 2px;
             font: 16px Arial;
             display: none;
+            background: transparent;
+            transform: translateY(-100%);
         }
     </style>
 </head>
@@ -37,6 +39,7 @@ class CanvasManager {
         this.bindEvents();
         this.setupStyles();
     }
+    
     createTextInput() {
         const input = document.createElement('input');
         input.id = 'textInput';
@@ -45,6 +48,7 @@ class CanvasManager {
         return input;
     }
 
+   
     bindTextEvents() {
         this.textInput.addEventListener('blur', () => this.finishTextEdit());
         this.textInput.addEventListener('keydown', (e) => {
@@ -52,6 +56,8 @@ class CanvasManager {
             if (e.key === 'Escape') this.cancelTextEdit();
         });
     }
+
+
     createToolbar() {
         this.toolbar = document.createElement('div');
         const tools = ['select', 'text', 'line', 'rect', 'triangle', 'circle'];
@@ -89,10 +95,29 @@ class CanvasManager {
         this.canvas.addEventListener('pointerup', e => this.handlePointerUp(e));
     }
 
+   
     handlePointerDown(e) {
         const pos = this.getCanvasPos(e);
         this.pointerDownPos = { x: pos.x, y: pos.y };
         
+        // 处理文本工具点击
+        if (this.currentTool === 'text') {
+            const newText = {
+                type: 'text',
+                x: pos.x,
+                y: pos.y,
+                text: '',
+                color: '#000000',
+                width: 0,
+                height: 16
+            };
+            this.objects.push(newText);
+            this.selectedObject = newText;
+            this.startTextEdit();
+            this.redrawCanvas();
+            return;
+        }
+
         if (this.selectedObject && this.checkResizeHandle(pos)) {
             this.resizeHandle = this.getResizeHandle(pos);
             return;
@@ -127,6 +152,8 @@ class CanvasManager {
         
         this.redrawCanvas();
     }
+
+
 
     findObjectAtPos(pos) {
         return this.objects.slice().reverse().find(obj => this.checkCollision(pos, obj));
@@ -165,43 +192,75 @@ class CanvasManager {
         this.initialLineStart = null;
         this.initialLineEnd = null;
     }
+    
+    
     startTextEdit() {
         if (!this.selectedObject) return;
+        this.originalText = this.selectedObject.text;
         
+        const canvasRect = this.canvas.getBoundingClientRect();
+        const x = this.selectedObject.x + canvasRect.left;
+        const y = this.selectedObject.y + canvasRect.top;
+
         this.textInput.style.display = 'block';
-        this.textInput.style.left = `${this.selectedObject.x + window.scrollX}px`;
-        this.textInput.style.top = `${this.selectedObject.y + window.scrollY - 15}px`;
+        this.textInput.style.left = `${x}px`;
+        this.textInput.style.top = `${y}px`;
         this.textInput.value = this.selectedObject.text;
         this.textInput.focus();
-        
-        // 同步字体样式
-        this.textInput.style.font = this.ctx.font;
-        this.textInput.style.color = this.selectedObject.color || '#000000';
-        
-        // 根据文本宽度调整输入框大小
-        const metrics = this.ctx.measureText(this.selectedObject.text);
+
+        this.textInput.style.font = '16px Arial';
+        this.textInput.style.color = this.selectedObject.color;
+        this.adjustInputSize();
+    }
+    adjustInputSize() {
+        this.ctx.font = '16px Arial';
+        const metrics = this.ctx.measureText(this.textInput.value);
         this.textInput.style.width = `${Math.max(100, metrics.width + 10)}px`;
     }
+
+
     finishTextEdit() {
         if (this.selectedObject?.type === 'text') {
-            this.selectedObject.text = this.textInput.value;
-            
-            // 更新文本尺寸
-            const metrics = this.ctx.measureText(this.selectedObject.text);
-            this.selectedObject.width = metrics.width;
-            this.selectedObject.height = parseInt(this.ctx.font);
+            const newText = this.textInput.value.trim();
+            if (newText === '') {
+                const index = this.objects.indexOf(this.selectedObject);
+                this.objects.splice(index, 1);
+            } else {
+                this.selectedObject.text = newText;
+                this.ctx.font = '16px Arial';
+                const metrics = this.ctx.measureText(newText);
+                this.selectedObject.width = metrics.width;
+                this.selectedObject.height = 16;
+            }
         }
         this.hideTextInput();
         this.redrawCanvas();
     }
+
+    
     cancelTextEdit() {
+        if (this.selectedObject?.type === 'text') {
+            if (this.originalText === '' || this.textInput.value.trim() === '') {
+                const index = this.objects.indexOf(this.selectedObject);
+                this.objects.splice(index, 1);
+            } else {
+                this.selectedObject.text = this.originalText;
+            }
+        }
         this.hideTextInput();
         this.redrawCanvas();
     }
+
+ 
+    
     hideTextInput() {
         this.textInput.style.display = 'none';
         this.pendingTextEdit = false;
     }
+
+
+
+    
     startDrawing(pos) {
         this.isDrawing = true;
         this.tempObject = {
