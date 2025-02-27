@@ -95,6 +95,13 @@ class VideoEditor {
         this.initDOM();
     }
 
+    // 新增方法：更新JSON内容
+    updateJsonContent() {
+        if (this.jsonWindow.isVisible) {
+            this.jsonContent.textContent = this.generateVideoJson();
+        }
+    }
+
     createViewportMeta() {
         const meta = document.createElement('meta');
         meta.name = 'viewport';
@@ -238,6 +245,7 @@ class VideoEditor {
         `;
         durationInput.onchange = (e) => {
             scene.duration = Math.max(1, parseInt(e.target.value) || 1);
+            this.updateJsonContent(); // 新增更新
         };
 
         const colorInput = document.createElement('input');
@@ -249,8 +257,8 @@ class VideoEditor {
             if (this.currentSceneIndex === this.scenes.indexOf(scene)) {
                 this.updateCanvasColor(scene.color);
             }
+            this.updateJsonContent(); // 新增更新
         };
-
         sceneItem.appendChild(sceneBtn);
         sceneItem.appendChild(durationInput);
         sceneItem.appendChild(colorInput);
@@ -260,6 +268,7 @@ class VideoEditor {
         scene.btn = sceneBtn;
         this.scenes.push(scene);
         this.selectScene(scene.id);
+        this.updateJsonContent(); // 新增场景添加后的更新
     }
 
     selectScene(id) {
@@ -376,7 +385,7 @@ class VideoEditor {
         return `hsl(${Math.random() * 360}, 70%, 60%)`;
     }
 }
-
+//升级： 场景数据变化，视频数据窗口也变化
 new VideoEditor();
 </script>
 </body>
