@@ -7,7 +7,19 @@
             position: fixed;
             border: 1px solid #000;
             padding: 0;
+            margin: 0;#textInput {
+            position: fixed;
+            border: 1px solid #000;
+            padding: 0;
             margin: 0;
+            font: 16px Arial;
+            display: none;
+            background: white; /* 确保背景可见 */
+            line-height: 16px;
+            height: 18px;
+            min-width: 20px;
+            z-index: 1000; /* 确保输入框在最上层 */
+        }
             font: 16px Arial;
             display: none;
             background: transparent;
@@ -102,6 +114,7 @@ class CanvasManager {
 
    
     handlePointerDown(e) {
+        e.preventDefault(); // 阻止默认行为，帮助移动端聚焦
         const pos = this.getCanvasPos(e);
         this.pointerDownPos = { x: pos.x, y: pos.y };
         
@@ -204,20 +217,22 @@ class CanvasManager {
         this.originalText = this.selectedObject.text;
         
         const canvasRect = this.canvas.getBoundingClientRect();
-        const x = this.selectedObject.x + canvasRect.left;
-        const y = this.selectedObject.y + canvasRect.top;
+        // 添加滚动偏移修正
+        const x = this.selectedObject.x + canvasRect.left + window.scrollX;
+        const y = this.selectedObject.y + canvasRect.top + window.scrollY;
 
         this.textInput.style.display = 'block';
         this.textInput.style.left = `${x}px`;
         this.textInput.style.top = `${y}px`;
         this.textInput.value = this.selectedObject.text;
         this.textInput.focus();
-
-        // 确保输入框样式与画布一致
+        
+        // 确保字体样式匹配
         this.textInput.style.font = '16px Arial';
         this.textInput.style.color = this.selectedObject.color;
         this.adjustInputSize();
     }
+
 
 
     adjustInputSize() {
@@ -441,8 +456,8 @@ class CanvasManager {
             case 'text': 
                 return pos.x >= obj.x && 
                     pos.x <= obj.x + obj.width &&
-                    pos.y >= obj.y - obj.height &&  // 调整Y坐标计算
-                    pos.y <= obj.y;
+                    pos.y >= obj.y && 
+                    pos.y <= obj.y + obj.height; // 修正Y坐标检测
         }
     }
 
@@ -675,7 +690,7 @@ class CanvasManager {
         this.canvas.style.touchAction = 'none';
     }
 }
-// 升级：文本对象 就地输入编辑 实现不对
+// 升级：文本对象 就地输入编辑 实现不对， 手机上可以录入，但已添加文本不能选择编辑 ，电脑上录入都不行
 new CanvasManager();
 </script>
 </body>
