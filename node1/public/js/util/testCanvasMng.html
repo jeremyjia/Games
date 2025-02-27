@@ -2,6 +2,15 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        #textInput {
+            position: absolute;
+            border: 1px solid #000;
+            padding: 2px;
+            font: 16px Arial;
+            display: none;
+        }
+    </style>
 </head>
 <body>
 <script>
@@ -20,13 +29,29 @@ class CanvasManager {
         this.pointerDownPos = { x: 0, y: 0 };
         this.initialLineStart = null;
         this.initialLineEnd = null;
+        this.textInput = this.createTextInput();
+        this.bindTextEvents();
 
         this.createToolbar();
         this.createCanvas();
         this.bindEvents();
         this.setupStyles();
     }
+    createTextInput() {
+        const input = document.createElement('input');
+        input.id = 'textInput';
+        input.type = 'text';
+        document.body.appendChild(input);
+        return input;
+    }
 
+    bindTextEvents() {
+        this.textInput.addEventListener('blur', () => this.finishTextEdit());
+        this.textInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') this.finishTextEdit();
+            if (e.key === 'Escape') this.cancelTextEdit();
+        });
+    }
     createToolbar() {
         this.toolbar = document.createElement('div');
         const tools = ['select', 'text', 'line', 'rect', 'triangle', 'circle'];
@@ -130,12 +155,9 @@ class CanvasManager {
         }
 
         if (this.pendingTextEdit && this.selectedObject?.type === 'text' && isClick) {
-            const text = prompt('Edit text:', this.selectedObject.text);
-            if (text !== null) {
-                this.selectedObject.text = text;
-                this.redrawCanvas();
-            }
+            this.startTextEdit();
         }
+
 
         this.dragging = false;
         this.resizeHandle = null;
@@ -143,7 +165,43 @@ class CanvasManager {
         this.initialLineStart = null;
         this.initialLineEnd = null;
     }
-
+    startTextEdit() {
+        if (!this.selectedObject) return;
+        
+        this.textInput.style.display = 'block';
+        this.textInput.style.left = `${this.selectedObject.x + window.scrollX}px`;
+        this.textInput.style.top = `${this.selectedObject.y + window.scrollY - 15}px`;
+        this.textInput.value = this.selectedObject.text;
+        this.textInput.focus();
+        
+        // 同步字体样式
+        this.textInput.style.font = this.ctx.font;
+        this.textInput.style.color = this.selectedObject.color || '#000000';
+        
+        // 根据文本宽度调整输入框大小
+        const metrics = this.ctx.measureText(this.selectedObject.text);
+        this.textInput.style.width = `${Math.max(100, metrics.width + 10)}px`;
+    }
+    finishTextEdit() {
+        if (this.selectedObject?.type === 'text') {
+            this.selectedObject.text = this.textInput.value;
+            
+            // 更新文本尺寸
+            const metrics = this.ctx.measureText(this.selectedObject.text);
+            this.selectedObject.width = metrics.width;
+            this.selectedObject.height = parseInt(this.ctx.font);
+        }
+        this.hideTextInput();
+        this.redrawCanvas();
+    }
+    cancelTextEdit() {
+        this.hideTextInput();
+        this.redrawCanvas();
+    }
+    hideTextInput() {
+        this.textInput.style.display = 'none';
+        this.pendingTextEdit = false;
+    }
     startDrawing(pos) {
         this.isDrawing = true;
         this.tempObject = {
@@ -312,9 +370,9 @@ class CanvasManager {
                 return this.pointInTriangle(pos, obj.points);
             case 'text': 
                 return pos.x >= obj.x && 
-                       pos.x <= obj.x + obj.width &&
-                       pos.y >= obj.y && 
-                       pos.y <= obj.y + obj.height;
+                    pos.x <= obj.x + obj.width &&
+                    pos.y >= obj.y - obj.height &&  // 调整Y坐标计算
+                    pos.y <= obj.y;
         }
     }
 
@@ -447,7 +505,13 @@ class CanvasManager {
                 this.ctx.stroke();
                 break;
             case 'text':
+                this.ctx.fillStyle = obj.color || '#000000';
+                this.ctx.font = '16px Arial';  // 设置固定字体
                 this.ctx.fillText(obj.text, obj.x, obj.y + 15);
+                // 更新文本对象尺寸
+                const metrics = this.ctx.measureText(obj.text);
+                obj.width = metrics.width;
+                obj.height = 16;  // 与字体大小一致
                 break;
         }
     }
@@ -538,7 +602,7 @@ class CanvasManager {
         this.canvas.style.touchAction = 'none';
     }
 }
-
+// 升级：文本对象不要 promp 输入， 就地输入编辑
 new CanvasManager();
 </script>
 </body>
