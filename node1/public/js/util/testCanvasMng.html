@@ -18,6 +18,8 @@ class CanvasManager {
         this.resizeHandle = null;
         this.pendingTextEdit = false;
         this.pointerDownPos = { x: 0, y: 0 };
+        this.initialLineStart = null;
+        this.initialLineEnd = null;
 
         this.createToolbar();
         this.createCanvas();
@@ -83,6 +85,10 @@ class CanvasManager {
                 x: pos.x - this.selectedObject.x,
                 y: pos.y - this.selectedObject.y
             };
+            if (this.selectedObject.type === 'line') {
+                this.initialLineStart = { x: this.selectedObject.x, y: this.selectedObject.y };
+                this.initialLineEnd = { x: this.selectedObject.endX, y: this.selectedObject.endY };
+            }
             this.resizeHandle = null;
             this.redrawCanvas();
             return;
@@ -134,6 +140,8 @@ class CanvasManager {
         this.dragging = false;
         this.resizeHandle = null;
         this.pendingTextEdit = false;
+        this.initialLineStart = null;
+        this.initialLineEnd = null;
     }
 
     startDrawing(pos) {
@@ -209,22 +217,37 @@ class CanvasManager {
     moveObject(pos) {
         const dx = pos.x - this.selectedObject.x - this.dragOffset.x;
         const dy = pos.y - this.selectedObject.y - this.dragOffset.y;
-        this.selectedObject.x = pos.x - this.dragOffset.x;
-        this.selectedObject.y = pos.y - this.dragOffset.y;
-        if (this.selectedObject.type === 'triangle') {
-            this.selectedObject.points.forEach(point => {
-                point.x += dx;
-                point.y += dy;
-            });
+        if (this.selectedObject.type === 'line') {
+            this.selectedObject.x = this.initialLineStart.x + dx;
+            this.selectedObject.y = this.initialLineStart.y + dy;
+            this.selectedObject.endX = this.initialLineEnd.x + dx;
+            this.selectedObject.endY = this.initialLineEnd.y + dy;
+        } else {
+            this.selectedObject.x = pos.x - this.dragOffset.x;
+            this.selectedObject.y = pos.y - this.dragOffset.y;
+            if (this.selectedObject.type === 'triangle') {
+                this.selectedObject.points.forEach(point => {
+                    point.x += dx;
+                    point.y += dy;
+                });
+            }
         }
     }
 
     resizeObject(pos) {
-        if (this.selectedObject.type === 'circle') {
+        if (this.selectedObject.type === 'line') {
+            if (this.resizeHandle === 'start') {
+                this.selectedObject.x = pos.x;
+                this.selectedObject.y = pos.y;
+            } else if (this.resizeHandle === 'end') {
+                this.selectedObject.endX = pos.x;
+                this.selectedObject.endY = pos.y;
+            }
+        } else if (this.selectedObject.type === 'circle') {
             const dx = pos.x - this.selectedObject.x;
             const dy = pos.y - this.selectedObject.y;
             this.selectedObject.radius = Math.max(1, Math.hypot(dx, dy));
-        }else if (this.selectedObject.type === 'triangle') {
+        } else if (this.selectedObject.type === 'triangle') {
             const handle = this.resizeHandle;
             const points = this.selectedObject.points;
             let xs = points.map(p => p.x);
@@ -253,15 +276,13 @@ class CanvasManager {
                     break;
             }
 
-            // 更新三角形的顶点以匹配新的包围盒
-            points[0].x = minX;      // 左下角
+            points[0].x = minX;
             points[0].y = maxY;
-            points[1].x = maxX;      // 右下角
+            points[1].x = maxX;
             points[1].y = maxY;
-            points[2].x = (minX + maxX) / 2; // 顶点
+            points[2].x = (minX + maxX) / 2;
             points[2].y = minY;
-        }
-        else {
+        } else {
             const handle = this.resizeHandle;
             if (handle.includes('e')) this.selectedObject.width = pos.x - this.selectedObject.x;
             if (handle.includes('s')) this.selectedObject.height = pos.y - this.selectedObject.y;
@@ -347,6 +368,34 @@ class CanvasManager {
                     radius * 2 + 4,
                     radius * 2 + 4
                 );
+            } else if (this.selectedObject.type === 'line') {
+                const line = this.selectedObject;
+                const minX = Math.min(line.x, line.endX);
+                const minY = Math.min(line.y, line.endY);
+                const maxX = Math.max(line.x, line.endX);
+                const maxY = Math.max(line.y, line.endY);
+                const width = maxX - minX;
+                const height = maxY - minY;
+                this.ctx.strokeRect(
+                    minX - 2,
+                    minY - 2,
+                    width + 4,
+                    height + 4
+                );
+            } else if (this.selectedObject.type === 'triangle') {
+                const points = this.selectedObject.points;
+                const xs = points.map(p => p.x);
+                const ys = points.map(p => p.y);
+                const minX = Math.min(...xs);
+                const maxX = Math.max(...xs);
+                const minY = Math.min(...ys);
+                const maxY = Math.max(...ys);
+                this.ctx.strokeRect(
+                    minX - 2,
+                    minY - 2,
+                    (maxX - minX) + 4,
+                    (maxY - minY) + 4
+                );
             } else {
                 this.ctx.strokeRect(
                     this.selectedObject.x - 2,
@@ -357,11 +406,17 @@ class CanvasManager {
             }
             this.ctx.setLineDash([]);
             
-            ['nw', 'ne', 'sw', 'se'].forEach(handle => {
-                const pos = this.getHandlePosition(handle);
+            if (this.selectedObject.type === 'line') {
                 this.ctx.fillStyle = '#ff0000';
-                this.ctx.fillRect(pos.x - 3, pos.y - 3, 6, 6);
-            });
+                this.ctx.fillRect(this.selectedObject.x - 3, this.selectedObject.y - 3, 6, 6);
+                this.ctx.fillRect(this.selectedObject.endX - 3, this.selectedObject.endY - 3, 6, 6);
+            } else {
+                ['nw', 'ne', 'sw', 'se'].forEach(handle => {
+                    const pos = this.getHandlePosition(handle);
+                    this.ctx.fillStyle = '#ff0000';
+                    this.ctx.fillRect(pos.x - 3, pos.y - 3, 6, 6);
+                });
+            }
         }
     }
 
@@ -406,7 +461,7 @@ class CanvasManager {
                 case 'sw': return { x: this.selectedObject.x - radius, y: this.selectedObject.y + radius };
                 case 'se': return { x: this.selectedObject.x + radius, y: this.selectedObject.y + radius };
             }
-        }else if (this.selectedObject?.type === 'triangle') {
+        } else if (this.selectedObject?.type === 'triangle') {
             const points = this.selectedObject.points;
             const xs = points.map(p => p.x);
             const ys = points.map(p => p.y);
@@ -421,8 +476,11 @@ class CanvasManager {
                 case 'se': return { x: maxX, y: maxY };
                 default: return { x: 0, y: 0 };
             }
-        }
-        else{
+        } else if (this.selectedObject?.type === 'line') {
+            return handle === 'start' 
+                ? { x: this.selectedObject.x, y: this.selectedObject.y }
+                : { x: this.selectedObject.endX, y: this.selectedObject.endY };
+        } else {
             return {
                 x: this.selectedObject.x + (handle.includes('e') ? (this.selectedObject.width || 0) : 0),
                 y: this.selectedObject.y + (handle.includes('s') ? (this.selectedObject.height || 0) : 0)
@@ -431,17 +489,35 @@ class CanvasManager {
     }
 
     checkResizeHandle(pos) {
-        return ['nw', 'ne', 'sw', 'se'].some(handle => {
-            const hPos = this.getHandlePosition(handle);
-            return Math.abs(pos.x - hPos.x) < 5 && Math.abs(pos.y - hPos.y) < 5;
-        });
+        if (!this.selectedObject) return false;
+
+        if (this.selectedObject.type === 'line') {
+            const startDist = Math.hypot(pos.x - this.selectedObject.x, pos.y - this.selectedObject.y);
+            const endDist = Math.hypot(pos.x - this.selectedObject.endX, pos.y - this.selectedObject.endY);
+            return startDist < 5 || endDist < 5;
+        } else {
+            return ['nw', 'ne', 'sw', 'se'].some(handle => {
+                const hPos = this.getHandlePosition(handle);
+                return Math.abs(pos.x - hPos.x) < 5 && Math.abs(pos.y - hPos.y) < 5;
+            });
+        }
     }
 
     getResizeHandle(pos) {
-        return ['nw', 'ne', 'sw', 'se'].find(handle => {
-            const hPos = this.getHandlePosition(handle);
-            return Math.abs(pos.x - hPos.x) < 5 && Math.abs(pos.y - hPos.y) < 5;
-        });
+        if (!this.selectedObject) return null;
+
+        if (this.selectedObject.type === 'line') {
+            const startDist = Math.hypot(pos.x - this.selectedObject.x, pos.y - this.selectedObject.y);
+            const endDist = Math.hypot(pos.x - this.selectedObject.endX, pos.y - this.selectedObject.endY);
+            if (startDist < 5) return 'start';
+            if (endDist < 5) return 'end';
+            return null;
+        } else {
+            return ['nw', 'ne', 'sw', 'se'].find(handle => {
+                const hPos = this.getHandlePosition(handle);
+                return Math.abs(pos.x - hPos.x) < 5 && Math.abs(pos.y - hPos.y) < 5;
+            });
+        }
     }
 
     getCanvasPos(e) {
@@ -462,7 +538,7 @@ class CanvasManager {
         this.canvas.style.touchAction = 'none';
     }
 }
-//fix:三角形不能移动，不能改大小
+
 new CanvasManager();
 </script>
 </body>
