@@ -5,7 +5,7 @@
 </head>
 <body>
 <script>
-    class DraggableWindow {
+class DraggableWindow {
     constructor(title, content) {
         this.isVisible = true;
         this.createWindow(title, content);
@@ -219,7 +219,7 @@ class VideoEditor {
         this.selectScene(scene.id);
     }
 
-    
+
     selectScene(id) {
         const index = this.scenes.findIndex(s => s.id === id);
         this.scenes.forEach((s, i) => {
@@ -336,8 +336,8 @@ class VideoEditor {
 }
 
 /*
- 升级：把场景工具条的功能放到一个可移动窗口里，新建一个类实现
-VideoEditor 添加一个视频管理工具条，上面有一按钮可toggle场景可移动窗口
+ 升级：  视频管理工具条，上面加一按钮可toggle一个可移动窗口，可以显示视频json数据在一个文本框里
+      充分利用现有的代码
 */
 new VideoEditor();
 </script>
