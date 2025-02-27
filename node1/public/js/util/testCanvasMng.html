@@ -6,11 +6,14 @@
         #textInput {
             position: fixed;
             border: 1px solid #000;
-            padding: 2px;
+            padding: 0;
+            margin: 0;
             font: 16px Arial;
             display: none;
             background: transparent;
-            transform: translateY(-100%);
+            line-height: 16px;
+            height: 18px; /* 包含边框 */
+            min-width: 20px;
         }
     </style>
 </head>
@@ -44,6 +47,7 @@ class CanvasManager {
         const input = document.createElement('input');
         input.id = 'textInput';
         input.type = 'text';
+        input.style.boxSizing = 'border-box'; // 确保边框不影响尺寸
         document.body.appendChild(input);
         return input;
     }
@@ -55,6 +59,7 @@ class CanvasManager {
             if (e.key === 'Enter') this.finishTextEdit();
             if (e.key === 'Escape') this.cancelTextEdit();
         });
+        this.textInput.addEventListener('input', () => this.adjustInputSize());
     }
 
 
@@ -208,16 +213,22 @@ class CanvasManager {
         this.textInput.value = this.selectedObject.text;
         this.textInput.focus();
 
+        // 确保输入框样式与画布一致
         this.textInput.style.font = '16px Arial';
         this.textInput.style.color = this.selectedObject.color;
         this.adjustInputSize();
     }
-    adjustInputSize() {
-        this.ctx.font = '16px Arial';
-        const metrics = this.ctx.measureText(this.textInput.value);
-        this.textInput.style.width = `${Math.max(100, metrics.width + 10)}px`;
-    }
 
+
+    adjustInputSize() {
+        // 创建临时canvas测量文本
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.font = '16px Arial';
+        const metrics = tempCtx.measureText(this.textInput.value);
+        
+        this.textInput.style.width = `${Math.max(20, metrics.width + 2)}px`; // +2px边框补偿
+    }
 
     finishTextEdit() {
         if (this.selectedObject?.type === 'text') {
@@ -260,7 +271,7 @@ class CanvasManager {
 
 
 
-    
+
     startDrawing(pos) {
         this.isDrawing = true;
         this.tempObject = {
@@ -564,13 +575,16 @@ class CanvasManager {
                 this.ctx.stroke();
                 break;
             case 'text':
+                this.ctx.save();
                 this.ctx.fillStyle = obj.color || '#000000';
-                this.ctx.font = '16px Arial';  // 设置固定字体
-                this.ctx.fillText(obj.text, obj.x, obj.y + 15);
-                // 更新文本对象尺寸
+                this.ctx.font = '16px Arial';
+                this.ctx.textBaseline = 'top'; // 顶部对齐
+                this.ctx.fillText(obj.text, obj.x, obj.y);
+                // 更新尺寸
                 const metrics = this.ctx.measureText(obj.text);
                 obj.width = metrics.width;
-                obj.height = 16;  // 与字体大小一致
+                obj.height = 16;
+                this.ctx.restore();
                 break;
         }
     }
@@ -661,7 +675,7 @@ class CanvasManager {
         this.canvas.style.touchAction = 'none';
     }
 }
-// 升级：文本对象不要 promp 输入， 就地输入编辑
+// 升级：文本对象 就地输入编辑 实现不对
 new CanvasManager();
 </script>
 </body>
