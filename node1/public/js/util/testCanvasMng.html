@@ -1,33 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <style>
-        #textInput {
-            position: fixed;
-            border: 1px solid #000;
-            padding: 0;
-            margin: 0;#textInput {
-            position: fixed;
-            border: 1px solid #000;
-            padding: 0;
-            margin: 0;
-            font: 16px Arial;
-            display: none;
-            background: white; /* 确保背景可见 */
-            line-height: 16px;
-            height: 18px;
-            min-width: 20px;
-            z-index: 1000; /* 确保输入框在最上层 */
-        }
-            font: 16px Arial;
-            display: none;
-            background: transparent;
-            line-height: 16px;
-            height: 18px; /* 包含边框 */
-            min-width: 20px;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
 </head>
 <body>
 <script>
@@ -59,11 +33,25 @@ class CanvasManager {
         const input = document.createElement('input');
         input.id = 'textInput';
         input.type = 'text';
-        input.style.boxSizing = 'border-box'; // 确保边框不影响尺寸
+        input.style.cssText = `
+            box-sizing: border-box;
+            position: fixed;
+            border: 1px solid #000;
+            padding: 0;
+            margin: 0;
+            font: 16px Arial;
+            display: none;
+            background: white;
+            line-height: 16px;
+            height: 18px;
+            min-width: 20px;
+            z-index: 1000;
+            transform: translate3d(0,0,0);
+            -webkit-user-select: text;
+        `;
         document.body.appendChild(input);
         return input;
     }
-
    
     bindTextEvents() {
         this.textInput.addEventListener('blur', () => this.finishTextEdit());
@@ -216,36 +204,52 @@ class CanvasManager {
         if (!this.selectedObject) return;
         this.originalText = this.selectedObject.text;
         
-        const canvasRect = this.canvas.getBoundingClientRect();
-        // 添加滚动偏移修正
-        const x = this.selectedObject.x + canvasRect.left + window.scrollX;
-        const y = this.selectedObject.y + canvasRect.top + window.scrollY;
+        // Use requestAnimationFrame to ensure accurate positioning
+        requestAnimationFrame(() => {
+            const canvasRect = this.canvas.getBoundingClientRect();
+            const scaleX = this.canvas.width / canvasRect.width;
+            const scaleY = this.canvas.height / canvasRect.height;
+            
+            const x = this.selectedObject.x / scaleX + canvasRect.left;
+            const y = this.selectedObject.y / scaleY + canvasRect.top;
 
-        this.textInput.style.display = 'block';
-        this.textInput.style.left = `${x}px`;
-        this.textInput.style.top = `${y}px`;
-        this.textInput.value = this.selectedObject.text;
-        this.textInput.focus();
-        
-        // 确保字体样式匹配
-        this.textInput.style.font = '16px Arial';
-        this.textInput.style.color = this.selectedObject.color;
-        this.adjustInputSize();
+            this.textInput.style.display = 'block';
+            this.textInput.style.left = `${x}px`;
+            this.textInput.style.top = `${y}px`;
+            this.textInput.value = this.selectedObject.text;
+            this.textInput.style.font = '16px Arial';
+            this.textInput.style.color = this.selectedObject.color;
+            
+            // Mobile-friendly focus handling
+            setTimeout(() => {
+                this.textInput.focus();
+                this.textInput.select();
+            }, 50);
+            
+            this.adjustInputSize();
+        });
     }
-
 
 
     adjustInputSize() {
-        // 创建临时canvas测量文本
-        const tempCanvas = document.createElement('canvas');
-        const tempCtx = tempCanvas.getContext('2d');
-        tempCtx.font = '16px Arial';
-        const metrics = tempCtx.measureText(this.textInput.value);
+        // Use canvas context for accurate measurement
+        this.ctx.font = '16px Arial';
+        const metrics = this.ctx.measureText(this.textInput.value);
         
-        this.textInput.style.width = `${Math.max(20, metrics.width + 2)}px`; // +2px边框补偿
+        // Add padding for better mobile touch
+        const padding = 4;
+        this.textInput.style.width = `${Math.max(20, metrics.width + padding)}px`;
+        
+        // Handle iOS zoom prevention
+        this.textInput.style.fontSize = '16px';
+        this.textInput.style.transformOrigin = '0 0';
+        this.textInput.style.transform = `scale(${1/window.devicePixelRatio})`;
     }
 
     finishTextEdit() {
+        // Reset transform before saving
+        this.textInput.style.transform = 'none';
+        
         if (this.selectedObject?.type === 'text') {
             const newText = this.textInput.value.trim();
             if (newText === '') {
@@ -262,7 +266,6 @@ class CanvasManager {
         this.hideTextInput();
         this.redrawCanvas();
     }
-
     
     cancelTextEdit() {
         if (this.selectedObject?.type === 'text') {
@@ -690,8 +693,9 @@ class CanvasManager {
         this.canvas.style.touchAction = 'none';
     }
 }
-// 升级：文本对象 就地输入编辑 实现不对， 手机上可以录入，但已添加文本不能选择编辑 ，电脑上录入都不行
+
 new CanvasManager();
 </script>
 </body>
-</html>
+</html
+ 
