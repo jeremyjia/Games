@@ -6,18 +6,18 @@
 <body>
 <script>
 class DraggableWindow {
-    constructor(title, content) {
+    constructor(title, content, initialLeft = 20, initialTop = 20) {
         this.isVisible = true;
-        this.createWindow(title, content);
+        this.createWindow(title, content, initialLeft, initialTop);
         this.addDragListeners();
     }
 
-    createWindow(title, content) {
+    createWindow(title, content, initialLeft, initialTop) {
         this.windowElement = document.createElement('div');
         this.windowElement.style.cssText = `
             position: fixed;
-            left: 20px;
-            top: 20px;
+            left: ${initialLeft}px;
+            top: ${initialTop}px;
             background: white;
             border: 1px solid #ccc;
             box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
@@ -101,12 +101,24 @@ class VideoEditor {
         meta.content = 'width=device-width, initial-scale=1.0';
         document.head.appendChild(meta);
     }
+
     initDOM() {
         this.createSceneToolbar();
-        this.sceneWindow = new DraggableWindow('场景管理', this.sceneToolbar);
+        this.sceneWindow = new DraggableWindow('场景管理', this.sceneToolbar, 20, 20);
         this.createVideoManagerToolbar();
         this.createCanvas();
         this.createPlayToolbar();
+
+        // 初始化JSON窗口
+        this.jsonContent = document.createElement('pre');
+        this.jsonContent.style.cssText = `
+            padding: 10px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow: auto;
+            margin: 0;
+        `;
+        this.jsonWindow = new DraggableWindow('视频数据', this.jsonContent, 20, 200);
     }
 
     createSceneToolbar() {
@@ -130,6 +142,7 @@ class VideoEditor {
         newSceneBtn.onclick = () => this.addScene();
         this.sceneToolbar.appendChild(newSceneBtn);
     }
+
     createVideoManagerToolbar() {
         this.videoManagerToolbar = document.createElement('div');
         this.videoManagerToolbar.style.cssText = `
@@ -152,10 +165,40 @@ class VideoEditor {
         `;
         toggleWindowBtn.onclick = () => this.sceneWindow.toggleVisibility();
 
-        this.videoManagerToolbar.appendChild(toggleWindowBtn);
-        document.body.appendChild(this.videoManagerToolbar);
-    } 
+        const toggleJsonBtn = document.createElement('button');
+        toggleJsonBtn.textContent = '切换数据窗口';
+        toggleJsonBtn.style.cssText = `
+            padding: 6px 12px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        `;
+        toggleJsonBtn.onclick = () => {
+            this.jsonWindow.toggleVisibility();
+            if (this.jsonWindow.isVisible) {
+                this.jsonContent.textContent = this.generateVideoJson();
+            }
+        };
 
+        this.videoManagerToolbar.appendChild(toggleWindowBtn);
+        this.videoManagerToolbar.appendChild(toggleJsonBtn);
+        document.body.appendChild(this.videoManagerToolbar);
+    }
+
+    generateVideoJson() {
+        const data = {
+            scenes: this.scenes.map(scene => ({
+                id: scene.id,
+                color: scene.color,
+                duration: scene.duration
+            }))
+        };
+        return JSON.stringify(data, null, 2);
+    }
+
+    // 其他原有方法保持不变...
     addScene() {
         const scene = {
             id: Date.now(),
@@ -218,7 +261,6 @@ class VideoEditor {
         this.scenes.push(scene);
         this.selectScene(scene.id);
     }
-
 
     selectScene(id) {
         const index = this.scenes.findIndex(s => s.id === id);
@@ -335,11 +377,7 @@ class VideoEditor {
     }
 }
 
-/*
- 升级：  视频管理工具条，上面加一按钮可toggle一个可移动窗口，可以显示视频json数据在一个文本框里
-      充分利用现有的代码
-*/
 new VideoEditor();
 </script>
-</body> 
+</body>
 </html>
