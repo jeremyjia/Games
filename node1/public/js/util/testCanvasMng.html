@@ -65,7 +65,7 @@ class CanvasManager {
 
     createToolbar() {
         this.toolbar = document.createElement('div');
-        const tools = ['select', 'text', 'line', 'rect', 'triangle', 'circle'];
+        const tools = ['select','delete', 'text', 'line', 'rect', 'triangle', 'circle'];
         tools.forEach(tool => {
             const btn = document.createElement('button');
             btn.textContent = tool;
@@ -78,6 +78,24 @@ class CanvasManager {
 
     handleToolClick(e) {
         const tool = e.target.dataset.tool;
+        if (tool === 'delete') {
+            if (this.selectedObject) {
+                const index = this.objects.indexOf(this.selectedObject);
+                if (index !== -1) {
+                    this.objects.splice(index, 1);
+                    this.selectedObject = null;
+                    this.hideTextInput(); // Close text input if open
+                    this.redrawCanvas();
+                }
+            }
+            // Switch back to select mode and highlight select button
+            this.currentTool = null;
+            Array.from(this.toolbar.children).forEach(btn => {
+                btn.style.backgroundColor = btn.dataset.tool === 'select' ? '#99ccff' : '';
+            });
+            return;
+        }
+        
         Array.from(this.toolbar.children).forEach(btn => {
             btn.style.backgroundColor = btn === e.target ? '#99ccff' : '';
         });
@@ -697,5 +715,8 @@ class CanvasManager {
 new CanvasManager();
 </script>
 </body>
-</html
+</html>
+<!--
+add a button to delete selected object.
+-->
  
