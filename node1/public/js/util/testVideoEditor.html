@@ -353,6 +353,16 @@ class VideoEditor {
         this.scenes.forEach((scene, i) => {
             scene.btn.style.outline = i === index ? "2px solid #00f" : "";
         });
+        
+        if (index >= 0 && index < this.scenes.length) {
+            // 新增滚动逻辑
+            const sceneElement = this.scenes[index].element;
+            sceneElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'start'
+            });
+        }
     }
 
     clearPlayHighlights() {
@@ -433,7 +443,7 @@ class VideoEditor {
         return `hsl(${Math.random() * 360}, 70%, 60%)`;
     }
 }
-
+//播放时，场景窗口自动滚动
 new VideoEditor();
 </script>
 </body>
