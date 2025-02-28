@@ -5,32 +5,7 @@
 </head>
 <body>
 <script>
-
-    /* 动态添加全局样式 */
-const style = document.createElement('style');
-style.textContent = `
-    .json-content {
-        white-space: pre-wrap;
-        font-family: monospace;
-        counter-reset: line;
-    }
-    .json-content .line {
-        display: block;
-    }
-    .json-content .line::before {
-        counter-increment: line;
-        content: counter(line) ". ";
-        display: inline-block;
-        width: 3em;
-        padding-right: 0.5em;
-        color: #666;
-        user-select: none;
-        border-right: 1px solid #ddd;
-        margin-right: 0.5em;
-    }
-`;
-document.head.appendChild(style);
-
+ 
 class DraggableWindow {
     constructor(title, content, initialLeft = 20, initialTop = 20) {
         this.isVisible = true;
@@ -133,6 +108,7 @@ class VideoEditor {
         this.animationId = null;
         this.createViewportMeta();
         this.initGlobalStyle();
+        this.initGlobalStyle();  // 合并样式初始化到类方法
         this.initDOM();
     }
     initGlobalStyle() {
@@ -146,9 +122,29 @@ class VideoEditor {
                 transition: opacity 0.2s;
             }
             button:active { opacity: 0.8; }
+            .json-content {
+                white-space: pre-wrap;
+                font-family: monospace;
+                counter-reset: line;
+            }
+            .json-content .line {
+                display: block;
+            }
+            .json-content .line::before {
+                counter-increment: line;
+                content: counter(line) ". ";
+                display: inline-block;
+                width: 3em;
+                padding-right: 0.5em;
+                color: #666;
+                user-select: none;
+                border-right: 1px solid #ddd;
+                margin-right: 0.5em;
+            }
         `;
         document.head.appendChild(style);
     }
+
     updateJsonContent() {
         if (this.jsonWindow.isVisible) {
             const jsonStr = this.generateVideoJson();
@@ -472,8 +468,12 @@ class VideoEditor {
         return `hsl(${Math.random() * 360}, 70%, 60%)`;
     }
 }
-//升级：去掉<style>，代码生成
 new VideoEditor();
 </script>
 </body>
 </html>
+<!--
+
+//升级：动态添加全局样式 移到类里
+
+-->
