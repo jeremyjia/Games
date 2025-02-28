@@ -7,10 +7,18 @@
 <script>
  
 class DraggableWindow {
-    constructor(title, content, initialLeft = 20, initialTop = 20) {
-        this.isVisible = true;
+    constructor(title, content, initialLeft = 20, initialTop = 20, isVisible = true) {
+        this.isVisible = isVisible;
         this.createWindow(title, content, initialLeft, initialTop);
         this.addDragListeners();
+        this.windowElement.style.display = isVisible ? 'block' : 'none';
+    }
+
+    show() {
+        if (!this.isVisible) {
+            this.isVisible = true;
+            this.windowElement.style.display = 'block';
+        }
     }
 
     createWindow(title, content, initialLeft, initialTop) {
@@ -210,6 +218,16 @@ class VideoEditor {
             background: white;
         `;
         this.jsonWindow = new DraggableWindow('视频数据', this.jsonContent, 20, 200);
+        // 创建结果窗口元素
+        this.resultContent = document.createElement('div');
+        this.resultContent.style.cssText = `
+            padding: 10px;
+            min-width: 300px;
+            max-width: 600px;
+            background: white;
+        `;
+        this.resultWindow = new DraggableWindow('生成结果', this.resultContent, 100, 100, false);
+    
     }
 
     createSceneToolbar() {
@@ -463,22 +481,9 @@ class VideoEditor {
             return;
         }
 
-        // 创建结果窗口
-        const resultContent = document.createElement('div');
-        resultContent.style.cssText = `
-            padding: 10px;
-            min-width: 300px;
-            max-width: 600px;
-            background: white;
-        `;
-        resultContent.innerHTML = '<div>生成中，请稍候...</div>';
-        
-        // 如果已有结果窗口则关闭
-        if (this.resultWindow) {
-            this.resultWindow.toggleVisibility();
-        }
-        this.resultWindow = new DraggableWindow('生成结果', resultContent, 100, 100);
-        this.resultWindow.toggleVisibility();
+        // 更新结果窗口内容
+        this.resultContent.innerHTML = '<div>生成中，请稍候...</div>';
+        this.resultWindow.show();
 
         const data = {
             fps: parseInt(this.fpsInput.value) || 30,
@@ -503,10 +508,9 @@ class VideoEditor {
                 });
             }
             return response.blob();
-        })
-        .then(blob => {
+        }).then(blob => {
             const url = URL.createObjectURL(blob);
-            resultContent.innerHTML = '';
+            this.resultContent.innerHTML = '';
             
             // 创建视频播放器
             const video = document.createElement('video');
@@ -531,9 +535,10 @@ class VideoEditor {
                 document.body.removeChild(a);
             };
 
-            resultContent.appendChild(video);
-            resultContent.appendChild(downloadBtn);
+            this.resultContent.appendChild(video);
+            this.resultContent.appendChild(downloadBtn);
         })
+
         .catch(error => {
             console.error('生成失败:', error);
             resultContent.innerHTML = `
@@ -698,5 +703,5 @@ new VideoEditor();
 </body>
 </html>
 <!--
-升级： generateVideo, 最后弹出可移动窗口， 如果失败，窗口显示失败原因，如果成功，窗口可播放视频
+升级： generateVideo, 只弹出1个窗口
 -->
