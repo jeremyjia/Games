@@ -141,17 +141,47 @@ class VideoEditor {
                 border-right: 1px solid #ddd;
                 margin-right: 0.5em;
             }
+            .json-content .line.highlight {
+                background-color: #ffeb3b;
+                transition: background-color 
+            }
         `;
         document.head.appendChild(style);
+    }
+
+    highlightJsonLine(sceneId) {
+        if (!this.jsonWindow.isVisible) {
+            this.jsonWindow.toggleVisibility(); // 确保窗口可见
+        }
+        this.updateJsonContent(); // 刷新内容以确保数据最新
+        setTimeout(() => { // 等待DOM更新
+            const targetLine = this.jsonContent.querySelector(`[data-scene-id="${sceneId}"]`);
+            if (targetLine) {
+                // 移除旧高亮
+                this.jsonContent.querySelectorAll('.line').forEach(line => {
+                    line.classList.remove('highlight');
+                });
+                // 添加新高亮并滚动
+                targetLine.classList.add('highlight');
+                targetLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 0);
     }
 
     updateJsonContent() {
         if (this.jsonWindow.isVisible) {
             const jsonStr = this.generateVideoJson();
             const lines = jsonStr.split('\n');
-            this.jsonContent.innerHTML = lines.map(line => 
-                `<div class="line">${line.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>`
-            ).join('');
+            this.jsonContent.innerHTML = lines.map(line => {
+                const escapedLine = line.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                // 匹配 "id": 数字 格式的行
+                const idMatch = line.match(/"id":\s*(\d+)/);
+                if (idMatch) {
+                    return `<div class="line" data-scene-id="${idMatch[1]}">${escapedLine}</div>`;
+                } else {
+                    return `<div class="line">${escapedLine}</div>`;
+                }
+            }).join('');
         }
     }
 
@@ -308,8 +338,8 @@ class VideoEditor {
         });
         this.currentSceneIndex = index;
         this.updateCanvasColor(this.scenes[index].color);
+        this.highlightJsonLine(id); // 触发高亮和滚动
     }
-
     createCanvas() {
         this.canvas = document.createElement('canvas');
         this.canvas.width = 300;
