@@ -1,30 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8"><style>
-        .json-content {
-            white-space: pre-wrap;
-            font-family: monospace;
-            counter-reset: line;
-        }
-        .json-content .line {
-            display: block;
-        }
-        .json-content .line::before {
-            counter-increment: line;
-            content: counter(line) ". ";
-            display: inline-block;
-            width: 3em;
-            padding-right: 0.5em;
-            color: #666;
-            user-select: none;
-            border-right: 1px solid #ddd;
-            margin-right: 0.5em;
-        }
-    </style>
+    <meta charset="UTF-8"> 
 </head>
 <body>
 <script>
+
+    /* 动态添加全局样式 */
+const style = document.createElement('style');
+style.textContent = `
+    .json-content {
+        white-space: pre-wrap;
+        font-family: monospace;
+        counter-reset: line;
+    }
+    .json-content .line {
+        display: block;
+    }
+    .json-content .line::before {
+        counter-increment: line;
+        content: counter(line) ". ";
+        display: inline-block;
+        width: 3em;
+        padding-right: 0.5em;
+        color: #666;
+        user-select: none;
+        border-right: 1px solid #ddd;
+        margin-right: 0.5em;
+    }
+`;
+document.head.appendChild(style);
+
 class DraggableWindow {
     constructor(title, content, initialLeft = 20, initialTop = 20) {
         this.isVisible = true;
@@ -34,39 +40,38 @@ class DraggableWindow {
 
     createWindow(title, content, initialLeft, initialTop) {
         this.windowElement = document.createElement('div');
-        this.windowElement.style.cssText = `
-            position: fixed;
-            left: ${initialLeft}px;
-            top: ${initialTop}px;
-            background: white;
-            border: 1px solid #ccc;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-            z-index: 1000;
-            min-width: 300px;
-        `;
+        Object.assign(this.windowElement.style, {
+            position: 'fixed',
+            left: `${initialLeft}px`,
+            top: `${initialTop}px`,
+            background: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '2px 2px 5px rgba(0,0,0,0.2)',
+            zIndex: '1000',
+            minWidth: '300px'
+        });
 
         this.titleBar = document.createElement('div');
         this.titleBar.textContent = title;
-        this.titleBar.style.cssText = `
-            padding: 8px;
-            background: #f0f0f0;
-            cursor: move;
-            user-select: none;
-            border-bottom: 1px solid #ddd;
-            touch-action: none;
-        `;
+        Object.assign(this.titleBar.style, {
+            padding: '8px',
+            background: '#f0f0f0',
+            cursor: 'move',
+            userSelect: 'none',
+            borderBottom: '1px solid #ddd',
+            touchAction: 'none'
+        });
 
         this.contentContainer = document.createElement('div');
-        this.contentContainer.style.cssText = `
-            padding: 10px;
-            background: white;
-            max-height: 60vh;
-            overflow-y: auto;
-        `;
+        Object.assign(this.contentContainer.style, {
+            padding: '10px',
+            background: 'white',
+            maxHeight: '60vh',
+            overflowY: 'auto'
+        });
         this.contentContainer.appendChild(content);
 
-        this.windowElement.appendChild(this.titleBar);
-        this.windowElement.appendChild(this.contentContainer);
+        this.windowElement.append(this.titleBar, this.contentContainer);
         document.body.appendChild(this.windowElement);
     }
 
@@ -82,45 +87,34 @@ class DraggableWindow {
 
         const mouseMoveHandler = (e) => {
             if (!isDragging) return;
-            const newX = e.clientX - initialX;
-            const newY = e.clientY - initialY;
-            this.windowElement.style.left = `${newX}px`;
-            this.windowElement.style.top = `${newY}px`;
+            this.windowElement.style.left = `${e.clientX - initialX}px`;
+            this.windowElement.style.top = `${e.clientY - initialY}px`;
         };
 
-        const mouseUpHandler = () => {
-            isDragging = false;
-        };
-
-        const touchStartHandler = (e) => {
-            e.preventDefault();
-            isDragging = true;
-            const touch = e.touches[0];
-            initialX = touch.clientX - this.windowElement.offsetLeft;
-            initialY = touch.clientY - this.windowElement.offsetTop;
-        };
-
-        const touchMoveHandler = (e) => {
-            if (!isDragging) return;
-            e.preventDefault();
-            const touch = e.touches[0];
-            const newX = touch.clientX - initialX;
-            const newY = touch.clientY - initialY;
-            this.windowElement.style.left = `${newX}px`;
-            this.windowElement.style.top = `${newY}px`;
-        };
-
-        const touchEndHandler = () => {
-            isDragging = false;
+        const handlers = {
+            mouseup: () => isDragging = false,
+            mousemove: mouseMoveHandler,
+            touchend: () => isDragging = false,
+            touchstart: (e) => {
+                const touch = e.touches[0];
+                initialX = touch.clientX - this.windowElement.offsetLeft;
+                initialY = touch.clientY - this.windowElement.offsetTop;
+                isDragging = true;
+            },
+            touchmove: (e) => {
+                if (!isDragging) return;
+                const touch = e.touches[0];
+                this.windowElement.style.left = `${touch.clientX - initialX}px`;
+                this.windowElement.style.top = `${touch.clientY - initialY}px`;
+            }
         };
 
         this.titleBar.addEventListener('mousedown', mouseDownHandler);
-        document.addEventListener('mousemove', mouseMoveHandler);
-        document.addEventListener('mouseup', mouseUpHandler);
-        
-        this.titleBar.addEventListener('touchstart', touchStartHandler);
-        document.addEventListener('touchmove', touchMoveHandler, { passive: false });
-        document.addEventListener('touchend', touchEndHandler);
+        document.addEventListener('mouseup', handlers.mouseup);
+        document.addEventListener('mousemove', handlers.mousemove);
+        this.titleBar.addEventListener('touchstart', handlers.touchstart);
+        document.addEventListener('touchend', handlers.touchend);
+        document.addEventListener('touchmove', handlers.touchmove);
     }
 
     toggleVisibility() {
@@ -138,9 +132,23 @@ class VideoEditor {
         this.currentFrame = 0;
         this.animationId = null;
         this.createViewportMeta();
+        this.initGlobalStyle();
         this.initDOM();
     }
-
+    initGlobalStyle() {
+        const style = document.createElement('style');
+        style.textContent = `
+            button {
+                padding: 6px 12px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: opacity 0.2s;
+            }
+            button:active { opacity: 0.8; }
+        `;
+        document.head.appendChild(style);
+    }
     updateJsonContent() {
         if (this.jsonWindow.isVisible) {
             const jsonStr = this.generateVideoJson();
@@ -179,26 +187,22 @@ class VideoEditor {
 
     createSceneToolbar() {
         this.sceneToolbar = document.createElement('div');
-        this.sceneToolbar.style.cssText = `
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        `;
+        Object.assign(this.sceneToolbar.style, {
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+            padding: '10px'
+        });
 
         const newSceneBtn = document.createElement('button');
+        Object.assign(newSceneBtn.style, {
+            background: '#4CAF50',
+            color: 'white'
+        });
         newSceneBtn.textContent = '新建场景';
-        newSceneBtn.style.cssText = `
-            padding: 6px 12px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        `;
         newSceneBtn.onclick = () => this.addScene();
         this.sceneToolbar.appendChild(newSceneBtn);
     }
-
     createVideoManagerToolbar() {
         this.videoManagerToolbar = document.createElement('div');
         this.videoManagerToolbar.style.cssText = `
@@ -468,7 +472,7 @@ class VideoEditor {
         return `hsl(${Math.random() * 360}, 70%, 60%)`;
     }
 }
-//升级：视频数据可显示行号
+//升级：去掉<style>，代码生成
 new VideoEditor();
 </script>
 </body>
