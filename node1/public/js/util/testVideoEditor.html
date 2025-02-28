@@ -25,7 +25,6 @@ class DraggableWindow {
             min-width: 300px;
         `;
 
-        // Title bar with touch-action
         this.titleBar = document.createElement('div');
         this.titleBar.textContent = title;
         this.titleBar.style.cssText = `
@@ -34,7 +33,7 @@ class DraggableWindow {
             cursor: move;
             user-select: none;
             border-bottom: 1px solid #ddd;
-            touch-action: none; /* Prevent browser touch actions */
+            touch-action: none;
         `;
 
         this.contentContainer = document.createElement('div');
@@ -55,7 +54,6 @@ class DraggableWindow {
         let isDragging = false;
         let initialX, initialY;
 
-        // Mouse handlers
         const mouseDownHandler = (e) => {
             isDragging = true;
             initialX = e.clientX - this.windowElement.offsetLeft;
@@ -74,7 +72,6 @@ class DraggableWindow {
             isDragging = false;
         };
 
-        // Touch handlers
         const touchStartHandler = (e) => {
             e.preventDefault();
             isDragging = true;
@@ -97,7 +94,6 @@ class DraggableWindow {
             isDragging = false;
         };
 
-        // Add event listeners
         this.titleBar.addEventListener('mousedown', mouseDownHandler);
         document.addEventListener('mousemove', mouseMoveHandler);
         document.addEventListener('mouseup', mouseUpHandler);
@@ -117,7 +113,7 @@ class VideoEditor {
     constructor() {
         this.scenes = [];
         this.currentSceneIndex = -1;
-        this.currentPlaySceneIndex = -1; // 新增：跟踪播放中的场景
+        this.currentPlaySceneIndex = -1;
         this.isPlaying = false;
         this.currentFrame = 0;
         this.animationId = null;
@@ -125,7 +121,6 @@ class VideoEditor {
         this.initDOM();
     }
 
-    // 新增方法：更新JSON内容
     updateJsonContent() {
         if (this.jsonWindow.isVisible) {
             this.jsonContent.textContent = this.generateVideoJson();
@@ -146,7 +141,6 @@ class VideoEditor {
         this.createCanvas();
         this.createPlayToolbar();
 
-        // 初始化JSON窗口
         this.jsonContent = document.createElement('pre');
         this.jsonContent.style.cssText = `
             padding: 10px;
@@ -192,26 +186,10 @@ class VideoEditor {
 
         const toggleWindowBtn = document.createElement('button');
         toggleWindowBtn.textContent = '切换场景窗口';
-        toggleWindowBtn.style.cssText = `
-            padding: 6px 12px;
-            background: #2196F3;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        `;
         toggleWindowBtn.onclick = () => this.sceneWindow.toggleVisibility();
 
         const toggleJsonBtn = document.createElement('button');
         toggleJsonBtn.textContent = '切换数据窗口';
-        toggleJsonBtn.style.cssText = `
-            padding: 6px 12px;
-            background: #2196F3;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        `;
         toggleJsonBtn.onclick = () => {
             this.jsonWindow.toggleVisibility();
             if (this.jsonWindow.isVisible) {
@@ -226,6 +204,7 @@ class VideoEditor {
 
     generateVideoJson() {
         const data = {
+            fps: parseInt(this.fpsInput.value) || 30,
             scenes: this.scenes.map(scene => ({
                 id: scene.id,
                 color: scene.color,
@@ -235,7 +214,6 @@ class VideoEditor {
         return JSON.stringify(data, null, 2);
     }
 
-    // 其他原有方法保持不变...
     addScene() {
         const scene = {
             id: Date.now(),
@@ -269,13 +247,9 @@ class VideoEditor {
         const durationInput = document.createElement('input');
         durationInput.type = 'number';
         durationInput.value = scene.duration;
-        durationInput.style.cssText = `
-            width: 60px;
-            padding: 4px;
-        `;
         durationInput.onchange = (e) => {
             scene.duration = Math.max(1, parseInt(e.target.value) || 1);
-            this.updateJsonContent(); // 新增更新
+            this.updateJsonContent();
         };
 
         const colorInput = document.createElement('input');
@@ -287,8 +261,9 @@ class VideoEditor {
             if (this.currentSceneIndex === this.scenes.indexOf(scene)) {
                 this.updateCanvasColor(scene.color);
             }
-            this.updateJsonContent(); // 新增更新
+            this.updateJsonContent();
         };
+
         sceneItem.appendChild(sceneBtn);
         sceneItem.appendChild(durationInput);
         sceneItem.appendChild(colorInput);
@@ -298,7 +273,7 @@ class VideoEditor {
         scene.btn = sceneBtn;
         this.scenes.push(scene);
         this.selectScene(scene.id);
-        this.updateJsonContent(); // 新增场景添加后的更新
+        this.updateJsonContent();
     }
 
     selectScene(id) {
@@ -343,6 +318,7 @@ class VideoEditor {
             <label>帧率: <input type="number" value="30" min="1" style="width:50px"></label>
         `;
         this.fpsInput = fpsContainer.querySelector('input');
+        this.fpsInput.addEventListener('change', () => this.updateJsonContent());
 
         this.playToolbar.appendChild(this.playBtn);
         this.playToolbar.appendChild(fpsContainer);
@@ -350,11 +326,7 @@ class VideoEditor {
     }
 
     togglePlay() {
-        if (this.isPlaying) {
-            this.stopPlay();
-        } else {
-            this.startPlay();
-        }
+        this.isPlaying ? this.stopPlay() : this.startPlay();
     }
 
     startPlay() {
@@ -363,7 +335,7 @@ class VideoEditor {
         this.playBtn.textContent = '停止';
         this.currentFrame = 0;
         this.playStart = performance.now();
-        this.currentPlaySceneIndex = -1; // 重置播放场景跟踪
+        this.currentPlaySceneIndex = -1;
         this.animate();
     }
 
@@ -371,25 +343,20 @@ class VideoEditor {
         this.isPlaying = false;
         this.playBtn.textContent = '播放';
         cancelAnimationFrame(this.animationId);
-        this.clearPlayHighlights(); // 新增：清除播放高亮
+        this.clearPlayHighlights();
+        if (this.currentSceneIndex >=0 && this.currentSceneIndex < this.scenes.length) {
+            this.updateCanvasColor(this.scenes[this.currentSceneIndex].color);
+        }
     }
 
-    // 新增：高亮当前播放场景
     highlightSceneButton(index) {
         this.scenes.forEach((scene, i) => {
-            if (i === index) {
-                scene.btn.style.outline = "2px solid #00f";
-                scene.btn.style.outlineOffset = "2px";
-            } else {
-                scene.btn.style.outline = "";
-            }
+            scene.btn.style.outline = i === index ? "2px solid #00f" : "";
         });
     }
-    // 新增：清除播放高亮
+
     clearPlayHighlights() {
-        this.scenes.forEach(scene => {
-            scene.btn.style.outline = "";
-        });
+        this.scenes.forEach(scene => scene.btn.style.outline = "");
     }
 
     animate() {
@@ -419,7 +386,6 @@ class VideoEditor {
         let accumulated = 0;
         let currentSceneIndex = -1;
         
-        // 查找当前播放的场景
         for (let i = 0; i < this.scenes.length; i++) {
             accumulated += this.scenes[i].duration;
             if (this.currentFrame < accumulated) {
@@ -429,9 +395,7 @@ class VideoEditor {
         }
 
         if (currentSceneIndex !== -1) {
-            this.updateCanvasColor(this.scenes[currentSceneIndex].color);
-            
-            // 更新播放场景高亮
+            this.updateCanvasColor(this.scenes[currentSceneIndex].color, true);
             if (this.currentPlaySceneIndex !== currentSceneIndex) {
                 this.highlightSceneButton(currentSceneIndex);
                 this.currentPlaySceneIndex = currentSceneIndex;
@@ -439,16 +403,37 @@ class VideoEditor {
         }
     }
 
-    updateCanvasColor(color) {
+    updateCanvasColor(color, isPlaying = false) {
         this.ctx.fillStyle = color;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        if (isPlaying) this.drawHUD();
+    }
+
+    drawHUD() {
+        const fps = parseInt(this.fpsInput.value) || 30;
+        const totalFrames = this.scenes.reduce((sum, s) => sum + s.duration, 0);
+        const currentFrame = this.currentFrame + 1;
+        const currentScene = this.currentPlaySceneIndex + 1;
+        const totalScenes = this.scenes.length;
+
+        // 绘制半透明背景
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        this.ctx.fillRect(5, 5, 160, 60);
+
+        // 绘制文本
+        this.ctx.fillStyle = 'white';
+        this.ctx.font = '14px Arial';
+        this.ctx.textBaseline = 'top';
+        this.ctx.fillText(`帧率: ${fps} FPS`, 10, 10);
+        this.ctx.fillText(`帧: ${currentFrame}/${totalFrames}`, 10, 30);
+        this.ctx.fillText(`场景: ${currentScene}/${totalScenes}`, 10, 50);
     }
 
     getRandomColor() {
         return `hsl(${Math.random() * 360}, 70%, 60%)`;
     }
 }
-//升级：播放时，场景按钮跟着高亮
+
 new VideoEditor();
 </script>
 </body>
