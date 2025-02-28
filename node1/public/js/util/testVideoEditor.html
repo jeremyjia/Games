@@ -518,13 +518,20 @@ class VideoEditor {
             video.src = url;
             video.style.width = '100%';
             
-            // 创建下载按钮
+            // 创建按钮容器
+            const buttonContainer = document.createElement('div');
+            buttonContainer.style.cssText = `
+                display: flex;
+                gap: 10px;
+                margin-top: 10px;
+            `;
+
+            // 下载按钮
             const downloadBtn = document.createElement('button');
             downloadBtn.textContent = '下载视频';
             downloadBtn.style.cssText = `
                 background: #2196F3;
                 color: white;
-                margin-top: 10px;
             `;
             downloadBtn.onclick = () => {
                 const a = document.createElement('a');
@@ -535,8 +542,20 @@ class VideoEditor {
                 document.body.removeChild(a);
             };
 
+            // 新增关闭按钮
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = '关闭窗口';
+            closeBtn.style.cssText = `
+                background: #f44336;
+                color: white;
+            `;
+            closeBtn.onclick = () => this.resultWindow.toggleVisibility();
+
+            buttonContainer.appendChild(downloadBtn);
+            buttonContainer.appendChild(closeBtn);
+
             this.resultContent.appendChild(video);
-            this.resultContent.appendChild(downloadBtn);
+            this.resultContent.appendChild(buttonContainer);
         })
 
         .catch(error => {
@@ -703,5 +722,5 @@ new VideoEditor();
 </body>
 </html>
 <!--
-升级： generateVideo, 只弹出1个窗口
+升级： generateVideo, 窗口 下载视频按钮边上生成一按钮，实现关闭窗口
 -->
