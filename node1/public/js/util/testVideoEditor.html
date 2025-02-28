@@ -279,6 +279,8 @@ class VideoEditor {
         };
 
         const sceneItem = document.createElement('div');
+        sceneItem.draggable = true;  // 新增拖拽属性
+        
         sceneItem.style.cssText = `
             display: flex;
             gap: 8px;
@@ -286,8 +288,13 @@ class VideoEditor {
             background: #f8f8f8;
             border-radius: 4px;
             align-items: center;
+            cursor: move;
         `;
-
+        // 添加拖拽事件
+        sceneItem.addEventListener('dragstart', (e) => this.handleDragStart(e, scene));
+        sceneItem.addEventListener('dragover', (e) => this.handleDragOver(e, scene));
+        sceneItem.addEventListener('drop', (e) => this.handleDrop(e, scene));
+        sceneItem.addEventListener('dragend', (e) => this.handleDragEnd(e));
         const sceneBtn = document.createElement('button');
         sceneBtn.textContent = `场景 ${this.scenes.length + 1}`;
         sceneBtn.style.cssText = `
@@ -328,6 +335,55 @@ class VideoEditor {
         scene.btn = sceneBtn;
         this.scenes.push(scene);
         this.selectScene(scene.id);
+        this.updateJsonContent();
+    }
+
+    // 新增拖拽相关方法
+    handleDragStart(e, scene) {
+        e.dataTransfer.setData('text/plain', scene.id);
+        e.dataTransfer.effectAllowed = 'move';
+        this.draggedScene = scene;
+        this.draggedIndex = this.scenes.findIndex(s => s.id === scene.id);
+        scene.element.style.opacity = '0.5';
+    }
+
+    handleDragOver(e, targetScene) {
+        e.preventDefault();
+        const targetIndex = this.scenes.findIndex(s => s.id === targetScene.id);
+        if (this.draggedIndex === targetIndex) return;
+
+        const rect = targetScene.element.getBoundingClientRect();
+        const midY = rect.top + rect.height / 2;
+        
+        if (e.clientY < midY) {
+            this.sceneToolbar.insertBefore(
+                this.draggedScene.element,
+                targetScene.element
+            );
+        } else {
+            this.sceneToolbar.insertBefore(
+                this.draggedScene.element,
+                targetScene.element.nextSibling
+            );
+        }
+
+        // 更新数组顺序
+        const newScenes = [...this.scenes];
+        newScenes.splice(this.draggedIndex, 1);
+        const newIndex = newScenes.findIndex(s => s.id === targetScene.id);
+        newScenes.splice(e.clientY < midY ? newIndex : newIndex + 1, 0, this.draggedScene);
+        
+        this.scenes = newScenes;
+        this.draggedIndex = this.scenes.findIndex(s => s.id === this.draggedScene.id);
+    }
+
+    handleDrop(e) {
+        e.preventDefault();
+    }
+
+    handleDragEnd(e) {
+        this.draggedScene.element.style.opacity = '1';
+        this.draggedScene = null;
         this.updateJsonContent();
     }
 
@@ -504,6 +560,6 @@ new VideoEditor();
 </html>
 <!--
 
-//升级：当点击场景按钮时，视频数据自动滚动到对应的数据，并高亮显示代码
+//升级： 场景 可拖拉改变顺序
 
 -->
