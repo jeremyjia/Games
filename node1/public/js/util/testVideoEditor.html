@@ -121,8 +121,48 @@ class VideoEditor {
         this.createViewportMeta();
         this.initGlobalStyle();
         this.initDOM();
+        this.createAudioPresetWindow();
     }
-    
+    createAudioPresetWindow() {
+        this.audioPresetContent = document.createElement('div');
+        this.audioPresetContent.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 10px;
+        `;
+
+        const baseURL = 'https://littleflute.github.io/english/NewConceptEnglish/Book2/';
+        for (let i = 1; i <= 36; i++) { 
+            const btn = document.createElement('button');
+            btn.textContent = `第 ${i} 课`;
+            btn.style.cssText = `
+                padding: 4px 8px;
+                background: #9C27B0;
+                color: white;
+                font-size: 12px;
+            `;
+            btn.onclick = () => {
+                // 关键修改：用padStart补足两位数路径
+                const paddedI = i.toString().padStart(2, '0');
+                const url = `${baseURL}${paddedI}.mp3`;
+                this.audioUrlInput.value = url;
+                this.audio.src = url;
+                this.updateJsonContent();
+            };
+            this.audioPresetContent.appendChild(btn);
+        }
+
+        this.audioPresetWindow = new DraggableWindow(
+            '音频预设',
+            this.audioPresetContent,
+            400,  
+            20,
+            false
+        );
+    }
+
+
     initGlobalStyle() {
         const style = document.createElement('style');
         style.textContent = `
@@ -282,8 +322,17 @@ class VideoEditor {
             this.updateJsonContent();
         });
 
+        // 新增音频预设切换按钮
+        const toggleAudioPresetBtn = document.createElement('button');
+        toggleAudioPresetBtn.textContent = '音频预设';
+        toggleAudioPresetBtn.onclick = () => this.audioPresetWindow.toggleVisibility();
+
+        // 在原有工具栏中添加新按钮
+        this.videoManagerToolbar.appendChild(toggleAudioPresetBtn);
         this.videoManagerToolbar.appendChild(toggleWindowBtn);
         this.videoManagerToolbar.appendChild(toggleJsonBtn);
+        
+        this.audioUrlInput = audioUrlInput;
         this.videoManagerToolbar.appendChild(audioUrlInput);
         document.body.appendChild(this.videoManagerToolbar);
     }
@@ -722,9 +771,5 @@ new VideoEditor();
 </body>
 </html>
 <!--
-升级： audioUrlInput 绑定一个按钮，可toggle一个移动窗口，窗口上有一些按钮，可以设置一些src:
-   https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3
-   https://littleflute.github.io/english/NewConceptEnglish/Book2/2.mp3
-   https://littleflute.github.io/english/NewConceptEnglish/Book2/3.mp3
-   ...
+fix：点第2课按钮，  audioUrlInput 没更新 
 -->
