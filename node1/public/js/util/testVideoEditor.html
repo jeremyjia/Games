@@ -106,11 +106,15 @@ class VideoEditor {
         this.isPlaying = false;
         this.currentFrame = 0;
         this.animationId = null;
+        this.audio = new Audio();
+        this.audio.src = 'https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3';
+        this.audio.addEventListener('ended', () => this.stopPlay());
+        
         this.createViewportMeta();
         this.initGlobalStyle();
-        this.initGlobalStyle();  // 合并样式初始化到类方法
         this.initDOM();
     }
+    
     initGlobalStyle() {
         const style = document.createElement('style');
         style.textContent = `
@@ -151,17 +155,15 @@ class VideoEditor {
 
     highlightJsonLine(sceneId) {
         if (!this.jsonWindow.isVisible) {
-            this.jsonWindow.toggleVisibility(); // 确保窗口可见
+            this.jsonWindow.toggleVisibility();
         }
-        this.updateJsonContent(); // 刷新内容以确保数据最新
-        setTimeout(() => { // 等待DOM更新
+        this.updateJsonContent();
+        setTimeout(() => {
             const targetLine = this.jsonContent.querySelector(`[data-scene-id="${sceneId}"]`);
             if (targetLine) {
-                // 移除旧高亮
                 this.jsonContent.querySelectorAll('.line').forEach(line => {
                     line.classList.remove('highlight');
                 });
-                // 添加新高亮并滚动
                 targetLine.classList.add('highlight');
                 targetLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
@@ -174,7 +176,6 @@ class VideoEditor {
             const lines = jsonStr.split('\n');
             this.jsonContent.innerHTML = lines.map(line => {
                 const escapedLine = line.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                // 匹配 "id": 数字 格式的行
                 const idMatch = line.match(/"id":\s*(\d+)/);
                 if (idMatch) {
                     return `<div class="line" data-scene-id="${idMatch[1]}">${escapedLine}</div>`;
@@ -199,8 +200,8 @@ class VideoEditor {
         this.createCanvas();
         this.createPlayToolbar();
 
-        this.jsonContent = document.createElement('div');  // 改为 div 元素
-        this.jsonContent.className = 'json-content';      // 添加样式类
+        this.jsonContent = document.createElement('div');
+        this.jsonContent.className = 'json-content';
         this.jsonContent.style.cssText = `
             padding: 10px;
             max-height: 200px;
@@ -229,6 +230,7 @@ class VideoEditor {
         newSceneBtn.onclick = () => this.addScene();
         this.sceneToolbar.appendChild(newSceneBtn);
     }
+    
     createVideoManagerToolbar() {
         this.videoManagerToolbar = document.createElement('div');
         this.videoManagerToolbar.style.cssText = `
@@ -248,18 +250,30 @@ class VideoEditor {
         toggleJsonBtn.onclick = () => {
             this.jsonWindow.toggleVisibility();
             if (this.jsonWindow.isVisible) {
-                this.jsonContent.textContent = this.generateVideoJson();
+                this.updateJsonContent();
             }
         };
 
+        const audioUrlInput = document.createElement('input');
+        audioUrlInput.type = 'url';
+        audioUrlInput.placeholder = '音频URL';
+        audioUrlInput.value = this.audio.src;
+        audioUrlInput.style.flex = '1';
+        audioUrlInput.addEventListener('change', (e) => {
+            this.audio.src = e.target.value;
+            this.updateJsonContent();
+        });
+
         this.videoManagerToolbar.appendChild(toggleWindowBtn);
         this.videoManagerToolbar.appendChild(toggleJsonBtn);
+        this.videoManagerToolbar.appendChild(audioUrlInput);
         document.body.appendChild(this.videoManagerToolbar);
     }
 
     generateVideoJson() {
         const data = {
             fps: parseInt(this.fpsInput.value) || 30,
+            audio: this.audio.src,
             scenes: this.scenes.map(scene => ({
                 id: scene.id,
                 color: scene.color,
@@ -279,8 +293,7 @@ class VideoEditor {
         };
 
         const sceneItem = document.createElement('div');
-        sceneItem.draggable = true;  // 新增拖拽属性
-        
+        sceneItem.draggable = true;
         sceneItem.style.cssText = `
             display: flex;
             gap: 8px;
@@ -290,11 +303,12 @@ class VideoEditor {
             align-items: center;
             cursor: move;
         `;
-        // 添加拖拽事件
+        
         sceneItem.addEventListener('dragstart', (e) => this.handleDragStart(e, scene));
         sceneItem.addEventListener('dragover', (e) => this.handleDragOver(e, scene));
         sceneItem.addEventListener('drop', (e) => this.handleDrop(e, scene));
         sceneItem.addEventListener('dragend', (e) => this.handleDragEnd(e));
+
         const sceneBtn = document.createElement('button');
         sceneBtn.textContent = `场景 ${this.scenes.length + 1}`;
         sceneBtn.style.cssText = `
@@ -338,7 +352,6 @@ class VideoEditor {
         this.updateJsonContent();
     }
 
-    // 新增拖拽相关方法
     handleDragStart(e, scene) {
         e.dataTransfer.setData('text/plain', scene.id);
         e.dataTransfer.effectAllowed = 'move';
@@ -367,7 +380,6 @@ class VideoEditor {
             );
         }
 
-        // 更新数组顺序
         const newScenes = [...this.scenes];
         newScenes.splice(this.draggedIndex, 1);
         const newIndex = newScenes.findIndex(s => s.id === targetScene.id);
@@ -394,8 +406,9 @@ class VideoEditor {
         });
         this.currentSceneIndex = index;
         this.updateCanvasColor(this.scenes[index].color);
-        this.highlightJsonLine(id); // 触发高亮和滚动
+        this.highlightJsonLine(id);
     }
+    
     createCanvas() {
         this.canvas = document.createElement('canvas');
         this.canvas.width = 300;
@@ -445,8 +458,15 @@ class VideoEditor {
         this.isPlaying = true;
         this.playBtn.textContent = '停止';
         this.currentFrame = 0;
-        this.playStart = performance.now();
         this.currentPlaySceneIndex = -1;
+
+        const fps = parseInt(this.fpsInput.value) || 30;
+        this.audio.currentTime = this.currentFrame / fps;
+        this.audio.play().catch(error => {
+            console.error('音频播放失败:', error);
+            this.stopPlay();
+        });
+
         this.animate();
     }
 
@@ -454,6 +474,8 @@ class VideoEditor {
         this.isPlaying = false;
         this.playBtn.textContent = '播放';
         cancelAnimationFrame(this.animationId);
+        this.audio.pause();
+        this.audio.currentTime = 0;
         this.clearPlayHighlights();
         if (this.currentSceneIndex >=0 && this.currentSceneIndex < this.scenes.length) {
             this.updateCanvasColor(this.scenes[this.currentSceneIndex].color);
@@ -466,7 +488,6 @@ class VideoEditor {
         });
         
         if (index >= 0 && index < this.scenes.length) {
-            // 新增滚动逻辑
             const sceneElement = this.scenes[index].element;
             sceneElement.scrollIntoView({
                 behavior: 'smooth',
@@ -483,22 +504,17 @@ class VideoEditor {
     animate() {
         if (!this.isPlaying) return;
 
+        const fps = parseInt(this.fpsInput.value) || 30;
+        const currentTime = this.audio.currentTime;
+        this.currentFrame = Math.floor(currentTime * fps);
+
         const totalFrames = this.scenes.reduce((sum, s) => sum + s.duration, 0);
         if (this.currentFrame >= totalFrames) {
             this.stopPlay();
             return;
         }
 
-        const fps = parseInt(this.fpsInput.value) || 30;
-        const frameTime = 1000 / fps;
-        const now = performance.now();
-        const elapsed = now - this.playStart;
-
-        const targetFrame = Math.floor(elapsed / frameTime);
-        if (targetFrame > this.currentFrame) {
-            this.currentFrame = targetFrame;
-            this.updatePlayback();
-        }
+        this.updatePlayback();
 
         this.animationId = requestAnimationFrame(() => this.animate());
     }
@@ -537,11 +553,9 @@ class VideoEditor {
         const currentScene = this.currentPlaySceneIndex + 1;
         const totalScenes = this.scenes.length;
 
-        // 绘制半透明背景
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
         this.ctx.fillRect(5, 5, 160, 60);
 
-        // 绘制文本
         this.ctx.fillStyle = 'white';
         this.ctx.font = '14px Arial';
         this.ctx.textBaseline = 'top';
@@ -579,10 +593,7 @@ class VideoEditor {
             g = hue2rgb(p, q, h);
             b = hue2rgb(p, q, h - 1/3);
         }
-        const toHex = x => {
-            const hex = Math.round(x * 255).toString(16).padStart(2, '0');
-            return hex;
-        };
+        const toHex = x => Math.round(x * 255).toString(16).padStart(2, '0');
         return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
     }
 }
@@ -590,8 +601,3 @@ new VideoEditor();
 </script>
 </body>
 </html>
-<!--
-
-//fix: 添加场景时，颜色设置框颜色不对
-
--->
