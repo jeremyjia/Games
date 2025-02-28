@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8"> 
+    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.2/dist/ffmpeg.min.js"></script>
 </head>
 <body>
 <script>
@@ -113,6 +114,13 @@ class VideoEditor {
         this.createViewportMeta();
         this.initGlobalStyle();
         this.initDOM();
+        this.ffmpeg = null;
+        this.initFFmpeg();
+    }
+    async initFFmpeg() {
+        this.ffmpeg = new FFmpeg();
+        this.ffmpeg.on('log', ({ message }) => console.log(message));
+        await this.ffmpeg.load();
     }
     
     initGlobalStyle() {
@@ -444,6 +452,14 @@ class VideoEditor {
         this.fpsInput = fpsContainer.querySelector('input');
         this.fpsInput.addEventListener('change', () => this.updateJsonContent());
 
+        // 添加生成视频按钮
+        const generateBtn = document.createElement('button');
+        generateBtn.textContent = '生成视频';
+        generateBtn.style.background = '#2196F3';
+        generateBtn.style.color = 'white';
+        generateBtn.onclick = () => this.generateVideo();
+        this.playToolbar.appendChild(generateBtn);
+
         this.playToolbar.appendChild(this.playBtn);
         this.playToolbar.appendChild(fpsContainer);
         document.body.appendChild(this.playToolbar);
@@ -596,6 +612,89 @@ class VideoEditor {
         const toHex = x => Math.round(x * 255).toString(16).padStart(2, '0');
         return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
     }
+
+    async generateVideo() {
+        if (!this.ffmpeg.loaded) {
+            alert('FFmpeg 正在初始化，请稍候...');
+            return;
+        }
+
+        try {
+            const fps = parseInt(this.fpsInput.value) || 30;
+            const width = this.canvas.width;
+            const height = this.canvas.height;
+            
+            // 生成颜色片段
+            const scenes = this.scenes.map(scene => ({
+                color: scene.color,
+                duration: scene.duration,
+                frames: Array.from({length: scene.duration * fps}, () => scene.color)
+            }));
+
+            // 创建颜色帧
+            let frameCount = 0;
+            for (const scene of scenes) {
+                for (let i = 0; i < scene.frames.length; i++) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = scene.color;
+                    ctx.fillRect(0, 0, width, height);
+                    this.drawTextOnCanvas(ctx, `场景 ${scenes.indexOf(scene)+1}`, width, height);
+                    
+                    const blob = await new Promise(resolve => 
+                        canvas.toBlob(resolve, 'image/png')
+                    );
+                    await this.ffmpeg.writeFile(`frame-${frameCount.toString().padStart(5,'0')}.png`, 
+                        new Uint8Array(await blob.arrayBuffer()));
+                    frameCount++;
+                }
+            }
+
+            // 生成视频命令
+            const commands = [
+                '-framerate', `${fps}`,
+                '-i', 'frame-%05d.png',
+                '-i', await this.fetchFile(this.audio.src),
+                '-c:a', 'aac',
+                '-c:v', 'libx264',
+                '-pix_fmt', 'yuv420p',
+                '-shortest',
+                'output.mp4'
+            ];
+
+            await this.ffmpeg.exec(commands);
+
+            // 下载视频
+            const data = await this.ffmpeg.readFile('output.mp4');
+            const url = URL.createObjectURL(new Blob([data.buffer], {type: 'video/mp4'}));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'generated-video.mp4';
+            a.click();
+            
+        } catch (err) {
+            console.error('生成视频失败:', err);
+            alert('视频生成失败，请检查控制台日志');
+        }
+    }
+
+    async fetchFile(url) {
+        const response = await fetch(url);
+        const buffer = await response.arrayBuffer();
+        const fileName = url.split('/').pop();
+        await this.ffmpeg.writeFile(fileName, new Uint8Array(buffer));
+        return fileName;
+    }
+    drawTextOnCanvas(ctx, text, width, height) {
+        ctx.fillStyle = 'white';
+        ctx.font = '24px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, width/2, height/2);
+    }
+
 }
 new VideoEditor();
 </script>
