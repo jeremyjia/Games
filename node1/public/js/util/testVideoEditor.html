@@ -219,6 +219,10 @@ class VideoEditor {
 
     initDOM() {
         this.createSceneToolbar();
+        this.scenesHandler = new C4Scenes(
+            id => this.selectScene(id),
+            () => this.updateJsonContent()
+        );
         this.sceneWindow = new C4DraggableWindow('场景管理', this.sceneToolbar, 20, 20);
         this.createVideoManagerToolbar();
         this.createCanvas();
@@ -261,7 +265,7 @@ class VideoEditor {
             color: 'white'
         });
         newSceneBtn.textContent = '新建场景';
-        newSceneBtn.onclick = () => this.addScene();
+        newSceneBtn.onclick = () => this.scenesHandler.addScene();
         this.sceneToolbar.appendChild(newSceneBtn);
     }
     
@@ -317,142 +321,20 @@ class VideoEditor {
         const data = {
             fps: parseInt(this.fpsInput.value) || 30,
             audio: this.audio.src,
-            srt: this.srt,  // 将SRT加入JSON
-            scenes: this.scenes.map(scene => ({
-                id: scene.id,
-                color: scene.color,
-                duration: scene.duration
-            }))
+            srt: this.srt,
+            scenes: this.scenesHandler.getScenesData()
         };
         return JSON.stringify(data, null, 2);
     }
-   
-    addScene() {
-        const scene = {
-            id: Date.now(),
-            color: this.getRandomColor(),
-            duration: 30,
-            element: null,
-            btn: null
-        };
-
-        const sceneItem = document.createElement('div');
-        sceneItem.draggable = true;
-        sceneItem.style.cssText = `
-            display: flex;
-            gap: 8px;
-            padding: 8px;
-            background: #f8f8f8;
-            border-radius: 4px;
-            align-items: center;
-            cursor: move;
-        `;
-        
-        sceneItem.addEventListener('dragstart', (e) => this.handleDragStart(e, scene));
-        sceneItem.addEventListener('dragover', (e) => this.handleDragOver(e, scene));
-        sceneItem.addEventListener('drop', (e) => this.handleDrop(e, scene));
-        sceneItem.addEventListener('dragend', (e) => this.handleDragEnd(e));
-
-        const sceneBtn = document.createElement('button');
-        sceneBtn.textContent = `场景 ${this.scenes.length + 1}`;
-        sceneBtn.style.cssText = `
-            padding: 4px 8px;
-            background: ${scene.color};
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-        `;
-        sceneBtn.onclick = () => this.selectScene(scene.id);
-
-        const durationInput = document.createElement('input');
-        durationInput.type = 'number';
-        durationInput.value = scene.duration;
-        durationInput.onchange = (e) => {
-            scene.duration = Math.max(1, parseInt(e.target.value) || 1);
-            this.updateJsonContent();
-        };
-
-        const colorInput = document.createElement('input');
-        colorInput.type = 'color';
-        colorInput.value = scene.color;
-        colorInput.oninput = (e) => {
-            scene.color = e.target.value;
-            sceneBtn.style.backgroundColor = scene.color;
-            if (this.currentSceneIndex === this.scenes.indexOf(scene)) {
-                this.updateCanvasColor(scene.color);
-            }
-            this.updateJsonContent();
-        };
-
-        sceneItem.appendChild(sceneBtn);
-        sceneItem.appendChild(durationInput);
-        sceneItem.appendChild(colorInput);
-        this.sceneToolbar.appendChild(sceneItem);
-
-        scene.element = sceneItem;
-        scene.btn = sceneBtn;
-        this.scenes.push(scene);
-        this.selectScene(scene.id);
-        this.updateJsonContent();
-    }
-
-    handleDragStart(e, scene) {
-        e.dataTransfer.setData('text/plain', scene.id);
-        e.dataTransfer.effectAllowed = 'move';
-        this.draggedScene = scene;
-        this.draggedIndex = this.scenes.findIndex(s => s.id === scene.id);
-        scene.element.style.opacity = '0.5';
-    }
-
-    handleDragOver(e, targetScene) {
-        e.preventDefault();
-        const targetIndex = this.scenes.findIndex(s => s.id === targetScene.id);
-        if (this.draggedIndex === targetIndex) return;
-
-        const rect = targetScene.element.getBoundingClientRect();
-        const midY = rect.top + rect.height / 2;
-        
-        if (e.clientY < midY) {
-            this.sceneToolbar.insertBefore(
-                this.draggedScene.element,
-                targetScene.element
-            );
-        } else {
-            this.sceneToolbar.insertBefore(
-                this.draggedScene.element,
-                targetScene.element.nextSibling
-            );
-        }
-
-        const newScenes = [...this.scenes];
-        newScenes.splice(this.draggedIndex, 1);
-        const newIndex = newScenes.findIndex(s => s.id === targetScene.id);
-        newScenes.splice(e.clientY < midY ? newIndex : newIndex + 1, 0, this.draggedScene);
-        
-        this.scenes = newScenes;
-        this.draggedIndex = this.scenes.findIndex(s => s.id === this.draggedScene.id);
-    }
-
-    handleDrop(e) {
-        e.preventDefault();
-    }
-
-    handleDragEnd(e) {
-        this.draggedScene.element.style.opacity = '1';
-        this.draggedScene = null;
-        this.updateJsonContent();
-    }
-
+         
     selectScene(id) {
-        const index = this.scenes.findIndex(s => s.id === id);
-        this.scenes.forEach((s, i) => {
-            s.btn.style.border = i === index ? '5px solid #f00' : '';
-        });
-        this.currentSceneIndex = index;
-        this.updateCanvasColor(this.scenes[index].color);
-        this.highlightJsonLine(id);
+        const sceneData = this.scenesHandler.getScenesData().find(s => s.id === id);
+        if (sceneData) {
+            this.updateCanvasColor(sceneData.color);
+            this.highlightJsonLine(id);
+        }
     }
-    
+
     createCanvas() {
         this.canvas = document.createElement('canvas');
         this.canvas.width = 300;
@@ -756,5 +638,6 @@ new VideoEditor();
 </body>
 </html>
 <!--
-升级：把 scenes 相关功能封装成一个类 C4Scenes，在文件 c4Scenes.js 里实现。 
+升级：新建场景按钮按下后 列表看不到
+
 -->
