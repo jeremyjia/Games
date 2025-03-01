@@ -336,6 +336,7 @@ class VideoEditor {
             id: scene.id,
             color: scene.color,
             duration: scene.duration,
+            // 保持绘图对象数据不变
             drawingObjs: scene.drawingObjs.map(obj => ({
                 type: obj.constructor.name.replace("C4", ""),
                 startX: Math.round(obj.startX * scale.x),
@@ -345,9 +346,14 @@ class VideoEditor {
                 color: obj.color
             }))
         }));
-        return JSON.stringify(scenesData, null, 2); // 转换为格式化的JSON字符串
+        return JSON.stringify({
+            fps: parseInt(this.fpsInput.value) || 30,
+            width: 640,
+            height: 480,
+            scenes: scenesData,
+            audio: this.audio.src
+        }, null, 2);
     }
-
 
     selectScene(id) {
         const sceneData = this.scenesHandler.getScenesData().find(s => s.id === id);
