@@ -19,8 +19,38 @@ class C4Scenes {
         `;
         newSceneBtn.onclick = () => this.addScene();
         this.sceneToolbar.appendChild(newSceneBtn);
+
+        // 添加绘图工具栏
+        const toolBar = document.createElement('div');
+        toolBar.style.cssText = `
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        `;
+
+        this.lineBtn = document.createElement('button');
+        this.lineBtn.textContent = '直线';
+        this.lineBtn.onclick = () => this.setTool('line');
+
+        this.rectBtn = document.createElement('button');
+        this.rectBtn.textContent = '矩形';
+        this.rectBtn.onclick = () => this.setTool('rect');
+
+        toolBar.appendChild(this.lineBtn);
+        toolBar.appendChild(this.rectBtn);
+        this.sceneToolbar.insertBefore(toolBar, this.sceneToolbar.firstChild);
+
+        this.currentTool = null;
     }
  
+    
+    setTool(tool) {
+        this.currentTool = tool;
+        this.lineBtn.style.background = tool === 'line' ? '#2196F3' : '';
+        this.rectBtn.style.background = tool === 'rect' ? '#2196F3' : '';
+    }
+
+
     getScenes() {
         return this.scenes;
     }
@@ -31,7 +61,8 @@ class C4Scenes {
             color: this.getRandomColor(),
             duration: 30,
             element: null,
-            btn: null
+            btn: null, 
+            drawingObjs: []  // 新增绘图对象数组
         };
 
         const sceneItem = document.createElement('div');
@@ -153,7 +184,15 @@ class C4Scenes {
         return this.scenes.map(scene => ({
             id: scene.id,
             color: scene.color,
-            duration: scene.duration
+            duration: scene.duration,
+            drawingObjs: scene.drawingObjs.map(obj => ({
+                type: obj.constructor.name,
+                startX: obj.startX,
+                startY: obj.startY,
+                endX: obj.endX,
+                endY: obj.endY,
+                color: obj.color
+            }))
         }));
     }
 

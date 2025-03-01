@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8"> 
+    <script src="c4DrawingObjs.js"></script>
     <script src="c4DraggableWindow.js"></script>
     <script src="c4Scenes.js"></script>
     <script src="c4Srt.js"></script>
@@ -95,9 +96,20 @@ class VideoEditor {
         this.initGlobalStyle();
         this.initDOM();
         this.createAudioPresetWindow();
+        
+        this.isDrawing = false;
+        this.tempShape = null;
+        this.registerCanvasEvents();
     }
  
     
+    registerCanvasEvents() {
+        this.canvas.addEventListener('mousedown', e => this.startDrawing(e));
+        this.canvas.addEventListener('mousemove', e => this.whileDrawing(e));
+        this.canvas.addEventListener('mouseup', e => this.finishDrawing(e));
+        this.canvas.addEventListener('mouseleave', e => this.finishDrawing(e));
+    }
+
     createAudioPresetWindow() {
         this.audioPresetContent = document.createElement('div');
         this.audioPresetContent.style.cssText = `
@@ -592,7 +604,111 @@ class VideoEditor {
         this.srtHandler.showCurrentSubTxt(this.ctx,this.canvas);
         
     }
-  
+    
+    startDrawing(e) {
+        if (!this.scenesHandler.currentTool || this.currentSceneIndex === -1) return;
+        
+        const rect = this.canvas.getBoundingClientRect();
+        this.startPos = {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+        this.isDrawing = true;
+    }
+
+    whileDrawing(e) {
+        if (!this.isDrawing) return;
+
+        const rect = this.canvas.getBoundingClientRect();
+        const currentPos = {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+
+        // 清空画布并重绘
+        this.updateCanvasColor(
+            this.scenesHandler.scenes[this.currentSceneIndex].color,
+            this.isPlaying
+        );
+        
+        // 绘制已有图形
+        this.redrawSceneGraphics();
+        
+        // 绘制临时图形
+        this.drawTempShape(currentPos);
+    }
+
+    finishDrawing(e) {
+        if (!this.isDrawing) return;
+        this.isDrawing = false;
+
+        const rect = this.canvas.getBoundingClientRect();
+        const endPos = {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+
+        // 创建图形对象
+        const scene = this.scenesHandler.scenes[this.currentSceneIndex];
+        const newShape = this.createShape(
+            this.scenesHandler.currentTool,
+            this.startPos,
+            endPos,
+            scene.color
+        );
+
+        if (newShape) {
+            scene.drawingObjs.push(newShape);
+            this.updateJsonContent();
+        }
+    }
+
+    createShape(type, start, end, color) {
+        switch(type) {
+            case 'line':
+                return new C4Line(start.x, start.y, end.x, end.y, color);
+            case 'rect':
+                return new C4Rect(start.x, start.y, end.x, end.y, color);
+            default:
+                return null;
+        }
+    }
+
+    drawTempShape(currentPos) {
+        const ctx = this.ctx;
+        ctx.save();
+        ctx.strokeStyle = ctx.fillStyle = this.scenesHandler.scenes[this.currentSceneIndex].color;
+        
+        switch(this.scenesHandler.currentTool) {
+            case 'line':
+                ctx.beginPath();
+                ctx.moveTo(this.startPos.x, this.startPos.y);
+                ctx.lineTo(currentPos.x, currentPos.y);
+                ctx.stroke();
+                break;
+            case 'rect':
+                ctx.fillRect(
+                    this.startPos.x,
+                    this.startPos.y,
+                    currentPos.x - this.startPos.x,
+                    currentPos.y - this.startPos.y
+                );
+                break;
+        }
+        ctx.restore();
+    }
+
+    redrawSceneGraphics() {
+        const scene = this.scenesHandler.scenes[this.currentSceneIndex];
+        scene.drawingObjs.forEach(obj => obj.draw(this.ctx));
+    }
+
+    updateCanvasColor(color, isPlaying = false) {
+        // 清空画布
+        this.ctx.fillStyle = color;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        if (isPlaying) this.drawHUD();
+    }
 }
 new VideoEditor();
 </script>
@@ -600,5 +716,11 @@ new VideoEditor();
 </html>
 <!--
 升级： 
+在场景管理窗口顶部建立一个对象绘制工具条，上面有“直线”，“矩形” 按钮，
+选择直线按钮时，高亮此按钮，可在当前场景画布上所见即所得的画直线
+选择矩形按钮时,高亮此按钮，可在当前场景画布上所见即所得的矩形
+在 c4DrawingObjs.js 文件， 设计基类 C4DrawingObj, 子类 C4Line, C4Rect  
+
+
 
 -->
