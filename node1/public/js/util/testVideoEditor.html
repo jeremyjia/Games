@@ -2,110 +2,13 @@
 <html>
 <head>
     <meta charset="UTF-8"> 
+    <script src="c4DraggableWindow.js"></script>
     <script src="c4Srt.js"></script>
 </head>
 <body>
 <script>
  
-class DraggableWindow {
-    constructor(title, content, initialLeft = 20, initialTop = 20, isVisible = true) {
-        this.isVisible = isVisible;
-        this.createWindow(title, content, initialLeft, initialTop);
-        this.addDragListeners();
-        this.windowElement.style.display = isVisible ? 'block' : 'none';
-    }
 
-    show() {
-        if (!this.isVisible) {
-            this.isVisible = true;
-            this.windowElement.style.display = 'block';
-        }
-    }
-
-    createWindow(title, content, initialLeft, initialTop) {
-        this.windowElement = document.createElement('div');
-        Object.assign(this.windowElement.style, {
-            position: 'fixed',
-            left: `${initialLeft}px`,
-            top: `${initialTop}px`,
-            background: 'white',
-            border: '1px solid #ccc',
-            boxShadow: '2px 2px 5px rgba(0,0,0,0.2)',
-            zIndex: '1000',
-            minWidth: '300px'
-        });
-
-        this.titleBar = document.createElement('div');
-        this.titleBar.textContent = title;
-        Object.assign(this.titleBar.style, {
-            padding: '8px',
-            background: '#f0f0f0',
-            cursor: 'move',
-            userSelect: 'none',
-            borderBottom: '1px solid #ddd',
-            touchAction: 'none'
-        });
-
-        this.contentContainer = document.createElement('div');
-        Object.assign(this.contentContainer.style, {
-            padding: '10px',
-            background: 'white',
-            maxHeight: '60vh',
-            overflowY: 'auto'
-        });
-        this.contentContainer.appendChild(content);
-
-        this.windowElement.append(this.titleBar, this.contentContainer);
-        document.body.appendChild(this.windowElement);
-    }
-
-    addDragListeners() {
-        let isDragging = false;
-        let initialX, initialY;
-
-        const mouseDownHandler = (e) => {
-            isDragging = true;
-            initialX = e.clientX - this.windowElement.offsetLeft;
-            initialY = e.clientY - this.windowElement.offsetTop;
-        };
-
-        const mouseMoveHandler = (e) => {
-            if (!isDragging) return;
-            this.windowElement.style.left = `${e.clientX - initialX}px`;
-            this.windowElement.style.top = `${e.clientY - initialY}px`;
-        };
-
-        const handlers = {
-            mouseup: () => isDragging = false,
-            mousemove: mouseMoveHandler,
-            touchend: () => isDragging = false,
-            touchstart: (e) => {
-                const touch = e.touches[0];
-                initialX = touch.clientX - this.windowElement.offsetLeft;
-                initialY = touch.clientY - this.windowElement.offsetTop;
-                isDragging = true;
-            },
-            touchmove: (e) => {
-                if (!isDragging) return;
-                const touch = e.touches[0];
-                this.windowElement.style.left = `${touch.clientX - initialX}px`;
-                this.windowElement.style.top = `${touch.clientY - initialY}px`;
-            }
-        };
-
-        this.titleBar.addEventListener('mousedown', mouseDownHandler);
-        document.addEventListener('mouseup', handlers.mouseup);
-        document.addEventListener('mousemove', handlers.mousemove);
-        this.titleBar.addEventListener('touchstart', handlers.touchstart);
-        document.addEventListener('touchend', handlers.touchend);
-        document.addEventListener('touchmove', handlers.touchmove);
-    }
-
-    toggleVisibility() {
-        this.isVisible = !this.isVisible;
-        this.windowElement.style.display = this.isVisible ? 'block' : 'none';
-    }
-}
 const srt = `
 1
 00:00:00,000 --> 00:00:04,000
@@ -225,7 +128,7 @@ class VideoEditor {
             this.audioPresetContent.appendChild(btn);
         }
 
-        this.audioPresetWindow = new DraggableWindow(
+        this.audioPresetWindow = new C4DraggableWindow(
             '音频预设',
             this.audioPresetContent,
             400,  
@@ -315,7 +218,7 @@ class VideoEditor {
 
     initDOM() {
         this.createSceneToolbar();
-        this.sceneWindow = new DraggableWindow('场景管理', this.sceneToolbar, 20, 20);
+        this.sceneWindow = new C4DraggableWindow('场景管理', this.sceneToolbar, 20, 20);
         this.createVideoManagerToolbar();
         this.createCanvas();
         this.createPlayToolbar();
@@ -329,7 +232,7 @@ class VideoEditor {
             margin: 0;
             background: white;
         `;
-        this.jsonWindow = new DraggableWindow('视频数据', this.jsonContent, 20, 200);
+        this.jsonWindow = new C4DraggableWindow('视频数据', this.jsonContent, 20, 200);
         // 创建结果窗口元素
         this.resultContent = document.createElement('div');
         this.resultContent.style.cssText = `
@@ -338,7 +241,7 @@ class VideoEditor {
             max-width: 600px;
             background: white;
         `;
-        this.resultWindow = new DraggableWindow('生成结果', this.resultContent, 100, 100, false);
+        this.resultWindow = new C4DraggableWindow('生成结果', this.resultContent, 100, 100, false);
     
     }
 
@@ -853,7 +756,4 @@ new VideoEditor();
 </html>
 <!--
 升级：把 srt 相关功能封装成一个类，在文件srt.js里实现。 
-
-
-
 -->

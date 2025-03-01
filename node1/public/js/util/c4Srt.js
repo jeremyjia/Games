@@ -12,7 +12,7 @@ class C4Srt{
         // 新增字幕绘制
         if (subtitleText) {
             ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-            ctx.font = '18px Arial';
+            ctx.font = '12px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'bottom';
             
