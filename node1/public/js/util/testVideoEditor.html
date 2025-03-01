@@ -331,6 +331,11 @@ class VideoEditor {
     }
     
     generateVideoJson() {
+    // 添加有效性检查
+    if (!this.scenesHandler.scenes.every(s => s.drawingObjs)) {
+        alert('请确保所有场景的图形数据完整');
+        return;
+    }
         const scale = this.getCanvasScale();
         const scenesData = this.scenesHandler.scenes.map(scene => ({
             id: scene.id,
@@ -348,6 +353,8 @@ class VideoEditor {
         }));
         return JSON.stringify({
             fps: parseInt(this.fpsInput.value) || 30,
+            canvasWidth: this.canvas.width,  // 新增画布尺寸
+            canvasHeight: this.canvas.height,
             width: 640,
             height: 480,
             scenes: scenesData,
@@ -763,7 +770,6 @@ new VideoEditor();
 </body>
 </html>
 <!--
-升级： 
-生成视频时，画上对象
+生成视频： 设计nodejs 程序实现
  
 -->
