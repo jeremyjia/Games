@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<script>
+class CMusicNotationApp {
+    constructor() {
+        this.CONFIG = {
+            noteWidth: 80,
+            baseY: 250,
+            canvasPadding: 40,
+            fontSize: 36,
+            highOctaveDotOffset: 15,
+            lowOctaveDotOffset: 15,
+            slashVerticalOffset: 20,
+            octaveDotSpacing: 10,
+            slashLineSpacing: 6,
+            slashLineLength: 24,
+            dashHorizontalOffset: 25,
+            dashLineLength: 14,
+            dashLineSpacing: 20
+        };
+
+        this.EXAMPLES = {
+            simple: "1 2 3 4 5 6 7 0",
+            octave: "1'' 2' 3 4, 5,, 6 7' 0",
+            duration: "1/ 2// 3- 4--- 5 6/ 7 0--",
+            rest: "0 0/ 0- 0-- 0 0// 0 0---",
+            mixed: "1' 2// 3,, 4- 0 5''/ 6-- 7,,"
+        };
+
+        this.initStyles();
+        this.createToolbar();
+        this.createFloatingWindow();
+        this.createNavigationWindow(); // 新增导航窗口
+        this.bindEvents();
+    }
+
+    initStyles() {
+        const style = document.createElement('style');
+        style.textContent = `
+            body {
+                padding: 20px;
+                font-family: Arial, sans-serif;
+                margin-bottom: 60px; /* 给底部工具条留空间 */
+            }
+            #mainToolbar {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: #f0f0f0;
+                padding: 10px;
+                border-top: 1px solid #ccc;
+                z-index: 1000;
+            }
+            .floating-window {
+                position: fixed;
+                left: 50%;
+                top: 50px;
+                transform: translateX(-50%);
+                width: 90%;
+                max-width: 800px;
+                background: white;
+                border: 1px solid #ccc;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                z-index: 1001;
+                display: none;
+            }
+            .window-header {
+                padding: 10px;
+                background: #f8f8f8;
+                border-bottom: 1px solid #ddd;
+                cursor: move;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .window-content {
+                padding: 15px;
+            }
+            #inputBox {
+                width: 100%;
+                height: 80px;
+                margin-bottom: 15px;
+                padding: 10px;
+                box-sizing: border-box;
+                border: 2px solid #ccc;
+                border-radius: 4px;
+            }
+            #canvasContainer {
+                overflow-x: auto;
+                margin-top: 20px;
+                border: 1px solid #ddd;
+                padding: 10px;
+            }
+            canvas {
+                background-color: white;
+            }
+            .toolbar {
+                margin: 10px 0;
+            }
+            button {
+                padding: 10px 20px;
+                font-size: 14px;
+                margin: 5px;
+                cursor: pointer;
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                transition: background 0.3s;
+            }
+            button:hover {
+                background-color: #45a049;
+            }
+            .close-btn {
+                background: #ff4444;
+                padding: 5px 10px;
+            }
+            @media (max-width: 600px) {
+                .floating-window {
+                    width: 95%;
+                    top: 20px;
+                }
+                #inputBox { height: 120px; }
+                button { padding: 8px 16px; }
+            }
+        `;
+        const navStyle =  `
+            /* 保持原有样式不变，新增导航窗口样式 */
+            .nav-content {
+                padding: 20px;
+            }
+            .nav-menu {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+            .nav-menu li {
+                margin: 10px 0;
+            }
+            .nav-menu a {
+                color: #06c;
+                text-decoration: none;
+                font-size: 16px;
+            }
+            .nav-menu a:hover {
+                text-decoration: underline;
+            }
+        `;
+        style.textContent += navStyle;
+        document.head.appendChild(style);
+    }
+
+    createToolbar() {
+        this.mainToolbar = document.createElement('div');
+        this.mainToolbar.id = 'mainToolbar';
+        
+        const toggleBtn = document.createElement('button');
+        toggleBtn.textContent = '打开简谱工具';
+        toggleBtn.addEventListener('click', () => this.toggleWindow('musicWindow'));
+        
+        // 新增导航按钮
+        const navBtn = document.createElement('button');
+        navBtn.textContent = '打开导航菜单';
+        navBtn.addEventListener('click', () => this.toggleWindow('navWindow'));
+        
+        this.mainToolbar.appendChild(toggleBtn);
+        this.mainToolbar.appendChild(navBtn);
+        document.body.appendChild(this.mainToolbar);
+    }
+
+
+    createNavigationWindow() {
+        this.navWindow = document.createElement('div');
+        this.navWindow.className = 'floating-window';
+        this.navWindow.style.display = 'none';
+        this.navWindow.dataset.windowType = 'navWindow';
+
+        const header = document.createElement('div');
+        header.className = 'window-header';
+        header.innerHTML = `<span>导航菜单</span>`;
+
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'close-btn';
+        closeBtn.textContent = '×';
+        closeBtn.addEventListener('click', () => this.toggleWindow('navWindow'));
+        
+        const content = document.createElement('div');
+        content.className = 'nav-content';
+        
+        // 创建导航菜单
+        const navList = document.createElement('ul');
+        navList.className = 'nav-menu';
+        
+        // 新增首页链接
+        const homeItem = document.createElement('li');
+        const homeLink = document.createElement('a');
+        homeLink.href = 'index.html';
+        homeLink.textContent = '返回首页';
+        homeItem.appendChild(homeLink);
+        navList.appendChild(homeItem);
+
+        const deepseekItem = document.createElement('li');
+        const deepseekLink = document.createElement('a');
+        deepseekLink.href = 'https://www.deepseek.com';
+        deepseekLink.target = '_blank';
+        deepseekLink.textContent = 'DeepSeek 主页';
+        
+        deepseekItem.appendChild(deepseekLink);
+        navList.appendChild(deepseekItem);
+        content.appendChild(navList);
+
+        header.appendChild(closeBtn);
+        this.navWindow.appendChild(header);
+        this.navWindow.appendChild(content);
+        document.body.appendChild(this.navWindow);
+ 
+        this.initDrag(this.navWindow);
+    }
+
+
+    createFloatingWindow() {
+        // 创建窗口容器
+        this.window = document.createElement('div');
+        this.window.className = 'floating-window';
+        
+        // 窗口标题栏
+        const header = document.createElement('div');
+        header.className = 'window-header';
+        header.innerHTML = `<span>简谱编辑工具</span>`;
+        
+        // 关闭按钮
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'close-btn';
+        closeBtn.textContent = '×'; 
+        closeBtn.addEventListener('click', () => this.toggleWindow('musicWindow'));
+        header.appendChild(closeBtn);
+        
+        // 窗口内容容器
+        const content = document.createElement('div');
+        content.className = 'window-content';
+        
+        // 创建原有界面元素
+        this.inputBox = document.createElement('textarea');
+        this.inputBox.id = 'inputBox';
+        this.inputBox.placeholder = '输入简谱示例：\n1\' 2 3- 4// 5, 6\' 7 0';
+        
+        this.toolbar = document.createElement('div');
+        this.toolbar.className = 'toolbar';
+        
+        this.canvasContainer = document.createElement('div');
+        this.canvasContainer.id = 'canvasContainer';
+        this.canvas = document.createElement('canvas');
+        this.canvas.id = 'musicCanvas';
+        this.canvasContainer.appendChild(this.canvas);
+
+        this.createButtons();
+        
+        content.appendChild(this.inputBox);
+        content.appendChild(this.toolbar);
+        content.appendChild(this.canvasContainer);
+        
+        this.window.appendChild(header);
+        this.window.appendChild(content);
+        document.body.appendChild(this.window);
+         
+        this.initDrag(this.window);
+    }
+
+    createButtons() {
+        const examples = [
+            { text: '简单音符', type: 'simple' },
+            { text: '高低八度', type: 'octave' },
+            { text: '时值示例', type: 'duration' },
+            { text: '休止符', type: 'rest' },
+            { text: '混合示例', type: 'mixed' }
+        ];
+
+        examples.forEach(example => {
+            const btn = document.createElement('button');
+            btn.textContent = example.text;
+            btn.addEventListener('click', () => this.createExample(example.type));
+            this.toolbar.appendChild(btn);
+        });
+    }
+    
+    initDrag(targetWindow) {  // 修改方法以接收目标窗口参数
+        const header = targetWindow.querySelector('.window-header');
+        let isDragging = false;
+        let startX, startY, startLeft, startTop;
+
+        const onMouseMove = (e) => {
+            if (!isDragging) return;
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            targetWindow.style.left = `${startLeft + dx}px`;
+            targetWindow.style.top = `${startTop + dy}px`;
+        };
+
+        const onMouseUp = () => {
+            isDragging = false;
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+
+        header.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            
+            // 获取当前实际位置
+            const rect = targetWindow.getBoundingClientRect();
+            startLeft = rect.left;
+            startTop = rect.top;
+            
+            // 移除transform并更新定位方式
+            targetWindow.style.transform = 'none';
+            targetWindow.style.left = `${startLeft}px`;
+            targetWindow.style.top = `${startTop}px`;
+            
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        });
+    }
+
+    toggleWindow(windowType) {
+        const windowMap = {
+            musicWindow: this.window,
+            navWindow: this.navWindow
+        };
+        const targetWindow = windowMap[windowType];
+        const currentDisplay = window.getComputedStyle(targetWindow).display;
+        targetWindow.style.display = currentDisplay === 'none' ? 'block' : 'none';
+        
+        // 提升当前窗口的z-index
+        document.querySelectorAll('.floating-window').forEach(win => {
+            win.style.zIndex = 1001;
+        });
+        targetWindow.style.zIndex = 1002;
+    }
+
+    bindEvents() {
+        let drawTimeout;
+        this.inputBox.addEventListener('input', () => {
+            clearTimeout(drawTimeout);
+            drawTimeout = setTimeout(() => this.drawSheetMusic(), 300);
+        });
+    }
+
+    createExample(type) {
+        this.inputBox.value = this.EXAMPLES[type];
+        this.drawSheetMusic();
+    }
+
+    drawSheetMusic() {
+        const input = this.inputBox.value.trim();
+        const ctx = this.canvas.getContext('2d');
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        const notes = input.split(/\s+/).filter(n => n);
+        this.canvas.width = Math.max(800, notes.length * this.CONFIG.noteWidth + this.CONFIG.canvasPadding * 2);
+        this.canvas.height = 400;
+
+        notes.forEach((noteStr, index) => {
+            const parsed = this.parseNote(noteStr);
+            this.drawTextNote(
+                ctx,
+                this.CONFIG.canvasPadding + index * this.CONFIG.noteWidth,
+                this.CONFIG.baseY,
+                parsed
+            );
+        });
+    }
+
+    parseNote(noteStr) {
+        const numMatch = noteStr.match(/^\d/);
+        if (!numMatch) return { value: '0', highOctave: 0, lowOctave: 0, slash: 0, dash: 0 };
+        
+        const symbols = noteStr.slice(1);
+        let highOctave = 0, lowOctave = 0, slash = 0, dash = 0;
+
+        for (const c of symbols) {
+            switch(c) {
+                case "'": highOctave++; break;
+                case ",": lowOctave++; break;
+                case "/": slash++; break;
+                case "-": dash++; break;
+            }
+        }
+
+        return {
+            value: numMatch[0],
+            highOctave: highOctave,
+            lowOctave: lowOctave,
+            slash: slash,
+            dash: dash,
+            isRest: numMatch[0] === '0'
+        };
+    }
+
+    drawTextNote(ctx, x, y, note) {
+        const _tntc = {
+            noteWidth: 80,
+            baseY: 250,
+            canvasPadding: 40,
+            fontSize: 36,
+            highOctaveDotOffset: 15,
+            lowOctaveDotOffset: 15,
+            slashVerticalOffset: 20,
+            octaveDotSpacing: 10,
+            slashLineSpacing: 6,
+            slashLineLength: 24,
+            dashHorizontalOffset: 25,
+            dashLineLength: 14,
+            dashLineSpacing: 20
+        };
+        ctx.save();
+        ctx.font = `${_tntc.fontSize}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        ctx.fillStyle = note.isRest ? '#FF4444' : '#000';
+        ctx.fillText(note.value, x, y);
+
+        if (note.highOctave > 0) {
+            const noteTop = y - _tntc.fontSize/2;
+            const startY = noteTop - _tntc.highOctaveDotOffset;
+            for (let i = 0; i < note.highOctave; i++) {
+                ctx.beginPath();
+                ctx.arc(x, startY - i * _tntc.octaveDotSpacing, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        if (note.slash > 0) {
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            const baseY = y + _tntc.slashVerticalOffset;
+            for (let i = 0; i < note.slash; i++) {
+                ctx.beginPath();
+                ctx.moveTo(x - _tntc.slashLineLength/2, baseY + i * _tntc.slashLineSpacing);
+                ctx.lineTo(x + _tntc.slashLineLength/2, baseY + i * _tntc.slashLineSpacing);
+                ctx.stroke();
+            }
+        }
+
+        if (note.lowOctave > 0) {
+            const slashHeight = note.slash > 0 
+                ? _tntc.slashVerticalOffset + (note.slash - 1) * _tntc.slashLineSpacing 
+                : 0;
+            const baseY = y + slashHeight + _tntc.lowOctaveDotOffset;
+            for (let i = 0; i < note.lowOctave; i++) {
+                ctx.beginPath();
+                ctx.arc(x, baseY + i * _tntc.octaveDotSpacing, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        if (note.dash > 0) {
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            const baseX = x + _tntc.dashHorizontalOffset;
+            for (let i = 0; i < note.dash; i++) {
+                const lineX = baseX + i * (_tntc.dashLineLength + 6);
+                ctx.beginPath();
+                ctx.moveTo(lineX, y);
+                ctx.lineTo(lineX + _tntc.dashLineLength, y);
+                ctx.stroke();
+            }
+        }
+        ctx.restore();
+    }
+    
+}
+
+// 初始化应用
+new CMusicNotationApp();
+</script>
+</body>
+</html>
+<!--
+打开简谱工具 need to click 2 times to let the window show up. should be 1 time.
+-->

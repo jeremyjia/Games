@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>移动端钢琴</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            touch-action: manipulation;
+        }
+
+        .piano {
+            display: flex;
+            position: relative;
+            width: 190%;
+            max-width: 600px;
+            height: 200px;
+            overflow-x: auto; /* 添加横向滚动 */
+        }
+
+        .white-key { 
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 0 0 5px 5px;
+            margin: 0 1px;
+            touch-action: none;
+            transition: background-color 0.1s;
+            flex: 0 0 7.14%; /* 14个白键各占约7.14% */
+        }
+
+        .black-key {
+            position: absolute;
+            width: 6%;
+            height: 60%;
+            background-color: black;
+            border-radius: 0 0 3px 3px;
+            z-index: 1;
+            touch-action: none;
+            transition: background-color 0.1s;
+        }
+
+        .white-key.active {
+            background-color: #e0e0e0;
+        }
+
+        .black-key.active {
+            background-color: #333;
+        }
+
+        /* 黑键位置 */
+        .black-key:nth-child(1) { left: 5.5%; }   /* C#4 */
+        .black-key:nth-child(2) { left: 12.8%; }  /* D#4 */
+        .black-key:nth-child(3) { left: 27.4%; }  /* F#4 */
+        .black-key:nth-child(4) { left: 34.7%; }  /* G#4 */
+        .black-key:nth-child(5) { left: 42%; }    /* A#4 */
+        .black-key:nth-child(6) { left: 54.5%; }  /* C#5 */
+        .black-key:nth-child(7) { left: 61.8%; }  /* D#5 */
+        .black-key:nth-child(8) { left: 76.4%; }  /* F#5 */
+        .black-key:nth-child(9) { left: 83.7%; }  /* G#5 */
+        .black-key:nth-child(10) { left: 91%; }   /* A#5 */
+            </style>
+</head>
+<body>
+    <div class="piano">
+        <!-- 新增黑键 -->
+        <div class="black-key" data-note="C#5"></div>
+        <div class="black-key" data-note="D#5"></div>
+        <div class="black-key" data-note="F#5"></div>
+        <div class="black-key" data-note="G#5"></div>
+        <div class="black-key" data-note="A#5"></div>
+        
+        <!-- 新增白键 -->
+        <div class="white-key" data-note="C5"></div>
+        <div class="white-key" data-note="D5"></div>
+        <div class="white-key" data-note="E5"></div>
+        <div class="white-key" data-note="F5"></div>
+        <div class="white-key" data-note="G5"></div>
+        <div class="white-key" data-note="A5"></div>
+        <div class="white-key" data-note="B5"></div>
+    </div>
+
+    <script>
+        // 初始化音频上下文
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // 频率对照表（C4到B4）
+        const frequencies = {
+            'C4': 261.63,
+            'C#4': 277.18,
+            'D4': 293.66,
+            'D#4': 311.13,
+            'E4': 329.63,
+            'F4': 349.23,
+            'F#4': 369.99,
+            'G4': 392.00,
+            'G#4': 415.30,
+            'A4': 440.00,
+            'A#4': 466.16,
+            'B4': 493.88,
+            
+            'C5': 523.25,
+            'C#5': 554.37,
+            'D5': 587.33,
+            'D#5': 622.25,
+            'E5': 659.26,
+            'F5': 698.46,
+            'F#5': 739.99,
+            'G5': 783.99,
+            'G#5': 830.61,
+            'A5': 880.00,
+            'A#5': 932.33,
+            'B5': 987.77
+        };
+
+        // 创建振荡器
+        function playNote(frequency) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 1);
+        }
+
+        // 事件处理
+        function handleStart(event) {
+            event.preventDefault();
+            const key = event.target;
+            if (!key.dataset.note) return;
+            
+            key.classList.add('active');
+            playNote(frequencies[key.dataset.note]);
+        }
+
+        function handleEnd(event) {
+            event.preventDefault();
+            const key = event.target;
+            key.classList.remove('active');
+        }
+
+        // 添加事件监听
+        document.querySelectorAll('.white-key, .black-key').forEach(key => {
+            key.addEventListener('touchstart', handleStart);
+            key.addEventListener('mousedown', handleStart);
+            
+            key.addEventListener('touchend', handleEnd);
+            key.addEventListener('mouseup', handleEnd);
+            key.addEventListener('mouseleave', handleEnd);
+        });
+
+        // 防止移动端滚动
+        document.body.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+    </script>
+</body>
+</html>
+<!--
+只显示了一个八度，应该是两个
+-->

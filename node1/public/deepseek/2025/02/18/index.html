@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>吉他调音器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .status {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        .note-display {
+            font-size: 48px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            color: #333;
+        }
+
+        .tuning-status {
+            text-align: center;
+            font-size: 24px;
+            margin: 10px 0;
+        }
+
+        .frequency {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 0;
+            width: 100%;
+        }
+
+        button:disabled {
+            background: #cccccc;
+        }
+
+        .target-note {
+            text-align: center;
+            margin: 15px 0;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="status" id="status">点击开始调音</div>
+        <button id="startButton">开始</button>
+        <div class="note-display" id="currentNote">--</div>
+        <div class="frequency" id="frequency">-- Hz</div>
+        <div class="target-note">目标音高: <span id="targetNote">E4</span></div>
+        <div class="tuning-status" id="tuningStatus"></div>
+    </div>
+
+    <script>
+        const guitarNotes = [
+            { name: 'E4', frequency: 329.63 },
+            { name: 'B3', frequency: 246.94 },
+            { name: 'G3', frequency: 196.00 },
+            { name: 'D3', frequency: 146.83 },
+            { name: 'A2', frequency: 110.00 },
+            { name: 'E2', frequency: 82.41 }
+        ];
+
+        let audioContext = null;
+        let analyser = null;
+        let microphone = null;
+        let isTuning = false;
+        let targetNote = guitarNotes[0];
+
+        const startButton = document.getElementById('startButton');
+        const statusElement = document.getElementById('status');
+        const currentNoteElement = document.getElementById('currentNote');
+        const frequencyElement = document.getElementById('frequency');
+        const tuningStatusElement = document.getElementById('tuningStatus');
+        const targetNoteElement = document.getElementById('targetNote');
+
+        async function initAudio() {
+            try {
+                // 添加浏览器前缀兼容处理
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioContext = new AudioContext();
+                
+                // 添加mediaDevices兼容处理
+                navigator.mediaDevices = navigator.mediaDevices || 
+                    (navigator.webkitMediaDevices ? navigator.webkitMediaDevices : null);
+
+                if (!navigator.mediaDevices) {
+                    throw new Error("浏览器不支持媒体设备访问");
+                }
+
+                // 延迟麦克风请求到用户交互后
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                analyser = audioContext.createAnalyser();
+                microphone = audioContext.createMediaStreamSource(stream);
+                microphone.connect(analyser);
+                
+                analyser.fftSize = 2048;
+                startButton.disabled = false;
+                statusElement.textContent = "已准备好，点击开始调音";
+            } catch (err) {
+                statusElement.textContent = "错误: " + err.message;
+                if(err.name === 'SecurityError') {
+                    statusElement.innerHTML += "<br>请使用HTTPS协议访问";
+                }
+                console.error(err);
+            }
+        }
+
+
+        function autoCorrelate(buffer, sampleRate) {
+            const SIZE = buffer.length;
+            const MAX_SAMPLES = Math.floor(SIZE / 2);
+            let bestOffset = -1;
+            let bestCorrelation = 0;
+            
+            const correlations = new Array(MAX_SAMPLES);
+
+            for (let offset = 0; offset < MAX_SAMPLES; offset++) {
+                let correlation = 0;
+                
+                for (let i = 0; i < MAX_SAMPLES; i++) {
+                    correlation += Math.abs(buffer[i] - buffer[i + offset]);
+                }
+                
+                correlations[offset] = correlation;
+                if (correlation < bestCorrelation) {
+                    bestCorrelation = correlation;
+                    bestOffset = offset;
+                }
+            }
+            
+            return sampleRate / bestOffset;
+        }
+
+        function updatePitch() {
+            if (!isTuning) return;
+
+            const buffer = new Float32Array(analyser.fftSize);
+            analyser.getFloatTimeDomainData(buffer);
+            const frequency = autoCorrelate(buffer, audioContext.sampleRate);
+
+            if (frequency && frequency > 0) {
+                frequencyElement.textContent = frequency.toFixed(1) + ' Hz';
+                
+                // 找到最接近的音符
+                let closestNote = guitarNotes[0];
+                let minDiff = Infinity;
+                
+                guitarNotes.forEach(note => {
+                    const diff = Math.abs(note.frequency - frequency);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        closestNote = note;
+                    }
+                });
+
+                currentNoteElement.textContent = closestNote.name;
+                
+                // 计算音高差
+                const diff = frequency - targetNote.frequency;
+                const diffPercent = Math.abs(diff / targetNote.frequency * 100);
+                
+                if (diffPercent < 2) {
+                    tuningStatusElement.textContent = "✓ 音准正确";
+                    tuningStatusElement.style.color = "green";
+                } else {
+                    tuningStatusElement.textContent = diff > 0 ? "调低" : "调高";
+                    tuningStatusElement.style.color = diff > 0 ? "red" : "blue";
+                }
+            }
+
+            requestAnimationFrame(updatePitch);
+        }
+
+        startButton.addEventListener('click', async () => {
+            if (!audioContext) {
+                await initAudio();
+            }
+            
+            if (!isTuning) {
+                isTuning = true;
+                startButton.textContent = "停止调音";
+                targetNote = guitarNotes[Math.floor(Math.random() * guitarNotes.length)];
+                targetNoteElement.textContent = targetNote.name;
+                updatePitch();
+            } else {
+                isTuning = false;
+                startButton.textContent = "开始";
+                currentNoteElement.textContent = "--";
+                frequencyElement.textContent = "-- Hz";
+                tuningStatusElement.textContent = "";
+            }
+        });
+
+ 
+    </script>
+</body>
+</html>

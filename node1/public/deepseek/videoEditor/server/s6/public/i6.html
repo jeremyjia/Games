@@ -1,0 +1,1563 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Video Editor</title>
+  <link href="https://cdn.jsdelivr.net/npm/jsoneditor@9.5.6/dist/jsoneditor.min.css" rel="stylesheet">
+  <style>
+    body {
+  overflow: auto;
+  min-width: 100vw;
+  min-height: 100vh;
+}
+    .window {
+      transition: box-shadow 0.2s, opacity 0.2s;
+    }
+    .window.active {
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      opacity: 0.95;
+    }
+
+    .window {
+      position: absolute;
+      background: white;
+      border: 1px solid #ccc;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      min-width: 300px;
+      min-height: 200px;
+      overflow: hidden; 
+      resize: none; /* 禁用CSS默认resize */
+    }
+    .window-header {
+      padding: 8px 32px 8px 12px;
+      background: #f5f5f5;
+      border-bottom: 1px solid #ddd;
+      cursor: move;
+      position: relative;
+      user-select: none;
+    }
+    .window-close {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 18px;
+      color: #666;
+    }
+
+    .window-close:hover {
+      color: #333;
+    }
+    .window-content {
+      height: calc(100% - 70px);
+    }
+
+    #container {
+      display: grid;
+      grid-template-columns: 1fr;
+      padding: 20px;
+    }
+
+    canvas {
+      border: 1px solid #ccc;
+      background: white;
+      margin-top: 20px;
+    }
+
+    .controls {
+      margin: 10px 0;
+    }
+
+    button {
+      padding: 8px 16px;
+      margin-right: 10px;
+    } 
+    #videoWindow {
+      width: 800px;
+      height: 600px;
+    }
+    #editor {
+    width: 100%;
+    height: 100%;
+  }
+  .jsoneditor-outer {
+    height: calc(100% - 30px) !important;
+  }
+    #videoPreview {
+      background: black;
+    }
+    .window-resize-handle {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 12px;
+        height: 12px;
+        cursor: nwse-resize;
+        background: transparent;
+        z-index: 1;
+    }
+    button {
+      padding: 8px 16px;
+      margin-right: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    button.active {
+      background-color: #4CAF50;
+    }
+
+    button.active:hover {
+      background-color: #45a049;
+    }
+    .window-toolbar {
+      padding: 8px;
+      background: #f8f8f8;
+      border-bottom: 1px solid #ddd;
+      display: flex;
+      gap: 8px;
+    }
+    .toolbar-btn {
+      padding: 4px 8px;
+      font-size: 12px;
+      background: #e0e0e0;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .toolbar-btn:hover {
+      background: #d0d0d0;
+    }
+
+    .c_play_button.active {
+      background-color: #dc3545;
+    }
+
+    .c_play_button.active:hover {
+      background-color: #c82333;
+    }
+    #id_4_scene_list {
+      padding: 8px;
+      background: #f8f8f8;
+      border-bottom: 1px solid #ddd;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      max-height: 100px;
+      overflow-y: auto;
+    }
+
+.scene-btn {
+  padding: 4px 8px;
+  background: #e0e0e0;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.scene-btn:hover {
+  background: #d0d0d0;
+}
+
+.scene-btn.active {
+  background: #007bff;
+  color: white;
+}
+.c_4_settings_window .window-content {
+  padding: 15px;
+}
+
+#bgColorInput {
+  vertical-align: middle;
+  cursor: pointer;
+}
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <button onclick="saveData()">Save</button>
+    <button class = "c_play_button" id="playButton" onclick="togglePlay()">Play</button>
+    <button onclick="exportVideo()">Export Video</button> <!-- 新增按钮 -->
+    <button id="toggleEditorBtn" onclick="toggleEditorWindow()">Toggle Editor</button>
+    <button onclick="toggleSettingsWindow()">settings</button>
+  </div>
+  <div class="window c_4_settings_window" id="id_4_settings_window" 
+     style="left: 350px; top: 60px; display: none; width: 260px; height: 120px;">
+  <div class="window-header">
+    settings
+    <span class="window-close">×</span>
+  </div>
+  <div class="window-content" style="padding: 15px; text-align: center;">
+    <input type="color" id="bgColorInput" style="width: 80px; height: 40px;">
+    <button onclick="applyBackgroundColor()" style="margin-left: 10px;">应用</button>
+    <div style="margin-top: 10px; font-size: 12px; color: #666;">点击颜色选择</div>
+  </div>
+</div>
+  <div class="window" id="editorWindow" style="left: 20px; top: 60px">
+    <div class="window-header">
+      JSON Editor 
+      <span class="window-close">×</span>
+    </div>
+    <div class="window-toolbar">
+      <button class="toolbar-btn" onclick="addExample1()">ex1</button>
+      <button class="toolbar-btn" onclick="addExample2()">ex2</button>
+      <button class="toolbar-btn" onclick="addExample3()">ex3</button>
+    </div>
+    <div id="id_4_scene_manager"> 
+      <div id="id_4_scene_list"></div>
+    </div>
+    <div class="window-content" id="editor"></div>
+  </div>
+
+
+  <div id="container">
+    <canvas id="canvas"></canvas>
+  </div>
+<!-- 在index.html的body末尾添加视频播放窗口 -->
+<div class="window preview-window" id="videoWindow" style="left: 650px; top: 60px; display: none; width: 800px; height: 600px;">
+  <div class="window-header">视频预览 <span class="window-close">×</span></div>
+  <div class="window-content" style="position: relative; height: calc(100% - 35px);">
+    <video id="videoPreview" controls style="width: 100%; height: 90%;"></video>
+    <button onclick="downloadVideo()" 
+            style="position: absolute; bottom: 10px; right: 10px; padding: 8px 16px;"
+            title="下载视频">
+      下载
+    </button>
+  </div>
+</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jsoneditor@9.5.6/dist/jsoneditor.min.js"></script>
+  <script>
+    let workingData = {
+      scenes: []
+    };
+
+   
+function toggleSettingsWindow() {
+  const colorWindow = document.getElementById('id_4_settings_window');
+  const isVisible = colorWindow.style.display !== 'none';
+  
+  // 新增数据校验
+  if (!workingData || !workingData.scenes || workingData.scenes.length === 0) {
+    alert('请先创建或加载项目');
+    return;
+  }
+
+  if (!isVisible) {
+    if (isPlaying) {
+      alert('请先停止播放再进行编辑');
+      return;
+    }
+    
+    // 新增当前场景索引校验
+    if (currentSceneIndex < 0 || currentSceneIndex >= workingData.scenes.length) {
+      alert('当前场景无效');
+      return;
+    }
+
+    // 初始化颜色值为当前场景背景色
+    const currentScene = workingData.scenes[currentSceneIndex];
+    document.getElementById('bgColorInput').value = currentScene.background || '#ffffff';
+  }
+  
+  colorWindow.style.display = isVisible ? 'none' : 'block';
+  windowManager.bringToFront(colorWindow);
+}
+
+function applyBackgroundColor() {
+  if (isPlaying) {
+    alert('请先停止播放再进行编辑');
+    return;
+  }
+  
+  const color = document.getElementById('bgColorInput').value;
+  const currentScene = workingData.scenes[currentSceneIndex];
+  
+  // 更新数据
+  currentScene.background = color;
+  editor.set(workingData);
+  saveData();
+  
+  // 立即渲染
+  renderScene(currentScene);
+}
+    let lastFrameTime = null;
+
+    function addExample1() {
+      const example = {
+        "scenes": [
+          {
+            "background": "#11ffff",
+            "duration": 3,
+            "elements": [
+              {
+                "type": "circle",
+                "x": 100,
+                "y": 100,
+                "radius": 50,
+                "color": "#ff0000"
+              }
+            ]
+          },
+          {
+            "background": "#ff11ff",
+            "duration": 4,
+            "elements": [
+              {
+                "type": "circle",
+                "x": 200,
+                "y": 100,
+                "radius": 50,
+                "color": "#ff0000"
+              }
+            ]
+          }
+        ],
+        "fps": 1
+      };
+      editor.set(example);
+      stopAnimation(); // 新增：加载示例时停止当前动画
+      workingData = JSON.parse(JSON.stringify(example)); // 新增初始化
+      generateSceneButtons(); // 新增场景列表刷新
+    }
+
+function addExample2() {
+  const example = {
+    "scenes": [
+      {
+        "background": "#000000",
+        "duration": 120,
+        "elements": [
+          {
+            "type": "triangle",
+            "x1": 200, "y1": 100,
+            "x2": 300, "y2": 200,
+            "x3": 100, "y3": 200,
+            "color": "#00ff00"
+          }
+        ]
+      },
+      {
+        "background": "#444444",
+        "duration": 60,
+        "elements": [
+          {
+            "type": "line",
+            "x1": 50, "y1": 50,
+            "x2": 400, "y2": 400,
+            "color": "#0000ff"
+          }
+        ]
+      }
+    ],
+    "fps": 60
+  };
+  editor.set(example);
+  stopAnimation(); // 新增：加载示例时停止当前动画
+  workingData = JSON.parse(JSON.stringify(example)); // 新增初始化
+  generateSceneButtons(); // 新增场景列表刷新
+}
+    function addExample3() {
+          const example = {
+          "meta": {
+            "version": "2.0",
+            "created": "2025-02-21T19:54:05.091Z",
+            "totalFrames": 750,
+            "totalScenes": 25
+          },
+          "audio": "https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3",
+          "scenes": [
+            {
+              "id": 1740167434947,
+              "name": "Scene 1",
+              "background": "#2c101d",
+              "elements": [
+                {
+                  "type": "triangle",
+                  "x1": 319,
+                  "y1": 489,
+                  "x2": 860,
+                  "y2": 489,
+                  "x3": 589.5,
+                  "y3": 221,
+                  "color": "#b2702a",
+                  "myDraw": null
+                }
+              ],
+              "duration": 30
+            },
+            {
+              "id": 1740167449054,
+              "name": "Scene 2",
+              "background": "#3918c3",
+              "elements": [
+                {
+                  "type": "circle",
+                  "x": 536,
+                  "y": 190,
+                  "radius": 134.30189872075525,
+                  "color": "#eaa0f5",
+                  "myDraw": null
+                }
+              ],
+              "duration": 30
+            },
+            {
+              "id": 1740167449622,
+              "name": "Scene 3",
+              "background": "#fe7534",
+              "elements": [
+                {
+                  "type": "line",
+                  "x1": 258,
+                  "y1": 229,
+                  "x2": 661,
+                  "y2": 337,
+                  "color": "#8e8bbb",
+                  "myDraw": null
+                },
+                {
+                  "type": "line",
+                  "x1": 247,
+                  "y1": 246,
+                  "x2": 677,
+                  "y2": 207,
+                  "color": "#2640f2",
+                  "myDraw": null
+                }
+              ],
+              "duration": 30
+            },
+            {
+              "id": 1740167449990,
+              "name": "Scene 4",
+              "background": "#cbcd51",
+              "elements": [],
+              "duration": 30
+            },
+            {
+              "id": 1740167450184,
+              "name": "Scene 5",
+              "background": "#28257a",
+              "elements": [],
+              "duration": 30
+            },
+            {
+              "id": 1740167450358,
+              "name": "Scene 6",
+              "background": "#67d180",
+              "elements": [],
+              "duration": 30
+            },
+            {
+              "id": 1740167450534,
+              "name": "Scene 7",
+              "background": "#ca5cc6",
+              "elements": [],
+              "duration": 30
+            },
+            {
+              "id": 1740167450702,
+              "name": "Scene 8",
+              "background": "#c6e8f6",
+              "elements": [],
+              "duration": 30
+            },
+            {
+              "id": 1740167450886,
+              "name": "Scene 9",
+              "background": "#80bc78",
+              "elements": [],
+              "duration": 30
+            },
+            {
+              "id": 1740167451054,
+              "name": "Scene 10",
+              "background": "#662ff9",
+              "elements": [],
+              "duration": 30
+            },
+            {
+              "id": 1740167451230,
+              "name": "Scene 11",
+              "background": "#415015",
+              "elements": [],
+              "duration": 30
+            },
+            {
+              "id": 1740167451406,
+              "name": "Scene 12",
+              "background": "#d92f25",
+              "elements": [],
+              "duration": 30
+            },
+            {
+              "id": 1740167451590,
+              "name": "Scene 13",
+              "background": "#cd1549",
+              "elements": [],
+              "duration": 30
+            },
+            {
+              "id": 1740167451790,
+              "name": "Scene 14",
+              "background": "#a4eebc",
+              "elements": [],
+              "duration": 30
+            },
+            {
+              "id": 1740167451974,
+              "name": "Scene 15",
+              "background": "#c01b3c",
+              "elements": [],
+              "duration": 30
+            },
+            {
+              "id": 1740167452166,
+              "name": "Scene 16",
+              "background": "#b1836c",
+              "elements": [],
+              "duration": 30
+            },
+            {
+              "id": 1740167452343,
+              "name": "Scene 17",
+              "background": "#478662",
+              "elements": [],
+              "duration": 30
+            },
+            {
+              "id": 1740167452526,
+              "name": "Scene 18",
+              "background": "#d8c7d7",
+              "elements": [],
+              "duration": 30
+            },
+            {
+              "id": 1740167452702,
+              "name": "Scene 19",
+              "background": "#59c841",
+              "elements": [],
+              "duration": 30
+            },
+            {
+              "id": 1740167452886,
+              "name": "Scene 20",
+              "background": "#497d99",
+              "elements": [],
+              "duration": 30
+            },
+            {
+              "id": 1740167453070,
+              "name": "Scene 21",
+              "background": "#76c9c2",
+              "elements": [],
+              "duration": 30
+            },
+            {
+              "id": 1740167453254,
+              "name": "Scene 22",
+              "background": "#b04c81",
+              "elements": [],
+              "duration": 30
+            },
+            {
+              "id": 1740167453446,
+              "name": "Scene 23",
+              "background": "#d65562",
+              "elements": [],
+              "duration": 30
+            },
+            {
+              "id": 1740167453638,
+              "name": "Scene 24",
+              "background": "#af799a",
+              "elements": [],
+              "duration": 30
+            },
+            {
+              "id": 1740167453910,
+              "name": "Scene 25",
+              "background": "#a35bbd",
+              "elements": [],
+              "duration": 30
+            }
+          ],
+          "fps": 1
+        };
+        editor.set(example);
+        stopAnimation(); // 新增：加载示例时停止当前动画
+        workingData = JSON.parse(JSON.stringify(example)); // 新增初始化
+        generateSceneButtons(); // 新增场景列表刷新
+    }
+    let isResizingControlPoint = false;
+    let selectedElement = null;
+let isDraggingElement = false;
+let isResizingElement = false;
+let dragStartX = 0;
+let dragStartY = 0;
+let originalElementState = null;
+const elementHandlers = {
+  circle: {
+    contains: (element, x, y) => {
+      const dx = x - element.x;
+      const dy = y - element.y;
+      return dx*dx + dy*dy <= element.radius*element.radius + 400; // 增加检测容差
+    },
+    drawSelection: (ctx, element) => {
+      ctx.strokeStyle = '#00ff00';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(element.x, element.y, element.radius, 0, Math.PI*2);
+      ctx.stroke();
+      
+      // 绘制调整控制点
+      ctx.fillStyle = '#ff0000';
+      ctx.beginPath();
+      ctx.arc(element.x + element.radius, element.y, 5, 0, Math.PI*2);
+      ctx.fill();
+    }
+  },
+  triangle: {
+    contains: (element, x, y) => {
+      // 增加5像素的检测容差
+      const area = 0.5 * (-element.y2*element.x3 + element.y1*(-element.x2 + element.x3) 
+                   + element.x1*(element.y2 - element.y3) + element.x2*element.y3);
+      const s = 1/(2*area)*(element.y1*element.x3 - element.x1*element.y3 
+                 + (element.y3 - element.y1)*x + (element.x1 - element.x3)*y);
+      const t = 1/(2*area)*(element.x1*element.y2 - element.y1*element.x2 
+                 + (element.y1 - element.y2)*x + (element.x2 - element.x1)*y);
+      return s > -0.1 && t > -0.1 && (1-s-t) > -0.1; // 增加容差
+    },
+    drawSelection: (ctx, element) => {
+      ctx.strokeStyle = '#00ff00';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(element.x1, element.y1);
+      ctx.lineTo(element.x2, element.y2);
+      ctx.lineTo(element.x3, element.y3);
+      ctx.closePath();
+      ctx.stroke();
+      
+      // 绘制控制点
+      const points = [
+        {x: element.x1, y: element.y1},
+        {x: element.x2, y: element.y2},
+        {x: element.x3, y: element.y3}
+      ];
+      points.forEach(p => {
+        ctx.fillStyle = '#ff0000';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 5, 0, Math.PI*2);
+        ctx.fill();
+      });
+    }
+  },
+  line: {
+    contains: (element, x, y) => {
+      // 增加10像素的检测容差
+      const A = x - element.x1;
+      const B = y - element.y1;
+      const C = element.x2 - element.x1;
+      const D = element.y2 - element.y1;
+
+      const dot = A * C + B * D;
+      const lenSq = C * C + D * D;
+      let param = -1;
+      if (lenSq !== 0) param = dot / lenSq;
+
+      let xx, yy;
+      if (param < 0) {
+        xx = element.x1;
+        yy = element.y1;
+      } else if (param > 1) {
+        xx = element.x2;
+        yy = element.y2;
+      } else {
+        xx = element.x1 + param * C;
+        yy = element.y1 + param * D;
+      }
+
+      const dx = x - xx;
+      const dy = y - yy;
+      return Math.sqrt(dx*dx + dy*dy) < 10; // 增加容差
+    },
+    drawSelection: (ctx, element) => {
+      ctx.strokeStyle = '#00ff00';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(element.x1, element.y1);
+      ctx.lineTo(element.x2, element.y2);
+      ctx.stroke();
+      
+      // 绘制控制点
+      ctx.fillStyle = '#ff0000';
+      [element.x1, element.x2].forEach((x, i) => {
+        const y = i === 0 ? element.y1 : element.y2;
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, Math.PI*2);
+        ctx.fill();
+      });
+    }
+  }
+};
+
+elementHandlers.circle.drawSelection = (ctx, element) => {
+  ctx.strokeStyle = '#00ff00';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(element.x, element.y, element.radius, 0, Math.PI*2);
+  ctx.stroke();
+  
+  // 绘制调整控制点
+  ctx.fillStyle = '#ff0000';
+  ctx.beginPath();
+  ctx.arc(element.x + element.radius, element.y, 5, 0, Math.PI*2);
+  ctx.fill();
+};
+elementHandlers.circle.contains = (element, x, y) => {
+  const dx = x - element.x;
+  const dy = y - element.y;
+  return dx*dx + dy*dy <= element.radius*element.radius + 100; // 增加检测容差
+};
+// 新增事件监听
+canvas.addEventListener('mousedown', handleCanvasMouseDown);
+canvas.addEventListener('mousemove', handleCanvasMouseMove);
+canvas.addEventListener('mouseup', handleCanvasMouseUp);
+document.addEventListener('keydown', handleKeyDown);
+  
+ 
+function handleCanvasMouseDown(e) {
+  if (isPlaying) {
+    alert('请先停止播放再进行编辑');
+    return;
+  }
+  e.preventDefault(); // 阻止默认行为
+  
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  
+  workingData = JSON.parse(JSON.stringify(editor.get()));
+  const currentScene = workingData.scenes[currentSceneIndex];
+  
+  // 优先检测控制点
+  if (selectedElement) {
+    isResizingElement = checkControlPoint(selectedElement, x, y);
+    if (isResizingElement) {
+      isResizingControlPoint = true; // 新增标志位
+      dragStartX = x;
+      dragStartY = y;
+      originalElementState = JSON.parse(JSON.stringify(selectedElement));
+      return;
+    }
+  }
+
+  // 检测元素点击（从后向前检测）
+  for (let i = currentScene.elements.length - 1; i >= 0; i--) {
+    const element = currentScene.elements[i];
+    const handler = elementHandlers[element.type];
+    if (handler?.contains(element, x, y)) {
+      selectedElement = element;
+      originalElementState = JSON.parse(JSON.stringify(element));
+      isDraggingElement = true;
+      dragStartX = x;
+      dragStartY = y;
+      
+      // 立即渲染选中状态
+      renderScene(currentScene);
+      return;
+    }
+  }
+  
+  // 点击空白处取消选择
+  selectedElement = null;
+  renderScene(currentScene);
+}
+ // 修改 handleCanvasMouseMove 函数
+function handleCanvasMouseMove(e) {
+  e.preventDefault();
+  
+  if (isResizingElement && selectedElement) {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // 根据元素类型调整大小
+    switch (selectedElement.type) {
+      case 'circle':
+        // 计算新的半径
+        const dx = x - selectedElement.x;
+        const dy = y - selectedElement.y;
+        selectedElement.radius = Math.sqrt(dx*dx + dy*dy);
+        break;
+        
+      case 'line':
+        // 更新对应的端点坐标
+        if (this.resizingEnd === 'x1y1') {
+          selectedElement.x1 = x;
+          selectedElement.y1 = y;
+        } else {
+          selectedElement.x2 = x;
+          selectedElement.y2 = y;
+        }
+        break;
+        
+      case 'triangle':
+        // 找到最近的顶点进行更新
+        const points = [
+          {x: selectedElement.x1, y: selectedElement.y1},
+          {x: selectedElement.x2, y: selectedElement.y2},
+          {x: selectedElement.x3, y: selectedElement.y3}
+        ];
+        
+        // 找到距离最近的顶点
+        let minDist = Infinity;
+        let closestPoint = null;
+        points.forEach((p, i) => {
+          const dist = Math.hypot(x - p.x, y - p.y);
+          if (dist < minDist) {
+            minDist = dist;
+            closestPoint = i;
+          }
+        });
+        
+        // 更新对应的顶点坐标
+        if (closestPoint !== null && minDist < 20) {
+          const prop = `x${closestPoint + 1}`;
+          const yProp = `y${closestPoint + 1}`;
+          selectedElement[prop] = x;
+          selectedElement[yProp] = y;
+        }
+        break;
+    }
+    // 实时更新 workingData
+    const currentScene = workingData.scenes[currentSceneIndex];
+    const elementIndex = currentScene.elements.findIndex(el => el === originalElementState);
+    if (elementIndex !== -1) {
+      currentScene.elements[elementIndex] = selectedElement;
+    }
+    editor.set(workingData);
+    renderScene(workingData.scenes[currentSceneIndex]);
+    return;
+  }
+
+  // 原有拖拽逻辑保持不变
+  if (isDraggingElement && selectedElement) {
+    const rect = canvas.getBoundingClientRect();
+    const xPos = e.clientX - rect.left;
+    const yPos = e.clientY - rect.top;
+    
+    const deltaX = xPos - dragStartX;
+    const deltaY = yPos - dragStartY;
+
+    // 更新元素位置
+    switch(selectedElement.type) {
+      case 'circle':
+        selectedElement.x += deltaX;
+        selectedElement.y += deltaY;
+        break;
+      case 'line':
+        selectedElement.x1 += deltaX;
+        selectedElement.y1 += deltaY;
+        selectedElement.x2 += deltaX;
+        selectedElement.y2 += deltaY;
+        break;
+      case 'triangle':
+        selectedElement.x1 += deltaX;
+        selectedElement.y1 += deltaY;
+        selectedElement.x2 += deltaX;
+        selectedElement.y2 += deltaY;
+        selectedElement.x3 += deltaX;
+        selectedElement.y3 += deltaY;
+        break;
+    }
+    
+    dragStartX = xPos;
+    dragStartY = yPos;
+    renderScene(workingData.scenes[currentSceneIndex]);
+  }
+}
+
+function handleCanvasMouseUp() {
+  isResizingControlPoint = false; // 重置标志位
+  if (selectedElement) {
+    const original = JSON.stringify(originalElementState);
+    const current = JSON.stringify(selectedElement);
+    
+    if (original !== current) {
+      editor.set(workingData); // 同步到JSON编辑器
+      saveData(); // 保存最新的workingData
+    }
+  }
+  
+  isDraggingElement = false;
+  isResizingElement = false;
+  renderScene(workingData.scenes[currentSceneIndex]);
+  if (selectedElement) {
+    // 强制同步最新数据
+    workingData = JSON.parse(JSON.stringify(editor.get()));
+    saveData();
+    
+    // 刷新元素引用
+    const currentScene = workingData.scenes[currentSceneIndex];
+    selectedElement = currentScene.elements.find(el => 
+      JSON.stringify(el) === JSON.stringify(selectedElement)
+    );
+  }
+}
+function handleKeyDown(e) {
+  if (e.key === 'Delete' && selectedElement) {
+    // 使用 workingData 而不是重新获取数据
+    const currentScene = workingData.scenes[currentSceneIndex];
+    const index = currentScene.elements.findIndex(el => el === selectedElement);
+    
+    if (index !== -1) {
+      currentScene.elements.splice(index, 1);
+      selectedElement = null;
+      
+      // 同步更新到编辑器和保存
+      editor.update(workingData);
+      saveData();
+      editor.set(workingData);
+      renderScene(currentScene);
+    }
+  }
+}
+
+function checkControlPoint(element, x, y) {
+  const threshold = 8; // 增大检测范围
+  switch(element.type) {
+    case 'circle':
+      return Math.abs(
+        Math.hypot(x - (element.x + element.radius), y - element.y) - element.radius
+      ) < threshold;
+      
+    case 'line':
+      const d1 = Math.hypot(x - element.x1, y - element.y1);
+      const d2 = Math.hypot(x - element.x2, y - element.y2);
+      this.resizingEnd = d1 < d2 ? 'x1y1' : 'x2y2';
+      return Math.min(d1, d2) < threshold;
+
+    case 'triangle':
+      // 添加三角形顶点检测
+      return ['x1', 'x2', 'x3'].some((prop, i) => {
+        const px = element[prop];
+        const py = element[`y${i+1}`];
+        return Math.hypot(x - px, y - py) < threshold;
+      });
+  }
+  return false;
+}
+
+
+    function toggleEditorWindow() {
+      const editorWindow = document.getElementById('editorWindow');
+      const btn = document.getElementById('toggleEditorBtn');
+      const currentDisplay = window.getComputedStyle(editorWindow).display;
+      
+      if (currentDisplay === 'none') {
+        editorWindow.style.display = 'block';
+        windowManager.bringToFront(editorWindow);
+        btn.classList.add('active');
+      } else {
+        editorWindow.style.display = 'none';
+        btn.classList.remove('active');
+      }
+    }
+    function updateActiveSceneButton(index) {
+      const buttons = document.querySelectorAll('#id_4_scene_list .scene-btn');
+      buttons.forEach((btn, i) => {
+        btn.classList.toggle('active', i === index);
+      });
+    }
+    
+    function generateSceneButtons() {
+      const container = document.getElementById('id_4_scene_list');
+      container.innerHTML = '';
+      
+      const data = editor.get();
+      if (!data.scenes) return;
+
+      data.scenes.forEach((_, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'scene-btn';
+        btn.textContent = `场景 ${index + 1}`;
+        
+        btn.onclick = () => {
+          const currentData = editor.get();
+          const scene = currentData.scenes[index];
+          if (!scene) return;
+          
+          currentSceneIndex = index; // 新增：更新当前场景索引
+          selectedElement = null; // 新增：重置选中状态
+          if (isPlaying) stopAnimation();
+          renderScene(scene);
+          
+          document.querySelectorAll('.scene-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        };
+        
+        container.appendChild(btn);
+      });
+    }
+
+
+    let audioElement = null;
+    // 统一窗口管理逻辑
+class WindowManager {
+  constructor() {
+    this.windows = new Set();
+    this.activeWindow = null;
+    this.isResizing = false;
+    this.offset = { x: 0, y: 0 };
+    this.initialWidth = 0;
+    this.initialHeight = 0;
+    this.startX = 0;
+    this.startY = 0;
+    this.init();
+  }
+
+  init() {
+    document.addEventListener('mousedown', this.handleMouseDown.bind(this));
+    document.addEventListener('mousemove', this.handleMouseMove.bind(this));
+    document.addEventListener('mouseup', this.handleMouseUp.bind(this));
+    
+    document.querySelectorAll('.window').forEach(window => {
+      this.registerWindow(window);
+      this.addCloseButton(window);  // Add close button programmatically
+    });
+  }
+  addCloseButton(windowElement) {
+    const closeBtn = document.createElement('span');
+    closeBtn.className = 'window-close';
+    closeBtn.innerHTML = '&times;';
+    closeBtn.onclick = () => windowElement.style.display = 'none';
+    
+    const header = windowElement.querySelector('.window-header');
+    if (header) {
+      header.appendChild(closeBtn);
+    }
+  }
+    registerWindow(windowElement) {
+        if (!this.windows.has(windowElement)) {
+            this.windows.add(windowElement);
+            this.addCloseHandler(windowElement);
+            this.addResizeHandle(windowElement); // 添加调整手柄
+        }
+    }
+
+  addCloseHandler(windowElement) {
+    const closeBtn = windowElement.querySelector('.window-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        e.stopPropagation(); // 防止触发拖动事件
+        windowElement.style.display = 'none';
+      });
+    }
+  }
+
+  addResizeHandle(windowElement) {
+        const resizeHandle = document.createElement('div');
+        resizeHandle.className = 'window-resize-handle';
+        windowElement.appendChild(resizeHandle);
+    }
+  
+    handleMouseDown(e) {
+        const resizeHandle = e.target.closest('.window-resize-handle');
+        if (resizeHandle) {
+            const windowElement = resizeHandle.parentElement;
+            this.isResizing = true;
+            this.activeWindow = windowElement;
+            this.initialWidth = windowElement.offsetWidth;
+            this.initialHeight = windowElement.offsetHeight;
+            this.startX = e.clientX;
+            this.startY = e.clientY;
+            this.bringToFront(windowElement);
+            e.preventDefault();
+            return;
+        }
+
+        const header = e.target.closest('.window-header');
+        if (!header) return;
+
+        const windowElement = header.parentElement;
+        this.activeWindow = windowElement;
+        const rect = windowElement.getBoundingClientRect();
+        this.offset = {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+        this.bringToFront(windowElement);
+    }
+
+    handleMouseMove(e) {
+        if (this.isResizing) {
+            const deltaX = e.clientX - this.startX;
+            const deltaY = e.clientY - this.startY;
+            const minSize = 100; // 最小窗口尺寸
+            
+            const newWidth = Math.max(minSize, this.initialWidth + deltaX);
+            const newHeight = Math.max(minSize, this.initialHeight + deltaY);
+            
+            this.activeWindow.style.width = `${newWidth}px`;
+            this.activeWindow.style.height = `${newHeight}px`;
+            return;
+        } else if (this.activeWindow) 
+        {
+            const x = e.clientX - this.offset.x;
+            const y = e.clientY - this.offset.y;
+            this.activeWindow.style.left = `${x}px`;
+            this.activeWindow.style.top = `${y}px`;
+        }
+        
+        this.updateDocumentSize();
+
+    }
+    updateDocumentSize() {
+        let maxRight = 0;
+        let maxBottom = 0;
+
+        this.windows.forEach(window => {
+          const rect = window.getBoundingClientRect();
+          maxRight = Math.max(maxRight, rect.right);
+          maxBottom = Math.max(maxBottom, rect.bottom);
+        });
+
+        document.body.style.minWidth = `${maxRight + 50}px`;
+        document.body.style.minHeight = `${maxBottom + 50}px`;
+  }
+  
+    
+    handleMouseUp() {
+        this.activeWindow = null;
+        this.isResizing = false;
+    }
+  bringToFront(windowElement) {
+    const currentMaxZ = Math.max(...[...this.windows].map(w => 
+      parseInt(w.style.zIndex) || 1000));
+    
+    windowElement.style.zIndex = currentMaxZ + 1;
+  }
+}
+
+// 初始化窗口管理
+let windowManager;
+
+let debounceTimer; 
+document.addEventListener('DOMContentLoaded', () => {
+    windowManager = new WindowManager();
+    
+    // 初始化JSON编辑器
+    const container = document.getElementById('editor');
+    const options = {
+      mode: 'code',
+      onChange: () => { 
+        if (isResizingControlPoint) return; // 新增判断
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          // 同步workingData到编辑器的最新状态
+          workingData = JSON.parse(JSON.stringify(editor.get()));
+          generateSceneButtons();
+        }, 500);
+      }
+    };
+    editor = new JSONEditor(container, options);
+    
+    fetch('/data')
+      .then(res => res.json())
+      .then(data => {
+        editor.set(data);
+        setupEditorResize();
+        generateSceneButtons();
+      })
+      .catch(() => {
+        editor.set(initialData);
+        setupEditorResize();
+        generateSceneButtons();
+      });
+        
+      // 注册动态创建的窗口（如果有）
+      const videoWindow = document.getElementById('videoWindow');
+      if (videoWindow) windowManager.registerWindow(videoWindow);
+
+      
+      const editorWindow = document.getElementById('editorWindow');
+      const toggleBtn = document.getElementById('toggleEditorBtn');
+      if (window.getComputedStyle(editorWindow).display !== 'none') {
+        toggleBtn.classList.add('active');
+      }
+      workingData = {
+        scenes: [],
+        fps: 30
+      };
+      
+  });
+
+
+  let currentVideoUrl = null;
+function registerDynamicWindow() {  // 添加了function关键字
+  document.querySelectorAll('.window').forEach(window => {
+    if (!windowManager.windows.has(window)) {
+      windowManager.registerWindow(window);
+    }
+  });
+}
+
+// 在显示视频窗口时调用
+function showVideoWindow() {
+  const videoWindow = document.getElementById('videoWindow');
+  videoWindow.style.display = 'block';
+  windowManager.registerDynamicWindow();
+  windowManager.bringToFront(videoWindow);
+}
+function cleanupVideo() {
+  if (currentVideoUrl) {
+    URL.revokeObjectURL(currentVideoUrl);
+    currentVideoUrl = null;
+  }
+}
+function downloadVideo() {
+  if (!currentVideoUrl) return;
+  
+  const a = document.createElement('a');
+  a.href = currentVideoUrl;
+  a.download = `video-${Date.now()}.mp4`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+
+    // 新增窗口拖动功能
+    let isDragging = false;
+    let currentX = 0;
+    let currentY = 0;
+    let initialX = 0;
+    let initialY = 0;
+    let xOffset = 0;
+    let yOffset = 0;
+
+    const windowElement = document.getElementById('editorWindow');
+    const header = document.querySelector('.window-header');
+
+    header.addEventListener('mousedown', dragStart);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', dragEnd);
+
+    function dragStart(e) { 
+    }
+
+    function drag(e) { 
+    }
+
+    function setTranslate(xPos, yPos, el) { 
+    }
+
+    function dragEnd(e) { 
+    }
+
+    // 以下保持原有逻辑不变...
+    let editor = null;
+    let animationFrame = null;
+    let currentSceneIndex = 0;
+    let startTime = null;
+    
+    
+    function setupEditorResize() {
+    const editorWindow = document.getElementById('editorWindow');
+    const observer = new ResizeObserver(() => {
+      if (editor && editor.aceEditor) {
+        const container = editor.container;
+        const modes = container.querySelector('.jsoneditor-modes');
+        const content = container.querySelector('.jsoneditor-outer');
+        
+        if (modes && content) {
+          content.style.height = `calc(100% - ${modes.offsetHeight}px)`;
+        }
+        setTimeout(() => editor.aceEditor.resize(), 10);
+      }
+    });
+    observer.observe(editorWindow);
+  }
+
+   
+
+  function saveData() {
+    fetch('/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(workingData)
+    });
+  }
+      
+[addExample1, addExample2, addExample3].forEach(fn => {
+  const original = fn;
+  fn = function() {
+    original();
+    generateSceneButtons();
+  }
+});
+
+function renderScene(scene) {
+  if (!scene) return;
+  
+  try {
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = 1024;
+    canvas.height = 768;
+
+    // 验证背景颜色
+    ctx.fillStyle = scene.background || '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    (scene.elements || []).forEach(element => {
+      if (!element) return;
+      
+      ctx.fillStyle = element.color || '#000000';
+      ctx.strokeStyle = element.color || '#000000';
+
+      switch(element.type) {
+        case 'circle':
+          if (typeof element.x === 'number' && typeof element.y === 'number') {
+            ctx.beginPath();
+            ctx.arc(element.x, element.y, element.radius || 0, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          break;
+        case 'triangle':
+          if ([element.x1, element.y1, element.x2, element.y2, element.x3, element.y3].every(Number.isFinite)) {
+            ctx.beginPath();
+            ctx.moveTo(element.x1, element.y1);
+            ctx.lineTo(element.x2, element.y2);
+            ctx.lineTo(element.x3, element.y3);
+            ctx.closePath();
+            ctx.fill();
+          }
+          break;
+        case 'line':
+          if ([element.x1, element.y1, element.x2, element.y2].every(Number.isFinite)) {
+            ctx.beginPath();
+            ctx.moveTo(element.x1, element.y1);
+            ctx.lineTo(element.x2, element.y2);
+            ctx.stroke();
+          }
+          break;
+      }
+    });
+    if (selectedElement) {
+      ctx.save();
+      ctx.globalAlpha = 0.3;
+      ctx.fillStyle = '#00ff00';
+      const handler = elementHandlers[selectedElement.type];
+      handler?.drawSelection(ctx, selectedElement);
+      ctx.restore();
+    } 
+  } catch (error) {
+    console.error('渲染错误:', error);
+  }
+}
+
+    let isPlaying = false;
+
+    function togglePlay() {
+      if (isPlaying) {
+        stopAnimation();
+      } else {
+        playAnimation();
+      }
+      updateButtonState();
+    }
+
+    function updateButtonState() {
+      const btn = document.getElementById('playButton');
+      btn.textContent = isPlaying ? 'Stop' : 'Play';
+      btn.classList.toggle('active', isPlaying);
+    }
+    
+    function animate(timestamp) {
+  if (!isPlaying) return;
+
+  try {
+    if (!startTime) startTime = timestamp;
+    const data = editor.get();
+    
+    // 确保数据有效性
+    if (!data.scenes || data.scenes.length === 0 || !data.fps || data.fps <= 0) {
+      stopAnimation();
+      return;
+    }
+
+    let currentFPS = 0;
+    if (lastFrameTime !== null) {
+      const delta = timestamp - lastFrameTime;
+      currentFPS = 1000 / delta;
+    }
+    lastFrameTime = timestamp;
+
+    const totalFrames = data.scenes.reduce((sum, scene) => sum + (scene.duration || 0) * data.fps, 0);
+    const elapsed = (timestamp - startTime) / 1000;
+    let elapsedFrames = elapsed * data.fps;
+
+    if (elapsedFrames >= totalFrames) {
+      stopAnimation();
+      return;
+    }
+
+    let accumulated = 0;
+    let currentSceneIndex = 0;
+    let currentScene = data.scenes[0];
+    for (let i = 0; i < data.scenes.length; i++) {
+      const scene = data.scenes[i];
+      const sceneFrames = (scene.duration || 0) * data.fps;
+      if (elapsedFrames < accumulated + sceneFrames) {
+        currentScene = scene;
+        currentSceneIndex = i;
+        break;
+      }
+      accumulated += sceneFrames;
+    }
+
+    updateActiveSceneButton(currentSceneIndex);
+ 
+
+    renderScene(currentScene);
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    drawDebugInfo(ctx, currentFPS, data.fps, currentSceneIndex + 1, Math.floor(elapsedFrames));
+    
+    animationFrame = requestAnimationFrame(animate);
+  } catch (error) {
+    console.error('动画错误:', error);
+    stopAnimation();
+  }
+}
+   
+    function drawDebugInfo(ctx, current_fps, data_fps, sceneNumber, frameNumber) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.fillRect(5, 5, 120, 50); // Increased height to 50
+      
+      ctx.font = '14px Arial';
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = '#fff';
+      
+      ctx.fillText(`current_fps: ${Math.round(current_fps)}`, 10, 10);
+      ctx.fillText(`data_fps: ${Math.round(data_fps)}`, 10, 20);
+      ctx.fillText(`Scene: ${sceneNumber}`, 10, 30);
+      ctx.fillText(`Frame: ${frameNumber}`, 10, 40); // New line
+      if (selectedElement) {
+        ctx.fillText(`Editing: ${selectedElement.type}`, 10, 50);
+      }
+
+      ctx.restore();
+    }
+
+
+
+
+function playAnimation() {
+  if (!isPlaying) {
+    const data = editor.get();
+    isPlaying = true;
+    updateButtonState();
+    startTime = null;
+
+    // Handle audio playback
+    if (data.audio) {
+      if (!audioElement) {
+        audioElement = new Audio(data.audio);
+      }
+      audioElement.currentTime = 0; // Reset audio to start
+      audioElement.play().catch(error => {
+        console.error('Audio playback error:', error);
+      });
+    }
+
+    // Start animation immediately
+    animationFrame = requestAnimationFrame(animate);
+  }
+}
+    
+function stopAnimation() {
+  if (isPlaying) {
+    isPlaying = false;
+    updateButtonState();
+    cancelAnimationFrame(animationFrame);
+    startTime = null;
+    lastFrameTime = null;  // 重置FPS计算
+
+    // Pause and reset audio
+    if (audioElement) {
+      audioElement.pause();
+      audioElement.currentTime = 0;
+    }
+
+    // Reset to first scene
+    const data = editor.get();
+    if (data.scenes.length > 0) {
+      currentSceneIndex = 0;
+      renderScene(data.scenes[0]);
+      updateActiveSceneButton(0);
+    }
+  }
+}
+
+    function exportVideo() {
+  const data = editor.get();
+  const btn = event.target;
+  const originalText = btn.textContent;
+
+  // 清理之前的视频
+  cleanupVideo();
+
+  btn.textContent = '生成中...';
+  btn.disabled = true;
+
+  fetch('/export', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(response => {
+    if (!response.ok) throw new Error('生成失败: ' + response.statusText);
+    return response.blob();
+  })
+  .then(blob => {
+    currentVideoUrl = URL.createObjectURL(blob);
+    const videoPlayer = document.getElementById('videoPreview');
+    videoPlayer.src = currentVideoUrl;
+    showVideoWindow();
+    videoPlayer.play();
+  })
+  .catch(error => {
+    console.error('导出错误:', error);
+    alert(error.message);
+  })
+  .finally(() => {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  });
+}
+ 
+window.addEventListener('load', () => {
+   
+  windowManager.updateDocumentSize();
+  
+});
+  </script>
+</body>
+</html>
+<!--元素控制点移动后，元素没有真的变
+-->

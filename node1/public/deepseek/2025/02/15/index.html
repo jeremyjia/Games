@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <title>微信封面编辑器 - 完整版</title>
+    <style>
+         @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .toolbar {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-group {
+                padding: 12px;
+            }
+            
+            button {
+                padding: 12px;
+                margin: 4px 2px;
+                font-size: 14px;
+            }
+            
+            #editorCanvas {
+                max-width: 100%;
+                height: auto!important;
+            }
+            
+            input, select {
+                font-size: 16px!important; /* 防止iOS缩放 */
+            }
+        }
+        
+        /* 优化控制点触摸区域 */
+        .control-point {
+            width: 30px!important;
+            height: 30px!important;
+            margin: -15px;
+        }
+        :root {
+            --primary-color: #07c160;
+            --bg-color: #f5f5f5;
+        }
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            padding: 20px;
+            background: var(--bg-color);
+            min-width: 320px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .editor-panel {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-top: 20px;
+        }
+        canvas {
+            border: 2px dashed #ddd;
+            margin: 20px 0;
+            background: repeating-conic-gradient(#f8f9fa 0% 25%, white 0% 50%) 50%/20px 20px;
+        }
+        .toolbar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .control-group {
+            background: #f8f9fa;
+            padding: 18px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+        input[type="text"], 
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin: 6px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 4px;
+        }
+        button:hover {
+            background: #05964a;
+            transform: translateY(-1px);
+        }
+        .alert {
+            padding: 10px;
+            background: #fff3cd;
+            border-radius: 4px;
+            margin: 10px 0;
+            display: none;
+        }
+        .control-point {
+        width: 10px;
+        height: 10px;
+        background: #fff;
+        border: 2px solid #07c160;
+        position: absolute;
+        pointer-events: all;
+    }
+    .rotate-handle {
+        width: 16px;
+        height: 16px;
+        top: -40px;
+        background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" fill="%2307c160"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>') center/contain no-repeat;
+    }
+    
+/* 添加方向按钮样式 */
+.direction-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0;
+}
+
+.arrow-btn {
+    width: 50px;
+    height: 40px;
+    font-size: 20px;
+    background: #f0f0f0;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+@media (max-width: 768px) {
+    .arrow-btn {
+        width: 60px;
+        height: 50px;
+        font-size: 24px;
+    }
+}
+
+.direction-panel {
+            display: none;
+            position: fixed;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            cursor: move;
+            user-select: none;
+        }
+        
+        .panel-header {
+            padding: 8px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 8px 8px 0 0;
+            text-align: center;
+        }
+        
+        .direction-controls {
+            padding: 12px;
+        }
+        .nav-menu {
+            background: var(--primary-color);
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .nav-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+        }
+
+        .nav-item {
+            padding: 15px 25px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 6px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .nav-list {
+                flex-direction: column;
+            }
+            
+            .nav-item {
+                padding: 12px 20px;
+                text-align: center;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="nav-menu">
+            <ul class="nav-list">
+                <li class="nav-item" onclick="showHome()">🏠 首页</li>
+                <li class="nav-item" onclick="window.location.href='..'">[..]</li>
+                <li class="nav-item" onclick="window.location.href='c1.html'">c1.html</li>
+                <li class="nav-item" onclick="window.location.href='readme.md'">readme.md</li>
+
+                <!-- 可以继续添加更多菜单项 -->
+            </ul>
+        </nav>
+        <h1>🎨 微信封面编辑器</h1>
+        <div class="alert" id="alertBox"></div>
+        
+        <div class="editor-panel">
+            <div class="toolbar">
+                <!-- 图片控制 -->
+                <div class="control-group image-controls">
+                    <h3>🖼️ 图片操作</h3>
+                    <input type="file" id="imageUpload" accept="image/*" hidden>
+                    <button onclick="document.getElementById('imageUpload').click()">上传图片</button>
+                    <button onclick="resetBackground()">移除背景</button>
+                </div>
+
+                <!-- 文字控制 -->
+                <div class="control-group text-controls">
+                    <h3>✍️ 文字编辑</h3>
+                    <input type="text" id="textContent" placeholder="输入文字内容">
+                    <div style="margin: 10px 0">
+                        <label>颜色：</label>
+                        <input type="color" id="textColor" value="#2d2d2d">
+                        <label>大小：</label>
+                        <input type="number" id="fontSize" value="36" min="12" max="120" step="2">
+                    </div>
+                    <label>对齐：</label>
+                    <select id="textAlign" onchange="updateTextAlignment()">
+                                             <option value="left">左对齐</option>
+                                             <option value="center" selected>居中</option>
+                                             <option value="right">右对齐</option>
+                    </select>
+ 
+                    <button onclick="addTextLayer()">添加文字</button>
+                    <button onclick="clearAllText()">清除文字</button>
+                </div>
+
+                <!-- 输出控制 -->
+                <div class="control-group">
+                    <h3>📥 输出设置</h3>
+                    <button onclick="exportImage()">下载封面 (900×383)</button>
+                    <button onclick="toggleGrid()">切换参考线</button>
+                    <button onclick="clearLocalStorage()">清除本地数据</button>
+                </div>
+            </div>
+
+            <!-- 画布区域 -->
+            <canvas id="editorCanvas" width="900" height="383"></canvas>
+        </div>
+
+        <div class="direction-panel" id="directionPanel">
+            <div class="panel-header">↔ 位置调整</div>
+            <div class="direction-controls">
+                <button class="arrow-btn" onclick="moveText('up')">↑</button>
+                <div>
+                    <button class="arrow-btn" onclick="moveText('left')">←</button>
+                    <button class="arrow-btn" onclick="moveText('right')">→</button>
+                </div>
+                <button class="arrow-btn" onclick="moveText('down')">↓</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+// 新增菜单功能函数
+function showHome() {
+        // 这里可以添加首页相关的功能
+        showAlert('已返回首页');
+        // 示例：滚动到顶部
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+let panelDragging = false;
+let panelOffset = { x: 0, y: 0 };
+const directionPanel = document.getElementById('directionPanel');
+
+
+// 初始化状态
+const editorState = {
+    version: 1,
+    canvas: document.getElementById('editorCanvas'),
+    ctx: null,
+    backgroundImage: null,
+    textLayers: [],
+    showGrid: true,
+    history: [],
+    selectedTextIndex: -1,
+    dragging: false,
+    transformType: null,
+    controlPoints: [],
+    initialMousePos: { x: 0, y: 0 },
+    initialTextState: null
+};
+
+const textPrototype = {
+    content: "",
+    color: "#2d2d2d",
+    fontSize: 36,
+    position: { x: 0, y: 0 },
+    rotation: 0,
+    scale: 1,
+    padding: 10,
+    fontFamily: "'Microsoft YaHei', sans-serif",
+    textAlign: "center",
+    textBaseline: "middle"
+};
+// 系统初始化
+(function init() {
+    initPanelDrag();
+    editorState.ctx = editorState.canvas.getContext('2d');
+    initEventListeners();
+    initTouchListeners(); // 新增触摸监听
+    adaptCanvasSize();
+    window.addEventListener('resize', adaptCanvasSize);
+    loadFromLocalStorage(); // 新增加载逻辑
+    requestAnimationFrame(redrawCanvas);
+    saveState();
+})();
+function initPanelDrag() {
+    const header = directionPanel.querySelector('.panel-header');
+    
+    // 鼠标事件
+    header.addEventListener('mousedown', startDrag);
+    document.addEventListener('mousemove', handleDrag);
+    document.addEventListener('mouseup', stopDrag);
+    
+    // 触摸事件
+    header.addEventListener('touchstart', startDrag);
+    document.addEventListener('touchmove', handleDrag);
+    document.addEventListener('touchend', stopDrag);
+
+    function startDrag(e) {
+        panelDragging = true;
+        const rect = directionPanel.getBoundingClientRect();
+        panelOffset = {
+            x: (e.clientX || e.touches[0].clientX) - rect.left,
+            y: (e.clientY || e.touches[0].clientY) - rect.top
+        };
+    }
+
+    function handleDrag(e) {
+        if (!panelDragging) return;
+        const x = (e.clientX || e.touches[0].clientX) - panelOffset.x;
+        const y = (e.clientY || e.touches[0].clientY) - panelOffset.y;
+        
+        directionPanel.style.left = `${x}px`;
+        directionPanel.style.top = `${y}px`;
+    }
+
+    function stopDrag() {
+        panelDragging = false;
+    }
+}
+function saveToLocalStorage() {
+    const stateToSave = {
+        version: editorState.version,
+        background: editorState.backgroundImage?.src || null,
+        texts: editorState.textLayers.map(text => ({
+            content: text.content,
+            color: text.color,
+            fontSize: text.fontSize,
+            position: text.position,
+            rotation: text.rotation,
+            scale: text.scale,
+            textAlign: text.textAlign
+        })),
+        showGrid: editorState.showGrid
+    };
+    localStorage.setItem('editorState', JSON.stringify(stateToSave));
+}
+
+function loadFromLocalStorage() {
+    const saved = localStorage.getItem('editorState');
+    if (!saved) return;
+
+    try {
+        const data = JSON.parse(saved);
+        // 加载背景图片
+        if (data.background) {
+            const img = new Image();
+            img.onload = () => {
+                editorState.backgroundImage = img;
+                redrawCanvas();
+            };
+            img.src = data.background;
+        }
+        
+        // 加载文字层
+        if (data.texts) {
+            editorState.textLayers = data.texts.map(t => ({
+                ...textPrototype,
+                ...t,
+                position: t.position || { x: 450, y: 300 }
+            }));
+        }
+        
+        // 加载其他设置
+        if (data.showGrid !== undefined) {
+            editorState.showGrid = data.showGrid;
+        }
+        
+        showAlert('已加载上次保存的数据');
+    } catch (e) {
+        console.error('加载数据失败:', e);
+        showAlert('加载保存数据失败', 'warning');
+    }
+}
+
+function clearLocalStorage() {
+    localStorage.removeItem('editorState');
+    showAlert('已清除本地保存数据');
+    location.reload();
+}
+
+// 添加移动控制函数
+function moveText(direction) {
+    if (editorState.selectedTextIndex === -1) return;
+    
+    const text = editorState.textLayers[editorState.selectedTextIndex];
+    const step = 5; // 移动步长
+    
+    // 边界限制参数
+    const minX = 50;
+    const maxX = editorState.canvas.width - 50;
+    const minY = 50;
+    const maxY = editorState.canvas.height - 50;
+
+    switch(direction) {
+        case 'left':
+            text.position.x = Math.max(minX, text.position.x - step);
+            break;
+        case 'right':
+            text.position.x = Math.min(maxX, text.position.x + step);
+            break;
+        case 'up':
+            text.position.y = Math.max(minY, text.position.y - step);
+            break;
+        case 'down':
+            text.position.y = Math.min(maxY, text.position.y + step);
+            break;
+    }
+    
+    redrawCanvas();
+    saveToLocalStorage();
+}
+
+// 事件监听
+function initEventListeners() {
+    // 图片上传事件
+    document.getElementById('imageUpload').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        if (!file.type.startsWith('image/')) {
+            showAlert('请选择有效的图片文件', 'warning');
+            return;
+        }
+
+        loadImageFile(file);
+    });
+
+    // 画布交互事件
+    const canvas = editorState.canvas;
+    canvas.addEventListener('dblclick', handleDoubleClick);
+    canvas.addEventListener('mousedown', handleCanvasMouseDown);
+    canvas.addEventListener('mousemove', handleCanvasMouseMove);
+    canvas.addEventListener('mouseup', handleCanvasMouseUp);
+    canvas.addEventListener('mouseleave', handleCanvasMouseUp);
+
+    document.addEventListener('keydown', handleKeyDown);
+    
+    document.getElementById('textColor').addEventListener('change', saveToLocalStorage);
+    document.getElementById('fontSize').addEventListener('change', saveToLocalStorage);
+    document.getElementById('textAlign').addEventListener('change', saveToLocalStorage);
+
+    
+    canvas.addEventListener('touchstart', handleTouchStart, {passive: false});
+    canvas.addEventListener('touchmove', handleTouchMove, {passive: false});
+    canvas.addEventListener('touchend', handleTouchEnd);
+    canvas.addEventListener('touchcancel', handleTouchEnd);
+
+
+    // 文字输入实时更新
+    document.getElementById('textContent').addEventListener('input', function(e) {
+        if (editorState.selectedTextIndex > -1) {
+            editorState.textLayers[editorState.selectedTextIndex].content = e.target.value;
+            redrawCanvas();
+        }
+    });
+
+    // 优化文字输入体验
+    document.getElementById('textContent').addEventListener('focus', function() {
+        window.scrollTo(0, this.offsetTop - 100); // 自动滚动到输入框
+    });
+
+}
+
+function handleTouchStart(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        handleCanvasMouseDown(touch);
+    }
+
+    function handleTouchMove(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        handleCanvasMouseMove(touch);
+    }
+
+    function handleTouchEnd(e) {
+        handleCanvasMouseUp();
+    }
+
+// 添加在 redrawCanvas 函数之前
+function drawBackground() {
+    const { ctx, canvas, backgroundImage } = editorState;
+    
+    // 先填充白色背景
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 如果有背景图片则绘制
+    if (backgroundImage) {
+        // 计算图片适配画布的最佳比例
+        const imgRatio = backgroundImage.naturalWidth / backgroundImage.naturalHeight;
+        const canvasRatio = canvas.width / canvas.height;
+        
+        let renderWidth, renderHeight, offsetX = 0, offsetY = 0;
+
+        if (imgRatio > canvasRatio) {
+            // 图片更宽，按高度适配
+            renderHeight = canvas.height;
+            renderWidth = backgroundImage.naturalWidth * (renderHeight / backgroundImage.naturalHeight);
+            offsetX = (canvas.width - renderWidth) / 2;
+        } else {
+            // 图片更高，按宽度适配
+            renderWidth = canvas.width;
+            renderHeight = backgroundImage.naturalHeight * (renderWidth / backgroundImage.naturalWidth);
+            offsetY = (canvas.height - renderHeight) / 2;
+        }
+
+        ctx.drawImage(
+            backgroundImage,
+            offsetX, offsetY,
+            renderWidth, renderHeight
+        );
+    }
+}
+
+
+function handleKeyDown(e) {
+    if (editorState.selectedTextIndex === -1) return;
+    
+    const step = 5; // 移动步长
+    const rotateStep = 1 * Math.PI / 180; // 1度的弧度值
+    const text = editorState.textLayers[editorState.selectedTextIndex];
+    
+    // 边界限制参数
+    const minX = 50;
+    const maxX = editorState.canvas.width - 50;
+    const minY = 50;
+    const maxY = editorState.canvas.height - 50;
+
+    // 添加Delete键处理
+    if (e.key === 'Delete') {
+        editorState.textLayers.splice(editorState.selectedTextIndex, 1);
+        editorState.selectedTextIndex = -1;
+        redrawCanvas();
+        saveToLocalStorage();
+        e.preventDefault();
+        return;
+    }
+
+    switch(e.key) {
+        case 'ArrowLeft':
+            if (e.shiftKey) {
+                // Shift + 左方向键：逆时针旋转
+                text.rotation -= rotateStep;
+            } else {
+                // 普通左方向键：左移
+                text.position.x = Math.max(minX, text.position.x - step);
+            }
+            break;
+        case 'ArrowRight':
+            if (e.shiftKey) { 
+                text.rotation += rotateStep;
+            } else { 
+                text.position.x = Math.min(maxX, text.position.x + step);
+            }
+            break;
+        case 'ArrowUp':
+            text.position.y = Math.max(minY, text.position.y - step);
+            break;
+        case 'ArrowDown':
+            text.position.y = Math.min(maxY, text.position.y + step);
+            break;
+        default:
+            return; // 非方向键不处理
+    }
+    
+    // 规范化旋转角度到0-2π范围
+    text.rotation = text.rotation % (2 * Math.PI);
+    if (text.rotation < 0) {
+        text.rotation += 2 * Math.PI;
+    }
+    
+    e.preventDefault(); // 阻止页面滚动
+    redrawCanvas();
+    saveToLocalStorage();
+}
+
+
+
+function handleDoubleClick(e) {
+    const pos = getCanvasMousePos(e);
+    let selectedIndex = -1;
+
+    editorState.textLayers.forEach((text, index) => {
+        if (isPointInText(pos, text)) {
+            selectedIndex = index;
+        }
+    });
+
+    if (selectedIndex > -1) {
+        editorState.selectedTextIndex = selectedIndex;
+        const text = editorState.textLayers[selectedIndex];
+        
+        // 同步到输入控件
+        document.getElementById('textContent').value = text.content;
+        document.getElementById('textColor').value = text.color;
+        document.getElementById('fontSize').value = text.fontSize;
+        document.getElementById('textAlign').value = text.textAlign;
+        
+        redrawCanvas();
+        saveToLocalStorage(); // 保存状态变更
+    }
+}
+
+
+
+
+function handleCanvasMouseDown(e) {
+    const pos = getCanvasMousePos(e);
+    let hitControlPoint = false;
+    
+    // 检测控制点点击
+    editorState.controlPoints.forEach(point => {
+        if (isPointInControl(pos, point)) {
+            editorState.transformType = point.type;
+            editorState.dragging = true;
+            editorState.initialMousePos = pos;
+            editorState.initialTextState = {...editorState.textLayers[editorState.selectedTextIndex]};
+            hitControlPoint = true;
+            return;
+        }
+
+        if (!hitControlPoint) {
+            let hitText = false;
+            editorState.textLayers.forEach((text, index) => {
+                if (isPointInText(pos, text)) {
+                    editorState.selectedTextIndex = index;
+                    hitText = true;
+                }
+            });
+            
+            if (!hitText) {
+                editorState.selectedTextIndex = -1;
+                // 清空输入框
+                document.getElementById('textContent').value = '';
+            }
+        }
+    });
+    
+    function isPointInControl(pos, control) {
+    // 简化控制点检测，使用屏幕坐标系
+    const text = editorState.textLayers[editorState.selectedTextIndex];
+    const controlSize = 20; // 增大检测区域
+    
+    // 计算控制点的实际屏幕坐标
+    const transform = new DOMMatrix()
+        .translate(text.position.x, text.position.y)
+        .rotate(text.rotation)
+        .scale(text.scale);
+    
+    const controlPoint = transform.transformPoint(new DOMPoint(control.x, control.y));
+    
+    return (
+        pos.x >= controlPoint.x - controlSize &&
+        pos.x <= controlPoint.x + controlSize &&
+        pos.y >= controlPoint.y - controlSize &&
+        pos.y <= controlPoint.y + controlSize
+    );
+}
+
+// 实时更新文字属性
+document.getElementById('textColor').addEventListener('input', function() {
+    if (editorState.selectedTextIndex >= 0) {
+        editorState.textLayers[editorState.selectedTextIndex].color = this.value;
+        redrawCanvas();
+    }
+});
+    // 检测文字主体点击
+    editorState.textLayers.forEach((text, index) => {
+        if (isPointInText(pos, text)) {
+            editorState.selectedTextIndex = index;
+            editorState.transformType = 'move';
+            editorState.dragging = true; // 添加这一行
+            editorState.initialMousePos = pos;
+            editorState.initialTextState = {...text};
+        }
+    });
+    // 保存初始状态
+    editorState.initialMousePos = pos;
+    if (editorState.selectedTextIndex > -1) {
+        editorState.initialTextState = 
+            {...editorState.textLayers[editorState.selectedTextIndex]};
+    }
+    redrawCanvas();
+
+    // 新增：如果点击空白处则取消选择
+    if (!editorState.transformType && editorState.selectedTextIndex !== -1) {
+        editorState.selectedTextIndex = -1;
+        redrawCanvas();
+    }
+
+    // 选中文字后显示面板
+    if (editorState.selectedTextIndex !== -1) {
+        showDirectionPanel(e);
+    } else {
+        directionPanel.style.display = 'none';
+    }
+}
+
+function showDirectionPanel(e) {
+    directionPanel.style.display = 'block';
+    
+    // 初始位置设置
+    const canvasRect = editorState.canvas.getBoundingClientRect();
+    const panelWidth = 120;
+    const panelHeight = 160;
+    
+    let x = canvasRect.right - panelWidth - 20;
+    let y = canvasRect.top + 20;
+    
+    // 如果首次显示，定位在画布右侧
+    if (!directionPanel.style.left) {
+        directionPanel.style.left = `${x}px`;
+        directionPanel.style.top = `${y}px`;
+    }
+}
+document.getElementById('fontSize').addEventListener('input', function() {
+    if (editorState.selectedTextIndex >= 0) {
+        const text = editorState.textLayers[editorState.selectedTextIndex];
+        text.fontSize = parseInt(this.value);
+        text.scale = 1; // 重置缩放比例
+        redrawCanvas();
+    }
+});
+ 
+function handleCanvasMouseMove(e) {
+    if (!editorState.dragging || !editorState.transformType) return;
+    const currentText = editorState.textLayers[editorState.selectedTextIndex];
+    if (!currentText) return;
+    const pos = getCanvasMousePos(e);
+
+    // 获取当前缩放比例
+    const scale = currentText.scale;
+    
+    // 计算基于缩放后的增量
+    const delta = {
+        x: (pos.x - editorState.initialMousePos.x) / scale,
+        y: (pos.y - editorState.initialMousePos.y) / scale
+    };
+
+    switch(editorState.transformType) {
+        case 'move':
+            currentText.position.x = editorState.initialTextState.position.x + delta.x;
+            currentText.position.y = editorState.initialTextState.position.y + delta.y;
+                // 添加边界限制
+            currentText.position.x = Math.max(50, Math.min(editorState.canvas.width - 50, currentText.position.x));
+            currentText.position.y = Math.max(50, Math.min(editorState.canvas.height - 50, currentText.position.y));
+            break;
+
+        case 'rotate':
+            // 计算基于中心点的旋转角度
+            const centerX = currentText.position.x;
+            const centerY = currentText.position.y;
+            const angle = Math.atan2(pos.y - centerY, pos.x - centerX);
+            currentText.rotation = angle - Math.PI/2; // 调整初始角度偏移
+            break;
+
+        case 'resize':
+            // 计算基于中心的缩放
+            const baseSize = editorState.initialTextState.fontSize;
+            const baseScale = editorState.initialTextState.scale;
+            const distance = Math.sqrt(delta.x**2 + delta.y**2);
+            const scale = Math.max(0.5, Math.min(3, baseScale + distance/100));
+            currentText.scale = scale;
+            currentText.fontSize = baseSize * scale;
+            break;
+    }
+    
+    // 立即重绘画布
+    redrawCanvas();
+}
+
+ 
+function drawText(text, index) {
+    const ctx = editorState.ctx;
+    ctx.save();
+    
+    // 应用变换矩阵
+    ctx.translate(text.position.x, text.position.y);
+    ctx.rotate(text.rotation);
+    ctx.scale(text.scale, text.scale); // 确保缩放应用在正确顺序
+
+    // 设置文字样式
+    ctx.font = `${text.fontSize}px ${text.fontFamily}`;
+    ctx.fillStyle = text.color;
+    ctx.textAlign = text.textAlign;
+    ctx.textBaseline = text.textBaseline;
+
+    // 绘制文字
+    ctx.fillText(text.content, 0, 0);
+
+    // 绘制选中状态
+    if (index === editorState.selectedTextIndex) {
+        const metrics = ctx.measureText(text.content);
+        const padding = text.padding || 10; // 添加默认值
+        
+        // 绘制边界框
+        ctx.strokeStyle = '#07c160';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 3]);
+        ctx.strokeRect(
+            -metrics.width/2 - padding,    // 使用动态 padding
+            -text.fontSize/2 - padding,    // 使用动态 padding
+            metrics.width + padding*2,     // 使用动态 padding
+            text.fontSize + padding*2      // 使用动态 padding
+        );
+
+        // 绘制控制点
+        drawControlHandle(ctx, 0, -text.fontSize/2 - padding*2, 'rotate');
+        drawControlHandle(ctx, metrics.width/2 + padding, 0, 'resize');
+    }
+
+    ctx.restore();
+}
+
+
+
+function drawControlHandle(ctx, x, y, type) {
+    ctx.fillStyle = type === 'rotate' ? '#07c160' : '#ff3b30';
+    ctx.beginPath();
+    ctx.arc(x, y, 6, 0, Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+}
+
+function handleTextInput(e) {
+    if (editorState.selectedTextIndex >= 0) {
+        editorState.textLayers[editorState.selectedTextIndex].content = e.target.value;
+        redrawCanvas();
+    }
+}
+
+function updateTextAlignment() {
+    if (editorState.selectedTextIndex >= 0) {
+        const align = document.getElementById('textAlign').value;
+        editorState.textLayers[editorState.selectedTextIndex].textAlign = align;
+        redrawCanvas();
+    }
+    saveToLocalStorage();
+}
+
+// 状态管理
+function saveState() {
+    editorState.history.push({
+        textLayers: JSON.parse(JSON.stringify(editorState.textLayers)),
+        backgroundImage: editorState.backgroundImage?.src
+    });
+    
+    // 保持最多50个历史状态
+    if (editorState.history.length > 50) editorState.history.shift();
+}
+
+function undoLastAction() {
+    if (editorState.history.length < 2) return;
+    
+    editorState.history.pop();
+    const prevState = editorState.history[editorState.history.length-1];
+    
+    // 恢复文字层
+    editorState.textLayers = JSON.parse(JSON.stringify(prevState.textLayers));
+    
+    // 恢复背景图片
+    if (prevState.backgroundImage) {
+        const img = new Image();
+        img.onload = () => {
+            editorState.backgroundImage = img;
+            redrawCanvas();
+        };
+        img.src = prevState.backgroundImage;
+    } else {
+        editorState.backgroundImage = null;
+    }
+    
+    redrawCanvas();
+}
+
+
+
+    // 更新坐标获取方法
+    function getCanvasMousePos(event) {
+        const rect = editorState.canvas.getBoundingClientRect();
+        let clientX, clientY;
+        
+        if (event.touches) {
+            clientX = event.touches[0].clientX;
+            clientY = event.touches[0].clientY;
+        } else {
+            clientX = event.clientX;
+            clientY = event.clientY;
+        }
+        
+        const scaleX = editorState.canvas.width / rect.width;
+        const scaleY = editorState.canvas.height / rect.height;
+        
+        return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
+        };
+    }
+
+ // 动态调整画布大小
+ function adaptCanvasSize() {
+        const canvas = editorState.canvas;
+        const container = document.querySelector('.container');
+        const maxWidth = container.clientWidth;
+        const aspectRatio = 900 / 383;
+        
+        canvas.style.width = Math.min(maxWidth, 900) + 'px';
+        canvas.style.height = (canvas.clientWidth / aspectRatio) + 'px';
+    }
+
+
+function createControlPoint(x, y, type) {
+    return {
+        x: x,
+        y: y,
+        type: type,
+        region: new Path2D()
+    };
+}
+ 
+
+function isPointInText(point, text) {
+    const ctx = editorState.ctx;
+    ctx.save();
+    
+    // 创建变换矩阵
+    const transform = new DOMMatrix()
+        .translate(text.position.x, text.position.y)
+        .rotate(text.rotation)
+        .scale(text.scale);
+    
+    // 转换点到本地坐标系
+    const inverse = transform. inverse();
+    const localPoint = inverse.transformPoint(new DOMPoint(point.x, point.y));
+    
+    // 测量文字尺寸
+    ctx.font = `${text.fontSize}px ${text.fontFamily}`;
+    const metrics = ctx.measureText(text.content);
+    const width = metrics.width;
+    const height = text.fontSize;
+    
+    // 检测点击区域
+    const halfWidth = width / 2;
+    const halfHeight = height / 2;
+    const isHit = (
+        localPoint.x >= -halfWidth &&
+        localPoint.x <= halfWidth &&
+        localPoint.y >= -halfHeight &&
+        localPoint.y <= halfHeight
+    );
+    
+    ctx.restore();
+    return isHit;
+}
+
+
+function handleCanvasMouseUp() {
+    editorState.dragging = false;
+    editorState.transformType = null;  // 新增这行代码
+    if (editorState.selectedTextIndex === -1) {
+        directionPanel.style.display = 'none';
+    }
+}
+function updateSelectedText() {
+    if (editorState.selectedTextIndex === -1) return;
+    
+    const text = editorState.textLayers[editorState.selectedTextIndex];
+    text.color = document.getElementById('textColor').value;
+    text.fontSize = parseInt(document.getElementById('fontSize').value);
+    redrawCanvas();
+}
+
+// 核心功能函数
+function loadImageFile(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+            editorState.backgroundImage = img;
+            showAlert('图片上传成功');
+            redrawCanvas();
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function addTextLayer() {
+    const textInput = document.getElementById('textContent');
+    const content = textInput.value.trim();
+    
+    if (!content) {
+        showAlert('请输入文字内容', 'warning');
+        return;
+    }
+
+    if (editorState.selectedTextIndex !== -1) {
+        // 更新现有文字
+        const text = editorState.textLayers[editorState.selectedTextIndex];
+        text.content = content;
+        text.color = document.getElementById('textColor').value;
+        text.fontSize = parseInt(document.getElementById('fontSize').value);
+        editorState.selectedTextIndex = -1;
+    } else {
+        // 添加新文字
+        editorState.textLayers.push({
+            ...textPrototype, // 合并原型默认值
+            content,
+            color: document.getElementById('textColor').value,
+            fontSize: parseInt(document.getElementById('fontSize').value),
+            position: { x: 450, y: 300 } // 显式覆盖位置
+        });
+    }
+
+    textInput.value = '';
+    redrawCanvas();
+    saveToLocalStorage();
+}
+
+
+function redrawCanvas() {
+    const { ctx, canvas } = editorState;
+    
+    // 清空画布
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 绘制背景
+    drawBackground();
+    
+    // 绘制文字层
+    editorState.textLayers.forEach((text, index) => drawText(text, index));
+    
+    // 绘制参考线
+    if (editorState.showGrid) drawReferenceGuides();
+    
+    requestAnimationFrame(redrawCanvas);
+}
+
+
+// 辅助功能
+function drawReferenceGuides() {
+    const { ctx, canvas } = editorState;
+    ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
+    ctx.setLineDash([5, 5]);
+    
+    // 中心线
+    ctx.beginPath();
+    ctx.moveTo(canvas.width/2, 0);
+    ctx.lineTo(canvas.width/2, canvas.height);
+    ctx.stroke();
+    
+    // 安全区域
+    ctx.strokeStyle = 'rgba(0, 150, 255, 0.3)';
+    ctx.strokeRect(50, 50, canvas.width-100, canvas.height-100);
+}
+
+function showAlert(message, type = 'info') {
+    const alertBox = document.getElementById('alertBox');
+    alertBox.style.display = 'block';
+    alertBox.textContent = message;
+    alertBox.className = `alert ${type}`;
+    setTimeout(() => alertBox.style.display = 'none', 3000);
+}
+
+// 控制功能
+function resetBackground() {
+    editorState.backgroundImage = null;
+    redrawCanvas();
+    saveToLocalStorage();
+}
+
+function clearAllText() {
+    editorState.textLayers = [];
+    editorState.selectedTextIndex = -1; // 重置选中状态
+    redrawCanvas();
+    saveToLocalStorage();
+    directionPanel.style.display = 'none';
+}
+
+function toggleGrid() {
+    editorState.showGrid = !editorState.showGrid;
+    redrawCanvas();
+}
+
+function undoLastAction() {
+    if (editorState.textLayers.length > 0) {
+        editorState.textLayers.pop();
+        redrawCanvas();
+    }
+}
+
+// 导出图片
+function exportImage() {
+    const link = document.createElement('a');
+    link.download = `wechat-cover-${Date.now()}.jpg`;
+    link.href = editorState.canvas.toDataURL('image/jpeg', 0.92);
+    link.click();
+}
+
+// 添加手势缩放支持
+let initialDistance = null;
+    document.addEventListener('touchstart', function(e) {
+        if (e.touches.length === 2) {
+            initialDistance = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+        }
+    });
+
+    document.addEventListener('touchmove', function(e) {
+        if (e.touches.length === 2 && editorState.selectedTextIndex !== -1) {
+            const currentDistance = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+            
+            const scale = currentDistance / initialDistance;
+            const text = editorState.textLayers[editorState.selectedTextIndex];
+            text.scale = Math.max(0.5, Math.min(3, text.scale * scale));
+            initialDistance = currentDistance;
+            
+            redrawCanvas();
+            e.preventDefault();
+        }
+    });
+
+</script>
+</body>
+</html>

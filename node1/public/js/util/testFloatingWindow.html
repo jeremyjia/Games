@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>浮动窗口测试</title>
+</head>
+<body>
+<script>
+class FloatingWindow {
+    constructor(title = '新窗口') {
+        this.windowId = Date.now();
+        this.isVisible = true;
+        this.initStyles();
+        this.createWindow(title);
+        this.addDragListeners();
+    }
+
+    initStyles() {
+        if (!document.querySelector('#float-window-styles')) {
+            const style = document.createElement('style');
+            style.id = 'float-window-styles';
+            style.textContent = `
+                .floating-window {
+                    position: fixed;
+                    border: 1px solid #ccc;
+                    background: white;
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                    min-width: 300px;
+                    min-height: 200px;
+                }
+
+                .window-title {
+                    background: #007bff;
+                    color: white;
+                    padding: 10px;
+                    cursor: move;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+
+                .window-content {
+                    padding: 15px;
+                }
+
+                .close-btn {
+                    background: #ff4444;
+                    border: none;
+                    color: white;
+                    padding: 2px 8px;
+                    cursor: pointer;
+                    border-radius: 3px;
+                }
+
+                #testToolbar {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    background: #f0f0f0;
+                    padding: 10px;
+                    z-index: 1000;
+                    display: flex;
+                    gap: 10px;
+                }
+
+                .toggle-btn {
+                    background: #28a745;
+                    color: white;
+                    border: none;
+                    padding: 5px 10px;
+                    cursor: pointer;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+
+    createWindow(title) {
+        this.windowElement = document.createElement('div');
+        this.windowElement.className = 'floating-window';
+        this.windowElement.style.left = `${Math.random() * 300}px`;
+        this.windowElement.style.top = `${Math.random() * 300}px`;
+
+        const titleBar = document.createElement('div');
+        titleBar.className = 'window-title';
+
+        const titleText = document.createElement('span');
+        titleText.textContent = title;
+
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'close-btn';
+        closeBtn.innerHTML = '×';
+        closeBtn.onclick = () => this.close();
+
+        titleBar.append(titleText, closeBtn);
+
+        const content = document.createElement('div');
+        content.className = 'window-content';
+        content.innerHTML = `<p>窗口内容（${title}）</p>`;
+
+        this.windowElement.append(titleBar, content);
+        document.body.appendChild(this.windowElement);
+    }
+
+    addDragListeners() {
+        const titleBar = this.windowElement.querySelector('.window-title');
+        let isDragging = false;
+        let startX, startY, initialX, initialY;
+
+        const startDrag = (e) => {
+            isDragging = true;
+            const rect = this.windowElement.getBoundingClientRect();
+            [initialX, initialY] = [rect.left, rect.top];
+            startX = e.clientX || e.touches[0].clientX;
+            startY = e.clientY || e.touches[0].clientY;
+
+            document.querySelectorAll('.floating-window').forEach(win => {
+                win.style.zIndex = 1;
+            });
+            this.windowElement.style.zIndex = 100;
+        };
+
+        const duringDrag = (e) => {
+            if (!isDragging) return;
+            const currentX = e.clientX || e.touches[0].clientX;
+            const currentY = e.clientY || e.touches[0].clientY;
+            
+            this.windowElement.style.left = `${initialX + currentX - startX}px`;
+            this.windowElement.style.top = `${initialY + currentY - startY}px`;
+        };
+
+        const stopDrag = () => isDragging = false;
+
+        titleBar.addEventListener('mousedown', startDrag);
+        document.addEventListener('mousemove', duringDrag);
+        document.addEventListener('mouseup', stopDrag);
+
+        titleBar.addEventListener('touchstart', startDrag);
+        document.addEventListener('touchmove', duringDrag);
+        document.addEventListener('touchend', stopDrag);
+    }
+
+    toggleWin() {
+        this.isVisible = !this.isVisible;
+        this.windowElement.style.display = this.isVisible ? 'block' : 'none';
+    }
+
+    close() {
+        this.windowElement.remove();
+        document.querySelector(`button[data-window-id="${this.windowId}"]`)?.remove();
+    }
+}
+
+class TestToolbar {
+    static createTestToolbar() {
+        const toolbar = document.createElement('div');
+        toolbar.id = 'testToolbar';
+
+        const newWindowBtn = document.createElement('button');
+        newWindowBtn.className = 'toggle-btn';
+        newWindowBtn.textContent = '新建窗口';
+        
+        let windowCount = 1;
+        newWindowBtn.addEventListener('click', () => {
+            const window = new FloatingWindow(`窗口 ${windowCount}`);
+            
+            const toggleBtn = document.createElement('button');
+            toggleBtn.className = 'toggle-btn';
+            toggleBtn.textContent = `窗口 ${windowCount}`;
+            toggleBtn.dataset.windowId = window.windowId;
+            toggleBtn.addEventListener('click', () => window.toggleWin());
+            
+            toolbar.appendChild(toggleBtn);
+            windowCount++;
+        });
+
+        toolbar.appendChild(newWindowBtn);
+        document.body.prepend(toolbar);
+    }
+}
+
+// 初始化测试工具栏
+TestToolbar.createTestToolbar();
+</script>
+</body>
+</html>

@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>漂泊者视频编辑器</title>
+    <style>
+        :root {
+            --primary-color: #483D8B;
+            --secondary-color: #00FF7F;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 10px;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 10px;
+        }
+
+        #preview {
+            aspect-ratio: 16/9;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .edit-panel {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .edit-panel {
+            display: none; /* 隐藏原始面板，改用浮动窗口 */
+        }
+
+        .section {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin: 10px 0;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .scene-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .object-item {
+            cursor: pointer;
+            padding: 5px;
+            margin: 2px 0;
+            background: #eee;
+        }
+        .scene-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            margin: 4px 0;
+        }
+        .delete-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .delete-btn:hover {
+            background: #cc0000;
+        }
+        .scene-item.active {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+        }
+        .draggable-window {
+            position: fixed;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            min-width: 280px;
+            z-index: 100;
+        }
+
+        .window-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px 5px 0 0;
+            cursor: move;
+            user-select: none;
+        }
+
+        .window-content {
+            padding: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        @media (max-width: 768px) {
+            body {
+                grid-template-columns: 1fr;
+            }
+            
+            .edit-panel {
+                order: -1;
+            }
+        }
+        pre {
+            background: #f8f8f8;
+            padding: 10px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        /* 原有样式保持不变，新增canvas样式 */
+        #preview {
+            background: #000;
+            position: relative;
+            overflow: hidden;
+        }
+        #previewCanvas {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        button {
+            transition: background 0.2s;
+        }
+        button:hover {
+            filter: brightness(1.1);
+        }
+    </style>
+    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.10.0/dist/ffmpeg.min.js"></script>
+</head>
+<body>
+    <div id="preview"><canvas id="previewCanvas"></canvas></div>
+    <!-- 对象属性窗口 -->
+    <div class="draggable-window" id="propertyWindow" style="left: 20px; top: 400px;">
+        <div class="window-header">对象属性</div>
+        <div class="window-content" id="propertyContent"></div>
+    </div>
+    <!-- 场景管理窗口 -->
+    <div class="draggable-window" id="sceneWindow" style="left: 20px; top: 20px;">
+        <div class="window-header">场景管理</div>
+        <div class="window-content">
+            <div class="scene-list" id="sceneList"></div>
+            <button onclick="addScene()" style="margin-top: 10px;">添加场景</button>
+        </div>
+    </div>
+    <!-- JSON查看窗口 -->
+    <div class="draggable-window" id="jsonWindow" style="left: 400px; top: 20px;">
+        <div class="window-header">JSON数据</div>
+        <div class="window-content">
+            <pre id="jsonContent"></pre>
+            <div style="display: flex; gap: 5px; margin-top: 10px;">
+                <button onclick="playPreview()" style="flex:1;">播放预览</button>
+                <button onclick="stopPreview()" style="background:#ff4444;">停止</button>
+                <button onclick="exportMP4()" style="background:#2196F3;">导出MP4</button>
+            </div>
+        </div>
+    </div>
+    <!-- 对象列表窗口 -->
+    <div class="draggable-window" id="objectWindow" style="left: 20px; top: 200px;">
+        <div class="window-header">对象列表</div>
+        <div class="window-content" id="objectListContent"></div>
+    </div>
+
+    <div class="edit-panel">
+        <div class="section">
+            <h3>全局设置</h3>
+            <div class="form-group">
+                <label>帧率 (fps):</label>
+                <input type="number" id="frameRate" value="1" min="1">
+            </div>
+            <!-- 其他全局设置 -->
+        </div>
+
+        <div class="section">
+            <h3>场景管理</h3>
+            <div class="scene-list" id="sceneList"></div>
+            <button onclick="addScene()">添加场景</button>
+        </div>
+
+        <div class="section" id="sceneEdit">
+            <h3>场景编辑</h3>
+            <!-- 场景编辑表单 -->
+        </div>
+
+        <div class="section">
+            <h3>数据操作</h3>
+            <button onclick="importJSON()">导入JSON</button>
+            <button onclick="exportJSON()">导出JSON</button>
+            <button onclick="playPreview()">播放预览</button>
+        </div>
+    </div>
+
+    <script>
+        const { createFFmpeg, fetchFile } = FFmpeg;
+        const ffmpeg = createFFmpeg({
+            log: true,
+            progress: ({ ratio }) => {
+                document.getElementById('exportProgress').style.width = `${ratio * 100}%`;
+            }
+        });
+
+        async function exportMP4() {
+            try {
+                if (!ffmpeg.isLoaded) {
+                    await ffmpeg.load();
+                }
+
+                // 创建进度条
+                const progressBar = document.createElement('div');
+                progressBar.style = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 3px;
+                    background: #f0f0f0;
+                    z-index: 1000;
+                `;
+                const progressInner = document.createElement('div');
+                progressInner.id = 'exportProgress';
+                progressInner.style = `
+                    width: 0%;
+                    height: 100%;
+                    background: #00FF7F;
+                    transition: width 0.3s;
+                `;
+                progressBar.appendChild(progressInner);
+                document.body.appendChild(progressBar);
+
+                // 计算视频参数
+                const fps = editor.data.rate;
+                const duration = editor.data.frames.reduce((sum, scene) => sum + scene.time, 0);
+                const totalFrames = Math.ceil(duration * fps);
+                
+                // 禁用所有按钮
+                document.querySelectorAll('button').forEach(btn => btn.disabled = true);
+
+                // 生成帧序列
+                for (let i = 0; i < totalFrames; i++) {
+                    const time = i / fps;
+                    let accumulated = 0;
+                    let currentScene = editor.data.frames[0];
+                    
+                    // 查找当前场景
+                    for (const scene of editor.data.frames) {
+                        if (time < accumulated + scene.time) {
+                            currentScene = scene;
+                            break;
+                        }
+                        accumulated += scene.time;
+                    }
+
+                    // 渲染场景
+                    editor.renderer.render(currentScene);
+                    
+                    // 捕获Canvas为PNG
+                    const canvas = document.getElementById('previewCanvas');
+                    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                    ffmpeg.FS('writeFile', 
+                        `frame${i.toString().padStart(6, '0')}.png`, 
+                        await fetchFile(blob)
+                    );
+                }
+
+                // 运行ffmpeg命令
+                await ffmpeg.run(
+                    '-framerate', fps.toString(),
+                    '-i', 'frame%06d.png',
+                    '-c:v', 'libx264',
+                    '-pix_fmt', 'yuv420p',
+                    '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2', // 确保分辨率是偶数
+                    '-y',
+                    'output.mp4'
+                );
+
+                // 生成下载链接
+                const data = ffmpeg.FS('readFile', 'output.mp4');
+                const url = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `video-${Date.now()}.mp4`;
+                document.body.appendChild(a);
+                a.click();
+                
+                // 清理资源
+                URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                document.body.removeChild(progressBar);
+                ffmpeg.FS('unlink', 'output.mp4');
+            } catch (err) {
+                console.error(err);
+                alert('视频导出失败: ' + err.message);
+            } finally {
+                document.querySelectorAll('button').forEach(btn => btn.disabled = false);
+            }
+        }
+            
+
+        function updateJSONView() { 
+            const json = editor.exportJSON();
+            document.getElementById('jsonContent').textContent = json;
+        }
+    function makeDraggable(windowElement) {
+            let isDragging = false;
+            let startX, startY, initialX, initialY;
+
+            const header = windowElement.querySelector('.window-header');
+            
+            header.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+
+            function startDrag(e) {
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                initialX = windowElement.offsetLeft;
+                initialY = windowElement.offsetTop;
+                windowElement.style.transition = 'none';
+            }
+
+            function drag(e) {
+                if (!isDragging) return;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                windowElement.style.left = `${initialX + dx}px`;
+                windowElement.style.top = `${initialY + dy}px`;
+            }
+
+            function stopDrag() {
+                isDragging = false;
+                windowElement.style.transition = 'all 0.2s';
+            }
+        }
+
+        // 初始化窗口拖拽
+        window.addEventListener('DOMContentLoaded', () => {
+            makeDraggable(document.getElementById('sceneWindow'));
+            makeDraggable(document.getElementById('objectWindow'));
+            makeDraggable(document.getElementById('propertyWindow'));
+            makeDraggable(document.getElementById('jsonWindow'));
+        });
+
+    document.getElementById('frameRate').addEventListener('change', function(e) {
+        editor.data.rate = parseInt(e.target.value) || 1;
+    });
+        
+        let isPlaying = false;
+        let startTime;
+        let animationFrameId;
+
+        function playPreview() {
+            if (!editor.currentScene) return;
+            
+            isPlaying = !isPlaying;
+            const button = document.querySelector('button[onclick="playPreview()"]');
+            
+            if (isPlaying) {
+                startTime = Date.now();
+                button.textContent = '暂停预览';
+                animate();
+            } else {
+                cancelAnimationFrame(animationFrameId);
+                button.textContent = '继续播放';
+            }
+        }
+        function stopPreview() {
+            isPlaying = false;
+            cancelAnimationFrame(animationFrameId);
+            document.querySelector('button[onclick="playPreview()"]').textContent = '播放预览';
+            editor.renderer.render(editor.currentScene); // 重置到初始状态
+        }
+        function animate() {
+            if (!isPlaying) return;
+
+            const elapsed = (Date.now() - startTime) / 1000;
+            const totalDuration = editor.data.frames.reduce((sum, scene) => sum + scene.time, 0);
+
+            // 播放结束处理
+            if (elapsed >= totalDuration) {
+                isPlaying = false;
+                document.querySelector('button[onclick="playPreview()"]').textContent = '播放预览';
+                return;
+            }
+
+            // 计算当前场景
+            let accumulated = 0;
+            let currentScene;
+            for (const scene of editor.data.frames) {
+                if (elapsed >= accumulated && elapsed < accumulated + scene.time) {
+                    currentScene = scene;
+                    break;
+                }
+                accumulated += scene.time;
+            }
+
+            editor.renderer.render(currentScene || editor.data.frames[0]);
+            animationFrameId = requestAnimationFrame(animate);
+        }
+        function selectObject(id) {
+            const obj = editor.currentScene.objects.find(o => o.id === id);
+            renderObjectEditor(obj);
+        }
+        // 更新对象属性方法
+        function updateObjectText(id, value) {
+            const obj = editor.currentScene.objects.find(o => o.id == id);
+            obj.text = value;
+            updatePreview();
+        }
+
+        function updateObjectPosition(id, axis, value) {
+            const obj = editor.currentScene.objects.find(o => o.id == id);
+            obj[axis] = parseInt(value);
+            updatePreview();
+        }
+
+        function updateObjectProp(id, prop, value) {
+            const obj = editor.currentScene.objects.find(o => o.id == id);
+            obj[prop] = value;
+            updatePreview();
+            updateJSONView(); // 新增
+        }
+
+        function deleteObject(id) {
+            editor.currentScene.objects = editor.currentScene.objects.filter(o => o.id != id);
+            document.getElementById('propertyWindow').style.display = 'none';
+            renderSceneEditor();
+            updatePreview();
+        }
+function renderObjectEditor(obj) {
+    const container = document.getElementById('propertyContent');
+    container.innerHTML = `
+        <div class="section">
+            <h4>${obj.text}</h4>
+            <div class="form-group">
+                <label>文本内容：</label>
+                <input value="${obj.text}" onchange="updateObjectText('${obj.id}', this.value)">
+            </div>
+            <div class="form-group">
+                <label>X坐标：</label>
+                <input type="number" value="${obj.x}" onchange="updateObjectPosition('${obj.id}', 'x', this.value)">
+            </div>
+            <div class="form-group">
+                <label>Y坐标：</label>
+                <input type="number" value="${obj.y}" onchange="updateObjectPosition('${obj.id}', 'y', this.value)">
+            </div>
+            <div class="form-group">
+                <label>字体大小：</label>
+                <input type="number" value="${obj.size}" onchange="updateObjectProp('${obj.id}', 'size', this.value)">
+            </div>
+            <div class="form-group">
+                <label>颜色：</label>
+                <input type="color" value="#${hexColor(obj.color)}" 
+                    onchange="updateObjectProp('${obj.id}', 'color', rgbToArray(this.value))">
+            </div>
+            <button class="delete-btn" onclick="deleteObject('${obj.id}')">删除对象</button>
+        </div>
+    `;
+    // 显示属性窗口
+    document.getElementById('propertyWindow').style.display = 'block';
+}
+// 辅助函数
+function hexColor(rgbStr) {
+    const rgb = rgbStr.split(',').map(Number);
+    return ((rgb[0] << 16) | (rgb[1] << 8) | rgb[2]).toString(16).padStart(6, '0');
+}
+
+function rgbToArray(hex) {
+    const bigint = parseInt(hex.slice(1), 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return `${r},${g},${b}`;
+}
+        function deleteScene(number) {
+            if (!confirm("确定要删除这个场景吗？")) return;
+            
+            editor.deleteScene(number);
+            
+            // 如果没有任何场景，自动创建新场景
+            if (editor.data.frames.length === 0) {
+                const newScene = editor.addScene();
+                selectScene(newScene.number);
+            } else {
+                renderSceneList();
+                updatePreview();
+            }
+            updateJSONView(); // 新增
+        }
+        class VideoEditor {
+            constructor() {
+                this.data = {
+                    version: "0.0.11",
+                    width: 1280,  // 改为常见视频尺寸
+                    height: 720,
+                    rate: 30,     // 改为常规帧率
+                    frames: []
+                };
+                this.currentScene = null;
+                this.renderer = new VideoRenderer(document.getElementById('previewCanvas'));
+                this.initCanvas();
+            }
+
+            initCanvas() {
+                const canvas = this.renderer.canvas;
+                canvas.width = this.data.width;
+                canvas.height = this.data.height;
+            }
+            deleteScene(number) {
+                this.data.frames = this.data.frames.filter(s => s.number !== number);
+                // 如果删除的是当前场景，切换到第一个场景
+                if (this.currentScene?.number === number) {
+                    this.currentScene = this.data.frames[0] || null;
+                }
+            }
+            addScene(time = 5) {
+                const newScene = {
+                    number: Date.now(), // 改用时间戳作为唯一ID
+                    time: time,
+                    objects: [],
+                    backgroundColor: "72,61,139"
+                };
+                this.data.frames.push(newScene);
+                this.currentScene = newScene;
+                return newScene;
+            }
+
+            getScene(number) {
+                return this.data.frames.find(s => s.number === number);
+            }
+
+            updateScene(scene) {
+                const index = this.data.frames.findIndex(s => s.number === scene.number);
+                if (index >= 0) this.data.frames[index] = scene;
+            }
+
+            addTextObject(scene, text = "新文本") {
+                const newText = {
+                    id: Date.now(),
+                    text: text,
+                    x: 100,
+                    y: 100,
+                    size: 50,
+                    color: "255,255,255"
+                };
+                scene.objects.push(newText);
+                return newText;
+            }
+
+            exportJSON() {
+                return JSON.stringify(this.data, null, 2);
+            }
+
+            importJSON(json) {
+                this.data = JSON.parse(json);
+                this.initCanvas();
+                updateJSONView(); // 新增
+            }
+        }
+
+        class VideoRenderer {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.ctx.textBaseline = 'top';
+            }
+
+            render(scene) {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // 绘制背景
+                this.ctx.fillStyle = `rgb(${scene.backgroundColor})`;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // 绘制对象
+                scene.objects.forEach(obj => {
+                    if (obj.text) {
+                        this.ctx.fillStyle = `rgb(${obj.color})`;
+                        this.ctx.font = `${obj.size}px Arial`;
+                        this.ctx.fillText(obj.text, obj.x, obj.y);
+                    }
+                });
+            }
+        }
+
+        // 初始化编辑器实例
+        const editor = new VideoEditor();
+
+        // UI操作函数
+        function addScene() {
+            const scene = editor.addScene();
+            renderSceneList();
+            selectScene(scene.number);
+            updateJSONView(); // 新增
+        }
+
+        function selectScene(number) {
+            editor.currentScene = editor.data.frames.find(s => s.number === number);
+            renderSceneList();  // 新增这行以刷新列表状态
+            renderSceneEditor();
+            updatePreview();
+        }
+
+        function updateSceneProp(prop, value) {
+            editor.currentScene[prop] = isNaN(value) ? value : Number(value);
+            renderSceneList();  // 新增场景列表刷新
+            updatePreview();
+        }
+
+        function addTextObject() {
+            editor.addTextObject(editor.currentScene);
+            renderSceneEditor();
+            updatePreview();
+        }
+
+        function renderSceneList() {
+            const list = document.getElementById('sceneList');
+            list.innerHTML = editor.data.frames.map(scene => `
+                <div class="scene-item ${editor.currentScene?.number === scene.number ? 'active' : ''}">
+                    <div onclick="selectScene(${scene.number})" style="flex-grow:1;">
+                        场景 ${scene.number} (${scene.time}s)
+                    </div>
+                    <button class="delete-btn" onclick="deleteScene(${scene.number})">×</button>
+                </div>
+            `).join('');
+        }
+
+        function renderSceneEditor() {
+            const scene = editor.currentScene;
+            const container = document.getElementById('objectListContent');
+            if (!scene) return;
+
+            container.innerHTML = `
+                <div class="form-group">
+                    <label>持续时间 (秒):</label>
+                    <input type="number" value="${scene.time}" 
+                        onchange="updateSceneProp('time', this.value)">
+                </div>
+                <div class="form-group">
+                    <label>背景颜色:</label>
+                    <input type="color" 
+                        value="#${hexColor(scene.backgroundColor)}" 
+                        onchange="updateSceneProp('backgroundColor', rgbToArray(this.value))">
+                </div>
+                <h4>对象列表</h4>
+                <div class="object-list">
+                    ${scene.objects.map(obj => `
+                        <div class="object-item" onclick="selectObject(${obj.id})">
+                            ${obj.text}
+                        </div>
+                    `).join('')}
+                </div>
+                <button onclick="addTextObject()">添加文本</button>
+            `;
+        }
+      
+        function updatePreview() {
+            if (editor.currentScene) {
+                editor.renderer.render(editor.currentScene);
+            }
+        }
+
+        // 数据操作
+        function exportJSON() {
+            const data = editor.exportJSON();
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'video-project.json';
+            a.click();
+        }
+
+        function importJSON() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'application/json';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = () => {
+                    editor.importJSON(reader.result);
+                    renderSceneList();
+                    selectScene(editor.data.frames[0]?.number);
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        // 初始化示例场景
+        editor.addScene();
+        renderSceneList();
+        selectScene(1);
+        updateJSONView(); // 新增
+    </script>
+</body>
+</html>

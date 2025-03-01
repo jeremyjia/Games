@@ -1,198 +1,886 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="DeepSeek 开发平台">
-    <title>DeepSeek Development</title>
-    <script src="dsMade.js"></script>
+    <title>DeepSeek Toolbar</title>
+    <script src="js/blDSClass.js"></script>
+    <script src="js/blDSMusic.js"></script>
+    <style>
+        /* 在现有样式中添加以下内容 */
+.config-item {
+    margin: 6px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px;
+    background: #555;
+    border-radius: 4px;
+}
+
+.config-item label {
+    color: #fff;
+    margin-right: 10px;
+}
+
+.config-item input {
+    width: 70px;
+    padding: 3px;
+    background: #666;
+    border: 1px solid #777;
+    color: #fff;
+    border-radius: 3px;
+}
+
+.ds_window_footer {
+    padding: 8px;  
+    background: #333;
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+        .ds_window {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #444;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1002;
+            display: none;
+            width: 300px;
+            min-height: 180px;
+            max-height: 70vh;   /* 添加最大高度限制 */
+            overflow-y: auto;   /* 添加滚动条 */
+            flex-direction: column;
+        }
+        
+        .ds_window_header {
+            background: #333;
+            padding: 10px;
+            border-radius: 6px 6px 0 0;
+            cursor: move;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ds_window_header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.current-mode {
+    color: #4CAF50;
+    font-weight: bold;
+    font-size: 0.9em;
+    background: rgba(76, 175, 80, 0.15);
+    padding: 2px 8px;
+    border-radius: 12px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.8; }
+    50% { opacity: 1; }
+    100% { opacity: 0.8; }
+}
+        .ds_window_title {
+            color: #fff;
+            font-weight: bold;
+        }
+        
+        .ds_window_content {
+            flex: 1;
+            padding: 10px;
+        }
+        .ds_window_content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .ds_window_content::-webkit-scrollbar-thumb {
+            background: #666;
+            border-radius: 3px;
+        }
+        .ds_textarea {
+            width: 95%;
+            height: 150px;
+            background: #555;
+            border: 1px solid #666;
+            color: #fff;
+            padding: 8px;
+            border-radius: 4px;
+            resize: vertical;
+        }
+        
+        .ds_window_close {
+            color: #fff;
+            cursor: pointer;
+            padding: 0 5px;
+        }
+        .ds_canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #f5f9ff; /* Soft blueish background */
+        z-index: 1;
+        transition: background 0.3s ease;
+    }
+        .ds_toolbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #333;
+            color: #fff;
+            padding: 10px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-start;
+        }
+        .ds_button {
+            background: #4a5568;
+            color: #f1f1f1;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;    /* 减小字体大小 */
+            min-width: 40px;
+            text-align: center;
+            user-select: none;
+            position: relative; /* Add positioning context */
+        }
+        .ds_button:hover {
+            background: #2d3748;
+            transform: translateY(-1px);
+        }
+        .ds_menu {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background: #444;
+            border-radius: 4px;
+            padding: 8px;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 150px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1001;
+        }
+
+        .ds_menu.active {
+            display: flex;
+        }
+
+        .ds_menu_item {
+            padding: 8px;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .ds_menu_item:hover {
+            background: #555;
+        }
+        .ds_subtoolbar {
+    display: flex;
+    background: #3a3a3a;
+    padding: 4px;
+    border-bottom: 1px solid #555;
+}
+
+.ds_subtoolbar .ds_button {
+    flex: 1;
+    margin: 0 2px;
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+.ds_subtoolbar .ds_button.active {
+    background: #2b6cb0;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+.ds_window_header {
+    transition: all 0.3s ease;
+}
+#musicConfigWindow {
+    /* Remove: transform: translate(-50%, -50%); 
+    left: 0;
+    top: 0;
+    */
+}
+    </style>
+    <style>
+        /* 添加新的字体和动画定义 */
+        @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap');
+        
+        @keyframes glow {
+            0% { filter: drop-shadow(0 0 5px #00a8ff); }
+            50% { filter: drop-shadow(0 0 20px #0066ff); }
+            100% { filter: drop-shadow(0 0 5px #00a8ff); }
+        }
+         
+        /* 添加星空背景效果 */
+        .canvas_container {
+            background: linear-gradient(135deg, #f5f9ff 0%, #e6f0ff 100%);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* 添加以下样式 */
+.starfield_container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2222;  
+    overflow: hidden;
+}
+
+.star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    animation: twinkle 1.5s infinite alternate;
+}
+
+@keyframes twinkle {
+    0% { opacity: 0.3; }
+    100% { opacity: 1; }
+}
+        </style>
+         
+        
+         
 </head>
 <body>
-    <nav class="navbar" aria-label="主导航">
-        <div class="nav-container"></div>
-    </nav>
+<script>
+    class DeepSeekApp {
+        constructor() {
+            this.styleAdded = false;
+            this.addBaseStyles();
+        }
 
-    <main class="main-content">
-        <h1>欢迎访问 DeepSeek 开发平台</h1>
-        <section>
-            <p>请选择上方导航菜单中的工具开始使用</p>
-        </section>
-    </main>
+        addBaseStyles() {
+            if (this.styleAdded) return;
+            // 基础样式已移至<head>的style标签
+            this.styleAdded = true;
+        }
 
-    <script>
-        // 动态生成样式
-        const dynamicStyles = document.createElement('style');
-        dynamicStyles.textContent = `
-            :root {
-                --primary-color: #4CAF50;
-                --bg-dark: #1a1a1a;
-                --text-light: #ffffff;
-                --nav-height: 60px;
-            }
+        createCanvas(parentElement, id) {
+            const canvas = document.createElement('canvas');
+            canvas.id = id;
+            canvas.className = 'ds_canvas';
+            parentElement.appendChild(canvas);
+            
+            // 处理高清显示
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            canvas.getContext('2d').scale(dpr, dpr);
+            
+            return canvas;
+        }
 
-            .navbar {
-                width: 100%;
-                background: var(--bg-dark);
-                padding: 15px 0;
-                position: fixed;
-                top: 0;
-                z-index: 1000;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
+        createToolbar(parentElement, id) {
+            const toolbar = document.createElement('div');
+            toolbar.id = id;
+            toolbar.className = 'ds_toolbar';
+            parentElement.appendChild(toolbar);
+            return toolbar;
+        }
 
-            .nav-container {
-                max-width: 1200px;
-                margin: 0 auto;
-                padding: 0 20px;
-            }
+        addButton(parentElement, id, text) {
+            const button = document.createElement('div');
+            button.id = id;
+            button.className = 'ds_button';
+            button.textContent = text;
+            parentElement.appendChild(button);
+            return button;
+        }
 
-            .nav-menu {
-                list-style: none;
-                display: flex;
-                justify-content: center;
-                gap: 30px;
-                margin: 0;
-                padding: 0;
-            }
-
-            .nav-menu a {
-                color: var(--text-light);
-                text-decoration: none;
-                font-family: 'Segoe UI', Arial, sans-serif;
-                font-size: 1rem;
-                padding: 8px 12px;
-                border-radius: 4px;
-                transition: all 0.3s ease;
-            }
-
-            .nav-menu a:hover {
-                color: var(--primary-color);
-                background: rgba(255,255,255,0.1);
-            }
-
-            .nav-menu .version {
-                color: #888;
-                cursor: default;
-                user-select: none;
-            }
-
-            .main-content {
-                margin-top: var(--nav-height);
-                padding: 40px 20px;
-                max-width: 1200px;
-                width: 100%;
-            }
-
-            @media (max-width: 768px) {
-                .nav-menu {
-                    flex-wrap: wrap;
-                    gap: 15px;
-                    justify-content: flex-start;
+        // 节流函数优化性能
+        throttle(func, limit = 100) {
+            let lastFunc;
+            let lastRan;
+            return function(...args) {
+                if (!lastRan) {
+                    func.apply(this, args);
+                    lastRan = Date.now();
+                } else {
+                    clearTimeout(lastFunc);
+                    lastFunc = setTimeout(() => {
+                        if ((Date.now() - lastRan) >= limit) {
+                            func.apply(this, args);
+                            lastRan = Date.now();
+                        }
+                    }, limit - (Date.now() - lastRan));
                 }
-                
-                .nav-menu a {
-                    font-size: 0.9rem;
-                    padding: 6px 10px;
+            };
+        }
+    }
+
+
+// 配置管理器类（添加在DeepSeekApp类之后）
+class MusicConfigManager {
+    constructor() {
+        this.defaultConfig = {
+            noteWidth: 80,
+            baseY: 250,
+            canvasPadding: 40,
+            fontSize: 36,
+            highOctaveDotOffset: 15,
+            lowOctaveDotOffset: 24,
+            slashVerticalOffset: 5,         
+            slashLineSpacing: 10,           
+            slashLineLength: 24,
+            octaveDotSpacing: 10,
+            dashHorizontalOffset: 25,
+            dashLineLength: 14,
+            dashLineSpacing: 20 
+        };
+        this.currentConfig = {...this.defaultConfig}; 
+        // 延迟初始化直到元素存在
+        this.configWindow = null;
+        this.configContent = null;
+        this.initWhenReady();
+    }
+    // 新增方法：等待元素加载完成
+    initWhenReady() {
+        const checkExist = setInterval(() => {
+            if (document.getElementById('musicConfigContent')) {
+                clearInterval(checkExist);
+                this.initConfigWindow();
+            }
+        }, 100);
+    }
+    // 修改后的初始化方法
+    initConfigWindow() {
+        this.configWindow = document.getElementById('musicConfigWindow');
+        this.configContent = document.getElementById('musicConfigContent');
+        
+        // 确保元素存在后再操作
+        if (!this.configContent) {
+            console.error('Configuration content element not found!');
+            return;
+        }
+        
+        this.populateConfigForm();
+        this.initWindowBehavior();
+    }
+    // 生成配置表单
+    populateConfigForm() {
+        this.configContent.innerHTML = Object.entries(this.currentConfig)
+            .map(([key, value]) => `
+                <div class="config-item">
+                    <label>${this.formatConfigKey(key)}:</label>
+                    <input type="number" 
+                           data-key="${key}" 
+                           value="${value}"
+                           min="0"
+                           max="500"
+                           step="1">
+                </div>`
+            ).join('');
+    }
+
+    // 初始化窗口行为
+    initWindowBehavior() {
+        const configWindow = this.configWindow; // Capture DOM reference
+         
+        const dragHandler = {
+        isDragging: false,
+        startX: 0,
+        startY: 0,
+        startTranslateX: 0,
+        startTranslateY: 0,
+
+        start: (e) => {
+            const rect = configWindow.getBoundingClientRect();
+            const style = window.getComputedStyle(configWindow);
+            const transform = style.transform;
+
+            let translateX = 0, translateY = 0;
+            if (transform && transform !== 'none') {
+                const matrix = transform.match(/matrix\((.+)\)/);
+                if (matrix) {
+                    const values = matrix[1].split(', ');
+                    translateX = parseFloat(values[4]);
+                    translateY = parseFloat(values[5]);
                 }
             }
 
-            @media (max-width: 480px) {
-                .nav-container {
-                    padding: 0 10px;
-                }
-                
-                .nav-menu {
-                    gap: 10px;
-                }
-            }
+            dragHandler.startX = e.clientX || e.touches[0].clientX;
+            dragHandler.startY = e.clientY || e.touches[0].clientY;
+            dragHandler.startTranslateX = translateX;
+            dragHandler.startTranslateY = translateY;
+            dragHandler.isDragging = true;
+        },
 
-            /* 新增浮动窗口样式 */
-            .floating-window {
-                position: fixed;
-                background: white;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-                z-index: 1001;
-                min-width: 300px;
-                cursor: grab;
-            }
+        move: (e) => {
+            if (!dragHandler.isDragging) return;
+            const currentX = e.clientX || e.touches[0].clientX;
+            const currentY = e.clientY || e.touches[0].clientY;
 
-            .floating-window:active {
-                cursor: grabbing;
-            }
+            const deltaX = currentX - dragHandler.startX;
+            const deltaY = currentY - dragHandler.startY;
 
-            .title-bar {
-                background: var(--bg-dark);
-                color: var(--text-light);
-                padding: 12px;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                border-bottom: 1px solid #444;
-                cursor: move;
-            }
+            configWindow.style.transform = 
+                `translate(${dragHandler.startTranslateX + deltaX}px, 
+                 ${dragHandler.startTranslateY + deltaY}px)`;
+        },
 
-            .title-bar button {
-                background: none;
-                border: none;
-                color: var(--text-light);
-                font-size: 1.4rem;
-                cursor: pointer;
-                padding: 0 8px;
-                transition: color 0.3s ease;
-            }
+        end: () => {
+            dragHandler.isDragging = false;
+        }
+    };
 
-            .title-bar button:hover {
-                color: var(--primary-color);
-            }
+        configWindow.querySelector('.ds_window_header')
+            .addEventListener('mousedown', dragHandler.start);
+        configWindow.querySelector('.ds_window_header')
+            .addEventListener('touchstart', dragHandler.start);
 
-            .window-content {
-                padding: 20px;
-                max-height: 60vh;
-                overflow-y: auto;
-            }
+        document.addEventListener('mousemove', dragHandler.move);
+        document.addEventListener('touchmove', dragHandler.move);
+        document.addEventListener('mouseup', dragHandler.end);
+        document.addEventListener('touchend', dragHandler.end);
 
-            /* 导航按钮样式 */
-            .nav-menu button {
-                background: none;
-                border: none;
-                color: var(--text-light);
-                cursor: pointer;
-                font-family: inherit;
-                padding: 8px 12px;
-                transition: all 0.3s ease;
-            }
-
-            .nav-menu button:hover {
-                color: var(--primary-color);
-                background: rgba(255,255,255,0.1);
-            }
-        `;
-        document.head.appendChild(dynamicStyles);
- 
-        document.addEventListener('DOMContentLoaded', () => {
-            // 导航菜单数据
-            const menuItems = [
-                { type: 'button', text: '打开工具窗口' }, // 新增按钮
-                { type: 'link', text: '[..]', href: '..' },
-                { type: 'version', text: 'v0.23' },
-                { type: 'external', text: 'DeepSeek 首页', href: 'https://www.deepseek.com' },
-                { type: 'link', text: 'dsDev.html', href: 'dsDev.html' },
-                { type: 'link', text: '【docEditor】', href: 'http://localhost:3000',title:"2025/02/14/server.js" },
-                { type: 'link', text: '【2025】', href: '2025' },
-                { type: 'link', text: 'Class Editor', href: 'classEditor/' },
-                { type: 'link', text: 'word2Draw', href: 'word2Draw/' },
-                { type: 'link', text: 'Sandbox', href: 'sandBox/' },
-                { type: 'link', text: 'Scarecrow', href: 'scarecrow' },
-                { type: 'link', text: 'Video Editor', href: 'videoEditor' },
-                { type: 'link', text: 'cube1.html', href: 'cube1.html' },
-                { type: 'link', text: 'cube2.html', href: 'cube2.html' },
-                { type: 'link', text: 'wave9.html', href: 'wave9.html' }
-            ];
-
-            new NavigationMenu('.nav-container', menuItems);
+        // 保存配置
+        document.getElementById('saveMusicConfig').addEventListener('click', () => {
+            this.saveConfig();
+            textarea.dispatchEvent(new Event('input'));
         });
-    </script>
+
+        // 重置配置
+        document.getElementById('resetMusicConfig').addEventListener('click', () => {
+            this.currentConfig = {...this.defaultConfig};
+            this.populateConfigForm();
+        });
+
+        // 关闭窗口
+        this.configWindow.querySelector('.ds_window_close')
+            .addEventListener('click', () => {
+                this.configWindow.style.display = 'none';
+            });
+    }
+
+    // 保存配置
+    saveConfig() {
+    const inputs = this.configContent.querySelectorAll('input');
+    inputs.forEach(input => {
+        const inputVal = parseInt(input.value, 10);
+        const maxVal = parseInt(input.max, 10);
+        const minVal = parseInt(input.min, 10);
+        // 将值限制在min和max之间
+        const value = Math.min(Math.max(inputVal, minVal), maxVal);
+        this.currentConfig[input.dataset.key] = value;
+        input.value = value; // 确保显示有效值
+    });
+}
+
+    // 格式化配置项名称
+    formatConfigKey(key) {
+        return key.replace(/([A-Z])/g, ' $1')
+                  .replace(/^./, str => str.toUpperCase());
+    }
+
+    // 获取当前配置
+    getConfig() {
+        return {...this.currentConfig};
+    }
+}
+
+
+
+const musicConfigManager = new MusicConfigManager();
+    // 初始化应用
+    const app = new DeepSeekApp();
+    const canvas = app.createCanvas(document.body, 'mainCanvas');
+    
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    ctx.font = '24px Arial';
+    ctx.fillStyle = '#666';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('和 DeepSeek 一起奔向未来！', rect.width / 2, rect.height / 2);
+
+    const toolbar = app.createToolbar(document.body, 'mainToolbar');
+
+    // 在工具栏添加配置按钮（添加在现有按钮代码之后）
+    const configBtn = app.addButton(toolbar, 'musicConfigBtn', 'Music Config');
+    
+    configBtn.addEventListener('click', () => {
+        const configWindow = document.getElementById('musicConfigWindow');
+        if (window.getComputedStyle(configWindow).display === 'none') {
+            // Simply show the window - CSS will handle centering
+            configWindow.style.display = 'flex';
+        } else {
+            configWindow.style.display = 'none';
+        }
+    });
+
+
+    const windowBtn = app.addButton(toolbar, 'windowBtn', 'Notes');
+    
+    // Create movable window
+    const movableWindow = document.createElement('div');
+    movableWindow.className = 'ds_window';
+    
+    // Window header
+    const windowHeader = document.createElement('div');
+    windowHeader.className = 'ds_window_header';
+    
+    const windowTitle = document.createElement('div');
+    windowTitle.className = 'ds_window_title';
+    windowTitle.textContent = 'Notes Window';
+    
+    const windowClose = document.createElement('div');
+    windowClose.className = 'ds_window_close';
+    windowClose.innerHTML = '&times;';
+    
+    // Window content
+    const windowContent = document.createElement('div');
+    windowContent.className = 'ds_window_content';
+    const textarea = document.createElement('textarea');
+    textarea.className = 'ds_textarea';
+    textarea.placeholder = 'Type your notes here...';
+     
+// 创建模式显示元素
+const modeDisplay = document.createElement('div');
+modeDisplay.className = 'current-mode';
+modeDisplay.textContent = 'Mode1';  // 默认模式
+    // Assemble window
+    windowHeader.appendChild(windowTitle);
+    windowHeader.appendChild(modeDisplay);  // 添加模式显示
+    windowHeader.appendChild(windowClose);
+    movableWindow.appendChild(windowHeader);
+    windowContent.appendChild(textarea);
+    movableWindow.appendChild(windowContent);
+    document.body.appendChild(movableWindow);
+    
+    // Toggle window visibility
+    windowBtn.addEventListener('click', () => {
+        const currentDisplay = window.getComputedStyle(movableWindow).display;
+        movableWindow.style.display = currentDisplay === 'none' ? 'flex' : 'none';
+    });
+    
+    // Close window
+    windowClose.addEventListener('click', () => {
+        movableWindow.style.display = 'none';
+    });
+    
+    // Make window draggable
+    let isDragging = false;
+    let currentX = 0;
+    let currentY = 0;
+    let initialX = 0;
+    let initialY = 0;
+    let xOffset = 0;
+    let yOffset = 0;
+    
+    windowHeader.addEventListener('mousedown', dragStart);
+    document.addEventListener('mouseup', dragEnd);
+    document.addEventListener('mousemove', drag);
+    
+    // Touch events for mobile
+    windowHeader.addEventListener('touchstart', dragStart);
+    document.addEventListener('touchend', dragEnd);
+    document.addEventListener('touchmove', drag);
+    
+    textarea.addEventListener('input', function() {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        const msc = new CBlDSMusic();
+        msc.testDrawNotes(ctx, modeDisplay.textContent, this.value, 33, 54, 33);
+
+        // Add configuration display
+        const config = musicConfigManager.getConfig();
+        ctx.font = '12px Arial';
+        ctx.fillStyle = '#333';
+        ctx.textBaseline = 'bottom';
+        ctx.textAlign = 'left';
+        
+        const lineHeight = 14;
+        let yPosition = canvas.clientHeight - 55;
+        
+        Object.entries(config).forEach(([key, value], index) => {
+                const text = `${musicConfigManager.formatConfigKey(key)}: ${value}`;
+                ctx.fillText(text, 10, yPosition - (index * lineHeight));
+        });
+    });
+
+    function dragStart(e) {
+        if (e.type === 'touchstart') {
+            initialX = e.touches[0].clientX - xOffset;
+            initialY = e.touches[0].clientY - yOffset;
+        } else {
+            initialX = e.clientX - xOffset;
+            initialY = e.clientY - yOffset;
+        }
+        
+        if (e.target === windowHeader) {
+            isDragging = true;
+        }
+    }
+    
+    function dragEnd(e) {
+        initialX = currentX;
+        initialY = currentY;
+        isDragging = false;
+    }
+    
+    function drag(e) {
+        if (isDragging) {
+            e.preventDefault();
+            
+            if (e.type === 'touchmove') {
+                currentX = e.touches[0].clientX - initialX;
+                currentY = e.touches[0].clientY - initialY;
+            } else {
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+            }
+            
+            xOffset = currentX;
+            yOffset = currentY;
+            
+            setTranslate(currentX, currentY, movableWindow);
+        }
+    }
+    
+    function setTranslate(xPos, yPos, el) {
+        el.style.transform = `translate(${xPos}px, ${yPos}px)`;
+    }
+
+
+    // 添加按钮
+    const menuBtn = app.addButton(toolbar, 'menuBtn', '[menu]');
+    const coordDisplay = app.addButton(toolbar, 'coordDisplay', '0:0');
+    coordDisplay.onclick = function(e){ 
+    }
+     
+    function createSubToolbar() {
+    const toolbar = document.createElement('div');
+    toolbar.className = 'ds_subtoolbar';
+    
+    const buttons = [
+        {id: 'mode1', text: 'Mode1'},
+        {id: 'mode2', text: 'Mode2'}, 
+        {id: 'mode3', text: 'Mode3'},
+        {id: 'mode4', text: 'Mode4',fnClick:function(){alert(this.id);}}, 
+    ];
+
+    buttons.forEach((btn, index) => {
+        const button = document.createElement('div');
+        button.className = `ds_button ${index === 0 ? 'active' : ''}`;
+        button.id = btn.id;
+        button.textContent = btn.text;
+        
+        button.addEventListener('click', function() {
+            // 移除所有按钮的active状态
+            toolbar.querySelectorAll('.ds_button').forEach(b => 
+                b.classList.remove('active'));
+            // 设置当前按钮为active
+            this.classList.add('active');
+
+             // 更新标题栏模式显示
+             modeDisplay.textContent = btn.text;
+            // 添加视觉反馈
+            modeDisplay.style.animation = 'none';
+            void modeDisplay.offsetWidth; // 触发重绘
+            modeDisplay.style.animation = 'pulse 2s infinite';
+            textarea.dispatchEvent(new Event('input'));
+            if(btn.fnClick){btn.fnClick();}
+             
+        });
+        
+        toolbar.appendChild(button);
+    });
+
+    return toolbar;
+}
+
+    // 优化后的坐标更新处理
+    const updateCoordinates = app.throttle((e) => {
+        const rect = canvas.getBoundingClientRect();
+        const getClientPos = (event) => ({
+            x: event.touches ? event.touches[0].clientX : event.clientX,
+            y: event.touches ? event.touches[0].clientY : event.clientY
+        });
+
+        const pos = getClientPos(e);
+        const mouseX = pos.x - rect.left;
+        const mouseY = pos.y - rect.top;
+        
+        coordDisplay.textContent = `${Math.round(mouseX)}:${Math.round(mouseY)}`;
+    }, 50);
+
+    // 支持触摸和鼠标事件
+    canvas.addEventListener('mousemove', updateCoordinates);
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault(); // 阻止触摸滚动
+        updateCoordinates(e);
+    }, { passive: false });
+
+    // 窗口大小调整处理
+    window.addEventListener('resize', () => {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        canvas.getContext('2d').scale(dpr, dpr);
+    });
+
+    // After creating menuBtn in existing code
+    const menu = document.createElement('div');
+    menu.className = 'ds_menu';
+
+    // Menu items
+    ['dsToolBox','2025', 'classEditor','videoEditor', 'sandBox',"index0"].forEach(text => {
+        const item = document.createElement('div');
+        item.className = 'ds_menu_item';
+        item.textContent = text;
+        if (text === '2025') {
+            item.addEventListener('click', () => {
+                window.location.href = '2025';
+                menu.classList.remove('active');
+            });
+        } 
+        else if (text === 'dsToolBox'){
+            item.addEventListener('click', () => {
+                window.location.href = 'toolBox.html';
+                menu.classList.remove('active');
+            }); 
+        }
+        else if (text === 'classEditor'){
+            item.addEventListener('click', () => {
+                window.location.href = 'classEditor';
+                menu.classList.remove('active');
+            }); 
+        }
+        else if (text === 'videoEditor'){
+            item.addEventListener('click', () => {
+                window.location.href = 'videoEditor';
+                menu.classList.remove('active');
+            }); 
+        }
+        else if (text === 'sandBox'){
+            item.addEventListener('click', () => {
+                window.location.href = 'sandBox';
+                menu.classList.remove('active');
+            }); 
+        }
+        else if (text === 'index0') {
+            item.addEventListener('click', () => {
+                window.location.href = 'index0.html';
+                menu.classList.remove('active');
+            }); 
+        }
+        
+        
+        menu.appendChild(item);
+    });
+
+    menuBtn.appendChild(menu);
+
+    // Toggle menu
+    menuBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        menu.classList.toggle('active');
+    });
+
+    // Close menu on outside click
+    document.addEventListener('click', (e) => {
+        if (!menuBtn.contains(e.target)) {
+            menu.classList.remove('active');
+        }
+    });
+
+    // Close on ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            menu.classList.remove('active');
+        }
+    });
+    const windowHeader1 = movableWindow.querySelector('.ds_window_header');
+    const windowContent1 = movableWindow.querySelector('.ds_window_content');
+    const subToolbar = createSubToolbar();
+    movableWindow.insertBefore(subToolbar, windowContent1);
+
+
+     // 创建星空背景（修正版）
+function createStarfield(container) {
+    // 移除重复的函数定义
+    const starCount = Math.floor(window.innerWidth * window.innerHeight / 1000);
+    
+    for (let i = 0; i < starCount; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        
+        // 随机位置
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 100}%`;
+        
+        // 随机动画参数
+        star.style.animationDelay = `${Math.random() * 2}s`;
+        star.style.animationDuration = `${0.5 + Math.random() * 2}s`;
+        
+        container.appendChild(star);
+    }
+}
+
+// 初始化代码
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.querySelector('.starfield_container'); // 修正选择器
+    if (container) {
+        createStarfield(container);
+        
+        // 添加视差效果
+        document.addEventListener('mousemove', (e) => { // 改为监听整个文档
+            const stars = container.querySelectorAll('.star');
+            const speed = 0.05;
+            
+            stars.forEach(star => {
+                const x = (e.clientX / window.innerWidth - 0.5) * 20;
+                const y = (e.clientY / window.innerHeight - 0.5) * 20;
+                star.style.transform = `translate(${x}px, ${y}px)`;
+            });
+        });
+    }
+});
+
+
+</script>
+<div class="canvas_container">
+    <canvas id="mainCanvas"></canvas>
+    <div style="border: 1px red solid;">和 DeepSeek 一起奔向未来！</div>
+</div>
+ 
+<div class="starfield_container"></div>
+
+<!-- 在body末尾添加音乐配置窗口 -->
+<div class="ds_window" id="musicConfigWindow">
+    <div class="ds_window_header">
+        <div class="ds_window_title">Music Config Settings</div>
+        <div class="ds_window_close">&times;</div>
+    </div>
+    <div class="ds_window_content" id="musicConfigContent"></div>
+    <div class="ds_window_footer">
+        <button class="ds_button" id="saveMusicConfig">Save</button>
+        <button class="ds_button" id="resetMusicConfig">Reset</button>
+    </div>
+</div>
 </body>
 </html>

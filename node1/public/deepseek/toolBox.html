@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DeepSeek工具箱测试</title>
+    <script src="js/dsToolbox.js"></script>
+</head>
+<body>
+<script>
+// 初始化工具箱
+const dsToolBox = new DeepSeekToolbox();
+
+// 工具栏配置
+const tools = [
+    {
+        id: "toolbox_ai",
+        icon: '🤖',
+        text: 'AI 助手',
+        action: (id) => {
+            const window = dsToolBox.createFloatingWindow(
+                id,
+                `<div class="ai-assistant">
+                    <p>当前模型：DeepSeek-R1</p>
+                    <textarea placeholder="输入您的问题..."></textarea>
+                    <button class="ask-button">提问</button>
+                </div>`,
+                'DeepSeek AI 助手'
+            );
+        }
+    },
+    {
+        id: "toolbox_analytics",
+        icon: '📊',
+        text: '数据分析',
+        action: (id) => {
+            const window = dsToolBox.createFloatingWindow(
+                id,
+                `<div class="data-analytics">
+                    <div class="chart-placeholder"></div>
+                    <div class="toolbar">
+                        <button>导入数据</button>
+                        <button>生成报告</button>
+                    </div>
+                </div>`,
+                '数据分析套件'
+            );
+            if (!window.toolbar) {
+                window.toolbar = dsToolBox.createToolbar(
+                    window.querySelector('.data-analytics'),
+                    'c_toolbar_inside_window'
+                );
+                dsToolBox.addButtons(window.toolbar, 'c_toolbar_btn', [
+                    { icon: '📁', text: '打开', action: () => {} },
+                    { icon: '📈', text: '分析', action: () => {} },
+                    { icon: '📤', text: '导出', action: () => {} }
+                ]);
+            }
+        }
+    },
+    {
+        id: "toolbox_settings",
+        icon: '⚙️',
+        text: '设置',
+        action: (id) => {
+            dsToolBox.createFloatingWindow(
+                id,
+                `<div class="settings-panel">
+                    <h3>系统设置</h3>
+                    <label><input type="checkbox"> 暗黑模式</label>
+                    <label><input type="range"> 透明度调节</label>
+                </div>`,
+                '系统设置'
+            );
+        }
+    }
+];
+
+// 创建主工具栏
+const mainToolbar = dsToolBox.createToolbar(document.body, 'c_toolbar_fixed_at_bottom');
+dsToolBox.addButtons(mainToolbar, 'c_toolbar_btn', tools);
+
+// 测试createCanvas功能
+const testCanvas = dsToolBox.createCanvas(document.body, 'test-canvas');
+testCanvas.width = 400;
+testCanvas.height = 200;
+
+const ctx = testCanvas.getContext('2d');
+ctx.font = '24px "Helvetica Neue"';
+ctx.fillStyle = '#2c3e50';
+ctx.textAlign = 'center';
+ctx.textBaseline = 'middle';
+ctx.fillText('Hello World', testCanvas.width/2, testCanvas.height/2);
+
+// 添加装饰图形
+ctx.beginPath();
+ctx.arc(testCanvas.width/2, testCanvas.height/2, 80, 0, Math.PI*2);
+ctx.strokeStyle = '#6baed6';
+ctx.lineWidth = 3;
+ctx.stroke();
+
+</script>
+</body>
+</html>

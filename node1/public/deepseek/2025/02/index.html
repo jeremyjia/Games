@@ -19,17 +19,22 @@
         .menu-items {
             display: flex;
             list-style: none;
+            flex-wrap: wrap;
         }
 
         .menu-item {
             position: relative;
+            text-align: center;
         }
 
         .menu-item a {
+            display: block;
+            padding: 1rem;
             color: white;
             text-decoration: none;
-            padding: 1rem;
-            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .submenu {
@@ -39,10 +44,6 @@
             min-width: 200px;
             top: 100%;
             left: 0;
-        }
-
-        .menu-item:hover .submenu {
-            display: block;
         }
 
         .mobile-menu-toggle {
@@ -55,47 +56,70 @@
             cursor: pointer;
         }
 
-        @media (max-width: 768px) {
-            .menu-items {
-                display: none;
-                flex-direction: column;
-                width: 100%;
-            }
-
-            .mobile-menu-toggle {
+        /* 桌面端样式 */
+        @media (min-width: 401px) {
+            .menu-item:hover .submenu {
                 display: block;
             }
+            .mobile-menu-toggle {
+                display: none !important;
+            }
+        }
 
-            .menu-item:hover .submenu {
-                display: none;
+        /* 移动端样式 */
+        @media (max-width: 400px) {
+            .menu-items {
+                display: flex !important;
+                flex-direction: column;
+            }
+            
+            .menu-item {
+                width: 100%;
+                border-bottom: 1px solid #555;
+            }
+            
+            .menu-item:nth-child(n+4) {
+                width: 100%;
+                font-size: 0.9rem;
             }
 
             .submenu {
                 position: static;
-                background: #555;
-                padding-left: 1rem;
+                width: 100%;
+                background: #666;
+                display: none;
             }
 
-            .nav-menu.active .menu-items {
-                display: flex;
+            .menu-item.active .submenu {
+                display: block;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+                position: absolute;
+                right: 0;
+                top: 0;
             }
         }
     </style>
 </head>
 <body>
     <nav class="nav-container"></nav>
-    <p>
-        设计一个JavaScript类可以实现导航菜单。
-在设计一个网页测试这个类，随便添加几个实例。其中有一个菜单项连接到deep sick的主页。
-在手机上可以完美原型。
-    </p>
-
+    <p>第二行开始显示四项菜单项。</p>
     <script>
         class NavMenu {
             constructor(config) {
-                this.config = config;
+                this.config = JSON.parse(JSON.stringify(config));
+                this.config.items[2].children = [
+                    { 
+                        text: '深度求索', 
+                        href: 'https://www.deepseek.com', 
+                        title: '前往深度求索主页' 
+                    }
+                ];
                 this.init();
                 this.bindEvents();
+                this.handleResize();
             }
 
             init() {
@@ -104,7 +128,7 @@
                 
                 this.toggleButton = document.createElement('button');
                 this.toggleButton.className = 'mobile-menu-toggle';
-                this.toggleButton.innerHTML = '☰';
+                this.toggleButton.innerHTML = '×';
                 
                 this.menuItems = document.createElement('ul');
                 this.menuItems.className = 'menu-items';
@@ -122,9 +146,10 @@
                 li.className = 'menu-item';
                 
                 const a = document.createElement('a');
-                a.href = item.href;
+                a.href = item.href || '#';
                 a.textContent = item.text;
-                
+                if (item.title) a.title = item.title;
+
                 li.appendChild(a);
 
                 if (item.children) {
@@ -140,17 +165,34 @@
             }
 
             bindEvents() {
-                this.toggleButton.addEventListener('click', () => this.toggleMenu());
-                
-                // 移动端子菜单切换
+                // 移动端菜单切换
+                this.toggleButton.addEventListener('click', () => {
+                    this.menuItems.style.display = 
+                        this.menuItems.style.display === 'none' ? 'flex' : 'none';
+                    this.toggleButton.innerHTML = 
+                        this.menuItems.style.display === 'none' ? '☰' : '×';
+                });
+
+                // 子菜单交互
                 this.menuItems.querySelectorAll('.menu-item').forEach(item => {
-                    if (item.querySelector('.submenu')) {
-                        item.addEventListener('click', (e) => {
-                            if (window.innerWidth <= 768) {
-                                e.preventDefault();
-                                item.classList.toggle('active');
-                                item.querySelector('.submenu').style.display = 
-                                    item.classList.contains('active') ? 'block' : 'none';
+                    const submenu = item.querySelector('.submenu');
+                    if (!submenu) return;
+
+                    item.addEventListener('click', (e) => {
+                        if (window.innerWidth > 400) return;
+                        
+                        e.preventDefault();
+                        e.stopPropagation();
+                        item.classList.toggle('active');
+                    });
+                });
+
+                // 点击外部关闭子菜单
+                document.addEventListener('click', (e) => {
+                    if (window.innerWidth <= 400) {
+                        this.menuItems.querySelectorAll('.menu-item').forEach(item => {
+                            if (!item.contains(e.target)) {
+                                item.classList.remove('active');
                             }
                         });
                     }
@@ -159,89 +201,40 @@
                 window.addEventListener('resize', () => this.handleResize());
             }
 
-            toggleMenu() {
-                this.nav.classList.toggle('active');
-            }
-
             handleResize() {
-                if (window.innerWidth > 768) {
-                    this.nav.classList.remove('active');
-                    this.menuItems.querySelectorAll('.submenu').forEach(sub => {
-                        sub.style.display = 'none';
-                    });
+                if (window.innerWidth > 400) {
+                    this.menuItems.style.display = 'flex';
+                    this.toggleButton.style.display = 'none';
+                } else {
+                    this.menuItems.style.display = 'flex'; // 移动端默认展开
+                    this.toggleButton.style.display = 'block';
                 }
             }
         }
 
-        // 创建菜单配置
+        // 初始化配置
         const menuConfig = {
             items: [
-                {
-                    text: '首页',
-                    href: '/'
-                },
-                {
-                    text: '[..]',
-                    href: '..'
-                },
-                {
-                    text: '[2025/02]->',
-                    href: '#'
-                },
-                {
-                    text: '[03]',
-                    href: '03'
-                },
-                {
-                    text: '[04]',
-                    href: '04'
-                },
-                {
-                    text: '[08]',
-                    href: '08'
-                },
-                {
-                    text: '[10]',
-                    href: '10'
-                },
-                {
-                    text: '[11]',
-                    href: '11'
-                },
-                {
-                    text: '[12]',
-                    href: '12'
-                },
-                {
-                    text: '[13]',
-                    href: '13'
-                },
-                {
-                    text: '[14]',
-                    href: '14'
-                },
-                {
-                    text: '深度求索',
-                    href: 'https://www.deepseek.com'
-                },
-                {
-                    text: '产品',
-                    href: '#',
-                    children: [
-                        { text: '产品1', href: '#' },
-                        { text: '产品2', href: '#' }
-                    ]
-                },
-                {
-                    text: '联系我们',
-                    href: '#contact'
-                }
+                { text: '首页', href: '/' },
+                { text: '[..]', href: '..' },
+                { text: '[2025/02]->', href: '#' },
+                { text: '[03]', href: '03' },
+                { text: '[04]', href: '04' },
+                { text: '[08]', href: '08' },
+                { text: '[10]', href: '10' },
+                { text: '[11]', href: '11' },
+                { text: '[12]', href: '12' },
+                { text: '[13]', href: '13' },
+                { text: '[14]', href: '14' },
+                { text: '[15]', href: '15' }, 
+                { text: '[18]', href: '18',title:"guitar Tunner" }, 
+                { text: '[19]', href: '19',title:"tool box" }, 
+                { text: '[21]', href: '21',title:"piano" }, 
             ]
         };
 
-        // 初始化导航菜单
-        const navMenu = new NavMenu(menuConfig);
-        document.querySelector('.nav-container').appendChild(navMenu.nav);
+        const nav = new NavMenu(menuConfig);
+        document.querySelector('.nav-container').appendChild(nav.nav);
     </script>
 </body>
 </html>

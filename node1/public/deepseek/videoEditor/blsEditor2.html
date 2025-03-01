@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>漂泊者视频编辑器</title>
+    <style>
+        :root {
+            --primary-color: #483D8B;
+            --secondary-color: #00FF7F;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 10px;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 10px;
+        }
+
+        #preview {
+            background: #000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .edit-panel {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .section {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin: 10px 0;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .scene-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .object-item {
+            cursor: pointer;
+            padding: 5px;
+            margin: 2px 0;
+            background: #eee;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                grid-template-columns: 1fr;
+            }
+            
+            .edit-panel {
+                order: -1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="preview"></div>
+    <div class="edit-panel">
+        <div class="section">
+            <h3>全局设置</h3>
+            <div class="form-group">
+                <label>帧率 (fps):</label>
+                <input type="number" id="frameRate" value="1" min="1">
+            </div>
+            <!-- 其他全局设置 -->
+        </div>
+
+        <div class="section">
+            <h3>场景管理</h3>
+            <div class="scene-list" id="sceneList"></div>
+            <button onclick="addScene()">添加场景</button>
+        </div>
+
+        <div class="section" id="sceneEdit">
+            <h3>场景编辑</h3>
+            <!-- 场景编辑表单 -->
+        </div>
+
+        <div class="section">
+            <h3>数据操作</h3>
+            <button onclick="importJSON()">导入JSON</button>
+            <button onclick="exportJSON()">导出JSON</button>
+            <button onclick="playPreview()">播放预览</button>
+        </div>
+    </div>
+
+    <script>
+        class VideoRenderer {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+  }
+
+  renderFrame(frame) {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // 绘制背景
+    if(frame.backgroundPicture) {
+      // 绘制背景图片
+    } else {
+      this.ctx.fillStyle = `rgb(${frame.backgroundColor})`;
+      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    // 绘制对象
+    frame.objects.forEach(obj => {
+      if(obj.text) {
+        this.ctx.fillStyle = `rgb(${obj.color})`;
+        this.ctx.font = `${obj.size}px Arial`;
+        this.ctx.fillText(obj.text, obj.x, obj.y);
+      } else if(obj.picture) {
+        // 绘制图片
+      }
+    });
+  }
+}
+class VideoPlayer {
+  constructor(data, renderer) {
+    this.data = data;
+    this.renderer = renderer;
+    this.currentFrame = 0;
+    this.isPlaying = false;
+  }
+
+  play() {
+    this.isPlaying = true;
+    const frameDuration = 1000 / this.data.rate;
+    let startTime = Date.now();
+
+    const playFrame = () => {
+      if(!this.isPlaying) return;
+
+      const elapsed = Date.now() - startTime;
+      this.currentFrame = Math.floor(elapsed / (frameDuration * this.data.frames[0].time));
+      
+      if(this.currentFrame >= this.data.frames.length) {
+        this.stop();
+        return;
+      }
+
+      this.renderer.renderFrame(this.data.frames[this.currentFrame]);
+      requestAnimationFrame(playFrame);
+    };
+
+    playFrame();
+  }
+
+  stop() {
+    this.isPlaying = false;
+  }
+}
+
+        let editorData = {
+            version: "0.0.1",
+            width: 1024,
+            height: 768,
+            music: "",
+            rate: 1,
+            frames: []
+        };
+
+        let currentScene = null;
+        let currentObject = null;
+
+        // 初始化示例数据
+        function initExampleData() {
+            // 此处加载示例数据
+        }
+
+        // 场景管理
+        function addScene() {
+            const newScene = {
+                number: editorData.frames.length + 1,
+                time: 5,
+                objects: [],
+                backgroundColor: "72,61,139"
+            };
+            editorData.frames.push(newScene);
+            renderSceneList();
+        }
+
+        // 渲染场景列表
+        function renderSceneList() {
+            const list = document.getElementById('sceneList');
+            list.innerHTML = editorData.frames.map(scene => `
+                <div class="scene-item" onclick="selectScene(${scene.number})">
+                    场景 ${scene.number} (${scene.time}s)
+                </div>
+            `).join('');
+        }
+
+        // 选择场景
+        function selectScene(number) {
+            currentScene = editorData.frames.find(s => s.number === number);
+            renderSceneEditor();
+        }
+
+        // 渲染场景编辑器
+        function renderSceneEditor() {
+            const container = document.getElementById('sceneEdit');
+            container.innerHTML = `
+                <div class="form-group">
+                    <label>持续时间 (秒):</label>
+                    <input type="number" value="${currentScene.time}" 
+                           onchange="updateSceneProp('time', this.value)">
+                </div>
+                <h4>对象列表</h4>
+                <div class="object-list">
+                    ${currentScene.objects.map(obj => `
+                        <div class="object-item" onclick="selectObject('${obj.id}')">
+                            ${obj.text || obj.picture}
+                        </div>
+                    `).join('')}
+                </div>
+                <button onclick="addTextObject()">添加文本</button>
+                <button onclick="addImageObject()">添加图片</button>
+            `;
+        }
+
+        // 更新场景属性
+        function updateSceneProp(prop, value) {
+            currentScene[prop] = value;
+            updatePreview();
+        }
+
+        // 添加文本对象
+        function addTextObject() {
+            const newText = {
+                id: Date.now(),
+                text: "新文本",
+                x: 200,
+                y: 200,
+                size: 50,
+                color: "255,255,255"
+            };
+            currentScene.objects.push(newText);
+            renderSceneEditor();
+        }
+
+        // 预览更新
+        function updatePreview() {
+            const preview = document.getElementById('preview');
+            preview.style.width = `${editorData.width}px`;
+            preview.style.height = `${editorData.height}px`;
+            
+            // 渲染当前场景
+            preview.innerHTML = currentScene.objects.map(obj => {
+                if(obj.text) {
+                    return `<div style="position: absolute; left: ${obj.x}px; top: ${obj.y}px;
+                            font-size: ${obj.size}px; color: rgb(${obj.color})">
+                            ${obj.text}
+                        </div>`;
+                }
+                // 处理图片对象...
+            }).join('');
+        }
+
+        // 初始化
+        initExampleData();
+        renderSceneList();
+    </script>
+</body>
+</html>

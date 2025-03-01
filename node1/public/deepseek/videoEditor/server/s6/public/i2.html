@@ -1,0 +1,237 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Video Editor</title>
+  <link href="https://cdn.jsdelivr.net/npm/jsoneditor@9.5.6/dist/jsoneditor.min.css" rel="stylesheet">
+  <style>
+    /* 新增可拖动窗口样式 */
+    .window {
+      position: absolute;
+      width: 600px;
+      height: 80vh;
+      background: white;
+      border: 1px solid #ccc;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      z-index: 1000;
+      resize: both;
+      overflow: hidden;
+    }
+
+    .window-header {
+      padding: 8px;
+      background: #f5f5f5;
+      border-bottom: 1px solid #ddd;
+      cursor: move;
+      user-select: none;
+    }
+
+    .window-content {
+      height: calc(100% - 35px);
+    }
+
+    #container {
+      display: grid;
+      grid-template-columns: 1fr;
+      padding: 20px;
+    }
+
+    canvas {
+      border: 1px solid #ccc;
+      background: white;
+      margin-top: 20px;
+    }
+
+    .controls {
+      margin: 10px 0;
+    }
+
+    button {
+      padding: 8px 16px;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <button onclick="saveData()">Save</button>
+    <button onclick="playAnimation()">Play</button>
+  </div>
+  
+  <!-- 可拖动窗口结构 -->
+  <div class="window" id="editorWindow" style="left: 20px; top: 60px">
+    <div class="window-header">JSON Editor (拖动我)</div>
+    <div class="window-content" id="editor"></div>
+  </div>
+
+  <div id="container">
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jsoneditor@9.5.6/dist/jsoneditor.min.js"></script>
+  <script>
+    // 新增窗口拖动功能
+    let isDragging = false;
+    let currentX = 0;
+    let currentY = 0;
+    let initialX = 0;
+    let initialY = 0;
+    let xOffset = 0;
+    let yOffset = 0;
+
+    const windowElement = document.getElementById('editorWindow');
+    const header = document.querySelector('.window-header');
+
+    header.addEventListener('mousedown', dragStart);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', dragEnd);
+
+    function dragStart(e) {
+      initialX = e.clientX - xOffset;
+      initialY = e.clientY - yOffset;
+
+      if (e.target === header) {
+        isDragging = true;
+      }
+    }
+
+    function drag(e) {
+      if (isDragging) {
+        e.preventDefault();
+        currentX = e.clientX - initialX;
+        currentY = e.clientY - initialY;
+
+        xOffset = currentX;
+        yOffset = currentY;
+
+        setTranslate(currentX, currentY, windowElement);
+      }
+    }
+
+    function setTranslate(xPos, yPos, el) {
+      el.style.left = xPos + 'px';
+      el.style.top = yPos + 'px';
+    }
+
+    function dragEnd(e) {
+      initialX = currentX;
+      initialY = currentY;
+      isDragging = false;
+    }
+
+    // 以下保持原有逻辑不变...
+    let editor = null;
+    let animationFrame = null;
+    let currentSceneIndex = 0;
+    let startTime = null;
+    
+    // 初始化编辑器
+    const container = document.getElementById('editor');
+    const options = { mode: 'code' };
+    editor = new JSONEditor(container, options);
+
+    // 加载初始数据
+    fetch('/data')
+      .then(res => res.json())
+      .then(data => editor.set(data))
+      .catch(() => editor.set({
+        meta: { version: "2.0", totalFrames: 750, totalScenes: 25 },
+        audio: "",
+        scenes: [],
+        fps: 1
+      }));
+
+    // 保存数据
+    function saveData() {
+      fetch('/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editor.get())
+      });
+    }
+
+    // 动画渲染和播放逻辑保持原样...
+    // ...（保持原有的renderScene和playAnimation函数不变）
+    
+    
+    // 动画渲染
+    function renderScene(scene) {
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      // 设置画布尺寸
+      canvas.width = 1024;
+      canvas.height = 768;
+
+      // 绘制背景
+      ctx.fillStyle = scene.background;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 绘制元素
+      scene.elements.forEach(element => {
+        ctx.fillStyle = element.color;
+        ctx.strokeStyle = element.color;
+        
+        switch(element.type) {
+          case 'circle':
+            ctx.beginPath();
+            ctx.arc(element.x, element.y, element.radius, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+          case 'triangle':
+            ctx.beginPath();
+            ctx.moveTo(element.x1, element.y1);
+            ctx.lineTo(element.x2, element.y2);
+            ctx.lineTo(element.x3, element.y3);
+            ctx.closePath();
+            ctx.fill();
+            break;
+          case 'line':
+            ctx.beginPath();
+            ctx.moveTo(element.x1, element.y1);
+            ctx.lineTo(element.x2, element.y2);
+            ctx.stroke();
+            break;
+        }
+      });
+    }
+
+    // 播放动画
+    function playAnimation(timestamp) {
+      const data = editor.get();
+      const scenes = data.scenes;
+      const fps = data.fps || 1;
+
+      if (!startTime) startTime = timestamp;
+      
+      const elapsed = timestamp - startTime;
+      const frameDuration = 1000 / fps;
+      const totalDuration = scenes.reduce((acc, scene) => 
+        acc + (scene.duration * frameDuration), 0);
+      
+      const currentTime = elapsed % totalDuration;
+      
+      let accumulated = 0;
+      let currentScene = scenes[0];
+      
+      for (const scene of scenes) {
+        accumulated += scene.duration * frameDuration;
+        if (currentTime < accumulated) {
+          currentScene = scene;
+          break;
+        }
+      }
+
+      renderScene(currentScene);
+      animationFrame = requestAnimationFrame(playAnimation);
+    }
+
+    // 停止动画
+    function stopAnimation() {
+      cancelAnimationFrame(animationFrame);
+      startTime = null;
+    }
+    
+  </script>
+</body>
+</html>

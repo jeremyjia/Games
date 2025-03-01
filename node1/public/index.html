@@ -1,134 +1,85 @@
-<!DOCTYPE HTML>
-<html>
-
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>node1</title>
+    <script src="js/util/NavigationMenu.js"></script>
+</head>
 <body>
-  <div>
-    <a href="..">[..] v0.122</a>
-    <a href="bls2v" target="_blank">bls2v</a>
-    <a href="txtDraw" target="_blank">txtDraw</a>
-    <a href="songs">songs</a>
-    <a href="music/index.html">music</a>
-    <a href="zhipu">zhipu</a>
-    <a href="abc/index.html">abc</a>
-    <a href="html5tricks/index.html">html5tricks</a>
-    <a href="word/index.html">word</a>
-    <a href="whiteBoard.html">whiteBoard</a>
-    <a href="paint/index.html">paint</a>
-    <a href="ts/index.html">TypeScript</a>
-    <a href="deepseek">[deepseek]</a>
-    <a href="subok.html">subok.html</a>
-    <a href="1.html">1.html</a>
-    <a href="1a.html">1a.html</a>
-    <a href="2.html">2.html</a>
-    <a href="3.html">3.html</a>
-    <a href="4.html">4.html</a>
-    <a href="5.html">5.html</a>
-    <a href="6.html">6.html</a>
-    <a href="7.html">7.html</a>
-    <a href="d3.html">d3.html</a>
-    <a href="live-editor/index.html">[live-editor]</a>
-    <a href="spider">spider</a>
-  </div>
-  <div style="position: fixed; width: 100px; height: 30px;right: 0; top: 50px; z-index: 10;border: 1px red solid;">
-    <a href="https://littleflute.github.io/Games/" target="_blank">littleflute</a>
-  </div>
-  <div id="ID4TestBar"> 
-  </div>
-  <canvas id="myCanvas" style="position:fixed; width:1111px;height:555px; left:10; top:50;"></canvas>
-  <script src="https://littleflute.github.io/Games/js/blclass.js"></script>
-  <script src="https://littleflute.github.io/JavaScript/w3.js" ></script>
-  <script src="https://jeremyjia.github.io/Games/Spring/script/firework.js"></script>
-  <script src="js/index.js"></script>
-  <script type="text/javascript">
-    let c = document.querySelector('#myCanvas');
-    let ctx = c.getContext('2d');
-    c.width = 1200;//window.innerWidth/2;
-    c.height = 600;// window.innerHeight/2;
-    let w = c.width;
-    let h = c.height;  
-    let gN = 0;
-
-    function draw(ts) {
-        gN++;
-        clear(); 
-        drawKlineTest();
-        animateFrame(gN); 
-        window.requestAnimationFrame(ts => draw(ts));
+<script>
+ 
+const menuData = [
+    {
+        text: '首页 v0.13',
+        url: '/'
+    },
+    {
+        text: 'DeepSeek学习',
+        submenu: [
+            {
+                text: 'videoEditor',
+                submenu: [
+                    { text: 'index',url:'DeepSeek/videoEditor/index.html' },
+                    { text: 'c1',url:'DeepSeek/videoEditor/c1' },
+                    { text: 'c2',url:'DeepSeek/videoEditor/c2' },
+                    { text: 'c3',url:'DeepSeek/videoEditor/c3' },
+                    { text: 'server',url:'DeepSeek/videoEditor/server' }
+                ]
+            },
+            {
+                text: '2025',
+                submenu: [
+                    { text: '02',url:'DeepSeek/2025/02' },
+                    { text: '03',url:'DeepSeek/2025/03'  }
+                ]
+            }
+        ]
+    },
+    {
+        text: 'music',
+        submenu: [
+            { text: 'index',url:'music/piano.html' },
+            { text: 'piano',url:'music/piano.html' },
+            { text: 'filter',url:'music/filter.html' },
+            { text: 'sampler',url:'music/sampler.html' }
+        ]
+    }, 
+    {   text: 'js',  url: 'js/index.html'  },
+    {
+        text: 'index0.html',
+        url: 'index0.html'
+    },
+    {
+        text: '1.html',
+        url: '1.html'
+    },
+    {
+        text: '2.html',
+        url: '2S.html'
     }
+];
 
-    function clear() {
-        ctx.save();
-        ctx.fillStyle = 'green';
-        ctx.fillRect(0, 0, w, h);
-        
-        ctx.fillStyle = 'blue';
-        ctx.font = "30px Verdana";
-        ctx.fillText(gN, 10, 44);
-        ctx.restore();
+new NavigationMenu(menuData);
+
+// 添加页面内容
+const mainContent = document.createElement('main');
+mainContent.style.marginTop = '60px';
+mainContent.style.padding = '20px';
+mainContent.innerHTML = `
+    <h1>欢迎访问漂泊者乐园的网站</h1>
+    <p>这是一个演示导航菜单的示例页面。</p>
+`;
+document.body.appendChild(mainContent);
+
+// 点击页面其他区域关闭所有子菜单（保留增强体验）
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.menu-item')) {
+        document.querySelectorAll('.submenu').forEach(menu => {
+            menu.classList.remove('active');
+        });
     }
-    const drawKlineTest = function(){
-      const dataHistory = [
-        {
-          "o":100,
-          "c":120,
-          "h":140,
-          "l":90
-        },
-        
-        {
-          "o":110,
-          "c":120,
-          "h":140,
-          "l":90
-        },
-        {
-          "o":110,
-          "c":130,
-          "h":140,
-          "l":90
-        },
-        {
-          "o":80,
-          "c":130,
-          "h":140,
-          "l":70
-        }
-      ];
-        ctx.fillStyle = 'blue';
-        ctx.fillRect(110, 110, 22, 22);
-        
-        ctx.fillRect(110+10, 90, 2, 33);
-
-        const x0 = 111;
-        const y0 = 333;
-        let xC = x0;
-        const dx = 50;
-        const w = 11;
-        ctx.fillRect(x0, y0, 2,2);
-
-        for(i in dataHistory){
-          xC = x0 + i*dx;
-          ctx.fillRect(xC, y0-dataHistory[i].o, w*2,20);
-          
-          ctx.fillRect(xC+w, y0-dataHistory[i].h, 2,40);
-
-        }
-
-        ctx.fillStyle = 'brown';
-     
-        xC += dx;
-        let oCur = 80;
-        let yCur = 80 + gN%20;
-        ctx.fillRect(xC, y0-oCur, w*2,yCur - oCur);
-          
-        ctx.fillRect(xC+w, y0-123, 2,40);
-    }
-    window.requestAnimationFrame(ts => { 
-        draw(ts);
-    });
-
-  </script>
-
+});
+</script>
 </body>
-
 </html>

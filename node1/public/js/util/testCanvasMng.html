@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
+</head>
+<body>
+<script>
+class CanvasManager {
+    constructor() {
+        this.objects = [];
+        this.selectedObject = null;
+        this.currentTool = null;
+        this.isDrawing = false;
+        this.startX = 0;
+        this.startY = 0;
+        this.tempObject = null;
+        this.dragging = false;
+        this.resizeHandle = null;
+        this.pendingTextEdit = false;
+        this.pointerDownPos = { x: 0, y: 0 };
+        this.initialLineStart = null;
+        this.initialLineEnd = null;
+        this.textInput = this.createTextInput();
+        this.bindTextEvents();
+
+        this.createToolbar();
+        this.createCanvas();
+        this.bindEvents();
+        this.setupStyles();
+    }
+    
+    createTextInput() {
+        const input = document.createElement('input');
+        input.id = 'textInput';
+        input.type = 'text';
+        input.style.cssText = `
+            box-sizing: border-box;
+            position: fixed;
+            border: 1px solid #000;
+            padding: 0;
+            margin: 0;
+            font: 16px Arial;
+            display: none;
+            background: white;
+            line-height: 16px;
+            height: 18px;
+            min-width: 20px;
+            z-index: 1000;
+            transform: translate3d(0,0,0);
+            -webkit-user-select: text;
+        `;
+        document.body.appendChild(input);
+        return input;
+    }
+   
+    bindTextEvents() {
+        this.textInput.addEventListener('blur', () => this.finishTextEdit());
+        this.textInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') this.finishTextEdit();
+            if (e.key === 'Escape') this.cancelTextEdit();
+        });
+        this.textInput.addEventListener('input', () => this.adjustInputSize());
+    }
+
+
+    createToolbar() {
+        this.toolbar = document.createElement('div');
+        const tools = ['select','delete', 'text', 'line', 'rect', 'triangle', 'circle'];
+        tools.forEach(tool => {
+            const btn = document.createElement('button');
+            btn.textContent = tool;
+            btn.dataset.tool = tool;
+            btn.addEventListener('click', (e) => this.handleToolClick(e));
+            this.toolbar.appendChild(btn);
+        });
+        document.body.appendChild(this.toolbar);
+    }
+
+    handleToolClick(e) {
+        const tool = e.target.dataset.tool;
+        if (tool === 'delete') {
+            if (this.selectedObject) {
+                const index = this.objects.indexOf(this.selectedObject);
+                if (index !== -1) {
+                    this.objects.splice(index, 1);
+                    this.selectedObject = null;
+                    this.hideTextInput(); // Close text input if open
+                    this.redrawCanvas();
+                }
+            }
+            // Switch back to select mode and highlight select button
+            this.currentTool = null;
+            Array.from(this.toolbar.children).forEach(btn => {
+                btn.style.backgroundColor = btn.dataset.tool === 'select' ? '#99ccff' : '';
+            });
+            return;
+        }
+        
+        Array.from(this.toolbar.children).forEach(btn => {
+            btn.style.backgroundColor = btn === e.target ? '#99ccff' : '';
+        });
+        this.currentTool = tool === 'select' ? null : tool;
+        this.selectedObject = null;
+        this.redrawCanvas();
+    }
+
+    createCanvas() {
+        this.canvas = document.createElement('canvas');
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight - 40;
+        this.ctx = this.canvas.getContext('2d');
+        document.body.appendChild(this.canvas);
+    }
+
+    bindEvents() {
+        this.canvas.addEventListener('pointerdown', e => this.handlePointerDown(e));
+        this.canvas.addEventListener('pointermove', e => this.handlePointerMove(e));
+        this.canvas.addEventListener('pointerup', e => this.handlePointerUp(e));
+    }
+
+   
+    handlePointerDown(e) {
+        e.preventDefault(); // 阻止默认行为，帮助移动端聚焦
+        const pos = this.getCanvasPos(e);
+        this.pointerDownPos = { x: pos.x, y: pos.y };
+        
+        // 处理文本工具点击
+        if (this.currentTool === 'text') {
+            const newText = {
+                type: 'text',
+                x: pos.x,
+                y: pos.y,
+                text: '',
+                color: '#000000',
+                width: 0,
+                height: 16
+            };
+            this.objects.push(newText);
+            this.selectedObject = newText;
+            this.startTextEdit();
+            this.redrawCanvas();
+            return;
+        }
+
+        if (this.selectedObject && this.checkResizeHandle(pos)) {
+            this.resizeHandle = this.getResizeHandle(pos);
+            return;
+        }
+        
+        const clickedObject = this.findObjectAtPos(pos);
+        
+        if (clickedObject) {
+            this.selectedObject = clickedObject;
+            if (this.selectedObject.type === 'text') {
+                this.pendingTextEdit = true;
+            }
+            this.dragging = true;
+            this.dragOffset = {
+                x: pos.x - this.selectedObject.x,
+                y: pos.y - this.selectedObject.y
+            };
+            if (this.selectedObject.type === 'line') {
+                this.initialLineStart = { x: this.selectedObject.x, y: this.selectedObject.y };
+                this.initialLineEnd = { x: this.selectedObject.endX, y: this.selectedObject.endY };
+            }
+            this.resizeHandle = null;
+            this.redrawCanvas();
+            return;
+        } else {
+            this.selectedObject = null;
+        }
+        
+        if (this.currentTool) {
+            this.startDrawing(pos);
+        }
+        
+        this.redrawCanvas();
+    }
+
+
+
+    findObjectAtPos(pos) {
+        return this.objects.slice().reverse().find(obj => this.checkCollision(pos, obj));
+    }
+
+    handlePointerMove(e) {
+        const pos = this.getCanvasPos(e);
+        if (this.isDrawing) {
+            this.continueDrawing(pos);
+        } else if (this.dragging) {
+            this.moveObject(pos);
+        } else if (this.resizeHandle) {
+            this.resizeObject(pos);
+        }
+        this.redrawCanvas();
+    }
+
+    handlePointerUp(e) {
+        const pos = this.getCanvasPos(e);
+        const dx = pos.x - this.pointerDownPos.x;
+        const dy = pos.y - this.pointerDownPos.y;
+        const isClick = (dx * dx + dy * dy) < 25;
+
+        if (this.isDrawing) {
+            this.finishDrawing();
+        }
+
+        if (this.pendingTextEdit && this.selectedObject?.type === 'text' && isClick) {
+            this.startTextEdit();
+        }
+
+
+        this.dragging = false;
+        this.resizeHandle = null;
+        this.pendingTextEdit = false;
+        this.initialLineStart = null;
+        this.initialLineEnd = null;
+    }
+    
+    
+    startTextEdit() {
+        if (!this.selectedObject) return;
+        this.originalText = this.selectedObject.text;
+        
+        // Use requestAnimationFrame to ensure accurate positioning
+        requestAnimationFrame(() => {
+            const canvasRect = this.canvas.getBoundingClientRect();
+            const scaleX = this.canvas.width / canvasRect.width;
+            const scaleY = this.canvas.height / canvasRect.height;
+            
+            const x = this.selectedObject.x / scaleX + canvasRect.left;
+            const y = this.selectedObject.y / scaleY + canvasRect.top;
+
+            this.textInput.style.display = 'block';
+            this.textInput.style.left = `${x}px`;
+            this.textInput.style.top = `${y}px`;
+            this.textInput.value = this.selectedObject.text;
+            this.textInput.style.font = '16px Arial';
+            this.textInput.style.color = this.selectedObject.color;
+            
+            // Mobile-friendly focus handling
+            setTimeout(() => {
+                this.textInput.focus();
+                this.textInput.select();
+            }, 50);
+            
+            this.adjustInputSize();
+        });
+    }
+
+
+    adjustInputSize() {
+        // Use canvas context for accurate measurement
+        this.ctx.font = '16px Arial';
+        const metrics = this.ctx.measureText(this.textInput.value);
+        
+        // Add padding for better mobile touch
+        const padding = 4;
+        this.textInput.style.width = `${Math.max(20, metrics.width + padding)}px`;
+        
+        // Handle iOS zoom prevention
+        this.textInput.style.fontSize = '16px';
+        this.textInput.style.transformOrigin = '0 0';
+        this.textInput.style.transform = `scale(${1/window.devicePixelRatio})`;
+    }
+
+    finishTextEdit() {
+        // Reset transform before saving
+        this.textInput.style.transform = 'none';
+        
+        if (this.selectedObject?.type === 'text') {
+            const newText = this.textInput.value.trim();
+            if (newText === '') {
+                const index = this.objects.indexOf(this.selectedObject);
+                this.objects.splice(index, 1);
+            } else {
+                this.selectedObject.text = newText;
+                this.ctx.font = '16px Arial';
+                const metrics = this.ctx.measureText(newText);
+                this.selectedObject.width = metrics.width;
+                this.selectedObject.height = 16;
+            }
+        }
+        this.hideTextInput();
+        this.redrawCanvas();
+    }
+    
+    cancelTextEdit() {
+        if (this.selectedObject?.type === 'text') {
+            if (this.originalText === '' || this.textInput.value.trim() === '') {
+                const index = this.objects.indexOf(this.selectedObject);
+                this.objects.splice(index, 1);
+            } else {
+                this.selectedObject.text = this.originalText;
+            }
+        }
+        this.hideTextInput();
+        this.redrawCanvas();
+    }
+
+ 
+    
+    hideTextInput() {
+        this.textInput.style.display = 'none';
+        this.pendingTextEdit = false;
+    }
+
+
+
+
+    startDrawing(pos) {
+        this.isDrawing = true;
+        this.tempObject = {
+            type: this.currentTool,
+            x: pos.x,
+            y: pos.y,
+            color: '#000000',
+            text: 'New Text',
+            ...(this.currentTool === 'text' && { width: 100, height: 20 })
+        };
+        if (this.currentTool === 'circle') this.tempObject.radius = 0;
+    }
+
+    continueDrawing(pos) {
+        switch (this.currentTool) {
+            case 'line':
+                this.tempObject.endX = pos.x;
+                this.tempObject.endY = pos.y;
+                break;
+            case 'rect':
+                this.tempObject.width = pos.x - this.tempObject.x;
+                this.tempObject.height = pos.y - this.tempObject.y;
+                break;
+            case 'circle':
+                this.tempObject.radius = Math.hypot(
+                    pos.x - this.tempObject.x,
+                    pos.y - this.tempObject.y
+                );
+                break;
+            case 'triangle':
+                this.tempObject.points = [
+                    { x: this.tempObject.x, y: pos.y },
+                    { x: pos.x, y: pos.y },
+                    { x: (this.tempObject.x + pos.x)/2, y: this.tempObject.y }
+                ];
+                break;
+        }
+    }
+
+    finishDrawing() {
+        if (this.currentTool === 'text') {
+            const text = prompt('Enter text:', this.tempObject.text);
+            if (text) this.tempObject.text = text;
+        } else {
+            if (this.isObjectTooSmall(this.tempObject)) return;
+        }
+        this.objects.push(this.tempObject);
+        this.isDrawing = false;
+        this.tempObject = null;
+    }
+
+    isObjectTooSmall(obj) {
+        const MIN_SIZE = 5;
+        switch (obj.type) {
+            case 'line':
+                return Math.hypot(obj.endX - obj.x, obj.endY - obj.y) < MIN_SIZE;
+            case 'rect':
+                return Math.abs(obj.width) < MIN_SIZE || Math.abs(obj.height) < MIN_SIZE;
+            case 'circle':
+                return obj.radius < MIN_SIZE;
+            case 'triangle':
+                const xs = obj.points.map(p => p.x);
+                const ys = obj.points.map(p => p.y);
+                return Math.max(...xs) - Math.min(...xs) < MIN_SIZE ||
+                       Math.max(...ys) - Math.min(...ys) < MIN_SIZE;
+            default:
+                return false;
+        }
+    }
+
+    moveObject(pos) {
+        const dx = pos.x - this.selectedObject.x - this.dragOffset.x;
+        const dy = pos.y - this.selectedObject.y - this.dragOffset.y;
+        if (this.selectedObject.type === 'line') {
+            this.selectedObject.x = this.initialLineStart.x + dx;
+            this.selectedObject.y = this.initialLineStart.y + dy;
+            this.selectedObject.endX = this.initialLineEnd.x + dx;
+            this.selectedObject.endY = this.initialLineEnd.y + dy;
+        } else {
+            this.selectedObject.x = pos.x - this.dragOffset.x;
+            this.selectedObject.y = pos.y - this.dragOffset.y;
+            if (this.selectedObject.type === 'triangle') {
+                this.selectedObject.points.forEach(point => {
+                    point.x += dx;
+                    point.y += dy;
+                });
+            }
+        }
+    }
+
+    resizeObject(pos) {
+        if (this.selectedObject.type === 'line') {
+            if (this.resizeHandle === 'start') {
+                this.selectedObject.x = pos.x;
+                this.selectedObject.y = pos.y;
+            } else if (this.resizeHandle === 'end') {
+                this.selectedObject.endX = pos.x;
+                this.selectedObject.endY = pos.y;
+            }
+        } else if (this.selectedObject.type === 'circle') {
+            const dx = pos.x - this.selectedObject.x;
+            const dy = pos.y - this.selectedObject.y;
+            this.selectedObject.radius = Math.max(1, Math.hypot(dx, dy));
+        } else if (this.selectedObject.type === 'triangle') {
+            const handle = this.resizeHandle;
+            const points = this.selectedObject.points;
+            let xs = points.map(p => p.x);
+            let ys = points.map(p => p.y);
+            let minX = Math.min(...xs);
+            let maxX = Math.max(...xs);
+            let minY = Math.min(...ys);
+            let maxY = Math.max(...ys);
+
+            switch (handle) {
+                case 'nw':
+                    minX = pos.x;
+                    minY = pos.y;
+                    break;
+                case 'ne':
+                    maxX = pos.x;
+                    minY = pos.y;
+                    break;
+                case 'sw':
+                    minX = pos.x;
+                    maxY = pos.y;
+                    break;
+                case 'se':
+                    maxX = pos.x;
+                    maxY = pos.y;
+                    break;
+            }
+
+            points[0].x = minX;
+            points[0].y = maxY;
+            points[1].x = maxX;
+            points[1].y = maxY;
+            points[2].x = (minX + maxX) / 2;
+            points[2].y = minY;
+        } else {
+            const handle = this.resizeHandle;
+            if (handle.includes('e')) this.selectedObject.width = pos.x - this.selectedObject.x;
+            if (handle.includes('s')) this.selectedObject.height = pos.y - this.selectedObject.y;
+            if (handle.includes('w')) {
+                this.selectedObject.width += this.selectedObject.x - pos.x;
+                this.selectedObject.x = pos.x;
+            }
+            if (handle.includes('n')) {
+                this.selectedObject.height += this.selectedObject.y - pos.y;
+                this.selectedObject.y = pos.y;
+            }
+        }
+    }
+
+    checkCollision(pos, obj) {
+        switch (obj.type) {
+            case 'rect': 
+                return pos.x >= obj.x && 
+                       pos.x <= obj.x + obj.width &&
+                       pos.y >= obj.y && 
+                       pos.y <= obj.y + obj.height;
+            case 'circle': 
+                return Math.hypot(pos.x - obj.x, pos.y - obj.y) <= obj.radius;
+            case 'line': 
+                return this.pointToLineDistance(pos, obj) < 5;
+            case 'triangle': 
+                return this.pointInTriangle(pos, obj.points);
+            case 'text': 
+                return pos.x >= obj.x && 
+                    pos.x <= obj.x + obj.width &&
+                    pos.y >= obj.y && 
+                    pos.y <= obj.y + obj.height; // 修正Y坐标检测
+        }
+    }
+
+    pointToLineDistance(p, line) {
+        const dx = line.endX - line.x;
+        const dy = line.endY - line.y;
+        const t = ((p.x - line.x) * dx + (p.y - line.y) * dy) / (dx*dx + dy*dy);
+        const tClamped = Math.max(0, Math.min(1, t));
+        const proj = {
+            x: line.x + dx * tClamped,
+            y: line.y + dy * tClamped
+        };
+        return Math.hypot(p.x - proj.x, p.y - proj.y);
+    }
+
+    pointInTriangle(p, points) {
+        const area = 0.5 * (
+            (points[1].x - points[0].x) * (points[2].y - points[0].y) - 
+            (points[2].x - points[0].x) * (points[1].y - points[0].y)
+        );
+        if (Math.abs(area) < 1e-8) return false;
+
+        const s = (points[0].y * points[2].x - points[0].x * points[2].y + 
+                  (points[2].y - points[0].y) * p.x + 
+                  (points[0].x - points[2].x) * p.y) / (2 * area);
+        const t = (points[0].x * points[1].y - points[0].y * points[1].x + 
+                  (points[0].y - points[1].y) * p.x + 
+                  (points[1].x - points[0].x) * p.y) / (2 * area);
+
+        return s >= 0 && t >= 0 && (s + t) <= 1;
+    }
+
+    redrawCanvas() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        this.objects.forEach(obj => this.drawObject(obj));
+        
+        if (this.isDrawing && this.tempObject) {
+            this.drawObject(this.tempObject, true);
+        }
+
+        if (this.selectedObject) {
+            this.ctx.strokeStyle = '#ff0000';
+            this.ctx.setLineDash([5, 5]);
+            
+            if (this.selectedObject.type === 'circle') {
+                const radius = this.selectedObject.radius;
+                this.ctx.strokeRect(
+                    this.selectedObject.x - radius - 2,
+                    this.selectedObject.y - radius - 2,
+                    radius * 2 + 4,
+                    radius * 2 + 4
+                );
+            } else if (this.selectedObject.type === 'line') {
+                const line = this.selectedObject;
+                const minX = Math.min(line.x, line.endX);
+                const minY = Math.min(line.y, line.endY);
+                const maxX = Math.max(line.x, line.endX);
+                const maxY = Math.max(line.y, line.endY);
+                const width = maxX - minX;
+                const height = maxY - minY;
+                this.ctx.strokeRect(
+                    minX - 2,
+                    minY - 2,
+                    width + 4,
+                    height + 4
+                );
+            } else if (this.selectedObject.type === 'triangle') {
+                const points = this.selectedObject.points;
+                const xs = points.map(p => p.x);
+                const ys = points.map(p => p.y);
+                const minX = Math.min(...xs);
+                const maxX = Math.max(...xs);
+                const minY = Math.min(...ys);
+                const maxY = Math.max(...ys);
+                this.ctx.strokeRect(
+                    minX - 2,
+                    minY - 2,
+                    (maxX - minX) + 4,
+                    (maxY - minY) + 4
+                );
+            } else {
+                this.ctx.strokeRect(
+                    this.selectedObject.x - 2,
+                    this.selectedObject.y - 2,
+                    (this.selectedObject.width || 0) + 4,
+                    (this.selectedObject.height || 0) + 4
+                );
+            }
+            this.ctx.setLineDash([]);
+            
+            if (this.selectedObject.type === 'line') {
+                this.ctx.fillStyle = '#ff0000';
+                this.ctx.fillRect(this.selectedObject.x - 3, this.selectedObject.y - 3, 6, 6);
+                this.ctx.fillRect(this.selectedObject.endX - 3, this.selectedObject.endY - 3, 6, 6);
+            } else {
+                ['nw', 'ne', 'sw', 'se'].forEach(handle => {
+                    const pos = this.getHandlePosition(handle);
+                    this.ctx.fillStyle = '#ff0000';
+                    this.ctx.fillRect(pos.x - 3, pos.y - 3, 6, 6);
+                });
+            }
+        }
+    }
+
+    drawObject(obj, isTemp = false) {
+        this.ctx.fillStyle = obj.color || '#000000';
+        this.ctx.strokeStyle = isTemp ? '#888888' : obj.color || '#000000';
+        
+        switch (obj.type) {
+            case 'line':
+                this.ctx.beginPath();
+                this.ctx.moveTo(obj.x, obj.y);
+                this.ctx.lineTo(obj.endX, obj.endY);
+                this.ctx.stroke();
+                break;
+            case 'rect':
+                this.ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
+                break;
+            case 'circle':
+                this.ctx.beginPath();
+                this.ctx.arc(obj.x, obj.y, obj.radius, 0, Math.PI*2);
+                this.ctx.stroke();
+                break;
+            case 'triangle':
+                this.ctx.beginPath();
+                obj.points.forEach((p, i) => 
+                    i === 0 ? this.ctx.moveTo(p.x, p.y) : this.ctx.lineTo(p.x, p.y));
+                this.ctx.closePath();
+                this.ctx.stroke();
+                break;
+            case 'text':
+                this.ctx.save();
+                this.ctx.fillStyle = obj.color || '#000000';
+                this.ctx.font = '16px Arial';
+                this.ctx.textBaseline = 'top'; // 顶部对齐
+                this.ctx.fillText(obj.text, obj.x, obj.y);
+                // 更新尺寸
+                const metrics = this.ctx.measureText(obj.text);
+                obj.width = metrics.width;
+                obj.height = 16;
+                this.ctx.restore();
+                break;
+        }
+    }
+
+    getHandlePosition(handle) {
+        if (this.selectedObject?.type === 'circle') {
+            const radius = this.selectedObject.radius;
+            switch (handle) {
+                case 'nw': return { x: this.selectedObject.x - radius, y: this.selectedObject.y - radius };
+                case 'ne': return { x: this.selectedObject.x + radius, y: this.selectedObject.y - radius };
+                case 'sw': return { x: this.selectedObject.x - radius, y: this.selectedObject.y + radius };
+                case 'se': return { x: this.selectedObject.x + radius, y: this.selectedObject.y + radius };
+            }
+        } else if (this.selectedObject?.type === 'triangle') {
+            const points = this.selectedObject.points;
+            const xs = points.map(p => p.x);
+            const ys = points.map(p => p.y);
+            const minX = Math.min(...xs);
+            const maxX = Math.max(...xs);
+            const minY = Math.min(...ys);
+            const maxY = Math.max(...ys);
+            switch (handle) {
+                case 'nw': return { x: minX, y: minY };
+                case 'ne': return { x: maxX, y: minY };
+                case 'sw': return { x: minX, y: maxY };
+                case 'se': return { x: maxX, y: maxY };
+                default: return { x: 0, y: 0 };
+            }
+        } else if (this.selectedObject?.type === 'line') {
+            return handle === 'start' 
+                ? { x: this.selectedObject.x, y: this.selectedObject.y }
+                : { x: this.selectedObject.endX, y: this.selectedObject.endY };
+        } else {
+            return {
+                x: this.selectedObject.x + (handle.includes('e') ? (this.selectedObject.width || 0) : 0),
+                y: this.selectedObject.y + (handle.includes('s') ? (this.selectedObject.height || 0) : 0)
+            }; 
+        }
+    }
+
+    checkResizeHandle(pos) {
+        if (!this.selectedObject) return false;
+
+        if (this.selectedObject.type === 'line') {
+            const startDist = Math.hypot(pos.x - this.selectedObject.x, pos.y - this.selectedObject.y);
+            const endDist = Math.hypot(pos.x - this.selectedObject.endX, pos.y - this.selectedObject.endY);
+            return startDist < 5 || endDist < 5;
+        } else {
+            return ['nw', 'ne', 'sw', 'se'].some(handle => {
+                const hPos = this.getHandlePosition(handle);
+                return Math.abs(pos.x - hPos.x) < 5 && Math.abs(pos.y - hPos.y) < 5;
+            });
+        }
+    }
+
+    getResizeHandle(pos) {
+        if (!this.selectedObject) return null;
+
+        if (this.selectedObject.type === 'line') {
+            const startDist = Math.hypot(pos.x - this.selectedObject.x, pos.y - this.selectedObject.y);
+            const endDist = Math.hypot(pos.x - this.selectedObject.endX, pos.y - this.selectedObject.endY);
+            if (startDist < 5) return 'start';
+            if (endDist < 5) return 'end';
+            return null;
+        } else {
+            return ['nw', 'ne', 'sw', 'se'].find(handle => {
+                const hPos = this.getHandlePosition(handle);
+                return Math.abs(pos.x - hPos.x) < 5 && Math.abs(pos.y - hPos.y) < 5;
+            });
+        }
+    }
+
+    getCanvasPos(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        return {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+    }
+
+    setupStyles() {
+        this.toolbar.style.padding = '10px';
+        this.toolbar.style.backgroundColor = '#f0f0f0';
+        this.toolbar.querySelectorAll('button').forEach(btn => {
+            btn.style.margin = '0 5px';
+            btn.style.padding = '5px 10px';
+        });
+        this.canvas.style.touchAction = 'none';
+    }
+}
+
+new CanvasManager();
+</script>
+</body>
+</html>
+<!--
+add a button to delete selected object.
+-->
+ 

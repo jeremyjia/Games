@@ -113,33 +113,12 @@
         button[data-class="2"].active { background: #4A148C; }
 
         #toggleEditorBtn {
-            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); 
+            background: #4CAF50;
         }
         #toggleEditorBtn:hover {
             background: #45a049;
         }
-        #addClassBtn {
-            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-            border: none;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
 
-        #addClassBtn:hover {
-            background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            transform: translateY(-1px);
-        }
-
-        #addClassBtn:active {
-            background: linear-gradient(135deg, #3d8b40 0%, #2d6d2f 100%);
-            transform: translateY(0);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
         hr {
             width: 100%;
             margin: 8px 0;
@@ -241,25 +220,12 @@
             border-top: 1px solid #e2e8f0;
             padding: 10px;
         }
-        button.class-btn-0 { background: #2196F3; }
-        button.class-btn-0:hover { background: #1976D2; }
-        button.class-btn-0.active { background: #0D47A1; }
-
-        button.class-btn-1 { background: #FF9800; }
-        button.class-btn-1:hover { background: #F57C00; }
-        button.class-btn-1.active { background: #E65100; }
-
-        button.class-btn-2 { background: #9C27B0; }
-        button.class-btn-2:hover { background: #7B1FA2; }
-        button.class-btn-2.active { background: #4A148C; }
     </style>
-    <script src="../js/blDSMusic.js"></script>
+
 </head>
 <body>
     <div class="nav">
-        <a href="..">[..]</a>
-        <a href="temp.html">temp.html</a>
-        <a href="jp1.html">jp1.html</a>
+        <a href="https://www.deepseek.com">前往DeepSeek</a>
         <a href="c1.html">c1.html</a>
         <a href="d1.html">d1.html</a>
         <a href="d2.html">d2.html</a>
@@ -274,7 +240,6 @@
             <textarea></textarea>
             <div class="editor-toolbar">
                 <button id="updateBtn">refresh</button>
-                <button id="addClassBtn">Add Class</button> <!-- 新增按钮 -->
             </div>
             <div class="resize-handle"></div>
         </div>
@@ -284,9 +249,9 @@
         <div class="toolbar-header">类工具箱</div>
         <div class="toolbar-content">
             <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-                <button data-class="0" class="class-btn-0">Class1</button>
-                <button data-class="1" class="class-btn-1">Class2</button>
-                <button data-class="2" class="class-btn-2">Class3</button>
+                <button data-class="0">Class1</button>
+                <button data-class="1">Class2</button>
+                <button data-class="2">Class3</button>
                 <button id="toggleEditorBtn">Toggle Editor</button>
             </div>
             <hr>
@@ -297,51 +262,13 @@
     </div>
 
     <script>
-        
-        const classInstances = [];
-
-        // 添加新建类功能
-        document.getElementById('addClassBtn').addEventListener('click', async function() {
-            const classCode = textarea.value;
-            try {
-                const cls = new Function(`return ${classCode}`)();
-                classTemplates.push(classCode);
-                const newClassIndex = classTemplates.length - 1;
-
-                // 创建新按钮
-                const newButton = document.createElement('button');
-                newButton.textContent = `Class${newClassIndex + 1}`;
-                newButton.setAttribute('data-class', newClassIndex);
-                newButton.classList.add(`class-btn-${newClassIndex % 3}`); // 循环使用3种颜色
-                
-                // 插入到toggle按钮前
-                const container = document.querySelector('#id_4_class_toolbar > .toolbar-content > div:first-child');
-                container.insertBefore(newButton, document.getElementById('toggleEditorBtn'));
-
-                // 绑定点击事件
-                newButton.addEventListener('click', async () => {
-                    document.querySelectorAll('[data-class]').forEach(b => b.classList.remove('active'));
-                    newButton.classList.add('active');
-                    textarea.value = classTemplates[newClassIndex];
-                    classInstances[newClassIndex] = classInstances[newClassIndex] || new cls();
-                    showMethods(classInstances[newClassIndex]);
-                });
-
-                classInstances[newClassIndex] = new cls();
-                alert('Class added successfully!');
-            } catch (e) {
-                alert('Error creating class: ' + e.message);
-            }
-        });
-
         const canvas = document.getElementById('id_4_draw_canvase');
         let ctx = null;
         
         function initCanvas() {
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
-            ctx = canvas.getContext('2d'); 
-            
+            ctx = canvas.getContext('2d');
         }
         window.addEventListener('load', initCanvas);
         window.addEventListener('resize', initCanvas);
@@ -420,89 +347,6 @@
             document.addEventListener('touchend', dragHandler.end);
         });
 
-
-        // 添加全局拖拽状态管理
-    let isDraggingBox = false;
-    let dragStartX = 0;
-    let dragStartY = 0;
-    let selectedInstance = null;
-
-    // Canvas事件监听
-    canvas.addEventListener('mousedown', handleCanvasDown);
-    canvas.addEventListener('touchstart', handleCanvasDown, { passive: false });
-    canvas.addEventListener('mousemove', handleCanvasMove);
-    canvas.addEventListener('touchmove', handleCanvasMove, { passive: false });
-    canvas.addEventListener('mouseup', handleCanvasUp);
-    canvas.addEventListener('touchend', handleCanvasUp);
-
-    function handleCanvasDown(e) {
-        e.preventDefault(); // 防止触摸滚动
-        const rect = canvas.getBoundingClientRect();
-        // 统一处理鼠标和触摸坐标
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        const mouseX = clientX - rect.left;
-        const mouseY = clientY - rect.top;
-
-        const activeBtn = document.querySelector('[data-class].active');
-        if (!activeBtn) return;
-        
-        const instance = classInstances[activeBtn.dataset.class];
-        if (!instance) return;
-
-        const hitIndex = instance.checkHitBox(mouseX, mouseY);
-        if(hitIndex > -1) {
-            isDraggingBox = true;
-            selectedInstance = instance;
-            instance.selectedBox = hitIndex;
-            dragStartX = mouseX;
-            dragStartY = mouseY;
-            
-            // 立即清除并重绘画布
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            selectedInstance.drawAllBoxs(ctx);  // 新增的立即重绘
-        }  
-    }
-
-    function handleCanvasMove(e) {
-        e.preventDefault(); // 防止触摸滚动
-        if(!isDraggingBox) return;
-
-        const rect = canvas.getBoundingClientRect();
-        // 统一处理坐标
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        
-        const mouseX = clientX - rect.left;
-        const mouseY = clientY - rect.top;
-
-        const dx = mouseX - dragStartX;
-        const dy = mouseY - dragStartY;
-
-        if(selectedInstance) {
-            selectedInstance.moveSelectedBox(dx, dy);
-            dragStartX = mouseX;
-            dragStartY = mouseY;
-            
-            // 清除并重绘
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            selectedInstance.drawAllBoxs(ctx);
-        }
-    }
-
-    function handleCanvasUp(e) {
-        if(e.type === 'touchend') {
-            e.preventDefault();
-        }
-        if(isDraggingBox && selectedInstance) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            selectedInstance.drawAllBoxs(ctx);  // 新增的释放时重绘
-            selectedInstance.selectedBox = -1;  // 重置选中状态
-        }
-        isDraggingBox = false;
-        selectedInstance = null;
-    }
-
         // 类模板定义
         const classTemplates = [
             `class Class1 {
@@ -522,123 +366,89 @@
                     cx.fillStyle = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
                     cx.fill();
                 }
-                drawMyName(cx) {
-                    cx.save();
-                    cx.font = "24px Arial";
-                    cx.fillStyle = "#2196F3";
-                    cx.textBaseline = "middle";
-                    cx.textAlign = "center";
-                    
-                    const x = cx.canvas.width/4;
-                    const y = cx.canvas.height/4;
-                    cx.fillText(this.name, x, y);
-                    
-                    cx.shadowColor = "rgba(0,0,0,0.3)";
-                    cx.shadowOffsetX = 2;
-                    cx.shadowOffsetY = 2;
-                    cx.shadowBlur = 4;
- 
-                    cx.restore();
-                }
             }`,
 
             `class Class2 {
                 constructor() {
                     this.value = 0;
-                    this.name = "class2_name"; 
-                    this.x = 50;
-                    this.y = 50;
-                    this.dx = 50;
-                }
-                 
-                #f1(cx) { 
-                    const ns = ["1---","2//","3//","4//","1,,","5,","2'","7,,-","2''---"];  
-                } 
-                Test(cx) { 
-                    this.#f1(cx);
-                } 
-            }` 
-        ,
-
-           `class Class3 {
-        constructor(name) {
-            this.n = 0;
-            this.x = 10;
-            this.y = 10;
-            this.dx = 50;
-            this.boxs = [];
-            this.name = name || 'Default';
-            this.selectedBox = null;
-            this.boxSize = 20;
-        }
-        
-        draw_boxs(cx) {
-            if(this.n>5){
-                this.n = 0;
-                this.x = 10;
-                this.y += 10;
-            }
-            this.x += this.dx;
-            this.n++;
-
-            this.boxs.push({ 
-                x: this.x, 
-                y: this.y,
-                originalX: this.x,
-                originalY: this.y
-            });
-            this.drawAllBoxs(cx);
-        }
-        
-        drawAllBoxs(cx) {
-            cx.fillStyle = '#FF5722';
-            cx.strokeStyle = '#333';
-            this.boxs.forEach((point, index) => {
-                cx.beginPath();
-                cx.rect(
-                    point.x - this.boxSize/2,
-                    point.y - this.boxSize/2,
-                    this.boxSize,
-                    this.boxSize
-                );
-
-                // 修改后的颜色逻辑
-                if(index === this.selectedBox) {
-                    cx.fillStyle = '#2196F3'; // 选中时蓝色
-                } else {
-                    // 未选中时保持渐变
-                    const gradient = cx.createLinearGradient(
-                        point.x - this.boxSize/2,
-                        point.y - this.boxSize/2,
-                        point.x + this.boxSize/2,
-                        point.y + this.boxSize/2
-                    );
-                    gradient.addColorStop(0, '#FF9800');
-                    gradient.addColorStop(1, '#FF5722');
-                    cx.fillStyle = gradient;
+                    this.name = "class2_name";
                 }
                 
-                cx.fill();
-                cx.stroke();
-            });
-        }
-        
-        checkHitBox(x, y) {
-            return this.boxs.findIndex(point => {
-                return x > point.x - this.boxSize/2 && 
-                       x < point.x + this.boxSize/2 && 
-                       y > point.y - this.boxSize/2 && 
-                       y < point.y + this.boxSize/2;
-            });
-        }
-        
-        moveSelectedBox(dx, dy) {
-            if(this.selectedBox !== null) {
-                this.boxs[this.selectedBox].x += dx;
-                this.boxs[this.selectedBox].y += dy;
-            }
-        }
-    }`
+                increment() {
+                    this.value++;
+                }
+                
+                drawMyName(ctx) {
+                    ctx.save();
+                    ctx.font = "24px Arial";
+                    ctx.fillStyle = "#2196F3";
+                    ctx.textBaseline = "middle";
+                    ctx.textAlign = "center";
+                    
+                    const x = ctx.canvas.width/2;
+                    const y = ctx.canvas.height/2;
+                    ctx.fillText(this.name, x, y);
+                    
+                    ctx.shadowColor = "rgba(0,0,0,0.3)";
+                    ctx.shadowOffsetX = 2;
+                    ctx.shadowOffsetY = 2;
+                    ctx.shadowBlur = 4;
+                    ctx.restore();
+                }
+            }`,
+
+            `class Class3 {
+                constructor(name) {
+                    this.n = 0;
+                    this.x = 10;
+                    this.y = 10;
+                    this.dx = 50;
+                    this.boxs = [];
+                    this.name = name || 'Default';
+                }
+                
+                greet() {
+                    console.log("Hello from ${this.name}");
+                }
+                
+                draw_boxs(cx) {
+                    this.x += this.dx;
+                    this.n ++;
+                    if(this.n>10){
+                        this.n = 0;
+                        this.x = 10;
+                        this.y += 50;
+                    }
+                    // 修正对象语法并添加坐标点
+                    this.boxs.push({ x: this.x, y: this.y });
+                    
+                    // 绘制所有矩形
+                    cx.fillStyle = '#FF5722';  // 橙色填充
+                    cx.strokeStyle = '#333';  // 黑色边框
+                    this.boxs.forEach(point => {
+                        cx.beginPath();
+                        // 绘制矩形（位置，宽高20x20）
+                        cx.rect(point.x - 10, point.y - 10, 20, 20); // 中心对齐坐标点
+                        // 添加渐变效果
+                        const gradient = cx.createLinearGradient(
+                            point.x - 10, 
+                            point.y - 10,
+                            point.x + 20,
+                            point.y + 20
+                        );
+                        gradient.addColorStop(0, '#FF9800');
+                        gradient.addColorStop(1, '#FF5722');
+                        cx.fillStyle = gradient;
+                        
+                        cx.fill();
+                        cx.stroke();
+                    });
+                }
+                
+                static staticMethod() {
+                    console.log('This is static');
+                }
+            }`
 
 
             ,
@@ -660,32 +470,25 @@
                 // 加载类模板
                 textarea.value = classTemplates[btn.dataset.class];
 
-                const classIndex = btn.dataset.class;
-                if (!classInstances[classIndex]) {
+                try {
+                    // 自动生成实例
+                    const classIndex = btn.dataset.class;
                     const cls = await createClass(classTemplates[classIndex]);
-                    classInstances[classIndex] = new cls();
+                    const instance = new cls();
+                    showMethods(instance);
+                } catch (e) {
+                    console.error('实例创建失败:', e);
+                    alert('类定义有误，请检查语法');
                 }
-                showMethods(classInstances[classIndex]);
-                    });
-                });
+            });
+        });
 
-        document.getElementById('updateBtn').addEventListener('click', async () => {
+        // 更新按钮处理
+        document.getElementById('updateBtn').addEventListener('click', () => {
             const activeBtn = document.querySelector('[data-class].active');
             if (activeBtn) {
-                const classIndex = activeBtn.dataset.class;
-                classTemplates[classIndex] = textarea.value;
-
-                try {
-                    // 重新创建类实例
-                    const cls = await createClass(classTemplates[classIndex]);
-                    classInstances[classIndex] = new cls();
-                    // 更新方法列表
-                    showMethods(classInstances[classIndex]);
-                    alert('类定义已更新并刷新方法列表');
-                } catch (e) {
-                    alert('类定义错误: ' + e.message);
-                    console.error(e);
-                }
+                classTemplates[activeBtn.dataset.class] = textarea.value;
+                alert('类定义已更新');
             } else {
                 alert('请先选择要更新的类');
             }
@@ -730,29 +533,6 @@
                     methodList.appendChild(div);
                 });
         }
-        document.addEventListener('keydown', (e) => {
-            if (!selectedInstance || selectedInstance.selectedBox === null) return;
-
-            const step = 5; // 每次移动5像素
-            let dx = 0, dy = 0;
-
-            switch(e.key) {
-                case 'ArrowLeft':  dx = -step; break;
-                case 'ArrowRight': dx = step; break;
-                case 'ArrowUp':    dy = -step; break;
-                case 'ArrowDown': dy = step; break;
-                default: return;
-            }
-
-            selectedInstance.moveSelectedBox(dx, dy);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            selectedInstance.drawAllBoxs(ctx);
-        });
     </script>
 </body>
 </html>
-<!--
-"2/," the point should be under the underline
-
-"1//," the point should be under the 2 underlines
--->
