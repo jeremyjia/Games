@@ -234,94 +234,74 @@ app.post('/generate_video', async (req, res) => {
     });
   }
 });
-// Add this new route before app.listen()
-app.get('/test_generate_video', async (req, res) => {
-  console.log('\n=== Handling test video generation request ===');
-  let tempDir;
-  try {
-    // Test parameters
-    const testParams = {
-      fps: 1,
-      audio: 'https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3',
-      scenes: [
-        {
-          id: 'scene1',
-          color: '#FFA500',
-          duration: 2,
-          drawingObjs: [
-            { type: 'Rect', startX: 100, startY: 100, endX: 300, endY: 300, color: '#00FF00' },
-            { type: 'Line', startX: 50, startY: 50, endX: 200, endY: 200, color: '#0000FF' }
-          ]
-        },
-        {
-          id: 'scene2',
-          color: '#87CEEB',
-          duration: 3,
-          drawingObjs: [
-            { type: 'Line', startX: 300, startY: 300, endX: 500, endY: 100, color: '#FF0000' }
-          ]
-        }
-      ],
-      width: 640,
-      height: 480
-    };
 
-    // Create temporary directory
-    const dir = await tmp.dir();
-    tempDir = dir.path;
-    console.log(`Created temporary directory at ${tempDir}`);
-
-    // Download audio
-    const audioPath = path.join(tempDir, 'audio.mp3');
-    console.log(`Downloading test audio from ${testParams.audio}`);
-    const audioResponse = await axios({
-      url: testParams.audio,
-      responseType: 'stream',
-    });
-    await new Promise((resolve, reject) => {
-      audioResponse.data.pipe(fs.createWriteStream(audioPath))
-        .on('finish', resolve)
-        .on('error', reject);
-    });
-
-    // Process scenes
-    const clipPaths = [];
-    for (const scene of testParams.scenes) {
-      const pngPath = await generateSceneImage(scene, testParams.width, testParams.height, tempDir);
-      const clipPath = await createSceneClip(scene, pngPath, scene.duration, testParams.fps, tempDir);
-      clipPaths.push(clipPath);
+// Add root route handler
+app.get('/', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Video Generator Server</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f0f0f0;
+          }
+          .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+          }
+          h1 {
+            color: #333;
+          }
+          a {
+            color: #0066cc;
+            text-decoration: none;
+          }
+          a:hover {
+            text-decoration: underline;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>🎥 Video Generation Server</h1>
+          <p>Welcome to the video generation service. Here's what you can do:</p>
+          <ul>
+            <li>POST JSON requests to <code>/generate_video</code> to create custom videos</li>
+            <li>Test the service with a <a href="/test_generate_video">sample video</a></li>
+          </ul>
+          <h2>📚 API Documentation</h2>
+          <h3>POST /generate_video</h3>
+          <p>Request body format:</p>
+          <pre>
+{
+  "fps": 30,
+  "audio": "https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3",
+  "scenes": [
+    {
+      "id": "scene1",
+      "color": "#FFA500",
+      "duration": 5,
+      "drawingObjs": [
+        { "type": "Rect", "startX": 100, "startY": 100, "endX": 300, "endY": 300, "color": "#00FF00" }
+      ]
     }
-
-    // Merge clips
-    const mergedPath = await mergeClips(clipPaths, tempDir);
-    
-    // Add audio
-    const outputPath = path.join(tempDir, 'final.mp4');
-    await addAudio(mergedPath, audioPath, outputPath);
-
-    // Send result
-    res.download(outputPath, 'test-video.mp4', async (err) => {
-      console.log('\nCleaning up temporary files');
-      await dir.cleanup();
-      if (err) {
-        console.error('Download failed:', err);
-        res.status(500).send('Video delivery failed');
-      }
-    });
-
-  } catch (error) {
-    console.error('\n!!! Test Processing Error !!!');
-    console.error(error.stack);
-    if (tempDir) {
-      console.log(`Cleaning up temporary directory ${tempDir}`);
-      await fs.remove(tempDir);
-    }
-    res.status(500).json({
-      error: 'Test video generation failed',
-      message: error.message
-    });
-  }
+  ]
+}
+          </pre>
+        </div>
+      </body>
+    </html>
+  `);
 });
+
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`\nServer started on port ${PORT}`);
