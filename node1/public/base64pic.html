@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Base64 图片展示</title>
+    <style>
+        body {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .image-container {
+            border: 2px dashed #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 200px;
+            text-align: center;
+        }
+
+        .warning {
+            color: #dc3545;
+            background: #ffe6e6;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Base64 图片展示器</h1>
+    <div class="warning">
+        注意：Base64 数据会使 URL 变得很长，建议仅用于小图片（<50KB）
+    </div>
+    
+    <div class="image-container" id="imageContainer">
+        <p>图片将在此处显示</p>
+    </div>
+
+    <div>
+        <input type="text" id="base64Input" 
+               placeholder="输入 data:image/png;base64,... 格式的字符串">
+        <button onclick="loadFromInput()">显示图片</button>
+        <button onclick="generateDemo()">生成示例链接</button>
+    </div>
+
+    <script>
+        // 初始化时检查 URL 参数
+        const params = new URLSearchParams(window.location.search);
+        const base64Data = params.get('data');
+
+        if (base64Data) {
+            loadImage(decodeURIComponent(base64Data));
+        }
+
+        // 安全验证函数
+        function isValidBase64(str) {
+            const pattern = /^data:image\/(png|jpeg|gif|webp);base64,([a-zA-Z0-9+/]+=*)$/;
+            if (!pattern.test(str)) return false;
+
+            // 检查数据长度（限制为 100KB）
+            const dataPart = str.split(',')[1];
+            const byteLength = atob(dataPart).length;
+            return byteLength <= 100 * 1024; // 100KB
+        }
+
+        // 加载图片
+        function loadImage(base64Str) {
+            const container = document.getElementById('imageContainer');
+            
+            if (!isValidBase64(base64Str)) {
+                container.innerHTML = `
+                    <div class="warning">
+                        无效的 Base64 图片数据，请确认格式为：
+                        data:image/[格式];base64,... 且大小不超过 100KB
+                    </div>
+                `;
+                return;
+            }
+
+            const img = new Image();
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '80vh';
+            img.onload = () => {
+                container.innerHTML = '';
+                container.appendChild(img);
+            };
+            img.onerror = () => {
+                container.innerHTML = `
+                    <div class="warning">
+                        图片加载失败，请检查数据完整性
+                    </div>
+                `;
+            };
+            img.src = base64Str;
+        }
+
+        // 输入框加载
+        function loadFromInput() {
+            const input = document.getElementById('base64Input').value;
+            loadImage(input);
+        }
+
+        // 生成示例链接
+        function generateDemo() {
+            // 示例小图片（1x1像素透明PNG）
+            const demoData = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+            const url = `${location.origin}${location.pathname}?data=${encodeURIComponent(demoData)}`;
+            
+            prompt("示例链接（复制使用）:", url);
+        }
+    </script>
+</body>
+</html>

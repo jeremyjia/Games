@@ -1,0 +1,571 @@
+<!--
+i5a.html: 
+升级:让小狗不停的摆尾巴。
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>视频数据编辑器</title>
+    <style> 
+        
+        .toolbar {
+            position: fixed;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            touch-action: none;
+            min-width: 120px;
+        }
+        .toolbar-header {
+            padding: 8px;
+            background: rgba(0,0,0,0.1);
+            cursor: grab;
+            border-radius: 8px 8px 0 0;
+            user-select: none;
+        }
+        .toolbar.dragging .toolbar-header {
+            cursor: grabbing;
+        }
+        .toolbar-content {
+            padding: 10px;
+        }
+        .toolbar button {
+            display: block;
+            margin: 5px;
+            padding: 8px;
+            width: calc(100% - 10px);
+        }
+        .frame-btn {
+            display: inline-block;
+            padding: 8px;
+            margin: 2px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+        }
+        .selected {
+            background: #ffd700;
+            border-color: #ff9900;
+        }
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #e0f7ff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            max-width: 80vw;
+            max-height: 80vh;
+            overflow: auto;
+        }
+        .close-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .fps-control {
+            margin: 10px 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .fps-value {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <button id="runApp">run</button> 
+
+    <script>
+        const BACKGROUNDS = ['海边', '马路边', '树林', '操场'];
+        
+        class CanvasManager {
+            constructor() {
+                this.canvas = document.getElementById('mainCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+            }
+
+            resize() {
+                const rect = this.canvas.getBoundingClientRect();
+                this.canvas.width = rect.width;
+                this.canvas.height = rect.height;
+            }
+
+            clear() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+
+            drawBackground(type) {
+                const ctx = this.ctx;
+                ctx.save();
+                
+                switch(type) {
+                    case '海边':
+                        ctx.fillStyle = '#87CEEB';
+                        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height/2);
+                        ctx.fillStyle = '#FFD700';
+                        ctx.fillRect(0, this.canvas.height/2, this.canvas.width, this.canvas.height/2);
+                        break;
+                    case '马路边':
+                        ctx.fillStyle = '#808080';
+                        ctx.fillRect(0, this.canvas.height*0.7, this.canvas.width, this.canvas.height*0.3);
+                        break;
+                    case '树林':
+                        ctx.fillStyle = '#228B22';
+                        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                        break;
+                    case '操场':
+                        ctx.fillStyle = '#4CAF50';
+                        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                        ctx.beginPath();
+                        ctx.arc(this.canvas.width/2, this.canvas.height/2, 50, 0, Math.PI*2);
+                        ctx.strokeStyle = 'white';
+                        ctx.stroke();
+                        break;
+                }
+                ctx.restore();
+            }
+
+            drawObject(obj) {
+                const ctx = this.ctx;
+                ctx.save();
+                ctx.translate(obj.x, obj.y);
+                ctx.scale(obj.scale, obj.scale);
+                
+                switch(obj.type) {
+                    // ... 汽车和树木的绘制保持不变 ...
+                    case '小狗':
+                        ctx.fillStyle = '#8B4513';
+                        // 身体（椭圆）
+                        ctx.beginPath();
+                        ctx.ellipse(0, 0, 20, 30, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 头部（圆形）
+                        ctx.beginPath();
+                        ctx.arc(0, -35, 15, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 耳朵（两个半圆）
+                        ctx.beginPath();
+                        ctx.arc(-12, -45, 8, 0, Math.PI, true);
+                        ctx.arc(12, -45, 8, 0, Math.PI, true);
+                        ctx.fill();
+                        
+                        // 腹部（浅色椭圆）
+                        ctx.fillStyle = '#CD853F';
+                        ctx.beginPath();
+                        ctx.ellipse(0, 5, 12, 20, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 四肢（四个椭圆）
+                        ctx.fillStyle = '#8B4513';
+                        ctx.beginPath();
+                        ctx.ellipse(-15, 15, 8, 12, Math.PI/6, 0, Math.PI * 2);
+                        ctx.ellipse(15, 15, 8, 12, -Math.PI/6, 0, Math.PI * 2);
+                        ctx.ellipse(-15, 35, 8, 12, Math.PI/6, 0, Math.PI * 2);
+                        ctx.ellipse(15, 35, 8, 12, -Math.PI/6, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 摆动尾巴的动画
+                        const now = Date.now();
+                        const angle = Math.sin(now / 150) * Math.PI/4; // 摆动角度
+                        
+                        ctx.save();
+                        ctx.translate(20, 20); // 尾巴根部位置
+                        ctx.rotate(angle);
+                        
+                        // 尾巴（曲线）
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.quadraticCurveTo(15, -10, 0, -20);
+                        ctx.strokeStyle = '#8B4513';
+                        ctx.lineWidth = 5;
+                        ctx.stroke();
+                        
+                        ctx.restore();
+                        
+                        // 眼睛和鼻子保持不变...
+                        break;
+                }
+                ctx.restore();
+            }
+        }
+
+        class FrameManager {
+            constructor() {
+                this.frames = [];
+                this.currentFrame = null;
+            }
+
+            addFrame() {
+                const newFrame = {
+                    id: Date.now(),
+                    background: BACKGROUNDS[Math.floor(Math.random() * BACKGROUNDS.length)],
+                    objects: [],
+                    selectedObject: null
+                };
+                this.frames.push(newFrame);
+                this.selectFrame(newFrame.id);
+                return newFrame;
+            }
+
+            deleteFrame(frameId) {
+                const index = this.frames.findIndex(f => f.id === frameId);
+                if (index === -1) return;
+
+                this.frames.splice(index, 1);
+                if (this.currentFrame?.id === frameId) {
+                    this.currentFrame = this.frames[Math.max(index-1, 0)] || null;
+                }
+            }
+
+            selectFrame(frameId) {
+                this.currentFrame = this.frames.find(f => f.id === frameId);
+            }
+
+            getFrameIndex(frameId) {
+                return this.frames.findIndex(f => f.id === frameId);
+            }
+        }
+
+        class Toolbar {
+            constructor(title, buttons, position, color) {
+                this.element = document.createElement('div');
+                this.element.className = 'toolbar';
+                this.element.style.backgroundColor = color;
+                this.element.style.left = position.x + 'px';
+                this.element.style.top = position.y + 'px';
+                
+                const header = document.createElement('div');
+                header.className = 'toolbar-header';
+                header.textContent = title;
+                
+                const content = document.createElement('div');
+                content.className = 'toolbar-content';
+                
+                buttons.forEach(btn => {
+                    if (btn.type === 'range') {
+                        const container = document.createElement('div');
+                        container.className = 'fps-control';
+                        
+                        const label = document.createElement('label');
+                        label.textContent = btn.label;
+                        
+                        const input = document.createElement('input');
+                        Object.assign(input, btn.attrs);
+                        
+                        const valueDisplay = document.createElement('span');
+                        valueDisplay.className = 'fps-value';
+                        valueDisplay.textContent = btn.attrs.value;
+                        
+                        container.appendChild(label);
+                        container.appendChild(input);
+                        container.appendChild(valueDisplay);
+                        content.appendChild(container);
+                    } else {
+                        const button = document.createElement('button');
+                        button.textContent = btn.label;
+                        button.onclick = btn.action;
+                        content.appendChild(button);
+                    }
+                });
+
+                this.element.appendChild(header);
+                this.element.appendChild(content);
+                this.initDrag(header);
+                document.body.appendChild(this.element);
+            }
+
+            initDrag(handle) {
+                let isDragging = false;
+                let offset = {x: 0, y: 0};
+
+                const startDrag = (e) => {
+                    isDragging = true;
+                    this.element.classList.add('dragging');
+                    offset = {
+                        x: e.clientX - this.element.offsetLeft,
+                        y: e.clientY - this.element.offsetTop
+                    };
+                };
+
+                const doDrag = (e) => {
+                    if (!isDragging) return;
+                    const clientX = e.clientX || e.touches[0].clientX;
+                    const clientY = e.clientY || e.touches[0].clientY;
+                    
+                    this.element.style.left = (clientX - offset.x) + 'px';
+                    this.element.style.top = (clientY - offset.y) + 'px';
+                };
+
+                const stopDrag = () => {
+                    isDragging = false;
+                    this.element.classList.remove('dragging');
+                };
+
+                handle.addEventListener('mousedown', startDrag);
+                document.addEventListener('mousemove', doDrag);
+                document.addEventListener('mouseup', stopDrag);
+                
+                handle.addEventListener('touchstart', (e) => startDrag(e.touches[0]));
+                document.addEventListener('touchmove', (e) => doDrag(e.touches[0]));
+                document.addEventListener('touchend', stopDrag);
+            }
+        }
+
+        class Editor {
+            constructor() {
+                this.canvasManager = new CanvasManager();
+                this.frameManager = new FrameManager();
+                this.initToolbars();
+                this.initFrameToolbar();
+                this.currentObjectType = null;
+                this.initCanvasInteraction();
+                this.isPlaying = false;
+                this.animationInterval = null;
+                this.fps = 2;
+            }
+
+            initCanvasInteraction() {
+                const canvas = this.canvasManager.canvas;
+                
+                const handleCanvasClick = (e) => {
+                    if (!this.currentObjectType || !this.frameManager.currentFrame) return;
+                    
+                    const rect = canvas.getBoundingClientRect();
+                    const scaleX = canvas.width / rect.width;
+                    const scaleY = canvas.height / rect.height;
+                    
+                    const x = (e.clientX || e.touches[0].clientX) - rect.left;
+                    const y = (e.clientY || e.touches[0].clientY) - rect.top;
+                    
+                    const newObj = {
+                        type: this.currentObjectType,
+                        x: x * scaleX,
+                        y: y * scaleY,
+                        scale: 1
+                    };
+                    
+                    this.frameManager.currentFrame.objects.push(newObj);
+                    this.refreshCanvas();
+                };
+
+                canvas.addEventListener('click', handleCanvasClick);
+                canvas.addEventListener('touchstart', handleCanvasClick);
+            }
+
+            initToolbars() {
+                new Toolbar(
+                    '背景设置',
+                    BACKGROUNDS.map(bg => ({
+                        label: bg,
+                        action: () => {
+                            if (this.frameManager.currentFrame) {
+                                this.frameManager.currentFrame.background = bg;
+                                this.refreshCanvas();
+                            }
+                        }
+                    })),
+                    {x: 20, y: 20}, 
+                    '#FFE4B5'
+                );
+
+                new Toolbar(
+                    '添加对象',
+                    ['汽车', '树木', '小狗'].map(type => ({
+                        label: type,
+                        action: () => this.currentObjectType = type
+                    })),
+                    {x: 20, y: 150}, 
+                    '#B0E0E6'
+                );
+
+                new Toolbar(
+                    '播放控制',
+                    [
+                        {label: '播放', action: () => this.playAnimation()},
+                        {label: '暂停', action: () => this.stopAnimation()},
+                        {label: '导出JSON', action: () => this.showExportModal()},
+                        {
+                            type: 'range',
+                            label: '帧率',
+                            attrs: {
+                                type: 'range',
+                                min: 1,
+                                max: 30,
+                                value: 2,
+                                className: 'fps-control',
+                                oninput: (e) => {
+                                    this.fps = parseInt(e.target.value);
+                                    e.target.nextElementSibling.textContent = this.fps;
+                                }
+                            }
+                        }
+                    ],
+                    {x: window.innerWidth - 160, y: 20}, 
+                    '#98FB98'
+                );
+            }
+
+            initFrameToolbar() {
+                this.frameToolbar = new Toolbar(
+                    '帧管理',
+                    [
+                        {label: '+ 添加帧', action: () => this.addFrame()},
+                        {label: '- 删除帧', action: () => this.deleteFrame()}
+                    ],
+                    {x: window.innerWidth/2 - 60, y: window.innerHeight - 100}, 
+                    '#DDA0DD'
+                );
+                
+                this.framesContainer = this.frameToolbar.element.querySelector('.toolbar-content');
+                this.framesContainer.style.padding = '10px 5px';
+            }
+
+            addFrame() {
+                const frame = this.frameManager.addFrame();
+                const frameBtn = document.createElement('div');
+                frameBtn.className = 'frame-btn';
+                frameBtn.textContent = `帧 ${this.frameManager.frames.length}`;
+                frameBtn.dataset.frameId = frame.id;
+                
+                // 清除所有选中状态
+                Array.from(this.framesContainer.querySelectorAll('.frame-btn')).forEach(c => {
+                    c.classList.remove('selected');
+                });
+                
+                frameBtn.onclick = () => {
+                    Array.from(this.framesContainer.querySelectorAll('.frame-btn')).forEach(c => {
+                        c.classList.remove('selected');
+                    });
+                    frameBtn.classList.add('selected');
+                    this.frameManager.selectFrame(frame.id);
+                    this.refreshCanvas();
+                };
+                
+                this.framesContainer.appendChild(frameBtn);
+                frameBtn.classList.add('selected');
+                this.refreshCanvas();
+            }
+
+            deleteFrame() {
+                if (!this.frameManager.currentFrame) return;
+                const frameId = this.frameManager.currentFrame.id;
+                
+                this.frameManager.deleteFrame(frameId);
+                const btnToRemove = this.framesContainer.querySelector(`[data-frame-id="${frameId}"]`);
+                if (btnToRemove) btnToRemove.remove();
+                
+                // 修复序号更新逻辑
+                const frameButtons = Array.from(this.framesContainer.querySelectorAll('.frame-btn'));
+                frameButtons.forEach((btn, index) => {
+                    btn.textContent = `帧 ${index + 1}`;
+                });
+
+                if (this.frameManager.currentFrame) {
+                    const currentBtn = this.framesContainer.querySelector(`[data-frame-id="${this.frameManager.currentFrame.id}"]`);
+                    if (currentBtn) currentBtn.classList.add('selected');
+                }
+                
+                this.refreshCanvas();
+            }
+
+            refreshCanvas() {
+                this.canvasManager.clear();
+                const frame = this.frameManager.currentFrame;
+                if (!frame) return;
+                
+                this.canvasManager.drawBackground(frame.background);
+                frame.objects.forEach(obj => this.canvasManager.drawObject(obj));
+            }
+
+            playAnimation() {
+                if (this.isPlaying || this.frameManager.frames.length === 0) return;
+                
+                this.isPlaying = true;
+                let currentIndex = 0;
+                const totalFrames = this.frameManager.frames.length;
+                const intervalTime = 1000 / this.fps;
+
+                this.animationInterval = setInterval(() => {
+                    const frame = this.frameManager.frames[currentIndex];
+                    this.frameManager.selectFrame(frame.id);
+                    this.refreshCanvas();
+                    
+                    // 修复高亮同步问题
+                    const frameBtns = Array.from(this.framesContainer.querySelectorAll('.frame-btn'));
+                    frameBtns.forEach(btn => btn.classList.remove('selected'));
+                    if (frameBtns[currentIndex]) {
+                        frameBtns[currentIndex].classList.add('selected');
+                    }
+                    
+                    currentIndex = (currentIndex + 1) % totalFrames;
+                }, intervalTime);
+            }
+
+            stopAnimation() {
+                this.isPlaying = false;
+                clearInterval(this.animationInterval);
+            }
+
+            showExportModal() {
+                const data = this.frameManager.frames.map(f => ({
+                    background: f.background,
+                    objects: f.objects
+                }));
+                
+                const modal = document.createElement('div');
+                modal.className = 'modal';
+                
+                const closeBtn = document.createElement('div');
+                closeBtn.className = 'close-btn';
+                closeBtn.textContent = '×';
+                closeBtn.onclick = () => modal.remove();
+                
+                const pre = document.createElement('pre');
+                pre.textContent = JSON.stringify(data, null, 2);
+                
+                modal.appendChild(closeBtn);
+                modal.appendChild(pre);
+                document.body.appendChild(modal);
+                
+                setTimeout(() => modal.remove(), 3000);
+            }
+        }
+
+        
+
+        const btnApp = document.getElementById("runApp");
+        btnApp.onclick = function(){ 
+            if(!btnApp.run){
+                btnApp.run = true; 
+
+                document.body.style.border = "1px solid red";
+                document.body.style.margin = 0;
+                document.body.style.overflow = "hidden"; 
+
+                const cvs = document.createElement('canvas'); 
+                cvs.id = "mainCanvas"; 
+                cvs.style.border = "2px solid #333";
+                cvs.style.position = "fixed";
+                cvs.style.left = "20vw";
+                cvs.style.top = "10vh";
+                cvs.style.width = "60vw";
+                cvs.style.height = "60vhvh";
+                document.body.appendChild(cvs);
+
+                const editor = new Editor();
+
+            }
+        }
+    </script>
+</body>
+</html>

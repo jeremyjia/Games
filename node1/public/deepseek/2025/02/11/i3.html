@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>防撞车流探照灯</title>
+    <style>
+        * { margin: 0; padding: 0; }
+        canvas { display: block; }
+        body { background: #000; overflow: hidden; }
+    </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let lightPos = { x: 0, y: 0 };
+
+// 车辆类
+class Vehicle {
+    constructor() {
+        this.lane = Math.random() > 0.5 ? 1 : -1;
+        this.reset(true);
+    }
+
+    reset(initial = false) {
+        this.speed = 2 + Math.random() * 3;
+        this.width = 40 + Math.random() * 40;
+        this.height = this.width * 0.6;
+        this.color = `hsl(${Math.random()*360}, 70%, 50%)`;
+        
+        let overlap = true;
+        let attempts = 0;
+        
+        do {
+            overlap = false;
+            
+            if(this.lane === 1) {
+                this.x = initial ? -this.width - 200 : -this.width;
+                this.y = canvas.height/2 + 40;
+            } else {
+                this.x = initial ? canvas.width + 200 : canvas.width;
+                this.y = canvas.height/2 - 40;
+            }
+            
+            // 添加随机偏移避免完全对齐
+            if(!initial) {
+                this.x += this.lane * Math.random() * 100;
+            }
+
+            // 碰撞检测
+            vehicles.forEach(other => {
+                if(other !== this && other.lane === this.lane && 
+                   this.x < other.x + other.width && 
+                   this.x + this.width > other.x) {
+                    overlap = true;
+                }
+            });
+
+            attempts++;
+            if(attempts > 100) break;
+        } while (overlap);
+    }
+
+    update() {
+        if(this.lane === 1) {
+            let newX = this.x + this.speed;
+            let maxMove = newX;
+
+            vehicles.forEach(other => {
+                if(other !== this && other.lane === this.lane &&
+                   other.x > this.x && 
+                   newX + this.width > other.x) {
+                    maxMove = Math.min(maxMove, other.x - this.width);
+                }
+            });
+
+            this.x = maxMove;
+            if(this.x > canvas.width) this.reset();
+        } else {
+            let newX = this.x - this.speed;
+            let maxMove = newX;
+
+            vehicles.forEach(other => {
+                if(other !== this && other.lane === this.lane &&
+                   other.x < this.x && 
+                   newX < other.x + other.width) {
+                    maxMove = Math.max(maxMove, other.x + other.width);
+                }
+            });
+
+            this.x = maxMove;
+            if(this.x < -this.width) this.reset();
+        }
+    }
+
+    draw() {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+        
+        ctx.fillStyle = '#A0D8EF';
+        ctx.fillRect(
+            this.x + this.width*0.1,
+            this.y + this.height*0.2,
+            this.width*0.8,
+            this.height*0.6
+        );
+    }
+}
+
+// 设置画布尺寸
+let vehicles = [];
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    vehicles = Array.from({length: 15}, () => new Vehicle());
+}
+window.addEventListener('resize', resize);
+
+// 绘制道路
+function drawRoad() {
+    ctx.fillStyle = '#333333';
+    ctx.fillRect(0, canvas.height/2 - 60, canvas.width, 120);
+    
+    ctx.strokeStyle = '#FFFF00';
+    ctx.setLineDash([40, 30]);
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height/2);
+    ctx.lineTo(canvas.width, canvas.height/2);
+    ctx.lineWidth = 4;
+    ctx.stroke();
+}
+
+// 主绘制函数
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    drawRoad();
+    
+    vehicles.forEach(vehicle => {
+        vehicle.update();
+        vehicle.draw();
+    });
+    
+    const gradient = ctx.createRadialGradient(
+        lightPos.x, lightPos.y, 0,
+        lightPos.x, lightPos.y, 250
+    );
+    gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0.95)');
+    
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    requestAnimationFrame(draw);
+}
+
+// 输入处理
+canvas.addEventListener('mousemove', e => {
+    lightPos.x = e.clientX;
+    lightPos.y = e.clientY;
+});
+
+canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    lightPos.x = e.touches[0].clientX;
+    lightPos.y = e.touches[0].clientY;
+}, { passive: false });
+
+// 初始化
+resize();
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>

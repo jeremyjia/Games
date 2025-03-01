@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript 沙盒</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .editor-container, .console-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .editor-header, .console-header {
+            padding: 12px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #editor {
+            width: 100%;
+            height: 400px;
+            padding: 15px;
+            border: none;
+            resize: none;
+            font-family: 'Fira Code', Monaco, Consolas, 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            tab-size: 4;
+        }
+
+        #console {
+            height: 400px;
+            padding: 15px;
+            overflow-y: auto;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Fira Code', Monaco, Consolas, 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+        }
+
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .error {
+            color: #dc3545;
+        }
+
+        .log {
+            color: #17a2b8;
+        }
+
+        .warn {
+            color: #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="editor-container">
+            <div class="editor-header">
+                <span>代码编辑器</span>
+                <div>
+                    <button onclick="runCode()">运行 ▶</button>
+                    <button onclick="clearConsole()" style="background: #6c757d; margin-left: 8px;">清空</button>
+                </div>
+            </div>
+            <textarea id="editor" placeholder="输入JavaScript代码...">console.log('Hello World!');
+function add(a, b) {
+    return a + b;
+}
+console.log('2 + 3 =', add(2, 3));</textarea>
+        </div>
+
+        <div class="console-container">
+            <div class="console-header">
+                <span>控制台输出</span>
+            </div>
+            <div id="console"></div>
+        </div>
+    </div>
+
+    <script>
+        const consoleOutput = document.getElementById('console');
+        const originalConsole = {
+            log: console.log,
+            error: console.error,
+            warn: console.warn
+        };
+
+        // 重写 console 方法
+        function hijackConsole() {
+            console.log = function(...args) {
+                originalConsole.log(...args);
+                appendToConsole(args, 'log');
+            };
+
+            console.error = function(...args) {
+                originalConsole.error(...args);
+                appendToConsole(args, 'error');
+            };
+
+            console.warn = function(...args) {
+                originalConsole.warn(...args);
+                appendToConsole(args, 'warn');
+            };
+        }
+
+        // 恢复原始 console 方法
+        function restoreConsole() {
+            console.log = originalConsole.log;
+            console.error = originalConsole.error;
+            console.warn = originalConsole.warn;
+        }
+
+        function appendToConsole(args, type) {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg
+            ).join(' ');
+            
+            consoleOutput.appendChild(div);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        function clearConsole() {
+            consoleOutput.innerHTML = '';
+        }
+
+        function runCode() {
+            hijackConsole();
+            clearConsole();
+            
+            try {
+                const code = document.getElementById('editor').value;
+                const output = new Function(code);
+                output();
+            } catch (error) {
+                console.error(error.toString());
+            } finally {
+                restoreConsole();
+            }
+        }
+
+        // 初始化代码编辑器
+        document.getElementById('editor').addEventListener('keydown', function(e) {
+            if (e.key === 'Tab' && !e.shiftKey) {
+                e.preventDefault();
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 4;
+            }
+        });
+    </script>
+</body>
+</html>

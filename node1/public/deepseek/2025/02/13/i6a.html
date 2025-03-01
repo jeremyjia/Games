@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>复读机测试</title>
+    <style>
+        /* 基础样式 */
+        body {
+            margin: 0;
+            padding-bottom: 60px; /* 状态栏高度 */
+            font-family: Arial, sans-serif;
+        }
+
+        /* 浮动窗口样式 */
+        .window {
+            position: absolute;
+            border: 1px solid #ccc;
+            background: white;
+            min-width: 300px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+        }
+        .title-bar {
+            background: #f0f0f0;
+            padding: 5px;
+            cursor: move;
+            user-select: none;
+        }
+        .content {
+            padding: 10px;
+        }
+
+        /* 进度条样式 */
+        .progress-container {
+            height: 20px;
+            background: #eee;
+            position: relative;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background: #4CAF50;
+        }
+        .marker {
+            position: absolute;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background: red;
+            cursor: ew-resize;
+        }
+
+        /* 乐谱拍子按钮 */
+        .beat-btn {
+            margin: 2px;
+            padding: 4px;
+            transition: background 0.3s;
+        }
+        .beat-btn.active {
+            background: #ffeb3b;
+        }
+
+        /* 状态栏样式 */
+        #status-bar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: #f8f8f8;
+            padding: 5px;
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+        }
+        .test-case-btn {
+            padding: 8px;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <div id="testCases"></div>
+    <div id="status-bar">
+        <button onclick="createTestCase()">新建用例</button>
+    </div>
+
+<script>
+// 复读机核心类
+class RepeaterMachine {
+    constructor() {
+        this.audio = new Audio();
+        this.window = this.createWindow();
+        this.isDragging = false;
+        this.startPoint = 0;
+        this.endPoint = 0;
+        this.isPlaying = false;
+        this.intervalId = null;
+        this.initAudio();
+        this.setupEventListeners();
+    }
+
+    createWindow() {
+        const window = document.createElement('div');
+        window.className = 'window';
+        window.innerHTML = `
+            <div class="title-bar">复读机</div>
+            <div class="content">
+                <div class="toolbar"></div>
+                <input type="text" class="url-input" readonly>
+                <div class="progress-container">
+                    <div class="progress-bar"></div>
+                    <div class="marker start" style="left:0"></div>
+                    <div class="marker end" style="left:100%"></div>
+                </div>
+                <button class="play-btn">播放</button>
+                <div class="score"></div>
+            </div>
+        `;
+        document.body.appendChild(window);
+        return window;
+    }
+
+    initAudio() {
+        const urls = [
+            'https://littleflute.github.io/english/NewConceptEnglish/Book2/2.mp3',
+            'https://littleflute.github.io/english/NewConceptEnglish/Book2/10.mp3',
+            'https://littleflute.github.io/gt1/mp3/j72_4_4.mp3'
+        ];
+
+        // 创建工具条按钮
+        const toolbar = this.window.querySelector('.toolbar');
+        urls.forEach(url => {
+            const btn = document.createElement('button');
+            btn.textContent = url.split('/').pop();
+            btn.addEventListener('click', () => this.setUrl(url, btn));
+            toolbar.appendChild(btn);
+        });
+
+        // 初始化乐谱
+        this.score = new Score(this.window.querySelector('.score'), this.audio);
+    }
+
+    setUrl(url, btn) {
+        this.audio.src = url;
+        this.window.querySelector('.url-input').value = url;
+        document.querySelectorAll('.toolbar button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        // 加载元数据
+        this.audio.addEventListener('loadedmetadata', () => {
+            this.endPoint = this.audio.duration;
+            this.score.generateBeats();
+        });
+    }
+
+    setupEventListeners() {
+        // 窗口拖动
+        const titleBar = this.window.querySelector('.title-bar');
+        titleBar.addEventListener('mousedown', (e) => this.startDrag(e));
+        document.addEventListener('mousemove', (e) => this.drag(e));
+        document.addEventListener('mouseup', () => this.stopDrag());
+
+        // 播放控制
+        const playBtn = this.window.querySelector('.play-btn');
+        playBtn.addEventListener('click', () => this.togglePlay());
+
+        // 进度条点击
+        const progress = this.window.querySelector('.progress-container');
+        progress.addEventListener('click', (e) => {
+            const rect = progress.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            this.audio.currentTime = percent * this.audio.duration;
+        });
+    }
+
+    togglePlay() {
+        if(this.isPlaying) {
+            this.audio.pause();
+            clearInterval(this.intervalId);
+        } else {
+            this.audio.play();
+            this.intervalId = setInterval(() => {
+                if(this.audio.currentTime >= this.endPoint) {
+                    this.audio.currentTime = this.startPoint;
+                }
+            }, 50);
+        }
+        this.isPlaying = !this.isPlaying;
+    }
+
+    startDrag(e) {
+        this.isDragging = true;
+        this.offsetX = e.clientX - this.window.offsetLeft;
+        this.offsetY = e.clientY - this.window.offsetTop;
+    }
+
+    drag(e) {
+        if(!this.isDragging) return;
+        this.window.style.left = (e.clientX - this.offsetX) + 'px';
+        this.window.style.top = (e.clientY - this.offsetY) + 'px';
+    }
+
+    stopDrag() {
+        this.isDragging = false;
+    }
+}
+
+// 乐谱类
+class Score {
+    constructor(container, audio) {
+        this.container = container;
+        this.audio = audio;
+        this.bpm = 60;
+        this.beats = [];
+    }
+
+    generateBeats() {
+        this.container.innerHTML = `
+            <div>
+                BPM: <input type="number" value="${this.bpm}" min="30" max="240">
+            </div>
+        `;
+        const duration = this.audio.duration;
+        const beatCount = Math.floor(duration / (60 / this.bpm));
+        
+        // 生成拍子按钮
+        for(let i=0; i<beatCount; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'beat-btn';
+            btn.textContent = i+1;
+            btn.addEventListener('click', () => {
+                this.audio.currentTime = i * (60 / this.bpm);
+            });
+            this.container.appendChild(btn);
+            this.beats.push(btn);
+        }
+
+        // 实时高亮
+        this.audio.addEventListener('timeupdate', () => {
+            const currentBeat = Math.floor(this.audio.currentTime / (60 / this.bpm));
+            this.beats.forEach((btn, i) => {
+                btn.classList.toggle('active', i === currentBeat);
+            });
+        });
+    }
+}
+
+// 测试用例管理
+let testCaseCount = 0;
+function createTestCase() {
+    testCaseCount++;
+    const machine = new RepeaterMachine();
+    
+    // 创建状态栏按钮
+    const btn = document.createElement('button');
+    btn.className = 'test-case-btn';
+    btn.textContent = `用例 ${testCaseCount}`;
+    btn.addEventListener('click', () => {
+        machine.window.style.display = machine.window.style.display === 'none' ? '' : 'none';
+        btn.style.background = machine.window.style.display ? '' : '#ccc';
+    });
+    
+    document.getElementById('status-bar').appendChild(btn);
+}
+
+// 初始化第一个用例
+createTestCase();
+</script>
+</body>
+</html>

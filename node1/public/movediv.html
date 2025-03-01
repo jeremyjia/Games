@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可滚动宽幅DIV</title>
+    <style>
+        .scroll-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 100px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            overflow: hidden; /* 关键：隐藏溢出内容 */
+            touch-action: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .draggable-content {
+            position: absolute;
+            width: 600px; /* 内容宽度大于容器 */
+            height: 100%;
+            background: linear-gradient(90deg, #2196F3, #4CAF50);
+            cursor: grab;
+            user-select: none;
+            transition: transform 0.2s;
+        }
+
+        .draggable-content.active {
+            cursor: grabbing;
+            transition: none;
+        }
+
+        /* 滚动提示 */
+        .scroll-hint {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 30px;
+            background: linear-gradient(
+                to right, 
+                rgba(0,0,0,0.1) 0%, 
+                transparent 100%
+            );
+            pointer-events: none;
+        }
+        .scroll-hint.right {
+            right: 0;
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="scroll-container">
+        <div class="scroll-hint left"></div>
+        <div class="scroll-hint right"></div>
+        <div class="draggable-content" id="dragContent">
+            <!-- 示例内容 -->
+            <div style="padding: 20px; color: white;">
+                <div style = "border: 1px solid red;">
+                    <button>1111</button><button>222</button><button>333</button><button>444</button>
+                </div>
+                <h2>可滚动内容</h2>
+                <p>左右拖动查看完整内容</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const container = document.querySelector('.scroll-container');
+            const content = document.getElementById('dragContent');
+            
+            // 计算可移动范围
+            let maxScroll = 0;
+            function updateScrollRange() {
+                const containerWidth = container.offsetWidth;
+                const contentWidth = content.offsetWidth;
+                maxScroll = containerWidth - contentWidth;
+            }
+            updateScrollRange();
+
+            // 拖动状态
+            let isDragging = false;
+            let startX = 0;
+            let currentScroll = 0;
+
+            // 统一坐标获取
+            const getClientX = e => e.touches ? e.touches[0].clientX : e.clientX;
+
+            // 开始拖动
+            const startDrag = e => {
+                isDragging = true;
+                startX = getClientX(e);
+                currentScroll = content.offsetLeft;
+                content.classList.add('active');
+                e.preventDefault();
+            };
+
+            // 处理移动
+            const handleMove = e => {
+                if (!isDragging) return;
+
+                const deltaX = getClientX(e) - startX;
+                let newPosition = currentScroll + deltaX;
+
+                // 边界约束
+                newPosition = Math.min(0, Math.max(maxScroll, newPosition));
+                
+                content.style.left = `${newPosition}px`;
+            };
+
+            // 结束拖动
+            const endDrag = () => {
+                isDragging = false;
+                content.classList.remove('active');
+            };
+
+            // 事件绑定
+            content.addEventListener('mousedown', startDrag);
+            content.addEventListener('touchstart', startDrag);
+
+            document.addEventListener('mousemove', handleMove);
+            document.addEventListener('touchmove', handleMove, { passive: false });
+
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchend', endDrag);
+            document.addEventListener('touchcancel', endDrag);
+
+            // 响应式处理
+            window.addEventListener('resize', () => {
+                updateScrollRange();
+                // 自动修正位置
+                const currentLeft = parseFloat(content.style.left) || 0;
+                content.style.left = `${Math.min(0, Math.max(maxScroll, currentLeft))}px`;
+            });
+        })();
+    </script>
+</body>
+</html>

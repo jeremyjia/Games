@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        canvas {
+            border: 1px solid #eee;
+            background: white;
+            margin: 20px;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="staff" width="600" height="300"></canvas>
+
+    <script>
+        const canvas = document.getElementById('staff');
+        const ctx = canvas.getContext('2d');
+        
+        // 专业级高音谱号路径数据（源自Bravura字体）
+        const TREBLE_CLEF = {
+            path: [
+                ['M', 307.82, 184.85],
+                ['C', 306.06,162.07, 290.61,134.41, 260.67,130.32],
+                ['C', 242.33,127.65, 219.08,140.39, 206.66,162.19],
+                ['C', 194.39,183.74, 194.19,211.26, 207.06,231.35],
+                ['C', 218.83,249.51, 236.66,258.67, 256.54,257.66],
+                ['C', 280.64,256.43, 299.04,239.36, 302.72,217.13],
+                ['C', 305.61,199.28, 295.83,181.82, 281.25,172.68],
+                ['C', 264.66,162.17, 242.57,164.84, 230.02,179.29],
+                ['C', 217.13,194.15, 218.13,216.43, 231.17,229.87],
+                ['C', 243.77,242.89, 261.91,245.73, 276.25,237.87],
+                ['C', 290.99,229.78, 299.33,214.85, 297.31,199.51],
+                ['C', 295.09,182.24, 281.88,168.25, 265.18,164.52],
+                ['C', 246.62,160.39, 225.51,168.67, 214.35,184.85],
+                ['C', 201.98,202.68, 201.41,226.59, 212.53,244.32],
+                ['C', 223.83,262.35, 242.35,273.05, 263.29,273.05],
+                ['C', 289.42,273.05, 312.15,255.54, 317.35,231.35],
+                ['C', 322.05,209.69, 312.53,187.38, 295.39,174.85],
+                ['L', 295.39,338.58],
+                ['L', 265.39,369.58],
+                ['L', 215.39,369.58]
+            ],
+            // 标准化参数
+            baseScale: 0.12,      // 基础缩放比例
+            staffLine: 2,         // 中心线位置（从下往上数）
+            positionOffset: 45    // 垂直偏移修正值
+        };
+
+        // 五线谱配置
+        const STAFF_CONFIG = {
+            lineCount: 5,
+            lineSpacing: 14,      // 线间距
+            startX: 100,          // 起始X坐标
+            startY: 120,          // 起始Y坐标
+            lineWidth: 1.8
+        };
+
+        function init() {
+            // 高清屏幕适配
+            const scale = window.devicePixelRatio || 1;
+            canvas.width = canvas.offsetWidth * scale;
+            canvas.height = canvas.offsetHeight * scale;
+            ctx.scale(scale, scale);
+            
+            // 设置绘制样式
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = STAFF_CONFIG.lineWidth;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+        }
+
+        // 绘制五线谱
+        function drawStaff() {
+            const { startX, startY, lineSpacing, lineCount } = STAFF_CONFIG;
+            
+            for(let i = 0; i < lineCount; i++) {
+                const y = startY + i * lineSpacing;
+                ctx.beginPath();
+                ctx.moveTo(startX, y);
+                ctx.lineTo(canvas.width - startX, y);
+                ctx.stroke();
+            }
+        }
+
+        // 精确绘制高音谱号
+        function drawTrebleClef() {
+            const { startX, startY, lineSpacing } = STAFF_CONFIG;
+            const staffCenterY = startY + (TREBLE_CLEF.staffLine - 1) * lineSpacing;
+            
+            ctx.save();
+            ctx.translate(
+                startX - 25,  // X轴偏移
+                staffCenterY - TREBLE_CLEF.positionOffset // Y轴精确对齐
+            );
+            ctx.scale(TREBLE_CLEF.baseScale, TREBLE_CLEF.baseScale);
+
+            ctx.beginPath();
+            TREBLE_CLEF.path.forEach(([command, ...points]) => {
+                const scaledPoints = points.map(p => p / 2.5); // 路径缩放适配
+                switch(command) {
+                    case 'M':
+                        ctx.moveTo(...scaledPoints);
+                        break;
+                    case 'L':
+                        ctx.lineTo(...scaledPoints);
+                        break;
+                    case 'C':
+                        ctx.bezierCurveTo(...scaledPoints);
+                        break;
+                }
+            });
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // 执行绘制
+        init();
+        drawStaff();
+        drawTrebleClef();
+
+        // 响应式处理
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth * 0.8;
+            init();
+            drawStaff();
+            drawTrebleClef();
+        });
+    </script>
+</body>
+</html>

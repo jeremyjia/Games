@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Visualizer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #1a1a1a; color: white; }
+        
+        #nav { 
+            height: 40px;
+            background: #333;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
+        #main {
+            height: calc(100vh - 80px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #statusBar {
+            height: 40px;
+            background: #222;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 10px;
+        }
+        
+        .window {
+            position: absolute;
+            background: #444;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            min-width: 300px;
+        }
+        
+        .window-header {
+            padding: 10px;
+            background: #333;
+            border-radius: 8px 8px 0 0;
+            cursor: move;
+            user-select: none;
+        }
+        
+        .beats-container {
+            display: flex;
+            gap: 5px;
+            padding: 10px;
+        }
+        
+        .beat-unit {
+            width: 25px;
+            height: 25px;
+            border-radius: 4px;
+            background: #666;
+        }
+        
+        canvas { position: absolute; }
+    </style>
+</head>
+<body>
+    <nav id="nav"></nav>
+    <div id="main">
+        <canvas id="canvas"></canvas>
+        <button id="newWindow" style="position: absolute; top: 10px; left: 10px;">New Window</button>
+    </div>
+    <div id="statusBar"></div>
+
+<script>
+// 基础功能模块
+class DragWindow {
+    constructor(title, content) {
+        this.id = Date.now();
+        this.isDragging = false;
+        this.pos = { x: 100, y: 100 };
+        this.createWindow(title, content);
+        this.addDragListeners();
+    }
+
+    createWindow(title, content) {
+        this.element = document.createElement('div');
+        this.element.className = 'window';
+        this.element.innerHTML = `
+            <div class="window-header">${title}</div>
+            <div class="window-content">${content}</div>
+        `;
+        document.getElementById('main').appendChild(this.element);
+        this.updatePosition();
+    }
+
+    addDragListeners() {
+        const header = this.element.querySelector('.window-header');
+        header.addEventListener('mousedown', (e) => this.startDrag(e));
+        document.addEventListener('mousemove', (e) => this.drag(e));
+        document.addEventListener('mouseup', () => this.stopDrag());
+    }
+
+    startDrag(e) {
+        this.isDragging = true;
+        this.offset = {
+            x: e.clientX - this.pos.x,
+            y: e.clientY - this.pos.y
+        };
+    }
+
+    drag(e) {
+        if (this.isDragging) {
+            this.pos.x = e.clientX - this.offset.x;
+            this.pos.y = e.clientY - this.offset.y;
+            this.updatePosition();
+        }
+    }
+
+    stopDrag() {
+        this.isDragging = false;
+    }
+
+    updatePosition() {
+        this.element.style.transform = `translate(${this.pos.x}px, ${this.pos.y}px)`;
+    }
+
+    toggle() {
+        this.element.style.display = this.element.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
+// 音乐播放器类
+class MusicPlayer {
+    constructor() {
+        this.audio = new Audio();
+        this.tempo = 72;
+        this.isPlaying = false;
+        this.beatIndex = 0;
+        this.animationFrame = null;
+        this.lastBeatTime = 0;
+        this.beatDuration = 60000 / this.tempo;
+        this.containers = [];
+        this.createVisualizer();
+    }
+
+    createVisualizer() {
+        this.visualizer = document.createElement('div');
+        this.visualizer.innerHTML = `
+            <input type="text" id="mp3Url" value="https://littleflute.github.io/gt1/mp3/j72_4_4.mp3">
+            <button id="playBtn">Play</button>
+            <div class="beats-container"></div>
+            <input type="number" id="tempo" value="72" min="40" max="200">
+        `;
+        
+        for (let i = 0; i < 4; i++) {
+            const container = document.createElement('div');
+            container.className = 'beats-container';
+            container.style.backgroundColor = `hsl(${i * 90}, 50%, 20%)`;
+            this.containers.push(container);
+            this.visualizer.querySelector('.beats-container').appendChild(container);
+            
+            for (let j = 0; j < 4; j++) {
+                const beat = document.createElement('div');
+                beat.className = 'beat-unit';
+                container.appendChild(beat);
+            }
+        }
+
+        this.visualizer.querySelector('#playBtn').addEventListener('click', () => this.togglePlay());
+        this.visualizer.querySelector('#tempo').addEventListener('change', (e) => {
+            this.tempo = e.target.value;
+            this.beatDuration = 60000 / this.tempo;
+        });
+    }
+
+    togglePlay() {
+        if (this.isPlaying) {
+            this.stop();
+        } else {
+            this.audio.src = document.getElementById('mp3Url').value;
+            this.audio.play();
+            this.startVisualization();
+        }
+        this.isPlaying = !this.isPlaying;
+    }
+
+    startVisualization() {
+        this.lastBeatTime = performance.now();
+        this.animate();
+    }
+
+    animate() {
+        const now = performance.now();
+        const delta = now - this.lastBeatTime;
+
+        if (delta >= this.beatDuration) {
+            this.updateBeats();
+            this.lastBeatTime = now;
+            this.beatIndex = (this.beatIndex + 1) % 16;
+            
+            if (this.beatIndex % 4 === 0) {
+                createFirework();
+            }
+        }
+
+        this.animationFrame = requestAnimationFrame(() => this.animate());
+    }
+
+    updateBeats() {
+        this.containers.forEach((container, i) => {
+            const beats = container.querySelectorAll('.beat-unit');
+            beats.forEach((beat, j) => {
+                beat.style.backgroundColor = (j === this.beatIndex % 4) ? 
+                    `hsl(${i * 90}, 70%, 50%)` : '#666';
+            });
+        });
+    }
+
+    stop() {
+        this.audio.pause();
+        cancelAnimationFrame(this.animationFrame);
+    }
+}
+
+// 初始化基础功能
+const mls = ["index.html", "readme.md", "i1.html", "i2.html"];
+const nav = document.getElementById('nav');
+mls.forEach(item => {
+    const link = document.createElement('a');
+    link.href = item;
+    link.textContent = item;
+    link.style.color = 'white';
+    link.style.marginRight = '20px';
+    nav.appendChild(link);
+});
+
+let windowCount = 0;
+document.getElementById('newWindow').addEventListener('click', () => {
+    windowCount++;
+    const player = new MusicPlayer();
+    const window = new DragWindow(`Window ${windowCount}`, player.visualizer);
+    
+    const toggleBtn = document.createElement('button');
+    toggleBtn.textContent = `Window ${windowCount}`;
+    toggleBtn.style.backgroundColor = '#666';
+    
+    toggleBtn.addEventListener('click', () => {
+        window.toggle();
+        toggleBtn.style.backgroundColor = window.element.style.display === 'none' ? '#444' : '#666';
+    });
+    
+    document.getElementById('statusBar').appendChild(toggleBtn);
+});
+
+// 烟花效果
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight - 80;
+
+function createFirework() {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height;
+    animateFirework(x, y);
+}
+
+function animateFirework(x, y) {
+    const particles = [];
+    for (let i = 0; i < 100; i++) {
+        particles.push({
+            x, y,
+            vx: Math.random() * 6 - 3,
+            vy: Math.random() * 6 - 3,
+            life: 1
+        });
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.life -= 0.01;
+            
+            ctx.fillStyle = `hsla(${Math.random() * 360}, 100%, 50%, ${p.life})`;
+            ctx.fillRect(p.x, p.y, 3, 3);
+        });
+
+        if (particles[0].life > 0) {
+            requestAnimationFrame(draw);
+        }
+    }
+    
+    draw();
+}
+
+// 动态样式生成
+const style = document.createElement('style');
+style.textContent = `
+    .beats-container { padding: 10px; margin: 5px; }
+    button { padding: 5px 10px; background: #666; border: none; color: white; cursor: pointer; }
+    input { background: #555; color: white; border: 1px solid #666; padding: 3px; }
+`;
+document.head.appendChild(style);
+</script>
+</body>
+</html>

@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>矢量动画编辑系统</title>
+    <style>
+        #toolbar {
+            padding: 10px;
+            background: #f0f0f0;
+            margin-bottom: 10px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            margin-top: 60px;
+        }
+        .tool-btn {
+            padding: 5px 10px;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+        .tool-btn.active {
+            background: #ccc;
+        }
+        #timeline {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 120px;
+            background: #333;
+            padding: 10px;
+            overflow-x: auto;
+            display: flex;
+            gap: 5px;
+        }
+        .frame-thumbnail {
+            width: 80px;
+            height: 60px;
+            border: 2px solid #666;
+            cursor: pointer;
+            position: relative;
+        }
+        .frame-thumbnail.active {
+            border-color: #fff;
+        }
+        #controls {
+            position: fixed;
+            bottom: 140px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="toolbar">
+        <button class="tool-btn active" data-tool="select">✥ 选择</button>
+        <button class="tool-btn" data-tool="text">T 文本</button>
+        <button class="tool-btn" data-tool="line">/ 直线</button>
+        <button class="tool-btn" data-tool="circle">○ 圆形</button>
+        <button class="tool-btn" data-tool="rect">□ 矩形</button>
+        <button class="tool-btn" data-tool="quarter">♩ 四分音符</button>
+        <button class="tool-btn" data-tool="eighth">♪ 八分音符</button>
+        <button class="tool-btn" data-tool="whole">𝅝 全音符</button>
+        <button class="tool-btn" data-tool="scarecrow">🌾 稻草人</button>
+        <button class="tool-btn" data-tool="trebleclef">🎼 高音谱号</button>
+        <input type="color" id="colorPicker" value="#000000">
+        <input type="number" id="lineWidth" value="2" min="1" max="10">
+        <button id="saveBtn">保存当前帧</button>
+    </div>
+    <div id="controls">
+        <button id="addFrame">+ 添加帧</button>
+        <button id="play">▶ 播放</button>
+        <button id="export">导出动画</button>
+        <input type="number" id="fps" value="24" min="1" max="60" style="width:50px"> FPS
+    </div>
+    <div id="timeline"></div>
+    <canvas id="canvas" width="800" height="600"></canvas>
+
+    <script>
+        class ShapeFactory {
+            static create(type, start, end, color, lineWidth, text) {
+                const createPoint = (p) => ({x: p.x, y: p.y}); // 确保坐标对象结构
+                switch(type) {
+                    case 'text': return new TextShape(createPoint(start), text, color, lineWidth);
+                    case 'line': return new Line(createPoint(start), createPoint(end), color, lineWidth);
+                    case 'rect': return new Rectangle(createPoint(start), createPoint(end), color, lineWidth);
+                    case 'circle': return new Circle(createPoint(start), createPoint(end), color, lineWidth);
+                    case 'quarter': return new QuarterNote(createPoint(start), createPoint(end), color, lineWidth);
+                    case 'eighth': return new EighthNote(createPoint(start), createPoint(end), color, lineWidth);
+                    case 'whole': return new WholeNote(createPoint(start), createPoint(end), color, lineWidth);
+                    case 'scarecrow': return new Scarecrow(createPoint(start), createPoint(end), color, lineWidth);
+                    case 'trebleclef': return new TrebleClef(createPoint(start), createPoint(end), color, lineWidth);
+                    default: throw new Error('未知图形类型');
+                }
+            }
+        }
+
+        class Shape {
+            constructor(start, end, color, lineWidth) {
+                this.points = [{x: start.x, y: start.y}, {x: end.x, y: end.y}];
+                this.color = color;
+                this.lineWidth = lineWidth;
+                this.rotation = 0;
+            }
+
+            draw(ctx) {
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = this.lineWidth;
+                ctx.beginPath();
+                this._draw(ctx);
+                ctx.stroke();
+            }
+
+            _draw(ctx) {
+                throw new Error('必须实现_draw方法');
+            }
+
+            toJSON() {
+                return {
+                    type: this.constructor.name.toLowerCase(),
+                    points: this.points.map(p => ({x: p.x, y: p.y})),
+                    color: this.color,
+                    lineWidth: this.lineWidth,
+                    rotation: this.rotation
+                };
+            }
+        }
+
+        class Line extends Shape {
+            _draw(ctx) {
+                const [start, end] = this.points;
+                ctx.moveTo(start.x, start.y);
+                ctx.lineTo(end.x, end.y);
+            }
+        }
+
+        class Rectangle extends Shape {
+            _draw(ctx) {
+                const [start, end] = this.points;
+                ctx.rect(start.x, start.y, end.x - start.x, end.y - start.y);
+            }
+        }
+
+        class Circle extends Shape {
+            _draw(ctx) {
+                const [start, end] = this.points;
+                const radius = Math.sqrt((end.x - start.x)**2 + (end.y - start.y)**2);
+                ctx.arc(start.x, start.y, radius, 0, Math.PI * 2);
+            }
+        }
+
+        class TextShape {
+            constructor(pos, text, color, lineWidth) {
+                this.pos = {x: pos.x, y: pos.y};
+                this.text = text;
+                this.color = color;
+                this.lineWidth = lineWidth;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.fillStyle = this.color;
+                ctx.textBaseline = 'top';
+                ctx.font = `${this.lineWidth * 2}px Arial`;
+                ctx.fillText(this.text, this.pos.x, this.pos.y);
+                ctx.restore();
+            }
+
+            toJSON() {
+                return {
+                    type: 'text',
+                    pos: {x: this.pos.x, y: this.pos.y},
+                    text: this.text,
+                    color: this.color,
+                    lineWidth: this.lineWidth
+                };
+            }
+        }
+
+        class WholeNote extends Shape {
+            _draw(ctx) {
+                const [start] = this.points;
+                const size = this._calculateSize();
+                
+                ctx.save();
+                ctx.translate(start.x, start.y);
+                ctx.rotate(this.rotation);
+                ctx.beginPath();
+                ctx.ellipse(0, 0, size * 0.8, size, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            _calculateSize() {
+                const [start, end] = this.points;
+                return Math.sqrt((end.x - start.x)**2 + (end.y - start.y)**2)/2;
+            }
+        }
+
+        class QuarterNote extends Shape {
+            _draw(ctx) {
+                const [start] = this.points;
+                const size = this._calculateSize();
+                
+                ctx.save();
+                ctx.translate(start.x, start.y);
+                ctx.rotate(this.rotation);
+                
+                ctx.beginPath();
+                ctx.ellipse(0, 0, size * 0.4, size * 0.6, 0, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.moveTo(size * 0.4, 0);
+                ctx.lineTo(size * 0.4, -size * 2);
+                ctx.stroke();
+                
+                ctx.restore();
+            }
+
+            _calculateSize() {
+                const [start, end] = this.points;
+                return Math.sqrt((end.x - start.x)**2 + (end.y - start.y)**2);
+            }
+        }
+
+        class EighthNote extends QuarterNote {
+            _draw(ctx) {
+                super._draw(ctx);
+                const size = this._calculateSize();
+                
+                ctx.save();
+                ctx.translate(this.points[0].x, this.points[0].y);
+                ctx.rotate(this.rotation);
+                
+                ctx.beginPath();
+                ctx.moveTo(size * 0.4, -size * 2);
+                ctx.lineTo(size * 0.8, -size * 1.8);
+                ctx.lineTo(size * 0.4, -size * 1.6);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                
+                ctx.restore();
+            }
+        }
+
+        class Scarecrow extends Shape {
+            _draw(ctx) {
+                const [start] = this.points;
+                const baseSize = this._calculateSize();
+                
+                ctx.arc(start.x, start.y, baseSize * 0.2, 0, Math.PI * 2);
+                
+                this._drawBody(ctx, start, baseSize);
+                this._drawHat(ctx, start, baseSize);
+            }
+
+            _drawBody(ctx, start, size) {
+                ctx.moveTo(start.x, start.y + size * 0.2);
+                ctx.lineTo(start.x, start.y + size * 0.6);
+                
+                ctx.moveTo(start.x - size * 0.3, start.y + size * 0.3);
+                ctx.lineTo(start.x + size * 0.3, start.y + size * 0.3);
+                
+                ctx.moveTo(start.x, start.y + size * 0.6);
+                ctx.lineTo(start.x - size * 0.2, start.y + size * 0.9);
+                ctx.moveTo(start.x, start.y + size * 0.6);
+                ctx.lineTo(start.x + size * 0.2, start.y + size * 0.9);
+            }
+
+            _drawHat(ctx, start, size) {
+                ctx.moveTo(start.x - size * 0.2, start.y - size * 0.1);
+                ctx.lineTo(start.x + size * 0.2, start.y - size * 0.1);
+                ctx.lineTo(start.x, start.y - size * 0.3);
+                ctx.closePath();
+            }
+
+            _calculateSize() {
+                const [start, end] = this.points;
+                return Math.max(Math.abs(end.x - start.x), Math.abs(end.y - start.y)) * 0.8;
+            }
+        }
+
+        class TrebleClef extends Shape {
+            _draw(ctx) {
+                const [start] = this.points;
+                const scale = this._calculateScale();
+                
+                ctx.save();
+                ctx.translate(start.x, start.y);
+                ctx.rotate(this.rotation);
+                
+                this._drawMainCurve(ctx, scale);
+                this._drawBottomLoop(ctx, scale);
+                this._drawDecorations(ctx, scale);
+                
+                ctx.restore();
+            }
+
+            _drawMainCurve(ctx, scale) {
+                ctx.moveTo(0, 0);
+                ctx.bezierCurveTo(-35*scale, -150*scale, 85*scale, -220*scale, 110*scale, -160*scale);
+            }
+
+            _drawBottomLoop(ctx, scale) {
+                ctx.moveTo(0, 0);
+                ctx.bezierCurveTo(25*scale, 25*scale, 55*scale, 25*scale, 80*scale, 0);
+            }
+
+            _drawDecorations(ctx, scale) {
+                ctx.moveTo(45*scale, -90*scale);
+                ctx.lineTo(60*scale, -110*scale);
+                
+                ctx.moveTo(110*scale, -160*scale);
+                ctx.quadraticCurveTo(130*scale, -180*scale, 100*scale, -200*scale);
+                ctx.quadraticCurveTo(70*scale, -180*scale, 90*scale, -160*scale);
+                
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, 40*scale);
+            }
+
+            _calculateScale() {
+                const [start, end] = this.points;
+                const dx = end.x - start.x;
+                const dy = end.y - start.y;
+                return Math.sqrt(dx*dx + dy*dy) / 180;
+            }
+        }
+
+        class AnimationState {
+            constructor() {
+                this.frames = [{
+                    shapes: [],
+                    duration: 1
+                }];
+                this.currentFrame = 0;
+                this.isPlaying = false;
+            }
+
+            addFrame() {
+                const newFrame = {
+                    shapes: JSON.parse(JSON.stringify(this.currentFrameData.shapes)),
+                    duration: 1
+                };
+                this.frames.push(newFrame);
+                this.currentFrame = this.frames.length - 1;
+            }
+
+            get currentFrameData() {
+                return this.frames[this.currentFrame];
+            }
+        }
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const animState = new AnimationState();
+        let currentTool = 'select';
+        let isDrawing = false;
+        let currentShape = null;
+        let startPos = null;
+
+        document.querySelectorAll('.tool-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTool = btn.dataset.tool;
+            });
+        });
+
+        const colorPicker = document.getElementById('colorPicker');
+        const lineWidth = document.getElementById('lineWidth');
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', drawing);
+        canvas.addEventListener('mouseup', finishDrawing);
+        canvas.addEventListener('mouseout', finishDrawing);
+
+        function startDrawing(e) {
+            const pos = getCanvasPosition(e);
+            
+            if (currentTool === 'text') {
+                const text = prompt('输入文本:');
+                if (text) {
+                    animState.currentFrameData.shapes.push(
+                        new TextShape(pos, text, colorPicker.value, lineWidth.value)
+                    );
+                    redraw();
+                    updateTimeline();
+                }
+                return;
+            }
+
+            if (currentTool === 'select') return;
+
+            isDrawing = true;
+            startPos = pos;
+            currentShape = ShapeFactory.create(
+                currentTool, 
+                startPos, 
+                startPos, // 初始化时使用相同起点
+                colorPicker.value, 
+                lineWidth.value
+            );
+        }
+
+        function drawing(e) {
+            if (!isDrawing || !currentShape) return;
+            
+            const currentPos = getCanvasPosition(e);
+            currentShape.points[1] = {x: currentPos.x, y: currentPos.y};
+            currentShape.rotation = Math.atan2(
+                currentPos.y - startPos.y, 
+                currentPos.x - startPos.x
+            );
+            
+            redraw();
+        }
+
+        function finishDrawing() {
+            if (!isDrawing) return;
+            isDrawing = false;
+            
+            if (currentShape) {
+                animState.currentFrameData.shapes.push(currentShape);
+                currentShape = null;
+                updateTimeline();
+            }
+            redraw();
+        }
+
+        function redraw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 先绘制已保存的图形
+            animState.currentFrameData.shapes.forEach(shape => {
+                try {
+                    const restoredShape = ShapeFactory.create(
+                        shape.type,
+                        shape.points[0],
+                        shape.points[1] || shape.points[0], // 处理单点图形
+                        shape.color,
+                        shape.lineWidth
+                    );
+                    restoredShape.rotation = shape.rotation;
+                    restoredShape.draw(ctx);
+                } catch (error) {
+                    console.error("图形渲染失败:", error);
+                }
+            });
+
+            // 再绘制当前正在绘制的临时图形
+            if (isDrawing && currentShape) {
+                currentShape.draw(ctx);
+            }
+        }
+
+        function getCanvasPosition(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        }
+
+        function updateTimeline() {
+            const timeline = document.getElementById('timeline');
+            timeline.innerHTML = '';
+            
+            animState.frames.forEach((frame, index) => {
+                const thumb = document.createElement('canvas');
+                thumb.className = `frame-thumbnail ${index === animState.currentFrame ? 'active' : ''}`;
+                thumb.width = 80;
+                thumb.height = 60;
+                
+                const ctx = thumb.getContext('2d');
+                ctx.clearRect(0, 0, 80, 60);
+                ctx.scale(80/800, 60/600);
+                frame.shapes.forEach(shape => {
+                    try {
+                        const restoredShape = ShapeFactory.create(
+                            shape.type,
+                            shape.points[0],
+                            shape.points[1] || shape.points[0],
+                            shape.color,
+                            shape.lineWidth
+                        );
+                        restoredShape.rotation = shape.rotation;
+                        restoredShape.draw(ctx);
+                    } catch (error) {
+                        console.error("缩略图渲染失败:", error);
+                    }
+                });
+                
+                thumb.addEventListener('click', () => {
+                    animState.currentFrame = index;
+                    redraw();
+                    updateTimeline();
+                });
+                
+                timeline.appendChild(thumb);
+            });
+        }
+
+        function playAnimation() {
+            if(animState.isPlaying) return;
+            animState.isPlaying = true;
+            
+            const startTime = Date.now();
+            const totalFrames = animState.frames.reduce((sum, f) => sum + f.duration, 0);
+            const fps = parseInt(document.getElementById('fps').value);
+            
+            function update() {
+                if(!animState.isPlaying) return;
+                
+                const elapsed = (Date.now() - startTime) / 1000;
+                const currentFrame = Math.floor(elapsed * fps) % totalFrames;
+                
+                let frameCounter = 0;
+                for(let i=0; i<animState.frames.length; i++) {
+                    frameCounter += animState.frames[i].duration;
+                    if(currentFrame < frameCounter) {
+                        animState.currentFrame = i;
+                        redraw();
+                        updateTimeline();
+                        break;
+                    }
+                }
+                
+                requestAnimationFrame(update);
+            }
+            
+            update();
+        }
+
+        document.getElementById('addFrame').addEventListener('click', () => {
+            animState.addFrame();
+            updateTimeline();
+        });
+
+        document.getElementById('play').addEventListener('click', () => {
+            animState.isPlaying = !animState.isPlaying;
+            if(animState.isPlaying) {
+                document.getElementById('play').textContent = '⏸ 暂停';
+                playAnimation();
+            } else {
+                document.getElementById('play').textContent = '▶ 播放';
+            }
+        });
+
+        document.getElementById('export').addEventListener('click', () => {
+            const animationData = {
+                fps: parseInt(document.getElementById('fps').value),
+                frames: animState.frames.map(f => ({
+                    duration: f.duration,
+                    shapes: f.shapes.map(s => s.toJSON())
+                }))
+            };
+            console.log(JSON.stringify(animationData, null, 2));
+            alert('动画数据已保存到控制台');
+        });
+
+        document.getElementById('saveBtn').addEventListener('click', () => {
+            const json = JSON.stringify({
+                frameIndex: animState.currentFrame,
+                shapes: animState.currentFrameData.shapes.map(shape => shape.toJSON())
+            }, null, 2);
+            console.log(json);
+            alert('当前帧已保存到控制台');
+        });
+
+        // 初始化时间轴
+        updateTimeline();
+    </script>
+</body>
+</html>

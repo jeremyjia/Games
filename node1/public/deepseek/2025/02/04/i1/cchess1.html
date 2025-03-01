@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>中国象棋摆棋程序</title>
+    <style>
+        .container {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        #chessboard {
+            width: 560px;
+            height: 620px;
+            border: 2px solid #333;
+            background: #FFEBCD;
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            position: relative;
+        }
+
+        .cell {
+            border: 1px solid #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .piece {
+            font-size: 30px;
+            user-select: none;
+            cursor: move;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        .red {
+            color: #C03;
+        }
+
+        .black {
+            color: #333;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        button {
+            padding: 8px 16px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        .river {
+            grid-row: 5 / 6;
+            grid-column: 1 / 10;
+            background: rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            pointer-events: none;
+        }
+
+        .piece-palette {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .piece-type {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .palette-piece {
+            font-size: 24px;
+            padding: 8px 12px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 4px;
+        }
+
+        .palette-piece:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .palette-piece.selected {
+            border-color: #2196F3;
+            transform: scale(1.1);
+            background: rgba(33, 150, 243, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="chessboard"></div>
+        <div class="controls">
+            <button onclick="initBoard()">初始化棋盘</button>
+            <button onclick="clearBoard()">清空棋盘</button>
+            <button onclick="randomLayout()">随机摆棋</button>
+            <button onclick="saveLayout()">保存棋局</button>
+            <button onclick="loadLayout()">加载棋局</button>
+            
+            <div class="piece-palette">
+                <div class="piece-type">
+                    <div style="color:#C03; margin-bottom:5px;">红方棋子</div>
+                    <div class="palette-piece red" data-color="red" data-type="0">帥</div>
+                    <div class="palette-piece red" data-color="red" data-type="1">仕</div>
+                    <div class="palette-piece red" data-color="red" data-type="2">相</div>
+                    <div class="palette-piece red" data-color="red" data-type="3">俥</div>
+                    <div class="palette-piece red" data-color="red" data-type="4">傌</div>
+                    <div class="palette-piece red" data-color="red" data-type="5">炮</div>
+                    <div class="palette-piece red" data-color="red" data-type="6">兵</div>
+                </div>
+                <div class="piece-type">
+                    <div style="color:#333; margin-bottom:5px;">黑方棋子</div>
+                    <div class="palette-piece black" data-color="black" data-type="0">將</div>
+                    <div class="palette-piece black" data-color="black" data-type="1">士</div>
+                    <div class="palette-piece black" data-color="black" data-type="2">象</div>
+                    <div class="palette-piece black" data-color="black" data-type="3">車</div>
+                    <div class="palette-piece black" data-color="black" data-type="4">馬</div>
+                    <div class="palette-piece black" data-color="black" data-type="5">砲</div>
+                    <div class="palette-piece black" data-color="black" data-type="6">卒</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const pieceChars = {
+            red: ['帥', '仕', '相', '俥', '傌', '炮', '兵'],
+            black: ['將', '士', '象', '車', '馬', '砲', '卒']
+        };
+
+        let selectedPiece = null;
+        let boardState = Array(10).fill().map(() => Array(9).fill(null));
+
+        function createBoard() {
+            const board = document.getElementById('chessboard');
+            board.innerHTML = '';
+            
+            // 创建棋盘格子
+            for (let row = 0; row < 10; row++) {
+                for (let col = 0; col < 9; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    cell.addEventListener('click', handleCellClick);
+                    cell.addEventListener('dragover', handleDragOver);
+                    cell.addEventListener('drop', handleDrop);
+                    board.appendChild(cell);
+                }
+            }
+
+            // 添加楚河汉界
+            const river = document.createElement('div');
+            river.className = 'river';
+            river.textContent = '楚河　　　　　　漢界';
+            board.appendChild(river);
+        }
+
+        function handleCellClick(e) {
+            const cell = e.target.closest('.cell');
+            if (!cell) return;
+
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+
+            if (selectedPiece) {
+                // 放置棋子
+                if (!boardState[row][col]) {
+                    const piece = createPiece(selectedPiece.color, selectedPiece.type);
+                    cell.appendChild(piece);
+                    boardState[row][col] = {
+                        color: selectedPiece.color,
+                        type: selectedPiece.type
+                    };
+                }
+                clearSelection();
+            } else {
+                // 删除棋子
+                const existingPiece = cell.querySelector('.piece');
+                if (existingPiece) {
+                    existingPiece.remove();
+                    boardState[row][col] = null;
+                }
+            }
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+            const targetCell = e.target.closest('.cell');
+            
+            if (targetCell && !boardState[targetCell.dataset.row][targetCell.dataset.col]) {
+                const piece = createPiece(data.color, data.type);
+                targetCell.appendChild(piece);
+                boardState[targetCell.dataset.row][targetCell.dataset.col] = {
+                    color: data.color,
+                    type: data.type
+                };
+                // 移除原位置的棋子
+                boardState[data.row][data.col] = null;
+                document.querySelector(`[data-row="${data.row}"][data-col="${data.col}"] .piece`).remove();
+            }
+        }
+
+        function createPiece(color, typeIndex) {
+            const piece = document.createElement('div');
+            piece.className = `piece ${color}`;
+            piece.textContent = pieceChars[color][typeIndex];
+            piece.draggable = true;
+            piece.addEventListener('dragstart', handleDragStart);
+            return piece;
+        }
+
+        function handleDragStart(e) {
+            const piece = e.target;
+            const cell = piece.parentElement;
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+    
+            e.dataTransfer.setData('text/plain', JSON.stringify({
+                row,
+                col,
+                color: piece.classList.contains('red') ? 'red' : 'black',
+                type: pieceChars[piece.classList.contains('red') ? 'red' : 'black'].indexOf(piece.textContent)
+            }));
+        }
+
+        // 初始化标准棋局
+        function initBoard() {
+            clearBoard();
+            // 红方棋子
+            const redPieces = [
+                [0, 0, 3], [0, 1, 1], [0, 2, 2], [0, 3, 5], [0, 4, 0],
+                [0, 5, 5], [0, 6, 2], [0, 7, 1], [0, 8, 3],
+                [2, 1, 4], [2, 7, 4],
+                [3, 0, 6], [3, 2, 6], [3, 4, 6], [3, 6, 6], [3, 8, 6]
+            ];
+            
+            // 黑方棋子
+            const blackPieces = [
+                [9, 0, 3], [9, 1, 1], [9, 2, 2], [9, 3, 5], [9, 4, 0],
+                [9, 5, 5], [9, 6, 2], [9, 7, 1], [9, 8, 3],
+                [7, 1, 4], [7, 7, 4],
+                [6, 0, 6], [6, 2, 6], [6, 4, 6], [6, 6, 6], [6, 8, 6]
+            ];
+
+            [...redPieces, ...blackPieces].forEach(([row, col, type]) => {
+                const color = row < 5 ? 'red' : 'black';
+                const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                const piece = createPiece(color, type);
+                cell.appendChild(piece);
+                boardState[row][col] = { color, type };
+            });
+        }
+
+        function clearBoard() {
+            document.querySelectorAll('.piece').forEach(p => p.remove());
+            boardState = Array(10).fill().map(() => Array(9).fill(null));
+            clearSelection();
+        }
+
+        function randomLayout() {
+            clearBoard();
+            for (let i = 0; i < 30; i++) {
+                const row = Math.floor(Math.random() * 10);
+                const col = Math.floor(Math.random() * 9);
+                const color = Math.random() > 0.5 ? 'red' : 'black';
+                const type = Math.floor(Math.random() * 7);
+                
+                if (!boardState[row][col]) {
+                    const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                    const piece = createPiece(color, type);
+                    cell.appendChild(piece);
+                    boardState[row][col] = { color, type };
+                }
+            }
+        }
+
+        function saveLayout() {
+            const simplified = boardState.map(row => 
+                row.map(cell => cell ? `${cell.color[0]}${cell.type}` : null)
+            );
+            localStorage.setItem('chessLayout', JSON.stringify(simplified));
+            alert('棋局已保存！');
+        }
+
+        function loadLayout() {
+            const saved = localStorage.getItem('chessLayout');
+            if (!saved) return alert('没有找到保存的棋局');
+            
+            clearBoard();
+            const layout = JSON.parse(saved);
+            layout.forEach((row, rowIndex) => {
+                row.forEach((cell, colIndex) => {
+                    if (cell) {
+                        const color = cell[0] === 'r' ? 'red' : 'black';
+                        const type = parseInt(cell[1]);
+                        const piece = createPiece(color, type);
+                        const cellElem = document.querySelector(
+                            `[data-row="${rowIndex}"][data-col="${colIndex}"]`
+                        );
+                        cellElem.appendChild(piece);
+                        boardState[rowIndex][colIndex] = { color, type };
+                    }
+                });
+            });
+        }
+
+        function clearSelection() {
+            document.querySelectorAll('.palette-piece').forEach(p => p.classList.remove('selected'));
+            selectedPiece = null;
+        }
+
+        // 棋子选择面板事件
+        document.querySelectorAll('.palette-piece').forEach(piece => {
+            piece.addEventListener('click', function() {
+                document.querySelectorAll('.palette-piece').forEach(p => p.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedPiece = {
+                    color: this.dataset.color,
+                    type: parseInt(this.dataset.type)
+                };
+            });
+        });
+
+        // 初始化棋盘
+        createBoard();
+    </script>
+</body>
+</html>

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>跨平台场景编辑器</title>
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        #container {
+            display: grid;
+            grid-template-columns: 120px 1fr 200px;
+            height: 100vh;
+        }
+        #toolbar { 
+            background: #f0f0f0; 
+            padding: 10px;
+            touch-action: none;
+        }
+        #main-canvas {
+            border: 2px solid #333;
+            background: #87CEEB;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+        #property-panel { 
+            background: #f8f8f8; 
+            padding: 10px;
+            overflow-y: auto;
+        }
+        .obj-type { 
+            padding: 12px; 
+            margin: 8px; 
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background: white;
+            text-align: center;
+            font-size: 14px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .prop-item { margin: 12px 0; }
+        #output { 
+            background: white; 
+            padding: 10px; 
+            font-size: 12px;
+        }
+        @media (max-width: 600px) {
+            #container {
+                grid-template-columns: 100px 1fr;
+                grid-template-rows: 1fr auto;
+            }
+            #property-panel {
+                grid-column: 1 / -1;
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="toolbar">
+            <div class="obj-type" data-type="car">🚗 汽车</div>
+            <div class="obj-type" data-type="cloud">☁️ 云</div>
+            <div class="obj-type" data-type="tree">🌳 树</div>
+        </div>
+
+        <div id="canvas-container">
+            <canvas id="main-canvas"></canvas>
+        </div>
+
+        <div id="property-panel">
+            <h3>属性</h3>
+            <div id="props-content">点击对象进行编辑</div>
+            <button onclick="exportData()">导出数据</button>
+            <pre id="output"></pre>
+        </div>
+    </div>
+
+<script>
+const canvas = document.getElementById('main-canvas');
+const ctx = canvas.getContext('2d');
+let isDragging = false;
+let selectedObj = null;
+let offset = { x: 0, y: 0 };
+let currentTouchId = null;
+
+// 响应式画布尺寸
+function resizeCanvas() {
+    const container = canvas.parentElement;
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientHeight;
+    render();
+}
+
+// 场景数据
+const scene = {
+    background: '#87CEEB',
+    objects: []
+};
+
+const templates = {
+    car: { width: 60, height: 30, color: '#FF4500' },
+    cloud: { width: 80, height: 40, color: '#FFFFFF', density: 0.7 },
+    tree: { width: 40, height: 80, color: '#228B22', trunkColor: '#8B4513' }
+};
+
+// 统一输入处理
+function getCanvasCoordinates(event) {
+    const rect = canvas.getBoundingClientRect();
+    let clientX, clientY;
+    
+    if (event.touches) {
+        const touch = Array.from(event.touches).find(t => t.identifier === currentTouchId);
+        if (!touch) return null;
+        clientX = touch.clientX;
+        clientY = touch.clientY;
+    } else {
+        clientX = event.clientX;
+        clientY = event.clientY;
+    }
+    
+    return {
+        x: (clientX - rect.left) * (canvas.width / rect.width),
+        y: (clientY - rect.top) * (canvas.height / rect.height)
+    };
+}
+
+function handleStart(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    // 忽略多点触控
+    if (event.touches && event.touches.length > 1) return;
+
+    const pos = getCanvasCoordinates(event);
+    if (!pos) return;
+
+    // 查找选中对象
+    selectedObj = scene.objects.find(obj => 
+        pos.x >= obj.x && pos.x <= obj.x + obj.width &&
+        pos.y >= obj.y && pos.y <= obj.y + obj.height
+    );
+
+    if (selectedObj) {
+        isDragging = true;
+        offset.x = pos.x - selectedObj.x;
+        offset.y = pos.y - selectedObj.y;
+        
+        if (event.touches) {
+            currentTouchId = event.touches[0].identifier;
+        }
+    } else {
+        // 添加新对象（移动端长按触发）
+        if (event.type === 'touchstart') {
+            setTimeout(() => {
+                if (!isDragging) addNewObject(pos);
+            }, 300);
+        }
+    }
+}
+
+function handleMove(event) {
+    if (!isDragging || !selectedObj) return;
+    event.preventDefault();
+    event.stopPropagation();
+
+    const pos = getCanvasCoordinates(event);
+    if (!pos) return;
+
+    selectedObj.x = clamp(pos.x - offset.x, 0, canvas.width - selectedObj.width);
+    selectedObj.y = clamp(pos.y - offset.y, 0, canvas.height - selectedObj.height);
+    render();
+}
+
+function handleEnd() {
+    isDragging = false;
+    currentTouchId = null;
+    updatePropertyPanel();
+}
+
+function addNewObject(pos) {
+    const type = document.activeElement?.dataset?.type || 'car';
+    const template = templates[type];
+    
+    const newObj = {
+        type,
+        x: clamp(pos.x - template.width/2, 0, canvas.width - template.width),
+        y: clamp(pos.y - template.height/2, 0, canvas.height - template.height),
+        ...template
+    };
+    
+    scene.objects.push(newObj);
+    render();
+}
+
+// 辅助函数
+function clamp(value, min, max) {
+    return Math.max(min, Math.min(value, max));
+}
+
+// 渲染逻辑
+function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = scene.background;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    scene.objects.forEach(obj => {
+        ctx.save();
+        drawObject(obj);
+        ctx.restore();
+    });
+
+    if (selectedObj) {
+        ctx.strokeStyle = '#FF0000';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(
+            selectedObj.x - 2,
+            selectedObj.y - 2,
+            selectedObj.width + 4,
+            selectedObj.height + 4
+        );
+    }
+}
+
+function drawObject(obj) {
+    switch(obj.type) {
+        case 'car':
+            ctx.fillStyle = obj.color;
+            ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
+            break;
+
+        case 'cloud':
+            ctx.fillStyle = obj.color;
+            ctx.beginPath();
+            ctx.arc(obj.x + 20, obj.y + 15, 15, 0, Math.PI * 2);
+            ctx.arc(obj.x + 35, obj.y + 10, 20, 0, Math.PI * 2);
+            ctx.arc(obj.x + 55, obj.y + 15, 15, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+
+        case 'tree':
+            ctx.fillStyle = obj.trunkColor;
+            ctx.fillRect(obj.x + 15, obj.y + 50, 10, 30);
+            ctx.fillStyle = obj.color;
+            ctx.beginPath();
+            ctx.arc(obj.x + 20, obj.y + 30, 20, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+    }
+}
+
+// 初始化事件
+function init() {
+    // 窗口尺寸变化监听
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // 输入事件
+    const events = {
+        mouse: ['mousedown', 'mousemove', 'mouseup', 'mouseleave'],
+        touch: ['touchstart', 'touchmove', 'touchend', 'touchcancel']
+    };
+
+    events.mouse.forEach(e => canvas.addEventListener(e, handleStart));
+    events.touch.forEach(e => canvas.addEventListener(e, handleStart));
+
+    document.querySelectorAll('.obj-type').forEach(btn => {
+        btn.addEventListener('mousedown', () => btn.classList.add('active'));
+        btn.addEventListener('mouseup', () => btn.classList.remove('active'));
+        btn.addEventListener('mouseleave', () => btn.classList.remove('active'));
+        btn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            btn.classList.add('active');
+        });
+        btn.addEventListener('touchend', () => btn.classList.remove('active'));
+    });
+}
+
+// 初始化
+init();
+</script>
+</body>
+</html>

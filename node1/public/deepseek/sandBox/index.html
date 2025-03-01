@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sandBox</title>
+    <style>
+     /* 新增导航菜单样式 */
+        .navbar {
+            width: 100%;
+            background: #1a1a1a;
+            padding: 15px 0;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+        }
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 0;
+            padding: 0;
+        }
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            transition: color 0.3s;
+        }
+        .nav-menu a:hover {
+            color: #4CAF50;
+        }
+        
+        canvas {
+            border: 1px solid #000;
+            touch-action: none;
+        }
+        body {
+            padding-top: 60px; /* 给导航栏留出空间 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: #f0f0f0;
+            touch-action: manipulation;
+        }  
+    </style>
+</head>
+<body><!-- 新增导航菜单 -->
+    <nav class="navbar">
+        <ul class="nav-menu">
+            <li><a href="#" target="_blank">v0.13</a></li>
+            <li><a href="https://www.deepseek.com" target="_blank">DeepSeek 首页</a></li>
+            <li><a href="#">[sandBox]</a></li>
+            <li><a href="..">[..]</a></li> 
+            <li><a href="i1.html">i1.html</a></li> 
+            <li><a href="i2.html">i2.html</a></li> 
+            <!-- 可以继续添加其他菜单项 -->
+        </ul>
+    </nav>   
+ 
+</body>
+</html>

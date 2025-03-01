@@ -1,0 +1,108 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .container {
+            margin: 50px auto;
+        }
+        canvas {
+            background: transparent;
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <canvas id="karaokeCanvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('karaokeCanvas');
+        const ctx0 = canvas.getContext('2d');
+
+        // 配置参数
+        const text0 = "单画布卡拉OK效果";
+        const fontSize = 40;
+        const colors = {
+            base: '#666',      // 基础颜色
+            highlight: '#ff0000' // 高亮颜色
+        };
+
+        // 初始化画布
+        function initCanvas() {
+            ctx0.font = `${fontSize}px Arial`;
+            const textWidth = ctx0.measureText(text0).width;
+            const canvasHeight = fontSize * 2;
+
+            // 处理高清屏适配
+            const scale = window.devicePixelRatio || 1;
+            canvas.width = textWidth * scale;
+            canvas.height = canvasHeight * scale;
+            canvas.style.width = `${textWidth}px`;
+            canvas.style.height = `${canvasHeight}px`;
+            ctx0.scale(scale, scale);
+        }
+
+        function clearCanvas(ctx){
+            const canvasWidth = canvas.width / (window.devicePixelRatio || 1);
+            const canvasHeight = canvas.height / (window.devicePixelRatio || 1);
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+        }
+        // 绘制函数
+        function drawOKText(cvs,text,progress,x,y) {
+            const ctx = cvs.getContext('2d');
+            const canvasWidth = cvs.width / (window.devicePixelRatio || 1);
+            const canvasHeight = cvs.height / (window.devicePixelRatio || 1);
+ 
+
+            // 绘制基础文本
+            ctx.fillStyle = colors.base;
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, x,y);
+
+            // 保存画布状态
+            ctx.save();
+            
+            // 设置高亮裁剪区域
+            ctx.beginPath();
+            ctx.rect(0, 0, canvasWidth * progress, canvasHeight);
+            ctx.clip();
+
+            // 绘制高亮文本
+            ctx.fillStyle = colors.highlight;
+            ctx.fillText(text, x,y);
+
+            // 恢复画布状态
+            ctx.restore();
+        }
+
+        // 动画控制
+        function animate() {
+            const duration = 3000;
+            const start = Date.now();
+
+            function update() {
+                const elapsed = Date.now() - start;
+                const progress = Math.min(elapsed / duration, 1);
+                clearCanvas(ctx0);
+                drawOKText(canvas,text0,progress,0,10);
+                drawOKText(canvas,"line2: 号两岸三地",progress,0,33);
+                drawOKText(canvas,"333: 号两岸三地号两岸三地号两岸三地号两岸三地号两岸三地号两岸三地",0.5,0,55);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            
+            requestAnimationFrame(update);
+        }
+
+        // 初始化并启动
+        initCanvas();
+        animate();
+        window.addEventListener('resize', initCanvas);
+    </script>
+</body>
+</html>

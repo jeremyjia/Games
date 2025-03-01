@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D 可编辑长方体</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #1a1a1a;
+      touch-action: none;
+    }
+    canvas {
+      display: block;
+      background: linear-gradient(45deg, #2c3e50, #3498db);
+    }
+    #controls {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: rgba(255,255,255,0.9);
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    button {
+      padding: 8px 15px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      background: #3498db;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    button:hover {
+      background: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <div id="controls">
+    <button onclick="toggleProjection()">切换投影方式</button>
+    <button onclick="resetCube()">重置形状</button>
+  </div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let isPerspective = true;
+let isDragging = false;
+let selectedVertex = null;
+let lastTouchDistance = 0;
+
+// 初始化画布尺寸
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// 长方体初始参数
+let cube = {
+  vertices: [
+    { x: -50, y: -50, z: -50 },  // 0
+    { x: 50, y: -50, z: -50 },   // 1
+    { x: 50, y: 50, z: -50 },    // 2
+    { x: -50, y: 50, z: -50 },   // 3
+    { x: -50, y: -50, z: 50 },   // 4
+    { x: 50, y: -50, z: 50 },    // 5
+    { x: 50, y: 50, z: 50 },     // 6
+    { x: -50, y: 50, z: 50 }     // 7
+  ],
+  edges: [
+    [0,1], [1,2], [2,3], [3,0], // 底面
+    [4,5], [5,6], [6,7], [7,4], // 顶面
+    [0,4], [1,5], [2,6], [3,7]  // 侧面
+  ],
+  position: { x: 0, y: 0, z: 0 },
+  rotation: { x: 0, y: 0 }
+};
+
+// 投影函数
+function project(point) {
+  if (isPerspective) {
+    const scale = 500 / (500 - point.z);
+    return {
+      x: point.x * scale + canvas.width/2,
+      y: point.y * scale + canvas.height/2
+    };
+  } else {
+    return {
+      x: point.x + canvas.width/2,
+      y: point.y + canvas.height/2
+    };
+  }
+}
+
+// 坐标转换
+function transformPoint(vertex) {
+  // 应用旋转
+  let x = vertex.x;
+  let y = vertex.y;
+  let z = vertex.z;
+  
+  // X轴旋转
+  const cy = Math.cos(cube.rotation.x);
+  const sy = Math.sin(cube.rotation.x);
+  const tempY = y * cy - z * sy;
+  z = y * sy + z * cy;
+  y = tempY;
+
+  // Y轴旋转
+  const cx = Math.cos(cube.rotation.y);
+  const sx = Math.sin(cube.rotation.y);
+  const tempX = x * cx + z * sx;
+  z = -x * sx + z * cx;
+  x = tempX;
+
+  // 应用位置
+  return {
+    x: x + cube.position.x,
+    y: y + cube.position.y,
+    z: z + cube.position.z
+  };
+}
+
+// 绘制函数
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // 绘制面
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.strokeStyle = '#ecf0f1';
+  ctx.lineWidth = 3;
+  
+  // 前后面
+  drawFace([0,1,2,3], '#e74c3c');
+  drawFace([4,5,6,7], '#2ecc71');
+
+  // 绘制边
+  cube.edges.forEach(edge => {
+    const p1 = project(transformPoint(cube.vertices[edge[0]]));
+    const p2 = project(transformPoint(cube.vertices[edge[1]]));
+    ctx.beginPath();
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.stroke();
+  });
+
+  // 绘制顶点
+  ctx.fillStyle = '#f1c40f';
+  cube.vertices.forEach(vertex => {
+    const p = project(transformPoint(vertex));
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 6, 0, Math.PI*2);
+    ctx.fill();
+  });
+}
+
+function drawFace(indices, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  const points = indices.map(i => {
+    const p = project(transformPoint(cube.vertices[i]));
+    return [p.x, p.y];
+  });
+  ctx.moveTo(points[0][0], points[0][1]);
+  points.slice(1).forEach(p => ctx.lineTo(p[0], p[1]));
+  ctx.closePath();
+  ctx.fill();
+}
+
+// 交互处理
+function getCanvasPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: (e.clientX || e.touches[0].clientX) - rect.left,
+    y: (e.clientY || e.touches[0].clientY) - rect.top
+  };
+}
+
+function findVertex(x, y) {
+  let minDist = Infinity;
+  let found = null;
+  
+  cube.vertices.forEach((vertex, index) => {
+    const p = project(transformPoint(vertex));
+    const dx = p.x - x;
+    const dy = p.y - y;
+    const dist = dx*dx + dy*dy;
+    
+    if (dist < 400 && dist < minDist) { // 20px 感应范围
+      minDist = dist;
+      found = index;
+    }
+  });
+  
+  return found;
+}
+
+// 事件监听
+canvas.addEventListener('mousedown', e => {
+  const pos = getCanvasPos(e);
+  selectedVertex = findVertex(pos.x, pos.y);
+  isDragging = true;
+});
+
+canvas.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  
+  if (selectedVertex !== null) {
+    const pos = getCanvasPos(e);
+    const scale = 500 / (500 - cube.vertices[selectedVertex].z);
+    cube.vertices[selectedVertex].x = (pos.x - canvas.width/2) / scale;
+    cube.vertices[selectedVertex].y = (pos.y - canvas.height/2) / scale;
+  } else {
+    const deltaX = e.movementX;
+    const deltaY = e.movementY;
+    cube.rotation.y += deltaX * 0.01;
+    cube.rotation.x += deltaY * 0.01;
+  }
+  
+  draw();
+});
+
+canvas.addEventListener('mouseup', () => {
+  isDragging = false;
+  selectedVertex = null;
+});
+
+// 触摸事件
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  if (e.touches.length === 1) {
+    const pos = getCanvasPos(e);
+    selectedVertex = findVertex(pos.x, pos.y);
+    isDragging = true;
+  } else if (e.touches.length === 2) {
+    lastTouchDistance = getTouchDistance(e.touches);
+  }
+});
+
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (e.touches.length === 1 && selectedVertex !== null) {
+    const pos = getCanvasPos(e);
+    const scale = 500 / (500 - cube.vertices[selectedVertex].z);
+    cube.vertices[selectedVertex].x = (pos.x - canvas.width/2) / scale;
+    cube.vertices[selectedVertex].y = (pos.y - canvas.height/2) / scale;
+    draw();
+  } else if (e.touches.length === 2) {
+    const newDistance = getTouchDistance(e.touches);
+    const scale = newDistance / lastTouchDistance;
+    cube.position.z += (1 - scale) * 100;
+    lastTouchDistance = newDistance;
+    draw();
+  }
+});
+
+canvas.addEventListener('touchend', () => {
+  isDragging = false;
+  selectedVertex = null;
+});
+
+function getTouchDistance(touches) {
+  const dx = touches[0].clientX - touches[1].clientX;
+  const dy = touches[0].clientY - touches[1].clientY;
+  return Math.sqrt(dx*dx + dy*dy);
+}
+
+// 控制功能
+function toggleProjection() {
+  isPerspective = !isPerspective;
+  draw();
+}
+
+function resetCube() {
+  cube.vertices = [
+    { x: -50, y: -50, z: -50 },
+    { x: 50, y: -50, z: -50 },
+    { x: 50, y: 50, z: -50 },
+    { x: -50, y: 50, z: -50 },
+    { x: -50, y: -50, z: 50 },
+    { x: 50, y: -50, z: 50 },
+    { x: 50, y: 50, z: 50 },
+    { x: -50, y: 50, z: 50 }
+  ];
+  cube.position = { x: 0, y: 0, z: 0 };
+  cube.rotation = { x: 0, y: 0 };
+  draw();
+}
+
+// 初始绘制
+draw();
+</script>
+</body>
+</html>

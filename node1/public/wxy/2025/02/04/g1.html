@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treble Clef Drawing</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="musicStaffCanvas" width="400" height="200"></canvas>
+    <script>
+        const canvas = document.getElementById('musicStaffCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Function to draw the treble clef
+        function drawTrebleClef() {
+            // Starting point for the clef
+            const startX = 100;
+            const startY = 100;
+
+            // Draw the curved line
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.bezierCurveTo(startX + 20, startY - 30, startX + 70, startY - 80, startX + 100, startY - 30);
+            ctx.stroke();
+
+            // Draw the spiral
+            ctx.beginPath();
+            ctx.arc(startX + 85, startY - 90, 20, 0, Math.PI * 2, true); // Outer circle of the spiral
+            ctx.moveTo(startX + 85, startY - 90); // Move back to the center for the inner spiral
+            ctx.arc(startX + 85, startY - 90, 10, 0, Math.PI, false); // Inner part of the spiral (top half)
+            ctx.lineTo(startX + 95, startY - 70); // Line connecting the spiral to the stem
+            ctx.stroke();
+
+            // Draw the stem
+            ctx.beginPath();
+            ctx.moveTo(startX + 100, startY - 30);
+            ctx.lineTo(startX + 100, startY + 20);
+            ctx.stroke();
+
+            // Optionally, you can add the ledger lines and staff lines here
+        }
+
+        // Call the function to draw the treble clef
+        drawTrebleClef();
+    </script>
+</body>
+</html>

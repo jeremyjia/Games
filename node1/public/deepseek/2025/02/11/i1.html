@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>森林探照灯</title>
+    <style>
+        * { margin: 0; padding: 0; }
+        canvas { display: block; }
+        body { background: #000; overflow: hidden; }
+    </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let lightPos = { x: 0, y: 0 };
+
+// 设置画布尺寸
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    generateTrees();
+}
+window.addEventListener('resize', resize);
+
+// 生成树木数据
+let trees = [];
+function generateTrees() {
+    trees = [];
+    const count = Math.floor(canvas.width * canvas.height / 4000);
+    for(let i = 0; i < count; i++) {
+        trees.push({
+            x: Math.random() * canvas.width,
+            y: canvas.height - 50,
+            height: 80 + Math.random() * 120,
+            width: 20 + Math.random() * 30
+        });
+    }
+}
+
+// 绘制树木
+function drawTrees() {
+    trees.forEach(tree => {
+        // 绘制树干
+        ctx.fillStyle = '#543210';
+        ctx.fillRect(
+            tree.x - tree.width/6,
+            tree.y - tree.height,
+            tree.width/3,
+            tree.height
+        );
+        
+        // 绘制树冠
+        ctx.beginPath();
+        ctx.moveTo(tree.x - tree.width/2, tree.y - tree.height + 20);
+        ctx.lineTo(tree.x + tree.width/2, tree.y - tree.height + 20);
+        ctx.lineTo(tree.x, tree.y - tree.height - tree.width);
+        ctx.fillStyle = '#0A5100';
+        ctx.fill();
+    });
+}
+
+// 主绘制函数
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 绘制背景
+    ctx.save();
+    drawTrees();
+    
+    // 添加黑暗层和灯光效果
+    const gradient = ctx.createRadialGradient(
+        lightPos.x, lightPos.y, 0,
+        lightPos.x, lightPos.y, 200
+    );
+    gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0.9)');
+    
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.restore();
+    requestAnimationFrame(draw);
+}
+
+// 鼠标/触摸移动处理
+canvas.addEventListener('mousemove', e => {
+    lightPos.x = e.clientX;
+    lightPos.y = e.clientY;
+});
+
+canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    lightPos.x = e.touches[0].clientX;
+    lightPos.y = e.touches[0].clientY;
+}, { passive: false });
+
+// 初始化
+resize();
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>

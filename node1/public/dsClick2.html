@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        /* 原有样式保持不变 */
+        .contour {
+            position: absolute;
+            border: 2px solid red;
+            background-color: transparent;
+            pointer-events: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            transform: translate(-20px, -20px);
+            z-index: 2;
+        }
+        #dataPanel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 10px;
+            border: 1px solid #ccc;
+            z-index: 3;
+        }
+        #canvasOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <div id="dataPanel">点击数据将显示在这里</div>
+    <canvas id="canvasOverlay"></canvas>
+
+    <script>
+        const clickData = [];
+        const canvas = document.getElementById('canvasOverlay');
+        const ctx = canvas.getContext('2d');
+
+        // 初始化Canvas尺寸
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // 点击事件处理
+        document.addEventListener('click', function(e) {
+            const x = e.clientX;
+            const y = e.clientY;
+            
+            createContour(x, y);
+            
+            clickData.push({ x, y, timestamp: new Date().toISOString() });
+            updateDataDisplay();
+            
+            if (clickData.length >= 3) {
+                drawPolygon();
+            }
+        });
+        document.addEventListener('dblclick', function() {
+            clickData.length = 0;
+            updateDataDisplay();
+            clearCanvas();
+        });
+        // 绘制多边形
+        function drawPolygon() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.beginPath();
+            clickData.forEach((point, index) => {
+                if (index === 0) {
+                    ctx.moveTo(point.x, point.y);
+                } else {
+                    ctx.lineTo(point.x, point.y);
+                }
+            });
+            ctx.closePath();
+            
+            // 填充样式
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+            ctx.fill();
+            
+            // 边框样式
+            ctx.strokeStyle = '#ff0000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        // 清空画布
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // 修改后的数据显示更新
+        function updateDataDisplay() {
+            const dataPanel = document.getElementById('dataPanel');
+            dataPanel.innerHTML = `
+                <strong>已收集 ${clickData.length} 个点</strong><br>
+                ${clickData.length >= 3 ? '已生成多边形' : '需要至少3个点生成多边形'}
+                <hr>
+                ${clickData.slice(-5).reverse().map(point => 
+                    `X: ${point.x}, Y: ${point.y}<br>${point.timestamp}`
+                ).join('<br><br>')}
+            `;
+            
+            if (clickData.length < 3) {
+                clearCanvas();
+            }
+        }
+
+        // 原有创建轮廓和导出功能保持不变
+        function createContour(x, y) {
+            const contour = document.createElement('div');
+            contour.className = 'contour';
+            contour.style.left = `${x}px`;
+            contour.style.top = `${y}px`;
+            document.body.appendChild(contour);
+            setTimeout(() => contour.remove(), 1000);
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(clickData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'click_data.json';
+            a.click();
+        }
+
+        const exportBtn = document.createElement('button');
+        exportBtn.textContent = '导出数据';
+        exportBtn.style.position = 'fixed';
+        exportBtn.style.top = '20px';
+        exportBtn.style.left = '20px';
+        exportBtn.onclick = exportData;
+        document.body.appendChild(exportBtn);
+    </script>
+</body>
+</html>

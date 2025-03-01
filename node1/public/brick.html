@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+/* 样式与之前相同或根据需要进行调整 */
+#container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+}
+
+.draggable, .droppable {
+    width: 150px;
+    height: 150px;
+    text-align: center;
+    line-height: 150px;
+    font-size: 20px;
+    border: 2px solid #000;
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 10px;
+    user-select: none;
+    position: relative;
+}
+
+.highlight {
+    border-color: red;
+}
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="brick" draggable="true" class="draggable">
+            砖块
+        </div>
+        <div id="slot" class="droppable">
+            槽
+        </div>
+    </div>
+
+    <script>
+       const brick = document.getElementById('brick');
+const slot = document.getElementById('slot');
+let isDragging = false;
+let offsetX, offsetY;
+
+brick.addEventListener('touchstart', (e) => {
+    isDragging = true;
+    const touch = e.touches[0];
+    offsetX = touch.clientX - brick.offsetLeft;
+    offsetY = touch.clientY - brick.offsetTop;
+    brick.style.position = 'absolute'; // 允许砖块移动
+});
+
+document.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    e.preventDefault(); // 阻止默认滚动行为
+    const touch = e.touches[0];
+    const newX = touch.clientX - offsetX;
+    const newY = touch.clientY - offsetY;
+    
+    // 在这里可以添加逻辑来限制砖块只能在屏幕上移动，或者只能在槽的附近移动
+    brick.style.left = `${newX}px`;
+    brick.style.top = `${newY}px`;
+
+    // 检查砖块是否进入槽的区域（这里简化处理，只检查边界）
+    const slotRect = slot.getBoundingClientRect();
+    const brickRect = brick.getBoundingClientRect();
+    if (
+        brickRect.top < slotRect.bottom &&
+        brickRect.bottom > slotRect.top &&
+        brickRect.left < slotRect.right &&
+        brickRect.right > slotRect.left
+    ) {
+        slot.classList.add('highlight');
+    } else {
+        slot.classList.remove('highlight');
+    }
+});
+
+document.addEventListener('touchend', () => {
+    isDragging = false;
+    
+    // 检查砖块是否完全在槽内（这里可以根据需要调整逻辑）
+    const slotRect = slot.getBoundingClientRect();
+    const brickRect = brick.getBoundingClientRect();
+    if (
+        brickRect.top >= slotRect.top &&
+        brickRect.bottom <= slotRect.bottom &&
+        brickRect.left >= slotRect.left &&
+        brickRect.right <= slotRect.right
+    ) {
+        alert('砖块已成功拖入槽中！');
+        // 重置砖块位置或进行其他逻辑处理
+        brick.style.left = '';
+        brick.style.top = '';
+        brick.style.position = ''; // 恢复默认定位
+    } else {
+        // 如果不在槽内，将砖块移回初始位置（这里省略，可以根据需要添加）
+    }
+
+    // 重置槽的高亮状态
+    slot.classList.remove('highlight');
+});
+    </script>
+</body>
+</html>

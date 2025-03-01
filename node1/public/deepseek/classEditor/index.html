@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript类设计器</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+
+        .nav {
+            background: #333;
+            color: white;
+            padding: 10px;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .draggable {
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            min-width: 200px;
+        }
+
+        .toolbar-header {
+            padding: 8px;
+            background: #eee;
+            cursor: move;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .toolbar-content {
+            padding: 10px;
+        }
+        #drawCanvas {
+            position: fixed;
+            top: 280px;
+            left: 20px;
+            right: 20px;
+            height: 400px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            z-index: 1;
+        }
+        #codeEditor {
+            top: 60px;
+            left: 20px;
+            width: 300px;
+            height: 200px;
+        }
+
+        #classToolbar {
+            top: 60px;
+            right: 20px;
+            z-index: 10;
+        }
+
+        #instanceToolbar {
+            top: 200px;
+            right: 20px;
+        }
+
+        #canvas {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            height: 150px;
+            background: white;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        button {
+            margin: 2px;
+            padding: 5px 10px;
+            background: #4CAF50;
+            border: none;
+            color: white;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+            .draggable {
+                width: 90%;
+                left: 5% !important;
+                right: 5% !important;
+            }
+            #codeEditor {
+                top: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="https://www.deepseek.com">前往DeepSeek</a>
+        <a href="c1.html">c1.html</a>
+        <a href="d1.html">d1.html</a>
+        <a href="d2.html">d2.html</a>
+        <a href="c1.md">c1.md</a>
+        <a href="d1.md">d1.md</a>
+    </div>
+    <canvas id="drawCanvas"></canvas>
+    <div class="draggable" id="codeEditor">
+        <div class="toolbar-header">代码编辑器</div>
+        <textarea style="width:100%; height: 160px; resize: none"></textarea>
+    </div>
+
+    <div class="draggable" id="classToolbar">
+        <div class="toolbar-header">类工具条</div>
+        <div class="toolbar-content">
+            <button data-class="0">Class1</button>
+            <button data-class="1">Class2</button>
+            <button data-class="2">Class3</button>
+            <button id="updateBtn">更新</button>
+        </div>
+    </div>
+
+    <div class="draggable" id="instanceToolbar">
+        <div class="toolbar-header">实例生成</div>
+        <div class="toolbar-content">
+            <button data-instance="0">生成Class1</button>
+            <button data-instance="1">生成Class2</button>
+            <button data-instance="2">生成Class3</button>
+        </div>
+    </div>
+
+    <div id="canvas" class="draggable">
+        <div class="toolbar-header">实例方法列表</div>
+        <div id="methodList"></div>
+    </div>
+
+    <script>
+        let ctx = null;
+        function initCanvas() {
+            const canvas = document.getElementById('drawCanvas');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            ctx = canvas.getContext('2d');  // 初始化全局上下文
+        }
+        window.addEventListener('load', initCanvas);
+        window.addEventListener('resize', initCanvas);
+
+        // 拖拽功能
+        document.querySelectorAll('.draggable').forEach(element => {
+            let isDragging = false;
+            let currentX = 0;
+            let currentY = 0;
+            let initialX = 0;
+            let initialY = 0;
+
+            function startDrag(e) {
+                initialX = e.clientX || e.touches[0].clientX;
+                initialY = e.clientY || e.touches[0].clientY;
+                isDragging = true;
+                element.style.transition = 'none';
+            }
+
+            function duringDrag(e) {
+                if (!isDragging) return;
+                e.preventDefault();
+                
+                const currentX = e.clientX || e.touches[0].clientX;
+                const currentY = e.clientY || e.touches[0].clientY;
+                
+                const deltaX = currentX - initialX;
+                const deltaY = currentY - initialY;
+                
+                element.style.left = `${element.offsetLeft + deltaX}px`;
+                element.style.top = `${element.offsetTop + deltaY}px`;
+                
+                initialX = currentX;
+                initialY = currentY;
+            }
+
+            function stopDrag() {
+                isDragging = false;
+                element.style.transition = 'all 0.3s';
+            }
+
+            element.querySelector('.toolbar-header').addEventListener('mousedown', startDrag);
+            element.querySelector('.toolbar-header').addEventListener('touchstart', startDrag);
+            
+            document.addEventListener('mousemove', duringDrag);
+            document.addEventListener('touchmove', duringDrag);
+            
+            document.addEventListener('mouseup', stopDrag);
+            document.addEventListener('touchend', stopDrag);
+        });
+
+        // 类管理系统
+        const classTemplates = [
+            `class Class1 {
+                constructor() {
+                    this.name = 'Class1';
+                }
+                
+                clearCanvas(cx) { 
+                    cx.clearRect(0, 0, cx.canvas.width, cx.canvas.height); // 清除整个画布
+                }
+                    
+                drawCircle(cx) { 
+                    const x = Math.random() * cx.canvas.width;
+                    const y = Math.random() * cx.canvas.height;
+                    cx.beginPath();
+                    cx.arc(x, y, 20, 0, Math.PI * 2);
+                    cx.fillStyle = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+                    cx.fill();
+                }
+            }`,
+
+            `class Class2 {
+    constructor() {
+        this.value = 0;
+    }
+    
+    increment() {
+        this.value++;
+    }
+    
+    showValue() {
+        console.log(this.value);
+    }
+}`,
+
+            `class Class3 {
+    constructor(name) {
+        this.name = name || 'Default';
+    }
+    
+    greet() {
+        console.log(\`Hello from \${this.name}\`);
+    }
+    
+    static staticMethod() {
+        console.log('This is static');
+    }
+}`
+        ];
+
+        // 初始化代码编辑器
+        const textarea = document.querySelector('textarea');
+        document.querySelectorAll('[data-class]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                textarea.value = classTemplates[btn.dataset.class];
+            });
+        });
+
+        // 更新按钮
+        document.getElementById('updateBtn').addEventListener('click', () => {
+            const index = document.querySelector('[data-class].active')?.dataset.class;
+            if (index !== undefined) {
+                classTemplates[index] = textarea.value;
+            }
+        });
+
+        // 实例生成器
+        document.querySelectorAll('[data-instance]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const classIndex = btn.dataset.instance;
+                try {
+                    const cls = await createClass(classTemplates[classIndex]);
+                    const instance = new cls();
+                    showMethods(instance);
+                } catch (e) {
+                    console.error('类创建失败:', e);
+                }
+            });
+        });
+
+        function createClass(code) {
+            return new Promise((resolve, reject) => {
+                try {
+                    const fn = new Function(`return ${code}`)();
+                    resolve(fn);
+                } catch (e) {
+                    reject(e);
+                }
+            });
+        }
+
+        function showMethods(instance) {
+            const methodList = document.getElementById('methodList');
+            methodList.innerHTML = '';
+            
+            Object.getOwnPropertyNames(Object.getPrototypeOf(instance))
+                .filter(m => m !== 'constructor' && typeof instance[m] === 'function')
+                .forEach(m => {
+                    const div = document.createElement('div');
+                    div.textContent = m;
+                    div.style.padding = '5px';
+                    div.style.borderBottom = '1px solid #eee';
+                    
+                    div.addEventListener('click', () => {
+                        instance[m](ctx); // 点击执行方法
+                        if (m === 'drawCircle') {
+                            // 可以在这里添加额外的画布更新逻辑
+                        }
+                    });
+                    methodList.appendChild(div);
+                });
+        }
+
+        // 初始化激活状态
+        document.querySelectorAll('[data-class]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('[data-class]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

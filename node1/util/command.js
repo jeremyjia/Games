@@ -1,5 +1,8 @@
+const tag_command= "util/command.js bv0.34";    
 const { spawn } = require('child_process');
 const util = require('util');
+const l = require('../logger.js'); 
+l.tag1(tag_command,"--tag_command---------------------------")
 
 var e = {};
 module.exports = e;
@@ -8,7 +11,8 @@ module.exports = e;
 // 创建一个返回 Promise 的 spawn 函数
 const spawnPromise = util.promisify(spawn);
 
-e.run_Command = async function (r,c,ps) { 
+e.run_Command = async function (r,c,ps,nextCmd) { 
+    l.tag1(tag_command,Date())
     let p = ps.split(' ');
     const child = spawn(c, p, {
         stdio: ['ignore', 'pipe', 'pipe'], // 忽略输入，将标准输出和标准错误管道化
@@ -26,6 +30,7 @@ e.run_Command = async function (r,c,ps) {
       
       child.on('close', (code) => {
         console.log(`child process exited with code ${code}`);
+        if(nextCmd) nextCmd();
       });
 }
  

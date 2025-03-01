@@ -1,0 +1,1760 @@
+<!-- 
+升级这个代码，
+  
+  生成一个Note js服务程序，让 genVideo 按钮可以生成 数据的视频。
+返回升级后完整可运行代码 
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Editor</title>
+    <style> 
+        .debug-info {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            pointer-events: none;
+        }
+        #id_4_myDraw_code_TA {
+            width: 100%;
+            height: 120px;
+            margin: 10px 0;
+            font-family: monospace;
+            resize: vertical;
+        }
+        #id4Delete {
+            background: #ff4444;
+            color: white;
+        }
+        #color-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1001;
+        }
+        #color-modal .modal-content {
+            background: white;
+            padding: 20px;
+            width: 260px;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 8px;
+        }
+        #color-modal .color-controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+    .control-point.line-endpoint {
+            background: #ff9900;
+        }
+    .selected-element {
+        outline: 2px dashed #ff0000;
+        outline-offset: 2px;
+    }
+    .control-point {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: #fff;
+        border: 2px solid #2196F3;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    .scene-duration-control {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-left: 10px;
+    }
+    .scene-duration-control input {
+        width: 60px;
+        padding: 4px;
+    }
+        button {
+            min-width: 60px;
+            padding: 8px 12px;
+            touch-action: manipulation;
+        }
+        .c_floating_toolbar {
+            padding: 8px;
+            gap: 6px;
+        }
+        .c_floating_toolbar button {
+            padding: 10px;
+            font-size: 14px;
+        }
+        /* 新增可拖动标题栏样式 */
+        .modal-header {
+            padding: 10px 15px;
+            background: #f0f0f0;
+            cursor: move;
+            user-select: none;
+            border-bottom: 1px solid #ddd;
+            border-radius: 5px 5px 0 0;
+        }
+        /* 样式保持不变 */
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        canvas {
+            width: 100%;
+            display: block;
+        }
+
+        .c_floating_toolbar {
+            position: absolute;
+            left: 10px;
+            top: 50px;
+            background: #584141;
+            padding: 5px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 35px 20px 20px;
+            width: 60%;
+            max-height: 70vh;
+            overflow: auto;
+        }
+        .close {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .fps-control {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-left: 10px;
+        }
+        .fps-control input[type="range"] {
+            width: 100px;
+        }
+        .fps-control input[type="number"] {
+            width: 50px;
+        }
+        .c_video_modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        .c_video_modal_content {
+            position: absolute;
+            background: white;
+            padding: 35px 20px 20px;
+            width: 60%;
+            max-width: 600px;
+            text-align: center;
+            border-radius: 8px;
+            transform: translate(-50%, -50%);
+        }
+        .video-close {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .generate-controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        #generation-status {
+            color: #666;
+            font-style: italic;
+        }
+        pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
+        .string { color: green; }
+        .number { color: darkorange; }
+        .boolean { color: blue; }
+        .null { color: magenta; }
+        .key { color: red; }
+    </style>
+</head>
+<body>
+    <script src="https://littleflute.github.io/JavaScript/w3.js" ></script>
+    <script src="https://littleflute.github.io/Games/js/blclass.js" ></script> 
+    <div id="color-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">元素属性设置</div>
+            <span class="close">&times;</span>
+            <div style="margin: 15px 0;">
+                <label>颜色设置：</label>
+                <input type="color" id="color-picker" style="width: 100%; height: 40px;">
+            </div>
+            <div>
+                <div class="code-hint">
+                    自定义绘制函数（直接写函数体代码，可用参数：ctx, element）<br>
+                    示例：<br>
+                    <div id="id_4_myDraw_code_Examples"></div>>
+                </div>
+                <textarea id="id_4_myDraw_code_TA" 
+                    placeholder="ctx.fillStyle = 'red';\n// 在此输入绘制代码..."></textarea>
+            </div>
+            <div class="color-controls">
+                <button id="confirm-color">应用</button>
+                <button id="cancel-color">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toolbar">
+        <button id="addScene">Add Scene</button>
+        <button id="delete-scene">Delete Scene</button>
+        <select id="sceneSelector"></select>
+        <div class="scene-duration-control">
+            <span>Duration:</span>
+            <input type="number" id="sceneDuration" min="1" value="30">
+        </div>
+    </div>
+
+
+    <div id="id4ObjectsToolbar" class="c_floating_toolbar" style="top:200px;">
+        <button id="id4Line">Line</button>
+        <button id="id4Circle">Circle</button>
+        <button id="id4Rectangle">Rectangle</button>
+        <button id="id4Triangle">Triangle</button>
+        <button id="id4Delete">Delete</button>
+    </div> 
+
+    <div id="id4SceneToolbar" class="c_floating_toolbar" style="top:100px;">
+        <button id="id4Forest">Forest</button>
+        <button id="id4Beach">Beach</button>
+        <button id="id4Street">Street</button>
+    </div>
+
+    <div id="playback-toolbar">
+        <button id="playPause">Play</button>
+        <div class="fps-control">
+            <label>FPS:</label>
+            <input type="range" id="fpsRange" min="1" max="100" value="1">
+            <input type="number" id="fpsInput" min="1" max="100" value="1">
+        </div>
+        <input type="file" id="importFile" accept=".json" hidden>
+        <button onclick="document.getElementById('importFile').click()">Import</button>
+        <button id="export">Export</button>
+        <button id="id4_create_video">genVideo</button> 
+    </div>
+
+    <canvas id="canvas"></canvas>
+      <!-- 修改视频模态结构 -->
+      <div id="id4_video_modal" class="c_video_modal">
+        <div class="c_video_modal_content">
+            <div class="modal-header">Generate Video</div>
+            <span class="video-close">&times;</span>
+            <div class="generate-controls">
+                <div id="generation-status">准备生成视频...</div>
+                <div id="videoContainer"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="export-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Export Settings</div>
+            <span class="close">&times;</span>
+            <div class="generate-controls">
+                <button id="id4generateVideo">生成视频</button>
+                <button id="saveJson">保存为JSON</button>
+                <span id="generation-status"></span>
+            </div>
+            <pre id="export-json"></pre>
+        </div>
+    </div>
+
+
+    <div id="id4Status">status:</div>
+
+    <script>
+    document.getElementById('addScene').addEventListener('click', () => {
+    // 暂停播放状态
+    if (isPlaying) togglePlayback();
+    
+    // 创建新场景并重置状态
+    const newScene = createScene();
+    scenes.splice(currentSceneIndex + 1, 0, newScene);
+    currentSceneIndex++;
+    
+    // 更新所有相关状态
+    updateSceneDurations();
+    updateSceneSelector();
+    sceneFrameCount = 0;
+    
+    // 重置音频状态
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+        audioPausePosition = 0;
+    }
+    
+    drawScene();
+});
+    // 修改后的播放控制函数
+let animationFrameId = null;
+        // 新增音频相关全局变量
+        let projectAudioURL = null;
+        let currentAudio = null;
+        let audioStartTime = 0;
+        let audioPausePosition = 0;
+
+        document.getElementById('importFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        try {
+            // 预验证JSON格式
+            const rawData = event.target.result;
+            if (!validateJSON(rawData)) {
+                throw new Error('Invalid JSON format');
+            }
+            
+            const data = JSON.parse(rawData);
+            loadProject(data);
+            alert('项目导入成功！');
+        } catch (error) {
+            console.error('导入失败:', error);
+            alert(`文件解析失败：${error.message}`);
+        }
+    };
+    reader.readAsText(file);
+});
+
+// JSON格式验证函数
+function validateJSON(jsonString) {
+    try {
+        JSON.parse(jsonString);
+        return true;
+    } catch (e) {
+        // 生成友好的错误提示
+        const errorLine = jsonString.split('\n')[e.message.match(/line (\d+)/)?.[1]-1];
+        console.error(`JSON格式错误：
+            行号：${e.message.match(/line (\d+)/)?.[1]}
+            列号：${e.message.match(/column (\d+)/)?.[1]}
+            错误上下文：${errorLine?.substring(0, 50)}...
+        `);
+        return false;
+    }
+}
+
+function loadProject(data) {
+    // 暂停当前播放
+    if (isPlaying) togglePlayback();
+    
+    // 重置所有状态
+    scenes = [];
+    currentSceneIndex = 0;
+    sceneFrameCount = 0;
+    previousScenesFrames = 0;
+    totalFrames = 0;
+    
+    // 原有加载逻辑...
+    projectAudioURL = data.audio || null;
+    
+    // 深拷贝场景数据
+    data.scenes.forEach(scene => {
+        const newScene = {
+            ...scene,
+            elements: scene.elements.map(element => ({...element}))
+        };
+        scenes.push(newScene);
+    });
+
+    // 更新所有依赖状态
+    updateSceneDurations();
+    updateSceneSelector();
+    drawScene();
+}
+        let previousScenesFrames = 0;  // 当前场景之前的总帧数
+        let sceneFrameCount = 0;       // 当前场景内的帧数
+        let totalFrames = 0;           // 所有场景总帧数（自动计算）
+// 更新场景持续时间相关数据
+function updateSceneDurations() {
+    totalFrames = scenes.reduce((sum, scene) => sum + scene.duration, 0);
+    previousScenesFrames = scenes.slice(0, currentSceneIndex).reduce((sum, scene) => sum + scene.duration, 0);
+}
+        // 新增颜色编辑相关变量
+        const colorModal = document.getElementById('color-modal');
+        const colorPicker = document.getElementById('color-picker');
+        const confirmColorBtn = document.getElementById('confirm-color');
+        const cancelColorBtn = document.getElementById('cancel-color');
+      
+        // 删除元素时需要更新绘制
+function deleteSelectedElement() {
+    if (selectedElement) {
+        const currentScene = scenes[currentSceneIndex];
+        const index = currentScene.elements.indexOf(selectedElement);
+        if (index !== -1) {
+            currentScene.elements.splice(index, 1);
+            selectedElement = null;
+            drawScene(); // 直接调用无需参数
+        }
+    }
+}
+
+
+        // 初始化删除按钮事件
+        document.getElementById('id4Delete').addEventListener('click', deleteSelectedElement);
+
+        // 添加键盘删除支持
+        document.addEventListener('keydown', (e) => {
+            if ((e.key === 'Delete' || e.key === 'Backspace') && selectedElement) {
+                deleteSelectedElement();
+            }
+        });
+        // 初始化颜色编辑模态拖动
+        enableDrag(colorModal.querySelector('.modal-content'));
+
+        // 颜色确认按钮
+        confirmColorBtn.addEventListener('click', () => {
+            if (selectedElement) {
+                selectedElement.color = colorPicker.value;
+                // 构建自定义函数字符串 
+                selectedElement.myDraw = document.getElementById('id_4_myDraw_code_TA').value;
+                drawScene();
+            }
+            colorModal.style.display = 'none';
+        });
+
+        // 颜色取消按钮
+        cancelColorBtn.addEventListener('click', () => {
+            colorModal.style.display = 'none';
+        });
+
+        // 关闭颜色模态
+        colorModal.querySelector('.close').addEventListener('click', () => {
+            colorModal.style.display = 'none';
+        });
+
+        // 点击外部关闭颜色模态
+        window.addEventListener('click', (e) => {
+            if (e.target === colorModal) {
+                colorModal.style.display = 'none';
+            }
+        });
+
+
+        let selectedElement = null;
+        let selectedControl = null;
+        let isDraggingElement = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        const DEFAULT_FPS = 30;
+        const FRAME_DURATION = 30;
+        let tempElement = null; // 用于存储临时图形
+
+    function getCanvasCoordinates(clientX, clientY) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+    }
+
+ 
+    // 事件处理初始化
+    function initCanvasEvents() {
+        const handleStart = (x, y) => { 
+            const pos = {x, y};
+            // 点击空白处取消选择
+            const hit = detectHit(pos.x, pos.y);
+            if (!hit) {
+                selectedElement = null;
+                drawScene();
+            }
+            // 优先处理元素选择
+            if (!currentShape) {
+                const hit = detectHit(pos.x, pos.y);
+                if (hit) {
+                    selectedElement = hit.element;
+                    selectedControl = hit.control;
+                    isDraggingElement = true;
+                    dragStartX = pos.x;
+                    dragStartY = pos.y;
+                    drawScene();
+                    return;
+                }
+            }
+            if (!currentShape) return;
+            isDrawing = true;
+            startX = x;
+            startY = y;
+        };
+
+        const handleMove = (x, y) => {
+            const pos = {x, y};
+            // 处理元素拖拽
+            if (isDraggingElement && selectedElement) {
+                const dx = pos.x - dragStartX;
+                const dy = pos.y - dragStartY;
+                
+                updateElementPosition(selectedElement, selectedControl, dx, dy);
+            
+                dragStartX = pos.x;
+                dragStartY = pos.y;
+                drawScene();
+                return;
+            }
+            if (!isDrawing) return;
+            tempElement = createTempElement(x, y);
+            drawSceneWithTemp();
+        };
+
+        const handleEnd = (x, y) => {
+            isDraggingElement = false;
+            selectedControl = null;
+            if (!isDrawing) return;
+            isDrawing = false;
+                
+            if (tempElement) {
+                    tempElement.color = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+                    scenes[currentSceneIndex].elements.push(tempElement);
+                    tempElement = null;
+            }
+            drawScene({
+                global: globalFrameCount,
+                scene: sceneFrameCount
+            });
+        };
+
+            // 事件处理器
+            const eventHandler = {
+                start: e => {
+                    const t = e.touches ? e.touches[0] : e;
+                    const pos = getCanvasCoordinates(t.clientX, t.clientY);
+                    handleStart(pos.x, pos.y);
+                },
+                move: e => {
+                    const t = e.touches ? e.touches[0] : e;
+                    const pos = getCanvasCoordinates(t.clientX, t.clientY);
+                    handleMove(pos.x, pos.y);
+                },
+                end: e => {
+                    const t = e.changedTouches ? e.changedTouches[0] : e;
+                    const pos = t ? getCanvasCoordinates(t.clientX, t.clientY) : {x:0,y:0};
+                    handleEnd(pos.x, pos.y);
+                }
+            };
+
+        // 双击事件处理
+        canvas.addEventListener('dblclick', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            
+            const hit = detectHit(x, y);
+            if (hit && hit.element) {
+                selectedElement = hit.element;
+                colorPicker.value = selectedElement.color || '#000000';
+                // 解析现有自定义函数
+                const funcStr = selectedElement.myDraw || '';
+                const match = funcStr.match(/function\s*\(.*?\)\s*{([\s\S]*)}/);
+                const ta = document.getElementById('id_4_myDraw_code_TA');
+                ta.value = funcStr;
+                const _setExamples = function(){
+                    const tb = document.getElementById("id_4_myDraw_code_Examples");
+                    tb.innerHTML = "";
+                    const exs = [
+                        {
+                            "funBody":`// 在中心添加文字 
+                                        ctx.fillStyle = 'black';
+                                        ctx.font = '14px Arial';
+                                        ctx.textAlign = 'center';
+                                        ctx.fillText('Hello', element.x, element.y);`
+                        },
+                        {
+                            "funBody":`//  
+                                        ctx.fillStyle = 'gold';
+                                        ctx.beginPath();
+                                        ctx.arc(element.x, element.y, 10, 0, Math.PI*2);
+                                        ctx.fill();`
+                        }, {
+                    "funBody":`// 旋转矩形动画
+                                ctx.translate(element.x + element.width/2, element.y + element.height/2);
+                                ctx.rotate(frameNumber * Math.PI / 30);
+                                ctx.fillStyle = 'hsl(' + (frameNumber * 2) + ', 100%, 50%)';
+                                ctx.fillRect(-element.width/2, -element.height/2, element.width, element.height);`
+                },
+                {
+                    "funBody":`// 脉冲圆效果
+                                const pulse = Math.abs(Math.sin(frameNumber * 0.1)) * 20;
+                                ctx.beginPath();
+                                ctx.arc(element.x, element.y, element.radius + pulse, 0, Math.PI*2);
+                                ctx.fillStyle = element.color;
+                                ctx.fill();`
+                },
+                {
+                    "funBody":`// 文字帧计数器
+                                ctx.fillStyle = 'black';
+                                ctx.font = '20px Arial';
+                                ctx.textAlign = 'center';
+                                ctx.fillText('Frame: ' + frameNumber, element.x, element.y);`
+                }
+                    ];
+                    let n = 0;
+                    for(i in exs){
+                        n++;
+                        var btn= blo0.blBtn(tb,tb.id+"exampeCode"+n,n,blGrey[4]);
+                        btn.onclick = function(_btn,_s,_i){
+                            return function(){
+                                ta.value = _s[_i].funBody;
+                            }
+                        }(btn,exs,i);
+
+                    }
+
+
+                }();
+                colorModal.style.display = 'block';
+            }
+        });
+
+            // 绑定事件
+            canvas.addEventListener('mousedown', eventHandler.start);
+            canvas.addEventListener('mousemove', eventHandler.move);
+            canvas.addEventListener('mouseup', eventHandler.end);
+            canvas.addEventListener('mouseleave', eventHandler.end);
+            canvas.addEventListener('touchstart', e => {
+                e.preventDefault();
+                eventHandler.start(e);
+            }, { passive: false });
+            canvas.addEventListener('touchmove', e => {
+                e.preventDefault();
+                eventHandler.move(e);
+            }, { passive: false });
+            canvas.addEventListener('touchend', eventHandler.end);
+    }
+    // 新增元素位置更新函数
+    function updateElementPosition(element, control, dx, dy) {
+        ShapeEditor.updateElement(element, control, dx, dy);
+    }
+function enableDrag(modalContent) {
+    const header = modalContent.querySelector('.modal-header');
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let initialX = 0, initialY = 0;
+
+    const startDrag = (clientX, clientY) => {
+        isDragging = true;
+        startX = clientX;
+        startY = clientY;
+        const rect = modalContent.getBoundingClientRect();
+        initialX = rect.left;
+        initialY = rect.top;
+    };
+
+    const doDrag = (clientX, clientY) => {
+        if (!isDragging) return;
+        
+        const deltaX = clientX - startX;
+        const deltaY = clientY - startY;
+        
+        // 计算新位置并限制在窗口内
+        const newX = initialX + deltaX;
+        const newY = initialY + deltaY;
+        const maxX = window.innerWidth - modalContent.offsetWidth;
+        const maxY = window.innerHeight - modalContent.offsetHeight;
+        
+        modalContent.style.left = `${Math.max(0, Math.min(newX, maxX))}px`;
+        modalContent.style.top = `${Math.max(0, Math.min(newY, maxY))}px`;
+        modalContent.style.transform = 'none';
+    };
+
+    const stopDrag = () => {
+        isDragging = false;
+    };
+
+    // 鼠标事件
+    header.addEventListener('mousedown', (e) => {
+        startDrag(e.clientX, e.clientY);
+    });
+
+    // 触摸事件
+    header.addEventListener('touchstart', (e) => {
+        startDrag(e.touches[0].clientX, e.touches[0].clientY);
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        doDrag(e.clientX, e.clientY);
+    });
+
+    document.addEventListener('touchmove', (e) => {
+        doDrag(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: false });
+
+    document.addEventListener('mouseup', stopDrag);
+    document.addEventListener('touchend', stopDrag);
+}
+// 新增碰撞检测函数
+function detectHit(x, y) {
+    const currentScene = scenes[currentSceneIndex];
+    for (let i = currentScene.elements.length - 1; i >= 0; i--) {
+        const element = currentScene.elements[i];
+        const control = ShapeEditor.hitTest(element, x, y);
+        if (control) {
+            return { element, control };
+        }
+    }
+    return null;
+}
+ // 初始化模态拖动
+        const exportModalContent = document.querySelector('#export-modal .modal-content');
+        const videoModalContent = document.querySelector('.c_video_modal_content');
+        enableDrag(exportModalContent);
+        enableDrag(videoModalContent);
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let scenes = [];
+        let currentSceneIndex = 0;
+        let isDrawing = false;
+        let currentShape = null;
+        let startX, startY;
+        let playInterval = null;
+        let isPlaying = false;
+
+        // 确保FPS控制初始化正确
+        const fpsRange = document.getElementById('fpsRange');
+const fpsInput = document.getElementById('fpsInput');
+fpsRange.value = DEFAULT_FPS;
+fpsInput.value = DEFAULT_FPS;
+
+        // 初始化模态窗口交互
+        const modal = document.getElementById('export-modal');
+        const closeBtn = modal.querySelector('.close');
+        const exportJson = document.getElementById('export-json');
+        
+        // 导出按钮点击处理
+        document.getElementById('export').addEventListener('click', () => {
+            const exportData = getExportData();
+            exportJson.innerHTML = syntaxHighlight(exportData); // 添加语法高亮 
+            
+            // 强制重置位置
+            const modalContent = document.querySelector('#export-modal .modal-content');
+            modalContent.style.left = '50%';
+            modalContent.style.top = '50%';
+            modalContent.style.transform = 'translate(-50%, -50%)';
+            
+            modal.style.display = 'block';
+        });
+// 添加JSON语法高亮显示
+function syntaxHighlight(json) {
+    if (typeof json != 'string') {
+        json = JSON.stringify(json, null, 2);
+    }
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, 
+        function (match) {
+            let cls = 'number';
+            if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                    cls = 'key';
+                } else {
+                    cls = 'string';
+                }
+            } else if (/true|false/.test(match)) {
+                cls = 'boolean';
+            } else if (/null/.test(match)) {
+                cls = 'null';
+            }
+            return '<span class="' + cls + '">' + match + '</span>';
+        });
+}
+
+        document.getElementById('saveJson').addEventListener('click', () => {
+            const exportData = getExportData();
+            saveAsJson(exportData);
+        });
+        function getExportData() {
+    return {
+        meta: {
+            version: "2.0",
+            created: new Date().toISOString(),
+            totalFrames: totalFrames,
+            totalScenes: scenes.length
+        },
+        audio: projectAudioURL,  // 自动包含默认音频
+        scenes: scenes.map(scene => ({
+            ...scene,
+            elements: scene.elements.map(element => ({
+                ...element,
+                myDraw: element.myDraw ? element.myDraw.toString() : null
+            }))
+        })),
+        fps: parseInt(fpsInput.value) || 30
+    };
+}
+
+
+// 新增保存功能实现
+function saveAsJson(data) {
+    try {
+        const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `video-project-${new Date().toISOString().replace(/[:.]/g,'-')}.json`;
+        
+        document.body.appendChild(a);
+        a.click();
+        
+        // 清理资源
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 100);
+        
+    } catch (e) {
+        console.error('保存失败:', e);
+        alert('JSON保存失败，请检查控制台');
+    }
+}
+
+        // 关闭模态窗口处理
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        }); 
+        // 点击外部关闭模态窗口
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        class ShapeEditor {
+            static hitTest(element, x, y) {
+                switch(element.type) {
+                    case 'rectangle': return this.rectHitTest(element, x, y);
+                    case 'circle': return this.circleHitTest(element, x, y);
+                    case 'line': return this.lineHitTest(element, x, y);
+                    case 'triangle': return this.triangleHitTest(element, x, y);
+                }
+                return null;
+            }
+            static updateElement(element, control, dx, dy) {
+                switch(element.type) {
+                    case 'rectangle':
+                        this.updateRectangle(element, control, dx, dy);
+                        break;
+                    case 'circle':
+                        this.updateCircle(element, control, dx, dy);
+                        break;
+                    case 'line':
+                        this.updateLine(element, control, dx, dy);
+                        break;
+                    case 'triangle':
+                        this.updateTriangle(element, control, dx, dy);
+                        break;
+                }
+            }
+            static updateCircle(circle, control, dx, dy) {
+                switch(control) {
+                    case 'move':
+                        circle.x += dx;
+                        circle.y += dy;
+                        break;
+                    case 'radius':
+                        circle.radius += Math.hypot(dx, dy) * (dx > 0 ? 1 : -1);
+                        break;
+                }
+            }
+            static updateLine(line, control, dx, dy) {
+                switch(control) {
+                    case 'start':
+                        line.x1 += dx;
+                        line.y1 += dy;
+                        break;
+                    case 'end':
+                        line.x2 += dx;
+                        line.y2 += dy;
+                        break;
+                    case 'move':
+                        line.x1 += dx;
+                        line.y1 += dy;
+                        line.x2 += dx;
+                        line.y2 += dy;
+                        break;
+                }
+            }
+
+            static updateTriangle(tri, control, dx, dy) {
+                tri.x1 += dx;
+                tri.y1 += dy;
+                tri.x2 += dx;
+                tri.y2 += dy;
+                tri.x3 += dx;
+                tri.y3 += dy;
+            }
+            static updateRectangle(rect, control, dx, dy) {
+                switch(control) {
+                    case 'move':
+                        rect.x += dx;
+                        rect.y += dy;
+                        break;
+                    case 'nw':
+                        rect.x += dx;
+                        rect.y += dy;
+                        rect.width -= dx;
+                        rect.height -= dy;
+                        break;
+                    case 'ne':
+                        rect.y += dy;
+                        rect.width += dx;
+                        rect.height -= dy;
+                        break;
+                    case 'sw':
+                        rect.x += dx;
+                        rect.width -= dx;
+                        rect.height += dy;
+                        break;
+                    case 'se':
+                        rect.width += dx;
+                        rect.height += dy;
+                        break;
+                }
+            }
+
+            static rectHitTest(rect, x, y) {
+                const isInside = x >= rect.x && x <= rect.x + rect.width &&
+                                y >= rect.y && y <= rect.y + rect.height;
+                if (!isInside) return null;
+
+                const controls = {
+                    'nw': [rect.x, rect.y],
+                    'ne': [rect.x + rect.width, rect.y],
+                    'sw': [rect.x, rect.y + rect.height],
+                    'se': [rect.x + rect.width, rect.y + rect.height],
+                    'move': [rect.x + rect.width/2, rect.y + rect.height/2]
+                };
+
+                for (const [type, [cx, cy]] of Object.entries(controls)) {
+                    if (Math.abs(x - cx) < 5/2 && 
+                        Math.abs(y - cy) < 5/2) {
+                        return type;
+                    }
+                }
+                return 'move';
+            }
+
+            static circleHitTest(circle, x, y) {
+                const dx = x - circle.x;
+                const dy = y - circle.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (Math.abs(dist - circle.radius) < 5) return 'radius';
+                if (dist <= circle.radius) return 'move';
+                return null;
+            }
+
+            // 修改后的线条碰撞检测
+            static lineHitTest(line, x, y) {
+                const threshold = 8;
+                
+                // 检测起点
+                if (Math.abs(x - line.x1) < threshold && 
+                    Math.abs(y - line.y1) < threshold) {
+                    return 'start';
+                }
+                
+                // 检测终点
+                if (Math.abs(x - line.x2) < threshold && 
+                    Math.abs(y - line.y2) < threshold) {
+                    return 'end';
+                }
+                
+                // 检测线段本身
+                const d = this.pointToLineDistance(x, y, line);
+                return d < 5 ? 'move' : null;
+            }
+
+            static triangleHitTest(tri, x, y) {
+                const area = 0.5 * (-tri.y2 * tri.x3 + tri.y1 * (-tri.x2 + tri.x3) + 
+                                   tri.x1 * (tri.y2 - tri.y3) + tri.x2 * tri.y3);
+                const s = 1/(2*area)*(tri.y1*tri.x3 - tri.x1*tri.y3 + (tri.y3 - tri.y1)*x + 
+                                    (tri.x1 - tri.x3)*y);
+                const t = 1/(2*area)*(tri.x1*tri.y2 - tri.y1*tri.x2 + (tri.y1 - tri.y2)*x + 
+                                    (tri.x2 - tri.x1)*y);
+                return (s > 0 && t > 0 && 1-s-t > 0) ? 'move' : null;
+            }
+
+            static pointToLineDistance(x, y, line) {
+                const A = x - line.x1;
+                const B = y - line.y1;
+                const C = line.x2 - line.x1;
+                const D = line.y2 - line.y1;
+
+                const dot = A * C + B * D;
+                const lenSq = C * C + D * D;
+                const param = lenSq !== 0 ? dot / lenSq : -1;
+
+                let xx, yy;
+                if (param < 0) [xx, yy] = [line.x1, line.y1];
+                else if (param > 1) [xx, yy] = [line.x2, line.y2];
+                else [xx, yy] = [line.x1 + param * C, line.y1 + param * D];
+
+                return Math.hypot(x - xx, y - yy);
+            }
+        }
+ 
+        const playPauseBtn = document.getElementById('playPause');
+
+        function createRandomShape() {
+            const types = ['rectangle', 'circle', 'line', 'triangle'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const color = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+            const maxWidth = canvas.width;
+            const maxHeight = canvas.height;
+            
+            const getRandomCoord = () => ({
+                x: Math.random() * maxWidth,
+                y: Math.random() * maxHeight
+            });
+
+            switch(type) {
+                case 'rectangle':
+                    const start = getRandomCoord();
+                    return {
+                        type,
+                        x: start.x,
+                        y: start.y,
+                        width: Math.random() * 100 + 20,
+                        height: Math.random() * 100 + 20,
+                        color
+                    };
+                case 'circle':
+                    return {
+                        type,
+                        x: Math.random() * maxWidth,
+                        y: Math.random() * maxHeight,
+                        radius: Math.random() * 50 + 10,
+                        color
+                    };
+                case 'line': {
+                    const start = getRandomCoord();
+                    const end = getRandomCoord();
+                    return {
+                        type,
+                        x1: start.x,
+                        y1: start.y,
+                        x2: end.x,
+                        y2: end.y,
+                        color
+                    };
+                }
+                case 'triangle': {
+                    const p1 = getRandomCoord();
+                    const p2 = getRandomCoord();
+                    const p3 = getRandomCoord();
+                    return {
+                        type,
+                        x1: p1.x,
+                        y1: p1.y,
+                        x2: p2.x,
+                        y2: p2.y,
+                        x3: p3.x,
+                        y3: p3.y,
+                        color
+                    };
+                }
+            }
+        }
+
+        function syncFPSInput(e) {
+            let value = parseInt(e.target.value);
+            value = Math.min(100, Math.max(1, value || 1));
+            
+            if (e.target === fpsRange) {
+                fpsInput.value = value;
+            } else {
+                fpsRange.value = value;
+            }
+        }
+
+        fpsRange.addEventListener('input', syncFPSInput);
+        fpsInput.addEventListener('input', syncFPSInput);
+
+        function initCanvas() {
+            const parentWidth = canvas.parentElement.clientWidth;
+            const aspectRatio = 600 / 800;
+            canvas.width = parentWidth;
+            canvas.height = parentWidth * aspectRatio;
+        }
+
+        window.addEventListener('resize', () => {
+            initCanvas();
+            drawScene();
+        });
+
+        // 初始化场景
+        function createScene() {
+            return {
+                id: Date.now(),
+                name: `Scene ${scenes.length + 1}`,
+                background: '#' + Math.floor(Math.random()*16777215).toString(16),
+                elements: [],
+                duration: 30  // 默认持续30帧
+            };
+        }
+
+        function updateSceneSelector() {
+            const selector = document.getElementById('sceneSelector');
+            selector.innerHTML = scenes.map((scene, index) => 
+                `<option value="${index}">${scene.name}</option>`
+            ).join('');
+            selector.value = currentSceneIndex; 
+            document.getElementById('sceneDuration').value = scenes[currentSceneIndex]?.duration || FRAME_DURATION;
+        }
+             
+      // 在相关操作后更新帧数计算
+document.getElementById('sceneDuration').addEventListener('change', function() {
+    const duration = Math.max(1, parseInt(this.value) || 1);
+    scenes[currentSceneIndex].duration = duration;
+    updateSceneDurations();
+    sceneFrameCount = Math.min(sceneFrameCount, duration); // 保持当前帧数有效
+    drawScene();
+});
+
+        // 创建临时元素
+        function createTempElement(endX, endY) {
+            const base = { type: currentShape, color: '#FF000080' };
+            switch(currentShape) {
+                case 'rectangle':
+                    return {
+                        ...base,
+                        x: Math.min(startX, endX),
+                        y: Math.min(startY, endY),
+                        width: Math.abs(endX - startX),
+                        height: Math.abs(endY - startY)
+                    };
+                case 'circle':
+                    return {
+                        ...base,
+                        x: startX,
+                        y: startY,
+                        radius: Math.hypot(endX - startX, endY - startY)
+                    };
+                case 'line':
+                    return { ...base, x1: startX, y1: startY, x2: endX, y2: endY };
+                case 'triangle':
+                    return {
+                        ...base,
+                        x1: startX,
+                        y1: endY,
+                        x2: endX,
+                        y2: endY,
+                        x3: (startX + endX)/2,
+                        y3: startY
+                    };
+            }
+        }
+
+        // 图形元素绘制函数
+        function drawElement(element, frameNumber = 0) {
+            // 原始绘制逻辑
+            ctx.fillStyle = element.color;
+            ctx.strokeStyle = element.color;
+            ctx.lineWidth = 2;
+
+            switch(element.type) {
+                case 'rectangle':
+                    ctx.fillRect(element.x, element.y, element.width, element.height);
+                    break;
+                case 'circle':
+                    ctx.beginPath();
+                    ctx.arc(element.x, element.y, element.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+                case 'line':
+                    ctx.beginPath();
+                    ctx.moveTo(element.x1, element.y1);
+                    ctx.lineTo(element.x2, element.y2);
+                    ctx.stroke();
+                    break;
+                case 'triangle':
+                    ctx.beginPath();
+                    ctx.moveTo(element.x1, element.y1);
+                    ctx.lineTo(element.x2, element.y2);
+                    ctx.lineTo(element.x3, element.y3);
+                    ctx.closePath();
+                    ctx.fill();
+                    break;
+            }
+
+            // 执行自定义绘制函数
+            if (element.myDraw) {
+                try {
+                    const customDraw = new Function('ctx', 'element', 'frameNumber',element.myDraw);
+                    customDraw(ctx, element,frameNumber);
+                } catch (e) {
+                    console.error('Custom draw element.myDraw:', element.myDraw);
+                    console.error('Custom draw error:', e);
+                }
+            }
+
+            // 绘制选中状态
+            if (element === selectedElement) {
+                drawSelection(element);
+            }
+        }
+function drawSceneWithTemp() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 绘制背景
+    const currentScene = scenes[currentSceneIndex];
+    ctx.fillStyle = currentScene.background;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 绘制已有元素
+    currentScene.elements.forEach(element => drawElement(element));
+    
+    // 绘制临时元素
+    if (tempElement) {
+        ctx.save(); // 保存当前绘图状态
+        ctx.globalAlpha = 0.5; // 设置半透明
+        ctx.setLineDash([5, 5]); // 虚线样式
+        drawElement(tempElement);
+        ctx.restore(); // 恢复绘图状态
+    }
+}
+// 带临时元素的场景绘制
+function drawSceneWithTemp() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const currentScene = scenes[currentSceneIndex];
+            ctx.fillStyle = currentScene.background;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            currentScene.elements.forEach(drawElement);
+            
+            if (tempElement) {
+                ctx.save();
+                ctx.globalAlpha = 0.5;
+                ctx.setLineDash([5, 5]);
+                drawElement(tempElement);
+                ctx.restore();
+            }
+        }
+
+
+        function drawScene() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (!scenes[currentSceneIndex]) return;
+    
+    const currentScene = scenes[currentSceneIndex];
+    ctx.fillStyle = currentScene.background;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 计算实际全局位置
+    const globalPosition = previousScenesFrames + sceneFrameCount;
+    
+    // 绘制调试信息
+    ctx.fillStyle = 'black';
+    ctx.font = '14px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(
+        `Global: ${globalPosition}/${totalFrames} | ` +
+        `Scene: ${currentSceneIndex + 1}/${scenes.length} | ` +
+        `Frame: ${sceneFrameCount}/${currentScene.duration}`,
+        canvas.width/2, 
+        20
+    );
+
+    currentScene.elements.forEach(element => {
+        drawElement(element, sceneFrameCount);
+        if (element === selectedElement) {
+            drawSelection(element);
+        }
+    });
+}
+
+
+        // 新增选中状态绘制函数
+function drawSelection(element) {
+    ctx.save();
+    ctx.strokeStyle = '#ff0000';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+    
+    switch(element.type) {
+        case 'rectangle':
+            ctx.strokeRect(element.x-2, element.y-2, element.width+4, element.height+4);
+            drawControlPoints([
+                [element.x, element.y], // NW
+                [element.x + element.width, element.y], // NE
+                [element.x, element.y + element.height], // SW
+                [element.x + element.width, element.y + element.height], // SE
+                [element.x + element.width/2, element.y + element.height/2] // Center
+            ]);
+            break;
+        case 'circle':
+            ctx.beginPath();
+            ctx.arc(element.x, element.y, element.radius + 2, 0, Math.PI*2);
+            ctx.stroke();
+            drawControlPoints([
+                [element.x + element.radius, element.y], // Radius
+                [element.x, element.y] // Center
+            ]);
+            break;
+        case 'line':
+            ctx.beginPath();
+            ctx.moveTo(element.x1, element.y1);
+            ctx.lineTo(element.x2, element.y2);
+            ctx.stroke();
+            drawControlPoints([
+                    [element.x1, element.y1], // 起点
+                    [element.x2, element.y2]  // 终点
+                ], 'line-endpoint');
+            break;
+        case 'triangle':
+            ctx.beginPath();
+            ctx.moveTo(element.x1, element.y1);
+            ctx.lineTo(element.x2, element.y2);
+            ctx.lineTo(element.x3, element.y3);
+            ctx.closePath();
+            ctx.stroke();
+            drawControlPoints([
+                [(element.x1 + element.x2 + element.x3)/3, 
+                 (element.y1 + element.y2 + element.y3)/3] // Center
+            ]);
+            break;
+    }
+    
+    ctx.restore();
+}
+        // 修改后的控制点绘制
+        function drawControlPoints(points, cssClass = '') {
+            const originalFill = ctx.fillStyle;
+            
+            points.forEach(([x, y]) => {
+                ctx.beginPath();
+                ctx.arc(x, y, 6, 0, Math.PI*2);
+                ctx.fillStyle = cssClass === 'line-endpoint' ? '#ff9900' : '#2196F3';
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+            
+            ctx.fillStyle = originalFill;
+        }
+
+        // 新增视频模态控制逻辑
+        const videoModal = document.getElementById('id4_video_modal');
+        const videoClose = document.querySelector('.video-close');
+
+        // 打开视频生成模态
+        document.getElementById('id4_create_video').addEventListener('click', () => {
+            videoModal.style.display = 'block';
+            // 重置位置到屏幕中央
+            videoModalContent.style.left = '50%';
+            videoModalContent.style.top = '50%';
+            videoModalContent.style.transform = 'translate(-50%, -50%)';
+            createVideo();
+        });
+
+        // 关闭视频模态
+        videoClose.addEventListener('click', () => {
+            videoModal.style.display = 'none';
+        });
+
+        // 点击外部关闭模态
+        window.addEventListener('click', (e) => {
+            if (e.target === videoModal) {
+                videoModal.style.display = 'none';
+            }
+        });
+
+        async function createVideo() { 
+            const statusElement = document.getElementById('generation-status');
+            const videoContainer = document.getElementById('videoContainer');
+            
+            statusElement.textContent = '视频生成中...';
+            videoContainer.innerHTML = ''; 
+            
+            try {
+                const currentFPS = parseInt(fpsInput.value) || 1;
+                const requestData = {
+                    scenes: scenes.map(scene => ({
+                        ...scene,
+                        elements: scene.elements.map(element => ({...element}))
+                    })),
+                    fps: currentFPS
+                };
+
+                const response = await fetch('/generate-video', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                if (!response.ok) throw new Error('视频生成失败');
+
+                const result = await response.json();
+                const videoContainer = document.getElementById('videoContainer');
+                
+                videoContainer.innerHTML = `
+                    <video width="640" height="480" controls>
+                        <source src="${result.videoUrl}" type="video/mp4">
+                        您的浏览器不支持视频播放
+                    </video>
+                    <p>视频生成成功！</p>
+                `;
+                
+                statusElement.textContent = '视频已生成';
+            } catch (error) {
+                console.error('生成错误:', error);
+                statusElement.textContent = `错误: ${error.message}`;
+                videoContainer.innerHTML = '<p>视频生成失败，请检查控制台</p>';
+            }  
+        }
+
+        
+function togglePlayback() {
+    if (!isPlaying) {
+        const fps = parseInt(fpsInput.value) || DEFAULT_FPS;
+        const intervalTime = 1000 / fps;
+        
+        // 音频控制逻辑
+        if (projectAudioURL) {
+            if (!currentAudio) {
+                currentAudio = new Audio(projectAudioURL);
+                currentAudio.currentTime = audioPausePosition;
+            }
+            
+            // 添加时间更新监听器
+            currentAudio.addEventListener('timeupdate', syncAnimationWithAudio);
+            
+            const playPromise = currentAudio.play();
+            playPromise.catch(error => {
+                console.error('音频播放失败:', error);
+                alert('音频播放需要用户交互，请先点击页面任意位置');
+            });
+        }
+
+        let lastTime = performance.now();
+        
+        function playFrame(timestamp) {
+            if (!isPlaying) return;
+
+            const elapsed = timestamp - lastTime;
+            
+            if (elapsed >= intervalTime) {
+                // 如果没有音频时使用普通帧推进
+                if (!currentAudio) {
+                    sceneFrameCount++;
+                    if (sceneFrameCount >= scenes[currentSceneIndex].duration) {
+                        if (currentSceneIndex >= scenes.length - 1) {
+                            togglePlayback();
+                            return;
+                        }
+                        currentSceneIndex++;
+                        sceneFrameCount = 0;
+                        updateSceneDurations();
+                        updateSceneSelector();
+                    }
+                }
+
+                drawScene();
+                lastTime = timestamp - (elapsed % intervalTime);
+            }
+            animationFrameId = requestAnimationFrame(playFrame);
+        }
+        
+        isPlaying = true;
+        playPauseBtn.textContent = 'Pause';
+        animationFrameId = requestAnimationFrame(playFrame);
+    } else {
+        // 暂停逻辑
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio.removeEventListener('timeupdate', syncAnimationWithAudio);
+            audioPausePosition = currentAudio.currentTime;
+        }
+        
+        isPlaying = false;
+        playPauseBtn.textContent = 'Play';
+        
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+        }
+        drawScene();
+    }
+}
+
+
+function syncAnimationWithAudio() {
+    const currentTime = currentAudio.currentTime;
+    const targetFrame = Math.floor(currentTime * fpsInput.value);
+    
+    let accumulatedFrames = 0;
+    for (let i = 0; i < scenes.length; i++) {
+        if (accumulatedFrames + scenes[i].duration > targetFrame) {
+            currentSceneIndex = i;
+            sceneFrameCount = targetFrame - accumulatedFrames;
+            break;
+        }
+        accumulatedFrames += scenes[i].duration;
+    }
+    
+    updateSceneDurations();
+    updateSceneSelector();
+    drawScene();
+}
+
+
+
+document.getElementById('sceneSelector').addEventListener('change', (e) => {
+    if (isPlaying) togglePlayback();
+    currentSceneIndex = parseInt(e.target.value);
+    sceneFrameCount = 0;
+    updateSceneDurations();
+    drawScene();
+});
+
+
+        // 修改后的场景切换事件处理
+document.getElementById('sceneSelector').addEventListener('change', (e) => {
+    currentSceneIndex = parseInt(e.target.value);
+    updateSceneDurations(); // 更新帧数计算
+    sceneFrameCount = 0;    // 重置当前场景帧数
+    drawScene();            // 直接调用无需参数
+});
+
+
+        document.getElementById('delete-scene').addEventListener('click', () => {
+    if (scenes.length > 1) {
+        scenes.splice(currentSceneIndex, 1);
+        currentSceneIndex = Math.max(0, currentSceneIndex - 1);
+        updateSceneDurations();
+        sceneFrameCount = 0;
+        updateSceneSelector();
+        drawScene();
+    }
+});
+
+        document.getElementById('id4Forest').addEventListener('click', () => {
+            if (scenes.length === 0) return;
+            scenes[currentSceneIndex].background = '#228B22';
+            drawScene();
+        });
+
+        document.getElementById('id4Beach').addEventListener('click', () => {
+            if (scenes.length === 0) return;
+            scenes[currentSceneIndex].background = '#228Bff';
+            drawScene();
+        });
+
+        document.getElementById('id4Street').addEventListener('click', () => {
+            if (scenes.length === 0) return;
+            scenes[currentSceneIndex].background = '#888888';
+            drawScene();
+        });
+
+        playPauseBtn.addEventListener('click', togglePlayback);
+
+        document.getElementById('id4Rectangle').addEventListener('click', () => {
+            currentShape = 'rectangle';
+        });
+
+        document.getElementById('id4Line').addEventListener('click', () => {
+            currentShape = 'line';
+        });
+        document.getElementById('id4Circle').addEventListener('click', () => {
+            currentShape = 'circle';
+        });
+        document.getElementById('id4Triangle').addEventListener('click', () => {
+            currentShape = 'triangle';
+        });
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (!currentShape) return;
+            isDrawing = true;
+            startX = e.offsetX;
+            startY = e.offsetY;
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (!isDrawing) return;
+            isDrawing = false;
+            
+            let element;
+            const color = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+
+            switch(currentShape) {
+                case 'rectangle':
+                    element = {
+                        type: 'rectangle',
+                        x: Math.min(startX, e.offsetX),
+                        y: Math.min(startY, e.offsetY),
+                        width: Math.abs(e.offsetX - startX),
+                        height: Math.abs(e.offsetY - startY),
+                        color: color
+                    };
+                    break;
+                case 'circle': {
+                    const radius = Math.hypot(e.offsetX - startX, e.offsetY - startY);
+                    element = {
+                        type: 'circle',
+                        x: startX,
+                        y: startY,
+                        radius: radius,
+                        color: color
+                    };
+                    break;
+                }
+                case 'line':
+                    element = {
+                        type: 'line',
+                        x1: startX,
+                        y1: startY,
+                        x2: e.offsetX,
+                        y2: e.offsetY,
+                        color: color
+                    };
+                    break;
+                case 'triangle':
+                    element = {
+                        type: 'triangle',
+                        x1: startX,
+                        y1: e.offsetY,
+                        x2: e.offsetX,
+                        y2: e.offsetY,
+                        x3: (startX + e.offsetX) / 2,
+                        y3: startY,
+                        color: color
+                    };
+                    break;
+            }
+
+            if (element) {
+                scenes[currentSceneIndex].elements.push(element);
+                drawScene();
+            }
+            currentShape = null;
+        });
+
+// 改进的临时元素绘制
+function handleMove(x, y) {
+    if (!isDrawing) return;
+    tempElement = createTempElement(x, y);
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawScene();
+    
+    if (tempElement) {
+        ctx.save();
+        ctx.globalAlpha = 0.5;
+        ctx.setLineDash([5, 5]);
+        drawElement(tempElement);
+        ctx.restore();
+    }
+}
+
+
+// 初始化时需要更新帧数计算
+function init() {    
+    initCanvas();
+    scenes = [createScene()];
+    currentSceneIndex = 0;
+    
+    // 设置默认音频
+    projectAudioURL = "https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3";
+    
+    updateSceneDurations();
+    updateSceneSelector();
+    drawScene();
+    initCanvasEvents();
+    
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+    }
+}
+
+        document.getElementById('id4generateVideo').addEventListener('click', async () => {
+            const statusElement = document.getElementById('generation-status');
+            statusElement.textContent = '生成中...';
+            
+            try {
+                const currentFPS = parseInt(fpsInput.value) || 1;
+                const response = await fetch('http://localhost:3005/generateVideo', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        scenes,
+                        fps: currentFPS
+                    })
+                });
+
+                if (!response.ok) throw new Error('生成失败');
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'video.mp4';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                statusElement.textContent = '生成成功！';
+            } catch (error) {
+                console.error('Error:', error);
+                statusElement.textContent = '生成失败: ' + error.message;
+            }
+        });
+
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MP3波形可视化</title>
+    <style>
+        #waveform {
+            border: 1px solid #ccc;
+            margin: 20px 0;
+        }
+        .controls {
+            margin: 10px 0;
+        }
+        .progress-bar {
+            height: 4px;
+            background: #ddd;
+            margin: 10px 0;
+        }
+        .progress {
+            height: 100%;
+            background: #2196F3;
+            width: 0%;
+        }
+    </style>
+</head>
+<body>
+    <input type="file" id="audioFile" accept="audio/mpeg" />
+    <div class="controls">
+        <button id="playBtn" disabled>播放/暂停</button>
+    </div>
+    <div class="progress-bar">
+        <div class="progress"></div>
+    </div>
+    <canvas id="waveform"></canvas>
+
+    <script>
+        const canvas = document.getElementById('waveform');
+        const ctx = canvas.getContext('2d');
+        const audioFile = document.getElementById('audioFile');
+        const playBtn = document.getElementById('playBtn');
+        const progress = document.querySelector('.progress');
+
+        let audioContext, audioBuffer, sourceNode, isPlaying = false;
+
+        // 初始化Canvas尺寸
+        function initCanvas() {
+            canvas.width = window.innerWidth * 0.8;
+            canvas.height = 200;
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // 绘制波形
+        function drawWaveform(channelData) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            
+            const step = Math.ceil(channelData.length / canvas.width);
+            const amp = canvas.height / 2;
+
+            for(let i = 0; i < canvas.width; i++) {
+                let min = 1.0;
+                let max = -1.0;
+                
+                for (let j = 0; j < step; j++) {
+                    const datum = channelData[(i * step) + j] || 0;
+                    if (datum < min) min = datum;
+                    if (datum > max) max = datum;
+                }
+
+                const x = i;
+                const y = (1 + min) * amp;
+                const height = Math.max(1, (max - min) * amp);
+
+                ctx.fillStyle = '#2196F3';
+                ctx.fillRect(x, y, 1, height);
+            }
+        }
+
+        // 处理音频文件
+        audioFile.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // 初始化音频上下文
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // 读取并解码音频文件
+            const arrayBuffer = await file.arrayBuffer();
+            audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+            
+            // 获取第一个声道的PCM数据
+            const channelData = audioBuffer.getChannelData(0);
+            
+            // 调整Canvas尺寸并绘制波形
+            initCanvas();
+            drawWaveform(channelData);
+            
+            playBtn.disabled = false;
+        });
+
+        // 播放控制
+        playBtn.addEventListener('click', () => {
+            if (!isPlaying) {
+                sourceNode = audioContext.createBufferSource();
+                sourceNode.buffer = audioBuffer;
+                sourceNode.connect(audioContext.destination);
+                
+                // 进度更新
+                const startTime = audioContext.currentTime;
+                sourceNode.start();
+                
+                const updateProgress = () => {
+                    if (!isPlaying) return;
+                    const elapsed = audioContext.currentTime - startTime;
+                    progress.style.width = `${(elapsed / audioBuffer.duration) * 100}%`;
+                    
+                    if (elapsed < audioBuffer.duration) {
+                        requestAnimationFrame(updateProgress);
+                    }
+                };
+                
+                sourceNode.onended = () => {
+                    isPlaying = false;
+                    playBtn.textContent = '播放';
+                    progress.style.width = '0%';
+                };
+                
+                isPlaying = true;
+                playBtn.textContent = '暂停';
+                updateProgress();
+            } else {
+                sourceNode.stop();
+                isPlaying = false;
+                playBtn.textContent = '播放';
+            }
+        });
+
+        // 点击波形跳转播放位置
+        canvas.addEventListener('click', (e) => {
+            if (!audioBuffer || !sourceNode) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const percent = clickX / canvas.width;
+            const seekTime = audioBuffer.duration * percent;
+            
+            if (isPlaying) sourceNode.stop();
+            
+            sourceNode = audioContext.createBufferSource();
+            sourceNode.buffer = audioBuffer;
+            sourceNode.connect(audioContext.destination);
+            sourceNode.start(0, seekTime);
+            
+            isPlaying = true;
+            playBtn.textContent = '暂停';
+        });
+
+        // 初始化
+        initCanvas();
+    </script>
+</body>
+</html>

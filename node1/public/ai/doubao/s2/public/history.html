@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>历史记录</title>
+</head>
+
+<body>
+  <nav>
+    <ul>
+      <li><a href="index.html">游戏主页</a></li>
+      <li><a href="history.html">历史记录</a></li>
+    </ul>
+  </nav>
+  <h1>历史记录</h1>
+  <table id="history-table">
+    <thead>
+      <tr>
+        <th>序号</th>
+        <th>成绩</th>
+        <th>难度级别</th>
+        <th>日期</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <script>
+    async function fetchHistory() {
+      const response = await fetch('/history');
+      const scores = await response.json();
+      const tableBody = document.querySelector('#history-table tbody');
+      scores.forEach((score, index) => {
+        const row = document.createElement('tr');
+        const rankCell = document.createElement('td');
+        rankCell.textContent = index + 1;
+        const scoreCell = document.createElement('td');
+        scoreCell.textContent = score.score;
+        const levelCell = document.createElement('td');
+        levelCell.textContent = score.level;
+        const dateCell = document.createElement('td');
+        dateCell.textContent = score.date;
+        row.appendChild(rankCell);
+        row.appendChild(scoreCell);
+        row.appendChild(levelCell);
+        row.appendChild(dateCell);
+        tableBody.appendChild(row);
+      });
+    }
+
+    fetchHistory();
+  </script>
+</body>
+
+</html>

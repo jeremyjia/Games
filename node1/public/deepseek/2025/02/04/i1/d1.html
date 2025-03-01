@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>矢量绘图系统</title>
+    <style>
+        #toolbar {
+            padding: 10px;
+            background: #f0f0f0;
+            margin-bottom: 10px;
+        }
+        canvas {
+            border: 1px solid #ccc;
+        }
+        .tool-btn {
+            padding: 5px 10px;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="toolbar">
+        <button class="tool-btn" data-tool="select">✥ 选择</button>
+        <button class="tool-btn" data-tool="text">T 文本</button>
+        <button class="tool-btn" data-tool="line">/ 直线</button>
+        <button class="tool-btn" data-tool="circle">○ 圆形</button>
+        <button class="tool-btn" data-tool="rect">□ 矩形</button>
+        <input type="color" id="colorPicker" value="#000000">
+        <input type="number" id="lineWidth" value="2" min="1" max="10">
+        <button id="saveBtn">保存为JSON</button>
+    </div>
+    <canvas id="canvas" width="800" height="600"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let currentTool = 'select';
+        let shapes = [];
+        let currentShape = null;
+        let startX, startY;
+
+        // 工具按钮事件
+        document.querySelectorAll('.tool-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentTool = btn.dataset.tool;
+            });
+        });
+
+        // 颜色和线宽
+        const colorPicker = document.getElementById('colorPicker');
+        const lineWidth = document.getElementById('lineWidth');
+
+        // 鼠标事件处理
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', drawing);
+        canvas.addEventListener('mouseup', finishDrawing);
+        canvas.addEventListener('mouseout', finishDrawing);
+
+        // 保存按钮
+        document.getElementById('saveBtn').addEventListener('click', () => {
+            const json = JSON.stringify(shapes, null, 2);
+            console.log(json);
+            alert('JSON已保存到控制台');
+        });
+
+        function startDrawing(e) {
+            const rect = canvas.getBoundingClientRect();
+            startX = e.clientX - rect.left;
+            startY = e.clientY - rect.top;
+            
+            if (currentTool === 'text') {
+                const text = prompt('输入文本:');
+                if (text) {
+                    shapes.push({
+                        type: 'text',
+                        x: startX,
+                        y: startY,
+                        text: text,
+                        color: colorPicker.value
+                    });
+                    redraw();
+                }
+                return;
+            }
+
+            isDrawing = true;
+            currentShape = {
+                type: currentTool,
+                color: colorPicker.value,
+                lineWidth: lineWidth.value,
+                points: [{x: startX, y: startY}]
+            };
+        }
+
+        function drawing(e) {
+            if (!isDrawing) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const currentX = e.clientX - rect.left;
+            const currentY = e.clientY - rect.top;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            redraw();
+            
+            // 绘制临时形状
+            ctx.beginPath();
+            ctx.strokeStyle = colorPicker.value;
+            ctx.lineWidth = lineWidth.value;
+
+            switch(currentTool) {
+                case 'line':
+                    drawLine(startX, startY, currentX, currentY);
+                    break;
+                case 'rect':
+                    drawRect(startX, startY, currentX - startX, currentY - startY);
+                    break;
+                case 'circle':
+                    const radius = Math.sqrt(
+                        Math.pow(currentX - startX, 2) + 
+                        Math.pow(currentY - startY, 2)
+                    );
+                    drawCircle(startX, startY, radius);
+                    break;
+            }
+            ctx.stroke();
+        }
+
+        function finishDrawing() {
+            if (!isDrawing) return;
+            isDrawing = false;
+            
+            if (currentShape) {
+                shapes.push(currentShape);
+                currentShape = null;
+            }
+            redraw();
+        }
+        function redraw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            shapes.forEach(shape => {
+                ctx.strokeStyle = shape.color;
+                ctx.lineWidth = shape.lineWidth;
+                ctx.beginPath();
+
+                switch(shape.type) {
+                    case 'text':
+                        ctx.fillStyle = shape.color;
+                        ctx.fillText(shape.text, shape.x, shape.y);
+                        break;
+                    case 'line':
+                        drawLine(...shape.points[0], ...shape.points[1]);
+                        break;
+                    case 'rect':
+                        const rect = shape.points[1];
+                        drawRect(shape.points[0].x, shape.points[0].y, 
+                               rect.x - shape.points[0].x, 
+                               rect.y - shape.points[0].y);
+                        break;
+                    case 'circle':
+                        const center = shape.points[0];
+                        const radiusPoint = shape.points[1];
+                        const radius = Math.sqrt(
+                            Math.pow(radiusPoint.x - center.x, 2) + 
+                            Math.pow(radiusPoint.y - center.y, 2)
+                        );
+                        drawCircle(center.x, center.y, radius);
+                        break;
+                }
+                ctx.stroke();
+            });
+        }
+
+        function drawLine(x1, y1, x2, y2) {
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+        }
+
+        function drawRect(x, y, w, h) {
+            ctx.rect(x, y, w, h);
+        }
+
+        function drawCircle(x, y, r) {
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+        }
+    </script>
+</body>
+</html>

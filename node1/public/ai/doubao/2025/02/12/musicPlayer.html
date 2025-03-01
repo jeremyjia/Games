@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh - CN">
+
+<head>
+    <meta charset="UTF - 8">
+    <meta name="viewport" content="width=device-width, initial - scale=1.0">
+    <title>音乐播放器</title>
+    <style>
+        body {
+            font - family: Arial, sans - serif;
+            display: flex;
+            justify - content: center;
+            align - items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        button {
+            padding: 10px 20px;
+            background - color: #007BFF;
+            color: white;
+            border: none;
+            border - radius: 5px;
+            cursor: pointer;
+        }
+
+        /* 浮动窗口样式 */
+        #popup {
+            position: absolute;
+            background - color: #f0f0f0;
+            border: 1px solid #ccc;
+            border - radius: 5px;
+            padding: 10px;
+            box - shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+            display: none;
+        }
+
+        /* 用于拖动窗口的标题栏 */
+        #popup - header {
+            cursor: move;
+            background - color: #007BFF;
+            color: white;
+            padding: 5px 10px;
+            border - top - left - radius: 5px;
+            border - top - right - radius: 5px;
+        }
+
+        /* 拍子按钮样式 */
+        button.beat - button {
+            width: 30px;
+            height: 30px;
+            margin: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <button onclick="openPopup()">打开音乐播放器</button>
+
+    <div id="popup">
+        <div id="popup - header">拖动窗口</div>
+        <button onclick="playMusic()">播放</button>
+        <div id="beats">
+            <!-- 这里会动态生成拍子按钮 -->
+        </div>
+        <input type="number" id="bpmInput" value="60" placeholder="设置BPM">
+        <button onclick="setBPM()">设置BPM</button>
+    </div>
+
+    <script>
+        class MusicPlayer {
+            constructor() {
+                this.popup = document.getElementById('popup');
+                this.popupHeader = document.getElementById('popup - header');
+                this.beatsContainer = document.getElementById('beats');
+                this.bpm = 60;
+                this.isPlaying = false;
+                this.timer = null;
+                this.beatButtons = [];
+                this.currentBeatIndex = 0;
+                this.initPopup();
+                this.createBeats();
+            }
+
+            initPopup() {
+                let isDragging = false;
+                let startX, startY;
+
+                this.popupHeader.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    startX = e.pageX - this.popup.offsetLeft;
+                    startY = e.pageY - this.popup.offsetTop;
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (isDragging) {
+                        this.popup.style.left = (e.pageX - startX) + 'px';
+                        this.popup.style.top = (e.pageY - startY) + 'px';
+                    }
+                });
+
+                document.addEventListener('mouseup', () => {
+                    isDragging = false;
+                });
+            }
+
+            createBeats() {
+                for (let i = 0; i < 16; i++) {
+                    const button = document.createElement('button');
+                    button.classList.add('beat - button');
+                    button.textContent = (i % 4) + 1;
+                    this.beatButtons.push(button);
+                    this.beatsContainer.appendChild(button);
+                }
+            }
+
+            playMusic() {
+                if (!this.isPlaying) {
+                    this.isPlaying = true;
+                    this.timer = setInterval(() => {
+                        this.updateBeats();
+                    }, 60000 / this.bpm);
+                } else {
+                    this.isPlaying = false;
+                    clearInterval(this.timer);
+                }
+            }
+
+            updateBeats() {
+                this.beatButtons.forEach(button => button.style.backgroundColor = '');
+                const currentButton = this.beatButtons[this.currentBeatIndex];
+                currentButton.style.backgroundColor = 'lightblue';
+                this.currentBeatIndex = (this.currentBeatIndex + 1) % 16;
+            }
+
+            setBPM() {
+                const newBPM = parseInt(document.getElementById('bpmInput').value);
+                if (!isNaN(newBPM) && newBPM > 0) {
+                    this.bpm = newBPM;
+                    if (this.isPlaying) {
+                        clearInterval(this.timer);
+                        this.timer = setInterval(() => {
+                            this.updateBeats();
+                        }, 60000 / this.bpm);
+                    }
+                }
+            }
+        }
+
+        const musicPlayer = new MusicPlayer();
+
+        function openPopup() {
+            musicPlayer.popup.style.display = 'block';
+        }
+
+        function playMusic() {
+            musicPlayer.playMusic();
+        }
+
+        function setBPM() {
+            musicPlayer.setBPM();
+        }
+    </script>
+</body>
+
+</html>

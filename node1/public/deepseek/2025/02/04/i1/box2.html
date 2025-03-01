@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>推箱子游戏 - 多关卡版</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+            margin: 10px;
+        }
+        #info {
+            font-size: 20px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">第 <span id="level">1</span> 关</div>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const levelElement = document.getElementById('level');
+        let boxSize;
+        
+        // 游戏关卡数据
+        const levels = [
+            { // 第1关
+                map: [
+                    [1,1,1,1,1,1,1],
+                    [1,0,0,2,0,0,1],
+                    [1,0,3,4,3,0,1],
+                    [1,0,0,0,0,0,1],
+                    [1,1,1,1,1,1,1]
+                ],
+                player: {x:3, y:2},
+                boxes: [{x:2,y:2}, {x:4,y:2}],
+                targets: [{x:3,y:1}]
+            },
+            { // 第2关
+                map: [
+                    [1,1,1,1,1,1,1],
+                    [1,2,0,1,0,2,1],
+                    [1,0,3,4,3,0,1],
+                    [1,0,0,1,0,0,1],
+                    [1,2,0,0,0,2,1],
+                    [1,1,1,1,1,1,1]
+                ],
+                player: {x:3, y:2},
+                boxes: [{x:2,y:2}, {x:4,y:2}],
+                targets: [{x:1,y:1}, {x:5,y:1}, {x:1,y:4}, {x:5,y:4}]
+            },
+            { // 第3关
+                map: [
+                    [1,1,1,1,1,1,1,1,1],
+                    [1,0,0,0,0,0,0,0,1],
+                    [1,0,1,1,0,1,1,0,1],
+                    [1,0,3,0,0,0,3,0,1],
+                    [1,0,1,0,4,0,1,0,1],
+                    [1,0,0,0,2,0,0,0,1],
+                    [1,1,1,1,1,1,1,1,1]
+                ],
+                player: {x:4, y:4},
+                boxes: [{x:2,y:3}, {x:6,y:3}],
+                targets: [{x:4,y:5}]
+            }
+        ];
+
+        let currentLevel = 0;
+        let playerPos;
+        let boxes;
+        let targets;
+        let map;
+
+        // 颜色配置
+        const colors = {
+            floor: '#ffffff',
+            wall: '#666666',
+            target: '#ff0000',
+            box: '#8b4513',
+            player: '#0000ff'
+        };
+
+        function initGame() {
+            // 加载当前关卡数据
+            const levelData = levels[currentLevel];
+            map = levelData.map;
+            playerPos = {...levelData.player};
+            boxes = levelData.boxes.map(b => ({...b}));
+            targets = levelData.targets.map(t => ({...t}));
+
+            // 动态计算格子大小
+            const cols = map[0].length;
+            const rows = map.length;
+            boxSize = Math.min(600/cols, 600/rows);
+            canvas.width = cols * boxSize;
+            canvas.height = rows * boxSize;
+
+            levelElement.textContent = currentLevel + 1;
+            drawGame();
+        }
+
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制地图
+            for (let y = 0; y < map.length; y++) {
+                for (let x = 0; x < map[y].length; x++) {
+                    ctx.fillStyle = colors.floor;
+                    ctx.fillRect(x * boxSize, y * boxSize, boxSize, boxSize);
+                    
+                    if (map[y][x] === 1) { // 墙
+                        ctx.fillStyle = colors.wall;
+                        ctx.fillRect(x * boxSize, y * boxSize, boxSize, boxSize);
+                    }
+                    else if (map[y][x] === 2) { // 目标点
+                        ctx.fillStyle = colors.target;
+                        ctx.beginPath();
+                        ctx.arc(
+                            x * boxSize + boxSize/2,
+                            y * boxSize + boxSize/2,
+                            boxSize/4, 0, Math.PI * 2
+                        );
+                        ctx.fill();
+                    }
+                }
+            }
+
+            // 绘制箱子
+            boxes.forEach(box => {
+                ctx.fillStyle = colors.box;
+                ctx.fillRect(
+                    box.x * boxSize + 2,
+                    box.y * boxSize + 2,
+                    boxSize - 4,
+                    boxSize - 4
+                );
+            });
+
+            // 绘制玩家
+            ctx.fillStyle = colors.player;
+            ctx.beginPath();
+            ctx.arc(
+                playerPos.x * boxSize + boxSize/2,
+                playerPos.y * boxSize + boxSize/2,
+                boxSize/2 - 2, 0, Math.PI * 2
+            );
+            ctx.fill();
+        }
+
+        function movePlayer(dx, dy) {
+            const newX = playerPos.x + dx;
+            const newY = playerPos.y + dy;
+
+            // 检查边界和墙壁
+            if (newY < 0 || newY >= map.length || 
+                newX < 0 || newX >= map[newY].length ||
+                map[newY][newX] === 1) return;
+
+            // 检查箱子
+            const boxIndex = boxes.findIndex(b => b.x === newX && b.y === newY);
+            if (boxIndex > -1) {
+                const newBoxX = newX + dx;
+                const newBoxY = newY + dy;
+                
+                if (newBoxY < 0 || newBoxY >= map.length || 
+                    newBoxX < 0 || newBoxX >= map[newBoxY].length ||
+                    map[newBoxY][newBoxX] === 1 ||
+                    boxes.some(b => b.x === newBoxX && b.y === newBoxY)) {
+                    return;
+                }
+                boxes[boxIndex].x = newBoxX;
+                boxes[boxIndex].y = newBoxY;
+            }
+
+            playerPos.x = newX;
+            playerPos.y = newY;
+            checkWin();
+            drawGame();
+        }
+
+        function checkWin() {
+            const allOnTarget = targets.every(t => 
+                boxes.some(b => b.x === t.x && b.y === t.y)
+            );
+            
+            if (allOnTarget) {
+                if (currentLevel < levels.length - 1) {
+                    currentLevel++;
+                    setTimeout(() => {
+                        alert("恭喜过关！即将进入下一关");
+                        initGame();
+                    }, 100);
+                } else {
+                    ctx.fillStyle = 'black';
+                    ctx.font = '48px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('恭喜通关所有关卡！', canvas.width/2, canvas.height/2);
+                    document.removeEventListener('keydown', handleKeyPress);
+                }
+            }
+        }
+
+        function handleKeyPress(e) {
+            switch(e.key) {
+                case 'ArrowUp': movePlayer(0, -1); break;
+                case 'ArrowDown': movePlayer(0, 1); break;
+                case 'ArrowLeft': movePlayer(-1, 0); break;
+                case 'ArrowRight': movePlayer(1, 0); break;
+            }
+        }
+
+        // 初始化游戏
+        document.addEventListener('keydown', handleKeyPress);
+        initGame();
+    </script>
+</body>
+</html>

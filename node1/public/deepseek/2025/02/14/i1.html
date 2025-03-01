@@ -1,0 +1,316 @@
+<!--
+把工具条b和代码框放到一个可移动漂浮窗口里。
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>绘图代码工具</title>
+    <style>
+        :root {
+            --toolbar-height: 44px;
+            --element-spacing: 8px;
+        }
+
+        body {
+            margin: 0;
+            padding: var(--element-spacing);
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: var(--element-spacing);
+            overflow-x: auto;
+            padding: var(--element-spacing) 0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .toolbar button {
+            padding: 8px 12px;
+            min-width: 72px;
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            touch-action: manipulation;
+            font-size: 1rem;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .toolbar button.active {
+            background: #007bff;
+            color: white;
+            border-color: #0062cc;
+        }
+
+        #canvas {
+            border: 1px solid #ccc;
+            margin: var(--element-spacing) 0;
+            touch-action: none;
+            flex-grow: 1;
+            width: 100%;
+            max-height: 50vh;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 88px;
+            padding: 12px;
+            margin: var(--element-spacing) 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: var(--element-spacing) 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .button-group {
+            margin: var(--element-spacing) 0;
+        }
+        .button-group button {
+            margin: 2px;
+        }
+        #toolbarB {
+            margin-top: 2px;
+            margin-bottom: 18px;
+        }
+        @media (max-width: 480px) {
+            :root {
+                --toolbar-height: 40px;
+                --element-spacing: 6px;
+            }
+
+            .toolbar button {
+                min-width: 64px;
+                padding: 8px;
+                font-size: 0.9rem;
+            }
+
+            textarea {
+                min-height: 80px;
+                font-size: 0.85rem;
+            }
+
+            input[type="text"] {
+                padding: 10px;
+            }
+        }
+
+        @media (orientation: landscape) {
+            #canvas {
+                max-height: 60vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <input type="text" id="inputBox" placeholder="输入绘图参数...">
+    
+    <div class="button-group">
+        <div class="toolbar" id="toolbarA">
+            <button onclick="drawShape()">绘制</button>
+            <button onclick="clearCanvas()">清空画布</button>
+            <button onclick="updateButtonCode()">更新按钮</button>
+            <button onclick="createNewButton()">新建按钮</button>
+        </div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <div class="button-group">
+        <div class="toolbar" id="toolbarB">
+            <button onclick="insertExample1()">示例1</button>
+            <button onclick="insertExample2()">示例2</button>
+            <button onclick="clearCode()">清空代码</button>
+            <button onclick="inputABC()">ABC</button>
+        </div>
+    </div>
+    <textarea id="codeEditor" placeholder="输入JavaScript代码..."></textarea>
+
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let lastClickedButton = null;
+
+        // 自适应画布尺寸
+        function initCanvas() {
+            const container = document.body;
+            const aspectRatio = 16 / 9; // 根据需求调整宽高比
+            
+            canvas.width = container.clientWidth - 2; // 减去边框宽度
+            canvas.height = Math.min(
+                container.clientHeight * 0.5, // 最大高度为视口高度的50%
+                canvas.width / aspectRatio
+            );
+        }
+
+        // 初始化并添加响应式处理
+        initCanvas();
+        const resizeObserver = new ResizeObserver(() => {
+            initCanvas();
+            drawShape(); // 保持绘制内容适应新尺寸
+        });
+        resizeObserver.observe(document.body);
+
+        function drawShape() {
+            const input = document.getElementById('inputBox').value;
+            const params = input.split(':');
+            const [shapeType, color = '#ff0000', ...args] = params;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = color;
+
+            if (shapeType === 'circle') {
+                const radius = Math.min(canvas.width, canvas.height) * 0.2;
+                ctx.beginPath();
+                ctx.arc(canvas.width/2, canvas.height/2, radius, 0, Math.PI*2);
+                ctx.fill();
+            } else if (shapeType === 'rect') {
+                const [x=0.4, y=0.4, w=0.2, h=0.2] = args.map(parseFloat);
+                ctx.fillRect(
+                    canvas.width * x,
+                    canvas.height * y,
+                    canvas.width * w,
+                    canvas.height * h
+                );
+            }
+        }
+
+        // 其他函数保持不变...
+        // 清空画布
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // 更新按钮代码
+        function updateButtonCode() {
+            if(lastClickedButton) {
+                const code = document.getElementById('codeEditor').value;
+                lastClickedButton.onclick = new Function(code);
+            }
+        }
+
+        function createNewButton() {
+            const buttonName = prompt("请输入按钮名称：", "新按钮");
+            if (!buttonName) return;
+
+            const newButton = document.createElement('button');
+            newButton.textContent = buttonName;
+            const code = document.getElementById('codeEditor').value;
+
+            try {
+                const buttonFunction = new Function(code);
+                newButton.onclick = function() {
+                    document.querySelectorAll('#toolbarA button').forEach(btn => 
+                        btn.classList.remove('active'));
+                    this.classList.add('active');
+                    lastClickedButton = this;
+                    buttonFunction();
+                };
+                document.getElementById('toolbarA').appendChild(newButton);
+            } catch (e) {
+                alert("代码错误，无法创建按钮：" + e.message);
+            }
+        }
+        // 示例代码插入
+        function insertExample1() {
+            document.getElementById('codeEditor').value = 
+                `ctx.fillStyle = '#00ff00';\nctx.fillRect(100, 100, 80, 80);`;
+        }
+
+        function insertExample2() {
+            document.getElementById('codeEditor').value = 
+                `ctx.beginPath();\nctx.arc(200, 150, 40, 0, Math.PI * 2);\nctx.fill();`;
+        }
+
+        function clearCode() {
+            document.getElementById('codeEditor').value = '';
+        }
+        // 完善的ABC输入功能
+        function inputABC() {
+            const editor = document.getElementById('codeEditor');
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const value = editor.value;
+            
+            editor.value = value.slice(0, start) + "ABC" + value.slice(end);
+            editor.selectionEnd = start + 3;
+            editor.focus();
+        }
+        // 新增替换功能（可绑定到新按钮）
+        function replaceSelected() {
+            const editor = document.getElementById('codeEditor');
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            
+            if (start !== end) {
+                const value = editor.value;
+                editor.value = value.slice(0, start) + "abc" + value.slice(end);
+                editor.selectionEnd = start + 3;
+                editor.focus();
+            }
+        }
+
+
+        // 按钮点击高亮
+        document.querySelectorAll('#toolbarA button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#toolbarA button').forEach(b => 
+                    b.classList.remove('active'));
+                this.classList.add('active');
+                lastClickedButton = this;
+            });
+        });
+
+        let isDrawing = false;
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('touchstart', startDrawing);
+        canvas.addEventListener('touchmove', draw);
+        canvas.addEventListener('touchend', stopDrawing);
+
+        function startDrawing(e) {
+            isDrawing = true;
+            const pos = getCanvasPosition(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const pos = getCanvasPosition(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function getCanvasPosition(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: (e.clientX || e.touches[0].clientX) - rect.left,
+                y: (e.clientY || e.touches[0].clientY) - rect.top
+            };
+        }
+    </script>
+</body>
+</html>

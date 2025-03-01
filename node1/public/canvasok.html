@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .container {
+            position: relative;
+            margin: 50px auto;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <canvas id="underCanvas"></canvas>
+        <canvas id="upperCanvas"></canvas>
+    </div>
+
+    <script>
+        // 初始化画布
+        const container = document.querySelector('.container');
+        const underCanvas = document.getElementById('underCanvas');
+        const upperCanvas = document.getElementById('upperCanvas');
+        const underCtx = underCanvas.getContext('2d');
+        const upperCtx = upperCanvas.getContext('2d');
+
+        // 配置参数
+        const text = "卡拉OK字幕效果";
+        const fontSize = 40;
+        const colors = {
+            base: '#666',    // 基础颜色
+            highlight: '#ff0000' // 高亮颜色
+        };
+
+        // 初始化画布尺寸
+        function initCanvas() {
+            // 设置字体样式
+            underCtx.font = upperCtx.font = `${fontSize}px Arial`;
+            
+            // 测量文本尺寸
+            const textWidth = underCtx.measureText(text).width;
+            const canvasHeight = fontSize * 2;
+
+            // 处理高清屏幕缩放
+            const scale = window.devicePixelRatio || 1;
+            [underCanvas, upperCanvas].forEach(canvas => {
+                canvas.width = textWidth * scale;
+                canvas.height = canvasHeight * scale;
+                canvas.style.width = `${textWidth}px`;
+                canvas.style.height = `${canvasHeight}px`;
+                canvas.getContext('2d').scale(scale, scale);
+            });
+
+            // 绘制底层文本（基础色）
+            underCtx.fillStyle = colors.base;
+            underCtx.textBaseline = 'middle';
+            underCtx.fillText(text, 0, canvasHeight/2);
+        }
+
+        // 更新动画效果
+        function updateAnimation(progress) {
+            const canvasHeight = upperCanvas.height / (window.devicePixelRatio || 1);
+            const textWidth = upperCanvas.width / (window.devicePixelRatio || 1);
+
+            // 清除上层画布
+            upperCtx.clearRect(0, 0, textWidth, canvasHeight);
+            
+            // 设置裁剪区域
+            upperCtx.save();
+            upperCtx.beginPath();
+            upperCtx.rect(0, 0, textWidth * progress, canvasHeight);
+            upperCtx.clip();
+            
+            // 绘制高亮文本
+            upperCtx.fillStyle = colors.highlight;
+            upperCtx.textBaseline = 'middle';
+            upperCtx.fillText(text, 0, canvasHeight/2);
+            
+            upperCtx.restore();
+        }
+
+        // 动画循环
+        function animate() {
+            const duration = 15000; // 动画总时长（ms）
+            const startTime = Date.now();
+
+            function frame() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                updateAnimation(progress);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(frame);
+                }
+            }
+            
+            requestAnimationFrame(frame);
+        }
+
+        // 初始化并启动动画
+        initCanvas();
+        animate();
+
+        // 窗口大小变化时重置
+        window.addEventListener('resize', initCanvas);
+    </script>
+</body>
+</html>

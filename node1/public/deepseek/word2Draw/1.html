@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自然语言绘画</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { border: 1px solid #ccc; touch-action: none; }
+        #inputArea {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            padding: 8px;
+        }
+        .toolbar {
+            position: fixed;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px;
+            user-select: none;
+        }
+        .toolbar-header {
+            background: #f0f0f0;
+            padding: 5px;
+            cursor: move;
+            text-align: center;
+        }
+        .toolbar button {
+            margin: 2px;
+            padding: 5px;
+            min-width: 40px;
+        }
+        #objToolbar { top: 20px; left: 20px; }
+        #numToolbar { top: 20px; right: 20px; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="toolbar" id="objToolbar">
+        <div class="toolbar-header">对象</div>
+        <button onclick="insertText('房子')">房子</button>
+        <button onclick="insertText('狗')">狗</button>
+        <button onclick="insertText('树')">树</button>
+    </div>
+    <div class="toolbar" id="numToolbar">
+        <div class="toolbar-header">数字</div>
+        <button onclick="insertText('1')">1</button>
+        <button onclick="insertText('2')">2</button>
+        <button onclick="insertText('3')">3</button>
+    </div>
+    <div id="inputArea">
+        <input type="text" id="command" placeholder="输入绘画指令" style="width:70%">
+        <button onclick="parseCommand()">绘制</button>
+        <button onclick="deleteSelected()">删除选中</button>
+    </div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let objects = [];
+let selectedObj = null;
+let isDragging = false;
+let dragType = 'move';
+
+// 初始化画布尺寸
+function initCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight - 100;
+}
+initCanvas();
+window.addEventListener('resize', initCanvas);
+
+// 图形对象构造函数
+function Shape(type, x, y, color) {
+    this.type = type;
+    this.x = x;
+    this.y = y;
+    this.size = 50;
+    this.color = color || '#000';
+    this.selected = false;
+}
+
+// 自然语言解析
+function parseCommand() {
+    const text = document.getElementById('command').value;
+    const regex = /(?:画|绘)?(\d+|两|三|四)?[只个座辆]*(红色|红|蓝色|蓝|绿色|绿)?(房子|狗|树)/g;
+    let match;
+    
+    while ((match = regex.exec(text)) !== null) {
+        let count = match[1] ? chineseToNumber(match[1]) : 1;
+        let color = match[2] ? (match[2].includes('红') ? 'red' : 
+            match[2].includes('蓝') ? 'blue' : 'green') : 'black';
+        let type = match[3];
+        
+        for (let i = 0; i < count; i++) {
+            let x = Math.random() * (canvas.width - 100) + 50;
+            let y = Math.random() * (canvas.height - 100) + 50;
+            objects.push(new Shape(type, x, y, color));
+        }
+    }
+    draw();
+}
+
+// 中文数字转换
+function chineseToNumber(ch) {
+    const map = { '两': 2, '三': 3, '四': 4 };
+    return map[ch] || parseInt(ch) || 1;
+}
+
+// 绘制图形
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    objects.forEach(obj => {
+        ctx.fillStyle = obj.color;
+        ctx.strokeStyle = obj.selected ? 'blue' : 'black';
+        ctx.lineWidth = 2;
+        
+        switch(obj.type) {
+            case '房子':
+                ctx.fillRect(obj.x, obj.y, obj.size, obj.size);
+                ctx.beginPath();
+                ctx.moveTo(obj.x, obj.y);
+                ctx.lineTo(obj.x + obj.size/2, obj.y - obj.size/2);
+                ctx.lineTo(obj.x + obj.size, obj.y);
+                ctx.closePath();
+                ctx.fill();
+                break;
+            case '狗':
+                // 简单狗的形状
+                ctx.beginPath();
+                ctx.arc(obj.x, obj.y, obj.size/3, 0, Math.PI*2);
+                ctx.fill();
+                break;
+            case '树':
+                ctx.fillRect(obj.x, obj.y, obj.size/4, obj.size);
+                ctx.beginPath();
+                ctx.arc(obj.x + obj.size/8, obj.y - obj.size/2, obj.size/2, 0, Math.PI*2);
+                ctx.fill();
+                break;
+        }
+        ctx.stroke();
+        
+        if (obj.selected) {
+            ctx.strokeStyle = 'blue';
+            ctx.strokeRect(obj.x - 5, obj.y - 5, obj.size + 10, obj.size + 10);
+        }
+    });
+}
+
+// 事件处理
+function getMousePos(e) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+        x: (e.clientX || e.touches[0].clientX) - rect.left,
+        y: (e.clientY || e.touches[0].clientY) - rect.top
+    };
+}
+
+canvas.addEventListener('mousedown', handleStart);
+canvas.addEventListener('touchstart', handleStart);
+
+function handleStart(e) {
+    e.preventDefault();
+    const pos = getMousePos(e);
+    selectedObj = objects.find(obj => 
+        pos.x > obj.x && pos.x < obj.x + obj.size &&
+        pos.y > obj.y && pos.y < obj.y + obj.size
+    );
+    
+    if (selectedObj) {
+        selectedObj.selected = true;
+        isDragging = true;
+        dragType = 'move';
+        draw();
+    }
+}
+
+window.addEventListener('mousemove', handleMove);
+window.addEventListener('touchmove', handleMove);
+
+function handleMove(e) {
+    if (!isDragging || !selectedObj) return;
+    const pos = getMousePos(e);
+    selectedObj.x = pos.x - selectedObj.size/2;
+    selectedObj.y = pos.y - selectedObj.size/2;
+    draw();
+}
+
+window.addEventListener('mouseup', () => isDragging = false);
+window.addEventListener('touchend', () => isDragging = false);
+
+// 工具条拖动
+function makeDraggable(elm) {
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    elm.querySelector('.toolbar-header').addEventListener('mousedown', dragMouseDown);
+    elm.querySelector('.toolbar-header').addEventListener('touchstart', dragMouseDown);
+
+    function dragMouseDown(e) {
+        e = e || window.event;
+        e.preventDefault();
+        pos3 = (e.clientX || e.touches[0].clientX);
+        pos4 = (e.clientY || e.touches[0].clientY);
+        document.onmouseup = closeDrag;
+        document.ontouchend = closeDrag;
+        document.onmousemove = elementDrag;
+        document.ontouchmove = elementDrag;
+    }
+
+    function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        pos1 = (e.clientX || e.touches[0].clientX) - pos3;
+        pos2 = (e.clientY || e.touches[0].clientY) - pos4;
+        pos3 = e.clientX || e.touches[0].clientX;
+        pos4 = e.clientY || e.touches[0].clientY;
+        elm.style.top = (elm.offsetTop + pos2) + "px";
+        elm.style.left = (elm.offsetLeft + pos1) + "px";
+    }
+
+    function closeDrag() {
+        document.onmouseup = null;
+        document.ontouchend = null;
+        document.onmousemove = null;
+        document.ontouchmove = null;
+    }
+}
+
+makeDraggable(document.getElementById('objToolbar'));
+makeDraggable(document.getElementById('numToolbar'));
+
+// 文本插入
+function insertText(text) {
+    const input = document.getElementById('command');
+    const start = input.selectionStart;
+    input.value = input.value.slice(0, start) + text + input.value.slice(start);
+    input.focus();
+    input.setSelectionRange(start + text.length, start + text.length);
+}
+
+// 删除选中
+function deleteSelected() {
+    objects = objects.filter(obj => !obj.selected);
+    draw();
+}
+</script>
+</body>
+</html>

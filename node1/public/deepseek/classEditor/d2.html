@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript类设计器</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: Arial; background: #f0f0f0; }
+
+        /* 导航菜单 */
+        .nav {
+            background: #333;
+            padding: 10px;
+            color: white;
+        }
+        .nav a { color: white; text-decoration: none; }
+
+        /* 可移动元素公共样式 */
+        .draggable {
+            position: fixed;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .drag-header {
+            padding: 8px;
+            background: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+            cursor: move;
+        }
+
+        /* 文本框容器 */
+        #codeEditor {
+            top: 60px;
+            left: 20px;
+            width: 300px;
+        }
+        #codeText {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            border: none;
+            resize: vertical;
+        }
+
+        /* 类工具条 */
+        #classToolbar {
+            top: 60px;
+            right: 20px;
+            width: 200px;
+        }
+        .toolbar-btn {
+            width: 100%;
+            padding: 8px;
+            margin: 2px 0;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* 生成工具条 */
+        #generateToolbar {
+            bottom: 20px;
+            left: 20px;
+            width: 200px;
+        }
+
+        /* 画布区域 */
+        #canvas {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            height: 200px;
+            padding: 10px;
+            background: white;
+            overflow-y: auto;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 600px) {
+            .draggable { 
+                width: 90% !important;
+                left: 5% !important;
+                right: auto !important;
+            }
+            #codeEditor { top: 100px; }
+            #classToolbar { top: 340px; }
+            #generateToolbar { bottom: 70px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航菜单 -->
+    <nav class="nav">
+        <a href="https://www.deepseek.com">前往DeepSeek</a>
+    </nav>
+
+    <!-- 代码编辑器 -->
+    <div class="draggable" id="codeEditor">
+        <div class="drag-header">代码编辑器 (拖动)</div>
+        <textarea id="codeText"></textarea>
+        <button onclick="updateClass()" style="width:100%;">更新类代码</button>
+    </div>
+
+    <!-- 类工具条 -->
+    <div class="draggable" id="classToolbar">
+        <div class="drag-header">类模板 (拖动)</div>
+        <button class="toolbar-btn" onclick="loadClass('Animal', animalCode)">Animal</button>
+        <button class="toolbar-btn" onclick="loadClass('Car', carCode)">Car</button>
+        <button class="toolbar-btn" onclick="loadClass('Person', personCode)">Person</button>
+    </div>
+
+    <!-- 生成工具条 -->
+    <div class="draggable" id="generateToolbar">
+        <div class="drag-header">生成实例 (拖动)</div>
+        <button class="toolbar-btn" onclick="generateInstance('Animal')">生成Animal</button>
+        <button class="toolbar-btn" onclick="generateInstance('Car')">生成Car</button>
+        <button class="toolbar-btn" onclick="generateInstance('Person')">生成Person</button>
+    </div>
+
+    <!-- 画布区域 -->
+    <div id="canvas"></div>
+
+    <script>
+        // 初始化示例代码
+        const animalCode = `class Animal {
+            constructor(name) {
+                this.name = name;
+            }
+            speak() {
+                return \`\${this.name} makes a noise\`;
+            }
+            eat() {
+                return \`\${this.name} is eating\`;
+            }
+        }`;
+
+        const carCode = `class Car {
+            constructor(brand) {
+                this.brand = brand;
+            }
+            drive() {
+                return \`Driving \${this.brand}\`;
+            }
+            brake() {
+                return "Braking!";
+            }
+        }`;
+
+        const personCode = `class Person {
+            constructor(name) {
+                this.name = name;
+            }
+            greet() {
+                return \`Hello, I'm \${this.name}\`;
+            }
+            work() {
+                return \`\${this.name} is working\`;
+            }
+        }`;
+
+        // 拖拽功能实现
+        function makeDraggable(element) {
+            let isDragging = false;
+            let currentX = 0;
+            let currentY = 0;
+            let initialX = 0;
+            let initialY = 0;
+
+            element.querySelector('.drag-header').addEventListener('mousedown', dragStart);
+            element.querySelector('.drag-header').addEventListener('touchstart', dragStart);
+
+            function dragStart(e) {
+                e.preventDefault();
+                isDragging = true;
+                initialX = e.clientX || e.touches[0].clientX;
+                initialY = e.clientY || e.touches[0].clientY;
+                
+                document.addEventListener('mousemove', drag);
+                document.addEventListener('touchmove', drag);
+                document.addEventListener('mouseup', dragEnd);
+                document.addEventListener('touchend', dragEnd);
+            }
+
+            function drag(e) {
+                if (!isDragging) return;
+                e.preventDefault();
+                currentX = (e.clientX || e.touches[0].clientX) - initialX;
+                currentY = (e.clientY || e.touches[0].clientY) - initialY;
+                initialX = e.clientX || e.touches[0].clientX;
+                initialY = e.clientY || e.touches[0].clientY;
+                
+                element.style.left = `${element.offsetLeft + currentX}px`;
+                element.style.top = `${element.offsetTop + currentY}px`;
+            }
+
+            function dragEnd() {
+                isDragging = false;
+                document.removeEventListener('mousemove', drag);
+                document.removeEventListener('touchmove', drag);
+            }
+        }
+
+        // 初始化拖拽
+        document.querySelectorAll('.draggable').forEach(makeDraggable);
+
+        // 类操作函数
+        function loadClass(className, code) {
+            document.getElementById('codeText').value = code;
+        }
+
+        function updateClass() {
+            const buttons = document.querySelectorAll('#classToolbar button');
+            buttons.forEach(btn => {
+                if (btn.textContent === document.activeClass) {
+                    btn.setAttribute('data-code', document.getElementById('codeText').value);
+                }
+            });
+        }
+
+        // 实例生成函数
+        function generateInstance(className) {
+            try {
+                const code = document.getElementById('codeText').value;
+                eval(code);
+                const instance = new eval(className)(className);
+                
+                const canvas = document.getElementById('canvas');
+                canvas.innerHTML = `<h3>${className} 实例方法：</h3>`;
+                
+                for (let method of Object.getOwnPropertyNames(Object.getPrototypeOf(instance))) {
+                    if (method !== 'constructor') {
+                        canvas.innerHTML += `<div>${method}()</div>`;
+                    }
+                }
+            } catch (error) {
+                alert(`错误: ${error.message}`);
+            }
+        }
+
+        // 初始化默认类
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('codeText').value = animalCode;
+        });
+    </script>
+</body>
+</html>

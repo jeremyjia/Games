@@ -1,0 +1,664 @@
+<!--
+2025/2/6 升级让所有工具条为悬浮可移动的
+-->
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多场景稻草人</title>
+    <style>
+     /* 新增导航菜单样式 */
+        .navbar {
+            width: 100%;
+            background: #1a1a1a;
+            padding: 15px 0;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+        }
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 0;
+            padding: 0;
+        }
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            transition: color 0.3s;
+        }
+        .nav-menu a:hover {
+            color: #4CAF50;
+        }
+        
+        canvas {
+            border: 1px solid #000;
+            touch-action: none;
+        }
+        body {
+            padding-top: 60px; /* 给导航栏留出空间 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: #f0f0f0;
+            touch-action: manipulation;
+        }
+        .controls {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 0 10px;
+        }
+        button {
+            padding: 12px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            transition: all 0.2s;
+            min-width: 90px;
+            touch-action: manipulation;
+        }
+        @media (max-width: 480px) {
+            button {
+                padding: 10px 15px;
+                font-size: 13px;
+                min-width: 80px;
+            }
+        }
+        button:hover { transform: scale(1.05); }
+        button:active { transform: scale(0.95); }
+        .movement-controls, .rotation-controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        #startBtn { background: #4CAF50; }
+        #stopBtn { background: #f44336; }
+        #fishBtn { background: #e91e63; }
+        #jumpBtn { background: #ff9800; }
+        #dogBtn { background: #9C27B0; }
+        #dismissDogBtn { background: #673AB7; }
+        #lieLeftBtn, #lieRightBtn { background: #795548; }
+        #turnLeftBtn, #turnBackBtn, #turnRightBtn { background: #009688; }
+        .status-bar {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px;
+            border-radius: 5px;
+            font-family: Arial;
+        }
+        .scene-toolbar {
+            position: absolute;
+            top: 60px;
+            left: 10px;
+            background: rgba(255,255,255,0.9);
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex;
+            gap: 8px;
+            flex-direction: column;
+        }
+        .scene-btn {
+            background: #4CAF50 !important;
+            min-width: 80px;
+            padding: 8px 12px;
+        }
+    </style>
+</head>
+<body><!-- 新增导航菜单 -->
+    <nav class="navbar">
+        <ul class="nav-menu">
+            <li><a href="#" target="_blank">v0.11</a></li>
+            <li><a href="https://www.deepseek.com" target="_blank">DeepSeek 首页</a></li>
+            <li><a href="f.html">f.html</a></li>
+            <li><a href="i1.html">i1.html</a></li>
+            <li><a href="s1.html">s1.html</a></li>
+            <li><a href="readme.txt">readme.txt</a></li>
+            <!-- 可以继续添加其他菜单项 -->
+        </ul>
+    </nav>
+    <div class="status-bar">状态: <span id="status">运行中</span></div>
+    <div class="scene-toolbar">
+        <button class="scene-btn" id="roadSceneBtn">🚗 马路边</button>
+        <button class="scene-btn" id="forestSceneBtn">🌳 树林</button>
+        <button class="scene-btn" id="playgroundSceneBtn">🏃 操场</button>
+    </div>
+    <div class="controls">
+        <button id="lieLeftBtn">🛌 左躺</button>
+        <button id="lieRightBtn">🛌 右躺</button>
+        <div class="rotation-controls">
+            <button id="turnLeftBtn">↩ 左转</button>
+            <button id="turnBackBtn">↻ 后转</button>
+            <button id="turnRightBtn">↪ 右转</button>
+        </div>
+        <button id="startBtn">开始自动</button>
+        <button id="stopBtn">停止自动</button>
+        <button id="dogBtn">🐶 召唤小狗</button>
+        <button id="dismissDogBtn">👋 小狗离开</button>
+        <div class="movement-controls">
+            <button id="leftBtn" style="background:#2196F3">← 移动</button>
+            <button id="jumpBtn">↑ 跳跃</button>
+            <button id="rightBtn" style="background:#2196F3">→ 移动</button>
+        </div>
+        <button id="fishBtn">🎣 钓鱼</button>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let animationId = null;
+        let isMoving = true;
+        let isFishing = false;
+        const SCENES = { ROAD: 0, FOREST: 1, PLAYGROUND: 2 };
+        let currentScene = SCENES.ROAD;
+
+        function setCanvasSize() {
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            canvas.width = isMobile ? window.innerWidth * 0.95 : 800;
+            canvas.height = isMobile ? window.innerHeight * 0.6 : 400;
+        }
+        setCanvasSize();
+
+        const PHYSICS = {
+            STEP_SIZE: canvas.width * 0.05,
+            JUMP_FORCE: -18,
+            GRAVITY: 0.7,
+            FISHING_TIME: 1500
+        };
+
+        class Scarecrow {
+            constructor() {
+                this.reset();
+                this.speed = canvas.width * 0.005;
+                this.rodAngle = 0;
+                this.direction = 0;
+                this.lyingState = 0;
+                this.bodyRotation = 0;
+            }
+
+            reset() {
+                this.x = canvas.width / 2;
+                this.y = canvas.height - 100;
+                this.velocityY = 0;
+                this.isJumping = false;
+                this.armAngle = 0;
+                this.legAngle = 0;
+                this.animationStep = 0;
+                this.fishingProgress = 0;
+                this.direction = 0;
+                this.lyingState = 0;
+                this.bodyRotation = 0;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                if(this.lyingState !== 0) {
+                    ctx.rotate(this.lyingState === 1 ? -Math.PI/2 : Math.PI/2);
+                    ctx.translate(0, 50);
+                } else {
+                    ctx.rotate((this.direction * Math.PI)/2 + this.bodyRotation);
+                }
+
+                if(isFishing) this.#drawFishingRod();
+
+                switch(this.direction % 4) {
+                    case 0: this.#drawFront(); break;
+                    case 1: this.#drawRightSide(); break;
+                    case 2: this.#drawBack(); break;
+                    case 3: this.#drawLeftSide(); break;
+                }
+                ctx.restore();
+            }
+
+            #drawFishingRod() {
+                ctx.save();
+                ctx.rotate(-this.rodAngle + Math.PI/4);
+                ctx.strokeStyle = '#795548';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(20, -80);
+                ctx.lineTo(80, -140);
+                ctx.stroke();
+                
+                ctx.strokeStyle = '#FFFFFF';
+                ctx.setLineDash([2, 3]);
+                ctx.beginPath();
+                ctx.moveTo(80, -140);
+                ctx.lineTo(80 + Math.sin(Date.now()/200)*10, -140 + 50);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            #drawFront() {
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(-15, -80, 30, 80);
+                ctx.beginPath();
+                ctx.arc(0, -100, 20, 0, Math.PI * 2);
+                ctx.fillStyle = '#FFD700';
+                ctx.fill();
+                ctx.fillStyle = '#A0522D';
+                ctx.beginPath();
+                ctx.arc(0, -110, 25, 0, Math.PI);
+                ctx.fill();
+                this.#drawArm(-15, -this.armAngle);
+                this.#drawArm(15, this.armAngle);
+                this.#drawLeg(-10, -this.legAngle);
+                this.#drawLeg(10, this.legAngle);
+            }
+
+            #drawRightSide() {
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(-10, -80, 20, 80);
+                ctx.beginPath();
+                ctx.ellipse(0, -100, 15, 20, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#FFD700';
+                ctx.fill();
+                ctx.strokeStyle = '#8B4513';
+                ctx.lineWidth = 8;
+                ctx.beginPath();
+                ctx.moveTo(10, -80);
+                ctx.lineTo(40, -50);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, 40);
+                ctx.stroke();
+            }
+
+            #drawBack() {
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(-15, -80, 30, 80);
+                ctx.fillStyle = '#A0522D';
+                ctx.beginPath();
+                ctx.arc(0, -110, 25, 0, Math.PI);
+                ctx.fill();
+                ctx.strokeStyle = '#654321';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(0, -90);
+                ctx.lineTo(0, -70);
+                ctx.stroke();
+                ctx.strokeStyle = '#8B4513';
+                ctx.lineWidth = 8;
+                ctx.beginPath();
+                ctx.moveTo(-20, -80);
+                ctx.lineTo(-20, -50);
+                ctx.moveTo(20, -80);
+                ctx.lineTo(20, -50);
+                ctx.stroke();
+            }
+
+            #drawLeftSide() {
+                ctx.save();
+                ctx.scale(-1, 1);
+                this.#drawRightSide();
+                ctx.restore();
+            }
+
+            #drawArm(startX, angle) {
+                ctx.save();
+                ctx.rotate(angle);
+                ctx.strokeStyle = '#8B4513';
+                ctx.lineWidth = 8;
+                ctx.beginPath();
+                ctx.moveTo(startX, -80);
+                ctx.lineTo(startX*2, -50);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            #drawLeg(startX, angle) {
+                ctx.save();
+                ctx.rotate(angle);
+                ctx.strokeStyle = '#8B4513';
+                ctx.lineWidth = 6;
+                ctx.beginPath();
+                ctx.moveTo(startX, 0);
+                ctx.lineTo(startX*1.5, 40);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            update() {
+                if (this.lyingState !== 0) {
+                    this.bodyRotation = Math.sin(Date.now()/300) * 0.1;
+                    return;
+                }
+
+                if (isMoving) {
+                    this.x += this.speed * (this.direction % 2 === 0 ? 1 : 0);
+                    if (this.x > canvas.width - 50 || this.x < 50) {
+                        this.direction = (this.direction + 2) % 4;
+                    }
+                    this.animationStep = (this.animationStep + 1) % 60;
+                    this.armAngle = Math.sin(this.animationStep * 0.1) * 0.5;
+                    this.legAngle = Math.cos(this.animationStep * 0.1) * 0.3;
+                }
+
+                if (this.isJumping) {
+                    this.y += this.velocityY;
+                    this.velocityY += PHYSICS.GRAVITY;
+                    if (this.y >= canvas.height - 100) {
+                        this.y = canvas.height - 100;
+                        this.velocityY = 0;
+                        this.isJumping = false;
+                    }
+                }
+
+                if(isFishing) {
+                    this.rodAngle = Math.sin(Date.now()/200) * 0.2;
+                }
+            }
+
+            lieDown(side) { this.lyingState = side; }
+            standUp() { this.lyingState = 0; }
+            rotate(step) { if(this.lyingState === 0) this.direction = (this.direction + step + 4) % 4; }
+            turnBack() { if(this.lyingState === 0) this.direction = (this.direction + 2) % 4; }
+        }
+
+        class Dog {
+            constructor() {
+                this.reset();
+                this.speed = 8;
+                this.tailAngle = 0;
+                this.isLeaving = false;
+            }
+
+            reset() {
+                this.x = canvas.width + 100;
+                this.y = canvas.height - 80;
+                this.targetX = 0;
+                this.isMoving = false;
+                this.isVisible = false;
+                this.animationStep = 0;
+                this.isLeaving = false;
+            }
+
+            summon(scarecrowX) {
+                this.targetX = scarecrowX - 80;
+                this.isMoving = true;
+                this.isVisible = true;
+                this.isLeaving = false;
+                this.x = canvas.width + 100;
+            }
+
+            dismiss() {
+                if(this.isVisible && !this.isMoving) {
+                    this.isMoving = true;
+                    this.isLeaving = true;
+                    this.targetX = canvas.width + 150;
+                }
+            }
+
+            update() {
+                if(this.isMoving && this.isVisible) {
+                    this.isLeaving ? this.x += this.speed : this.x -= this.speed;
+                    if((this.isLeaving && this.x >= this.targetX) || (!this.isLeaving && this.x <= this.targetX)) {
+                        this.isMoving = false;
+                        if(this.isLeaving) this.isVisible = false;
+                    }
+                    this.animationStep = (this.animationStep + 1) % 30;
+                }
+                this.tailAngle = Math.sin(Date.now()/200) * 0.3;
+            }
+
+            draw() {
+                if(!this.isVisible) return;
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.fillStyle = '#FF5722';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 30, 20, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#FF9800';
+                ctx.beginPath();
+                ctx.arc(25, -15, 15, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(30, -30, 8, 0, Math.PI * 2);
+                ctx.arc(20, -30, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.save();
+                ctx.rotate(this.tailAngle);
+                ctx.fillStyle = '#FF5722';
+                ctx.beginPath();
+                ctx.ellipse(-35, 0, 15, 8, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+                ctx.fillStyle = '#FF9800';
+                for(let i = 0; i < 4; i++) {
+                    const legX = 10 - i*15;
+                    const legY = 10 + Math.abs(Math.sin(this.animationStep*0.2 + i*0.5)) * 5;
+                    ctx.fillRect(legX, legY, 8, 20);
+                }
+                ctx.fillStyle = 'black';
+                ctx.beginPath();
+                ctx.arc(30, -20, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        const scarecrow = new Scarecrow();
+        const dog = new Dog();
+
+        function drawScene() {
+            switch(currentScene) {
+                case SCENES.ROAD:
+                    ctx.fillStyle = '#A9A9A9';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#808080';
+                    ctx.fillRect(0, canvas.height - 60, canvas.width, 60);
+                    ctx.strokeStyle = 'white';
+                    ctx.setLineDash([20, 30]);
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(0, canvas.height - 30);
+                    ctx.lineTo(canvas.width, canvas.height - 30);
+                    ctx.stroke();
+                    if(Math.random() < 0.02) {
+                        ctx.fillStyle = '#FF4500';
+                        ctx.fillRect(canvas.width * Math.random(), canvas.height - 80, 50, 30);
+                    }
+                    break;
+
+                case SCENES.FOREST:
+                    ctx.fillStyle = '#87CEEB';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#228B22';
+                    ctx.fillRect(0, canvas.height - 60, canvas.width, 60);
+                    ctx.fillStyle = '#8B4513';
+                    for(let i = 0; i < 5; i++) {
+                        const x = 100 + i * 150;
+                        ctx.fillRect(x, canvas.height - 120, 30, 60);
+                        ctx.beginPath();
+                        ctx.arc(x + 15, canvas.height - 150, 50, 0, Math.PI * 2);
+                        ctx.fillStyle = '#228B22';
+                        ctx.fill();
+                    }
+                    ctx.fillStyle = '#FF69B4';
+                    for(let i = 0; i < 20; i++) {
+                        ctx.beginPath();
+                        ctx.arc(Math.random() * canvas.width, canvas.height - 50 + Math.random() * 10, 
+                               3 + Math.random() * 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    break;
+
+                case SCENES.PLAYGROUND:
+                    ctx.fillStyle = '#98FB98';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#FFD700';
+                    ctx.fillRect(0, canvas.height - 60, canvas.width, 60);
+                    ctx.strokeStyle = '#FFFFFF';
+                    ctx.lineWidth = 8;
+                    ctx.beginPath();
+                    ctx.arc(canvas.width/2, canvas.height/2, 150, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.fillStyle = '#8B4513';
+                    ctx.fillRect(canvas.width/2 - 100, canvas.height - 180, 20, 150);
+                    ctx.fillRect(canvas.width/2 - 150, canvas.height - 180, 120, 15);
+                    break;
+            }
+        }
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawScene();
+            scarecrow.update();
+            scarecrow.draw();
+            dog.update();
+            dog.draw();
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function updateSceneParameters() {
+            switch(currentScene) {
+                case SCENES.ROAD:
+                    PHYSICS.STEP_SIZE = canvas.width * 0.05;
+                    PHYSICS.JUMP_FORCE = -18;
+                    break;
+                case SCENES.FOREST:
+                    PHYSICS.STEP_SIZE = canvas.width * 0.03;
+                    PHYSICS.JUMP_FORCE = -15;
+                    break;
+                case SCENES.PLAYGROUND:
+                    PHYSICS.STEP_SIZE = canvas.width * 0.07;
+                    PHYSICS.JUMP_FORCE = -20;
+                    break;
+            }
+            scarecrow.speed = canvas.width * 0.005 * (PHYSICS.STEP_SIZE / (canvas.width * 0.05));
+        }
+
+        document.getElementById('roadSceneBtn').addEventListener('click', () => {
+            currentScene = SCENES.ROAD;
+            updateSceneParameters();
+        });
+        document.getElementById('forestSceneBtn').addEventListener('click', () => {
+            currentScene = SCENES.FOREST;
+            updateSceneParameters();
+        });
+        document.getElementById('playgroundSceneBtn').addEventListener('click', () => {
+            currentScene = SCENES.PLAYGROUND;
+            updateSceneParameters();
+        });
+
+        // 原有事件监听保持不变
+        document.getElementById('startBtn').addEventListener('click', () => {
+            isMoving = true;
+            document.getElementById('status').textContent = '自动运行中';
+            if(!animationId) gameLoop();
+        });
+        document.getElementById('stopBtn').addEventListener('click', () => {
+            isMoving = false;
+            document.getElementById('status').textContent = '已停止';
+        });
+        document.getElementById('leftBtn').addEventListener('click', () => move(-1));
+        document.getElementById('rightBtn').addEventListener('click', () => move(1));
+        document.getElementById('jumpBtn').addEventListener('click', jump);
+        document.getElementById('fishBtn').addEventListener('click', fish);
+        document.getElementById('dogBtn').addEventListener('click', summonDog);
+        document.getElementById('dismissDogBtn').addEventListener('click', dismissDog);
+        document.getElementById('lieLeftBtn').addEventListener('click', () => {
+            scarecrow.lieDown(1);
+            document.getElementById('status').textContent = '左躺中';
+        });
+        document.getElementById('lieRightBtn').addEventListener('click', () => {
+            scarecrow.lieDown(2);
+            document.getElementById('status').textContent = '右躺中';
+        });
+        document.getElementById('turnLeftBtn').addEventListener('click', () => {
+            scarecrow.standUp();
+            scarecrow.rotate(-1);
+            document.getElementById('status').textContent = '左转';
+        });
+        document.getElementById('turnRightBtn').addEventListener('click', () => {
+            scarecrow.standUp();
+            scarecrow.rotate(1);
+            document.getElementById('status').textContent = '右转';
+        });
+        document.getElementById('turnBackBtn').addEventListener('click', () => {
+            scarecrow.standUp();
+            scarecrow.turnBack();
+            document.getElementById('status').textContent = '向后转';
+        });
+
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                btn.click();
+            });
+        });
+
+        function move(direction) {
+            if(scarecrow.lyingState !== 0) return;
+            const newX = scarecrow.x + (PHYSICS.STEP_SIZE * direction);
+            scarecrow.x = Math.max(50, Math.min(canvas.width - 50, newX));
+        }
+
+        function jump() {
+            if (!scarecrow.isJumping && scarecrow.lyingState === 0) {
+                scarecrow.velocityY = PHYSICS.JUMP_FORCE;
+                scarecrow.isJumping = true;
+            }
+        }
+
+        function fish() {
+            if(!isFishing && scarecrow.lyingState === 0) {
+                isFishing = true;
+                document.getElementById('status').textContent = '钓鱼中...';
+                setTimeout(() => {
+                    isFishing = false;
+                    document.getElementById('status').textContent = isMoving ? '自动运行中' : '已停止';
+                }, PHYSICS.FISHING_TIME);
+            }
+        }
+
+        function summonDog() {
+            if(!dog.isVisible) {
+                dog.summon(scarecrow.x);
+                document.getElementById('status').textContent = '小狗来啦！';
+                setTimeout(() => {
+                    document.getElementById('status').textContent = isMoving ? '自动运行中' : '已停止';
+                }, 2000);
+            }
+        }
+
+        function dismissDog() {
+            if(dog.isVisible) {
+                dog.dismiss();
+                document.getElementById('status').textContent = '小狗离开了...';
+                setTimeout(() => {
+                    document.getElementById('status').textContent = isMoving ? '自动运行中' : '已停止';
+                }, 2000);
+            }
+        }
+
+        gameLoop();
+        window.addEventListener('resize', () => {
+            setCanvasSize();
+            scarecrow.reset();
+            dog.reset();
+        });
+    </script>
+</body>
+</html>

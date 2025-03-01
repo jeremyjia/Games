@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>场景编辑器 - 修复版</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        #container {
+            display: grid;
+            grid-template-columns: 120px 1fr 200px;
+            height: 100vh;
+        }
+        #toolbar { background: #f0f0f0; padding: 10px; }
+        #main-canvas { 
+            border: 2px solid #333;
+            background: #87CEEB;
+            width: 800px;
+            height: 600px;
+        }
+        #property-panel { background: #f8f8f8; padding: 10px; }
+        .obj-type { 
+            padding: 8px; 
+            margin: 4px; 
+            border: 1px solid #ccc;
+            cursor: pointer;
+            background: white;
+        }
+        .prop-item { margin: 10px 0; }
+        #output { background: white; padding: 10px; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <!-- 左侧工具栏 -->
+        <div id="toolbar">
+            <div class="obj-type" data-type="car">🚗 汽车</div>
+            <div class="obj-type" data-type="cloud">☁️ 云</div>
+            <div class="obj-type" data-type="tree">🌳 树</div>
+        </div>
+
+        <!-- 主画布 -->
+        <div id="canvas-container">
+            <canvas id="main-canvas"></canvas>
+        </div>
+
+        <!-- 右侧属性面板 -->
+        <div id="property-panel">
+            <h3>属性</h3>
+            <div id="props-content">点击对象进行编辑</div>
+            <button onclick="exportData()">导出数据</button>
+            <pre id="output"></pre>
+        </div>
+    </div>
+
+<script>
+// 初始化画布
+const canvas = document.getElementById('main-canvas');
+const ctx = canvas.getContext('2d');
+let isDragging = false;
+let selectedObj = null;
+let offsetX = 0, offsetY = 0;
+
+// 设置画布分辨率（与显示尺寸分离）
+canvas.width = 800;
+canvas.height = 600;
+
+// 场景数据
+const scene = {
+    background: '#87CEEB',
+    objects: []
+};
+
+// 对象模板
+const templates = {
+    car: { width: 60, height: 30, color: '#FF4500' },
+    cloud: { width: 80, height: 40, color: '#FFFFFF', density: 0.7 },
+    tree: { width: 40, height: 80, color: '#228B22', trunkColor: '#8B4513' }
+};
+
+// 事件监听初始化
+function initEventListeners() {
+    document.querySelectorAll('.obj-type').forEach(item => {
+        item.addEventListener('mousedown', startAddObject);
+    });
+
+    canvas.addEventListener('mousedown', startDrag);
+    canvas.addEventListener('mousemove', dragObject);
+    canvas.addEventListener('mouseup', endDrag);
+    canvas.addEventListener('click', selectObject);
+}
+
+// 选择对象
+function selectObject(e) {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    selectedObj = scene.objects.find(obj => 
+        x > obj.x && x < obj.x + obj.width &&
+        y > obj.y && y < obj.y + obj.height
+    );
+    
+    updatePropertyPanel();
+    render();
+}
+
+// 添加新对象（修复坐标计算）
+function startAddObject(e) {
+    const type = e.target.dataset.type;
+    const rect = canvas.getBoundingClientRect();
+    
+    // 计算缩放比例
+    const scaleX = canvas.width / canvas.offsetWidth;
+    const scaleY = canvas.height / canvas.offsetHeight;
+    
+    // 计算画布内坐标
+    const x = (e.clientX - rect.left) * scaleX - templates[type].width/2;
+    const y = (e.clientY - rect.top) * scaleY - templates[type].height/2;
+    
+    const newObj = {
+        type,
+        x: Math.max(0, Math.min(x, canvas.width - templates[type].width)),
+        y: Math.max(0, Math.min(y, canvas.height - templates[type].height)),
+        ...templates[type]
+    };
+    
+    scene.objects.push(newObj);
+    console.log('添加对象:', newObj);
+    render();
+}
+// 导出数据
+function exportData() {
+    const output = {
+        background: scene.background,
+        objects: scene.objects.map(obj => ({
+            type: obj.type,
+            x: obj.x,
+            y: obj.y,
+            color: obj.color,
+            ...(obj.density && { density: obj.density })
+        }))
+    };
+    
+    document.getElementById('output').textContent = 
+        JSON.stringify(output, null, 2);
+}
+// 绘制对象
+function drawObject(obj) {
+    ctx.save();
+    try {
+        switch(obj.type) {
+            case 'car':
+                ctx.fillStyle = obj.color;
+                ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
+                break;
+                
+            case 'cloud':
+                ctx.fillStyle = obj.color;
+                ctx.beginPath();
+                // 云朵形状（三个重叠圆形）
+                ctx.arc(obj.x + 20, obj.y + 15, 15, 0, Math.PI * 2);
+                ctx.arc(obj.x + 35, obj.y + 10, 20, 0, Math.PI * 2);
+                ctx.arc(obj.x + 55, obj.y + 15, 15, 0, Math.PI * 2);
+                ctx.fill();
+                break;
+                
+            case 'tree':
+                // 树干
+                ctx.fillStyle = obj.trunkColor;
+                ctx.fillRect(
+                    obj.x + obj.width/2 - 5,
+                    obj.y + obj.height - 30,
+                    10,
+                    30
+                );
+                // 树冠
+                ctx.fillStyle = obj.color;
+                ctx.beginPath();
+                ctx.arc(
+                    obj.x + obj.width/2,
+                    obj.y + obj.height - 50,
+                    25,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fill();
+                break;
+        }
+    } finally {
+        ctx.restore();
+    }
+}
+
+// 添加帧率监控
+let lastRender = Date.now();
+// 渲染循环
+function render() {
+    // 清除画布
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 绘制背景
+    ctx.fillStyle = scene.background;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // 绘制所有对象
+    scene.objects.forEach(obj => drawObject(obj));
+    
+    // 绘制选中框
+    if (selectedObj) {
+        ctx.strokeStyle = '#FF0000';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(
+            selectedObj.x - 2,
+            selectedObj.y - 2,
+            selectedObj.width + 4,
+            selectedObj.height + 4
+        );
+    }
+
+    // 显示帧率
+    const now = Date.now();
+    const fps = 1000 / (now - lastRender);
+    lastRender = now;
+    ctx.fillStyle = '#000';
+    ctx.fillText(`FPS: ${fps.toFixed(1)}`, 10, 20);
+}
+
+// 其他功能保持不变...
+
+// 拖动功能
+function startDrag(e) {
+    console.log(3)
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    selectedObj = scene.objects.find(obj => 
+        x > obj.x && x < obj.x + obj.width &&
+        y > obj.y && y < obj.y + obj.height
+    );
+    
+    if (selectedObj) {
+        isDragging = true;
+        offsetX = x - selectedObj.x;
+        offsetY = y - selectedObj.y;
+    }
+}
+function dragObject(e) {
+    if (!isDragging || !selectedObj) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    selectedObj.x = e.clientX - rect.left - offsetX;
+    selectedObj.y = e.clientY - rect.top - offsetY;
+    
+    render();
+}
+function endDrag() {
+    isDragging = false;
+    updatePropertyPanel();
+}
+
+// 更新属性面板
+function updatePropertyPanel() {
+    const panel = document.getElementById('props-content');
+    if (!selectedObj) {
+        panel.innerHTML = '请选择对象';
+        return;
+    }
+    
+    let html = `
+        <div class="prop-item">
+            <label>X: <input type="number" value="${selectedObj.x}" 
+                   onchange="updateProp('x', this.value)"></label>
+        </div>
+        <div class="prop-item">
+            <label>Y: <input type="number" value="${selectedObj.y}" 
+                   onchange="updateProp('y', this.value)"></label>
+        </div>
+        <div class="prop-item">
+            <label>颜色: <input type="color" value="${selectedObj.color}" 
+                   onchange="updateProp('color', this.value)"></label>
+        </div>
+    `;
+    
+    if (selectedObj.type === 'cloud') {
+        html += `
+            <div class="prop-item">
+                <label>密度: 
+                <input type="range" min="0" max="1" step="0.1" 
+                       value="${selectedObj.density}" 
+                       onchange="updateProp('density', this.value)">
+                </label>
+            </div>
+        `;
+    }
+    
+    panel.innerHTML = html;
+}
+
+// 初始化
+initEventListeners();
+render();
+</script>
+</body>
+</html>

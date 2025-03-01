@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>复读机测试</title>
+    <style>
+        body {
+            margin: 0;
+            padding-bottom: 40px;
+            font-family: Arial, sans-serif;
+        }
+
+        .floating-window {
+            position: absolute;
+            border: 1px solid #ccc;
+            background: white;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            min-width: 300px;
+            z-index: 1000;
+        }
+
+        .window-header {
+            background: #f0f0f0;
+            padding: 5px;
+            cursor: move;
+            user-select: none;
+        }
+
+        .window-content {
+            padding: 10px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 5px;
+            margin: 5px 0;
+        }
+
+        .toolbar button.active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .progress-container {
+            position: relative;
+            height: 20px;
+            background: #eee;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #4CAF50;
+            width: 0;
+        }
+
+        .controls {
+            margin: 10px 0;
+            display: flex;
+            gap: 5px;
+        }
+
+        .music-score {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+        }
+
+        .beat-btn {
+            padding: 2px 5px;
+            margin: 2px;
+        }
+
+        .beat-btn.active {
+            background: #FFC107;
+        }
+
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #f0f0f0;
+            padding: 5px;
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+        }
+
+        @media (max-width: 600px) {
+            .floating-window {
+                width: 90%;
+                left: 5% !important;
+                top: 20px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="status-bar">
+        <button onclick="TestCaseManager.createNew()">新建用例</button>
+    </div>
+
+<script>
+const AUDIO_URLS = [
+    'https://littleflute.github.io/english/NewConceptEnglish/Book2/2.mp3',
+    'https://littleflute.github.io/english/NewConceptEnglish/Book2/10.mp3',
+    'https://littleflute.github.io/gt1/mp3/j72_4_4.mp3'
+];
+
+class RepeaterMachine {
+    constructor() {
+        this.window = null;
+        this.audio = new Audio();
+        this.isPlaying = false;
+        this.startTime = 0;
+        this.endTime = 0;
+        this.createWindow();
+        this.setupAudio();
+    }
+
+    createWindow() {
+        this.window = document.createElement('div');
+        this.window.className = 'floating-window';
+        this.window.style.left = Math.random() * 300 + 'px';
+        this.window.style.top = Math.random() * 300 + 'px';
+
+        const header = document.createElement('div');
+        header.className = 'window-header';
+        header.textContent = '复读机';
+        
+        const content = document.createElement('div');
+        content.className = 'window-content';
+        
+        // 工具栏
+        const toolbar = document.createElement('div');
+        toolbar.className = 'toolbar';
+        AUDIO_URLS.forEach(url => {
+            const btn = document.createElement('button');
+            btn.textContent = url.split('/').pop();
+            btn.onclick = () => this.setAudioSource(url, btn);
+            toolbar.appendChild(btn);
+        });
+
+        // 音频链接显示
+        this.urlDisplay = document.createElement('input');
+        this.urlDisplay.type = 'text';
+        this.urlDisplay.readOnly = true;
+        this.urlDisplay.style.width = '100%';
+
+        // 进度控制
+        const progressContainer = document.createElement('div');
+        progressContainer.className = 'progress-container';
+        this.progressBar = document.createElement('div');
+        this.progressBar.className = 'progress-bar';
+        progressContainer.appendChild(this.progressBar);
+
+        // 时间控制
+        const timeControls = document.createElement('div');
+        timeControls.className = 'controls';
+        this.startInput = this.createTimeInput('起点');
+        this.endInput = this.createTimeInput('终点');
+        timeControls.appendChild(this.startInput);
+        timeControls.appendChild(this.endInput);
+
+        // 播放控制
+        this.playBtn = document.createElement('button');
+        this.playBtn.textContent = '播放';
+        this.playBtn.onclick = () => this.togglePlay();
+
+        // 乐谱区
+        this.musicScoreDiv = document.createElement('div');
+        this.musicScoreDiv.className = 'music-score';
+
+        content.appendChild(toolbar);
+        content.appendChild(this.urlDisplay);
+        content.appendChild(progressContainer);
+        content.appendChild(timeControls);
+        content.appendChild(this.playBtn);
+        content.appendChild(this.musicScoreDiv);
+        
+        this.window.appendChild(header);
+        this.window.appendChild(content);
+        document.body.appendChild(this.window);
+
+        this.makeDraggable(header);
+        this.setupAudioEvents();
+    }
+
+    createTimeInput(label) {
+        const container = document.createElement('div');
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.placeholder = label;
+        input.style.width = '80px';
+        input.onchange = () => this.validateTimeRange();
+        container.appendChild(input);
+        return input;
+    }
+
+    setupAudio() {
+        this.audio.loop = false;
+        this.audio.addEventListener('timeupdate', () => this.updateProgress());
+    }
+
+    setAudioSource(url, button) {
+        this.urlDisplay.value = url;
+        this.audio.src = url;
+        this.audio.load();
+        document.querySelectorAll('.toolbar button').forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        
+        this.audio.addEventListener('loadedmetadata', () => {
+            this.endTime = this.audio.duration;
+            this.endInput.value = this.endTime;
+            this.generateMusicScore();
+        });
+    }
+
+    generateMusicScore() {
+        this.musicScoreDiv.innerHTML = '';
+        const bpm = 60; // 默认BPM
+        const totalBeats = Math.ceil(this.audio.duration * bpm / 60);
+        
+        for (let i = 0; i < totalBeats; i++) {
+            const beat = document.createElement('button');
+            beat.className = 'beat-btn';
+            beat.textContent = i+1;
+            beat.onclick = () => this.jumpToBeat(i, bpm);
+            this.musicScoreDiv.appendChild(beat);
+        }
+    }
+
+    jumpToBeat(beatIndex, bpm) {
+        const time = beatIndex * 60 / bpm;
+        this.audio.currentTime = time;
+    }
+
+    togglePlay() {
+        if (this.isPlaying) {
+            this.audio.pause();
+        } else {
+            this.validateTimeRange();
+            this.audio.currentTime = this.startTime;
+            this.audio.play();
+            this.loopPlay();
+        }
+        this.isPlaying = !this.isPlaying;
+        this.playBtn.textContent = this.isPlaying ? '暂停' : '播放';
+    }
+
+    loopPlay() {
+        const checkLoop = () => {
+            if (!this.isPlaying) return;
+            if (this.audio.currentTime >= this.endTime) {
+                this.audio.currentTime = this.startTime;
+            }
+            requestAnimationFrame(checkLoop);
+        };
+        requestAnimationFrame(checkLoop);
+    }
+
+    validateTimeRange() {
+        this.startTime = Math.max(0, Math.min(this.endInput.value, this.startInput.value));
+        this.endTime = Math.min(this.audio.duration, Math.max(this.startInput.value, this.endInput.value));
+        this.startInput.value = this.startTime;
+        this.endInput.value = this.endTime;
+    }
+
+    updateProgress() {
+        const progress = (this.audio.currentTime / this.audio.duration) * 100;
+        this.progressBar.style.width = progress + '%';
+    }
+
+    makeDraggable(header) {
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        const startDrag = (e) => {
+            isDragging = true;
+            const rect = this.window.getBoundingClientRect();
+            offsetX = (e.clientX || e.touches[0].clientX) - rect.left;
+            offsetY = (e.clientY || e.touches[0].clientY) - rect.top;
+        };
+
+        const doDrag = (e) => {
+            if (!isDragging) return;
+            const x = (e.clientX || e.touches[0].clientX) - offsetX;
+            const y = (e.clientY || e.touches[0].clientY) - offsetY;
+            this.window.style.left = x + 'px';
+            this.window.style.top = y + 'px';
+        };
+
+        const stopDrag = () => isDragging = false;
+
+        header.addEventListener('mousedown', startDrag);
+        header.addEventListener('touchstart', startDrag);
+        document.addEventListener('mousemove', doDrag);
+        document.addEventListener('touchmove', doDrag);
+        document.addEventListener('mouseup', stopDrag);
+        document.addEventListener('touchend', stopDrag);
+    }
+}
+
+const TestCaseManager = {
+    testCases: [],
+    createNew() {
+        const repeater = new RepeaterMachine();
+        const testCase = {
+            repeater,
+            button: this.createTestCaseButton(repeater)
+        };
+        this.testCases.push(testCase);
+    },
+
+    createTestCaseButton(repeater) {
+        const btn = document.createElement('button');
+        btn.textContent = `用例 ${this.testCases.length + 1}`;
+        btn.style.backgroundColor = '#4CAF50';
+        
+        btn.onclick = () => {
+            repeater.window.style.display = 
+                repeater.window.style.display === 'none' ? 'block' : 'none';
+            btn.style.backgroundColor = 
+                repeater.window.style.display === 'none' ? '#ccc' : '#4CAF50';
+        };
+        document.querySelector('.status-bar').appendChild(btn);
+        return btn;
+    }
+};
+
+// 初始化第一个测试用例
+TestCaseManager.createNew();
+</script>
+</body>
+</html>

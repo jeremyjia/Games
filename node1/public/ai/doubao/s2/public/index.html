@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>贪吃蛇游戏</title>
+  <link rel="stylesheet" href="snake.css">
+</head>
+
+<body>
+  <nav>
+    <ul>
+      <li><a href="index.html">游戏主页</a></li>
+      <li><a href="history.html">历史记录</a></li>
+    </ul>
+  </nav>
+  <div id="game-container">
+    <canvas id="game-board"></canvas>
+    <select id="level-select">
+      <option value="1">简单</option>
+      <option value="2">中等</option>
+      <option value="3">困难</option>
+    </select>
+    <button id="start-button">开始游戏</button>
+    <p id="score-display">得分: 0</p>
+  </div>
+  <button id="save-history-button">保存历史记录为 Word</button>
+  <script src="snake.js"></script>
+  <script>
+    const saveHistoryButton = document.getElementById('save-history-button');
+    saveHistoryButton.addEventListener('click', () => {
+      window.location.href = '/save_history_to_word';
+    });
+  </script>
+</body>
+
+</html>

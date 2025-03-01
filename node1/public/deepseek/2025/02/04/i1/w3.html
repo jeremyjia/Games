@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        canvas {
+            border: 1px solid #000;
+            margin: 20px auto;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="stage" width="800" height="400"></canvas>
+
+    <script>
+        class GuitarPuppet {
+            constructor(ctx) {
+                this.ctx = ctx;
+                this.x = 100;
+                this.y = 300;
+                this.speed = 2;
+                this.direction = 1;
+                this.angle = 0;
+                this.bodyHeight = 80;
+                this.armLength = 60;
+                this.legLength = 80;
+                this.isPlaying = false; // 演奏状态
+                this.strumProgress = 0; // 拨弦进度
+            }
+
+            draw() {
+                this.ctx.save();
+                this.ctx.translate(this.x, this.y);
+                this.ctx.scale(this.direction, 1);
+
+                // 绘制身体部分
+                this.drawBody();
+                
+                // 根据状态绘制吉他
+                if(this.isPlaying) {
+                    this.drawGuitar();
+                }
+
+                this.ctx.restore();
+            }
+
+            drawBody() {
+                // 身体
+                this.ctx.fillStyle = '#666';
+                this.ctx.beginPath();
+                this.ctx.roundRect(-20, -this.bodyHeight, 40, this.bodyHeight, 20);
+                this.ctx.fill();
+
+                // 头部
+                this.ctx.fillStyle = '#444';
+                this.ctx.beginPath();
+                this.ctx.arc(0, -this.bodyHeight - 25, 25, 0, Math.PI * 2);
+                this.ctx.fill();
+
+                // 四肢动画
+                const baseArmAngle = this.isPlaying ? Math.PI/4 : Math.sin(this.angle) * 0.5;
+                const baseLegAngle = Math.cos(this.angle) * 0.5;
+
+                // 手臂（根据演奏状态调整）
+                this.drawArm(-25, -this.bodyHeight + 20, 
+                    baseArmAngle + (this.isPlaying ? this.strumProgress * 0.3 : 0), 
+                    '#888');
+                this.drawArm(25, -this.bodyHeight + 20, 
+                    -baseArmAngle + (this.isPlaying ? -this.strumProgress * 0.2 : 0), 
+                    '#888');
+
+                // 腿部
+                this.drawLeg(-10, 0, -baseLegAngle, '#333');
+                this.drawLeg(10, 0, baseLegAngle, '#333');
+            }
+
+            drawArm(x, y, angle, color) {
+                this.ctx.save();
+                this.ctx.translate(x, y);
+                this.ctx.rotate(angle);
+                
+                this.ctx.fillStyle = color;
+                this.ctx.beginPath();
+                this.ctx.roundRect(-5, 0, 10, this.armLength, 5);
+                this.ctx.fill();
+                
+                this.ctx.restore();
+            }
+
+            drawLeg(x, y, angle, color) {
+                this.ctx.save();
+                this.ctx.translate(x, y);
+                this.ctx.rotate(angle);
+                
+                this.ctx.fillStyle = color;
+                this.ctx.beginPath();
+                this.ctx.roundRect(-5, 0, 10, this.legLength, 5);
+                this.ctx.fill();
+                
+                this.ctx.restore();
+            }
+
+            drawGuitar() {
+                this.ctx.save();
+                // 吉他位置偏移
+                this.ctx.translate(-15 * this.direction, -this.bodyHeight/2);
+                
+                // 琴身
+                this.ctx.fillStyle = '#8B4513';
+                this.ctx.beginPath();
+                this.ctx.ellipse(40, 0, 50, 20, 0, 0, Math.PI * 2);
+                this.ctx.fill();
+
+                // 琴颈
+                this.ctx.fillStyle = '#D2691E';
+                this.ctx.fillRect(40, -80, 10, 100);
+
+                // 琴弦
+                const stringPositions = [-15, -8, 0, 8, 15];
+                this.ctx.strokeStyle = 'silver';
+                this.ctx.lineWidth = 1;
+                stringPositions.forEach(pos => {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(40, -80);
+                    this.ctx.lineTo(40 + pos, 0);
+                    this.ctx.stroke();
+                });
+
+                // 演奏效果
+                if(this.strumProgress > 0) {
+                    this.ctx.strokeStyle = `rgba(255,215,0,${1 - this.strumProgress})`;
+                    this.ctx.lineWidth = 3;
+                    this.ctx.beginPath();
+                    this.ctx.arc(40, 0, 30, 
+                        Math.PI/2 - this.strumProgress*0.5,
+                        Math.PI/2 + this.strumProgress*0.5);
+                    this.ctx.stroke();
+                }
+
+                this.ctx.restore();
+            }
+
+            update() {
+                // 移动逻辑
+                if(!this.isPlaying) {
+                    this.x += this.speed * this.direction;
+                    if (this.x > 700 || this.x < 100) this.direction *= -1;
+                }
+
+                // 基础动画角度
+                this.angle += 0.1;
+
+                // 演奏动画
+                if(this.isPlaying) {
+                    this.strumProgress = Math.sin(this.angle * 4) * 0.5 + 0.5;
+                }
+            }
+
+            togglePlay() {
+                this.isPlaying = !this.isPlaying;
+                this.strumProgress = 0;
+                if(this.isPlaying) this.speed = 0;
+                else this.speed = 2;
+            }
+        }
+
+        // 初始化
+        const canvas = document.getElementById('stage');
+        const ctx = canvas.getContext('2d');
+        const puppet = new GuitarPuppet(ctx);
+
+        // 动画循环
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            puppet.update();
+            puppet.draw();
+            requestAnimationFrame(animate);
+        }
+
+        // 点击切换演奏状态
+        canvas.addEventListener('click', () => puppet.togglePlay());
+
+        // 启动动画
+        animate();
+    </script>
+</body>
+</html>

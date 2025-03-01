@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>推箱子游戏</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="450" height="450"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const boxSize = 30;
+        
+        // 游戏地图 (0: 空地, 1: 墙, 2: 目标点, 3: 箱子, 4: 玩家)
+        let level = [
+            [1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 2, 0, 0, 1],
+            [1, 0, 3, 4, 3, 0, 1],
+            [1, 0, 0, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1, 1, 1]
+        ];
+
+        let playerPos = { x: 3, y: 2 };
+        let boxes = [{x:2,y:2}, {x:4,y:2}];
+        const targets = [{x:3,y:1}];
+
+        // 颜色配置
+        const colors = {
+            floor: '#ffffff',
+            wall: '#666666',
+            target: '#ff0000',
+            box: '#8b4513',
+            player: '#0000ff'
+        };
+
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制地图
+            for (let y = 0; y < level.length; y++) {
+                for (let x = 0; x < level[y].length; x++) {
+                    ctx.fillStyle = colors.floor;
+                    ctx.fillRect(x * boxSize, y * boxSize, boxSize, boxSize);
+                    
+                    if (level[y][x] === 1) {
+                        ctx.fillStyle = colors.wall;
+                        ctx.fillRect(x * boxSize, y * boxSize, boxSize, boxSize);
+                    }
+                }
+            }
+
+            // 绘制目标点
+            targets.forEach(target => {
+                ctx.fillStyle = colors.target;
+                ctx.beginPath();
+                ctx.arc(
+                    target.x * boxSize + boxSize/2,
+                    target.y * boxSize + boxSize/2,
+                    boxSize/4, 0, Math.PI * 2
+                );
+                ctx.fill();
+            });
+
+            // 绘制箱子
+            boxes.forEach(box => {
+                ctx.fillStyle = colors.box;
+                ctx.fillRect(
+                    box.x * boxSize + 2,
+                    box.y * boxSize + 2,
+                    boxSize - 4,
+                    boxSize - 4
+                );
+            });
+
+            // 绘制玩家
+            ctx.fillStyle = colors.player;
+            ctx.beginPath();
+            ctx.arc(
+                playerPos.x * boxSize + boxSize/2,
+                playerPos.y * boxSize + boxSize/2,
+                boxSize/2 - 2, 0, Math.PI * 2
+            );
+            ctx.fill();
+        }
+
+        function movePlayer(dx, dy) {
+            const newX = playerPos.x + dx;
+            const newY = playerPos.y + dy;
+
+            // 检查边界
+            if (newX < 0 || newY < 0 || 
+                newY >= level.length || 
+                newX >= level[newY].length) return;
+
+            // 检查墙壁
+            if (level[newY][newX] === 1) return;
+
+            // 检查箱子
+            const boxIndex = boxes.findIndex(b => b.x === newX && b.y === newY);
+            if (boxIndex > -1) {
+                const newBoxX = newX + dx;
+                const newBoxY = newY + dy;
+                
+                // 检查箱子是否可以推动
+                if (level[newBoxY][newBoxX] !== 1 && 
+                    !boxes.some(b => b.x === newBoxX && b.y === newBoxY)) {
+                    boxes[boxIndex].x = newBoxX;
+                    boxes[boxIndex].y = newBoxY;
+                } else {
+                    return;
+                }
+            }
+
+            playerPos.x = newX;
+            playerPos.y = newY;
+            
+            checkWin();
+        }
+
+        function checkWin() {
+            const allOnTarget = targets.every(target => 
+                boxes.some(box => box.x === target.x && box.y === target.y)
+            );
+            
+            if (allOnTarget) {
+                ctx.fillStyle = 'black';
+                ctx.font = '48px Arial';
+                ctx.fillText('你赢了！', 100, 200);
+                document.removeEventListener('keydown', handleKeyPress);
+            }
+        }
+
+        function handleKeyPress(e) {
+            switch(e.key) {
+                case 'ArrowUp':
+                    movePlayer(0, -1);
+                    break;
+                case 'ArrowDown':
+                    movePlayer(0, 1);
+                    break;
+                case 'ArrowLeft':
+                    movePlayer(-1, 0);
+                    break;
+                case 'ArrowRight':
+                    movePlayer(1, 0);
+                    break;
+            }
+            drawGame();
+        }
+
+        // 初始化游戏
+        function init() {
+            drawGame();
+            document.addEventListener('keydown', handleKeyPress);
+        }
+
+        init();
+    </script>
+</body>
+</html>

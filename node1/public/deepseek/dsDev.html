@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="DeepSeek 开发平台">
+    <title>DeepSeek Development</title> 
+</head>
+<body>
+    <nav class="navbar" aria-label="主导航">
+        <div class="nav-container"></div>
+    </nav>
+
+    <main class="main-content">
+        <h1>欢迎访问 DeepSeek 开发平台</h1>
+        <section>
+            <p>请选择上方导航菜单中的工具开始使用</p>
+        </section>
+    </main>
+
+    <script>
+        class WindowToolbar {
+    constructor(container, textarea) {
+        this.container = container;
+        this.textarea = textarea;
+        this.buttons = [
+            { text: '问候', content: '你好！今天天气真不错！' },
+            { text: '时间', content: `当前时间：${new Date().toLocaleTimeString()}` },
+            { text: '表情', content: '😊👍🎉' },
+            { text: '清除', content: '' }
+        ];
+        this.initToolbar();
+    }
+
+    initToolbar() {
+        this.buttons.forEach(btn => {
+            const button = document.createElement('button');
+            button.textContent = btn.text;
+            button.addEventListener('click', () => {
+                this.handleButtonClick(btn.content);
+            });
+            this.container.appendChild(button);
+        });
+    }
+
+    handleButtonClick(content) {
+        if (content === '') {
+            this.textarea.value = '';
+        } else {
+            this.textarea.value += content + '\n';
+        }
+        this.textarea.focus();
+    }
+}
+
+
+// 更新 FloatingWindow 类
+class FloatingWindow {
+    constructor() {
+        this.isDragging = false;
+        this.offsetX = 0;
+        this.offsetY = 0;
+        this.createWindow();
+        this.addEventListeners();
+        this.centerWindow();
+        // 初始化工具条和语音功能
+        new WindowToolbar(
+            this.window.querySelector('.toolbar'),
+            this.window.querySelector('textarea')
+        );
+    }
+    // 添加居中方法实现
+    centerWindow() {
+            const windowRect = this.window.getBoundingClientRect();
+            const left = (window.innerWidth - windowRect.width) / 2;
+            const top = (window.innerHeight - windowRect.height) / 2;
+            this.window.style.left = `${left}px`;
+            this.window.style.top = `${top}px`;
+    }
+
+    createWindow() {
+        this.window = document.createElement('div');
+        this.window.className = 'floating-window';
+        this.window.innerHTML = `
+            <div class="title-bar">
+                <span>工具窗口</span>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="window-content">
+                <div class="toolbar"></div>
+                <textarea class="input-area" placeholder="在此输入内容..."></textarea>
+                <button class="speak-btn">朗读内容</button>
+            </div>
+        `;
+        document.body.appendChild(this.window);
+    }
+
+    addEventListeners() {
+        const titleBar = this.window.querySelector('.title-bar');
+        titleBar.addEventListener('mousedown', (e) => this.startDragging(e));
+        titleBar.addEventListener('touchstart', (e) => this.startDragging(e.touches[0]));
+
+        document.addEventListener('mousemove', (e) => this.handleDragging(e));
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // 防止页面滚动
+            this.handleDragging(e.touches[0])
+        });
+
+        document.addEventListener('mouseup', () => this.stopDragging());
+        document.addEventListener('touchend', () => this.stopDragging());
+
+
+        // 关闭按钮
+        this.window.querySelector('.close-btn').addEventListener('click', () => {
+            this.window.remove();
+        });
+
+        // 朗读按钮
+        this.window.querySelector('.speak-btn').addEventListener('click', () => {
+            const text = this.window.querySelector('textarea').value;
+            if (text) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'zh-CN';
+                speechSynthesis.speak(utterance);
+            }
+        });
+    }
+
+    startDragging(e) {
+        this.isDragging = true;
+        const rect = this.window.getBoundingClientRect();
+        this.offsetX = e.clientX - rect.left;
+        this.offsetY = e.clientY - rect.top;
+        this.window.style.cursor = 'grabbing';
+    }
+
+    handleDragging(e) {
+        if (!this.isDragging) return;
+        const x = e.clientX - this.offsetX;
+        const y = e.clientY - this.offsetY;
+        this.window.style.left = `${x}px`;
+        this.window.style.top = `${y}px`;
+    }
+
+    stopDragging() {
+        this.isDragging = false;
+        this.window.style.cursor = 'grab';
+    }
+}
+        
+class NavigationMenu {
+    constructor(containerSelector, items) {
+        this.container = document.querySelector(containerSelector);
+        this.menuItems = items;
+        this.initMenu();
+    }
+
+    initMenu() {
+        const ul = document.createElement('ul');
+        ul.className = 'nav-menu';
+        ul.setAttribute('role', 'menubar');
+
+        this.menuItems.forEach(item => {
+            const li = this.createMenuItem(item);
+            ul.appendChild(li);
+        });
+
+        this.container.appendChild(ul);
+    }
+
+    createMenuItem(item) {
+        const li = document.createElement('li');
+        li.setAttribute('role', 'none');
+
+        switch(item.type) {
+            case 'version':
+                li.appendChild(this.createVersionElement(item));
+                break;
+            case 'button':
+                li.appendChild(this.createButtonElement(item));
+                break;
+            default:
+                li.appendChild(this.createLinkElement(item));
+        }
+        return li;
+    }
+
+    createVersionElement(item) {
+        const span = document.createElement('span');
+        span.className = 'version';
+        span.textContent = item.text;
+        return span;
+    }
+
+    createButtonElement(item) {
+        const button = document.createElement('button');
+        button.textContent = item.text;
+        button.addEventListener('click', () => {
+            new FloatingWindow(`
+                <h3>工具窗口示例</h3>
+                <p>这是一个可拖动的浮动窗口</p>
+                <p>可以在此添加各种工具内容</p>
+            `);
+        });
+        return button;
+    }
+
+    createLinkElement(item) {
+        const a = document.createElement('a');
+        a.href = item.href;
+        a.textContent = item.text;
+        if (item.type === 'external') {
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+        }
+        return a;
+    }
+}
+
+
+        // 动态生成样式
+        const dynamicStyles = document.createElement('style');
+        dynamicStyles.textContent = `
+            :root {
+                --primary-color: #4CAF50;
+                --bg-dark: #1a1a1a;
+                --text-light: #ffffff;
+                --nav-height: 60px;
+            }
+
+            .navbar {
+                width: 100%;
+                background: var(--bg-dark);
+                padding: 15px 0;
+                position: fixed;
+                top: 0;
+                z-index: 1000;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+
+            .nav-container {
+                max-width: none; /* 移除最大宽度限制 */
+                margin: 0 auto;
+                padding: 0 20px;
+            }
+
+            .nav-menu {
+                list-style: none;
+                display: flex;
+                justify-content: center;
+                justify-content: flex-start; /* 左对齐代替居中 */
+                flex-wrap: wrap; /* 始终允许换行 */
+                gap: 15px; /* 适当缩小间距 */
+                margin: 0;
+                padding: 0;
+            }
+
+            .nav-menu a {
+                color: var(--text-light);
+                text-decoration: none;
+                font-family: 'Segoe UI', Arial, sans-serif;
+                font-size: 1rem;
+                padding: 8px 12px;
+                border-radius: 4px;
+                transition: all 0.3s ease;
+            }
+
+            .nav-menu a:hover {
+                color: var(--primary-color);
+                background: rgba(255,255,255,0.1);
+            }
+
+            .nav-menu .version {
+                color: #888;
+                cursor: default;
+                user-select: none;
+            }
+
+            .main-content {
+                margin-top: var(--nav-height);
+                padding: 40px 20px;
+                max-width: 1200px;
+                width: 100%;
+            }
+
+            @media (max-width: 768px) {
+                .nav-menu {
+                    flex-wrap: wrap;
+                    gap: 10px;
+                    justify-content: flex-start;
+                }
+                
+                .nav-menu a {
+                    font-size: 0.9rem;
+                    padding: 6px 10px;
+                }
+            }
+
+            @media (max-width: 480px) {
+                .nav-container {
+                    padding: 0 10px;
+                }
+                
+                .nav-menu {
+                    gap: 10px;
+                }
+            }
+
+            /* 新增浮动窗口样式 */
+            .floating-window {
+                position: fixed;
+                background: white;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                z-index: 1001;
+                min-width: 300px;
+                cursor: grab;
+            }
+
+            .floating-window:active {
+                cursor: grabbing;
+            }
+
+            .title-bar {
+                background: var(--bg-dark);
+                color: var(--text-light);
+                padding: 12px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 1px solid #444;
+                cursor: move;
+            }
+
+            .title-bar button {
+                background: none;
+                border: none;
+                color: var(--text-light);
+                font-size: 1.4rem;
+                cursor: pointer;
+                padding: 0 8px;
+                transition: color 0.3s ease;
+            }
+
+            .title-bar button:hover {
+                color: var(--primary-color);
+            }
+
+            .window-content {
+                padding: 20px;
+                max-height: 60vh;
+                overflow-y: auto;
+            }
+
+            /* 导航按钮样式 */
+            .nav-menu button {
+                background: rgba(255,255,255,0.1);
+                border: 1px solid var(--primary-color);
+                color: var(--primary-color);
+                border-radius: 4px;
+                cursor: pointer;
+                font-family: inherit;
+                padding: 8px 12px;
+                transition: all 0.3s ease;
+            }
+
+            .nav-menu button:hover {
+                color: var(--primary-color);
+                background: rgba(255,255,255,0.1);
+            }
+        `;
+
+        dynamicStyles.textContent += `
+    .toolbar {
+        display: flex;
+        gap: 8px;
+        padding: 8px;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .toolbar button {
+        padding: 4px 8px;
+        background: var(--primary-color);
+        border: none;
+        border-radius: 3px;
+        color: white;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+    
+    .toolbar button:hover {
+        opacity: 0.8;
+    }
+    
+    .input-area {
+        width: 100%;
+        height: 200px;
+        margin: 10px 0;
+        padding: 8px;
+        border: 1px solid #ccc;
+        resize: vertical;
+    }
+    
+    .speak-btn {
+        width: 100%;
+        padding: 8px;
+        background: #2196F3;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    
+    .speak-btn:hover {
+        background: #1976D2;
+    }
+`;
+
+        document.head.appendChild(dynamicStyles);
+ 
+        document.addEventListener('DOMContentLoaded', () => {
+            // 导航菜单数据
+            const menuItems = [
+                { type: 'button', text: '打开工具窗口' }, // 打开工具窗口没有出现在菜单上。
+                { type: 'link', text: '[..]', href: '..' },
+                { type: 'version', text: 'v0.21' },
+                { type: 'external', text: 'DeepSeek 首页', href: 'https://www.deepseek.com' },
+                { type: 'link', text: 'index.html', href: 'index.html' },
+                { type: 'link', text: 'Class Editor', href: 'classEditor/' },
+                { type: 'link', text: 'word2Draw', href: 'word2Draw/' },
+                { type: 'link', text: 'Sandbox', href: 'sandBox/' },
+                { type: 'link', text: 'Scarecrow', href: 'scarecrow' },
+                { type: 'link', text: 'Video Editor', href: 'videoEditor' },
+                { type: 'link', text: 'cube1.html', href: 'cube1.html' },
+                { type: 'link', text: 'cube2.html', href: 'cube2.html' },
+                { type: 'link', text: 'wave9.html', href: 'wave9.html' }
+            ];
+
+            new NavigationMenu('.nav-container', menuItems);
+        });
+    </script>
+</body>
+</html>

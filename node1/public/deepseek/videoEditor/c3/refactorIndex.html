@@ -1,0 +1,1005 @@
+<!-- 
+升级这个代码，
+在json里加入fps值
+返回升级后完整可运行代码 
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Editor</title>
+    <style>
+        /* 样式保持不变 */
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        canvas {
+            width: 100%;
+            display: block;
+        }
+
+        .c_floating_toolbar {
+            position: absolute;
+            left: 10px;
+            top: 50px;
+            background: #584141;
+            padding: 5px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            position: relative;
+            background: white;
+            margin: 15% auto;
+            padding: 35px 20px 20px;
+            width: 60%;
+            max-height: 70vh;
+            overflow: auto;
+        }
+        .close {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .fps-control {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-left: 10px;
+        }
+        .fps-control input[type="range"] {
+            width: 100px;
+        }
+        .fps-control input[type="number"] {
+            width: 50px;
+        }
+        .generate-controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        #generation-status {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <!-- HTML结构保持不变 -->
+    <div id="toolbar">
+        <button id="addScene">Add Scene</button>
+        <button id="delete-scene">Delete Scene</button>
+        <select id="sceneSelector"></select>
+    </div>
+
+    <div id="id4ObjectsToolbar" class="c_floating_toolbar" style="top:100px;">
+        <button id="id4Line">Line</button>
+        <button id="id4Circle">Circle</button>
+        <button id="id4Rectangle">Rectangle</button>
+        <button id="id4Triangle">Triangle</button>
+    </div> 
+
+    <div id="id4SceneToolbar" class="c_floating_toolbar">
+        <button id="id4Forest">Forest</button>
+        <button id="set-beach">Beach</button>
+        <button id="set-street">Street</button>
+    </div>
+
+    <div id="playback-toolbar">
+        <button id="playPause">Play</button>
+        <div class="fps-control">
+            <label>FPS:</label>
+            <input type="range" id="fpsRange" min="1" max="100" value="1">
+            <input type="number" id="fpsInput" min="1" max="100" value="1">
+        </div>
+        <button id="export">Export</button>
+        <button onclick="generateVideo()">Generate Video</button>
+        <div id="videoContainer" style="margin-top: 20px;"></div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <div id="export-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="generate-controls">
+                <button id="id4generateVideo">生成视频</button>
+                <span id="generation-status"></span>
+            </div>
+            <pre id="export-json"></pre>
+        </div>
+    </div>
+
+    <div id="id4Status">status:</div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let scenes = [];
+        let currentSceneIndex = 0;
+        let isDrawing = false;
+        let currentShape = null;
+        let startX, startY;
+        let playInterval = null;
+        let isPlaying = false;
+
+        // 初始化模态窗口交互
+        const modal = document.getElementById('export-modal');
+        const closeBtn = modal.querySelector('.close');
+        
+        // 导出按钮点击处理
+        document.getElementById('export').addEventListener('click', () => {
+            const currentFPS = parseInt(fpsInput.value) || 1;
+            const exportData = {
+                scenes,
+                fps: currentFPS
+            };
+            const exportJson = document.getElementById('export-json');
+            exportJson.textContent = JSON.stringify(exportData, null, 2);
+            modal.style.display = 'block';
+        });
+
+        // 关闭模态窗口处理
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        // 点击外部关闭模态窗口
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        class ShapeEditor {
+            static hitTest(element, x, y) {
+                switch(element.type) {
+                    case 'rectangle': return this.rectHitTest(element, x, y);
+                    case 'circle': return this.circleHitTest(element, x, y);
+                    case 'line': return this.lineHitTest(element, x, y);
+                    case 'triangle': return this.triangleHitTest(element, x, y);
+                }
+                return null;
+            }
+
+            static rectHitTest(rect, x, y) {
+                const isInside = x >= rect.x && x <= rect.x + rect.width &&
+                                y >= rect.y && y <= rect.y + rect.height;
+                if (!isInside) return null;
+
+                const controls = {
+                    'nw': [rect.x, rect.y],
+                    'ne': [rect.x + rect.width, rect.y],
+                    'sw': [rect.x, rect.y + rect.height],
+                    'se': [rect.x + rect.width, rect.y + rect.height],
+                    'move': [rect.x + rect.width/2, rect.y + rect.height/2]
+                };
+
+                for (const [type, [cx, cy]] of Object.entries(controls)) {
+                    if (Math.abs(x - cx) < 5/2 && 
+                        Math.abs(y - cy) < 5/2) {
+                        return type;
+                    }
+                }
+                return 'move';
+            }
+
+            static circleHitTest(circle, x, y) {
+                const dx = x - circle.x;
+                const dy = y - circle.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (Math.abs(dist - circle.radius) < 5) return 'radius';
+                if (dist <= circle.radius) return 'move';
+                return null;
+            }
+
+            static lineHitTest(line, x, y) {
+                const d = this.pointToLineDistance(x, y, line);
+                return d < 5 ? 'move' : null;
+            }
+
+            static triangleHitTest(tri, x, y) {
+                const area = 0.5 * (-tri.y2 * tri.x3 + tri.y1 * (-tri.x2 + tri.x3) + 
+                                   tri.x1 * (tri.y2 - tri.y3) + tri.x2 * tri.y3);
+                const s = 1/(2*area)*(tri.y1*tri.x3 - tri.x1*tri.y3 + (tri.y3 - tri.y1)*x + 
+                                    (tri.x1 - tri.x3)*y);
+                const t = 1/(2*area)*(tri.x1*tri.y2 - tri.y1*tri.x2 + (tri.y1 - tri.y2)*x + 
+                                    (tri.x2 - tri.x1)*y);
+                return (s > 0 && t > 0 && 1-s-t > 0) ? 'move' : null;
+            }
+
+            static pointToLineDistance(x, y, line) {
+                const A = x - line.x1;
+                const B = y - line.y1;
+                const C = line.x2 - line.x1;
+                const D = line.y2 - line.y1;
+
+                const dot = A * C + B * D;
+                const lenSq = C * C + D * D;
+                const param = lenSq !== 0 ? dot / lenSq : -1;
+
+                let xx, yy;
+                if (param < 0) [xx, yy] = [line.x1, line.y1];
+                else if (param > 1) [xx, yy] = [line.x2, line.y2];
+                else [xx, yy] = [line.x1 + param * C, line.y1 + param * D];
+
+                return Math.hypot(x - xx, y - yy);
+            }
+        }
+
+        const fpsRange = document.getElementById('fpsRange');
+        const fpsInput = document.getElementById('fpsInput');
+        const playPauseBtn = document.getElementById('playPause');
+
+        function createRandomShape() {
+            const types = ['rectangle', 'circle', 'line', 'triangle'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const color = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+            const maxWidth = canvas.width;
+            const maxHeight = canvas.height;
+            
+            const getRandomCoord = () => ({
+                x: Math.random() * maxWidth,
+                y: Math.random() * maxHeight
+            });
+
+            switch(type) {
+                case 'rectangle':
+                    const start = getRandomCoord();
+                    return {
+                        type,
+                        x: start.x,
+                        y: start.y,
+                        width: Math.random() * 100 + 20,
+                        height: Math.random() * 100 + 20,
+                        color
+                    };
+                case 'circle':
+                    return {
+                        type,
+                        x: Math.random() * maxWidth,
+                        y: Math.random() * maxHeight,
+                        radius: Math.random() * 50 + 10,
+                        color
+                    };
+                case 'line': {
+                    const start = getRandomCoord();
+                    const end = getRandomCoord();
+                    return {
+                        type,
+                        x1: start.x,
+                        y1: start.y,
+                        x2: end.x,
+                        y2: end.y,
+                        color
+                    };
+                }
+                case 'triangle': {
+                    const p1 = getRandomCoord();
+                    const p2 = getRandomCoord();
+                    const p3 = getRandomCoord();
+                    return {
+                        type,
+                        x1: p1.x,
+                        y1: p1.y,
+                        x2: p2.x,
+                        y2: p2.y,
+                        x3: p3.x,
+                        y3: p3.y,
+                        color
+                    };
+                }
+            }
+        }
+
+        function syncFPSInput(e) {
+            let value = parseInt(e.target.value);
+            value = Math.min(100, Math.max(1, value || 1));
+            
+            if (e.target === fpsRange) {
+                fpsInput.value = value;
+            } else {
+                fpsRange.value = value;
+            }
+        }
+
+        fpsRange.addEventListener('input', syncFPSInput);
+        fpsInput.addEventListener('input', syncFPSInput);
+
+        function initCanvas() {
+            const parentWidth = canvas.parentElement.clientWidth;
+            const aspectRatio = 600 / 800;
+            canvas.width = parentWidth;
+            canvas.height = parentWidth * aspectRatio;
+        }
+
+        window.addEventListener('resize', () => {
+            initCanvas();
+            drawScene();
+        });
+
+        function createScene() {
+            const scene = {
+                id: Date.now(),
+                name: `Scene ${scenes.length + 1}`,
+                background: '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0'),
+                elements: []
+            };
+            
+            const count = Math.floor(Math.random() * 10) + 1;
+            for(let i = 0; i < count; i++) {
+                scene.elements.push(createRandomShape());
+            }
+            
+            return scene;
+        }
+
+        function updateSceneSelector() {
+            const selector = document.getElementById('sceneSelector');
+            selector.innerHTML = scenes.map((scene, index) => 
+                `<option value="${index}">${scene.name}</option>`
+            ).join('');
+            selector.value = currentSceneIndex;
+        }
+
+        function drawScene() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const currentScene = scenes[currentSceneIndex];
+            ctx.fillStyle = currentScene.background;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            currentScene.elements.forEach(element => {
+                ctx.fillStyle = element.color;
+                ctx.strokeStyle = element.color;
+                ctx.lineWidth = 2;
+
+                switch(element.type) {
+                    case 'rectangle':
+                        ctx.fillRect(element.x, element.y, element.width, element.height);
+                        break;
+                    case 'circle':
+                        ctx.beginPath();
+                        ctx.arc(element.x, element.y, element.radius, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                    case 'line':
+                        ctx.beginPath();
+                        ctx.moveTo(element.x1, element.y1);
+                        ctx.lineTo(element.x2, element.y2);
+                        ctx.stroke();
+                        break;
+                    case 'triangle':
+                        ctx.beginPath();
+                        ctx.moveTo(element.x1, element.y1);
+                        ctx.lineTo(element.x2, element.y2);
+                        ctx.lineTo(element.x3, element.y3);
+                        ctx.closePath();
+                        ctx.fill();
+                        break;
+                }
+            });
+        }
+        async function generateVideo() {
+            const jsonData1 = {
+                "scenes": [
+                    {
+                    "id": 1739046935984,
+                    "name": "Scene 1",
+                    "background": "#c7befa",
+                    "elements": [
+                        {
+                        "type": "circle",
+                        "x": 385.26342018378045,
+                        "y": 254.0364457329882,
+                        "radius": 48.90781275754192,
+                        "color": "#5b2410"
+                        },
+                        {
+                        "type": "rectangle",
+                        "x": 232.8503329432624,
+                        "y": 764.4709554737557,
+                        "width": 51.35970481918828,
+                        "height": 85.21508979769133,
+                        "color": "#c627f3"
+                        },
+                        {
+                        "type": "rectangle",
+                        "x": 1031.3214374715258,
+                        "y": 290.1272286385848,
+                        "width": 84.29206317036413,
+                        "height": 45.615270824933845,
+                        "color": "#eb4d7f"
+                        },
+                        {
+                        "type": "rectangle",
+                        "x": 939.3245237300738,
+                        "y": 835.7137145044261,
+                        "width": 41.14020972954462,
+                        "height": 43.16077740683853,
+                        "color": "#b8a152"
+                        },
+                        {
+                        "type": "line",
+                        "x1": 537.9929685843135,
+                        "y1": 812.7803257468818,
+                        "x2": 1213.9410793347804,
+                        "y2": 294.5987771370094,
+                        "color": "#684ef3"
+                        },
+                        {
+                        "type": "rectangle",
+                        "x": 273.40505781299015,
+                        "y": 886.3127176138628,
+                        "width": 108.19792546542158,
+                        "height": 109.29390800319096,
+                        "color": "#696fe9"
+                        },
+                        {
+                        "type": "triangle",
+                        "x1": 105.60899376076378,
+                        "y1": 168.99304441661434,
+                        "x2": 178.47383245470638,
+                        "y2": 895.2636194751163,
+                        "x3": 1177.6471176990435,
+                        "y3": 277.5095340158829,
+                        "color": "#f927d2"
+                        }
+                    ]
+                    },
+                    {
+                    "id": 1739047740678,
+                    "name": "Scene 2",
+                    "background": "#db42b4",
+                    "elements": [
+                        {
+                        "type": "rectangle",
+                        "x": 1267.9440809744933,
+                        "y": 605.2592270090281,
+                        "width": 22.668969060454106,
+                        "height": 62.84162270466349,
+                        "color": "#8f5af9"
+                        },
+                        {
+                        "type": "circle",
+                        "x": 761.7487600136506,
+                        "y": 77.75662927462434,
+                        "radius": 16.951103719173048,
+                        "color": "#47a846"
+                        },
+                        {
+                        "type": "rectangle",
+                        "x": 1169.1887300595968,
+                        "y": 394.43837595089303,
+                        "width": 109.83326428604532,
+                        "height": 50.004855994845855,
+                        "color": "#9e1734"
+                        },
+                        {
+                        "type": "line",
+                        "x1": 1193.4936751829766,
+                        "y1": 899.6739909684873,
+                        "x2": 114.57185250076122,
+                        "y2": 668.7689545752891,
+                        "color": "#4b7f3d"
+                        },
+                        {
+                        "type": "triangle",
+                        "x1": 772.7439613336213,
+                        "y1": 525.6540971520146,
+                        "x2": 823.8923182515337,
+                        "y2": 345.26807292198305,
+                        "x3": 1192.8590525852255,
+                        "y3": 11.381457537455688,
+                        "color": "#802f55"
+                        },
+                        {
+                        "type": "circle",
+                        "x": 1073.3422119013753,
+                        "y": 357.1348165489809,
+                        "radius": 32.67409557247198,
+                        "color": "#2c8a74"
+                        }
+                    ]
+                    },
+                    {
+                    "id": 1739047740901,
+                    "name": "Scene 3",
+                    "background": "#ef211c",
+                    "elements": [
+                        {
+                        "type": "line",
+                        "x1": 120.32209788210452,
+                        "y1": 142.8106317495645,
+                        "x2": 940.1174175816905,
+                        "y2": 952.1171271637712,
+                        "color": "#697361"
+                        },
+                        {
+                        "type": "rectangle",
+                        "x": 770.4076473039316,
+                        "y": 670.8408781596709,
+                        "width": 60.881720201451685,
+                        "height": 55.836643071097754,
+                        "color": "#211ffd"
+                        },
+                        {
+                        "type": "rectangle",
+                        "x": 1138.2910226116937,
+                        "y": 77.83092653061814,
+                        "width": 100.56677846062131,
+                        "height": 111.14620926930384,
+                        "color": "#f41a4c"
+                        }
+                    ]
+                    },
+                    {
+                    "id": 1739047741118,
+                    "name": "Scene 4",
+                    "background": "#44b6e0",
+                    "elements": [
+                        {
+                        "type": "line",
+                        "x1": 79.3588150319303,
+                        "y1": 430.0171553177644,
+                        "x2": 349.59888018599884,
+                        "y2": 141.49865045291966,
+                        "color": "#4055f0"
+                        },
+                        {
+                        "type": "triangle",
+                        "x1": 575.0088396213266,
+                        "y1": 394.87682203458684,
+                        "x2": 10.786147352359308,
+                        "y2": 815.0230059909399,
+                        "x3": 537.3398876400436,
+                        "y3": 835.1248654297057,
+                        "color": "#48746f"
+                        },
+                        {
+                        "type": "line",
+                        "x1": 223.03511085348958,
+                        "y1": 530.3489435634957,
+                        "x2": 296.2287299544158,
+                        "y2": 44.99825373604587,
+                        "color": "#69c211"
+                        },
+                        {
+                        "type": "rectangle",
+                        "x": 922.990130155973,
+                        "y": 594.3360446708059,
+                        "width": 73.05251355080483,
+                        "height": 49.84955710254668,
+                        "color": "#a691f2"
+                        },
+                        {
+                        "type": "rectangle",
+                        "x": 109.52827815020072,
+                        "y": 930.3891559071218,
+                        "width": 89.67876402733533,
+                        "height": 29.560755734064188,
+                        "color": "#92fa3d"
+                        },
+                        {
+                        "type": "triangle",
+                        "x1": 475.05874792327546,
+                        "y1": 442.9180029014165,
+                        "x2": 863.3098636355928,
+                        "y2": 313.7657015552642,
+                        "x3": 70.12511314084264,
+                        "y3": 522.6606947795804,
+                        "color": "#b9b685"
+                        }
+                    ]
+                    },
+                    {
+                    "id": 1739047741309,
+                    "name": "Scene 5",
+                    "background": "#0c4b7d",
+                    "elements": [
+                        {
+                        "type": "triangle",
+                        "x1": 860.8526818378389,
+                        "y1": 502.05968358122794,
+                        "x2": 734.802815466347,
+                        "y2": 565.1507384904734,
+                        "x3": 606.9153577904265,
+                        "y3": 691.9332894684201,
+                        "color": "#5d1212"
+                        },
+                        {
+                        "type": "circle",
+                        "x": 260.99830540940474,
+                        "y": 131.48965663014465,
+                        "radius": 22.340016105465235,
+                        "color": "#31ed3d"
+                        },
+                        {
+                        "type": "rectangle",
+                        "x": 375.955256916356,
+                        "y": 918.5405282588342,
+                        "width": 55.7239114449851,
+                        "height": 105.42485782925962,
+                        "color": "#2464ce"
+                        },
+                        {
+                        "type": "rectangle",
+                        "x": 310.7760096745889,
+                        "y": 492.6185991543183,
+                        "width": 112.90833848697517,
+                        "height": 82.3215429976385,
+                        "color": "#bd0175"
+                        },
+                        {
+                        "type": "triangle",
+                        "x1": 48.51897157455454,
+                        "y1": 603.2263958934434,
+                        "x2": 417.5236480893719,
+                        "y2": 158.59792877453373,
+                        "x3": 801.5279922023283,
+                        "y3": 78.07246632849953,
+                        "color": "#0418ba"
+                        },
+                        {
+                        "type": "rectangle",
+                        "x": 1197.3449902599998,
+                        "y": 537.2934164332553,
+                        "width": 115.082206434387,
+                        "height": 69.36991940722069,
+                        "color": "#e333c0"
+                        },
+                        {
+                        "type": "circle",
+                        "x": 893.4534111510616,
+                        "y": 678.2705762699813,
+                        "radius": 40.35524257035712,
+                        "color": "#bd2ab4"
+                        },
+                        {
+                        "type": "rectangle",
+                        "x": 737.9586723299286,
+                        "y": 449.59062260940533,
+                        "width": 115.14896980978197,
+                        "height": 114.98186667184096,
+                        "color": "#2a3446"
+                        },
+                        {
+                        "type": "circle",
+                        "x": 815.4538885181771,
+                        "y": 276.89490129116473,
+                        "radius": 29.43658313849228,
+                        "color": "#7bd815"
+                        }
+                    ]
+                    },
+                    {
+                    "id": 1739047741485,
+                    "name": "Scene 6",
+                    "background": "#990494",
+                    "elements": [
+                        {
+                        "type": "circle",
+                        "x": 1152.0068354097268,
+                        "y": 101.80796568577108,
+                        "radius": 25.31658589766176,
+                        "color": "#695cb3"
+                        }
+                    ]
+                    },
+                    {
+                    "id": 1739047741653,
+                    "name": "Scene 7",
+                    "background": "#65ecb5",
+                    "elements": [
+                        {
+                        "type": "line",
+                        "x1": 76.9555260922084,
+                        "y1": 333.50777491672795,
+                        "x2": 322.7099746500815,
+                        "y2": 772.2787667439075,
+                        "color": "#302243"
+                        },
+                        {
+                        "type": "line",
+                        "x1": 1176.2191675330757,
+                        "y1": 876.1946482528621,
+                        "x2": 212.47637325493685,
+                        "y2": 796.1828718483465,
+                        "color": "#ab0a82"
+                        },
+                        {
+                        "type": "circle",
+                        "x": 211.56397571921843,
+                        "y": 402.28062459020214,
+                        "radius": 57.828523581087914,
+                        "color": "#fd38b5"
+                        },
+                        {
+                        "type": "circle",
+                        "x": 948.9561458786206,
+                        "y": 739.6849065420641,
+                        "radius": 18.426888748377948,
+                        "color": "#2e7d73"
+                        }
+                    ]
+                    }
+                ],
+                "fps": 1
+                };
+            const jsonData2 = {
+                "scenes": [
+                    {
+                    "id": 1739046935984,
+                    "name": "Scene 1",
+                    "background": "#c7befa",
+                    "elements": [
+                        {
+                        "type": "circle",
+                        "x": 385.26342018378045,
+                        "y": 254.0364457329882,
+                        "radius": 48.90781275754192,
+                        "color": "#5b2410"
+                        },
+                        {
+                        "type": "rectangle",
+                        "x": 232.8503329432624,
+                        "y": 764.4709554737557,
+                        "width": 51.35970481918828,
+                        "height": 85.21508979769133,
+                        "color": "#c627f3"
+                        },
+                        {
+                        "type": "rectangle",
+                        "x": 1031.3214374715258,
+                        "y": 290.1272286385848,
+                        "width": 84.29206317036413,
+                        "height": 45.615270824933845,
+                        "color": "#eb4d7f"
+                        },
+                        {
+                        "type": "rectangle",
+                        "x": 939.3245237300738,
+                        "y": 835.7137145044261,
+                        "width": 41.14020972954462,
+                        "height": 43.16077740683853,
+                        "color": "#b8a152"
+                        },
+                        {
+                        "type": "line",
+                        "x1": 537.9929685843135,
+                        "y1": 812.7803257468818,
+                        "x2": 1213.9410793347804,
+                        "y2": 294.5987771370094,
+                        "color": "#684ef3"
+                        },
+                        {
+                        "type": "rectangle",
+                        "x": 273.40505781299015,
+                        "y": 886.3127176138628,
+                        "width": 108.19792546542158,
+                        "height": 109.29390800319096,
+                        "color": "#696fe9"
+                        },
+                        {
+                        "type": "triangle",
+                        "x1": 105.60899376076378,
+                        "y1": 168.99304441661434,
+                        "x2": 178.47383245470638,
+                        "y2": 895.2636194751163,
+                        "x3": 1177.6471176990435,
+                        "y3": 277.5095340158829,
+                        "color": "#f927d2"
+                        }
+                    ]
+                    }
+                ],
+                "fps": 1
+                };
+            const response = await fetch('http://localhost:3005/generate-video', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(jsonData1)
+            });
+
+            const result = await response.json();
+            const videoContainer = document.getElementById('videoContainer');
+            videoContainer.innerHTML = `
+                <video width="640" height="480" controls autoplay>
+                    <source src="${result.videoUrl}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            `;
+        }
+        function togglePlayback() {
+            if (!isPlaying) {
+                if (scenes.length === 0) return;
+                const fps = parseInt(fpsInput.value) || 1;
+                const intervalTime = 1000 / fps;
+                
+                playInterval = setInterval(() => {
+                    currentSceneIndex = (currentSceneIndex + 1) % scenes.length;
+                    updateSceneSelector();
+                    drawScene();
+                }, intervalTime);
+                
+                playPauseBtn.textContent = 'Pause';
+                isPlaying = true;
+            } else {
+                clearInterval(playInterval);
+                playInterval = null;
+                playPauseBtn.textContent = 'Play';
+                isPlaying = false;
+            }
+        }
+
+        document.getElementById('addScene').addEventListener('click', () => {
+            scenes.push(createScene());
+            currentSceneIndex = scenes.length - 1;
+            updateSceneSelector();
+            drawScene();
+        });
+
+        document.getElementById('sceneSelector').addEventListener('change', (e) => {
+            currentSceneIndex = e.target.value;
+            drawScene();
+        });
+
+        document.getElementById('delete-scene').addEventListener('click', () => {
+            if (scenes.length > 1) {
+                scenes.splice(currentSceneIndex, 1);
+                currentSceneIndex = Math.max(0, currentSceneIndex - 1);
+                updateSceneSelector();
+                drawScene();
+            }
+        });
+
+        document.getElementById('id4Forest').addEventListener('click', () => {
+            if (scenes.length === 0) return;
+            scenes[currentSceneIndex].background = '#228B22';
+            drawScene();
+        });
+
+        playPauseBtn.addEventListener('click', togglePlayback);
+
+        document.getElementById('id4Rectangle').addEventListener('click', () => {
+            currentShape = 'rectangle';
+        });
+
+        document.getElementById('id4Line').addEventListener('click', () => {
+            currentShape = 'line';
+        });
+        document.getElementById('id4Circle').addEventListener('click', () => {
+            currentShape = 'circle';
+        });
+        document.getElementById('id4Triangle').addEventListener('click', () => {
+            currentShape = 'triangle';
+        });
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (!currentShape) return;
+            isDrawing = true;
+            startX = e.offsetX;
+            startY = e.offsetY;
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (!isDrawing) return;
+            isDrawing = false;
+            
+            let element;
+            const color = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+
+            switch(currentShape) {
+                case 'rectangle':
+                    element = {
+                        type: 'rectangle',
+                        x: Math.min(startX, e.offsetX),
+                        y: Math.min(startY, e.offsetY),
+                        width: Math.abs(e.offsetX - startX),
+                        height: Math.abs(e.offsetY - startY),
+                        color: color
+                    };
+                    break;
+                case 'circle': {
+                    const radius = Math.hypot(e.offsetX - startX, e.offsetY - startY);
+                    element = {
+                        type: 'circle',
+                        x: startX,
+                        y: startY,
+                        radius: radius,
+                        color: color
+                    };
+                    break;
+                }
+                case 'line':
+                    element = {
+                        type: 'line',
+                        x1: startX,
+                        y1: startY,
+                        x2: e.offsetX,
+                        y2: e.offsetY,
+                        color: color
+                    };
+                    break;
+                case 'triangle':
+                    element = {
+                        type: 'triangle',
+                        x1: startX,
+                        y1: e.offsetY,
+                        x2: e.offsetX,
+                        y2: e.offsetY,
+                        x3: (startX + e.offsetX) / 2,
+                        y3: startY,
+                        color: color
+                    };
+                    break;
+            }
+
+            if (element) {
+                scenes[currentSceneIndex].elements.push(element);
+                drawScene();
+            }
+            currentShape = null;
+        });
+
+        function init() {
+            initCanvas();
+            scenes.push(createScene());
+            updateSceneSelector();
+            drawScene();
+        }
+        document.getElementById('id4generateVideo').addEventListener('click', async () => {
+            const statusElement = document.getElementById('generation-status');
+            statusElement.textContent = '生成中...';
+            
+            try {
+                const currentFPS = parseInt(fpsInput.value) || 1;
+                const response = await fetch('http://localhost:3005/generateVideo', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        scenes,
+                        fps: currentFPS
+                    })
+                });
+
+                if (!response.ok) throw new Error('生成失败');
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'video.mp4';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                statusElement.textContent = '生成成功！';
+            } catch (error) {
+                console.error('Error:', error);
+                statusElement.textContent = '生成失败: ' + error.message;
+            }
+        });
+        init();
+    </script>
+</body>
+</html>

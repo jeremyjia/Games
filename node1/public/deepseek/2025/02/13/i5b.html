@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>复读机测试</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px 0 60px;
+            font-family: Arial, sans-serif;
+        }
+
+        .test-case {
+            margin: 10px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            background: #f0f0f0;
+        }
+
+        .floating-window {
+            position: fixed;
+            background: white;
+            border: 2px solid #666;
+            border-radius: 8px;
+            padding: 10px;
+            min-width: 300px;
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.2);
+            touch-action: none;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 5px;
+            margin: 10px 0;
+        }
+
+        .toolbar button {
+            padding: 5px;
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .toolbar button.active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .progress-container {
+            height: 20px;
+            background: #eee;
+            position: relative;
+            margin: 10px 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #2196F3;
+        }
+
+        .time-marker {
+            position: absolute;
+            width: 4px;
+            height: 100%;
+            background: red;
+            top: 0;
+        }
+
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #333;
+            color: white;
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .score {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 10px 0;
+        }
+
+        .score button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #ff9800;
+            border: none;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="testCases"></div>
+    <div class="status-bar">
+        <button onclick="createTestCase()">新建用例</button>
+    </div>
+
+<script>
+class Repeater {
+    constructor() {
+        this.audioUrls = [
+            'https://littleflute.github.io/english/NewConceptEnglish/Book2/2.mp3',
+            'https://littleflute.github.io/english/NewConceptEnglish/Book2/10.mp3',
+            'https://littleflute.github.io/gt1/mp3/j72_4_4.mp3'
+        ];
+        this.createWindow();
+        this.initAudio();
+        this.setupDrag();
+    }
+
+    createWindow() {
+        this.window = document.createElement('div');
+        this.window.className = 'floating-window';
+        this.window.innerHTML = `
+            <div class="toolbar"></div>
+            <input type="text" class="url-input" readonly>
+            <div class="progress-container">
+                <div class="progress-bar"></div>
+                <div class="time-marker start" style="left: 0"></div>
+                <div class="time-marker end" style="left: 100%"></div>
+            </div>
+            <button class="play-btn">播放/暂停</button>
+            <div class="score"></div>
+            <div>BPM: <input type="number" class="bpm-input" value="60"></div>
+        `;
+
+        document.body.appendChild(this.window);
+        this.createToolbar();
+        this.setupControls();
+        this.score = new Score(
+            this.window.querySelector('.score'),
+            this.window.querySelector('.bpm-input')
+        );
+    }
+
+    createToolbar() {
+        const toolbar = this.window.querySelector('.toolbar');
+        this.audioUrls.forEach(url => {
+            const btn = document.createElement('button');
+            btn.textContent = url.split('/').pop();
+            btn.onclick = () => this.setAudio(url, btn);
+            toolbar.appendChild(btn);
+        });
+        this.setAudio(this.audioUrls[0], toolbar.firstChild);
+    }
+
+    setAudio(url, button) {
+        this.window.querySelector('.url-input').value = url;
+        Array.from(this.window.querySelectorAll('.toolbar button')).forEach(btn => 
+            btn.classList.remove('active'));
+        button.classList.add('active');
+        this.audio.src = url;
+    }
+
+    initAudio() {
+        this.audio = new Audio();
+        this.audio.loop = false;
+        this.audio.ontimeupdate = () => this.updateProgress();
+        this.startTime = 0;
+        this.endTime = Infinity;
+    }
+
+    setupControls() {
+        const playBtn = this.window.querySelector('.play-btn');
+        playBtn.onclick = () => this.togglePlay();
+
+        // 进度条控制（简化实现）
+        const progress = this.window.querySelector('.progress-container');
+        progress.onclick = (e) => {
+            const rect = progress.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            this.audio.currentTime = percent * this.audio.duration;
+        };
+    }
+
+    togglePlay() {
+        if (this.audio.paused) {
+            this.score.start();
+            this.audio.play();
+            this.loopPlayback();
+        } else {
+            this.audio.pause();
+            this.score.stop();
+        }
+    }
+
+    loopPlayback() {
+        const checkLoop = () => {
+            if (!this.audio.paused && this.audio.currentTime >= this.endTime) {
+                this.audio.currentTime = this.startTime;
+            }
+            requestAnimationFrame(checkLoop);
+        };
+        checkLoop();
+    }
+
+    updateProgress() {
+        const progress = this.audio.duration ? (this.audio.currentTime / this.audio.duration) * 100 : 0;
+        this.window.querySelector('.progress-bar').style.width = `${progress}%`;
+    }
+
+    setupDrag() {
+        let isDragging = false;
+        let offset = [0, 0];
+        
+        const startDrag = (e) => {
+            isDragging = true;
+            offset = [
+                e.clientX - this.window.offsetLeft,
+                e.clientY - this.window.offsetTop
+            ];
+        };
+
+        const duringDrag = (e) => {
+            if (!isDragging) return;
+            this.window.style.left = `${e.clientX - offset[0]}px`;
+            this.window.style.top = `${e.clientY - offset[1]}px`;
+        };
+
+        const stopDrag = () => isDragging = false;
+
+        this.window.addEventListener('mousedown', startDrag);
+        document.addEventListener('mousemove', duringDrag);
+        document.addEventListener('mouseup', stopDrag);
+        
+        // 触摸事件支持
+        this.window.addEventListener('touchstart', (e) => {
+            startDrag(e.touches[0]);
+        });
+        document.addEventListener('touchmove', (e) => {
+            duringDrag(e.touches[0]);
+        });
+        document.addEventListener('touchend', stopDrag);
+    }
+}
+
+class Score {
+    constructor(container, bpmInput) {
+        this.container = container;
+        this.bpmInput = bpmInput;
+        this.beats = [];
+        this.intervalId = null;
+    }
+
+    start() {
+        this.stop();
+        this.container.innerHTML = '';
+        const interval = 60000 / this.bpmInput.value;
+        this.intervalId = setInterval(() => this.addBeat(), interval);
+    }
+
+    stop() {
+        clearInterval(this.intervalId);
+    }
+
+    addBeat() {
+        const beat = document.createElement('button');
+        beat.textContent = this.beats.length + 1;
+        this.container.appendChild(beat);
+        this.beats.push(beat);
+    }
+}
+
+// 测试用例管理
+let testCaseId = 0;
+function createTestCase() {
+    const container = document.getElementById('testCases');
+    const testCase = document.createElement('div');
+    testCase.className = 'test-case';
+    testCase.innerHTML = `
+        <button onclick="toggleWindow(this)">用例 ${++testCaseId}</button>
+    `;
+    container.appendChild(testCase);
+    
+    const repeater = new Repeater();
+    testCase.repeaterWindow = repeater.window;
+    repeater.window.style.display = 'none';
+}
+
+function toggleWindow(btn) {
+    const window = btn.parentNode.repeaterWindow;
+    window.style.display = window.style.display === 'none' ? 'block' : 'none';
+    btn.style.backgroundColor = window.style.display === 'none' ? '' : '#4CAF50';
+}
+</script>
+</body>
+</html>

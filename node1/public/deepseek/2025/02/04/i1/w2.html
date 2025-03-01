@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        canvas {
+            border: 1px solid #000;
+            margin: 20px auto;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="stage" width="800" height="400"></canvas>
+
+    <script>
+        class CanvasPuppet {
+            constructor(ctx) {
+                this.ctx = ctx;
+                this.x = 100;
+                this.y = 300;
+                this.speed = 3;
+                this.direction = 1;
+                this.angle = 0;
+                this.bodyHeight = 80;
+                this.armLength = 60;
+                this.legLength = 80;
+            }
+
+            draw() {
+                this.ctx.save();
+                this.ctx.translate(this.x, this.y);
+                
+                // 水平翻转处理
+                this.ctx.scale(this.direction, 1);
+                
+                // 身体
+                this.ctx.fillStyle = '#666';
+                this.ctx.beginPath();
+                this.ctx.roundRect(-20, -this.bodyHeight, 40, this.bodyHeight, 20);
+                this.ctx.fill();
+
+                // 头部
+                this.ctx.fillStyle = '#444';
+                this.ctx.beginPath();
+                this.ctx.arc(0, -this.bodyHeight - 25, 25, 0, Math.PI * 2);
+                this.ctx.fill();
+
+                // 四肢动画参数
+                const armAngle = Math.sin(this.angle) * 0.5;
+                const legAngle = Math.cos(this.angle) * 0.5;
+
+                // 左臂
+                this.drawLimb(-25, -this.bodyHeight + 20, armAngle, this.armLength, '#888');
+                // 右臂
+                this.drawLimb(25, -this.bodyHeight + 20, -armAngle, this.armLength, '#888');
+                // 左腿
+                this.drawLimb(-10, 0, -legAngle, this.legLength, '#333');
+                // 右腿
+                this.drawLimb(10, 0, legAngle, this.legLength, '#333');
+
+                this.ctx.restore();
+            }
+
+            drawLimb(x, y, angle, length, color) {
+                this.ctx.save();
+                this.ctx.translate(x, y);
+                this.ctx.rotate(angle);
+                
+                this.ctx.fillStyle = color;
+                this.ctx.beginPath();
+                this.ctx.roundRect(-5, 0, 10, length, 5);
+                this.ctx.fill();
+                
+                this.ctx.restore();
+            }
+
+            update() {
+                // 更新位置
+                this.x += this.speed * this.direction;
+                
+                // 边界检测
+                if (this.x > 700 || this.x < 100) {
+                    this.direction *= -1;
+                }
+                
+                // 更新动画角度
+                this.angle += 0.1;
+            }
+        }
+
+        // 初始化画布
+        const canvas = document.getElementById('stage');
+        const ctx = canvas.getContext('2d');
+        const puppet = new CanvasPuppet(ctx);
+
+        function animate() {
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 更新并绘制木偶人
+            puppet.update();
+            puppet.draw();
+            
+            requestAnimationFrame(animate);
+        }
+
+        // 启动动画
+        animate();
+    </script>
+</body>
+</html>

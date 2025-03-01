@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MP3波形可视化（稳定版）</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; padding: 15px; font-family: Arial; }
+        #waveform { border: 1px solid #ccc; margin: 20px 0; width: 100%; height: 180px; }
+        .controls { margin: 15px 0; display: flex; gap: 10px; }
+        input[type="file"] { width: 100%; padding: 12px; border: 2px dashed #ccc; border-radius: 8px; }
+        button { padding: 12px 24px; font-size: 16px; border: none; border-radius: 25px; background: #2196F3; color: white; }
+        .progress-bar { height: 6px; background: #eee; border-radius: 3px; overflow: hidden; }
+        .progress { height: 100%; background: #2196F3; width: 0%; transition: width 0.1s linear; }
+        .error { color: red; margin: 10px 0; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <input type="file" id="audioFile" accept="audio/mpeg" />
+    <div class="error" id="errorMsg"></div>
+    <div class="controls">
+        <button id="playBtn" disabled>播放/暂停</button>
+    </div>
+    <div class="progress-bar">
+        <div class="progress"></div>
+    </div>
+    <canvas id="waveform"></canvas>
+
+    <script>
+        const canvas = document.getElementById('waveform');
+        const ctx = canvas.getContext('2d');
+        const audioFile = document.getElementById('audioFile');
+        const playBtn = document.getElementById('playBtn');
+        const progress = document.querySelector('.progress');
+        const errorMsg = document.getElementById('errorMsg');
+
+        // 状态管理对象
+        const audioState = {
+            context: null,
+            buffer: null,
+            source: null,
+            isPlaying: false,
+            isProcessing: false,
+            startTime: 0,
+            currentPosition: 0,
+            duration: 0,
+            animationFrameId: null
+        };
+
+        // 初始化Canvas
+        function initCanvas() {
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+            ctx.scale(dpr, dpr);
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(0, 0, rect.width, rect.height);
+        }
+
+        // 安全停止播放（增强版）
+        function safeStop() {
+            // 清理动画帧和音频资源
+            cancelAnimationFrame(audioState.animationFrameId);
+            
+            if (audioState.source) {
+                try {
+                    // 保存当前播放位置
+                    const elapsed = audioState.context.currentTime - audioState.startTime;
+                    audioState.currentPosition = Math.min(
+                        audioState.duration, 
+                        audioState.currentPosition + elapsed
+                    );
+                    
+                    // 立即停止音频
+                    audioState.source.stop(0);
+                    audioState.source.disconnect();
+                } catch (e) {
+                    console.warn('停止错误:', e);
+                }
+                audioState.source = null;
+            }
+            
+            // 强制更新UI状态
+            audioState.isPlaying = false;
+            playBtn.textContent = '播放';
+            updateProgressDisplay();
+        }
+
+        // 更新进度显示（立即执行）
+        function updateProgressDisplay() {
+            const progressPercent = (audioState.currentPosition / audioState.duration) * 100;
+            progress.style.width = `${Math.min(100, progressPercent)}%`;
+        }
+
+        // 创建新音源（增强版）
+        function createSource() {
+            audioState.source = audioState.context.createBufferSource();
+            audioState.source.buffer = audioState.buffer;
+            audioState.source.connect(audioState.context.destination);
+            
+            // 播放结束回调（带状态验证）
+            audioState.source.onended = () => {
+                if (audioState.isPlaying) { // 仅处理自然结束的情况
+                    safeStop();
+                    audioState.currentPosition = 0;
+                    progress.style.width = '0%';
+                }
+            };
+        }
+
+        // 精准播放控制（最终版）
+        async function playFrom(position) {
+            if (audioState.isProcessing || !audioState.buffer) return;
+            audioState.isProcessing = true;
+
+            try {
+                // 清理前次播放
+                safeStop();
+
+                // 初始化音频上下文
+                if (!audioState.context) {
+                    audioState.context = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                
+                // 激活音频上下文
+                if (audioState.context.state === 'suspended') {
+                    await audioState.context.resume();
+                }
+
+                // 创建并启动新音源
+                createSource();
+                audioState.currentPosition = position;
+                audioState.startTime = audioState.context.currentTime;
+                audioState.source.start(0, position);
+                
+                // 立即更新状态
+                audioState.isPlaying = true;
+                playBtn.textContent = '暂停';
+                progress.style.width = `${(position / audioState.duration) * 100}%`;
+                
+                // 启动实时进度更新
+                updateProgress();
+            } catch (error) {
+                showError(`播放失败: ${error.message}`);
+                safeStop();
+            } finally {
+                audioState.isProcessing = false;
+            }
+        }
+
+        // 实时进度更新（优化版）
+        function updateProgress() {
+            if (!audioState.isPlaying) return;
+
+            const elapsed = audioState.context.currentTime - audioState.startTime;
+            const current = audioState.currentPosition + elapsed;
+            const progressPercent = Math.min(100, (current / audioState.duration) * 100);
+            
+            // 立即更新进度条
+            progress.style.width = `${progressPercent}%`;
+
+            if (current < audioState.duration) {
+                audioState.animationFrameId = requestAnimationFrame(updateProgress);
+            } else {
+                safeStop();
+            }
+        }
+
+        // 波形点击处理（最终版）
+        async function handleSeek(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.clientX || (e.touches?.[0]?.clientX) || 0;
+            const percent = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+            const seekPosition = audioState.duration * percent;
+            
+            await playFrom(seekPosition);
+        }
+
+        // 文件处理（稳定版）
+        audioFile.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            try {
+                safeStop();
+                audioState.buffer = null;
+
+                const arrayBuffer = await file.arrayBuffer();
+                audioState.context = new (window.AudioContext || window.webkitAudioContext)();
+                audioState.buffer = await audioState.context.decodeAudioData(arrayBuffer);
+                audioState.duration = audioState.buffer.duration;
+                
+                initCanvas();
+                drawWaveform(audioState.buffer.getChannelData(0));
+                playBtn.disabled = false;
+            } catch (error) {
+                showError(`文件加载失败: ${error.message}`);
+                playBtn.disabled = true;
+            }
+        });
+
+        // 播放按钮控制（最终版）
+        playBtn.addEventListener('click', () => {
+            if (!audioState.buffer) return;
+            audioState.isPlaying ? safeStop() : playFrom(audioState.currentPosition);
+        });
+
+        // 波形绘制
+        function drawWaveform(channelData) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const visibleWidth = canvas.width / (window.devicePixelRatio || 1);
+            const step = Math.ceil(channelData.length / visibleWidth);
+            const amp = canvas.height / (2 * (window.devicePixelRatio || 1));
+
+            for(let i = 0; i < visibleWidth; i++) {
+                const start = i * step;
+                const end = Math.min(start + step, channelData.length);
+                const segment = channelData.slice(start, end);
+                
+                const min = Math.min(...segment);
+                const max = Math.max(...segment);
+
+                ctx.fillStyle = '#2196F3';
+                ctx.fillRect(i, (1 + min) * amp, 1, Math.max(1, (max - min) * amp));
+            }
+        }
+
+        // 错误提示
+        function showError(message) {
+            errorMsg.textContent = message;
+            setTimeout(() => errorMsg.textContent = '', 5000);
+        }
+
+        // 事件绑定
+        canvas.addEventListener('click', handleSeek);
+        canvas.addEventListener('touchstart', handleSeek);
+        initCanvas();
+    </script>
+</body>
+</html>
