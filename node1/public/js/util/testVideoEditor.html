@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8"> 
     <script src="c4DraggableWindow.js"></script>
+    <script src="c4Scenes.js"></script>
     <script src="c4Srt.js"></script>
 </head>
 <body>
@@ -76,8 +77,7 @@ I turned round again 'I can't hear a word!'I said angrily
  
 `;
 class VideoEditor {
-    constructor() {
-        this.scenes = [];
+    constructor() { 
         this.currentSceneIndex = -1;
         this.currentPlaySceneIndex = -1;
         this.isPlaying = false;
@@ -218,6 +218,11 @@ class VideoEditor {
 
     initDOM() {
         this.createSceneToolbar();
+        this.scenesHandler = new C4Scenes(
+            this.sceneToolbar, // 将工具栏容器传递给场景管理器
+            id => this.selectScene(id),
+            () => this.updateJsonContent()
+        );
         this.sceneWindow = new C4DraggableWindow('场景管理', this.sceneToolbar, 20, 20);
         this.createVideoManagerToolbar();
         this.createCanvas();
@@ -251,17 +256,10 @@ class VideoEditor {
             display: 'flex',
             flexDirection: 'column',
             gap: '8px',
-            padding: '10px'
+            padding: '10px',
+            overflowY: 'auto', // 添加滚动条
+            maxHeight: '300px' // 限制最大高度
         });
-
-        const newSceneBtn = document.createElement('button');
-        Object.assign(newSceneBtn.style, {
-            background: '#4CAF50',
-            color: 'white'
-        });
-        newSceneBtn.textContent = '新建场景';
-        newSceneBtn.onclick = () => this.addScene();
-        this.sceneToolbar.appendChild(newSceneBtn);
     }
     
     createVideoManagerToolbar() {
@@ -316,142 +314,20 @@ class VideoEditor {
         const data = {
             fps: parseInt(this.fpsInput.value) || 30,
             audio: this.audio.src,
-            srt: this.srt,  // 将SRT加入JSON
-            scenes: this.scenes.map(scene => ({
-                id: scene.id,
-                color: scene.color,
-                duration: scene.duration
-            }))
+            srt: this.srt,
+            scenes: this.scenesHandler.getScenesData()
         };
         return JSON.stringify(data, null, 2);
     }
-   
-    addScene() {
-        const scene = {
-            id: Date.now(),
-            color: this.getRandomColor(),
-            duration: 30,
-            element: null,
-            btn: null
-        };
-
-        const sceneItem = document.createElement('div');
-        sceneItem.draggable = true;
-        sceneItem.style.cssText = `
-            display: flex;
-            gap: 8px;
-            padding: 8px;
-            background: #f8f8f8;
-            border-radius: 4px;
-            align-items: center;
-            cursor: move;
-        `;
-        
-        sceneItem.addEventListener('dragstart', (e) => this.handleDragStart(e, scene));
-        sceneItem.addEventListener('dragover', (e) => this.handleDragOver(e, scene));
-        sceneItem.addEventListener('drop', (e) => this.handleDrop(e, scene));
-        sceneItem.addEventListener('dragend', (e) => this.handleDragEnd(e));
-
-        const sceneBtn = document.createElement('button');
-        sceneBtn.textContent = `场景 ${this.scenes.length + 1}`;
-        sceneBtn.style.cssText = `
-            padding: 4px 8px;
-            background: ${scene.color};
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-        `;
-        sceneBtn.onclick = () => this.selectScene(scene.id);
-
-        const durationInput = document.createElement('input');
-        durationInput.type = 'number';
-        durationInput.value = scene.duration;
-        durationInput.onchange = (e) => {
-            scene.duration = Math.max(1, parseInt(e.target.value) || 1);
-            this.updateJsonContent();
-        };
-
-        const colorInput = document.createElement('input');
-        colorInput.type = 'color';
-        colorInput.value = scene.color;
-        colorInput.oninput = (e) => {
-            scene.color = e.target.value;
-            sceneBtn.style.backgroundColor = scene.color;
-            if (this.currentSceneIndex === this.scenes.indexOf(scene)) {
-                this.updateCanvasColor(scene.color);
-            }
-            this.updateJsonContent();
-        };
-
-        sceneItem.appendChild(sceneBtn);
-        sceneItem.appendChild(durationInput);
-        sceneItem.appendChild(colorInput);
-        this.sceneToolbar.appendChild(sceneItem);
-
-        scene.element = sceneItem;
-        scene.btn = sceneBtn;
-        this.scenes.push(scene);
-        this.selectScene(scene.id);
-        this.updateJsonContent();
-    }
-
-    handleDragStart(e, scene) {
-        e.dataTransfer.setData('text/plain', scene.id);
-        e.dataTransfer.effectAllowed = 'move';
-        this.draggedScene = scene;
-        this.draggedIndex = this.scenes.findIndex(s => s.id === scene.id);
-        scene.element.style.opacity = '0.5';
-    }
-
-    handleDragOver(e, targetScene) {
-        e.preventDefault();
-        const targetIndex = this.scenes.findIndex(s => s.id === targetScene.id);
-        if (this.draggedIndex === targetIndex) return;
-
-        const rect = targetScene.element.getBoundingClientRect();
-        const midY = rect.top + rect.height / 2;
-        
-        if (e.clientY < midY) {
-            this.sceneToolbar.insertBefore(
-                this.draggedScene.element,
-                targetScene.element
-            );
-        } else {
-            this.sceneToolbar.insertBefore(
-                this.draggedScene.element,
-                targetScene.element.nextSibling
-            );
-        }
-
-        const newScenes = [...this.scenes];
-        newScenes.splice(this.draggedIndex, 1);
-        const newIndex = newScenes.findIndex(s => s.id === targetScene.id);
-        newScenes.splice(e.clientY < midY ? newIndex : newIndex + 1, 0, this.draggedScene);
-        
-        this.scenes = newScenes;
-        this.draggedIndex = this.scenes.findIndex(s => s.id === this.draggedScene.id);
-    }
-
-    handleDrop(e) {
-        e.preventDefault();
-    }
-
-    handleDragEnd(e) {
-        this.draggedScene.element.style.opacity = '1';
-        this.draggedScene = null;
-        this.updateJsonContent();
-    }
-
+         
     selectScene(id) {
-        const index = this.scenes.findIndex(s => s.id === id);
-        this.scenes.forEach((s, i) => {
-            s.btn.style.border = i === index ? '5px solid #f00' : '';
-        });
-        this.currentSceneIndex = index;
-        this.updateCanvasColor(this.scenes[index].color);
-        this.highlightJsonLine(id);
+        const sceneData = this.scenesHandler.getScenesData().find(s => s.id === id);
+        if (sceneData) {
+            this.updateCanvasColor(sceneData.color);
+            this.highlightJsonLine(id);
+        }
     }
-    
+
     createCanvas() {
         this.canvas = document.createElement('canvas');
         this.canvas.width = 300;
@@ -501,7 +377,7 @@ class VideoEditor {
     }
 
     generateVideo() {
-        if (this.scenes.length === 0) {
+        if (this.scenesHandler.scenes.length === 0) {
             alert('请先创建至少一个场景！');
             return;
         }
@@ -513,7 +389,7 @@ class VideoEditor {
         const data = {
             fps: parseInt(this.fpsInput.value) || 30,
             audio: this.audio.src,
-            scenes: this.scenes.map(scene => ({
+            scenes: this.scenesHandler.scenes.map(scene => ({
                 color: scene.color,
                 duration: scene.duration
             }))
@@ -599,7 +475,7 @@ class VideoEditor {
     }
 
     startPlay() {
-        if (this.scenes.length === 0) return;
+        if (this.scenesHandler.scenes.length === 0) return;
         this.isPlaying = true;
         this.playBtn.textContent = '停止';
         this.currentFrame = 0;
@@ -623,17 +499,17 @@ class VideoEditor {
         this.audio.currentTime = 0;
         this.clearPlayHighlights();
         if (this.currentSceneIndex >=0 && this.currentSceneIndex < this.scenes.length) {
-            this.updateCanvasColor(this.scenes[this.currentSceneIndex].color);
+            this.updateCanvasColor(this.scenesHandler.scenes[this.currentSceneIndex].color);
         }
     }
 
     highlightSceneButton(index) {
-        this.scenes.forEach((scene, i) => {
+        this.scenesHandler.scenes.forEach((scene, i) => {
             scene.btn.style.outline = i === index ? "2px solid #00f" : "";
         });
         
-        if (index >= 0 && index < this.scenes.length) {
-            const sceneElement = this.scenes[index].element;
+        if (index >= 0 && index < this.scenesHandler.scenes.length) {
+            const sceneElement = this.scenesHandler.scenes[index].element;
             sceneElement.scrollIntoView({
                 behavior: 'smooth',
                 block: 'nearest',
@@ -643,7 +519,7 @@ class VideoEditor {
     }
 
     clearPlayHighlights() {
-        this.scenes.forEach(scene => scene.btn.style.outline = "");
+        this.scenesHandler.scenes.forEach(scene => scene.btn.style.outline = "");
     }
 
     animate() {
@@ -653,7 +529,7 @@ class VideoEditor {
         const currentTime = this.audio.currentTime;
         this.currentFrame = Math.floor(currentTime * fps);
 
-        const totalFrames = this.scenes.reduce((sum, s) => sum + s.duration, 0);
+        const totalFrames = this.scenesHandler.scenes.reduce((sum, s) => sum + s.duration, 0);
         if (this.currentFrame >= totalFrames) {
             this.stopPlay();
             return;
@@ -668,16 +544,16 @@ class VideoEditor {
         let accumulated = 0;
         let currentSceneIndex = -1;
         
-        for (let i = 0; i < this.scenes.length; i++) {
-            accumulated += this.scenes[i].duration;
+        for (let i = 0; i < this.scenesHandler.scenes.length; i++) {
+            accumulated += this.scenesHandler.scenes[i].duration;
             if (this.currentFrame < accumulated) {
                 currentSceneIndex = i;
                 break;
             }
         }
 
-        if (currentSceneIndex !== -1) {
-            this.updateCanvasColor(this.scenes[currentSceneIndex].color, true);
+        if (currentSceneIndex !== -1) { 
+            this.updateCanvasColor(this.scenesHandler.scenes[currentSceneIndex].color, true);
             if (this.currentPlaySceneIndex !== currentSceneIndex) {
                 this.highlightSceneButton(currentSceneIndex);
                 this.currentPlaySceneIndex = currentSceneIndex;
@@ -698,10 +574,10 @@ class VideoEditor {
 
     drawHUD() {
         const fps = parseInt(this.fpsInput.value) || 30;
-        const totalFrames = this.scenes.reduce((sum, s) => sum + s.duration, 0);
+        const totalFrames = this.scenesHandler.scenes.reduce((sum, s) => sum + s.duration, 0);
         const currentFrame = this.currentFrame + 1;
         const currentScene = this.currentPlaySceneIndex + 1;
-        const totalScenes = this.scenes.length;
+        const totalScenes = this.scenesHandler.scenes.length;
 
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
         this.ctx.fillRect(5, 5, 160, 60);
@@ -755,5 +631,6 @@ new VideoEditor();
 </body>
 </html>
 <!--
-升级：把 srt 相关功能封装成一个类，在文件srt.js里实现。 
+升级： 
+
 -->
