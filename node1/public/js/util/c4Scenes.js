@@ -41,6 +41,15 @@ class C4Scenes {
         this.sceneToolbar.insertBefore(toolBar, this.sceneToolbar.firstChild);
 
         this.currentTool = null;
+
+        this.onSceneSelected = (id) => {
+            onSceneSelected(id);
+            // 强制重绘画布
+            if (this.currentSceneIndex !== -1) {
+                const scene = this.scenes[this.currentSceneIndex];
+                onSceneSelected(scene.id);
+            }
+        };
     }
  
     
