@@ -105,7 +105,72 @@ class DraggableWindow {
         this.windowElement.style.display = this.isVisible ? 'block' : 'none';
     }
 }
+const srt = `
+1
+00:00:00,000 --> 00:00:04,000
+Lesson 1 A Private Conversation
 
+2
+00:00:04,000 --> 00:00:09,000
+First listen and then answer the question.
+
+3
+00:00:09,000 --> 00:00:14,000
+Why did the writer complain to the people behind him?
+
+4
+00:00:14,000 --> 00:00:19,000
+Last week I went to the theatre.
+
+5
+00:00:19,000 --> 00:00:22,000
+I had a very good seat.
+
+6
+00:00:22,000 --> 00:00:24,000
+The play was very interesting.
+
+7
+00:00:24,000 --> 00:00:27,000
+Idid not enjoy it.
+
+8
+00:00:27,000 --> 00:00:31,000
+A young man and a young woman were sitting behind me.
+
+9
+00:00:31,000 --> 00:00:34,000
+They were talking loudly.
+
+10
+00:00:34,000 --> 00:00:36,000
+I got very angry.
+
+11
+00:00:36,000 --> 00:00:40,000
+I could not hear the actors.
+
+12
+00:00:40,000 --> 00:00:46,000
+I turned round.I looked at the man and the woman angrily.
+
+13
+00:00:46,000 --> 00:00:50,000
+They did not pay any attention.
+
+14
+00:00:50,000 --> 00:00:54,000
+In the end,I could not bear it.
+
+15
+00:00:54,000 --> 00:01:02,000
+I turned round again 'I can't hear a word!'I said angrily
+
+16
+00:01:02,000 --> 00:01:08,000
+'It's none of your business,'the young man said rudely.
+ 
+`;
 class VideoEditor {
     constructor() {
         this.scenes = [];
@@ -118,10 +183,43 @@ class VideoEditor {
         this.audio.src = 'https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3';
         this.audio.addEventListener('ended', () => this.stopPlay());
         
+        this.srt = srt;
+        this.srtData = this.parseSrt(this.srt);  // 新增SRT解析
+        this.currentSubtitleText = '';  // 当前显示的字幕
+
+
         this.createViewportMeta();
         this.initGlobalStyle();
         this.initDOM();
         this.createAudioPresetWindow();
+    }
+
+    // 新增SRT解析方法
+    parseSrt(srt) {
+        const subtitles = [];
+        const blocks = srt.trim().split('\n\n');
+        
+        for (const block of blocks) {
+            const lines = block.split('\n');
+            if (lines.length < 3) continue;
+
+            const id = parseInt(lines[0]);
+            const timecodes = lines[1].split(' --> ');
+            const start = this.parseTimecode(timecodes[0]);
+            const end = this.parseTimecode(timecodes[1]);
+            const text = lines.slice(2).join('\n');
+
+            subtitles.push({ id, start, end, text });
+        }
+        return subtitles;
+    }
+    parseTimecode(timecode) {
+        const [hms, ms] = timecode.split(',');
+        const [h, m, s] = hms.split(':');
+        return parseFloat(h) * 3600 + 
+               parseFloat(m) * 60 + 
+               parseFloat(s) + 
+               parseFloat(ms) / 1000;
     }
     createAudioPresetWindow() {
         this.audioPresetContent = document.createElement('div');
@@ -341,6 +439,7 @@ class VideoEditor {
         const data = {
             fps: parseInt(this.fpsInput.value) || 30,
             audio: this.audio.src,
+            srt: this.srt,  // 将SRT加入JSON
             scenes: this.scenes.map(scene => ({
                 id: scene.id,
                 color: scene.color,
@@ -349,7 +448,7 @@ class VideoEditor {
         };
         return JSON.stringify(data, null, 2);
     }
-
+   
     addScene() {
         const scene = {
             id: Date.now(),
@@ -707,6 +806,16 @@ class VideoEditor {
                 this.currentPlaySceneIndex = currentSceneIndex;
             }
         }
+        // 新增字幕处理
+        const currentTime = this.audio.currentTime;
+        this.currentSubtitleText = '';
+        
+        for (const sub of this.srtData) {
+            if (currentTime >= sub.start && currentTime < sub.end) {
+                this.currentSubtitleText = sub.text;
+                break;
+            }
+        }
     }
 
     updateCanvasColor(color, isPlaying = false) {
@@ -731,6 +840,27 @@ class VideoEditor {
         this.ctx.fillText(`帧率: ${fps} FPS`, 10, 10);
         this.ctx.fillText(`帧: ${currentFrame}/${totalFrames}`, 10, 30);
         this.ctx.fillText(`场景: ${currentScene}/${totalScenes}`, 10, 50);
+
+        // 新增字幕绘制
+        if (this.currentSubtitleText) {
+            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            this.ctx.font = '18px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'bottom';
+            
+            // 处理多行字幕
+            const lines = this.currentSubtitleText.split('\n');
+            const lineHeight = 24;
+            const startY = this.canvas.height - 40;
+            
+            lines.forEach((line, index) => {
+                this.ctx.fillText(
+                    line,
+                    this.canvas.width / 2,
+                    startY - (lines.length - 1 - index) * lineHeight
+                );
+            });
+        }
     }
 
     getRandomColor() {
@@ -771,5 +901,8 @@ new VideoEditor();
 </body>
 </html>
 <!--
-fix：点第2课按钮，  audioUrlInput 没更新 
+升级：把 this.srt 加到 json, 播放时，显示在视频上。 
+
+
+
 -->
