@@ -377,7 +377,7 @@ class VideoEditor {
     }
 
     generateVideo() {
-        if (this.scenes.length === 0) {
+        if (this.scenesHandler.scenes.length === 0) {
             alert('请先创建至少一个场景！');
             return;
         }
@@ -389,7 +389,7 @@ class VideoEditor {
         const data = {
             fps: parseInt(this.fpsInput.value) || 30,
             audio: this.audio.src,
-            scenes: this.scenes.map(scene => ({
+            scenes: this.scenesHandler.scenes.map(scene => ({
                 color: scene.color,
                 duration: scene.duration
             }))
@@ -475,7 +475,7 @@ class VideoEditor {
     }
 
     startPlay() {
-        if (this.scenes.length === 0) return;
+        if (this.scenesHandler.scenes.length === 0) return;
         this.isPlaying = true;
         this.playBtn.textContent = '停止';
         this.currentFrame = 0;
@@ -499,17 +499,17 @@ class VideoEditor {
         this.audio.currentTime = 0;
         this.clearPlayHighlights();
         if (this.currentSceneIndex >=0 && this.currentSceneIndex < this.scenes.length) {
-            this.updateCanvasColor(this.scenes[this.currentSceneIndex].color);
+            this.updateCanvasColor(this.scenesHandler.scenes[this.currentSceneIndex].color);
         }
     }
 
     highlightSceneButton(index) {
-        this.scenes.forEach((scene, i) => {
+        this.scenesHandler.scenes.forEach((scene, i) => {
             scene.btn.style.outline = i === index ? "2px solid #00f" : "";
         });
         
-        if (index >= 0 && index < this.scenes.length) {
-            const sceneElement = this.scenes[index].element;
+        if (index >= 0 && index < this.scenesHandler.scenes.length) {
+            const sceneElement = this.scenesHandler.scenes[index].element;
             sceneElement.scrollIntoView({
                 behavior: 'smooth',
                 block: 'nearest',
@@ -519,7 +519,7 @@ class VideoEditor {
     }
 
     clearPlayHighlights() {
-        this.scenes.forEach(scene => scene.btn.style.outline = "");
+        this.scenesHandler.scenes.forEach(scene => scene.btn.style.outline = "");
     }
 
     animate() {
@@ -529,7 +529,7 @@ class VideoEditor {
         const currentTime = this.audio.currentTime;
         this.currentFrame = Math.floor(currentTime * fps);
 
-        const totalFrames = this.scenes.reduce((sum, s) => sum + s.duration, 0);
+        const totalFrames = this.scenesHandler.scenes.reduce((sum, s) => sum + s.duration, 0);
         if (this.currentFrame >= totalFrames) {
             this.stopPlay();
             return;
@@ -544,16 +544,16 @@ class VideoEditor {
         let accumulated = 0;
         let currentSceneIndex = -1;
         
-        for (let i = 0; i < this.scenes.length; i++) {
-            accumulated += this.scenes[i].duration;
+        for (let i = 0; i < this.scenesHandler.scenes.length; i++) {
+            accumulated += this.scenesHandler.scenes[i].duration;
             if (this.currentFrame < accumulated) {
                 currentSceneIndex = i;
                 break;
             }
         }
 
-        if (currentSceneIndex !== -1) {
-            this.updateCanvasColor(this.scenes[currentSceneIndex].color, true);
+        if (currentSceneIndex !== -1) { 
+            this.updateCanvasColor(this.scenesHandler.scenes[currentSceneIndex].color, true);
             if (this.currentPlaySceneIndex !== currentSceneIndex) {
                 this.highlightSceneButton(currentSceneIndex);
                 this.currentPlaySceneIndex = currentSceneIndex;
@@ -574,10 +574,10 @@ class VideoEditor {
 
     drawHUD() {
         const fps = parseInt(this.fpsInput.value) || 30;
-        const totalFrames = this.scenes.reduce((sum, s) => sum + s.duration, 0);
+        const totalFrames = this.scenesHandler.scenes.reduce((sum, s) => sum + s.duration, 0);
         const currentFrame = this.currentFrame + 1;
         const currentScene = this.currentPlaySceneIndex + 1;
-        const totalScenes = this.scenes.length;
+        const totalScenes = this.scenesHandler.scenes.length;
 
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
         this.ctx.fillRect(5, 5, 160, 60);

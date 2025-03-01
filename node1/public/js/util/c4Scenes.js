@@ -21,6 +21,10 @@ class C4Scenes {
         this.sceneToolbar.appendChild(newSceneBtn);
     }
  
+    getScenes() {
+        return this.scenes;
+    }
+    
     addScene() {
         const scene = {
             id: Date.now(),
