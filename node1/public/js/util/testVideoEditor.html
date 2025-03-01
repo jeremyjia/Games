@@ -7,10 +7,18 @@
 <script>
  
 class DraggableWindow {
-    constructor(title, content, initialLeft = 20, initialTop = 20) {
-        this.isVisible = true;
+    constructor(title, content, initialLeft = 20, initialTop = 20, isVisible = true) {
+        this.isVisible = isVisible;
         this.createWindow(title, content, initialLeft, initialTop);
         this.addDragListeners();
+        this.windowElement.style.display = isVisible ? 'block' : 'none';
+    }
+
+    show() {
+        if (!this.isVisible) {
+            this.isVisible = true;
+            this.windowElement.style.display = 'block';
+        }
     }
 
     createWindow(title, content, initialLeft, initialTop) {
@@ -113,8 +121,48 @@ class VideoEditor {
         this.createViewportMeta();
         this.initGlobalStyle();
         this.initDOM();
+        this.createAudioPresetWindow();
     }
-    
+    createAudioPresetWindow() {
+        this.audioPresetContent = document.createElement('div');
+        this.audioPresetContent.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 10px;
+        `;
+
+        const baseURL = 'https://littleflute.github.io/english/NewConceptEnglish/Book2/';
+        for (let i = 1; i <= 36; i++) { 
+            const btn = document.createElement('button');
+            btn.textContent = `第 ${i} 课`;
+            btn.style.cssText = `
+                padding: 4px 8px;
+                background: #9C27B0;
+                color: white;
+                font-size: 12px;
+            `;
+            btn.onclick = () => {
+                // 关键修改：用padStart补足两位数路径
+                const paddedI = i.toString().padStart(2, '0');
+                const url = `${baseURL}${paddedI}.mp3`;
+                this.audioUrlInput.value = url;
+                this.audio.src = url;
+                this.updateJsonContent();
+            };
+            this.audioPresetContent.appendChild(btn);
+        }
+
+        this.audioPresetWindow = new DraggableWindow(
+            '音频预设',
+            this.audioPresetContent,
+            400,  
+            20,
+            false
+        );
+    }
+
+
     initGlobalStyle() {
         const style = document.createElement('style');
         style.textContent = `
@@ -210,6 +258,16 @@ class VideoEditor {
             background: white;
         `;
         this.jsonWindow = new DraggableWindow('视频数据', this.jsonContent, 20, 200);
+        // 创建结果窗口元素
+        this.resultContent = document.createElement('div');
+        this.resultContent.style.cssText = `
+            padding: 10px;
+            min-width: 300px;
+            max-width: 600px;
+            background: white;
+        `;
+        this.resultWindow = new DraggableWindow('生成结果', this.resultContent, 100, 100, false);
+    
     }
 
     createSceneToolbar() {
@@ -264,8 +322,17 @@ class VideoEditor {
             this.updateJsonContent();
         });
 
+        // 新增音频预设切换按钮
+        const toggleAudioPresetBtn = document.createElement('button');
+        toggleAudioPresetBtn.textContent = '音频预设';
+        toggleAudioPresetBtn.onclick = () => this.audioPresetWindow.toggleVisibility();
+
+        // 在原有工具栏中添加新按钮
+        this.videoManagerToolbar.appendChild(toggleAudioPresetBtn);
         this.videoManagerToolbar.appendChild(toggleWindowBtn);
         this.videoManagerToolbar.appendChild(toggleJsonBtn);
+        
+        this.audioUrlInput = audioUrlInput;
         this.videoManagerToolbar.appendChild(audioUrlInput);
         document.body.appendChild(this.videoManagerToolbar);
     }
@@ -444,9 +511,111 @@ class VideoEditor {
         this.fpsInput = fpsContainer.querySelector('input');
         this.fpsInput.addEventListener('change', () => this.updateJsonContent());
 
+            
+        const generateBtn = document.createElement('button');
+        generateBtn.textContent = '生成视频';
+        generateBtn.style.background = '#2196F3';
+        generateBtn.style.color = 'white';
+        generateBtn.onclick = () => this.generateVideo();
+        this.playToolbar.appendChild(generateBtn);
+
         this.playToolbar.appendChild(this.playBtn);
         this.playToolbar.appendChild(fpsContainer);
         document.body.appendChild(this.playToolbar);
+    }
+
+    generateVideo() {
+        if (this.scenes.length === 0) {
+            alert('请先创建至少一个场景！');
+            return;
+        }
+
+        // 更新结果窗口内容
+        this.resultContent.innerHTML = '<div>生成中，请稍候...</div>';
+        this.resultWindow.show();
+
+        const data = {
+            fps: parseInt(this.fpsInput.value) || 30,
+            audio: this.audio.src,
+            scenes: this.scenes.map(scene => ({
+                color: scene.color,
+                duration: scene.duration
+            }))
+        };
+
+        fetch('http://localhost:3000/generate-video', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(`服务器错误: ${response.status} - ${text}`);
+                });
+            }
+            return response.blob();
+        }).then(blob => {
+            const url = URL.createObjectURL(blob);
+            this.resultContent.innerHTML = '';
+            
+            // 创建视频播放器
+            const video = document.createElement('video');
+            video.controls = true;
+            video.src = url;
+            video.style.width = '100%';
+            
+            // 创建按钮容器
+            const buttonContainer = document.createElement('div');
+            buttonContainer.style.cssText = `
+                display: flex;
+                gap: 10px;
+                margin-top: 10px;
+            `;
+
+            // 下载按钮
+            const downloadBtn = document.createElement('button');
+            downloadBtn.textContent = '下载视频';
+            downloadBtn.style.cssText = `
+                background: #2196F3;
+                color: white;
+            `;
+            downloadBtn.onclick = () => {
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'video-output.mp4';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            };
+
+            // 新增关闭按钮
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = '关闭窗口';
+            closeBtn.style.cssText = `
+                background: #f44336;
+                color: white;
+            `;
+            closeBtn.onclick = () => this.resultWindow.toggleVisibility();
+
+            buttonContainer.appendChild(downloadBtn);
+            buttonContainer.appendChild(closeBtn);
+
+            this.resultContent.appendChild(video);
+            this.resultContent.appendChild(buttonContainer);
+        })
+
+        .catch(error => {
+            console.error('生成失败:', error);
+            resultContent.innerHTML = `
+                <div style="color: red;">
+                    <strong>生成失败:</strong><br>
+                    ${error.message}
+                </div>
+            `;
+        });
     }
 
     togglePlay() {
@@ -601,3 +770,6 @@ new VideoEditor();
 </script>
 </body>
 </html>
+<!--
+fix：点第2课按钮，  audioUrlInput 没更新 
+-->
