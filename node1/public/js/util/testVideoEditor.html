@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8"> 
-    <script src="srt.js"></script>
+    <script src="c4Srt.js"></script>
 </head>
 <body>
 <script>
@@ -185,8 +185,7 @@ class VideoEditor {
         this.audio.addEventListener('ended', () => this.stopPlay());
         
         this.srt = srt;
-        this.srtData = this.parseSrt(this.srt);  // 新增SRT解析
-        this.currentSubtitleText = '';  // 当前显示的字幕
+        this.srtHandler = new C4Srt(this.srt);  
 
 
         this.createViewportMeta();
@@ -194,34 +193,8 @@ class VideoEditor {
         this.initDOM();
         this.createAudioPresetWindow();
     }
-
-    // 新增SRT解析方法
-    parseSrt(srt) {
-        const subtitles = [];
-        const blocks = srt.trim().split('\n\n');
-        
-        for (const block of blocks) {
-            const lines = block.split('\n');
-            if (lines.length < 3) continue;
-
-            const id = parseInt(lines[0]);
-            const timecodes = lines[1].split(' --> ');
-            const start = this.parseTimecode(timecodes[0]);
-            const end = this.parseTimecode(timecodes[1]);
-            const text = lines.slice(2).join('\n');
-
-            subtitles.push({ id, start, end, text });
-        }
-        return subtitles;
-    }
-    parseTimecode(timecode) {
-        const [hms, ms] = timecode.split(',');
-        const [h, m, s] = hms.split(':');
-        return parseFloat(h) * 3600 + 
-               parseFloat(m) * 60 + 
-               parseFloat(s) + 
-               parseFloat(ms) / 1000;
-    }
+ 
+    
     createAudioPresetWindow() {
         this.audioPresetContent = document.createElement('div');
         this.audioPresetContent.style.cssText = `
@@ -809,14 +782,9 @@ class VideoEditor {
         }
         // 新增字幕处理
         const currentTime = this.audio.currentTime;
-        this.currentSubtitleText = '';
         
-        for (const sub of this.srtData) {
-            if (currentTime >= sub.start && currentTime < sub.end) {
-                this.currentSubtitleText = sub.text;
-                break;
-            }
-        }
+        this.srtHandler.getCurrentSubtitle(currentTime); 
+         
     }
 
     updateCanvasColor(color, isPlaying = false) {
@@ -842,26 +810,8 @@ class VideoEditor {
         this.ctx.fillText(`帧: ${currentFrame}/${totalFrames}`, 10, 30);
         this.ctx.fillText(`场景: ${currentScene}/${totalScenes}`, 10, 50);
 
-        // 新增字幕绘制
-        if (this.currentSubtitleText) {
-            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-            this.ctx.font = '18px Arial';
-            this.ctx.textAlign = 'center';
-            this.ctx.textBaseline = 'bottom';
-            
-            // 处理多行字幕
-            const lines = this.currentSubtitleText.split('\n');
-            const lineHeight = 24;
-            const startY = this.canvas.height - 40;
-            
-            lines.forEach((line, index) => {
-                this.ctx.fillText(
-                    line,
-                    this.canvas.width / 2,
-                    startY - (lines.length - 1 - index) * lineHeight
-                );
-            });
-        }
+        this.srtHandler.showCurrentSubTxt(this.ctx,this.canvas);
+        
     }
 
     getRandomColor() {
