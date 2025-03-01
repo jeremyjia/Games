@@ -1,6 +1,7 @@
 // c4Scenes.js 
 class C4Scenes {
     constructor(sceneToolbar, onSceneSelected, onScenesUpdated) {
+        this.scenes = [];
         this.sceneToolbar = sceneToolbar; // 使用外部传入的工具栏容器
         this.currentSceneIndex = -1;
         this.draggedScene = null;
