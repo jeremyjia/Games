@@ -85,7 +85,7 @@ class VideoEditor {
         this.currentFrame = 0;
         this.animationId = null;
         this.audio = new Audio();
-        this.audio.src = 'https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3';
+        this.audio.src = 'http://localhost:3001/deepseek/2025/02/03/i3/1.mp3';
         this.audio.addEventListener('ended', () => this.stopPlay());
         
         this.srt = srt;
@@ -249,7 +249,7 @@ class VideoEditor {
             margin: 0;
             background: white;
         `;
-        this.jsonWindow = new C4DraggableWindow('视频数据', this.jsonContent, 20, 200);
+        this.jsonWindow = new C4DraggableWindow('jsonWindow', this.jsonContent, 20, 200);
         // 创建结果窗口元素
         this.resultContent = document.createElement('div');
         this.resultContent.style.cssText = `
@@ -331,11 +331,11 @@ class VideoEditor {
     }
     
     generateVideoJson() {
-    // 添加有效性检查
-    if (!this.scenesHandler.scenes.every(s => s.drawingObjs)) {
-        alert('请确保所有场景的图形数据完整');
-        return;
-    }
+        // 添加有效性检查
+        if (!this.scenesHandler.scenes.every(s => s.drawingObjs)) {
+            alert('请确保所有场景的图形数据完整');
+            return;
+        }
         const scale = this.getCanvasScale();
         const scenesData = this.scenesHandler.scenes.map(scene => ({
             id: scene.id,
@@ -435,7 +435,27 @@ class VideoEditor {
             audio: this.audio.src,
             scenes: this.scenesHandler.scenes.map(scene => ({
                 color: scene.color,
-                duration: scene.duration
+                duration: scene.duration,
+                drawingObjs: scene.drawingObjs.map(obj => {
+                    const baseObj = {
+                        type: obj.constructor.name.replace("C4", ""),
+                        color: obj.color,
+                        startX: Math.round(obj.startX),
+                        startY: Math.round(obj.startY),
+                        endX: Math.round(obj.endX),
+                        endY: Math.round(obj.endY)
+                    };
+                    
+                    // 添加形状特定属性
+                    if (obj.constructor.name === "C4Rect") {
+                        baseObj.width = Math.round(obj.width);
+                        baseObj.height = Math.round(obj.height);
+                    } else if (obj.constructor.name === "C4Line") {
+                        baseObj.lineWidth = obj.lineWidth;
+                    }
+                    
+                    return baseObj;
+                })
             }))
         };
 

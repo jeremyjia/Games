@@ -11,7 +11,7 @@ class C4Scenes {
 
         // 在传入的工具栏容器中添加新建按钮
         const newSceneBtn = document.createElement('button');
-        newSceneBtn.textContent = '新建场景';
+        newSceneBtn.textContent = '+';
         newSceneBtn.style.cssText = `
             background: #4CAF50;
             color: white;
@@ -20,25 +20,25 @@ class C4Scenes {
         newSceneBtn.onclick = () => this.addScene();
         this.sceneToolbar.appendChild(newSceneBtn);
 
-        // 添加绘图工具栏
-        const toolBar = document.createElement('div');
-        toolBar.style.cssText = `
+         
+        const tbDrawing = document.createElement('div');
+        tbDrawing.style.cssText = `
             display: flex;
             gap: 5px;
             margin-bottom: 10px;
         `;
 
         this.lineBtn = document.createElement('button');
-        this.lineBtn.textContent = '直线';
+        this.lineBtn.textContent = 'Line';
         this.lineBtn.onclick = () => this.setTool('line');
 
         this.rectBtn = document.createElement('button');
-        this.rectBtn.textContent = '矩形';
+        this.rectBtn.textContent = 'Rectangle';
         this.rectBtn.onclick = () => this.setTool('rect');
 
-        toolBar.appendChild(this.lineBtn);
-        toolBar.appendChild(this.rectBtn);
-        this.sceneToolbar.insertBefore(toolBar, this.sceneToolbar.firstChild);
+        tbDrawing.appendChild(this.lineBtn);
+        tbDrawing.appendChild(this.rectBtn);
+        this.sceneToolbar.insertBefore(tbDrawing, this.sceneToolbar.firstChild);
 
         this.currentTool = null;
 

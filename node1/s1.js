@@ -1,5 +1,6 @@
 const express = require('express');
 const { createCanvas } = require('canvas');
+const cors = require('cors');  // <-- 添加CORS模块
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('ffmpeg-static');
 const tmp = require('tmp-promise');
@@ -10,6 +11,8 @@ const axios = require('axios');
 ffmpeg.setFfmpegPath(ffmpegPath);
 
 const app = express();
+app.use(cors());  // <-- 添加CORS中间件
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json({ limit: '50mb' }));
 
 // 图形绘制函数
@@ -189,6 +192,9 @@ app.post('/generate_video', async (req, res) => {
 
     // 处理所有场景
     console.log(`\nProcessing ${scenes.length} scenes`);
+    console.log(`\nProcessing ${scenes} ` + JSON.stringify(scenes));
+
+
     const clipPaths = [];
     for (const [index, scene] of scenes.entries()) {
       console.log(`\nProcessing scene ${index + 1}/${scenes.length} (ID: ${scene.id})`);
@@ -233,72 +239,6 @@ app.post('/generate_video', async (req, res) => {
       message: error.message
     });
   }
-});
-
-// Add root route handler
-app.get('/', (req, res) => {
-  res.send(`
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <title>Video Generator Server</title>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            background-color: #f0f0f0;
-          }
-          .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-          }
-          h1 {
-            color: #333;
-          }
-          a {
-            color: #0066cc;
-            text-decoration: none;
-          }
-          a:hover {
-            text-decoration: underline;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <h1>🎥 Video Generation Server</h1>
-          <p>Welcome to the video generation service. Here's what you can do:</p>
-          <ul>
-            <li>POST JSON requests to <code>/generate_video</code> to create custom videos</li>
-            <li>Test the service with a <a href="/test_generate_video">sample video</a></li>
-          </ul>
-          <h2>📚 API Documentation</h2>
-          <h3>POST /generate_video</h3>
-          <p>Request body format:</p>
-          <pre>
-{
-  "fps": 30,
-  "audio": "https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3",
-  "scenes": [
-    {
-      "id": "scene1",
-      "color": "#FFA500",
-      "duration": 5,
-      "drawingObjs": [
-        { "type": "Rect", "startX": 100, "startY": 100, "endX": 300, "endY": 300, "color": "#00FF00" }
-      ]
-    }
-  ]
-}
-          </pre>
-        </div>
-      </body>
-    </html>
-  `);
 });
 
 
