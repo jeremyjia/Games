@@ -220,6 +220,7 @@ class VideoEditor {
     initDOM() {
         this.createSceneToolbar();
         this.scenesHandler = new C4Scenes(
+            this.sceneToolbar, // 将工具栏容器传递给场景管理器
             id => this.selectScene(id),
             () => this.updateJsonContent()
         );
@@ -256,17 +257,10 @@ class VideoEditor {
             display: 'flex',
             flexDirection: 'column',
             gap: '8px',
-            padding: '10px'
+            padding: '10px',
+            overflowY: 'auto', // 添加滚动条
+            maxHeight: '300px' // 限制最大高度
         });
-
-        const newSceneBtn = document.createElement('button');
-        Object.assign(newSceneBtn.style, {
-            background: '#4CAF50',
-            color: 'white'
-        });
-        newSceneBtn.textContent = '新建场景';
-        newSceneBtn.onclick = () => this.scenesHandler.addScene();
-        this.sceneToolbar.appendChild(newSceneBtn);
     }
     
     createVideoManagerToolbar() {

@@ -1,38 +1,25 @@
 // c4Scenes.js 
 class C4Scenes {
-    constructor(onSceneSelected, onScenesUpdated) {
-        this.scenes = [];
+    constructor(sceneToolbar, onSceneSelected, onScenesUpdated) {
+        this.sceneToolbar = sceneToolbar; // 使用外部传入的工具栏容器
         this.currentSceneIndex = -1;
         this.draggedScene = null;
         this.draggedIndex = -1;
-        
         this.onSceneSelected = onSceneSelected;
         this.onScenesUpdated = onScenesUpdated;
-        
-        this.sceneToolbar = this.createSceneToolbar();
-    }
 
-    createSceneToolbar() {
-        const toolbar = document.createElement('div');
-        toolbar.style.cssText = `
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            padding: 10px;
-        `;
-
+        // 在传入的工具栏容器中添加新建按钮
         const newSceneBtn = document.createElement('button');
         newSceneBtn.textContent = '新建场景';
         newSceneBtn.style.cssText = `
             background: #4CAF50;
             color: white;
+            margin-bottom: 10px;
         `;
         newSceneBtn.onclick = () => this.addScene();
-        toolbar.appendChild(newSceneBtn);
-
-        return toolbar;
+        this.sceneToolbar.appendChild(newSceneBtn);
     }
-
+ 
     addScene() {
         const scene = {
             id: Date.now(),
