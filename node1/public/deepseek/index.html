@@ -748,7 +748,7 @@ modeDisplay.textContent = 'Mode1';  // 默认模式
     menu.className = 'ds_menu';
 
     // Menu items
-    ['dsToolBox','2025', 'classEditor','videoEditor', 'sandBox',"index0"].forEach(text => {
+    ['dsToolBox','2025','scarecrow', 'classEditor','videoEditor', 'sandBox',"index0"].forEach(text => {
         const item = document.createElement('div');
         item.className = 'ds_menu_item';
         item.textContent = text;
@@ -773,6 +773,12 @@ modeDisplay.textContent = 'Mode1';  // 默认模式
         else if (text === 'videoEditor'){
             item.addEventListener('click', () => {
                 window.location.href = 'videoEditor';
+                menu.classList.remove('active');
+            }); 
+        }
+        else if (text === 'scarecrow'){
+            item.addEventListener('click', () => {
+                window.location.href = 'scarecrow';
                 menu.classList.remove('active');
             }); 
         }
