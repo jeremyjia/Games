@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>银行排队系统完整版</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .controls {
+            margin: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        #container {
+            position: relative;
+            width: 1000px;
+            height: 600px;
+            border: 2px solid #333;
+            background: #fff;
+            margin: 20px auto;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .window {
+            position: absolute;
+            width: 150px;
+            height: 180px;
+            border: 2px solid #666;
+            background: #f8f8f8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            top: 50px;
+            border-radius: 8px;
+        }
+
+        .customer {
+            width: 45px;
+            height: 45px;
+            background: #2196F3;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            position: absolute;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .queue-area {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            background: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #takeNumber {
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+
+        #takeNumber:hover {
+            background: #45a049;
+        }
+
+        .status-light {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin: 15px 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .announcement {
+            font-size: 14px;
+            text-align: center;
+            margin: 10px 0;
+            height: 50px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .path-line {
+            position: absolute;
+            border: 2px dashed #888;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .window-number {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .queue-label {
+            font-size: 14px;
+            color: #666;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button id="takeNumber">点击取号</button>
+        <label>
+            <input type="checkbox" id="autoGenerate"> 自动生成客户
+        </label>
+    </div>
+    <div id="container"></div>
+
+    <script>
+        class CompleteBankSystem {
+            constructor(containerId, windowCount = 4) {
+                this.container = document.getElementById(containerId);
+                this.queue = [];
+                this.currentNumber = 0;
+                this.windows = Array.from({ length: windowCount }, (_, i) => ({
+                    id: i + 1,
+                    isAvailable: true,
+                    currentCustomer: null,
+                    element: null,
+                    announcementEl: null,
+                    timer: null
+                }));
+                this.autoTimer = null;
+                
+                this.initUI();
+                this.render();
+            }
+
+            initUI() {
+                this.windows.forEach((win, index) => {
+                    const windowEl = document.createElement('div');
+                    windowEl.className = 'window';
+                    windowEl.style.left = `${80 + index * 220}px`;
+                    windowEl.innerHTML = `
+                        <div class="window-number">${win.id}号窗口</div>
+                        <div class="status-light"></div>
+                        <div class="announcement">等待服务</div>
+                    `;
+                    this.container.appendChild(windowEl);
+                    win.element = windowEl;
+                    win.announcementEl = windowEl.querySelector('.announcement');
+                });
+
+                this.queueArea = document.createElement('div');
+                this.queueArea.className = 'queue-area';
+                this.queueArea.innerHTML = '<span class="queue-label">当前排队：</span>';
+                this.container.appendChild(this.queueArea);
+            }
+
+            takeNumber() {
+                this.currentNumber++;
+                this.queue.push(this.currentNumber);
+                this.render();
+                this.assignCustomerToWindow();
+                return this.currentNumber;
+            }
+
+            toggleAutoGenerate(enable) {
+                if (enable) {
+                    this.autoTimer = setInterval(() => {
+                        const count = Math.floor(Math.random() * 3) + 1;
+                        for(let i = 0; i < count; i++) {
+                            this.takeNumber();
+                        }
+                    }, 15000 + Math.random() * 15000);
+                } else {
+                    clearInterval(this.autoTimer);
+                    this.autoTimer = null;
+                }
+            }
+
+            assignCustomerToWindow() {
+                this.windows.forEach(win => {
+                    if (win.isAvailable && this.queue.length > 0) {
+                        const customer = this.queue.shift();
+                        this.serveCustomer(win, customer);
+                        this.render();
+                    }
+                });
+            }
+
+            createMovingAnimation(startPos, endPos, customerNumber) {
+                const pathLine = document.createElement('div');
+                pathLine.className = 'path-line';
+                pathLine.style.left = `${startPos.x}px`;
+                pathLine.style.top = `${startPos.y}px`;
+                
+                const dx = endPos.x - startPos.x;
+                const dy = endPos.y - startPos.y;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx);
+                
+                pathLine.style.width = `${length}px`;
+                pathLine.style.transform = `rotate(${angle}rad)`;
+                this.container.appendChild(pathLine);
+
+                const movingCustomer = document.createElement('div');
+                movingCustomer.className = 'customer';
+                movingCustomer.textContent = customerNumber;
+                movingCustomer.style.left = `${startPos.x}px`;
+                movingCustomer.style.top = `${startPos.y}px`;
+                this.container.appendChild(movingCustomer);
+
+                requestAnimationFrame(() => {
+                    movingCustomer.style.left = `${endPos.x}px`;
+                    movingCustomer.style.top = `${endPos.y}px`;
+                });
+
+                setTimeout(() => {
+                    pathLine.remove();
+                    movingCustomer.remove();
+                }, 1200);
+            }
+
+            serveCustomer(win, customer) {
+                win.isAvailable = false;
+                win.currentCustomer = customer;
+
+                win.announcementEl.innerHTML = `请 ${customer} 号顾客<br>到 ${win.id} 号窗口`;
+                win.element.querySelector('.status-light').style.backgroundColor = '#ff4444';
+
+                const queueItems = this.queueArea.querySelectorAll('.customer');
+                const lastQueueItem = queueItems[queueItems.length - 1];
+                const startPos = lastQueueItem ? 
+                    {
+                        x: lastQueueItem.offsetLeft + this.queueArea.offsetLeft + 20,
+                        y: lastQueueItem.offsetTop + this.queueArea.offsetTop + 20
+                    } : 
+                    { x: 50, y: this.container.offsetHeight - 50 };
+
+                const endPos = {
+                    x: win.element.offsetLeft + 50,
+                    y: win.element.offsetTop + 80
+                };
+
+                this.createMovingAnimation(startPos, endPos, customer);
+
+                win.timer = setTimeout(() => {
+                    win.isAvailable = true;
+                    win.currentCustomer = null;
+                    win.announcementEl.innerHTML = '窗口空闲中';
+                    win.element.querySelector('.status-light').style.backgroundColor = '#44ff44';
+                    this.render();
+
+                    setTimeout(() => {
+                        this.assignCustomerToWindow();
+                    }, 2000);
+                }, Math.random() * 10000 + 10000);
+            }
+
+            render() {
+                this.queueArea.innerHTML = '<span class="queue-label">当前排队：</span>' + 
+                    this.queue.map(num => 
+                        `<div class="customer" style="position: static;">${num}</div>`
+                    ).join('');
+                
+                this.windows.forEach(win => {
+                    const light = win.element.querySelector('.status-light');
+                    light.style.backgroundColor = win.isAvailable ? '#44ff44' : '#ff4444';
+                });
+            }
+        }
+
+        const bankSystem = new CompleteBankSystem('container', 4);
+
+        document.getElementById('takeNumber').addEventListener('click', () => {
+            bankSystem.takeNumber();
+        });
+
+        document.getElementById('autoGenerate').addEventListener('change', function(e) {
+            bankSystem.toggleAutoGenerate(e.target.checked);
+        });
+    </script>
+</body>
+</html>
