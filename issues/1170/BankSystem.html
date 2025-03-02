@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>智能银行排队系统 - 终极版</title>
+    <title>智能银行排队系统 - 完整动画版</title>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -46,6 +46,7 @@
             padding: 20px;
             top: 50px;
             transition: transform 0.3s ease;
+            will-change: transform;
         }
 
         .window:hover {
@@ -129,7 +130,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
-        /* 拟人化客户样式 */
+        /* 客户样式 */
         .customer {
             width: 70px;
             height: 110px;
@@ -138,6 +139,7 @@
             cursor: pointer;
             margin: 10px;
             flex-shrink: 0;
+            transform-origin: bottom center;
         }
 
         .customer .head {
@@ -197,6 +199,7 @@
             position: absolute;
             border-radius: 6px;
             top: 50px;
+            transform-origin: top center;
         }
 
         .customer .arm.left {
@@ -221,7 +224,7 @@
         .customer .leg.left { left: 15px; }
         .customer .leg.right { left: 40px; }
 
-        /* 动画效果 */
+        /* 动画系统 */
         @keyframes pulse {
             0% { opacity: 0.8; }
             50% { opacity: 1; }
@@ -233,16 +236,46 @@
             50% { transform: translateY(-8px); }
         }
 
-        .queue-area .customer {
-            animation: bounce 1.5s infinite;
+        @keyframes walk {
+            0% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-5px) rotate(2deg); }
+            50% { transform: translateY(0) rotate(0deg); }
+            75% { transform: translateY(-5px) rotate(-2deg); }
+            100% { transform: translateY(0) rotate(0deg); }
+        }
+
+        @keyframes armSwing {
+            0% { transform: rotate(20deg); }
+            50% { transform: rotate(-10deg); }
+            100% { transform: rotate(20deg); }
+        }
+
+        @keyframes pathAppear {
+            0% { width: 0; opacity: 0; }
+            100% { opacity: 0.5; }
+        }
+
+        .walking {
+            animation: walk 0.6s infinite linear;
+            z-index: 10;
+        }
+
+        .arm.walking {
+            animation: armSwing 0.6s infinite ease-in-out;
         }
 
         .path-line {
             position: absolute;
             border: 2px dashed #90a4ae;
             pointer-events: none;
-            opacity: 0.5;
-            transition: opacity 0.3s;
+            opacity: 0;
+            transform-origin: left center;
+            animation: pathAppear 0.5s ease-out forwards;
+        }
+
+        .serving {
+            transition: all 0.8s ease-in-out;
+            filter: brightness(0.9);
         }
     </style>
 </head>
@@ -284,7 +317,6 @@
             }
 
             initUI() {
-                // 初始化服务窗口
                 this.windows.forEach((win, index) => {
                     const windowEl = document.createElement('div');
                     windowEl.className = 'window';
@@ -299,7 +331,6 @@
                     win.announcementEl = windowEl.querySelector('.announcement');
                 });
 
-                // 初始化排队区域
                 this.queueArea = document.createElement('div');
                 this.queueArea.className = 'queue-area';
                 this.queueArea.innerHTML = '<span class="queue-label">排队队列：</span>';
@@ -307,6 +338,10 @@
             }
 
             takeNumber() {
+                if(this.queue.length >= 50) {
+                    alert('排队人数已达上限');
+                    return;
+                }
                 this.currentNumber++;
                 this.queue.push({
                     number: this.currentNumber,
@@ -333,7 +368,6 @@
                     <div class="leg right"></div>
                 `;
 
-                // 随机颜色分配
                 const hairColor = this.hairColors[Math.floor(Math.random() * this.hairColors.length)];
                 const clothColor = this.clothColors[Math.floor(Math.random() * this.clothColors.length)];
                 
@@ -348,9 +382,7 @@
                 if (enable) {
                     this.autoTimer = setInterval(() => {
                         const batchSize = Math.floor(Math.random() * 3) + 1;
-                        for(let i = 0; i < batchSize; i++) {
-                            this.takeNumber();
-                        }
+                        for(let i = 0; i < batchSize; i++) this.takeNumber();
                     }, 4000 + Math.random() * 8000);
                 } else {
                     clearInterval(this.autoTimer);
@@ -363,11 +395,13 @@
                         const customer = this.queue.shift();
                         this.serveCustomer(win, customer);
                         this.renderQueue();
+                    }else if(win.isAvailable && this.queue.length == 0){
+                        win.announcementEl.innerHTML = `等待客户...`;
                     }
                 });
             }
 
-            animateCustomerMovement(startPos, endPos, customerNumber) {
+            animateCustomerMovement(startPos, endPos, customerNumber, win) {
                 const pathLine = document.createElement('div');
                 pathLine.className = 'path-line';
                 this.container.appendChild(pathLine);
@@ -383,55 +417,44 @@
                 pathLine.style.transform = `rotate(${angle}rad)`;
 
                 const movingCustomer = this.createMovingCustomer(customerNumber, startPos);
-                
-                requestAnimationFrame(() => {
-                    movingCustomer.style.transform = `translate(${dx}px, ${dy}px) rotateY(180deg)`;
-                });
+                movingCustomer.classList.add('walking');
+                movingCustomer.querySelectorAll('.arm').forEach(arm => arm.classList.add('walking'));
+                movingCustomer.style.transform = `rotateY(${angle > Math.PI/2 ? 180 : 0}deg)`;
 
-                setTimeout(() => {
+                movingCustomer.animate([
+                    { transform: `translate(0, 0)` },
+                    { transform: `translate(${dx}px, ${dy}px)` }
+                ], {
+                    duration: 2000,
+                    easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                }).onfinish = () => {
                     pathLine.remove();
                     movingCustomer.remove();
-                }, 800);
-            }
-
-            createMovingCustomer(number, startPos) {
-                const element = this.createQueueElement(number);
-                element.style.position = 'absolute';
-                element.style.left = `${startPos.x}px`;
-                element.style.top = `${startPos.y}px`;
-                element.style.transform = 'translate(0, 0)';
-                this.container.appendChild(element);
-                return element;
+                };
             }
 
             serveCustomer(win, customer) {
                 win.isAvailable = false;
                 win.currentCustomer = customer.number;
-
-                // 更新窗口状态
                 win.announcementEl.innerHTML = `请 <strong>${customer.number}</strong> 号<br>至 ${win.id} 号窗口`;
                 const light = win.element.querySelector('.status-light');
                 light.style.background = '#ff5252';
 
-                // 计算动画起始位置
                 const startPos = {
                     x: customer.element.offsetLeft + this.queueArea.offsetLeft + 35,
                     y: customer.element.offsetTop + this.queueArea.offsetTop + 55
                 };
 
-                // 计算窗口目标位置
                 const endPos = {
                     x: win.element.offsetLeft + 80,
                     y: win.element.offsetTop + 120
                 };
 
-                // 执行动画
-                this.animateCustomerMovement(startPos, endPos, customer.number);
+                this.animateCustomerMovement(startPos, endPos, customer.number, win);
 
-                // 设置服务计时器
                 win.timer = setTimeout(() => {
                     this.completeService(win);
-                }, 3000 + Math.random() * 5000);
+                }, 6000 + Math.random() * 9000);
             }
 
             completeService(win) {
@@ -442,9 +465,18 @@
                 light.style.background = '#4caf50';
                 light.style.animation = 'pulse 0.8s ease 3';
                 
-                this.renderStats();
+                const customerClone = win.element.querySelector('.serving');
+                if (customerClone) {
+                    customerClone.animate([
+                        { opacity: 1, transform: 'translateY(0)' },
+                        { opacity: 0, transform: 'translateY(-20px)' }
+                    ], {
+                        duration: 500,
+                        easing: 'ease-out'
+                    }).onfinish = () => customerClone.remove();
+                }
 
-                // 延迟500ms后分配下一个客户
+                this.renderStats();
                 setTimeout(() => {
                     this.assignCustomerToWindow();
                     light.style.animation = '';
@@ -463,12 +495,19 @@
                 document.getElementById('queueCount').textContent = this.queue.length;
                 document.getElementById('servedCount').textContent = this.servedCount;
             }
+
+            createMovingCustomer(number, pos) {
+                const element = this.createQueueElement(number);
+                element.style.position = 'absolute';
+                element.style.left = `${pos.x}px`;
+                element.style.top = `${pos.y}px`;
+                this.container.appendChild(element);
+                return element;
+            }
         }
 
-        // 初始化银行系统
         const bankSystem = new UltimateBankSystem('container', 4);
 
-        // 事件绑定
         document.getElementById('takeNumber').addEventListener('click', () => {
             bankSystem.takeNumber();
         });
