@@ -12,9 +12,8 @@ class VideoEditor {
         this.audio = new Audio();
         this.audio.src = 'http://localhost:3001/deepseek/2025/02/03/i3/1.mp3';
         this.audio.addEventListener('ended', () => this.stopPlay());
-        
-        this.srt = srt;
-        this.srtHandler = new C4Srt(this.srt);  
+         
+        this.srtHandler = new C4Srt();  
 
 
         this.createViewportMeta();
