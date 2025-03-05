@@ -12,7 +12,9 @@ describe(tag4xdTest, function(){
   
   //
   it("node1_spring_blsVideo",
-    function(){assert.equal("done",'doing...');  });
+    function(){
+      assert.equal("done",'jsonWindow doing...');  
+     });
 
   it("bls_objsO_video",
     function(){assert.equal("done",'doing...');  });

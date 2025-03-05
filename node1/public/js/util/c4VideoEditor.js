@@ -77,7 +77,7 @@ class VideoEditor {
     handleMouseUp() {
         if (this.isDraggingShape) {
             this.isDraggingShape = false;
-            this.updateJsonContent();
+            this.updateJson();
         }
         this.finishDrawing();
     }
@@ -171,7 +171,7 @@ class VideoEditor {
                 const url = `${baseURL}${paddedI}.mp3`;
                 this.audioUrlInput.value = url;
                 this.audio.src = url;
-                this.updateJsonContent();
+                this.updateJson();
             };
             this.audioPresetContent.appendChild(btn);
         }
@@ -228,11 +228,12 @@ class VideoEditor {
         if (!this.jsonWindow.isVisible) {
             this.jsonWindow.toggleVisibility();
         }
-        this.updateJsonContent();
+        this.updateJson();
         setTimeout(() => {
-            const targetLine = this.jsonContent.querySelector(`[data-scene-id="${sceneId}"]`);
+            let jsonContent = this.jsonWindow.getJsonContent();
+            const targetLine = jsonContent.querySelector(`[data-scene-id="${sceneId}"]`);
             if (targetLine) {
-                this.jsonContent.querySelectorAll('.line').forEach(line => {
+                jsonContent.querySelectorAll('.line').forEach(line => {
                     line.classList.remove('highlight');
                 });
                 targetLine.classList.add('highlight');
@@ -241,11 +242,12 @@ class VideoEditor {
         }, 0);
     }
 
-    updateJsonContent() {
+    updateJson() {
         if (this.jsonWindow.isVisible) {
             const jsonStr = this.generateVideoJson();
             const lines = jsonStr.split('\n');
-            this.jsonContent.innerHTML = lines.map(line => {
+            let jsonContent = this.jsonWindow.getJsonContent();
+            jsonContent.innerHTML = lines.map(line => {
                 const escapedLine = line.replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 const idMatch = line.match(/"id":\s*(\d+)/);
                 if (idMatch) {
@@ -269,24 +271,15 @@ class VideoEditor {
         this.scenesHandler = new C4Scenes(
             this.sceneToolbar, // 将工具栏容器传递给场景管理器
             id => this.selectScene(id),
-            () => this.updateJsonContent()
+            () => this.updateJson()
         );
         this.sceneWindow = new C4DraggableWindow('场景管理', this.sceneToolbar, 20, 20);
         this.createVideoManagerToolbar();
         this.createCanvas();
         this.createPlayToolbar();
 
-        this.jsonContent = document.createElement('div');
-        this.jsonContent.className = 'json-content';
-        this.jsonContent.style.cssText = `
-            padding: 10px;
-            max-height: 200px;
-            overflow: auto;
-            margin: 0;
-            background: white;
-        `;
-        this.jsonWindow = new C4DraggableWindow('jsonWindow', this.jsonContent, 20, 200);
-        // 创建结果窗口元素
+        
+        this.jsonWindow = new C4JsonWnd();  
         this.resultContent = document.createElement('div');
         this.resultContent.style.cssText = `
             padding: 10px;
@@ -329,7 +322,7 @@ class VideoEditor {
         toggleJsonBtn.onclick = () => {
             this.jsonWindow.toggleVisibility();
             if (this.jsonWindow.isVisible) {
-                this.updateJsonContent();
+                this.updateJson();
             }
         };
 
@@ -340,15 +333,17 @@ class VideoEditor {
         audioUrlInput.style.flex = '1';
         audioUrlInput.addEventListener('change', (e) => {
             this.audio.src = e.target.value;
-            this.updateJsonContent();
+            this.updateJson();
         });
-
-        // 新增音频预设切换按钮
+ 
         const toggleAudioPresetBtn = document.createElement('button');
         toggleAudioPresetBtn.textContent = '音频预设';
         toggleAudioPresetBtn.onclick = () => this.audioPresetWindow.toggleVisibility();
-
-        // 在原有工具栏中添加新按钮
+ 
+        const btn4Version = document.createElement('button');
+        btn4Version.textContent = 'videoEditor_v0.12'; 
+ 
+        this.videoManagerToolbar.appendChild(btn4Version);
         this.videoManagerToolbar.appendChild(toggleAudioPresetBtn);
         this.videoManagerToolbar.appendChild(toggleWindowBtn);
         this.videoManagerToolbar.appendChild(toggleJsonBtn);
@@ -441,7 +436,7 @@ class VideoEditor {
             <label>帧率: <input type="number" value="30" min="1" style="width:50px"></label>
         `;
         this.fpsInput = fpsContainer.querySelector('input');
-        this.fpsInput.addEventListener('change', () => this.updateJsonContent());
+        this.fpsInput.addEventListener('change', () => this.updateJson());
 
             
         const generateBtn = document.createElement('button');
@@ -764,7 +759,7 @@ class VideoEditor {
 
         if (newShape) {
             scene.drawingObjs.push(newShape);
-            this.updateJsonContent();
+            this.updateJson();
         }
     }
     createShape(type, start, end) {  // 移除颜色参数
