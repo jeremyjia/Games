@@ -2,30 +2,47 @@
 class C4Scenes {
     constructor(sceneToolbar, onSceneSelected, onScenesUpdated) {
         this.scenes = [];
-        this.sceneToolbar = sceneToolbar; // 使用外部传入的工具栏容器
+        this.sceneToolbar = sceneToolbar;
         this.currentSceneIndex = -1;
         this.draggedScene = null;
         this.draggedIndex = -1;
         this.onSceneSelected = onSceneSelected;
         this.onScenesUpdated = onScenesUpdated;
-
-        // 在传入的工具栏容器中添加新建按钮
-        const newSceneBtn = document.createElement('button');
-        newSceneBtn.textContent = '+';
-        newSceneBtn.style.cssText = `
-            background: #4CAF50;
+ 
+        const header = document.createElement('div');
+        header.style.cssText = ` 
+            position: sticky;
+            top: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 1;
+            padding: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.15);
             color: white;
-            margin-bottom: 10px;
         `;
-        newSceneBtn.onclick = () => this.addScene();
-        this.sceneToolbar.appendChild(newSceneBtn);
 
-         
+        // Create a scrollable container for scenes
+        this.scenesContainer = document.createElement('div');
+        this.scenesContainer.style.cssText = `
+            overflow-y: auto;
+            flex-grow: 1;
+        `;
+
+        // Configure the main toolbar layout
+        this.sceneToolbar.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        `;
+        this.sceneToolbar.appendChild(header);
+        this.sceneToolbar.appendChild(this.scenesContainer);
+
+        // Add drawing tools to the header
         const tbDrawing = document.createElement('div');
         tbDrawing.style.cssText = `
             display: flex;
             gap: 5px;
-            margin-bottom: 10px;
+            margin-bottom: 1px;
         `;
 
         this.lineBtn = document.createElement('button');
@@ -38,20 +55,41 @@ class C4Scenes {
 
         tbDrawing.appendChild(this.lineBtn);
         tbDrawing.appendChild(this.rectBtn);
-        this.sceneToolbar.insertBefore(tbDrawing, this.sceneToolbar.firstChild);
+        header.appendChild(tbDrawing);
+
+        
+        const newSceneBtn = document.createElement('button');
+        newSceneBtn.textContent = '+';
+        newSceneBtn.style.cssText = `
+            background: #4CAF50;
+            color: white;
+            margin-bottom: 10px;
+            width: 100%;
+        `;
+        newSceneBtn.onclick = () => this.addScene();
+        header.appendChild(newSceneBtn);
 
         this.currentTool = null;
 
         this.onSceneSelected = (id) => {
             onSceneSelected(id);
-            // 强制重绘画布
             if (this.currentSceneIndex !== -1) {
                 const scene = this.scenes[this.currentSceneIndex];
                 onSceneSelected(scene.id);
             }
         };
+
+        
+        // Add to your button creation code:
+        this.lineBtn.style.color = 'brown';
+        this.rectBtn.style.color = 'brown';
+        newSceneBtn.style.color = 'white';
+
+        // Add hover effects:
+        this.lineBtn.style.transition = 'background 0.3s';
+        this.rectBtn.style.transition = 'background 0.3s';
+        newSceneBtn.style.transition = 'background 0.3s';
     }
- 
     
     setTool(tool) {
         this.currentTool = tool;
@@ -121,8 +159,8 @@ class C4Scenes {
 
         sceneItem.appendChild(sceneBtn);
         sceneItem.appendChild(durationInput);
-        sceneItem.appendChild(colorInput);
-        this.sceneToolbar.appendChild(sceneItem);
+        sceneItem.appendChild(colorInput); 
+        this.scenesContainer.appendChild(sceneItem);
 
         scene.element = sceneItem;
         scene.btn = sceneBtn;
@@ -155,9 +193,9 @@ class C4Scenes {
         const midY = rect.top + rect.height / 2;
 
         if (e.clientY < midY) {
-            this.sceneToolbar.insertBefore(this.draggedScene.element, targetScene.element);
+            this.scenesContainer.insertBefore(this.draggedScene.element, targetScene.element);
         } else {
-            this.sceneToolbar.insertBefore(this.draggedScene.element, targetScene.element.nextSibling);
+            this.scenesContainer.insertBefore(this.draggedScene.element, targetScene.element.nextSibling);
         }
 
         const newScenes = [...this.scenes];

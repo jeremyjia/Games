@@ -79,6 +79,8 @@ I turned round again 'I can't hear a word!'I said angrily
 `;
 class VideoEditor {
     constructor() { 
+        this.selectedShape = null;
+        this.dragOffset = { x: 0, y: 0 };
         this.currentSceneIndex = -1;
         this.currentPlaySceneIndex = -1;
         this.isPlaying = false;
@@ -108,6 +110,117 @@ class VideoEditor {
         this.canvas.addEventListener('mousemove', e => this.whileDrawing(e));
         this.canvas.addEventListener('mouseup', e => this.finishDrawing(e));
         this.canvas.addEventListener('mouseleave', e => this.finishDrawing(e));
+        this.canvas.addEventListener('mousedown', e => this.handleMouseDown(e));
+        // 添加新事件处理
+        this.canvas.addEventListener('mousemove', e => this.handleMouseMove(e));
+        this.canvas.addEventListener('mouseup', e => this.handleMouseUp(e));
+        this.canvas.addEventListener('mouseleave', e => this.handleMouseUp(e));
+    }
+
+    handleMouseDown(e) {
+        if (this.isPlaying) return;
+        
+        const pos = this.getCanvasPosition(e);
+        
+        // 优先检测是否选中图形
+        this.selectedShape = this.findShapeAt(pos.x, pos.y);
+        if (this.selectedShape) {
+            this.dragOffset = {
+                x: pos.x - this.selectedShape.startX,
+                y: pos.y - this.selectedShape.startY
+            };
+            this.isDraggingShape = true;
+            this.redrawCanvas();
+            return;
+        }
+        
+        // 原有绘图逻辑
+        if (this.scenesHandler.currentTool) {
+            this.startDrawing(e);
+        }
+    }
+    
+    handleMouseMove(e) {
+        if (!this.isDraggingShape) {
+            this.whileDrawing(e);
+            return;
+        }
+        
+        const pos = this.getCanvasPosition(e);
+        this.moveSelectedShape(pos.x, pos.y);
+        this.redrawCanvas();
+    }
+
+    handleMouseUp() {
+        if (this.isDraggingShape) {
+            this.isDraggingShape = false;
+            this.updateJsonContent();
+        }
+        this.finishDrawing();
+    }
+    // 新增辅助方法
+    getCanvasPosition(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
+        return {
+            x: (e.clientX - rect.left) * scaleX,
+            y: (e.clientY - rect.top) * scaleY
+        };
+    }
+    findShapeAt(x, y) {
+        if (this.currentSceneIndex === -1) return null;
+        
+        const scene = this.scenesHandler.scenes[this.currentSceneIndex];
+        // 反向查找最后绘制的图形
+        for (let i = scene.drawingObjs.length - 1; i >= 0; i--) {
+            const shape = scene.drawingObjs[i];
+            if (shape.isPointInside(x, y)) {
+                return shape;
+            }
+        }
+        return null;
+    }
+    moveSelectedShape(x, y) {
+        if (!this.selectedShape) return;
+        
+        const dx = x - this.selectedShape.startX - this.dragOffset.x;
+        const dy = y - this.selectedShape.startY - this.dragOffset.y;
+        
+        this.selectedShape.startX += dx;
+        this.selectedShape.startY += dy;
+        this.selectedShape.endX += dx;
+        this.selectedShape.endY += dy;
+    }
+
+    redrawCanvas() {
+        this.updateCanvasColor(
+            this.scenesHandler.scenes[this.currentSceneIndex].color
+        );
+        this.drawSelectionHighlight();
+    }
+    drawSelectionHighlight() {
+        if (!this.selectedShape) return;
+        
+        this.ctx.save();
+        this.ctx.strokeStyle = '#FF0000';
+        this.ctx.lineWidth = 2;
+        
+        if (this.selectedShape instanceof C4Line) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(this.selectedShape.startX, this.selectedShape.startY);
+            this.ctx.lineTo(this.selectedShape.endX, this.selectedShape.endY);
+            this.ctx.stroke();
+        } else if (this.selectedShape instanceof C4Rect) {
+            this.ctx.strokeRect(
+                this.selectedShape.startX,
+                this.selectedShape.startY,
+                this.selectedShape.endX - this.selectedShape.startX,
+                this.selectedShape.endY - this.selectedShape.startY
+            );
+        }
+        
+        this.ctx.restore();
     }
 
     createAudioPresetWindow() {
@@ -409,7 +522,7 @@ class VideoEditor {
 
             
         const generateBtn = document.createElement('button');
-        generateBtn.textContent = '生成视频';
+        generateBtn.textContent = 's1GenVideo';
         generateBtn.style.background = '#2196F3';
         generateBtn.style.color = 'white';
         generateBtn.onclick = () => this.generateVideo();
