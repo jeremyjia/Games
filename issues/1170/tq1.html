@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>跳跳棋游戏 - 菱形布局</title>
+  <style>
+    canvas {
+      border: 1px solid black;
+      display: block;
+      margin: 0 auto;
+    }
+    #status {
+      text-align: center;
+      font-size: 24px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="status">当前玩家：<span id="current-player">红方</span></div>
+  <canvas id="board" width="600" height="600"></canvas>
+  <script>
+    const canvas = document.getElementById("board");
+    const ctx = canvas.getContext("2d");
+    const statusText = document.getElementById("current-player");
+
+    // 棋盘参数
+    const rows = 9; // 棋盘行数（菱形布局需要奇数行）
+    const cols = 9; // 棋盘列数（菱形布局需要奇数列）
+    const cellSize = 60; // 每个棋位的大小
+    const board = []; // 棋盘状态
+
+    // 玩家参数
+    const players = [
+      { color: "red", pieces: [] },
+      { color: "blue", pieces: [] },
+    ];
+    let currentPlayer = 0;
+
+    // 初始化棋盘
+    function initBoard() {
+      for (let i = 0; i < rows; i++) {
+        board[i] = [];
+        for (let j = 0; j < cols; j++) {
+          // 判断是否为有效棋位（菱形布局）
+          const center = Math.floor(cols / 2);
+          if (Math.abs(j - center) + Math.abs(i - center) <= center) {
+            if (i < center-1) {
+              board[i][j] = { type: "piece", player: 0 }; // 玩家1的棋子
+              players[0].pieces.push({ x: j, y: i });
+            } else if (i > center+1) {
+              board[i][j] = { type: "piece", player: 1 }; // 玩家2的棋子
+              players[1].pieces.push({ x: j, y: i });
+            } else {
+              board[i][j] = { type: "empty" }; // 中间行为空
+            }
+          } else {
+            board[i][j] = null; // 无效棋位
+          }
+        }
+      }
+    }
+
+    // 绘制棋盘
+    function drawBoard() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          if (board[i][j] === null) continue; // 跳过无效棋位
+
+          const x = j * cellSize;
+          const y = i * cellSize;
+          ctx.strokeRect(x, y, cellSize, cellSize);
+
+          if (board[i][j].type === "piece") {
+            ctx.beginPath();
+            ctx.arc(x + cellSize / 2, y + cellSize / 2, cellSize / 3, 0, Math.PI * 2);
+            ctx.fillStyle = players[board[i][j].player].color;
+            ctx.fill();
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    // 闪烁选中的棋子
+    function blinkSelectedPiece() {
+      if (selectedPiece) {
+        const { x, y } = selectedPiece;
+        const piece = board[y][x];
+        ctx.beginPath();
+        ctx.arc(x * cellSize + cellSize / 2, y * cellSize + cellSize / 2, cellSize / 3, 0, Math.PI * 2);
+        ctx.fillStyle = piece.blink ? "white" : players[piece.player].color;
+        ctx.fill();
+        ctx.stroke();
+        piece.blink = !piece.blink;
+      }
+    }
+
+    // 显示可跳跃的位置
+    function showValidMoves() {
+      if (selectedPiece) {
+        const { x, y } = selectedPiece;
+        const moves = getAllValidMoves(x, y);
+        moves.forEach(({ x: tx, y: ty }) => {
+          ctx.beginPath();
+          ctx.arc(tx * cellSize + cellSize / 2, ty * cellSize + cellSize / 2, cellSize / 6, 0, Math.PI * 2);
+          ctx.fillStyle = "green";
+          ctx.fill();
+        });
+      }
+    }
+
+    // 获取所有合法的跳跃位置（包括连续跳跃）
+    function getAllValidMoves(x, y, visited = new Set(), isCheckEmpty = true) {
+      const moves = [];
+      const directions = [
+        { dx: 1, dy: 0 }, // 右
+        { dx: -1, dy: 0 }, // 左
+        { dx: 0, dy: 1 }, // 下
+        { dx: 0, dy: -1 }, // 上
+      ];
+
+      directions.forEach(({ dx, dy }) => {
+        const tx = x + dx;
+        const ty = y + dy;
+        if (tx >= 0 && tx < cols && ty >= 0 && ty < rows && board[ty][tx] && board[ty][tx].type === "empty" && isCheckEmpty) {
+          moves.push({ x: tx, y: ty });
+        } else if (tx >= 0 && tx < cols && ty >= 0 && ty < rows && board[ty][tx] && board[ty][tx].type === "piece") {
+          const jx = x + 2 * dx;
+          const jy = y + 2 * dy;
+          if (jx >= 0 && jx < cols && jy >= 0 && jy < rows && board[jy][jx] && board[jy][jx].type === "empty") {
+            const key = `${jx},${jy}`;
+            if (!visited.has(key)) {
+              visited.add(key);
+              moves.push({ x: jx, y: jy });
+              // 递归检查连续跳跃
+              const nextMoves = getAllValidMoves(jx, jy, visited, false);
+              moves.push(...nextMoves);
+            }
+          }
+        }
+      });
+
+      return moves;
+    }
+
+    // 移动棋子
+    function movePiece(fromX, fromY, toX, toY) {
+      const piece = board[fromY][fromX];
+      board[fromY][fromX] = { type: "empty" };
+      board[toY][toX] = piece;
+
+      // 更新玩家棋子位置
+      const player = players[piece.player];
+      const index = player.pieces.findIndex((p) => p.x === fromX && p.y === fromY);
+      player.pieces[index] = { x: toX, y: toY };
+    }
+
+    // 处理点击事件
+    let selectedPiece = null;
+    canvas.addEventListener("click", (event) => {
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = event.clientX - rect.left;
+      const mouseY = event.clientY - rect.top;
+
+      const col = Math.floor(mouseX / cellSize);
+      const row = Math.floor(mouseY / cellSize);
+
+      if (!board[row] || !board[row][col]) return; // 点击无效棋位时忽略
+
+      if (!selectedPiece) {
+        // 选择棋子
+        if (board[row][col].type === "piece" && board[row][col].player === currentPlayer) {
+          selectedPiece = { x: col, y: row };
+          board[row][col].blink = true;
+        }
+      } else {
+        // 如果点击的是另一个自己的棋子，则重新选择
+        if (board[row][col].type === "piece" && board[row][col].player === currentPlayer) {
+          selectedPiece = { x: col, y: row };
+          board[row][col].blink = true;
+          drawBoard(); // 重新绘制棋盘
+          return;
+        }
+
+        // 移动棋子
+        const moves = getAllValidMoves(selectedPiece.x, selectedPiece.y);
+        const isValid = moves.some((move) => move.x === col && move.y === row);
+        if (isValid) {
+          movePiece(selectedPiece.x, selectedPiece.y, col, row);
+          currentPlayer = (currentPlayer + 1) % players.length; // 切换玩家
+          selectedPiece = null;
+          drawBoard();
+          checkWin();
+          updateStatus();
+        }
+      }
+    });
+
+    // 检查胜利条件
+    function checkWin() {
+      for (let i = 0; i < players.length; i++) {
+        const player = players[i];
+        const targetRow = i === 0 ? rows - 1 : 0; // 对家营区
+        if (player.pieces.every((p) => p.y === targetRow)) {
+          alert(`玩家 ${i + 1} 胜利！`);
+          resetGame();
+        }
+      }
+    }
+
+    // 重置游戏
+    function resetGame() {
+      initBoard();
+      drawBoard();
+      currentPlayer = 0;
+      statusText.textContent = players[currentPlayer].color === "red" ? "红方" : "蓝方";
+    }
+
+    // 更新状态栏
+    function updateStatus() {
+      statusText.textContent = players[currentPlayer].color === "red" ? "红方" : "蓝方";
+    }
+
+    // 初始化
+    initBoard();
+    drawBoard();
+    updateStatus();
+
+    // 闪烁选中的棋子
+    setInterval(() => {
+      if (selectedPiece) {
+        blinkSelectedPiece();
+        showValidMoves();
+      }
+    }, 500);
+  </script>
+</body>
+</html>

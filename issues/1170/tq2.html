@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中国水晶跳棋 - 四玩家六边形棋盘</title>
+  <style>
+    canvas {
+      border: 1px solid black;
+      display: block;
+      margin: 0 auto;
+      background-color: #f0f0f0;
+    }
+    #status {
+      text-align: center;
+      font-size: 24px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="status">当前玩家：<span id="current-player">红方</span></div>
+  <canvas id="board" width="900" height="900"></canvas>
+  <script>
+    const canvas = document.getElementById("board");
+    const ctx = canvas.getContext("2d");
+    const statusText = document.getElementById("current-player");
+
+    // 棋盘参数
+    const hexSize = 25;
+    const rows = 17;
+    const cols = 17;
+    const board = [];
+
+    // 玩家参数
+    const players = [
+      { color: "red", pieces: [], startArea: [], targetArea: [] },
+      { color: "blue", pieces: [], startArea: [], targetArea: [] },
+      { color: "green", pieces: [], startArea: [], targetArea: [] },
+      { color: "yellow", pieces: [], startArea: [], targetArea: [] },
+    ];
+    let currentPlayer = 0;
+    let selectedPiece = null;
+    let validMoves = [];
+
+    // 初始化棋盘
+    function initBoard() {
+      for (let i = 0; i < rows; i++) {
+        board[i] = [];
+        for (let j = 0; j < cols; j++) {
+          board[i][j] = isValidHex(i, j) ? { type: "empty" } : null;
+        }
+      }
+      initStartAreas();
+    }
+
+    function isValidHex(row, col) {
+      const center = Math.floor(rows / 2);
+      return Math.abs(col - center) + Math.abs(row - center) <= center;
+    }
+
+    function initStartAreas() {
+      const center = Math.floor(rows / 2);
+      const directions = [
+        { axis: "y", delta: -1 }, // 上
+        { axis: "y", delta: 1 },  // 下
+        { axis: "x", delta: -1 }, // 左
+        { axis: "x", delta: 1 },  // 右
+      ];
+
+      directions.forEach((dir, idx) => {
+        // 初始化起始区域
+        for (let row = 0; row < 3; row++) {
+          const offset = 8 - row;
+          for (let i = -row; i <= row; i++) {
+            let x, y;
+            if (dir.axis === "y") {
+              x = center + i;
+              y = center + dir.delta * offset;
+            } else {
+              x = center + dir.delta * offset;
+              y = center + i;
+            }
+            if (isValidHex(y, x)) {
+              board[y][x] = { type: "piece", player: idx };
+              players[idx].pieces.push({ x, y });
+              players[idx].startArea.push({ x, y });
+            }
+          }
+        }
+
+        // 初始化目标区域（对面方向）
+        const targetDelta = -dir.delta;
+        for (let row = 0; row < 3; row++) {
+          const offset = 8 - row;
+          for (let i = -row; i <= row; i++) {
+            let x, y;
+            if (dir.axis === "y") {
+              x = center + i;
+              y = center + targetDelta * offset;
+            } else {
+              x = center + targetDelta * offset;
+              y = center + i;
+            }
+            if (isValidHex(y, x)) {
+              players[idx].targetArea.push({ x, y });
+            }
+          }
+        }
+      });
+    }
+
+    // 绘制逻辑
+    function drawHex(x, y, size, color) {
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI / 3) * i;
+        ctx.lineTo(x + size * Math.cos(angle), y + size * Math.sin(angle));
+      }
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    function drawBoard() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          if (!board[i][j]) continue;
+          
+          const x = centerX + (j - 8) * hexSize * 1.5;
+          const y = centerY + (i - 8) * hexSize * Math.sqrt(3);
+          
+          // 绘制背景
+          let bgColor = "#ddd";
+          if (selectedPiece?.row === i && selectedPiece?.col === j) {
+            bgColor = "#ff9999";
+          } else if (validMoves.some(m => m.row === i && m.col === j)) {
+            bgColor = "#99ff99";
+          }
+          drawHex(x, y, hexSize, bgColor);
+
+          // 绘制棋子
+          if (board[i][j].type === "piece") {
+            drawHex(x, y, hexSize * 0.8, players[board[i][j].player].color);
+          }
+        }
+      }
+    }
+
+    // 游戏逻辑
+    function getHexPosition(mouseX, mouseY) {
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      let minDist = Infinity;
+      let nearest = null;
+
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          if (!board[i][j]) continue;
+          
+          const hexX = centerX + (j - 8) * hexSize * 1.5;
+          const hexY = centerY + (i - 8) * hexSize * Math.sqrt(3);
+          const dist = Math.hypot(mouseX - hexX, mouseY - hexY);
+          
+          if (dist < hexSize && dist < minDist) {
+            minDist = dist;
+            nearest = { row: i, col: j };
+          }
+        }
+      }
+      return nearest;
+    }
+
+    function calculateValidMoves(startRow, startCol) {
+      const moves = [];
+      const visited = new Set();
+      const queue = [{ row: startRow, col: startCol, viaJump: false }];
+      visited.add(`${startRow},${startCol}`);
+
+      while (queue.length) {
+        const { row, col, viaJump } = queue.shift();
+
+        if (!(row === startRow && col === startCol)) {
+          moves.push({ row, col });
+        }
+
+        const directions = [
+          { dr: -1, dc: 0 }, { dr: 1, dc: 0 },
+          { dr: 0, dc: -1 }, { dr: 0, dc: 1 },
+          { dr: -1, dc: 1 }, { dr: 1, dc: -1 },
+          { dr: 1, dc: 1 }, { dr: -1, dc: -1 }
+        ];
+
+        for (const dir of directions) {
+          const nr = row + dir.dr, nc = col + dir.dc;
+          if (!isValidHex(nr, nc) || !board[nr][nc]) continue;
+
+          if (!viaJump) {
+            if (board[nr][nc].type === "empty") {
+              const key = `${nr},${nc}`;
+              if (!visited.has(key)) {
+                visited.add(key);
+                queue.push({ row: nr, col: nc, viaJump: 100 }); //Jeremy fixed it
+              }
+            } else {
+              const jr = nr + dir.dr, jc = nc + dir.dc;
+              if (isValidHex(jr, jc) && board[jr][jc]?.type === "empty") {
+                const key = `${jr},${jc}`;
+                if (!visited.has(key)) {
+                  visited.add(key);
+                  queue.push({ row: jr, col: jc, viaJump: true });
+                  exploreJumps(jr, jc, dir, visited, queue, moves);
+                }
+              }
+            }
+          } else {
+            if (board[nr][nc].type === "piece" && viaJump!==100) {
+              const jr = nr + dir.dr, jc = nc + dir.dc;
+              if (isValidHex(jr, jc) && board[jr][jc]?.type === "empty") {
+                const key = `${jr},${jc}`;
+                if (!visited.has(key)) {
+                  visited.add(key);
+                  queue.push({ row: jr, col: jc, viaJump: true });
+                  exploreJumps(jr, jc, dir, visited, queue, moves);
+                }
+              }
+            }
+          }
+        }
+      }
+      return moves;
+    }
+
+    function exploreJumps(row, col, dir, visited, queue, moves) {
+      let currentRow = row, currentCol = col;
+      while (true) {
+        const nextRow = currentRow + dir.dr, nextCol = currentCol + dir.dc;
+        if (!isValidHex(nextRow, nextCol) || !board[nextRow][nextCol]) break;
+        
+        if (board[nextRow][nextCol].type === "piece") {
+          const landRow = nextRow + dir.dr, landCol = nextCol + dir.dc;
+          if (isValidHex(landRow, landCol) && board[landRow][landCol]?.type === "empty") {
+            const key = `${landRow},${landCol}`;
+            if (!visited.has(key)) {
+              visited.add(key);
+              moves.push({ row: landRow, col: landCol });
+              queue.push({ row: landRow, col: landCol, viaJump: true });
+              currentRow = landRow;
+              currentCol = landCol;
+            } else break;
+          } else break;
+        } else break;
+      }
+    }
+
+    function movePiece(fromRow, fromCol, toRow, toCol) {
+      const player = board[fromRow][fromCol].player;
+      board[fromRow][fromCol] = { type: "empty" };
+      board[toRow][toCol] = { type: "piece", player };
+
+      const pieceIndex = players[player].pieces.findIndex(
+        p => p.x === fromCol && p.y === fromRow
+      );
+      players[player].pieces[pieceIndex] = { x: toCol, y: toRow };
+    }
+
+    function checkWin(playerIndex) {
+      return players[playerIndex].pieces.every(piece =>
+        players[playerIndex].targetArea.some(
+          t => t.x === piece.x && t.y === piece.y
+        )
+      );
+    }
+
+    // 事件处理
+    canvas.addEventListener("click", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const pos = getHexPosition(e.clientX - rect.left, e.clientY - rect.top);
+      if (!pos) return;
+
+      if (selectedPiece) {
+        if (validMoves.some(m => m.row === pos.row && m.col === pos.col)) {
+          movePiece(selectedPiece.row, selectedPiece.col, pos.row, pos.col);
+          if (checkWin(currentPlayer)) {
+            alert(`${players[currentPlayer].color} 胜利！`);
+            initBoard();
+          }
+          currentPlayer = (currentPlayer + 1) % 4;
+          statusText.textContent = `当前玩家：${players[currentPlayer].color}`;
+        }
+        selectedPiece = null;
+        validMoves = [];
+      } else if (
+        board[pos.row][pos.col].type === "piece" &&
+        board[pos.row][pos.col].player === currentPlayer
+      ) {
+        selectedPiece = pos;
+        validMoves = calculateValidMoves(pos.row, pos.col);
+      }
+      drawBoard();
+    });
+
+    // 初始化游戏
+    initBoard();
+    drawBoard();
+  </script>
+</body>
+</html>
