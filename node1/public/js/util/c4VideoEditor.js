@@ -27,9 +27,7 @@ class VideoEditor {
     }
  
     
-    registerCanvasEvents() {
-        this.canvas.addEventListener('mousedown', e => this.startDrawing(e));
-        this.canvas.addEventListener('mousemove', e => this.whileDrawing(e));
+    registerCanvasEvents() {  
         this.canvas.addEventListener('mouseup', e => this.finishDrawing(e));
         this.canvas.addEventListener('mouseleave', e => this.finishDrawing(e));
         this.canvas.addEventListener('mousedown', e => this.handleMouseDown(e));
@@ -818,3 +816,5 @@ class VideoEditor {
     
 }
 
+//程序刚运行时，添加一场景，选择直线，画一直线，
+// 选择已经画的直线移动到新位置，放开鼠标，发现鼠标移动时会有新直线在绘制中，从上次鼠标按下位置到鼠标移动位置
