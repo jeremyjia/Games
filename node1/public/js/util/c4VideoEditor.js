@@ -53,11 +53,11 @@ class VideoEditor {
             };
             this.isDraggingShape = true;
             this.redrawCanvas();
-            return;
+            return; // 添加 return 确保选中图形后不会执行后续绘图逻辑
         }
         
-        // 原有绘图逻辑
-        if (this.scenesHandler.currentTool) {
+        // 仅在未拖拽且选择工具时开始绘图
+        if (this.scenesHandler.currentTool && !this.isDraggingShape) {
             this.startDrawing(e);
         }
     }
@@ -77,8 +77,9 @@ class VideoEditor {
         if (this.isDraggingShape) {
             this.isDraggingShape = false;
             this.updateJson();
+        } else {
+            this.finishDrawing(); // 只有非拖拽时才调用结束绘图
         }
-        this.finishDrawing();
     }
     // 新增辅助方法
     getCanvasPosition(e) {
@@ -704,7 +705,7 @@ class VideoEditor {
         
     }
     startDrawing(e) {
-        if (!this.scenesHandler.currentTool || this.currentSceneIndex === -1) return;
+        if (!this.scenesHandler.currentTool || this.currentSceneIndex === -1 || this.isDraggingShape) return; // 添加拖拽状态检查
 
         const rect = this.canvas.getBoundingClientRect();
         const scaleX = this.canvas.width / rect.width;  // 新增缩放计算
@@ -718,7 +719,7 @@ class VideoEditor {
 
 
     whileDrawing(e) {
-        if (!this.isDrawing) return;
+        if (!this.isDrawing || this.isDraggingShape) return; // 拖拽时停止绘图更新
 
         const rect = this.canvas.getBoundingClientRect();
         const scaleX = this.canvas.width / rect.width;  // 新增缩放计算
@@ -737,6 +738,7 @@ class VideoEditor {
     }
 
     finishDrawing(e) {
+        if (this.isDraggingShape) return; // 拖拽时不要结束绘图
         if (!this.isDrawing) return;
         this.isDrawing = false;
 
