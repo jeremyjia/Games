@@ -4,8 +4,8 @@
 class C4DraggableWindow {
     constructor(title, content, initialLeft = 20, initialTop = 20, isVisible = true) {
         this.isVisible = isVisible;
-        this.createWindow(title, content, initialLeft, initialTop);
-        this.addDragListeners();
+        this.#createWindow(title, content, initialLeft, initialTop);
+        this.#addDragListeners();
         this.windowElement.style.display = isVisible ? 'block' : 'none';
     }
 
@@ -16,7 +16,7 @@ class C4DraggableWindow {
         }
     }
 
-    createWindow(title, content, initialLeft, initialTop) {
+    #createWindow(title, content, initialLeft, initialTop) {
         this.windowElement = document.createElement('div');
         Object.assign(this.windowElement.style, {
             position: 'fixed',
@@ -53,7 +53,7 @@ class C4DraggableWindow {
         document.body.appendChild(this.windowElement);
     }
 
-    addDragListeners() {
+    #addDragListeners() {
         let isDragging = false;
         let initialX, initialY;
 

@@ -35,23 +35,50 @@ class VideoEditor {
         this.canvas.addEventListener('mousemove', e => this.handleMouseMove(e));
         this.canvas.addEventListener('mouseup', e => this.handleMouseUp(e));
         this.canvas.addEventListener('mouseleave', e => this.handleMouseUp(e));
+        document.addEventListener('keydown', e => this.handleKeyDown(e));
     }
 
+    // 新增键盘事件处理
+    handleKeyDown(e) {
+        if (e.key === 'Delete' && this.selectedShape) {
+            this.deleteSelectedShape();
+        }
+    }
+    // 新增删除方法
+    deleteSelectedShape() {
+        if (this.currentSceneIndex === -1 || !this.selectedShape) return;
+
+        const scene = this.scenesHandler.scenes[this.currentSceneIndex];
+        const index = scene.drawingObjs.indexOf(this.selectedShape);
+        if (index !== -1) {
+            scene.drawingObjs.splice(index, 1);
+            this.selectedShape = null;
+            this.redrawCanvas();
+            this.updateJson();
+        }
+    }
     handleMouseDown(e) {
         if (this.isPlaying) return;
         
         const pos = this.getCanvasPosition(e);
         
-        // 优先检测是否选中图形
-        this.selectedShape = this.findShapeAt(pos.x, pos.y);
-        if (this.selectedShape) {
+        // 优先检测是否选中图形或控制点
+        const hitTest = this.findHitTarget(pos.x, pos.y);
+        if (!hitTest && this.selectedShape) {  // 点击空白处取消选中
+            this.selectedShape = null;
+            this.redrawCanvas();
+        }
+        
+        if (hitTest) {
+            this.selectedShape = hitTest.shape;
+            this.selectedPoint = hitTest.point; // 'start', 'end' 或 null（整体移动）
             this.dragOffset = {
-                x: pos.x - this.selectedShape.startX,
-                y: pos.y - this.selectedShape.startY
+                x: pos.x - (this.selectedPoint ? this.selectedShape[this.selectedPoint + 'X'] : this.selectedShape.startX),
+                y: pos.y - (this.selectedPoint ? this.selectedShape[this.selectedPoint + 'Y'] : this.selectedShape.startY)
             };
             this.isDraggingShape = true;
             this.redrawCanvas();
-            return; // 添加 return 确保选中图形后不会执行后续绘图逻辑
+            return;
         }
         
         // 仅在未拖拽且选择工具时开始绘图
@@ -60,6 +87,36 @@ class VideoEditor {
         }
     }
     
+    findHitTarget(x, y) {
+        if (this.currentSceneIndex === -1) return null;
+        
+        const scene = this.scenesHandler.scenes[this.currentSceneIndex];
+        for (let i = scene.drawingObjs.length - 1; i >= 0; i--) {
+            const shape = scene.drawingObjs[i];
+            
+            // 统一处理直线和矩形的控制点检测
+            if (shape instanceof C4Line || shape instanceof C4Rect) {
+                const startDist = Math.hypot(x - shape.startX, y - shape.startY);
+                const endDist = Math.hypot(x - shape.endX, y - shape.endY);
+                const controlPointRadius = 8;
+                
+                if (startDist < controlPointRadius) {
+                    return { shape, point: 'start' };
+                }
+                if (endDist < controlPointRadius) {
+                    return { shape, point: 'end' };
+                }
+            }
+            
+            // 整体图形检测
+            if (shape.isPointInside(x, y)) {
+                return { shape, point: null };
+            }
+        }
+        return null;
+    }
+
+
     handleMouseMove(e) {
         if (!this.isDraggingShape) {
             this.whileDrawing(e);
@@ -105,13 +162,20 @@ class VideoEditor {
     moveSelectedShape(x, y) {
         if (!this.selectedShape) return;
         
-        const dx = x - this.selectedShape.startX - this.dragOffset.x;
-        const dy = y - this.selectedShape.startY - this.dragOffset.y;
-        
-        this.selectedShape.startX += dx;
-        this.selectedShape.startY += dy;
-        this.selectedShape.endX += dx;
-        this.selectedShape.endY += dy;
+        if (this.selectedPoint) {
+            // 移动单个控制点
+            this.selectedShape[this.selectedPoint + 'X'] = x - this.dragOffset.x;
+            this.selectedShape[this.selectedPoint + 'Y'] = y - this.dragOffset.y;
+        } else {
+            // 原有整体移动逻辑
+            const dx = x - this.selectedShape.startX - this.dragOffset.x;
+            const dy = y - this.selectedShape.startY - this.dragOffset.y;
+            
+            this.selectedShape.startX += dx;
+            this.selectedShape.startY += dy;
+            this.selectedShape.endX += dx;
+            this.selectedShape.endY += dy;
+        }
     }
 
     redrawCanvas() {
@@ -120,6 +184,7 @@ class VideoEditor {
         );
         this.drawSelectionHighlight();
     }
+    
     drawSelectionHighlight() {
         if (!this.selectedShape) return;
         
@@ -127,17 +192,44 @@ class VideoEditor {
         this.ctx.strokeStyle = '#FF0000';
         this.ctx.lineWidth = 2;
         
-        if (this.selectedShape instanceof C4Line) {
-            this.ctx.beginPath();
-            this.ctx.moveTo(this.selectedShape.startX, this.selectedShape.startY);
-            this.ctx.lineTo(this.selectedShape.endX, this.selectedShape.endY);
-            this.ctx.stroke();
-        } else if (this.selectedShape instanceof C4Rect) {
-            this.ctx.strokeRect(
+        // 统一处理直线和矩形的控制点绘制
+        if (this.selectedShape instanceof C4Line || this.selectedShape instanceof C4Rect) {
+            // 绘制控制点
+            const drawControlPoint = (x, y, isSelected) => {
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, 8, 0, Math.PI * 2);
+                this.ctx.fillStyle = isSelected ? '#FF0000' : '#FFFFFF';
+                this.ctx.strokeStyle = '#000000';
+                this.ctx.lineWidth = 2;
+                this.ctx.fill();
+                this.ctx.stroke();
+            };
+            
+            // 绘制图形轮廓
+            if (this.selectedShape instanceof C4Line) {
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.selectedShape.startX, this.selectedShape.startY);
+                this.ctx.lineTo(this.selectedShape.endX, this.selectedShape.endY);
+                this.ctx.stroke();
+            } else {
+                this.ctx.strokeRect(
+                    this.selectedShape.startX,
+                    this.selectedShape.startY,
+                    this.selectedShape.endX - this.selectedShape.startX,
+                    this.selectedShape.endY - this.selectedShape.startY
+                );
+            }
+            
+            // 绘制控制点
+            drawControlPoint(
                 this.selectedShape.startX,
                 this.selectedShape.startY,
-                this.selectedShape.endX - this.selectedShape.startX,
-                this.selectedShape.endY - this.selectedShape.startY
+                this.selectedPoint === 'start'
+            );
+            drawControlPoint(
+                this.selectedShape.endX,
+                this.selectedShape.endY,
+                this.selectedPoint === 'end'
             );
         }
         
@@ -816,4 +908,4 @@ class VideoEditor {
     
 }
 
-//升级： 可以单独移动直线起点或终点
+//升级： 可以删除矩形或直线

@@ -60,16 +60,22 @@ class C4Line extends C4DrawingObj {
 }
 
 class C4Rect extends C4DrawingObj {
+    // 添加动态尺寸计算
+    get width() { return Math.abs(this.endX - this.startX); }
+    get height() { return Math.abs(this.endY - this.startY); }
     draw(ctx) {
         ctx.fillStyle = this.color;
         const width = this.endX - this.startX;
         const height = this.endY - this.startY;
         ctx.fillRect(this.startX, this.startY, width, height);
     }
+    
+    
     isPointInside(x, y) {
-        return x >= Math.min(this.startX, this.endX) &&
-               x <= Math.max(this.startX, this.endX) &&
-               y >= Math.min(this.startY, this.endY) &&
-               y <= Math.max(this.startY, this.endY);
+        const left = Math.min(this.startX, this.endX);
+        const right = Math.max(this.startX, this.endX);
+        const top = Math.min(this.startY, this.endY);
+        const bottom = Math.max(this.startY, this.endY);
+        return x >= left && x <= right && y >= top && y <= bottom;
     }
 }
