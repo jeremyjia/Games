@@ -68,7 +68,7 @@ class VideoEditor {
             this.selectedShape = null;
             this.redrawCanvas();
         }
-        
+
         if (hitTest) {
             this.selectedShape = hitTest.shape;
             this.selectedPoint = hitTest.point; // 'start', 'end' 或 null（整体移动）
@@ -368,6 +368,7 @@ class VideoEditor {
         this.createCanvas();
         this.createPlayToolbar();
 
+        this.springWnd = new C4SpringWnd(this.playToolbar); 
         
         this.jsonWindow = new C4JsonWnd();  
         this.resultContent = document.createElement('div');
