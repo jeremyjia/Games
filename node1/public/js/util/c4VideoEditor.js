@@ -368,7 +368,7 @@ class VideoEditor {
         this.createCanvas();
         this.createPlayToolbar();
 
-        this.springWnd = new C4SpringWnd(this.playToolbar); 
+        this.springWnd = new C4SpringWnd(this); 
         
         this.jsonWindow = new C4JsonWnd();  
         this.resultContent = document.createElement('div');
