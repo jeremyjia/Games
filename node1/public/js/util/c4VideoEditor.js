@@ -357,11 +357,11 @@ class VideoEditor {
     initDOM() {
         this.createSceneToolbar();
         this.scenesHandler = new C4Scenes(
-            this.sceneToolbar, // 将工具栏容器传递给场景管理器
+            this.sceneToolbar,  
             id => this.selectScene(id),
             () => this.updateJson()
         );
-        this.sceneWindow = new C4DraggableWindow('场景管理', this.sceneToolbar, 20, 20);
+        this.sceneWindow = new C4DraggableWindow('scenesManager', this.sceneToolbar, 20, 20);
         this.createVideoManagerToolbar();
         this.createCanvas();
         this.createPlayToolbar();
@@ -403,11 +403,11 @@ class VideoEditor {
         `;
 
         const toggleWindowBtn = document.createElement('button');
-        toggleWindowBtn.textContent = '切换场景窗口';
+        toggleWindowBtn.textContent = 'scenesWnd';
         toggleWindowBtn.onclick = () => this.sceneWindow.toggleVisibility();
 
         const toggleJsonBtn = document.createElement('button');
-        toggleJsonBtn.textContent = '切换数据窗口';
+        toggleJsonBtn.textContent = 'jsonWnd';
         toggleJsonBtn.onclick = () => {
             this.jsonWindow.toggleVisibility();
             if (this.jsonWindow.isVisible) {
@@ -852,8 +852,7 @@ class VideoEditor {
             this.updateJson();
         }
     }
-    createShape(type, start, end) {  // 移除颜色参数
-        // 固定使用黑色保存图形
+    createShape(type, start, end) {   
         const color = '#000';
         switch (type) {
             case 'line':
@@ -902,8 +901,6 @@ class VideoEditor {
     redrawSceneGraphics() {
         const scene = this.scenesHandler.scenes[this.currentSceneIndex];
         scene.drawingObjs.forEach(obj => obj.draw(this.ctx));
-    }
-
-    
+    }  
 }
- 
+ // 升级： 用配置数组重构 createVideoManagerToolbar

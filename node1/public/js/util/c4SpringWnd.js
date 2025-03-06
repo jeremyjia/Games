@@ -100,7 +100,7 @@ function C4SpringWnd(videoEditor){
         r.width   = oj.width;
         r.height = oj.height;
         r.music = oj.audio;
-        r.rate = "1";
+        r.rate =`${oj.fps}`;
 		s.request 		= r;		
         return s;
     }
