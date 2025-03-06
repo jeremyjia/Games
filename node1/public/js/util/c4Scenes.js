@@ -101,6 +101,10 @@ class C4Scenes {
     getScenes() {
         return this.scenes;
     }
+    //
+    // 重构 addScene 代码：
+    // sceneBtn durationInput colorInput 放在一个数组里，然后遍历数组生成DOM
+
     
     addScene() {
         const scene = {
@@ -108,10 +112,10 @@ class C4Scenes {
             color: this.getRandomColor(),
             duration: 30,
             element: null,
-            btn: null, 
-            drawingObjs: []  // 新增绘图对象数组
+            btn: null,
+            drawingObjs: []
         };
-
+    
         const sceneItem = document.createElement('div');
         sceneItem.style.cssText = `
             display: flex;
@@ -123,49 +127,79 @@ class C4Scenes {
             cursor: move;
         `;
         sceneItem.draggable = true;
-
+    
+        // 添加拖拽事件
         sceneItem.addEventListener('dragstart', e => this.handleDragStart(e, scene));
         sceneItem.addEventListener('dragover', e => this.handleDragOver(e, scene));
         sceneItem.addEventListener('drop', e => this.handleDrop(e));
         sceneItem.addEventListener('dragend', e => this.handleDragEnd(e));
-
-        const sceneBtn = document.createElement('button');
-        sceneBtn.textContent = `场景 0`; // 临时占位文本
-        sceneBtn.style.cssText = `
-            padding: 4px 8px;
-            background: ${scene.color};
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-        `;
-        sceneBtn.onclick = () => this.selectScene(scene.id);
-
-        const durationInput = document.createElement('input');
-        durationInput.type = 'number';
-        durationInput.value = scene.duration;
-        durationInput.onchange = (e) => {
-            scene.duration = Math.max(1, parseInt(e.target.value) || 1);
-            this.onScenesUpdated?.();
-        };
-
-        const colorInput = document.createElement('input');
-        colorInput.type = 'color';
-        colorInput.value = scene.color;
-        colorInput.oninput = (e) => {
-            scene.color = e.target.value;
-            sceneBtn.style.backgroundColor = scene.color;
-            this.onScenesUpdated?.();
-        };
-
-        sceneItem.appendChild(sceneBtn);
-        sceneItem.appendChild(durationInput);
-        sceneItem.appendChild(colorInput); 
+    
+        // 元素配置数组
+        const elementsConfig = [
+            {
+                type: 'button',
+                props: {
+                    textContent: '场景 0',
+                    style: {
+                        padding: '4px 8px',
+                        background: scene.color,
+                        border: 'none',
+                        borderRadius: '3px',
+                        cursor: 'pointer'
+                    },
+                    onclick: () => this.selectScene(scene.id)
+                },
+                postCreate: element => scene.btn = element // 保存按钮引用
+            },
+            {
+                type: 'input',
+                props: {
+                    type: 'number',
+                    value: scene.duration,
+                    onchange: e => {
+                        scene.duration = Math.max(1, parseInt(e.target.value) || 1);
+                        this.onScenesUpdated?.();
+                    }
+                }
+            },
+            {
+                type: 'input',
+                props: {
+                    type: 'color',
+                    value: scene.color,
+                    oninput: e => {
+                        scene.color = e.target.value;
+                        scene.btn.style.backgroundColor = scene.color; // 更新按钮颜色
+                        this.onScenesUpdated?.();
+                    }
+                }
+            }
+        ];
+    
+        // 循环创建元素
+        elementsConfig.forEach(config => {
+            const element = document.createElement(config.type);
+            
+            // 设置属性
+            Object.entries(config.props).forEach(([key, value]) => {
+                if (key === 'style') {
+                    Object.assign(element.style, value);
+                } else if (typeof value === 'function') {
+                    element[key] = value; // 处理事件监听
+                } else {
+                    element[key] = value;
+                }
+            });
+    
+            // 后处理
+            if (config.postCreate) config.postCreate(element);
+            sceneItem.appendChild(element);
+        });
+    
         this.scenesContainer.appendChild(sceneItem);
-
         scene.element = sceneItem;
-        scene.btn = sceneBtn;
         this.scenes.push(scene);
-        this.updateSceneNumbers(); // 新增：统一更新序号
+        this.updateSceneNumbers();
         this.selectScene(scene.id);
         this.onScenesUpdated?.();
     }

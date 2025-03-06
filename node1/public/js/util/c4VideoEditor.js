@@ -906,5 +906,4 @@ class VideoEditor {
 
     
 }
-
-//升级： 可以删除矩形或直线
+ 
