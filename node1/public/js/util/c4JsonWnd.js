@@ -9,7 +9,7 @@ function C4JsonWnd(){
             margin: 0;
             background: white;
         `;
-    let o = new C4DraggableWindow('jsonWnd_v0.11', divContent, 20, 200);
+    let o = new C4DraggableWindow('jsonWnd_v0.11', divContent, 444, 333);
 
     o.getJsonContent = function(){
         return divContent;

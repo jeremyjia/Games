@@ -1,7 +1,7 @@
 // c4Scenes.js 
 class C4Scenes {
     constructor(sceneToolbar, onSceneSelected, onScenesUpdated) {
-        this.sceneWindow = new C4DraggableWindow('scenesManager', sceneToolbar, 20, 20);
+        this.sceneWindow = new C4DraggableWindow('scenesManager', sceneToolbar, 444, 151);
         this.scenes = [];
         this.sceneToolbar = sceneToolbar;
         this.currentSceneIndex = -1;
