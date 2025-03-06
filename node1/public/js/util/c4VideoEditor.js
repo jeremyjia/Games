@@ -11,10 +11,7 @@ class VideoEditor {
         this.animationId = null;
         this.audio = new Audio();
         this.audio.src = 'https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3';
-        this.audio.addEventListener('ended', () => this.stopPlay());
-         
-        this.srtHandler = new C4Srt();  
-
+        this.audio.addEventListener('ended', () => this.stopPlay()); 
 
         this.createViewportMeta();
         this.initGlobalStyle();
@@ -311,7 +308,7 @@ class VideoEditor {
             id => this.selectScene(id),
             () => this.updateJson()
         );
-        this.sceneWindow = new C4DraggableWindow('scenesManager', this.sceneToolbar, 20, 20);
+        
         this.createVideoManagerToolbar();
         this.createCanvas();
         this.createPlayToolbar();
@@ -354,7 +351,7 @@ class VideoEditor {
 
         const toggleWindowBtn = document.createElement('button');
         toggleWindowBtn.textContent = 'scenesWnd';
-        toggleWindowBtn.onclick = () => this.sceneWindow.toggleVisibility();
+        toggleWindowBtn.onclick = () => this.scenesHandler.sceneWindow.toggleVisibility();
 
         const toggleJsonBtn = document.createElement('button');
         toggleJsonBtn.textContent = 'jsonWnd';
@@ -696,12 +693,7 @@ class VideoEditor {
                 this.highlightSceneButton(currentSceneIndex);
                 this.currentPlaySceneIndex = currentSceneIndex;
             }
-        }
-        // 新增字幕处理
-        const currentTime = this.audio.currentTime;
-        
-        this.srtHandler.getCurrentSubtitle(currentTime); 
-         
+        }  
     }
     
     

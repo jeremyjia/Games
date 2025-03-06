@@ -138,9 +138,10 @@ const drawHUD = function (_ve) {
     _ve.ctx.fillText(`帧率: ${fps} FPS`, 10, 10);
     _ve.ctx.fillText(`帧: ${currentFrame}/${totalFrames}`, 10, 30);
     _ve.ctx.fillText(`场景: ${currentScene}/${totalScenes}`, 10, 50);
-
-    _ve.srtHandler.showCurrentSubTxt(_ve.ctx,_ve.canvas);
     
+    oSrt = new C4Srt();  
+    oSrt.getCurrentSubtitle(_ve.audio.currentTime); 
+    oSrt.showCurrentSubTxt(_ve.ctx,_ve.canvas);
 }
 const  drawSelectionHighlight = function (_v_e) {
     if (!_v_e.selectedShape) return;
