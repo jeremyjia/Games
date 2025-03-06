@@ -138,7 +138,7 @@ function C4SpringWnd(videoEditor){
         const bs = [
             {
                 "id":11,
-                "name":"createBLS",
+                "name":"originJSON",
                 "fn2click":function(c){
                     c.innerHTML = videoEditor.generateVideoJson();
                 },
@@ -173,6 +173,34 @@ function C4SpringWnd(videoEditor){
                     var url = "http://localhost:8080/image/json2video?script=" + sBlsTitle + ".json&video=" + sBlsTitle + ".mp4"; 
                     c._2do = function(txt){
                         c.innerHTML = txt;
+                    }
+                    _Ajx(c,url);
+                },
+            },
+            {
+                "id":44,
+                "name":"jsons_on_server",
+                "fn2click":function(c){    
+                    var url = "http://localhost:8080/getResourceOnServer?filetype=json" ; 
+                    c._2do = function(txt){
+                        let o = JSON.parse(txt);
+                        let js = o.resource;
+                        c.innerHTML = "";
+                        const tb = _createToolbar(c,"tb"); 
+                        const v = _createToolbar(c,"v"); 
+                        for(i in js){
+                            const btn = _createBtn(tb,js[i],`id${i}`);
+                            btn.onclick = function(_btn,_js,_i,_c){
+                                return function(){ 
+                                    var url = `http://localhost:8080/image/json2video?script=${_js[_i]}&video=${_i}.mp4`; 
+                                    _c._2do = function(txt){
+                                        _c.innerHTML = txt;
+                                    }
+                                    _Ajx(_c,url);
+                                }
+                            }(btn,js,i,v);
+                        }
+ 
                     }
                     _Ajx(c,url);
                 },
