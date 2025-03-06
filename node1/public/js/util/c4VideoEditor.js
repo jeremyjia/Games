@@ -182,60 +182,10 @@ class VideoEditor {
         this.updateCanvasColor(
             this.scenesHandler.scenes[this.currentSceneIndex].color
         );
-        this.drawSelectionHighlight();
+        drawSelectionHighlight(this);
     }
     
-    drawSelectionHighlight() {
-        if (!this.selectedShape) return;
-        
-        this.ctx.save();
-        this.ctx.strokeStyle = '#FF0000';
-        this.ctx.lineWidth = 2;
-        
-        // 统一处理直线和矩形的控制点绘制
-        if (this.selectedShape instanceof C4Line || this.selectedShape instanceof C4Rect) {
-            // 绘制控制点
-            const drawControlPoint = (x, y, isSelected) => {
-                this.ctx.beginPath();
-                this.ctx.arc(x, y, 8, 0, Math.PI * 2);
-                this.ctx.fillStyle = isSelected ? '#FF0000' : '#FFFFFF';
-                this.ctx.strokeStyle = '#000000';
-                this.ctx.lineWidth = 2;
-                this.ctx.fill();
-                this.ctx.stroke();
-            };
-            
-            // 绘制图形轮廓
-            if (this.selectedShape instanceof C4Line) {
-                this.ctx.beginPath();
-                this.ctx.moveTo(this.selectedShape.startX, this.selectedShape.startY);
-                this.ctx.lineTo(this.selectedShape.endX, this.selectedShape.endY);
-                this.ctx.stroke();
-            } else {
-                this.ctx.strokeRect(
-                    this.selectedShape.startX,
-                    this.selectedShape.startY,
-                    this.selectedShape.endX - this.selectedShape.startX,
-                    this.selectedShape.endY - this.selectedShape.startY
-                );
-            }
-            
-            // 绘制控制点
-            drawControlPoint(
-                this.selectedShape.startX,
-                this.selectedShape.startY,
-                this.selectedPoint === 'start'
-            );
-            drawControlPoint(
-                this.selectedShape.endX,
-                this.selectedShape.endY,
-                this.selectedPoint === 'end'
-            );
-        }
-        
-        this.ctx.restore();
-    }
-
+    
     createAudioPresetWindow() {
         this.audioPresetContent = document.createElement('div');
         this.audioPresetContent.style.cssText = `
@@ -769,30 +719,11 @@ class VideoEditor {
             scene.drawingObjs.forEach(obj => obj.draw(this.ctx));
         }
         
-        if (isPlaying) this.drawHUD();
+        if (isPlaying) drawHUD(this);
     }
 
 
-    drawHUD() {
-        const fps = parseInt(this.fpsInput.value) || 30;
-        const totalFrames = this.scenesHandler.scenes.reduce((sum, s) => sum + s.duration, 0);
-        const currentFrame = this.currentFrame + 1;
-        const currentScene = this.currentPlaySceneIndex + 1;
-        const totalScenes = this.scenesHandler.scenes.length;
-
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        this.ctx.fillRect(5, 5, 160, 60);
-
-        this.ctx.fillStyle = 'white';
-        this.ctx.font = '14px Arial';
-        this.ctx.textBaseline = 'top';
-        this.ctx.fillText(`帧率: ${fps} FPS`, 10, 10);
-        this.ctx.fillText(`帧: ${currentFrame}/${totalFrames}`, 10, 30);
-        this.ctx.fillText(`场景: ${currentScene}/${totalScenes}`, 10, 50);
-
-        this.srtHandler.showCurrentSubTxt(this.ctx,this.canvas);
-        
-    }
+    
     startDrawing(e) {
         if (!this.scenesHandler.currentTool || this.currentSceneIndex === -1 || this.isDraggingShape) return; // 添加拖拽状态检查
 
@@ -823,7 +754,7 @@ class VideoEditor {
             this.isPlaying
         );
         this.redrawSceneGraphics();
-        this.drawTempShape(this.ctx,this.scenesHandler.currentTool,currentPos);
+        drawTempShape(this,this.ctx,this.scenesHandler.currentTool,currentPos);
     }
 
     finishDrawing(e) {
@@ -840,7 +771,7 @@ class VideoEditor {
         };
 
         const scene = this.scenesHandler.scenes[this.currentSceneIndex];
-        const newShape = this.createShape(
+        const newShape = createShape(
             this.scenesHandler.currentTool,
             this.startPos,
             endPos,
@@ -852,50 +783,8 @@ class VideoEditor {
             this.updateJson();
         }
     }
-    createShape(type, start, end) {   
-        const color = '#000';
-        switch (type) {
-            case 'line':
-                return new C4Line(start.x, start.y, end.x, end.y, color);
-            case 'rect':
-                return new C4Rect(start.x, start.y, end.x, end.y, color);
-            default:
-                return null;
-        }
-    }
 
-    drawTempShape(ctx,currentTool,currentPos) { 
-        ctx.save();
-        // 使用黑色边框和半透明填充
-        ctx.strokeStyle = '#000';
-        ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        ctx.lineWidth = 2;
-
-        switch (currentTool) {
-            case 'line':
-                ctx.beginPath();
-                ctx.moveTo(this.startPos.x, this.startPos.y);
-                ctx.lineTo(currentPos.x, currentPos.y);
-                ctx.stroke();
-                break;
-            case 'rect':
-                ctx.fillRect(
-                    this.startPos.x,
-                    this.startPos.y,
-                    currentPos.x - this.startPos.x,
-                    currentPos.y - this.startPos.y
-                );
-                ctx.strokeRect(
-                    this.startPos.x,
-                    this.startPos.y,
-                    currentPos.x - this.startPos.x,
-                    currentPos.y - this.startPos.y
-                );
-                break;
-        }
-        ctx.restore();
-    }
-
+    
 
     redrawSceneGraphics() {
         const scene = this.scenesHandler.scenes[this.currentSceneIndex];
