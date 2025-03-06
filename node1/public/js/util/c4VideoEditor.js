@@ -823,7 +823,7 @@ class VideoEditor {
             this.isPlaying
         );
         this.redrawSceneGraphics();
-        this.drawTempShape(currentPos);
+        this.drawTempShape(this.ctx,this.scenesHandler.currentTool,currentPos);
     }
 
     finishDrawing(e) {
@@ -864,15 +864,14 @@ class VideoEditor {
         }
     }
 
-    drawTempShape(currentPos) {
-        const ctx = this.ctx;
+    drawTempShape(ctx,currentTool,currentPos) { 
         ctx.save();
         // 使用黑色边框和半透明填充
         ctx.strokeStyle = '#000';
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
         ctx.lineWidth = 2;
 
-        switch (this.scenesHandler.currentTool) {
+        switch (currentTool) {
             case 'line':
                 ctx.beginPath();
                 ctx.moveTo(this.startPos.x, this.startPos.y);
