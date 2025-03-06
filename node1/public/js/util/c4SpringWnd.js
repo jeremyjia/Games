@@ -137,14 +137,21 @@ function C4SpringWnd(videoEditor){
 		const client = _createClient(divContent,"ui");
         const bs = [
             {
-                "id":1,
+                "id":11,
                 "name":"createBLS",
                 "fn2click":function(c){
                     c.innerHTML = videoEditor.generateVideoJson();
                 },
             },
             {
-                "id":2,
+                "id":21,
+                "name":"bls",
+                "fn2click":function(c){  
+                    c.innerHTML =  JSON.stringify( _makeBLS(videoEditor.generateVideoJson()));  
+                },
+            },
+            {
+                "id":22,
                 "name":"bls2server",
                 "fn2click":function(c){
                     const sBlsTitle = "node1";
@@ -158,7 +165,7 @@ function C4SpringWnd(videoEditor){
                 },
             },
             {
-                "id":3,
+                "id":33,
                 "name":"makeMP4", 
                 "fn2click":function(c){
                     const sBlsTitle = "node1";
@@ -169,7 +176,8 @@ function C4SpringWnd(videoEditor){
                     }
                     _Ajx(c,url);
                 },
-            },];
+            },
+        ];
         for(i in bs){
             const btn = _createBtn(tbServer,bs[i].name,bs[i].id);
             btn.onclick = function(_btn,_bs,_i,_c){

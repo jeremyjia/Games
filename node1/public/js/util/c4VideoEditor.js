@@ -256,9 +256,7 @@ class VideoEditor {
                 font-size: 12px;
             `;
             btn.onclick = () => {
-                // 关键修改：用padStart补足两位数路径
-                const paddedI = i.toString().padStart(2, '0');
-                const url = `${baseURL}${paddedI}.mp3`;
+                const url = `${baseURL}${i}.mp3`;
                 this.audioUrlInput.value = url;
                 this.audio.src = url;
                 this.updateJson();
@@ -267,7 +265,7 @@ class VideoEditor {
         }
 
         this.audioPresetWindow = new C4DraggableWindow(
-            '音频预设',
+            'setAudio',
             this.audioPresetContent,
             400,  
             20,
@@ -428,7 +426,7 @@ class VideoEditor {
         });
  
         const toggleAudioPresetBtn = document.createElement('button');
-        toggleAudioPresetBtn.textContent = '音频预设';
+        toggleAudioPresetBtn.textContent = 'setAuido';
         toggleAudioPresetBtn.onclick = () => this.audioPresetWindow.toggleVisibility();
  
         const btn4Version = document.createElement('button');
