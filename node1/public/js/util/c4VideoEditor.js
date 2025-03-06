@@ -324,7 +324,7 @@ class VideoEditor {
             },
             {
                 type: 'button',
-                text: 'setAudio',
+                text: 'setVideo',
                 onClick: () => this.videoSetWnd.toggleVisibility(),
                 style: {
                     background: '#9C27B0',
