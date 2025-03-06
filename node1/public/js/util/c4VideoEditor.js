@@ -10,7 +10,7 @@ class VideoEditor {
         this.currentFrame = 0;
         this.animationId = null;
         this.audio = new Audio();
-        this.audio.src = 'http://localhost:3001/deepseek/2025/02/03/i3/1.mp3';
+        this.audio.src = 'https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3';
         this.audio.addEventListener('ended', () => this.stopPlay());
          
         this.srtHandler = new C4Srt();  

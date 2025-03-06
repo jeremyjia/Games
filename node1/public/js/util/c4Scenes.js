@@ -70,14 +70,7 @@ class C4Scenes {
         header.appendChild(newSceneBtn);
 
         this.currentTool = null;
-
-        this.onSceneSelected = (id) => {
-            onSceneSelected(id);
-            if (this.currentSceneIndex !== -1) {
-                const scene = this.scenes[this.currentSceneIndex];
-                onSceneSelected(scene.id);
-            }
-        };
+ 
 
         
         // Add to your button creation code:
@@ -122,14 +115,13 @@ class C4Scenes {
             cursor: move;
         `;
         sceneItem.draggable = true;
-    
-        // 添加拖拽事件
+     
         sceneItem.addEventListener('dragstart', e => this.handleDragStart(e, scene));
         sceneItem.addEventListener('dragover', e => this.handleDragOver(e, scene));
         sceneItem.addEventListener('drop', e => this.handleDrop(e));
         sceneItem.addEventListener('dragend', e => this.handleDragEnd(e));
     
-        // 元素配置数组
+        
         const elementsConfig = [
             {
                 type: 'button',
@@ -170,17 +162,15 @@ class C4Scenes {
                 }
             }
         ];
-    
-        // 循环创建元素
+     
         elementsConfig.forEach(config => {
             const element = document.createElement(config.type);
-            
-            // 设置属性
+             
             Object.entries(config.props).forEach(([key, value]) => {
                 if (key === 'style') {
                     Object.assign(element.style, value);
                 } else if (typeof value === 'function') {
-                    element[key] = value; // 处理事件监听
+                    element[key] = value;  
                 } else {
                     element[key] = value;
                 }
@@ -198,8 +188,7 @@ class C4Scenes {
         this.selectScene(scene.id);
         this.onScenesUpdated?.();
     }
-
-    // 新增方法：更新所有场景按钮的序号
+ 
     updateSceneNumbers() {
         this.scenes.forEach((scene, index) => {
             scene.btn.textContent = `场景 ${index + 1}`;
@@ -243,7 +232,7 @@ class C4Scenes {
     handleDragEnd(e) {
         this.draggedScene.element.style.opacity = '1';
         this.draggedScene = null;
-        this.updateSceneNumbers(); // 新增：拖拽结束后更新序号
+        this.updateSceneNumbers();  
         this.onScenesUpdated?.();
     }
 
@@ -303,3 +292,5 @@ class C4Scenes {
         return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
     }
 }
+
+// 升级： elementsConfig 添加删除功能
