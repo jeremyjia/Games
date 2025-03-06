@@ -348,48 +348,108 @@ class VideoEditor {
             background: #e0e0e0;
             border-bottom: 1px solid #ccc;
         `;
-
-        const toggleWindowBtn = document.createElement('button');
-        toggleWindowBtn.textContent = 'scenesWnd';
-        toggleWindowBtn.onclick = () => this.scenesHandler.sceneWindow.toggleVisibility();
-
-        const toggleJsonBtn = document.createElement('button');
-        toggleJsonBtn.textContent = 'jsonWnd';
-        toggleJsonBtn.onclick = () => {
-            this.jsonWindow.toggleVisibility();
-            if (this.jsonWindow.isVisible) {
-                this.updateJson();
+    
+        // 工具栏配置数组
+        const toolbarConfig = [
+            {
+                type: 'button',
+                text: 'videoEditor_v0.12',
+                style: {
+                    background: 'transparent',
+                    border: '1px solid #666'
+                }
+            },
+            {
+                type: 'button',
+                text: 'setAudio',
+                onClick: () => this.audioPresetWindow.toggleVisibility(),
+                style: {
+                    background: '#9C27B0',
+                    color: 'white'
+                }
+            },
+            {
+                type: 'button',
+                text: 'scenesWnd',
+                onClick: () => this.scenesHandler.sceneWindow.toggleVisibility(),
+                style: {
+                    background: '#4CAF50',
+                    color: 'white'
+                }
+            },
+            {
+                type: 'button',
+                text: 'jsonWnd',
+                onClick: () => {
+                    this.jsonWindow.toggleVisibility();
+                    if (this.jsonWindow.isVisible) this.updateJson();
+                },
+                style: {
+                    background: '#2196F3',
+                    color: 'white'
+                }
+            },
+            {
+                type: 'input',
+                placeholder: '音频URL',
+                value: this.audio.src,
+                style: { flex: '1' },
+                onChange: (e) => {
+                    this.audio.src = e.target.value;
+                    this.updateJson();
+                }
             }
-        };
-
-        const audioUrlInput = document.createElement('input');
-        audioUrlInput.type = 'url';
-        audioUrlInput.placeholder = '音频URL';
-        audioUrlInput.value = this.audio.src;
-        audioUrlInput.style.flex = '1';
-        audioUrlInput.addEventListener('change', (e) => {
-            this.audio.src = e.target.value;
-            this.updateJson();
+        ];
+    
+        // 根据配置创建元素
+        toolbarConfig.forEach(config => {
+            if (config.type === 'button') {
+                const btn = document.createElement('button');
+                btn.textContent = config.text;
+                
+                // 合并样式
+                btn.style.cssText = Object.entries({
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    ...config.style
+                }).map(([k, v]) => `${k}: ${v}`).join(';');
+    
+                if (config.onClick) {
+                    btn.addEventListener('click', config.onClick.bind(this));
+                }
+                
+                this.videoManagerToolbar.appendChild(btn);
+            }
+            else if (config.type === 'input') {
+                const input = document.createElement('input');
+                input.type = 'url';
+                input.placeholder = config.placeholder;
+                input.value = config.value || '';
+                
+                // 合并样式
+                input.style.cssText = Object.entries({
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    ...config.style
+                }).map(([k, v]) => `${k}: ${v}`).join(';');
+    
+                if (config.onChange) {
+                    input.addEventListener('change', config.onChange.bind(this));
+                }
+                
+                // 保存音频输入引用
+                if (config.placeholder === '音频URL') {
+                    this.audioUrlInput = input;
+                }
+                
+                this.videoManagerToolbar.appendChild(input);
+            }
         });
- 
-        const toggleAudioPresetBtn = document.createElement('button');
-        toggleAudioPresetBtn.textContent = 'setAuido';
-        toggleAudioPresetBtn.onclick = () => this.audioPresetWindow.toggleVisibility();
- 
-        const btn4Version = document.createElement('button');
-        btn4Version.textContent = 'videoEditor_v0.12'; 
- 
-        this.videoManagerToolbar.appendChild(btn4Version);
-        this.videoManagerToolbar.appendChild(toggleAudioPresetBtn);
-        this.videoManagerToolbar.appendChild(toggleWindowBtn);
-        this.videoManagerToolbar.appendChild(toggleJsonBtn);
-        
-        this.audioUrlInput = audioUrlInput;
-        this.videoManagerToolbar.appendChild(audioUrlInput);
+    
         document.body.appendChild(this.videoManagerToolbar);
     }
-    
-    
+
     getCanvasScale() {
         return {
             x: 640 / this.canvas.width,
@@ -420,7 +480,7 @@ class VideoEditor {
         }));
         return JSON.stringify({
             fps: parseInt(this.fpsInput.value) || 30,
-            canvasWidth: this.canvas.width,  // 新增画布尺寸
+            canvasWidth: this.canvas.width,  
             canvasHeight: this.canvas.height,
             width: 640,
             height: 480,
@@ -433,7 +493,7 @@ class VideoEditor {
         const sceneData = this.scenesHandler.getScenesData().find(s => s.id === id);
         if (sceneData) {
             this.currentSceneIndex = this.scenesHandler.currentSceneIndex;
-            this.updateCanvasColor(sceneData.color); // 自动触发重绘
+            this.updateCanvasColor(sceneData.color); 
             this.highlightJsonLine(id);
         }
     }
