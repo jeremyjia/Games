@@ -122,7 +122,7 @@ const drawTempShape = function (videoEditor,ctx,currentTool,currentPos) {
     }
     ctx.restore();
 }
-const drawHUD = function (_ve) {
+const drawHUD = function (_ve,x,y) {
     const fps = parseInt(_ve.fpsInput.value) || 30;
     const totalFrames = _ve.scenesHandler.scenes.reduce((sum, s) => sum + s.duration, 0);
     const currentFrame = _ve.currentFrame + 1;
@@ -130,14 +130,14 @@ const drawHUD = function (_ve) {
     const totalScenes = _ve.scenesHandler.scenes.length;
 
     _ve.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    _ve.ctx.fillRect(5, 5, 160, 60);
+    _ve.ctx.fillRect(5, 5, 111, 60);
 
     _ve.ctx.fillStyle = 'white';
-    _ve.ctx.font = '14px Arial';
+    _ve.ctx.font = '8px Arial';
     _ve.ctx.textBaseline = 'top';
-    _ve.ctx.fillText(`帧率: ${fps} FPS`, 10, 10);
-    _ve.ctx.fillText(`帧: ${currentFrame}/${totalFrames}`, 10, 30);
-    _ve.ctx.fillText(`场景: ${currentScene}/${totalScenes}`, 10, 50);
+    _ve.ctx.fillText(`帧率: ${fps} FPS`, x, y);
+    _ve.ctx.fillText(`帧: ${currentFrame}/${totalFrames}`, x, y + 20 );
+    _ve.ctx.fillText(`场景: ${currentScene}/${totalScenes}`, x,y + 40);
     
     oSrt = new C4Srt();  
     oSrt.getCurrentSubtitle(_ve.audio.currentTime); 

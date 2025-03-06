@@ -10,13 +10,12 @@ class VideoEditor {
         this.currentFrame = 0;
         this.animationId = null;
         this.audio = new Audio();
-        this.audio.src = 'https://littleflute.github.io/english/NewConceptEnglish/Book2/1.mp3';
+        this.audio.src = 'http://192.168.192.123:3000/deepseek/2025/02/03/i3/1.mp3';
         this.audio.addEventListener('ended', () => this.stopPlay()); 
 
         this.createViewportMeta();
         this.initGlobalStyle();
-        this.initDOM();
-        this.createAudioPresetWindow();
+        this.initDOM(); 
         
         this.isDrawing = false;
         this.tempShape = null;
@@ -183,43 +182,6 @@ class VideoEditor {
     }
     
     
-    createAudioPresetWindow() {
-        let audioPresetContent = document.createElement('div');
-        audioPresetContent.style.cssText = `
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            padding: 10px;
-        `;
-
-        const baseURL = 'https://littleflute.github.io/english/NewConceptEnglish/Book2/';
-        for (let i = 1; i <= 36; i++) { 
-            const btn = document.createElement('button');
-            btn.textContent = `第 ${i} 课`;
-            btn.style.cssText = `
-                padding: 4px 8px;
-                background: #9C27B0;
-                color: white;
-                font-size: 12px;
-            `;
-            btn.onclick = () => {
-                const url = `${baseURL}${i}.mp3`;
-                this.audioUrlInput.value = url;
-                this.audio.src = url;
-                this.updateJson();
-            };
-            audioPresetContent.appendChild(btn);
-        }
-
-        this.audioPresetWindow = new C4DraggableWindow(
-            'setAudio',
-            audioPresetContent,
-            400,  
-            20,
-            false
-        );
-    }
-
 
     initGlobalStyle() {
         const style = document.createElement('style');
@@ -314,6 +276,7 @@ class VideoEditor {
         this.createPlayToolbar();
 
         this.springWnd = new C4SpringWnd(this);  
+        this.videoSetWnd = new C4VideoSetWnd(this);  
         this.jsonWindow = new C4JsonWnd(); 
 
         this.resultContent = document.createElement('div');
@@ -362,7 +325,7 @@ class VideoEditor {
             {
                 type: 'button',
                 text: 'setAudio',
-                onClick: () => this.audioPresetWindow.toggleVisibility(),
+                onClick: () => this.videoSetWnd.toggleVisibility(),
                 style: {
                     background: '#9C27B0',
                     color: 'white'
@@ -771,7 +734,7 @@ class VideoEditor {
             scene.drawingObjs.forEach(obj => obj.draw(this.ctx));
         }
         
-        if (isPlaying) drawHUD(this);
+        if (isPlaying) drawHUD(this,30,10);
     }
 
 
@@ -835,8 +798,6 @@ class VideoEditor {
             this.updateJson();
         }
     }
-
-    
 
     redrawSceneGraphics() {
         const scene = this.scenesHandler.scenes[this.currentSceneIndex];
