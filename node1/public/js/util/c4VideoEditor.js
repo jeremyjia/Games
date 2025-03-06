@@ -184,8 +184,8 @@ class VideoEditor {
     
     
     createAudioPresetWindow() {
-        this.audioPresetContent = document.createElement('div');
-        this.audioPresetContent.style.cssText = `
+        let audioPresetContent = document.createElement('div');
+        audioPresetContent.style.cssText = `
             display: flex;
             flex-direction: column;
             gap: 5px;
@@ -208,12 +208,12 @@ class VideoEditor {
                 this.audio.src = url;
                 this.updateJson();
             };
-            this.audioPresetContent.appendChild(btn);
+            audioPresetContent.appendChild(btn);
         }
 
         this.audioPresetWindow = new C4DraggableWindow(
             'setAudio',
-            this.audioPresetContent,
+            audioPresetContent,
             400,  
             20,
             false
@@ -309,13 +309,13 @@ class VideoEditor {
             () => this.updateJson()
         );
         
-        this.createVideoManagerToolbar();
+        this.createVideoManagerToolbar(); 
         this.createCanvas();
         this.createPlayToolbar();
 
-        this.springWnd = new C4SpringWnd(this); 
-        
-        this.jsonWindow = new C4JsonWnd();  
+        this.springWnd = new C4SpringWnd(this);  
+        this.jsonWindow = new C4JsonWnd(); 
+
         this.resultContent = document.createElement('div');
         this.resultContent.style.cssText = `
             padding: 10px;
