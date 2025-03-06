@@ -100,12 +100,7 @@ class C4Scenes {
 
     getScenes() {
         return this.scenes;
-    }
-    //
-    // 重构 addScene 代码：
-    // sceneBtn durationInput colorInput 放在一个数组里，然后遍历数组生成DOM
-
-    
+    } 
     addScene() {
         const scene = {
             id: Date.now(),
