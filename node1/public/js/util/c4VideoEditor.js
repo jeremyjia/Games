@@ -2,6 +2,7 @@
 
 class VideoEditor {
     constructor() { 
+        this.musicScript = new C4MusicScript();
         this.div4Debug = null;
         this.width = 640;
         this.height = 480;
@@ -24,10 +25,7 @@ class VideoEditor {
         this.tempShape = null;
         this.registerCanvasEvents();
     }
-  
-    #showDebug(){
-        if(this.div4Debug) this.div4Debug.innerHTML = Date();
-    }
+   
     registerCanvasEvents() {  
         this.canvas.addEventListener('mouseup', e => this.finishDrawing(e));
         this.canvas.addEventListener('mouseleave', e => this.finishDrawing(e));
@@ -693,8 +691,7 @@ class VideoEditor {
             this.stopPlay();
             return;
         }
-
-        this.#showDebug();
+ 
         this.updatePlayback();
 
         this.animationId = requestAnimationFrame(() => this.animate());
@@ -740,7 +737,10 @@ class VideoEditor {
             scene.drawingObjs.forEach(obj => obj.draw(this.ctx));
         }
         
-        if (isPlaying) drawHUD(this,44,10,12);
+        if (isPlaying) {
+            drawHUD(this,44,10,12);
+            this.musicScript.showInf(this.ctx, this.audio.currentTime);
+        }
     }
 
 

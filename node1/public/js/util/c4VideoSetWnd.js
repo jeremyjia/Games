@@ -97,8 +97,8 @@ function C4VideoSetWnd(videoEditor) {
             grid-template-columns: repeat(3, 1fr);
             gap: 5px;
         `;
-        divContent.textContent = "show info:" + Date();
-        ve.div4Debug = divContent;
+        divContent.textContent = "show info:" + Date(); 
+        ve.musicScript.setUI(divContent);
         return divContent;
     }
     // 音频预设内容
