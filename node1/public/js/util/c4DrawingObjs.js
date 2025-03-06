@@ -122,27 +122,57 @@ const drawTempShape = function (videoEditor,ctx,currentTool,currentPos) {
     }
     ctx.restore();
 }
-const drawHUD = function (_ve,x,y) {
+const drawHUD = function (_ve, x, y, fontSize) {
     const fps = parseInt(_ve.fpsInput.value) || 30;
     const totalFrames = _ve.scenesHandler.scenes.reduce((sum, s) => sum + s.duration, 0);
     const currentFrame = _ve.currentFrame + 1;
     const currentScene = _ve.currentPlaySceneIndex + 1;
     const totalScenes = _ve.scenesHandler.scenes.length;
 
-    _ve.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    _ve.ctx.fillRect(5, 5, 111, 60);
+    // 时间计算（优先使用音频时间，若不可用则使用帧数计算）
+    let currentTimeInSeconds, totalTimeInSeconds;
+    if (_ve.audio && !isNaN(_ve.audio.currentTime)) {
+        currentTimeInSeconds = _ve.audio.currentTime;
+    } else {
+        currentTimeInSeconds = (_ve.currentFrame) / fps;
+    }
 
+    if (_ve.audio && !isNaN(_ve.audio.duration) && _ve.audio.duration > 0) {
+        totalTimeInSeconds = _ve.audio.duration;
+    } else {
+        totalTimeInSeconds = totalFrames / fps;
+    }
+
+    // 时间格式化函数
+    const formatDuration = (seconds) => {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        return [
+            hours.toString().padStart(2, '0'),
+            minutes.toString().padStart(2, '0'),
+            secs.toFixed(2).padStart(5, '0')
+        ].join(':');
+    };
+
+    // 调整HUD背景尺寸
+    _ve.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    _ve.ctx.fillRect(5, 5, 220, 100); // 加宽背景以适应时间显示
+
+    // 绘制文本信息
     _ve.ctx.fillStyle = 'white';
-    _ve.ctx.font = '8px Arial';
+    _ve.ctx.font = `${fontSize}px Arial`;
     _ve.ctx.textBaseline = 'top';
     _ve.ctx.fillText(`帧率: ${fps} FPS`, x, y);
-    _ve.ctx.fillText(`帧: ${currentFrame}/${totalFrames}`, x, y + 20 );
-    _ve.ctx.fillText(`场景: ${currentScene}/${totalScenes}`, x,y + 40);
-    
+    _ve.ctx.fillText(`帧: ${currentFrame}/${totalFrames}`, x, y + 20);
+    _ve.ctx.fillText(`场景: ${currentScene}/${totalScenes}`, x, y + 40);
+    _ve.ctx.fillText(`时间: ${formatDuration(currentTimeInSeconds)}/${formatDuration(totalTimeInSeconds)}`, x, y + 60);
+
+    // 原有字幕逻辑
     oSrt = new C4Srt();  
     oSrt.getCurrentSubtitle(_ve.audio.currentTime); 
-    oSrt.showCurrentSubTxt(_ve.ctx,_ve.canvas);
-}
+    oSrt.showCurrentSubTxt(_ve.ctx, _ve.canvas);
+};
 const  drawSelectionHighlight = function (_v_e) {
     if (!_v_e.selectedShape) return;
     
@@ -193,3 +223,4 @@ const  drawSelectionHighlight = function (_v_e) {
     
     _v_e.ctx.restore();
 }
+

@@ -161,6 +161,33 @@ class C4Scenes {
                         this.onScenesUpdated?.();
                     }
                 }
+            },
+            {
+                type: 'button',
+                props: {
+                    textContent: '×',
+                    style: {
+                        background: '#ff4444',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '50%',
+                        cursor: 'pointer',
+                        width: '24px',
+                        height: '24px',
+                        padding: '0',
+                        transition: 'background 0.3s'
+                    },
+                    onmouseover: function() {
+                        this.style.background = '#cc0000';
+                    },
+                    onmouseout: function() {
+                        this.style.background = '#ff4444';
+                    },
+                    onclick: (e) => {
+                        e.stopPropagation();
+                        this.deleteScene(scene.id);
+                    }
+                }
             }
         ];
      
@@ -189,7 +216,28 @@ class C4Scenes {
         this.selectScene(scene.id);
         this.onScenesUpdated?.();
     }
- 
+    deleteScene(sceneId) {
+        const index = this.scenes.findIndex(s => s.id === sceneId);
+        if (index === -1) return;
+
+        // 从DOM中移除元素
+        this.scenes[index].element.remove();
+        
+        // 从数组中移除场景
+        this.scenes.splice(index, 1);
+
+        // 更新当前选中索引
+        if (this.currentSceneIndex === index) {
+            this.currentSceneIndex = -1;
+            this.onSceneSelected?.(null);
+        } else if (this.currentSceneIndex > index) {
+            this.currentSceneIndex--;
+        }
+
+        // 更新场景编号并触发回调
+        this.updateSceneNumbers();
+        this.onScenesUpdated?.();
+    }
     updateSceneNumbers() {
         this.scenes.forEach((scene, index) => {
             scene.btn.textContent = `场景 ${index + 1}`;

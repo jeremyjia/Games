@@ -734,7 +734,7 @@ class VideoEditor {
             scene.drawingObjs.forEach(obj => obj.draw(this.ctx));
         }
         
-        if (isPlaying) drawHUD(this,30,10);
+        if (isPlaying) drawHUD(this,44,10,12);
     }
 
 
