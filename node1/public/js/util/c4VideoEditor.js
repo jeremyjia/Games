@@ -2,6 +2,9 @@
 
 class VideoEditor {
     constructor() { 
+        this.div4Debug = null;
+        this.width = 640;
+        this.height = 480;
         this.selectedShape = null;
         this.dragOffset = { x: 0, y: 0 };
         this.currentSceneIndex = -1;
@@ -21,8 +24,10 @@ class VideoEditor {
         this.tempShape = null;
         this.registerCanvasEvents();
     }
- 
-    
+  
+    #showDebug(){
+        if(this.div4Debug) this.div4Debug.innerHTML = Date();
+    }
     registerCanvasEvents() {  
         this.canvas.addEventListener('mouseup', e => this.finishDrawing(e));
         this.canvas.addEventListener('mouseleave', e => this.finishDrawing(e));
@@ -415,8 +420,8 @@ class VideoEditor {
 
     getCanvasScale() {
         return {
-            x: 640 / this.canvas.width,
-            y: 480 / this.canvas.height
+            x: this.width / this.canvas.width,
+            y: this.height / this.canvas.height
         };
     }
     
@@ -445,8 +450,8 @@ class VideoEditor {
             fps: parseInt(this.fpsInput.value) || 30,
             canvasWidth: this.canvas.width,  
             canvasHeight: this.canvas.height,
-            width: 640,
-            height: 480,
+            width: this.width,
+            height: this.height,
             scenes: scenesData,
             audio: this.audio.src
         }, null, 2);
@@ -689,6 +694,7 @@ class VideoEditor {
             return;
         }
 
+        this.#showDebug();
         this.updatePlayback();
 
         this.animationId = requestAnimationFrame(() => this.animate());
