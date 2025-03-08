@@ -11,12 +11,38 @@ class C4MusicScript {
         this.barsPerLine = 4; // 每行默认4小节
         this.x = 110; // 默认X坐标
         this.y = 30; // 默认Y坐标
-        this.resultWindowOpen = false; // 新增标志，用于跟踪resultWindow是否打开
+        this.setWndOpen = false; // 新增标志，用于跟踪setWnd是否打开
     }
 
+    #toggleSetWnd(){
+        if (this.setWndOpen) {
+            // 如果setWnd已经打开，则关闭它
+            if (this.setWnd) {
+                this.setWnd.toggleVisibility();  
+            }
+            this.setWndOpen = false;
+        } else {
+            // 如果setWnd未打开，则创建一个新的
+            this.resultContent = document.createElement('div');
+            this.resultContent.style.cssText = `
+               padding: 10px;
+                min-width: 300px;
+                max-width: 600px;
+                background: white;
+            `;
+            this.setWnd = new C4DraggableWindow('生成结果', this.resultContent, 100, 100, true);
+            this.setWndOpen = true;
+        }
+    }
     draw_ui_handle(ctx){ 
         ctx.fillStyle = 'blue'; 
         ctx.fillRect(this.x, this.y, 20, 20); 
+    }
+    handle_mouse_up(ctx,pos){ 
+
+    }
+    handle_mouse_move(ctx,pos){ 
+
     }
     handle_mouse_down(ctx,pos){
         const clickX = pos.x;
@@ -24,24 +50,7 @@ class C4MusicScript {
 
         // 判断点击位置是否在矩形区域内
         if (clickX >= this.x && clickX <= this.x + 20 && clickY >= this.y && clickY <= this.y + 20) {
-            if (this.resultWindowOpen) {
-                // 如果resultWindow已经打开，则关闭它
-                if (this.resultWindow) {
-                    this.resultWindow.toggleVisibility();  
-                }
-                this.resultWindowOpen = false;
-            } else {
-                // 如果resultWindow未打开，则创建一个新的
-                this.resultContent = document.createElement('div');
-                this.resultContent.style.cssText = `
-                   padding: 10px;
-                    min-width: 300px;
-                    max-width: 600px;
-                    background: white;
-                `;
-                this.resultWindow = new C4DraggableWindow('生成结果', this.resultContent, 100, 100, true);
-                this.resultWindowOpen = true;
-            }
+            this.#toggleSetWnd();
             return true;
         }
         return false;

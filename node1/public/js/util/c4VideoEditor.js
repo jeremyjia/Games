@@ -120,17 +120,21 @@ class VideoEditor {
 
 
     handleMouseMove(e) {
+        const pos = this.getCanvasPosition(e);
+        this.musicScript.handle_mouse_move(this.ctx,pos);
         if (!this.isDraggingShape) {
             this.whileDrawing(e);
             return;
         }
         
-        const pos = this.getCanvasPosition(e);
         this.moveSelectedShape(pos.x, pos.y);
         this.redrawCanvas();
     }
 
-    handleMouseUp() {
+    handleMouseUp(e) {
+        const pos = this.getCanvasPosition(e);
+        this.musicScript.handle_mouse_up(this.ctx,pos);
+
         if (this.isDraggingShape) {
             this.isDraggingShape = false;
             this.updateJson();
