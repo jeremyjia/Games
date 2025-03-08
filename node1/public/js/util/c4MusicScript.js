@@ -12,6 +12,11 @@ class C4MusicScript {
         this.x = 110; // 默认X坐标
         this.y = 30; // 默认Y坐标
         this.setWndOpen = false; // 新增标志，用于跟踪setWnd是否打开
+        this.isDragging = false; // 标记矩形是否正在被拖动
+        this.startX = 0; // 鼠标按下时的初始X坐标
+        this.startY = 0; // 鼠标按下时的初始Y坐标
+        this.offsetX = 0; // 矩形的初始X坐标偏移量
+        this.offsetY = 0; // 矩形的初始Y坐标偏移量
     }
 
     #toggleSetWnd(){
@@ -34,27 +39,46 @@ class C4MusicScript {
             this.setWndOpen = true;
         }
     }
+
     draw_ui_handle(ctx){ 
         ctx.fillStyle = 'blue'; 
         ctx.fillRect(this.x, this.y, 20, 20); 
     }
-    handle_mouse_up(ctx,pos){ 
 
+    handle_mouse_up(ctx,pos){
+        this.isDragging = false; // 鼠标松开，取消拖动状态
     }
-    handle_mouse_move(ctx,pos){ 
 
+    handle_mouse_move(ctx,pos){
+        if (this.isDragging) {
+            // 计算鼠标的移动距离
+            const dx = pos.x - this.startX;
+            const dy = pos.y - this.startY;
+            // 更新矩形的位置
+            this.x = this.offsetX + dx;
+            this.y = this.offsetY + dy;
+            // 重绘画布
+            this.user.redrawCanvas();
+        }
     }
+
     handle_mouse_down(ctx,pos){
         const clickX = pos.x;
         const clickY = pos.y;
 
         // 判断点击位置是否在矩形区域内
         if (clickX >= this.x && clickX <= this.x + 20 && clickY >= this.y && clickY <= this.y + 20) {
+            this.isDragging = true; // 标记矩形为可移动状态
+            this.startX = clickX; // 记录鼠标按下的初始X坐标
+            this.startY = clickY; // 记录鼠标按下的初始Y坐标
+            this.offsetX = this.x; // 记录矩形的初始X坐标偏移量
+            this.offsetY = this.y; // 记录矩形的初始Y坐标偏移量
             this.#toggleSetWnd();
             return true;
-        }
+        } 
         return false;
     }
+
     /**
      * 设置UI控件到指定的div元素中
      * @param {HTMLElement} div - 用于放置UI控件的div元素
