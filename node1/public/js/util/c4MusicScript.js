@@ -1,4 +1,5 @@
-//c4MusicScript.js
+//c4MusicScript.js 
+// ...
 
 class C4MusicScript {
     constructor() {
