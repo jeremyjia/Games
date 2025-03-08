@@ -3,13 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>node1</title>
+    <title>node1</title> 
     <script src="js/util/NavigationMenu.js"></script>
     
+    <script src="js/util/c4MusicScript.js"></script>
     <script src="js/util/c4DrawingObjs.js"></script>
     <script src="js/util/c4DraggableWindow.js"></script>
     <script src="js/util/c4Scenes.js"></script>
     <script src="js/util/c4Srt.js"></script>
+    <script src="js/util/c4JsonWnd.js"></script>
+    <script src="js/util/c4SpringWnd.js"></script>
+    <script src="js/util/c4VideoSetWnd.js"></script>
     <script src="js/util/c4VideoEditor.js"></script>
 </head>
 <body>
@@ -17,7 +21,7 @@
  
 const menuData = [
     {
-        text: '首页 v0.13',
+        text: '首页 v0.22',
         url: '/'
     },
     {
@@ -67,18 +71,7 @@ const menuData = [
 ];
 
 new NavigationMenu(menuData);
-
-// 添加页面内容
-const mainContent = document.createElement('main');
-mainContent.style.marginTop = '60px';
-mainContent.style.padding = '20px';
-mainContent.innerHTML = `
-    <h1>欢迎访问漂泊者乐园的网站</h1>
-    <p>这是一个演示导航菜单的示例页面。</p>
-`;
-document.body.appendChild(mainContent);
-
-// 点击页面其他区域关闭所有子菜单（保留增强体验）
+ 
 document.addEventListener('click', (e) => {
     if (!e.target.closest('.menu-item')) {
         document.querySelectorAll('.submenu').forEach(menu => {
@@ -88,72 +81,7 @@ document.addEventListener('click', (e) => {
 });
 
 
-const srt = `
-1
-00:00:00,000 --> 00:00:04,000
-Lesson 1 A Private Conversation
 
-2
-00:00:04,000 --> 00:00:09,000
-First listen and then answer the question.
-
-3
-00:00:09,000 --> 00:00:14,000
-Why did the writer complain to the people behind him?
-
-4
-00:00:14,000 --> 00:00:19,000
-Last week I went to the theatre.
-
-5
-00:00:19,000 --> 00:00:22,000
-I had a very good seat.
-
-6
-00:00:22,000 --> 00:00:24,000
-The play was very interesting.
-
-7
-00:00:24,000 --> 00:00:27,000
-Idid not enjoy it.
-
-8
-00:00:27,000 --> 00:00:31,000
-A young man and a young woman were sitting behind me.
-
-9
-00:00:31,000 --> 00:00:34,000
-They were talking loudly.
-
-10
-00:00:34,000 --> 00:00:36,000
-I got very angry.
-
-11
-00:00:36,000 --> 00:00:40,000
-I could not hear the actors.
-
-12
-00:00:40,000 --> 00:00:46,000
-I turned round.I looked at the man and the woman angrily.
-
-13
-00:00:46,000 --> 00:00:50,000
-They did not pay any attention.
-
-14
-00:00:50,000 --> 00:00:54,000
-In the end,I could not bear it.
-
-15
-00:00:54,000 --> 00:01:02,000
-I turned round again 'I can't hear a word!'I said angrily
-
-16
-00:01:02,000 --> 00:01:08,000
-'It's none of your business,'the young man said rudely.
- 
-`;
 
 new VideoEditor();
 </script>

@@ -2,10 +2,12 @@
 //c4DraggableWindow.js
 
 class C4DraggableWindow {
+    static highestZIndex = 999; // 新增静态变量用于追踪最高z-index
+
     constructor(title, content, initialLeft = 20, initialTop = 20, isVisible = true) {
         this.isVisible = isVisible;
-        this.createWindow(title, content, initialLeft, initialTop);
-        this.addDragListeners();
+        this.#createWindow(title, content, initialLeft, initialTop);
+        this.#addDragListeners();
         this.windowElement.style.display = isVisible ? 'block' : 'none';
     }
 
@@ -16,7 +18,7 @@ class C4DraggableWindow {
         }
     }
 
-    createWindow(title, content, initialLeft, initialTop) {
+    #createWindow(title, content, initialLeft, initialTop) {
         this.windowElement = document.createElement('div');
         Object.assign(this.windowElement.style, {
             position: 'fixed',
@@ -25,7 +27,7 @@ class C4DraggableWindow {
             background: 'white',
             border: '1px solid #ccc',
             boxShadow: '2px 2px 5px rgba(0,0,0,0.2)',
-            zIndex: '1000',
+            zIndex: `${++C4DraggableWindow.highestZIndex}`, // 动态设置初始z-index
             minWidth: '300px'
         });
 
@@ -53,7 +55,7 @@ class C4DraggableWindow {
         document.body.appendChild(this.windowElement);
     }
 
-    addDragListeners() {
+    #addDragListeners() {
         let isDragging = false;
         let initialX, initialY;
 
@@ -61,6 +63,8 @@ class C4DraggableWindow {
             isDragging = true;
             initialX = e.clientX - this.windowElement.offsetLeft;
             initialY = e.clientY - this.windowElement.offsetTop;
+            // 点击时提升z-index
+            this.windowElement.style.zIndex = ++C4DraggableWindow.highestZIndex;
         };
 
         const mouseMoveHandler = (e) => {
@@ -78,6 +82,8 @@ class C4DraggableWindow {
                 initialX = touch.clientX - this.windowElement.offsetLeft;
                 initialY = touch.clientY - this.windowElement.offsetTop;
                 isDragging = true;
+                // 触摸开始时提升z-index
+                this.windowElement.style.zIndex = ++C4DraggableWindow.highestZIndex;
             },
             touchmove: (e) => {
                 if (!isDragging) return;
@@ -101,4 +107,4 @@ class C4DraggableWindow {
     }
 }
 
-
+//升级：  

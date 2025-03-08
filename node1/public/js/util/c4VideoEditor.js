@@ -2,6 +2,10 @@
 
 class VideoEditor {
     constructor() { 
+        this.musicScript = new C4MusicScript();
+        this.div4Debug = null;
+        this.width = 640;
+        this.height = 480;
         this.selectedShape = null;
         this.dragOffset = { x: 0, y: 0 };
         this.currentSceneIndex = -1;
@@ -10,27 +14,19 @@ class VideoEditor {
         this.currentFrame = 0;
         this.animationId = null;
         this.audio = new Audio();
-        this.audio.src = 'http://localhost:3001/deepseek/2025/02/03/i3/1.mp3';
-        this.audio.addEventListener('ended', () => this.stopPlay());
-        
-        this.srt = srt;
-        this.srtHandler = new C4Srt(this.srt);  
-
+        this.audio.src = 'http://192.168.192.123:3000/deepseek/2025/02/03/i3/1.mp3';
+        this.audio.addEventListener('ended', () => this.stopPlay()); 
 
         this.createViewportMeta();
         this.initGlobalStyle();
-        this.initDOM();
-        this.createAudioPresetWindow();
+        this.initDOM(); 
         
         this.isDrawing = false;
         this.tempShape = null;
         this.registerCanvasEvents();
     }
- 
-    
-    registerCanvasEvents() {
-        this.canvas.addEventListener('mousedown', e => this.startDrawing(e));
-        this.canvas.addEventListener('mousemove', e => this.whileDrawing(e));
+   
+    registerCanvasEvents() {  
         this.canvas.addEventListener('mouseup', e => this.finishDrawing(e));
         this.canvas.addEventListener('mouseleave', e => this.finishDrawing(e));
         this.canvas.addEventListener('mousedown', e => this.handleMouseDown(e));
@@ -38,31 +34,88 @@ class VideoEditor {
         this.canvas.addEventListener('mousemove', e => this.handleMouseMove(e));
         this.canvas.addEventListener('mouseup', e => this.handleMouseUp(e));
         this.canvas.addEventListener('mouseleave', e => this.handleMouseUp(e));
+        document.addEventListener('keydown', e => this.handleKeyDown(e));
     }
 
+    // 新增键盘事件处理
+    handleKeyDown(e) {
+        if (e.key === 'Delete' && this.selectedShape) {
+            this.deleteSelectedShape();
+        }
+    }
+    // 新增删除方法
+    deleteSelectedShape() {
+        if (this.currentSceneIndex === -1 || !this.selectedShape) return;
+
+        const scene = this.scenesHandler.scenes[this.currentSceneIndex];
+        const index = scene.drawingObjs.indexOf(this.selectedShape);
+        if (index !== -1) {
+            scene.drawingObjs.splice(index, 1);
+            this.selectedShape = null;
+            this.redrawCanvas();
+            this.updateJson();
+        }
+    }
     handleMouseDown(e) {
         if (this.isPlaying) return;
         
         const pos = this.getCanvasPosition(e);
         
-        // 优先检测是否选中图形
-        this.selectedShape = this.findShapeAt(pos.x, pos.y);
-        if (this.selectedShape) {
+        // 优先检测是否选中图形或控制点
+        const hitTest = this.findHitTarget(pos.x, pos.y);
+        if (!hitTest && this.selectedShape) {  // 点击空白处取消选中
+            this.selectedShape = null;
+            this.redrawCanvas();
+        }
+
+        if (hitTest) {
+            this.selectedShape = hitTest.shape;
+            this.selectedPoint = hitTest.point; // 'start', 'end' 或 null（整体移动）
             this.dragOffset = {
-                x: pos.x - this.selectedShape.startX,
-                y: pos.y - this.selectedShape.startY
+                x: pos.x - (this.selectedPoint ? this.selectedShape[this.selectedPoint + 'X'] : this.selectedShape.startX),
+                y: pos.y - (this.selectedPoint ? this.selectedShape[this.selectedPoint + 'Y'] : this.selectedShape.startY)
             };
             this.isDraggingShape = true;
             this.redrawCanvas();
             return;
         }
         
-        // 原有绘图逻辑
-        if (this.scenesHandler.currentTool) {
+        // 仅在未拖拽且选择工具时开始绘图
+        if (this.scenesHandler.currentTool && !this.isDraggingShape) {
             this.startDrawing(e);
         }
     }
     
+    findHitTarget(x, y) {
+        if (this.currentSceneIndex === -1) return null;
+        
+        const scene = this.scenesHandler.scenes[this.currentSceneIndex];
+        for (let i = scene.drawingObjs.length - 1; i >= 0; i--) {
+            const shape = scene.drawingObjs[i];
+            
+            // 统一处理直线和矩形的控制点检测
+            if (shape instanceof C4Line || shape instanceof C4Rect) {
+                const startDist = Math.hypot(x - shape.startX, y - shape.startY);
+                const endDist = Math.hypot(x - shape.endX, y - shape.endY);
+                const controlPointRadius = 8;
+                
+                if (startDist < controlPointRadius) {
+                    return { shape, point: 'start' };
+                }
+                if (endDist < controlPointRadius) {
+                    return { shape, point: 'end' };
+                }
+            }
+            
+            // 整体图形检测
+            if (shape.isPointInside(x, y)) {
+                return { shape, point: null };
+            }
+        }
+        return null;
+    }
+
+
     handleMouseMove(e) {
         if (!this.isDraggingShape) {
             this.whileDrawing(e);
@@ -77,9 +130,10 @@ class VideoEditor {
     handleMouseUp() {
         if (this.isDraggingShape) {
             this.isDraggingShape = false;
-            this.updateJsonContent();
+            this.updateJson();
+        } else {
+            this.finishDrawing(); // 只有非拖拽时才调用结束绘图
         }
-        this.finishDrawing();
     }
     // 新增辅助方法
     getCanvasPosition(e) {
@@ -107,84 +161,30 @@ class VideoEditor {
     moveSelectedShape(x, y) {
         if (!this.selectedShape) return;
         
-        const dx = x - this.selectedShape.startX - this.dragOffset.x;
-        const dy = y - this.selectedShape.startY - this.dragOffset.y;
-        
-        this.selectedShape.startX += dx;
-        this.selectedShape.startY += dy;
-        this.selectedShape.endX += dx;
-        this.selectedShape.endY += dy;
+        if (this.selectedPoint) {
+            // 移动单个控制点
+            this.selectedShape[this.selectedPoint + 'X'] = x - this.dragOffset.x;
+            this.selectedShape[this.selectedPoint + 'Y'] = y - this.dragOffset.y;
+        } else {
+            // 原有整体移动逻辑
+            const dx = x - this.selectedShape.startX - this.dragOffset.x;
+            const dy = y - this.selectedShape.startY - this.dragOffset.y;
+            
+            this.selectedShape.startX += dx;
+            this.selectedShape.startY += dy;
+            this.selectedShape.endX += dx;
+            this.selectedShape.endY += dy;
+        }
     }
 
     redrawCanvas() {
         this.updateCanvasColor(
             this.scenesHandler.scenes[this.currentSceneIndex].color
         );
-        this.drawSelectionHighlight();
+        drawSelectionHighlight(this);
     }
-    drawSelectionHighlight() {
-        if (!this.selectedShape) return;
-        
-        this.ctx.save();
-        this.ctx.strokeStyle = '#FF0000';
-        this.ctx.lineWidth = 2;
-        
-        if (this.selectedShape instanceof C4Line) {
-            this.ctx.beginPath();
-            this.ctx.moveTo(this.selectedShape.startX, this.selectedShape.startY);
-            this.ctx.lineTo(this.selectedShape.endX, this.selectedShape.endY);
-            this.ctx.stroke();
-        } else if (this.selectedShape instanceof C4Rect) {
-            this.ctx.strokeRect(
-                this.selectedShape.startX,
-                this.selectedShape.startY,
-                this.selectedShape.endX - this.selectedShape.startX,
-                this.selectedShape.endY - this.selectedShape.startY
-            );
-        }
-        
-        this.ctx.restore();
-    }
-
-    createAudioPresetWindow() {
-        this.audioPresetContent = document.createElement('div');
-        this.audioPresetContent.style.cssText = `
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            padding: 10px;
-        `;
-
-        const baseURL = 'https://littleflute.github.io/english/NewConceptEnglish/Book2/';
-        for (let i = 1; i <= 36; i++) { 
-            const btn = document.createElement('button');
-            btn.textContent = `第 ${i} 课`;
-            btn.style.cssText = `
-                padding: 4px 8px;
-                background: #9C27B0;
-                color: white;
-                font-size: 12px;
-            `;
-            btn.onclick = () => {
-                // 关键修改：用padStart补足两位数路径
-                const paddedI = i.toString().padStart(2, '0');
-                const url = `${baseURL}${paddedI}.mp3`;
-                this.audioUrlInput.value = url;
-                this.audio.src = url;
-                this.updateJsonContent();
-            };
-            this.audioPresetContent.appendChild(btn);
-        }
-
-        this.audioPresetWindow = new C4DraggableWindow(
-            '音频预设',
-            this.audioPresetContent,
-            400,  
-            20,
-            false
-        );
-    }
-
+    
+    
 
     initGlobalStyle() {
         const style = document.createElement('style');
@@ -228,11 +228,12 @@ class VideoEditor {
         if (!this.jsonWindow.isVisible) {
             this.jsonWindow.toggleVisibility();
         }
-        this.updateJsonContent();
+        this.updateJson();
         setTimeout(() => {
-            const targetLine = this.jsonContent.querySelector(`[data-scene-id="${sceneId}"]`);
+            let jsonContent = this.jsonWindow.getJsonContent();
+            const targetLine = jsonContent.querySelector(`[data-scene-id="${sceneId}"]`);
             if (targetLine) {
-                this.jsonContent.querySelectorAll('.line').forEach(line => {
+                jsonContent.querySelectorAll('.line').forEach(line => {
                     line.classList.remove('highlight');
                 });
                 targetLine.classList.add('highlight');
@@ -241,11 +242,12 @@ class VideoEditor {
         }, 0);
     }
 
-    updateJsonContent() {
+    updateJson() {
         if (this.jsonWindow.isVisible) {
             const jsonStr = this.generateVideoJson();
             const lines = jsonStr.split('\n');
-            this.jsonContent.innerHTML = lines.map(line => {
+            let jsonContent = this.jsonWindow.getJsonContent();
+            jsonContent.innerHTML = lines.map(line => {
                 const escapedLine = line.replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 const idMatch = line.match(/"id":\s*(\d+)/);
                 if (idMatch) {
@@ -267,26 +269,19 @@ class VideoEditor {
     initDOM() {
         this.createSceneToolbar();
         this.scenesHandler = new C4Scenes(
-            this.sceneToolbar, // 将工具栏容器传递给场景管理器
+            this.sceneToolbar,  
             id => this.selectScene(id),
-            () => this.updateJsonContent()
+            () => this.updateJson()
         );
-        this.sceneWindow = new C4DraggableWindow('场景管理', this.sceneToolbar, 20, 20);
-        this.createVideoManagerToolbar();
+        
+        this.createVideoManagerToolbar(); 
         this.createCanvas();
         this.createPlayToolbar();
 
-        this.jsonContent = document.createElement('div');
-        this.jsonContent.className = 'json-content';
-        this.jsonContent.style.cssText = `
-            padding: 10px;
-            max-height: 200px;
-            overflow: auto;
-            margin: 0;
-            background: white;
-        `;
-        this.jsonWindow = new C4DraggableWindow('jsonWindow', this.jsonContent, 20, 200);
-        // 创建结果窗口元素
+        this.springWnd = new C4SpringWnd(this);  
+        this.videoSetWnd = new C4VideoSetWnd(this);  
+        this.jsonWindow = new C4JsonWnd(); 
+
         this.resultContent = document.createElement('div');
         this.resultContent.style.cssText = `
             padding: 10px;
@@ -319,50 +314,112 @@ class VideoEditor {
             background: #e0e0e0;
             border-bottom: 1px solid #ccc;
         `;
-
-        const toggleWindowBtn = document.createElement('button');
-        toggleWindowBtn.textContent = '切换场景窗口';
-        toggleWindowBtn.onclick = () => this.sceneWindow.toggleVisibility();
-
-        const toggleJsonBtn = document.createElement('button');
-        toggleJsonBtn.textContent = '切换数据窗口';
-        toggleJsonBtn.onclick = () => {
-            this.jsonWindow.toggleVisibility();
-            if (this.jsonWindow.isVisible) {
-                this.updateJsonContent();
+    
+        // 工具栏配置数组
+        const toolbarConfig = [
+            {
+                type: 'button',
+                text: 'videoEditor_v0.12',
+                style: {
+                    background: 'transparent',
+                    border: '1px solid #666'
+                }
+            },
+            {
+                type: 'button',
+                text: 'setVideo',
+                onClick: () => this.videoSetWnd.toggleVisibility(),
+                style: {
+                    background: '#9C27B0',
+                    color: 'white'
+                }
+            },
+            {
+                type: 'button',
+                text: 'scenesWnd',
+                onClick: () => this.scenesHandler.sceneWindow.toggleVisibility(),
+                style: {
+                    background: '#4CAF50',
+                    color: 'white'
+                }
+            },
+            {
+                type: 'button',
+                text: 'jsonWnd',
+                onClick: () => {
+                    this.jsonWindow.toggleVisibility();
+                    if (this.jsonWindow.isVisible) this.updateJson();
+                },
+                style: {
+                    background: '#2196F3',
+                    color: 'white'
+                }
+            },
+            {
+                type: 'input',
+                placeholder: '音频URL',
+                value: this.audio.src,
+                style: { flex: '1' },
+                onChange: (e) => {
+                    this.audio.src = e.target.value;
+                    this.updateJson();
+                }
             }
-        };
-
-        const audioUrlInput = document.createElement('input');
-        audioUrlInput.type = 'url';
-        audioUrlInput.placeholder = '音频URL';
-        audioUrlInput.value = this.audio.src;
-        audioUrlInput.style.flex = '1';
-        audioUrlInput.addEventListener('change', (e) => {
-            this.audio.src = e.target.value;
-            this.updateJsonContent();
+        ];
+    
+        // 根据配置创建元素
+        toolbarConfig.forEach(config => {
+            if (config.type === 'button') {
+                const btn = document.createElement('button');
+                btn.textContent = config.text;
+                
+                // 合并样式
+                btn.style.cssText = Object.entries({
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    ...config.style
+                }).map(([k, v]) => `${k}: ${v}`).join(';');
+    
+                if (config.onClick) {
+                    btn.addEventListener('click', config.onClick.bind(this));
+                }
+                
+                this.videoManagerToolbar.appendChild(btn);
+            }
+            else if (config.type === 'input') {
+                const input = document.createElement('input');
+                input.type = 'url';
+                input.placeholder = config.placeholder;
+                input.value = config.value || '';
+                
+                // 合并样式
+                input.style.cssText = Object.entries({
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    ...config.style
+                }).map(([k, v]) => `${k}: ${v}`).join(';');
+    
+                if (config.onChange) {
+                    input.addEventListener('change', config.onChange.bind(this));
+                }
+                
+                // 保存音频输入引用
+                if (config.placeholder === '音频URL') {
+                    this.audioUrlInput = input;
+                }
+                
+                this.videoManagerToolbar.appendChild(input);
+            }
         });
-
-        // 新增音频预设切换按钮
-        const toggleAudioPresetBtn = document.createElement('button');
-        toggleAudioPresetBtn.textContent = '音频预设';
-        toggleAudioPresetBtn.onclick = () => this.audioPresetWindow.toggleVisibility();
-
-        // 在原有工具栏中添加新按钮
-        this.videoManagerToolbar.appendChild(toggleAudioPresetBtn);
-        this.videoManagerToolbar.appendChild(toggleWindowBtn);
-        this.videoManagerToolbar.appendChild(toggleJsonBtn);
-        
-        this.audioUrlInput = audioUrlInput;
-        this.videoManagerToolbar.appendChild(audioUrlInput);
+    
         document.body.appendChild(this.videoManagerToolbar);
     }
-    
-    
+
     getCanvasScale() {
         return {
-            x: 640 / this.canvas.width,
-            y: 480 / this.canvas.height
+            x: this.width / this.canvas.width,
+            y: this.height / this.canvas.height
         };
     }
     
@@ -389,10 +446,10 @@ class VideoEditor {
         }));
         return JSON.stringify({
             fps: parseInt(this.fpsInput.value) || 30,
-            canvasWidth: this.canvas.width,  // 新增画布尺寸
+            canvasWidth: this.canvas.width,  
             canvasHeight: this.canvas.height,
-            width: 640,
-            height: 480,
+            width: this.width,
+            height: this.height,
             scenes: scenesData,
             audio: this.audio.src
         }, null, 2);
@@ -402,7 +459,7 @@ class VideoEditor {
         const sceneData = this.scenesHandler.getScenesData().find(s => s.id === id);
         if (sceneData) {
             this.currentSceneIndex = this.scenesHandler.currentSceneIndex;
-            this.updateCanvasColor(sceneData.color); // 自动触发重绘
+            this.updateCanvasColor(sceneData.color); 
             this.highlightJsonLine(id);
         }
     }
@@ -441,7 +498,7 @@ class VideoEditor {
             <label>帧率: <input type="number" value="30" min="1" style="width:50px"></label>
         `;
         this.fpsInput = fpsContainer.querySelector('input');
-        this.fpsInput.addEventListener('change', () => this.updateJsonContent());
+        this.fpsInput.addEventListener('change', () => this.updateJson());
 
             
         const generateBtn = document.createElement('button');
@@ -634,7 +691,7 @@ class VideoEditor {
             this.stopPlay();
             return;
         }
-
+ 
         this.updatePlayback();
 
         this.animationId = requestAnimationFrame(() => this.animate());
@@ -662,12 +719,7 @@ class VideoEditor {
                 this.highlightSceneButton(currentSceneIndex);
                 this.currentPlaySceneIndex = currentSceneIndex;
             }
-        }
-        // 新增字幕处理
-        const currentTime = this.audio.currentTime;
-        
-        this.srtHandler.getCurrentSubtitle(currentTime); 
-         
+        }  
     }
     
     
@@ -685,32 +737,16 @@ class VideoEditor {
             scene.drawingObjs.forEach(obj => obj.draw(this.ctx));
         }
         
-        if (isPlaying) this.drawHUD();
+        if (isPlaying) {
+            drawHUD(this,44,10,12);
+            this.musicScript.showInf(this.ctx, this.audio.currentTime);
+        }
     }
 
 
-    drawHUD() {
-        const fps = parseInt(this.fpsInput.value) || 30;
-        const totalFrames = this.scenesHandler.scenes.reduce((sum, s) => sum + s.duration, 0);
-        const currentFrame = this.currentFrame + 1;
-        const currentScene = this.currentPlaySceneIndex + 1;
-        const totalScenes = this.scenesHandler.scenes.length;
-
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        this.ctx.fillRect(5, 5, 160, 60);
-
-        this.ctx.fillStyle = 'white';
-        this.ctx.font = '14px Arial';
-        this.ctx.textBaseline = 'top';
-        this.ctx.fillText(`帧率: ${fps} FPS`, 10, 10);
-        this.ctx.fillText(`帧: ${currentFrame}/${totalFrames}`, 10, 30);
-        this.ctx.fillText(`场景: ${currentScene}/${totalScenes}`, 10, 50);
-
-        this.srtHandler.showCurrentSubTxt(this.ctx,this.canvas);
-        
-    }
+    
     startDrawing(e) {
-        if (!this.scenesHandler.currentTool || this.currentSceneIndex === -1) return;
+        if (!this.scenesHandler.currentTool || this.currentSceneIndex === -1 || this.isDraggingShape) return; // 添加拖拽状态检查
 
         const rect = this.canvas.getBoundingClientRect();
         const scaleX = this.canvas.width / rect.width;  // 新增缩放计算
@@ -724,7 +760,7 @@ class VideoEditor {
 
 
     whileDrawing(e) {
-        if (!this.isDrawing) return;
+        if (!this.isDrawing || this.isDraggingShape) return; // 拖拽时停止绘图更新
 
         const rect = this.canvas.getBoundingClientRect();
         const scaleX = this.canvas.width / rect.width;  // 新增缩放计算
@@ -739,10 +775,11 @@ class VideoEditor {
             this.isPlaying
         );
         this.redrawSceneGraphics();
-        this.drawTempShape(currentPos);
+        drawTempShape(this,this.ctx,this.scenesHandler.currentTool,currentPos);
     }
 
     finishDrawing(e) {
+        if (this.isDraggingShape) return; // 拖拽时不要结束绘图
         if (!this.isDrawing) return;
         this.isDrawing = false;
 
@@ -755,7 +792,7 @@ class VideoEditor {
         };
 
         const scene = this.scenesHandler.scenes[this.currentSceneIndex];
-        const newShape = this.createShape(
+        const newShape = createShape(
             this.scenesHandler.currentTool,
             this.startPos,
             endPos,
@@ -764,61 +801,13 @@ class VideoEditor {
 
         if (newShape) {
             scene.drawingObjs.push(newShape);
-            this.updateJsonContent();
+            this.updateJson();
         }
     }
-    createShape(type, start, end) {  // 移除颜色参数
-        // 固定使用黑色保存图形
-        const color = '#000';
-        switch (type) {
-            case 'line':
-                return new C4Line(start.x, start.y, end.x, end.y, color);
-            case 'rect':
-                return new C4Rect(start.x, start.y, end.x, end.y, color);
-            default:
-                return null;
-        }
-    }
-
-    drawTempShape(currentPos) {
-        const ctx = this.ctx;
-        ctx.save();
-        // 使用黑色边框和半透明填充
-        ctx.strokeStyle = '#000';
-        ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        ctx.lineWidth = 2;
-
-        switch (this.scenesHandler.currentTool) {
-            case 'line':
-                ctx.beginPath();
-                ctx.moveTo(this.startPos.x, this.startPos.y);
-                ctx.lineTo(currentPos.x, currentPos.y);
-                ctx.stroke();
-                break;
-            case 'rect':
-                ctx.fillRect(
-                    this.startPos.x,
-                    this.startPos.y,
-                    currentPos.x - this.startPos.x,
-                    currentPos.y - this.startPos.y
-                );
-                ctx.strokeRect(
-                    this.startPos.x,
-                    this.startPos.y,
-                    currentPos.x - this.startPos.x,
-                    currentPos.y - this.startPos.y
-                );
-                break;
-        }
-        ctx.restore();
-    }
-
 
     redrawSceneGraphics() {
         const scene = this.scenesHandler.scenes[this.currentSceneIndex];
         scene.drawingObjs.forEach(obj => obj.draw(this.ctx));
-    }
-
-    
+    }  
 }
-
+ // 升级： 用配置数组重构 createVideoManagerToolbar

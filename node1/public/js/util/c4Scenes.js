@@ -1,6 +1,7 @@
 // c4Scenes.js 
 class C4Scenes {
     constructor(sceneToolbar, onSceneSelected, onScenesUpdated) {
+        this.sceneWindow = new C4DraggableWindow('scenesManager', sceneToolbar, 444, 151);
         this.scenes = [];
         this.sceneToolbar = sceneToolbar;
         this.currentSceneIndex = -1;
@@ -70,14 +71,7 @@ class C4Scenes {
         header.appendChild(newSceneBtn);
 
         this.currentTool = null;
-
-        this.onSceneSelected = (id) => {
-            onSceneSelected(id);
-            if (this.currentSceneIndex !== -1) {
-                const scene = this.scenes[this.currentSceneIndex];
-                onSceneSelected(scene.id);
-            }
-        };
+ 
 
         
         // Add to your button creation code:
@@ -100,18 +94,17 @@ class C4Scenes {
 
     getScenes() {
         return this.scenes;
-    }
-    
+    } 
     addScene() {
         const scene = {
             id: Date.now(),
             color: this.getRandomColor(),
             duration: 30,
             element: null,
-            btn: null, 
-            drawingObjs: []  // 新增绘图对象数组
+            btn: null,
+            drawingObjs: []
         };
-
+    
         const sceneItem = document.createElement('div');
         sceneItem.style.cssText = `
             display: flex;
@@ -123,54 +116,128 @@ class C4Scenes {
             cursor: move;
         `;
         sceneItem.draggable = true;
-
+     
         sceneItem.addEventListener('dragstart', e => this.handleDragStart(e, scene));
         sceneItem.addEventListener('dragover', e => this.handleDragOver(e, scene));
         sceneItem.addEventListener('drop', e => this.handleDrop(e));
         sceneItem.addEventListener('dragend', e => this.handleDragEnd(e));
-
-        const sceneBtn = document.createElement('button');
-        sceneBtn.textContent = `场景 0`; // 临时占位文本
-        sceneBtn.style.cssText = `
-            padding: 4px 8px;
-            background: ${scene.color};
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-        `;
-        sceneBtn.onclick = () => this.selectScene(scene.id);
-
-        const durationInput = document.createElement('input');
-        durationInput.type = 'number';
-        durationInput.value = scene.duration;
-        durationInput.onchange = (e) => {
-            scene.duration = Math.max(1, parseInt(e.target.value) || 1);
-            this.onScenesUpdated?.();
-        };
-
-        const colorInput = document.createElement('input');
-        colorInput.type = 'color';
-        colorInput.value = scene.color;
-        colorInput.oninput = (e) => {
-            scene.color = e.target.value;
-            sceneBtn.style.backgroundColor = scene.color;
-            this.onScenesUpdated?.();
-        };
-
-        sceneItem.appendChild(sceneBtn);
-        sceneItem.appendChild(durationInput);
-        sceneItem.appendChild(colorInput); 
+    
+        
+        const elementsConfig = [
+            {
+                type: 'button',
+                props: {
+                    textContent: '场景 0',
+                    style: {
+                        padding: '4px 8px',
+                        background: scene.color,
+                        border: 'none',
+                        borderRadius: '3px',
+                        cursor: 'pointer'
+                    },
+                    onclick: () => this.selectScene(scene.id)
+                },
+                postCreate: element => scene.btn = element // 保存按钮引用
+            },
+            {
+                type: 'input',
+                props: {
+                    type: 'number',
+                    value: scene.duration,
+                    onchange: e => {
+                        scene.duration = Math.max(1, parseInt(e.target.value) || 1);
+                        this.onScenesUpdated?.();
+                    }
+                }
+            },
+            {
+                type: 'input',
+                props: {
+                    type: 'color',
+                    value: scene.color,
+                    oninput: e => {
+                        scene.color = e.target.value;
+                        scene.btn.style.backgroundColor = scene.color; // 更新按钮颜色
+                        this.onScenesUpdated?.();
+                    }
+                }
+            },
+            {
+                type: 'button',
+                props: {
+                    textContent: '×',
+                    style: {
+                        background: '#ff4444',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '50%',
+                        cursor: 'pointer',
+                        width: '24px',
+                        height: '24px',
+                        padding: '0',
+                        transition: 'background 0.3s'
+                    },
+                    onmouseover: function() {
+                        this.style.background = '#cc0000';
+                    },
+                    onmouseout: function() {
+                        this.style.background = '#ff4444';
+                    },
+                    onclick: (e) => {
+                        e.stopPropagation();
+                        this.deleteScene(scene.id);
+                    }
+                }
+            }
+        ];
+     
+        elementsConfig.forEach(config => {
+            const element = document.createElement(config.type);
+             
+            Object.entries(config.props).forEach(([key, value]) => {
+                if (key === 'style') {
+                    Object.assign(element.style, value);
+                } else if (typeof value === 'function') {
+                    element[key] = value;  
+                } else {
+                    element[key] = value;
+                }
+            });
+    
+            // 后处理
+            if (config.postCreate) config.postCreate(element);
+            sceneItem.appendChild(element);
+        });
+    
         this.scenesContainer.appendChild(sceneItem);
-
         scene.element = sceneItem;
-        scene.btn = sceneBtn;
         this.scenes.push(scene);
-        this.updateSceneNumbers(); // 新增：统一更新序号
+        this.updateSceneNumbers();
         this.selectScene(scene.id);
         this.onScenesUpdated?.();
     }
+    deleteScene(sceneId) {
+        const index = this.scenes.findIndex(s => s.id === sceneId);
+        if (index === -1) return;
 
-    // 新增方法：更新所有场景按钮的序号
+        // 从DOM中移除元素
+        this.scenes[index].element.remove();
+        
+        // 从数组中移除场景
+        this.scenes.splice(index, 1);
+
+        // 更新当前选中索引
+        if (this.currentSceneIndex === index) {
+            this.currentSceneIndex = -1;
+            this.onSceneSelected?.(null);
+        } else if (this.currentSceneIndex > index) {
+            this.currentSceneIndex--;
+        }
+
+        // 更新场景编号并触发回调
+        this.updateSceneNumbers();
+        this.onScenesUpdated?.();
+    }
     updateSceneNumbers() {
         this.scenes.forEach((scene, index) => {
             scene.btn.textContent = `场景 ${index + 1}`;
@@ -214,7 +281,7 @@ class C4Scenes {
     handleDragEnd(e) {
         this.draggedScene.element.style.opacity = '1';
         this.draggedScene = null;
-        this.updateSceneNumbers(); // 新增：拖拽结束后更新序号
+        this.updateSceneNumbers();  
         this.onScenesUpdated?.();
     }
 
@@ -274,3 +341,5 @@ class C4Scenes {
         return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
     }
 }
+
+// 升级： elementsConfig 添加删除功能
