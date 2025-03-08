@@ -2,7 +2,7 @@
 
 class VideoEditor {
     constructor() { 
-        this.musicScript = new C4MusicScript();
+        this.musicScript = new C4MusicScript(this);
         this.div4Debug = null;
         this.width = 640;
         this.height = 480;
@@ -57,9 +57,11 @@ class VideoEditor {
         }
     }
     handleMouseDown(e) {
+        const pos = this.getCanvasPosition(e);
+        if(this.musicScript.handle_mouse_down(this.ctx,pos))  return;
+
         if (this.isPlaying) return;
         
-        const pos = this.getCanvasPosition(e);
         
         // 优先检测是否选中图形或控制点
         const hitTest = this.findHitTarget(pos.x, pos.y);
@@ -84,6 +86,7 @@ class VideoEditor {
         if (this.scenesHandler.currentTool && !this.isDraggingShape) {
             this.startDrawing(e);
         }
+
     }
     
     findHitTarget(x, y) {
@@ -182,6 +185,7 @@ class VideoEditor {
             this.scenesHandler.scenes[this.currentSceneIndex].color
         );
         drawSelectionHighlight(this);
+        this.musicScript.draw_ui_handle(this.ctx);
     }
     
     
@@ -741,6 +745,7 @@ class VideoEditor {
             drawHUD(this,44,10,12);
             this.musicScript.showInf(this.ctx, this.audio.currentTime);
         }
+        this.musicScript.draw_ui_handle(this.ctx);
     }
 
 

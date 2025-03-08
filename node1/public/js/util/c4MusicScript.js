@@ -2,16 +2,50 @@
 // ...
 
 class C4MusicScript {
-    constructor() {
+    constructor(user) {
+        this.user = user;
         this.BPM = 120; // 默认BPM为120
         this.beatType = '4/4'; // 默认拍号为4/4
         this.beatNumerator = 4; // 拍号分子
         this.beatDenominator = 4; // 拍号分母
         this.barsPerLine = 4; // 每行默认4小节
-        this.x = 10; // 默认X坐标
+        this.x = 110; // 默认X坐标
         this.y = 30; // 默认Y坐标
+        this.resultWindowOpen = false; // 新增标志，用于跟踪resultWindow是否打开
     }
 
+    draw_ui_handle(ctx){ 
+        ctx.fillStyle = 'blue'; 
+        ctx.fillRect(this.x, this.y, 20, 20); 
+    }
+    handle_mouse_down(ctx,pos){
+        const clickX = pos.x;
+        const clickY = pos.y;
+
+        // 判断点击位置是否在矩形区域内
+        if (clickX >= this.x && clickX <= this.x + 20 && clickY >= this.y && clickY <= this.y + 20) {
+            if (this.resultWindowOpen) {
+                // 如果resultWindow已经打开，则关闭它
+                if (this.resultWindow) {
+                    this.resultWindow.toggleVisibility();  
+                }
+                this.resultWindowOpen = false;
+            } else {
+                // 如果resultWindow未打开，则创建一个新的
+                this.resultContent = document.createElement('div');
+                this.resultContent.style.cssText = `
+                   padding: 10px;
+                    min-width: 300px;
+                    max-width: 600px;
+                    background: white;
+                `;
+                this.resultWindow = new C4DraggableWindow('生成结果', this.resultContent, 100, 100, true);
+                this.resultWindowOpen = true;
+            }
+            return true;
+        }
+        return false;
+    }
     /**
      * 设置UI控件到指定的div元素中
      * @param {HTMLElement} div - 用于放置UI控件的div元素
@@ -108,6 +142,7 @@ class C4MusicScript {
         // 绑定位置输入事件
         this.xInput.addEventListener('change', (e) => {
             this.x = parseInt(e.target.value) || 10;
+            this.user.redrawCanvas();
         });
 
         this.yInput.addEventListener('change', (e) => {
@@ -135,6 +170,6 @@ class C4MusicScript {
         ctx.font = '20px Arial';
         ctx.fillStyle = 'black';
         ctx.fillText(`小节: ${barNumber}, 拍: ${beatNumber}`, this.x, this.y);
-        console.log(`小节: ${barNumber}, 拍: ${beatNumber}`);
+        
     }
 }
