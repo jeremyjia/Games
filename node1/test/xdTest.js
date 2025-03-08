@@ -11,6 +11,12 @@ const spiderTest = require('./spider/index.js');
 describe(tag4xdTest, function(){ 
   
   //
+<<<<<<< HEAD
+  it("bls_objsO_video",
+    function(){assert.equal("done",'doing...');  });
+ 
+   
+=======
   it('T001# 2025/2/1: bls editor can play bls at right FPS;' + `
     test->https://littleflute.github.io/Games/issues/21/index.html;
     `,
@@ -60,6 +66,7 @@ describe(tag4xdTest, function(){
 
   it('2024/10/4 : 21voa; test->issues/455/index.html ',
      function(){assert.equal("done",'done');  });
+>>>>>>> upstream/master
 
   it('spiderTest: test1', function(){     
     spiderTest.test1(assert);   
