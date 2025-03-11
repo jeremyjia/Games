@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +27,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.pbz.demo.hello.model.VideoDoc;
 import com.pbz.demo.hello.service.DataStreamStoreService;
+import com.pbz.demo.hello.service.IDeepseekService;
 import com.pbz.demo.hello.service.VideoDocService;
 import com.pbz.demo.hello.util.ExecuteCommand;
 import com.pbz.demo.hello.util.FileUtil;
@@ -48,6 +50,14 @@ public class CommonController {
 
 	@Autowired
 	private VideoDocService videoDocService;
+	
+	private final IDeepseekService deepseekService;
+	
+    // 使用构造函数注入依赖
+    @Autowired
+    public CommonController(IDeepseekService deepseekService) {
+        this.deepseekService = deepseekService;
+    }
 
 	@ApiOperation(value = "执行服务器端命令", notes = "执行服务器端命令")
 	@ApiImplicitParams({
@@ -234,13 +244,26 @@ public class CommonController {
 		return resultString;
 	}
 
-    @RequestMapping(value = "/chatGPT/q", method = RequestMethod.GET)
+    @RequestMapping(value = "/chatGPT/q", method = RequestMethod.POST)
     @ResponseBody
     public String getAnswerData(@RequestParam(name = "question", defaultValue = "who are you") String question)
             throws Exception {
         String answerString = NetAccessUtil.getAnswerbyChatGPT(question);
         return answerString;
     }
+    
+    
+    @RequestMapping(value = "/api/deepseek/q", method = RequestMethod.GET)
+    @ResponseBody
+    public ResponseEntity<String> handleDeepseekInput(
+            @RequestParam(name = "autoInput", defaultValue = "Hello deepseek") String deepseekAutoInput)
+            throws Exception {
+
+        deepseekService.processAutoInput(deepseekAutoInput);
+        
+        return ResponseEntity.ok("OK");
+    }
+    
 	   
 	@ApiOperation(value = "获取版本信息", notes = "获取应用版本、服务器等信息")
 	@RequestMapping(value = "/getServerInfo", method = RequestMethod.GET)
