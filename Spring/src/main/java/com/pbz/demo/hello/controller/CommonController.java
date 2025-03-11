@@ -254,13 +254,18 @@ public class CommonController {
     
     @RequestMapping(value = "/api/deepseek/q", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<String> handleDeepseekInput(
+    public ResponseEntity<Map<String, Object>> handleDeepseekInput(
             @RequestParam(name = "text", defaultValue = "Hello deepseek") String deepseekAutoInput)
             throws Exception {
 
+        Map<String, Object> responseMap = new HashMap<>();
+        
         deepseekService.processAutoInput(deepseekAutoInput);
         
-        return ResponseEntity.ok("OK");
+        responseMap.put("status", 200);
+        responseMap.put("message", "OK");
+
+        return ResponseEntity.ok(responseMap);
     }
     
 	   
