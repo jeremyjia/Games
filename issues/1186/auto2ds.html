@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可编辑文本请求示例</title>
+    <style>
+        /* 原有样式保持不变 */
+        /* 新增编辑相关样式 */
+        .edit-panel {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        .edit-input {
+            width: 300px;
+            padding: 8px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+        }
+        .action-button {
+            padding: 8px 15px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .add-btn {
+            background: #4CAF50;
+            color: white;
+        }
+        .edit-btn {
+            background: #2196F3;
+            color: white;
+        }
+        .del-btn {
+            background: #f44336;
+            color: white;
+        }
+        .text-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>点击文本向后端服务发送请求</h2>
+        
+        <!-- 编辑面板 -->
+        <div class="edit-panel">
+            <input type="text" class="edit-input" id="textInput" placeholder="输入新文本">
+            <button class="action-button add-btn" onclick="addText()">添加文本</button>
+            <button class="action-button" onclick="saveList()" style="background:#9C27B0">保存列表</button>
+        </div>
+
+        <!-- 文本容器 -->
+        <div id="textContainer"></div>
+    </div>
+
+    <script>
+        // 初始化文本数据
+        let textList = [
+            { id: 1, content: '你好' },
+            { id: 2, content: '今天天气好吗？' },
+            { id: 3, content: '请问现在几点？' },
+            { id: 4, content: '有什么推荐的吗？' },
+            { id: 5, content: '谢谢' },
+            { id: 6, content: '需要帮助吗？' },
+            { id: 7, content: '请问怎么称呼您？'}
+        ];
+
+        // 渲染文本列表
+        function renderList() {
+            const container = document.getElementById('textContainer');
+            container.innerHTML = '';
+            
+            textList.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'text-item';
+                div.innerHTML = `
+                    <div onclick="sendRequest('${item.content}')" 
+                         style="flex-grow:1;padding:10px 15px">
+                        ${item.content}
+                    </div>
+                    <button class="action-button edit-btn" 
+                            onclick="editText(${item.id})">编辑</button>
+                    <button class="action-button del-btn" 
+                            onclick="deleteText(${item.id})">删除</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // 添加新文本
+        function addText() {
+            const input = document.getElementById('textInput');
+            const newText = input.value.trim();
+            
+            if (newText) {
+                textList.push({
+                    id: Date.now(),
+                    content: newText
+                });
+                input.value = '';
+                renderList();
+            }
+        }
+
+        // 编辑文本
+        function editText(id) {
+            const item = textList.find(i => i.id === id);
+            const newText = prompt('编辑文本内容：', item.content);
+            
+            if (newText !== null) {
+                item.content = newText.trim();
+                renderList();
+            }
+        }
+
+        // 删除文本
+        function deleteText(id) {
+            if (confirm('确定要删除这个文本吗？')) {
+                textList = textList.filter(i => i.id !== id);
+                renderList();
+            }
+        }
+
+        // 保存列表到LocalStorage
+        function saveList() {
+            localStorage.setItem('textList', JSON.stringify(textList));
+            alert('列表已保存！');
+        }
+
+        // 初始化加载
+        (function init() {
+            const saved = localStorage.getItem('textList');
+            if (saved) textList = JSON.parse(saved);
+            renderList();
+        })();
+
+        // 原有的请求函数保持不变
+        const API_ENDPOINT = 'http://localhost:8080/api/deepseek/q';
+
+        function sendRequest(text) {
+            const url = new URL(API_ENDPOINT);
+            url.searchParams.append('text', text);
+            
+            fetch(url, {
+                headers: {
+                    'Content-Type': 'text/plain; charset=UTF-8',
+                    'Accept-Charset': 'UTF-8'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('响应结果:', data);
+            })
+            .catch(error => {
+                console.error('请求错误:', error);
+				alert(error);
+            });
+        }
+    </script>
+</body>
+</html>
