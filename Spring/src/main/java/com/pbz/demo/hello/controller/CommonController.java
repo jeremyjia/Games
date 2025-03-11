@@ -1,7 +1,6 @@
 package com.pbz.demo.hello.controller;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -244,7 +243,7 @@ public class CommonController {
 		return resultString;
 	}
 
-    @RequestMapping(value = "/chatGPT/q", method = RequestMethod.POST)
+    @RequestMapping(value = "/chatGPT/q", method = RequestMethod.GET)
     @ResponseBody
     public String getAnswerData(@RequestParam(name = "question", defaultValue = "who are you") String question)
             throws Exception {
@@ -256,7 +255,7 @@ public class CommonController {
     @RequestMapping(value = "/api/deepseek/q", method = RequestMethod.GET)
     @ResponseBody
     public ResponseEntity<String> handleDeepseekInput(
-            @RequestParam(name = "autoInput", defaultValue = "Hello deepseek") String deepseekAutoInput)
+            @RequestParam(name = "text", defaultValue = "Hello deepseek") String deepseekAutoInput)
             throws Exception {
 
         deepseekService.processAutoInput(deepseekAutoInput);
