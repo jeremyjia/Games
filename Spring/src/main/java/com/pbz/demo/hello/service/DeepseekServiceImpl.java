@@ -203,8 +203,8 @@ public class DeepseekServiceImpl implements IDeepseekService {
 
         String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("mac")) {
-            robot.mousePress(InputEvent.BUTTON1_DOWN_MASK); // 按下左键
-            robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK); // 释放左键
+            //robot.mousePress(InputEvent.BUTTON1_DOWN_MASK); // 按下左键
+            //robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK); // 释放左键
 
             robot.keyPress(KeyEvent.VK_META); // Command+V
             robot.keyPress(KeyEvent.VK_V);
