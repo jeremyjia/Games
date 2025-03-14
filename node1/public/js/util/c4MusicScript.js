@@ -100,11 +100,7 @@ class C4MusicScript {
     setUI(div) {
         div.innerHTML = ''; 
 
-<<<<<<< HEAD
         // BPM Control
-=======
-        // BPM输入控件
->>>>>>> upstream/master
         const bpmContainer = document.createElement('div');
         const bpmLabel = document.createElement('label');
         bpmLabel.textContent = 'BPM: ';
@@ -115,11 +111,7 @@ class C4MusicScript {
         bpmLabel.appendChild(this.bpmInput);
         bpmContainer.appendChild(bpmLabel);
 
-<<<<<<< HEAD
         // Time Signature
-=======
-        // 拍号选择控件
->>>>>>> upstream/master
         const beatTypeContainer = document.createElement('div');
         const beatTypeLabel = document.createElement('label');
         beatTypeLabel.textContent = '拍号: ';
@@ -134,11 +126,7 @@ class C4MusicScript {
         beatTypeLabel.appendChild(this.beatTypeSelect);
         beatTypeContainer.appendChild(beatTypeLabel);
 
-<<<<<<< HEAD
         // Bars Per Line
-=======
-        // 每行小节数控件
->>>>>>> upstream/master
         const barsPerLineContainer = document.createElement('div');
         const barsPerLineLabel = document.createElement('label');
         barsPerLineLabel.textContent = '每行小节数: ';
@@ -149,11 +137,7 @@ class C4MusicScript {
         barsPerLineLabel.appendChild(this.barsPerLineInput);
         barsPerLineContainer.appendChild(barsPerLineLabel);
 
-<<<<<<< HEAD
         // Position Controls
-=======
-        // 位置坐标控件
->>>>>>> upstream/master
         const positionContainer = document.createElement('div');
         const xContainer = document.createElement('div');
         const xLabel = document.createElement('label');
@@ -174,30 +158,7 @@ class C4MusicScript {
         yContainer.appendChild(yLabel);
         positionContainer.append(xContainer, yContainer);
 
-<<<<<<< HEAD
         // Event Listeners
-=======
-        // 新增颜色选择控件
-        const colorContainer = document.createElement('div');
-        const colorLabel = document.createElement('label');
-        colorLabel.textContent = '文本颜色: ';
-        this.colorInput = document.createElement('input');
-        this.colorInput.type = 'color';
-        this.colorInput.value = this.color;
-        colorLabel.appendChild(this.colorInput);
-        colorContainer.appendChild(colorLabel);
-
-        // 组合所有控件
-        div.append(
-            bpmContainer,
-            beatTypeContainer,
-            barsPerLineContainer,
-            positionContainer,
-            colorContainer
-        );
-
-        // 事件监听器
->>>>>>> upstream/master
         this.bpmInput.addEventListener('change', (e) => {
             this.BPM = parseInt(e.target.value) || 120;
         });
@@ -223,49 +184,20 @@ class C4MusicScript {
             this.user.redrawCanvas();
         });
 
-<<<<<<< HEAD
         div.append(bpmContainer, beatTypeContainer, 
                  barsPerLineContainer, positionContainer);
-=======
-        this.colorInput.addEventListener('input', (e) => {
-            this.color = e.target.value;
-        });
->>>>>>> upstream/master
     }
 
     showInf(ctx, currentTime) {
-<<<<<<< HEAD
         const beatDuration = 60 / this.BPM;
         const beatsPerBar = this.beatNumerator;
         const barDuration = beatsPerBar * beatDuration;
-=======
-        // 计算时间参数
-        const beatDuration = 60 / this.BPM;
-        const beatsPerBar = this.beatNumerator;
-        const barDuration = beatsPerBar * beatDuration;
-
-        // 计算小节和拍数
->>>>>>> upstream/master
         const totalBeats = currentTime / beatDuration;
         const barNumber = Math.floor(totalBeats / beatsPerBar) + 1;
         const beatNumber = Math.floor(totalBeats % beatsPerBar) + 1;
 
-<<<<<<< HEAD
-=======
-        // 绘制文本
->>>>>>> upstream/master
         ctx.font = '20px Arial';
         ctx.fillStyle = this.color;
         ctx.fillText(`小节: ${barNumber}, 拍: ${beatNumber}`, this.x, this.y);
-<<<<<<< HEAD
-=======
-        
-        // 控制台输出
-        console.log(`[${new Date().toISOString()}] 显示参数：`, {
-            color: this.color,
-            position: { x: this.x, y: this.y },
-            text: `小节: ${barNumber}, 拍: ${beatNumber}`
-        });
->>>>>>> upstream/master
     }
 }

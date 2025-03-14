@@ -42,7 +42,7 @@ class C4Scenes {
         const tbDrawing = document.createElement('div');
         tbDrawing.style.cssText = `
             display: flex;
-            gap: 5px;
+            gap: 5px; 
             margin-bottom: 1px;
         `;
 
@@ -341,5 +341,4 @@ class C4Scenes {
         return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
     }
 }
-
-// 升级： elementsConfig 添加删除功能
+ 
