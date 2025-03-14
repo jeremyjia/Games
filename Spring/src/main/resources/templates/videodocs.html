@@ -1,97 +1,148 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>剧本列表</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- CSS 资源 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/base/jquery-ui.min.css">
 </head>
-
-<body>
+<body class="bg-light">
     <div class="container">
+        <!-- 主面板 -->
         <div class="panel panel-primary">
             <div class="panel-heading text-center">
-                <h3>剧本列表 <a class="btn btn-primary" th:href="@{${issue_link}}" target="_blank"
-                        th:text=${short_link}>#</a> </h3>
+                <h3 class="panel-title">
+                    剧本列表 
+                    <a class="btn btn-primary btn-sm" 
+                       th:href="@{${issue_link}}" 
+                       target="_blank"
+                       th:text="${short_link}">#</a>
+                </h3>
             </div>
-            <div class="panel-body">
-                <table class="table table-hover">
-                    <thead>
-                        <tr class="success">
-                            <td>序号</td>
-                            <td>剧本描述</td>
-                            <td>剧本链接</td>
-                            <td>视频页面</td>
-                            <td>剧本修改</td>
+            
+            <!-- 表格区域 -->
+            <div class="panel-body table-responsive">
+                <table class="table table-hover table-bordered">
+                    <thead class="bg-success">
+                        <tr>
+                            <th>序号</th>
+                            <th>剧本描述</th>
+                            <th>剧本链接</th>
+                            <th>视频页面</th>
+                            <th>操作</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="active" th:each="video:${videoDocs}">
+                        <tr th:each="video : ${videoDocs}" class="active">
                             <td th:text="${video.id}"></td>
                             <td th:text="${video.description}"></td>
                             <td>
-                                <a th:href="@{${video.video_link}}" target="_blank">查看剧本</a>
+                                <a th:href="@{${video.video_link}}" 
+                                   target="_blank"
+                                   class="text-primary">查看剧本</a>
                             </td>
                             <td>
-                                <a class="btn btn-info" th:href="@{${video.video_page}}" target="_blank">生成视频</a>
+                                <a th:href="@{${video.video_page}}" 
+                                   target="_blank"
+                                   class="btn btn-info btn-xs">生成视频</a>
                             </td>
                             <td>
-                                <a class="btn btn-info" data-toggle="modal" data-target="#myModalDlg" 
-                                th:data-cs="${video.content}" th:data-url="${video.comment_url}" th:data-issueID="${short_link}"
-                                onclick="fnSetValues2Control(this.getAttribute('data-cs'), this.getAttribute('data-url'), this.getAttribute('data-issueID'))" role="button">修改剧本</a>                            
+                                <button class="btn btn-info btn-xs edit-btn"
+                                        data-toggle="modal" 
+                                        data-target="#editModal"
+                                        th:data-content="${video.content}"
+                                        th:data-url="${video.comment_url}"
+                                        th:data-issue-id="${short_link}">
+                                    修改剧本
+                                </button>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-        <!-- 定义模态弹出对话窗 -->
-        <div class="modal fade" id="myModalDlg">
+
+        <!-- 编辑模态框 -->
+        <div class="modal fade" id="editModal" tabindex="-1">
             <div class="modal-dialog">
-                <!-- 模态弹出窗的内容 -->
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">修改对话框</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">×</span>
-                        </button>
+                        <h4 class="modal-title">修改剧本</h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
                     </div>
-                    <div class="modal-body">
-                        <form class="table" th:action="@{/videodocs/modify}" method="post">  <!-- action定义调用的Controller -->
-                            <input class="form-control" id="url" name="url" type="hidden" value=""/> <!-- 将commentURL, issueID隐藏, 提交时传递给Controller -->
-                            <input class="form-control" id="issueID" name="issueID" type="hidden" value=""/>
-                            <span>剧本内容:</span>
-                            <textarea class="form-control" rows="10" aria-label="With textarea" id="scriptID" name="scriptContent"></textarea>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
-                                <button type="submit" class="btn btn-primary">提交</button>
+                    <form th:action="@{/videodocs/modify}" method="post">
+                        <div class="modal-body">
+                            <input type="hidden" id="editUrl" name="url">
+                            <input type="hidden" id="editIssueId" name="issueID">
+                            <div class="form-group">
+                                <label>剧本内容:</label>
+                                <textarea class="form-control" 
+                                          id="editContent" 
+                                          name="scriptContent"
+                                          rows="8"
+                                          required></textarea>
                             </div>
-                        </form>
-                    </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="submit" class="btn btn-primary">提交修改</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
-
     </div>
+
+    <!-- JS 资源 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <!-- 页面脚本 -->
+    <script>
+    (function($) {
+        'use strict';
+        
+        // 初始化模态框拖拽
+        function initModalDrag() {
+            $('#editModal').draggable({
+                handle: ".modal-header",
+                cursor: 'move',
+                containment: 'document'
+            });
+        }
+
+        // 处理编辑按钮点击
+        function handleEditClick() {
+            $('.edit-btn').on('click', function() {
+                const rawContent = $(this).data('content');
+                const url = $(this).data('url');
+                const issueId = $(this).data('issueId');
+                const jsonStr = JSON.stringify(rawContent,null,2);
+                
+                $('#editContent').val(jsonStr);
+                $('#editUrl').val(url);
+                $('#editIssueId').val(issueId);
+            });
+        }
+
+        // 初始化函数
+        function initialize() {
+            initModalDrag();
+            handleEditClick();
+            
+            // 隐藏模态框背景
+            $('#editModal').modal('hide').on('hidden.bs.modal', function() {
+                $(this).css('display', '');
+            });
+        }
+
+        // 文档加载完成
+        $(document).ready(initialize);
+    })(jQuery);
+    </script>
 </body>
-
-<script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
-<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js"></script>
-<script> 
-$("#myModalDlg").modal("hide");
- 
- function fnSetValues2Control(cs, url, issueID) {
-     $("#scriptID").val(cs);
-     $("#url").val(url);
-     $("#issueID").val(issueID);
- } 
-
-     $(document).ready(function(){
-
-        $("#myModalDlg").draggable();//为模态对话框添加拖拽
-
-    })  
-</script>
-
 </html>
