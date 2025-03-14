@@ -1,25 +1,32 @@
-//c4MusicScript.js 
-//...
-
 class C4MusicScript {
     constructor(user) {
         this.user = user;
-        this.BPM = 120; // 默认BPM为120
-        this.beatType = '4/4'; // 默认拍号为4/4
-        this.beatNumerator = 4; // 拍号分子
-        this.beatDenominator = 4; // 拍号分母
-        this.barsPerLine = 4; // 每行默认4小节
-        this.x = 110; // 默认X坐标
-        this.y = 30; // 默认Y坐标 
-        this.w = 22;  
-        this.h = 22;  
-        this.setWndOpen = false; // 跟踪setWnd是否打开
-        this.isSetWndActive = false; // 顶部条激活状态
-        this.isDragging = false; // 标记矩形是否正在被拖动
-        this.startX = 0; // 鼠标按下时的初始X坐标
-        this.startY = 0; // 鼠标按下时的初始Y坐标
-        this.offsetX = 0; // 矩形的初始X坐标偏移量
-        this.offsetY = 0; // 矩形的初始Y坐标偏移量
+        this.BPM = 120;
+        this.beatType = '4/4';
+        this.beatNumerator = 4;
+        this.beatDenominator = 4;
+        this.barsPerLine = 4;
+        this.x = 110;
+        this.y = 30;
+        this.w = 22;
+        this.h = 22;
+        this.setWndOpen = false;
+        this.isSetWndActive = false;
+        this.isDragging = false;
+        this.startX = 0;
+        this.startY = 0;
+        this.offsetX = 0;
+        this.offsetY = 0;
+        
+        // 初始化时创建一次窗口（隐藏状态）
+        this.resultContent = document.createElement('div');
+        this.resultContent.style.cssText = `
+            padding: 10px;
+            min-width: 300px;
+            max-width: 600px;
+            background: white;
+        `;
+        this.setWnd = new C4DraggableWindow('生成结果', this.resultContent, -1000, -1000, false);
     }
 
     #toggleSetWnd() {
@@ -27,29 +34,23 @@ class C4MusicScript {
         this.isSetWndActive = this.setWndOpen;
         
         if (this.setWndOpen) {
-            // 创建新窗口
-            this.resultContent = document.createElement('div');
-            this.resultContent.style.cssText = `
-                padding: 10px;
-                min-width: 300px;
-                max-width: 600px;
-                background: white;
-            `;
-            this.setWnd = new C4DraggableWindow('生成结果', this.resultContent, 100, 100, true);
+            // 每次打开时更新窗口位置到控件右侧
+            const newX = this.x + this.w + 10;
+            const newY = this.y;
+            this.setWnd.windowElement.style.left = `${newX}px`;
+            this.setWnd.windowElement.style.top = `${newY}px`;
+            this.setWnd.show();
         } else {
-            // 关闭窗口
-            if (this.setWnd) {
-                this.setWnd.toggleVisibility();
-            }
+            this.setWnd.toggleVisibility();
         }
         this.user.redrawCanvas();
     }
 
     draw_ui_handle(ctx) { 
-        ctx.fillStyle = 'blue'; 
-        ctx.fillRect(this.x, this.y, this.w, this.h); 
-        ctx.fillStyle = this.isSetWndActive ? '#FFA500' : 'brown'; 
-        ctx.fillRect(this.x, this.y-5, this.w, 5); 
+        ctx.fillStyle = 'blue';
+        ctx.fillRect(this.x, this.y, this.w, this.h);
+        ctx.fillStyle = this.isSetWndActive ? '#FFA500' : 'brown';
+        ctx.fillRect(this.x, this.y-5, this.w, 5);
     }
 
     handle_mouse_up(ctx, pos) {
