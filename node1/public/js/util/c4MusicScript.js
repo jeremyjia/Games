@@ -1,5 +1,5 @@
 //c4MusicScript.js 
-// ...
+//...
 
 class C4MusicScript {
     constructor(user) {
@@ -10,8 +10,11 @@ class C4MusicScript {
         this.beatDenominator = 4; // 拍号分母
         this.barsPerLine = 4; // 每行默认4小节
         this.x = 110; // 默认X坐标
-        this.y = 30; // 默认Y坐标
-        this.setWndOpen = false; // 新增标志，用于跟踪setWnd是否打开
+        this.y = 30; // 默认Y坐标 
+        this.w = 22;  
+        this.h = 22;  
+        this.setWndOpen = false; // 跟踪setWnd是否打开
+        this.isSetWndActive = false; // 顶部条激活状态
         this.isDragging = false; // 标记矩形是否正在被拖动
         this.startX = 0; // 鼠标按下时的初始X坐标
         this.startY = 0; // 鼠标按下时的初始Y坐标
@@ -19,74 +22,75 @@ class C4MusicScript {
         this.offsetY = 0; // 矩形的初始Y坐标偏移量
     }
 
-    #toggleSetWnd(){
+    #toggleSetWnd() {
+        this.setWndOpen = !this.setWndOpen;
+        this.isSetWndActive = this.setWndOpen;
+        
         if (this.setWndOpen) {
-            // 如果setWnd已经打开，则关闭它
-            if (this.setWnd) {
-                this.setWnd.toggleVisibility();  
-            }
-            this.setWndOpen = false;
-        } else {
-            // 如果setWnd未打开，则创建一个新的
+            // 创建新窗口
             this.resultContent = document.createElement('div');
             this.resultContent.style.cssText = `
-               padding: 10px;
+                padding: 10px;
                 min-width: 300px;
                 max-width: 600px;
                 background: white;
             `;
             this.setWnd = new C4DraggableWindow('生成结果', this.resultContent, 100, 100, true);
-            this.setWndOpen = true;
+        } else {
+            // 关闭窗口
+            if (this.setWnd) {
+                this.setWnd.toggleVisibility();
+            }
         }
+        this.user.redrawCanvas();
     }
 
-    draw_ui_handle(ctx){ 
+    draw_ui_handle(ctx) { 
         ctx.fillStyle = 'blue'; 
-        ctx.fillRect(this.x, this.y, 20, 20); 
+        ctx.fillRect(this.x, this.y, this.w, this.h); 
+        ctx.fillStyle = this.isSetWndActive ? '#FFA500' : 'brown'; 
+        ctx.fillRect(this.x, this.y-5, this.w, 5); 
     }
 
-    handle_mouse_up(ctx,pos){
-        this.isDragging = false; // 鼠标松开，取消拖动状态
+    handle_mouse_up(ctx, pos) {
+        this.isDragging = false;
     }
 
-    handle_mouse_move(ctx,pos){
+    handle_mouse_move(ctx, pos) {
         if (this.isDragging) {
-            // 计算鼠标的移动距离
             const dx = pos.x - this.startX;
             const dy = pos.y - this.startY;
-            // 更新矩形的位置
             this.x = this.offsetX + dx;
             this.y = this.offsetY + dy;
-            // 重绘画布
             this.user.redrawCanvas();
         }
     }
 
-    handle_mouse_down(ctx,pos){
+    handle_mouse_down(ctx, pos) {
         const clickX = pos.x;
         const clickY = pos.y;
 
-        // 判断点击位置是否在矩形区域内
-        if (clickX >= this.x && clickX <= this.x + 20 && clickY >= this.y && clickY <= this.y + 20) {
-            this.isDragging = true; // 标记矩形为可移动状态
-            this.startX = clickX; // 记录鼠标按下的初始X坐标
-            this.startY = clickY; // 记录鼠标按下的初始Y坐标
-            this.offsetX = this.x; // 记录矩形的初始X坐标偏移量
-            this.offsetY = this.y; // 记录矩形的初始Y坐标偏移量
-            this.#toggleSetWnd();
+        if (clickX >= this.x && clickX <= this.x + this.w && 
+            clickY >= this.y && clickY <= this.y + this.h) {
+            this.isDragging = true;
+            this.startX = clickX;
+            this.startY = clickY;
+            this.offsetX = this.x;
+            this.offsetY = this.y;
             return true;
         } 
+        else if (clickX >= this.x && clickX <= this.x + this.w && 
+                 clickY >= this.y -5 && clickY <= this.y) {
+            this.#toggleSetWnd();
+            return true;
+        }
         return false;
     }
 
-    /**
-     * 设置UI控件到指定的div元素中
-     * @param {HTMLElement} div - 用于放置UI控件的div元素
-     */
     setUI(div) {
-        div.innerHTML = ''; // 清空div内容
+        div.innerHTML = ''; 
 
-        // 创建BPM输入控件
+        // BPM控件
         const bpmContainer = document.createElement('div');
         const bpmLabel = document.createElement('label');
         bpmLabel.textContent = 'BPM: ';
@@ -97,7 +101,7 @@ class C4MusicScript {
         bpmLabel.appendChild(this.bpmInput);
         bpmContainer.appendChild(bpmLabel);
 
-        // 创建拍号选择控件
+        // 拍号控件
         const beatTypeContainer = document.createElement('div');
         const beatTypeLabel = document.createElement('label');
         beatTypeLabel.textContent = '拍号: ';
@@ -106,13 +110,13 @@ class C4MusicScript {
             const option = document.createElement('option');
             option.value = beat;
             option.textContent = beat;
-            if (beat === this.beatType) option.selected = true;
+            option.selected = beat === this.beatType;
             this.beatTypeSelect.appendChild(option);
         });
         beatTypeLabel.appendChild(this.beatTypeSelect);
         beatTypeContainer.appendChild(beatTypeLabel);
 
-        // 创建每行小节数输入控件
+        // 每行小节数控件
         const barsPerLineContainer = document.createElement('div');
         const barsPerLineLabel = document.createElement('label');
         barsPerLineLabel.textContent = '每行小节数: ';
@@ -123,10 +127,8 @@ class C4MusicScript {
         barsPerLineLabel.appendChild(this.barsPerLineInput);
         barsPerLineContainer.appendChild(barsPerLineLabel);
 
-        // 创建位置设置控件
+        // 位置控件
         const positionContainer = document.createElement('div');
-        
-        // X坐标设置
         const xContainer = document.createElement('div');
         const xLabel = document.createElement('label');
         xLabel.textContent = 'X位置: ';
@@ -136,7 +138,6 @@ class C4MusicScript {
         xLabel.appendChild(this.xInput);
         xContainer.appendChild(xLabel);
 
-        // Y坐标设置
         const yContainer = document.createElement('div');
         const yLabel = document.createElement('label');
         yLabel.textContent = 'Y位置: ';
@@ -148,22 +149,14 @@ class C4MusicScript {
 
         positionContainer.append(xContainer, yContainer);
 
-        // 将控件添加到div中
-        div.append(
-            bpmContainer, 
-            beatTypeContainer, 
-            barsPerLineContainer,
-            positionContainer
-        );
-
-        // 绑定事件处理函数
+        // 事件绑定
         this.bpmInput.addEventListener('change', (e) => {
             this.BPM = parseInt(e.target.value) || 120;
         });
 
         this.beatTypeSelect.addEventListener('change', (e) => {
-            this.beatType = e.target.value;
             const [numerator, denominator] = e.target.value.split('/').map(Number);
+            this.beatType = e.target.value;
             this.beatNumerator = numerator;
             this.beatDenominator = denominator;
         });
@@ -172,7 +165,6 @@ class C4MusicScript {
             this.barsPerLine = parseInt(e.target.value) || 4;
         });
 
-        // 绑定位置输入事件
         this.xInput.addEventListener('change', (e) => {
             this.x = parseInt(e.target.value) || 10;
             this.user.redrawCanvas();
@@ -180,29 +172,23 @@ class C4MusicScript {
 
         this.yInput.addEventListener('change', (e) => {
             this.y = parseInt(e.target.value) || 30;
+            this.user.redrawCanvas();
         });
+
+        div.append(bpmContainer, beatTypeContainer, 
+                 barsPerLineContainer, positionContainer);
     }
 
-    /**
-     * 在画布上显示当前时间对应的小节和拍数
-     * @param {CanvasRenderingContext2D} ctx - 画布上下文
-     * @param {number} currentTime - 当前时间（秒）
-     */
     showInf(ctx, currentTime) {
-        // 计算每拍时长和小节时长
         const beatDuration = 60 / this.BPM;
         const beatsPerBar = this.beatNumerator;
         const barDuration = beatsPerBar * beatDuration;
-
-        // 计算总拍数、当前小节和拍数
         const totalBeats = currentTime / beatDuration;
         const barNumber = Math.floor(totalBeats / beatsPerBar) + 1;
         const beatNumber = Math.floor(totalBeats % beatsPerBar) + 1;
 
-        // 清除画布并绘制文本
         ctx.font = '20px Arial';
         ctx.fillStyle = 'black';
         ctx.fillText(`小节: ${barNumber}, 拍: ${beatNumber}`, this.x, this.y);
-        
     }
 }
