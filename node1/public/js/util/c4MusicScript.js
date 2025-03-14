@@ -17,8 +17,9 @@ class C4MusicScript {
         this.startY = 0;
         this.offsetX = 0;
         this.offsetY = 0;
-        
-        // 初始化时创建一次窗口（隐藏状态）
+        this.isSetWndPositionInitialized = false; // New position tracking flag
+
+        // Initialize result window (hidden)
         this.resultContent = document.createElement('div');
         this.resultContent.style.cssText = `
             padding: 10px;
@@ -34,11 +35,14 @@ class C4MusicScript {
         this.isSetWndActive = this.setWndOpen;
         
         if (this.setWndOpen) {
-            // 每次打开时更新窗口位置到控件右侧
-            const newX = this.x + this.w + 10;
-            const newY = this.y;
-            this.setWnd.windowElement.style.left = `${newX}px`;
-            this.setWnd.windowElement.style.top = `${newY}px`;
+            // Set initial position only once
+            if (!this.isSetWndPositionInitialized) {
+                const newX = this.x + this.w + 10;
+                const newY = this.y;
+                this.setWnd.windowElement.style.left = `${newX}px`;
+                this.setWnd.windowElement.style.top = `${newY}px`;
+                this.isSetWndPositionInitialized = true;
+            }
             this.setWnd.show();
         } else {
             this.setWnd.toggleVisibility();
@@ -47,8 +51,11 @@ class C4MusicScript {
     }
 
     draw_ui_handle(ctx) { 
+        // Control body
         ctx.fillStyle = 'blue';
         ctx.fillRect(this.x, this.y, this.w, this.h);
+        
+        // Top drag handle
         ctx.fillStyle = this.isSetWndActive ? '#FFA500' : 'brown';
         ctx.fillRect(this.x, this.y-5, this.w, 5);
     }
@@ -71,6 +78,7 @@ class C4MusicScript {
         const clickX = pos.x;
         const clickY = pos.y;
 
+        // Main control click
         if (clickX >= this.x && clickX <= this.x + this.w && 
             clickY >= this.y && clickY <= this.y + this.h) {
             this.isDragging = true;
@@ -80,6 +88,7 @@ class C4MusicScript {
             this.offsetY = this.y;
             return true;
         } 
+        // Top handle click (window toggle)
         else if (clickX >= this.x && clickX <= this.x + this.w && 
                  clickY >= this.y -5 && clickY <= this.y) {
             this.#toggleSetWnd();
@@ -91,7 +100,7 @@ class C4MusicScript {
     setUI(div) {
         div.innerHTML = ''; 
 
-        // BPM控件
+        // BPM Control
         const bpmContainer = document.createElement('div');
         const bpmLabel = document.createElement('label');
         bpmLabel.textContent = 'BPM: ';
@@ -102,7 +111,7 @@ class C4MusicScript {
         bpmLabel.appendChild(this.bpmInput);
         bpmContainer.appendChild(bpmLabel);
 
-        // 拍号控件
+        // Time Signature
         const beatTypeContainer = document.createElement('div');
         const beatTypeLabel = document.createElement('label');
         beatTypeLabel.textContent = '拍号: ';
@@ -117,7 +126,7 @@ class C4MusicScript {
         beatTypeLabel.appendChild(this.beatTypeSelect);
         beatTypeContainer.appendChild(beatTypeLabel);
 
-        // 每行小节数控件
+        // Bars Per Line
         const barsPerLineContainer = document.createElement('div');
         const barsPerLineLabel = document.createElement('label');
         barsPerLineLabel.textContent = '每行小节数: ';
@@ -128,7 +137,7 @@ class C4MusicScript {
         barsPerLineLabel.appendChild(this.barsPerLineInput);
         barsPerLineContainer.appendChild(barsPerLineLabel);
 
-        // 位置控件
+        // Position Controls
         const positionContainer = document.createElement('div');
         const xContainer = document.createElement('div');
         const xLabel = document.createElement('label');
@@ -150,7 +159,7 @@ class C4MusicScript {
 
         positionContainer.append(xContainer, yContainer);
 
-        // 事件绑定
+        // Event Listeners
         this.bpmInput.addEventListener('change', (e) => {
             this.BPM = parseInt(e.target.value) || 120;
         });
