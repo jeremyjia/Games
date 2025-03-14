@@ -43,6 +43,7 @@ class C4Scenes {
         tbDrawing.style.cssText = `
             display: flex;
             gap: 5px; 
+            background-color: red;
             margin-bottom: 1px;
         `;
 
@@ -57,7 +58,15 @@ class C4Scenes {
         tbDrawing.appendChild(this.lineBtn);
         tbDrawing.appendChild(this.rectBtn);
         header.appendChild(tbDrawing);
+        this.selectedShapeUI = document.createElement('div');
+        this.selectedShapeUI.style.cssText = `
+            display: flex;
+            gap: 5px; 
+            background-color: lightblue;
+            margin-bottom: 1px;
+        `;
 
+        header.appendChild(this.selectedShapeUI);
         
         const newSceneBtn = document.createElement('button');
         newSceneBtn.textContent = '+';

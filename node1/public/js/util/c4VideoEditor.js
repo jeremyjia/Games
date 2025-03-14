@@ -71,6 +71,9 @@ class VideoEditor {
         }
 
         if (hitTest) {
+            hitTest.shape.setUI(this.scenesHandler.selectedShapeUI, () => {
+                this.redrawCanvas();
+            });
             this.selectedShape = hitTest.shape;
             this.selectedPoint = hitTest.point; // 'start', 'end' 或 null（整体移动）
             this.dragOffset = {
