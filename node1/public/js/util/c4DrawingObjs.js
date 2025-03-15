@@ -11,6 +11,24 @@ class C4DrawingObj {
     draw(ctx) {
         throw new Error("Abstract method must be implemented");
     }
+    setUI(div, onChange) {
+        div.innerHTML = ''; // 清空原有内容
+        // 创建颜色选择器
+        const colorContainer = document.createElement('div');
+        colorContainer.style.margin = '5px 0';
+        const colorLabel = document.createElement('label');
+        colorLabel.textContent = '颜色: ';
+        const colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.value = this.color;
+        colorInput.addEventListener('input', (e) => {
+            this.color = e.target.value;
+            if (onChange) onChange();
+        });
+        colorContainer.appendChild(colorLabel);
+        colorContainer.appendChild(colorInput);
+        div.appendChild(colorContainer);
+    }
 }
 
 class C4Line extends C4DrawingObj {
@@ -20,6 +38,32 @@ class C4Line extends C4DrawingObj {
         ctx.lineTo(this.endX, this.endY);
         ctx.strokeStyle = this.color;
         ctx.stroke();
+    }
+    setUI(div, onChange) {
+        super.setUI(div, onChange); // 创建颜色输入
+
+        const addCoordinateInput = (labelText, value, property) => {
+            const container = document.createElement('div');
+            container.style.margin = '5px 0';
+            const label = document.createElement('label');
+            label.textContent = labelText;
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.step = 'any'; // 允许小数
+            input.value = value;
+            input.addEventListener('input', (e) => {
+                this[property] = parseFloat(e.target.value);
+                if (onChange) onChange();
+            });
+            container.appendChild(label);
+            container.appendChild(input);
+            div.appendChild(container);
+        };
+
+        addCoordinateInput('起点 X:', this.startX, 'startX');
+        addCoordinateInput('起点 Y:', this.startY, 'startY');
+        addCoordinateInput('终点 X:', this.endX, 'endX');
+        addCoordinateInput('终点 Y:', this.endY, 'endY');
     }
     // 添加点击检测
     isPointInside(x, y) {
@@ -69,7 +113,32 @@ class C4Rect extends C4DrawingObj {
         const height = this.endY - this.startY;
         ctx.fillRect(this.startX, this.startY, width, height);
     }
-    
+    setUI(div, onChange) {
+        super.setUI(div, onChange); // 创建颜色输入
+
+        const addCoordinateInput = (labelText, value, property) => {
+            const container = document.createElement('div');
+            container.style.margin = '5px 0';
+            const label = document.createElement('label');
+            label.textContent = labelText;
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.step = 'any';
+            input.value = value;
+            input.addEventListener('input', (e) => {
+                this[property] = parseFloat(e.target.value);
+                if (onChange) onChange();
+            });
+            container.appendChild(label);
+            container.appendChild(input);
+            div.appendChild(container);
+        };
+
+        addCoordinateInput('起点 X:', this.startX, 'startX');
+        addCoordinateInput('起点 Y:', this.startY, 'startY');
+        addCoordinateInput('终点 X:', this.endX, 'endX');
+        addCoordinateInput('终点 Y:', this.endY, 'endY');
+    }
     
     isPointInside(x, y) {
         const left = Math.min(this.startX, this.endX);

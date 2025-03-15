@@ -1,25 +1,106 @@
-//c4MusicScript.js 
-
 class C4MusicScript {
-    constructor() {
-        this.BPM = 120;            // 默认BPM为120
-        this.beatType = '4/4';      // 默认拍号为4/4
-        this.beatNumerator = 4;     // 拍号分子
-        this.beatDenominator = 4;   // 拍号分母
-        this.barsPerLine = 4;       // 每行默认4小节
-        this.x = 10;                // 默认X坐标
-        this.y = 30;                // 默认Y坐标
-        this.color = '#000000';      // 新增文本颜色属性
+    constructor(user) {
+        this.user = user;
+        this.BPM = 120;
+        this.beatType = '4/4';
+        this.beatNumerator = 4;
+        this.beatDenominator = 4;
+        this.barsPerLine = 4;
+        this.x = 110;
+        this.y = 30;
+        this.w = 22;
+        this.h = 22;
+        this.setWndOpen = false;
+        this.isSetWndActive = false;
+        this.isDragging = false;
+        this.startX = 0;
+        this.startY = 0;
+        this.offsetX = 0;
+        this.offsetY = 0;
+        this.isSetWndPositionInitialized = false; // New position tracking flag
+
+        // Initialize result window (hidden)
+        this.resultContent = document.createElement('div');
+        this.resultContent.style.cssText = `
+            padding: 10px;
+            min-width: 300px;
+            max-width: 600px;
+            background: white;
+        `;
+        this.setWnd = new C4DraggableWindow('生成结果', this.resultContent, -1000, -1000, false);
     }
 
-    /**
-     * 设置UI控件到指定的div元素中
-     * @param {HTMLElement} div - 用于放置UI控件的div元素
-     */
-    setUI(div) {
-        div.innerHTML = ''; // 清空div内容
+    #toggleSetWnd() {
+        this.setWndOpen = !this.setWndOpen;
+        this.isSetWndActive = this.setWndOpen;
+        
+        if (this.setWndOpen) {
+            // Set initial position only once
+            if (!this.isSetWndPositionInitialized) {
+                const newX = this.x + this.w + 10;
+                const newY = this.y;
+                this.setWnd.windowElement.style.left = `${newX}px`;
+                this.setWnd.windowElement.style.top = `${newY}px`;
+                this.isSetWndPositionInitialized = true;
+            }
+            this.setWnd.show();
+        } else {
+            this.setWnd.toggleVisibility();
+        }
+        this.user.redrawCanvas();
+    }
 
-        // BPM输入控件
+    draw_ui_handle(ctx) { 
+        // Control body
+        ctx.fillStyle = 'blue';
+        ctx.fillRect(this.x, this.y, this.w, this.h);
+        
+        // Top drag handle
+        ctx.fillStyle = this.isSetWndActive ? '#FFA500' : 'brown';
+        ctx.fillRect(this.x, this.y-5, this.w, 5);
+    }
+
+    handle_mouse_up(ctx, pos) {
+        this.isDragging = false;
+    }
+
+    handle_mouse_move(ctx, pos) {
+        if (this.isDragging) {
+            const dx = pos.x - this.startX;
+            const dy = pos.y - this.startY;
+            this.x = this.offsetX + dx;
+            this.y = this.offsetY + dy;
+            this.user.redrawCanvas();
+        }
+    }
+
+    handle_mouse_down(ctx, pos) {
+        const clickX = pos.x;
+        const clickY = pos.y;
+
+        // Main control click
+        if (clickX >= this.x && clickX <= this.x + this.w && 
+            clickY >= this.y && clickY <= this.y + this.h) {
+            this.isDragging = true;
+            this.startX = clickX;
+            this.startY = clickY;
+            this.offsetX = this.x;
+            this.offsetY = this.y;
+            return true;
+        } 
+        // Top handle click (window toggle)
+        else if (clickX >= this.x && clickX <= this.x + this.w && 
+                 clickY >= this.y -5 && clickY <= this.y) {
+            this.#toggleSetWnd();
+            return true;
+        }
+        return false;
+    }
+
+    setUI(div) {
+        div.innerHTML = ''; 
+
+        // BPM Control
         const bpmContainer = document.createElement('div');
         const bpmLabel = document.createElement('label');
         bpmLabel.textContent = 'BPM: ';
@@ -30,7 +111,7 @@ class C4MusicScript {
         bpmLabel.appendChild(this.bpmInput);
         bpmContainer.appendChild(bpmLabel);
 
-        // 拍号选择控件
+        // Time Signature
         const beatTypeContainer = document.createElement('div');
         const beatTypeLabel = document.createElement('label');
         beatTypeLabel.textContent = '拍号: ';
@@ -39,13 +120,13 @@ class C4MusicScript {
             const option = document.createElement('option');
             option.value = beat;
             option.textContent = beat;
-            if (beat === this.beatType) option.selected = true;
+            option.selected = beat === this.beatType;
             this.beatTypeSelect.appendChild(option);
         });
         beatTypeLabel.appendChild(this.beatTypeSelect);
         beatTypeContainer.appendChild(beatTypeLabel);
 
-        // 每行小节数控件
+        // Bars Per Line
         const barsPerLineContainer = document.createElement('div');
         const barsPerLineLabel = document.createElement('label');
         barsPerLineLabel.textContent = '每行小节数: ';
@@ -56,7 +137,7 @@ class C4MusicScript {
         barsPerLineLabel.appendChild(this.barsPerLineInput);
         barsPerLineContainer.appendChild(barsPerLineLabel);
 
-        // 位置坐标控件
+        // Position Controls
         const positionContainer = document.createElement('div');
         const xContainer = document.createElement('div');
         const xLabel = document.createElement('label');
@@ -77,33 +158,14 @@ class C4MusicScript {
         yContainer.appendChild(yLabel);
         positionContainer.append(xContainer, yContainer);
 
-        // 新增颜色选择控件
-        const colorContainer = document.createElement('div');
-        const colorLabel = document.createElement('label');
-        colorLabel.textContent = '文本颜色: ';
-        this.colorInput = document.createElement('input');
-        this.colorInput.type = 'color';
-        this.colorInput.value = this.color;
-        colorLabel.appendChild(this.colorInput);
-        colorContainer.appendChild(colorLabel);
-
-        // 组合所有控件
-        div.append(
-            bpmContainer,
-            beatTypeContainer,
-            barsPerLineContainer,
-            positionContainer,
-            colorContainer
-        );
-
-        // 事件监听器
+        // Event Listeners
         this.bpmInput.addEventListener('change', (e) => {
             this.BPM = parseInt(e.target.value) || 120;
         });
 
         this.beatTypeSelect.addEventListener('change', (e) => {
-            this.beatType = e.target.value;
             const [numerator, denominator] = e.target.value.split('/').map(Number);
+            this.beatType = e.target.value;
             this.beatNumerator = numerator;
             this.beatDenominator = denominator;
         });
@@ -114,43 +176,28 @@ class C4MusicScript {
 
         this.xInput.addEventListener('change', (e) => {
             this.x = parseInt(e.target.value) || 10;
+            this.user.redrawCanvas();
         });
 
         this.yInput.addEventListener('change', (e) => {
             this.y = parseInt(e.target.value) || 30;
+            this.user.redrawCanvas();
         });
 
-        this.colorInput.addEventListener('input', (e) => {
-            this.color = e.target.value;
-        });
+        div.append(bpmContainer, beatTypeContainer, 
+                 barsPerLineContainer, positionContainer);
     }
 
-    /**
-     * 在画布上显示当前时间对应的小节和拍数
-     * @param {CanvasRenderingContext2D} ctx - 画布上下文
-     * @param {number} currentTime - 当前时间（秒）
-     */
     showInf(ctx, currentTime) {
-        // 计算时间参数
         const beatDuration = 60 / this.BPM;
         const beatsPerBar = this.beatNumerator;
         const barDuration = beatsPerBar * beatDuration;
-
-        // 计算小节和拍数
         const totalBeats = currentTime / beatDuration;
         const barNumber = Math.floor(totalBeats / beatsPerBar) + 1;
         const beatNumber = Math.floor(totalBeats % beatsPerBar) + 1;
 
-        // 绘制文本
         ctx.font = '20px Arial';
         ctx.fillStyle = this.color;
         ctx.fillText(`小节: ${barNumber}, 拍: ${beatNumber}`, this.x, this.y);
-        
-        // 控制台输出
-        console.log(`[${new Date().toISOString()}] 显示参数：`, {
-            color: this.color,
-            position: { x: this.x, y: this.y },
-            text: `小节: ${barNumber}, 拍: ${beatNumber}`
-        });
     }
 }

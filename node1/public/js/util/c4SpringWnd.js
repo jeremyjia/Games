@@ -1,4 +1,18 @@
+
+
 //c4SpringWnd.js
+function CFrame(_number,_time,_backgroundColor){
+    this.number = _number;
+    this.time = _time;
+    this.backgroundColor = _backgroundColor;
+    this.objects = [];  
+     
+
+    this.addObj = function(_o){
+        this.objects.push(_o);
+    }; 
+};
+
 function C4SpringWnd(videoEditor){
     let tb = videoEditor.playToolbar;
     let divContent = document.createElement('div');
@@ -96,11 +110,31 @@ function C4SpringWnd(videoEditor){
         
 		var s = {};
         let r = {};
-        r.version 		= "blsNode1: v0.21";
+        r.version 		= "blsNode1: v0.22";
         r.width   = oj.width;
         r.height = oj.height;
         r.music = oj.audio;
         r.rate =`${oj.fps}`;
+        r.frames = [];
+        let n = 0;
+        for(i in oj.scenes){
+            n++;
+            let c = oj.scenes[i].color;
+            const makeRGB = function(c) {
+                let hex = c.replace('#', '');
+                if (hex.length === 3) {
+                    hex = hex.split('').map(function(char) {
+                        return char + char;
+                    }).join('');
+                }
+                const r = parseInt(hex.substring(0, 2), 16);
+                const g = parseInt(hex.substring(2, 4), 16);
+                const b = parseInt(hex.substring(4, 6), 16);
+                return r + "," + g + "," + b;
+            };
+            var f = new CFrame(n,oj.scenes[i].duration,makeRGB(c));
+            r.frames.push(f);
+        }
 		s.request 		= r;		
         return s;
     }
@@ -135,6 +169,7 @@ function C4SpringWnd(videoEditor){
     const ui4Server = function(){ 
 		const tbServer = _createToolbar(divContent,"tb");
 		const client = _createClient(divContent,"ui");
+        let sBlsTitle = null;
         const bs = [
             {
                 "id":11,
@@ -154,7 +189,18 @@ function C4SpringWnd(videoEditor){
                 "id":22,
                 "name":"bls2server",
                 "fn2click":function(c){
-                    const sBlsTitle = "node1";
+                    const d = new Date(); 
+                    const Date2String = function(d) {
+                        const year = d.getFullYear();
+                        const month = String(d.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+                        const day = String(d.getDate()).padStart(2, '0');
+                        const hours = String(d.getHours()).padStart(2, '0');
+                        const minutes = String(d.getMinutes()).padStart(2, '0');
+                        const seconds = String(d.getSeconds()).padStart(2, '0');
+                        
+                        return `${year}${month}${day}_${hours}_${minutes}_${seconds}`;
+                    };
+                    sBlsTitle = Date2String(d);
                     c.innerHTML = this.name;
                     var pl = _makeBLS(videoEditor.generateVideoJson()); 
                     var url = "http://localhost:8080/json?fileName=" + sBlsTitle + ".json"; 
@@ -167,8 +213,7 @@ function C4SpringWnd(videoEditor){
             {
                 "id":33,
                 "name":"makeMP4", 
-                "fn2click":function(c){
-                    const sBlsTitle = "node1";
+                "fn2click":function(c){ 
                     c.innerHTML = this.name;
                     var url = "http://localhost:8080/image/json2video?script=" + sBlsTitle + ".json&video=" + sBlsTitle + ".mp4"; 
                     c._2do = function(txt){
@@ -218,3 +263,4 @@ function C4SpringWnd(videoEditor){
     }();
     return o;
 }
+

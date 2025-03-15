@@ -2,7 +2,7 @@
 
 class VideoEditor {
     constructor() { 
-        this.musicScript = new C4MusicScript();
+        this.musicScript = new C4MusicScript(this);
         this.div4Debug = null;
         this.width = 640;
         this.height = 480;
@@ -57,9 +57,11 @@ class VideoEditor {
         }
     }
     handleMouseDown(e) {
+        const pos = this.getCanvasPosition(e);
+        if(this.musicScript.handle_mouse_down(this.ctx,pos))  return;
+
         if (this.isPlaying) return;
         
-        const pos = this.getCanvasPosition(e);
         
         // 优先检测是否选中图形或控制点
         const hitTest = this.findHitTarget(pos.x, pos.y);
@@ -69,6 +71,9 @@ class VideoEditor {
         }
 
         if (hitTest) {
+            hitTest.shape.setUI(this.scenesHandler.selectedShapeUI, () => {
+                this.redrawCanvas();
+            });
             this.selectedShape = hitTest.shape;
             this.selectedPoint = hitTest.point; // 'start', 'end' 或 null（整体移动）
             this.dragOffset = {
@@ -84,6 +89,7 @@ class VideoEditor {
         if (this.scenesHandler.currentTool && !this.isDraggingShape) {
             this.startDrawing(e);
         }
+
     }
     
     findHitTarget(x, y) {
@@ -117,17 +123,21 @@ class VideoEditor {
 
 
     handleMouseMove(e) {
+        const pos = this.getCanvasPosition(e);
+        this.musicScript.handle_mouse_move(this.ctx,pos);
         if (!this.isDraggingShape) {
             this.whileDrawing(e);
             return;
         }
         
-        const pos = this.getCanvasPosition(e);
         this.moveSelectedShape(pos.x, pos.y);
         this.redrawCanvas();
     }
 
-    handleMouseUp() {
+    handleMouseUp(e) {
+        const pos = this.getCanvasPosition(e);
+        this.musicScript.handle_mouse_up(this.ctx,pos);
+
         if (this.isDraggingShape) {
             this.isDraggingShape = false;
             this.updateJson();
@@ -182,6 +192,7 @@ class VideoEditor {
             this.scenesHandler.scenes[this.currentSceneIndex].color
         );
         drawSelectionHighlight(this);
+        this.musicScript.draw_ui_handle(this.ctx);
     }
     
     
@@ -741,6 +752,7 @@ class VideoEditor {
             drawHUD(this,44,10,12);
             this.musicScript.showInf(this.ctx, this.audio.currentTime);
         }
+        this.musicScript.draw_ui_handle(this.ctx);
     }
 
 
