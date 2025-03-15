@@ -120,7 +120,7 @@ function C4SpringWnd(videoEditor){
         for(i in oj.scenes){
             n++;
             let c = oj.scenes[i].color;
-            const makeRGB = function(c) {
+            const makeRGB = function(c) { 
                 let hex = c.replace('#', '');
                 if (hex.length === 3) {
                     hex = hex.split('').map(function(char) {
@@ -133,6 +133,7 @@ function C4SpringWnd(videoEditor){
                 return r + "," + g + "," + b;
             };
             var f = new CFrame(n,oj.scenes[i].duration,makeRGB(c));
+            
             r.frames.push(f);
         }
 		s.request 		= r;		

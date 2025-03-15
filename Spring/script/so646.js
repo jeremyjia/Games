@@ -138,7 +138,7 @@ function tick(t) {
 	return r2;
 }
 
-   
+
 function animateFrame2(time) {     
 	const _sn = sn;
     var canvas = document.getElementById('myCanvas');
