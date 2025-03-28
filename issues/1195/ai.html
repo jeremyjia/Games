@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>智能场景播放器</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .scene-container {
+            margin: 15px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        .preview-img {
+            max-width: 250px;
+            max-height: 180px;
+            margin: 10px 0;
+            border: 2px solid #eee;
+            border-radius: 4px;
+        }
+        #canvas {
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .controls {
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 8px 16px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            transition: background 0.3s;
+        }
+        button:hover { background: #0056b3; }
+        input[type="number"] {
+            padding: 6px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            width: 80px;
+        }
+        .loading {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(0,0,0,0.1);
+            border-radius: 50%;
+            border-top-color: #007bff;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button onclick="addNewScene()">➕ 添加场景</button>
+        <label>📺 帧率：<input type="number" id="fps" value="24" min="1" max="60"></label>
+        <button onclick="togglePlay()">▶ 播放</button>
+        <button onclick="stop()">⏹ 停止</button>
+        <button onclick="clearAll()">🗑️ 清空</button>
+        <p style="color:#666;margin-top:10px;">💡 提示：输入中文自动生成文字卡片，英文将尝试调用AI生成图片</p>
+    </div>
+    
+    <div id="scenesContainer"></div>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        // 全局状态管理
+        var scenes = [];
+        var isPlaying = false;
+        var currentFrame = 0;
+        var lastFrameTime = 0;
+        var canvas = document.getElementById('canvas');
+        var ctx = canvas.getContext('2d');
+        
+        // 初始化画布
+        canvas.width = 800;
+        canvas.height = 600;
+
+        // 添加新场景
+        function addNewScene() {
+            var sceneId = Date.now();
+            var sceneHTML = 
+                '<div class="scene-container" id="scene-' + sceneId + '">' +
+                    '<textarea placeholder="请输入场景描述..." rows="3" cols="50" style="width:100%;margin-bottom:10px;"></textarea>' +
+                    '<div style="display:flex;align-items:center;gap:10px;">' +
+                        '<button onclick="generateImage(' + sceneId + ')">🖼️ 生成图像</button>' +
+                        '<div class="img-container" style="position:relative;">' +
+                            '<div class="loading" style="display:none;"></div>' +
+                            '<img class="preview-img" id="preview-' + sceneId + '">' +
+                        '</div>' +
+                        '<button onclick="removeScene(' + sceneId + ')" style="background:#dc3545;">❌ 删除</button>' +
+                    '</div>' +
+                '</div>';
+            document.getElementById('scenesContainer').insertAdjacentHTML('beforeend', sceneHTML);
+            scenes.push({
+                id: sceneId,
+                description: '',
+                image: null,
+                loaded: false,
+                loading: false
+            });
+        }
+
+        // 删除场景
+        function removeScene(id) {
+            var element = document.getElementById('scene-' + id);
+            if (element) element.parentNode.removeChild(element);
+            for (var i = 0; i < scenes.length; i++) {
+                if (scenes[i].id === id) {
+                    scenes.splice(i, 1);
+                    break;
+                }
+            }
+        }
+
+        // 清空所有场景
+        function clearAll() {
+            scenes = [];
+            document.getElementById('scenesContainer').innerHTML = '';
+            stop();
+        }
+
+        // 图像生成主逻辑
+        function generateImage(sceneId) {
+            var scene = scenes.find(function(s) { return s.id === sceneId; });
+            var container = document.querySelector('#scene-' + sceneId + ' .img-container');
+            var textarea = document.querySelector('#scene-' + sceneId + ' textarea');
+            var previewImg = container.querySelector('img');
+            var loadingSpinner = container.querySelector('.loading');
+            
+            if (!textarea.value.trim()) {
+                alert('请输入场景描述内容');
+                return;
+            }
+
+            scene.loading = true;
+            previewImg.src = '';
+            loadingSpinner.style.display = 'block';
+
+            var text = textarea.value;
+            
+            // 中文检测处理
+            if(hasChinese(text)) {
+                generateChineseCard(scene, text, previewImg, loadingSpinner);
+            } else {
+                fetchImageFromAPI(text)
+                    .then(function(blob) {
+                        handleImageSuccess(scene, blob, previewImg, loadingSpinner);
+                    })
+                    .catch(function(error) {
+                        console.log('API失败:', error);
+                        generateChineseCard(scene, text, previewImg, loadingSpinner);
+                    });
+            }
+        }
+
+        // 中文检测函数
+        function hasChinese(str) {
+            return /[\u4E00-\u9FA5]/.test(str);
+        }
+
+        // API请求方法（带超时处理）
+        function fetchImageFromAPI(prompt) {
+            return new Promise(function(resolve, reject) {
+                var timeout = setTimeout(function() {
+                    reject(new Error('请求超时'));
+                }, 10000);
+
+                var encodedPrompt = encodeURIComponent(prompt);
+                var img = new Image();
+                img.crossOrigin = "Anonymous";
+                img.onload = function() {
+                    clearTimeout(timeout);
+                    var canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    canvas.toBlob(resolve);
+                };
+                img.onerror = function(err) {
+                    clearTimeout(timeout);
+                    reject(err);
+                };
+                img.src = 'https://image.pollinations.ai/prompt/' + encodedPrompt;
+            });
+        }
+
+        // 中文卡片生成器
+        function generateChineseCard(scene, text, previewImg, spinner) {
+            var canvas = document.createElement('canvas');
+            canvas.width = 800;
+            canvas.height = 600;
+            var ctx = canvas.getContext('2d');
+            
+            // 背景渐变
+            var gradient = ctx.createLinearGradient(0, 0, 800, 600);
+            gradient.addColorStop(0, '#F8BBD0');
+            gradient.addColorStop(1, '#B3E5FC');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 800, 600);
+            
+            // 字体设置
+            ctx.font = 'bold 38px "Microsoft YaHei", SimHei, sans-serif';
+            ctx.fillStyle = '#2d3436';
+            ctx.textBaseline = 'middle';
+            
+            // 文字排版
+            wrapChineseText(ctx, text, 50, 100, 700, 50, 8);
+
+            // 装饰元素
+            ctx.beginPath();
+            ctx.arc(700, 500, 60, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.fill();
+
+            var img = new Image();
+            img.onload = function() {
+                scene.image = img;
+                scene.loaded = true;
+                scene.loading = false;
+                previewImg.src = img.src;
+                spinner.style.display = 'none';
+            };
+            img.src = canvas.toDataURL();
+        }
+
+        // 智能中文换行算法
+        function wrapChineseText(ctx, text, x, y, maxWidth, lineHeight, maxLines) {
+            var lines = [];
+            var currentLine = '';
+            
+            for (var i = 0; i < text.length; i++) {
+                var char = text[i];
+                var testLine = currentLine + char;
+                var metrics = ctx.measureText(testLine);
+                
+                if (metrics.width > maxWidth) {
+                    lines.push(currentLine);
+                    currentLine = char;
+                    if (lines.length >= maxLines) break;
+                } else {
+                    currentLine = testLine;
+                }
+            }
+            
+            if (currentLine && lines.length < maxLines) lines.push(currentLine);
+            
+            // 垂直居中
+            var totalHeight = lineHeight * lines.length;
+            var startY = y + (600 - y - totalHeight) / 2;
+            
+            // 绘制文字
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+            ctx.shadowBlur = 4;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+            
+            lines.forEach(function(line, index) {
+                var textWidth = ctx.measureText(line).width;
+                ctx.fillText(line, x + (maxWidth - textWidth)/2, startY + index * lineHeight);
+            });
+            
+            // 重置阴影
+            ctx.shadowColor = 'transparent';
+        }
+
+        // 处理图像加载成功
+        function handleImageSuccess(scene, blob, previewImg, spinner) {
+            var img = new Image();
+            img.onload = function() {
+                scene.image = img;
+                scene.loaded = true;
+                scene.loading = false;
+                previewImg.src = img.src;
+                spinner.style.display = 'none';
+            };
+            img.src = URL.createObjectURL(blob);
+        }
+
+        // 动画循环核心
+        function animate(timestamp) {
+            if (!isPlaying) return;
+
+            var fps = document.getElementById('fps').value || 24;
+            var frameInterval = 1000 / fps;
+            
+            if (timestamp - lastFrameTime >= frameInterval) {
+                var sceneIndex = currentFrame % scenes.length;
+                var scene = scenes[sceneIndex];
+                
+                if (scene && scene.loaded) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(scene.image, 0, 0, 800, 600);
+                }
+                
+                currentFrame++;
+                lastFrameTime = timestamp;
+            }
+            
+            requestAnimationFrame(animate);
+        }
+
+        // 播放控制
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            var btn = document.querySelector('button[onclick="togglePlay()"]');
+            btn.textContent = isPlaying ? '⏸ 暂停' : '▶ 播放';
+            if (isPlaying) requestAnimationFrame(animate);
+        }
+
+        function stop() {
+            isPlaying = false;
+            currentFrame = 0;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.querySelector('button[onclick="togglePlay()"]').textContent = '▶ 播放';
+        }
+    </script>
+</body>
+</html>
