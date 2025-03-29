@@ -193,7 +193,7 @@
                     clearTimeout(timeout);
                     reject(err);
                 };
-                img.src = 'https://image.pollinations.ai/prompt/' + encodedPrompt;
+                img.src = 'https://image.pollinations.ai/prompt/' + encodedPrompt + "?seed=202503&width=1024&height=768&model=default";
             });
         }
 
