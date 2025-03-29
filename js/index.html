@@ -47,6 +47,8 @@
 
         .aoi-container {
             position: fixed;
+            left: 0;  /* 新增定位基准 */
+            top: 0;   /* 新增定位基准 */
             border: 3px dashed rgba(255, 0, 0, 0.6);
             pointer-events: none;
             z-index: 2;
@@ -105,6 +107,7 @@
                 // 创建AOI元素
                 this.aoiElement = document.createElement('div');
                 this.aoiElement.className = 'aoi-container';
+                this.aoiElement.style.display = 'none'; // 初始隐藏
                 this.aoiElement.innerHTML = `
                     <div class="aoi-header">分析区域（可拖动）</div>
                 `;
@@ -155,9 +158,7 @@
             toggle() {
                 this.isVisible = !this.isVisible;
                 this.aoiElement.style.display = this.isVisible ? 'block' : 'none';
-                if (this.isVisible) {
-                    this.aoiElement.style.transform = `translate(${this.offsetX}px, ${this.offsetY}px)`;
-                }
+                this.aoiElement.style.transform = `translate(${this.offsetX}px, ${this.offsetY}px)`; // 强制更新位置
             }
 
             getAreaRect() {
