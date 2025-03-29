@@ -25,18 +25,23 @@
             border-radius: 5px;
         }
     </style>
-    <script src="blclass.js"></script>
 </head>
 <body>
+    <script src="blclass.js"></script>
     <canvas id="myCanvas"></canvas>
     <div id="tools">
         <button onclick="changeColor('#ff0000')">红</button>
         <button onclick="changeColor('#00ff00')">绿</button>
         <button onclick="changeColor('#0000ff')">蓝</button>
+        <button onclick="clearCanvas()">清空</button>  
+        <button onclick="toggleAOI()">toggleAOI</button>  
         <input type="range" id="brushSize" min="1" max="50" value="5">
     </div>
 
     <script>
+        const C4AOI = function(){
+            
+        }
         const canvas = document.getElementById('myCanvas');
         const ctx = canvas.getContext('2d');
         let isDrawing = false;
@@ -48,6 +53,15 @@
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+        }
+
+        // 清空画布功能
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        function toggleAOI(){
+            const aoi = new C4AOI(ctx);
+            aoi.toggleUI();
         }
 
         // 窗口大小改变时重置画布
