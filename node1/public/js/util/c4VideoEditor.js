@@ -538,6 +538,7 @@ class VideoEditor {
             fps: parseInt(this.fpsInput.value) || 30,
             audio: this.audio.src,
             scenes: this.scenesHandler.scenes.map(scene => ({
+                uuid: scene.uuid, // 添加唯一标识
                 color: scene.color,
                 duration: scene.duration,
                 drawingObjs: scene.drawingObjs.map(obj => {
