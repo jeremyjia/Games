@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>全屏画布</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        canvas {
+            background: #f0f0f0;
+            touch-action: none; /* 禁止默认触摸行为 */
+        }
+
+        #tools {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 5px;
+            border-radius: 5px;
+        }
+    </style>
+    <script src="blclass.js"></script>
+</head>
+<body>
+    <canvas id="myCanvas"></canvas>
+    <div id="tools">
+        <button onclick="changeColor('#ff0000')">红</button>
+        <button onclick="changeColor('#00ff00')">绿</button>
+        <button onclick="changeColor('#0000ff')">蓝</button>
+        <input type="range" id="brushSize" min="1" max="50" value="5">
+    </div>
+
+    <script>
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        let currentColor = '#000000';
+        
+        // 初始化画布尺寸
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        // 窗口大小改变时重置画布
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // 绘制功能
+        function startDrawing(e) {
+            isDrawing = true;
+            const pos = getPosition(e);
+            [lastX, lastY] = [pos.x, pos.y];
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const pos = getPosition(e);
+            
+            ctx.beginPath();
+            ctx.lineWidth = document.getElementById('brushSize').value;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = currentColor;
+            
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            
+            [lastX, lastY] = [pos.x, pos.y];
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        // 获取坐标（兼容触摸事件）
+        function getPosition(e) {
+            if (e.touches) {
+                const rect = canvas.getBoundingClientRect();
+                return {
+                    x: e.touches[0].clientX - rect.left,
+                    y: e.touches[0].clientY - rect.top
+                };
+            }
+            return {
+                x: e.clientX - canvas.offsetLeft,
+                y: e.clientY - canvas.offsetTop
+            };
+        }
+
+        // 颜色切换
+        function changeColor(color) {
+            currentColor = color;
+        }
+
+        // 事件监听（同时支持鼠标和触摸）
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            startDrawing(e);
+        });
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            draw(e);
+        });
+        canvas.addEventListener('touchend', stopDrawing);
+    </script>
+</body>
+</html>
