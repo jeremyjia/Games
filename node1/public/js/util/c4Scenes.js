@@ -5,6 +5,7 @@ class C4Scenes {
         this.scenes = [];
         this.sceneToolbar = sceneToolbar;
         this.currentSceneIndex = -1;
+        this.nextSceneId = 1; // 新增ID计数器
         this.draggedScene = null;
         this.draggedIndex = -1;
         this.onSceneSelected = onSceneSelected;
@@ -106,7 +107,7 @@ class C4Scenes {
     } 
     addScene() {
         const scene = {
-            id: Date.now(),
+            id: this.nextSceneId++, // 使用自增唯一ID
             color: this.getRandomColor(),
             duration: 30,
             element: null,
