@@ -11,11 +11,15 @@
             overflow: hidden;
         }
 
-        canvas {
+        /* 主画布层级设置 */
+        #myCanvas {
             background: #f0f0f0;
             touch-action: none;
+            position: relative;  /* 关键定位 */
+            z-index: 1;          /* 基础层级 */
         }
 
+        /* 工具按钮容器 */
         #tools {
             position: fixed;
             top: 10px;
@@ -23,17 +27,20 @@
             background: rgba(255, 255, 255, 0.8);
             padding: 5px;
             border-radius: 5px;
-            z-index: 1000;
+            z-index: 1000;       /* 最高层级 */
         }
 
-        /* 新增覆盖层样式 */
-        .overlay-canvas {
-            pointer-events: none;
+        /* AOI覆盖层样式 */
+        .aoi-overlay {
+            pointer-events: none !important;  /* 强制事件穿透 */
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 2;          /* 介于画布和工具之间 */
         }
     </style>
 </head>
 <body>
-    <script src="blclass.js"></script>
     <canvas id="myCanvas"></canvas>
     <div id="tools">
         <button onclick="changeColor('#ff0000')">红</button>
@@ -45,71 +52,87 @@
     </div>
 
     <script>
-        let aoiInstance = null;
-        const C4AOI = function(ctx){
-            let o = {};
-            let isVisible = false;
-            const overlay = document.createElement('canvas');
-            overlay.className = 'overlay-canvas'; // 应用CSS类
-            const overlayCtx = overlay.getContext('2d');
-            
-            overlay.style.position = 'fixed';
-            overlay.style.left = '0';
-            overlay.style.top = '0';
-            overlay.style.zIndex = '999';
-            document.body.appendChild(overlay);
+        // AOI控制模块
+        class AOIController {
+            constructor(mainCtx) {
+                this.ctx = mainCtx;
+                this.isVisible = false;
+                
+                // 创建覆盖层
+                this.overlay = document.createElement('canvas');
+                this.overlay.className = 'aoi-overlay';
+                document.body.appendChild(this.overlay);  // 确保在画布之后插入
+                this.overlayCtx = this.overlay.getContext('2d');
+                
+                // 初始同步尺寸
+                this.syncSize();
+                window.addEventListener('resize', () => this.syncSize());
+            }
 
-            function resizeOverlay() {
-                overlay.width = ctx.canvas.width;
-                overlay.height = ctx.canvas.height;
-                if(isVisible) drawAOI();
+            syncSize() {
+                // 精确同步画布尺寸
+                this.overlay.width = this.ctx.canvas.width;
+                this.overlay.height = this.ctx.canvas.height;
+                this.overlay.style.width = this.ctx.canvas.width + 'px';
+                this.overlay.style.height = this.ctx.canvas.height + 'px';
+                if(this.isVisible) this.draw();
             }
-            window.addEventListener('resize', resizeOverlay);
-            resizeOverlay();
 
-            function drawAOI() {
-                overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
-                overlayCtx.strokeStyle = 'rgba(255, 0, 0, 0.6)';
-                overlayCtx.lineWidth = 3;
-                overlayCtx.setLineDash([8, 4]);
-                overlayCtx.strokeRect(50, 100, 200, 200);
+            draw() {
+                this.overlayCtx.clearRect(0, 0, this.overlay.width, this.overlay.height);
+                this.overlayCtx.strokeStyle = 'rgba(255, 0, 0, 0.6)';
+                this.overlayCtx.lineWidth = 3;
+                this.overlayCtx.setLineDash([8, 4]);
+                this.overlayCtx.strokeRect(50, 100, 200, 200);
             }
-            o.toggleUI = function(){
-                isVisible = !isVisible;
-                isVisible ? drawAOI() : overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+
+            toggle() {
+                this.isVisible = !this.isVisible;
+                this.isVisible ? this.draw() : this.overlayCtx.clearRect(0, 0, this.overlay.width, this.overlay.height);
             }
-            return o;
         }
+
+        // 主程序逻辑
         const canvas = document.getElementById('myCanvas');
         const ctx = canvas.getContext('2d');
+        let aoiController = null;
+        
+        // 状态变量
         let isDrawing = false;
         let lastX = 0;
         let lastY = 0;
         let currentColor = '#000000';
-        
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+
+        // 画布初始化
+        function initCanvas() {
+            const resize = () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                if(aoiController) aoiController.syncSize();
+            };
+            window.addEventListener('resize', resize);
+            resize();
         }
 
-        function clearCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-        function toggleAOI(){
-            if(!aoiInstance) aoiInstance = new C4AOI(ctx);
-            aoiInstance.toggleUI();
+        // 事件坐标计算
+        function getPosition(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches?.[0]?.clientX || e.clientX;
+            const clientY = e.touches?.[0]?.clientY || e.clientY;
+            return {
+                x: clientX - rect.left * (canvas.width / rect.width),
+                y: clientY - rect.top * (canvas.height / rect.height)
+            };
         }
 
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        function startDrawing(e) {
+        // 绘图逻辑
+        const startDrawing = e => {
             isDrawing = true;
             const pos = getPosition(e);
             [lastX, lastY] = [pos.x, pos.y];
-        }
+        };
 
-        function draw(e) {
+        const draw = e => {
             if (!isDrawing) return;
             const pos = getPosition(e);
             
@@ -123,49 +146,45 @@
             ctx.stroke();
             
             [lastX, lastY] = [pos.x, pos.y];
+        };
+
+        // 事件绑定
+        function bindEvents() {
+            const endDrawing = () => isDrawing = false;
+            
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', endDrawing);
+            canvas.addEventListener('mouseout', endDrawing);
+
+            canvas.addEventListener('touchstart', e => {
+                e.preventDefault();
+                startDrawing(e);
+            });
+            canvas.addEventListener('touchmove', e => {
+                e.preventDefault();
+                draw(e);
+            });
+            canvas.addEventListener('touchend', endDrawing);
         }
 
-        function stopDrawing() {
-            isDrawing = false;
-        }
-
-        // 统一坐标计算方法
-        function getPosition(e) {
-            const rect = canvas.getBoundingClientRect();
-            let clientX, clientY;
-
-            if (e.touches) {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
-            } else {
-                clientX = e.clientX;
-                clientY = e.clientY;
-            }
-
-            return {
-                x: clientX - rect.left,
-                y: clientY - rect.top
-            };
-        }
-
+        // 控制功能
         function changeColor(color) {
             currentColor = color;
         }
 
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseout', stopDrawing);
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
 
-        canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            startDrawing(e);
-        });
-        canvas.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            draw(e);
-        });
-        canvas.addEventListener('touchend', stopDrawing);
+        function toggleAOI() {
+            if (!aoiController) aoiController = new AOIController(ctx);
+            aoiController.toggle();
+        }
+
+        // 初始化
+        initCanvas();
+        bindEvents();
     </script>
 </body>
 </html>
