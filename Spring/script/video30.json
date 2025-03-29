@@ -1,0 +1,40 @@
+{
+    "request": {
+        "version": "0.0.30",
+        "description":"refactor plx for js",
+        "width": 1024,
+        "height": 768,
+        "music": "1.mp3",
+        "rate": "10",
+        "frames": [
+            {
+                "number": "1",
+                "time": "200",
+                "objects": [
+                    {
+                        "text": "重构插件接口测试-function animateFrame(time, ctx)",
+                        "x": 100,
+                        "y": 100,
+                        "size": 30,
+                        "color": "95,35,135",
+                        "layer": 2
+                    }
+                ],
+                "backgroundColor": "180,180,180"
+            }
+        ],
+        "superObjects": [
+            {
+                "type": "javascript",
+                "frameRange": "(0,3000)",
+                "unit":1,
+                "attribute": {
+                    "script": "refactor.js",
+                    "function": "animateFrame",
+                    "start": 1
+                },
+                "layer": 1
+            }
+        ]
+    }
+}

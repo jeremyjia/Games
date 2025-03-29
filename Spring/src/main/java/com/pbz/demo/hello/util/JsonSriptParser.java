@@ -1306,7 +1306,9 @@ public final class JsonSriptParser {
             setPlugInArgs(attributeObj, sew.getEngine());
         }
         Invocable invoke = (Invocable) sew.getEngine();
-        invoke.invokeFunction(functionName, new Object[] { number - start });
+        
+        Object ctxObj = sew.getGraphEngine().getElementById("myCanvas").getContext("2d");
+        invoke.invokeFunction(functionName, new Object[] { number - start, ctxObj });
     }
     private static void setPlugInArgs(JSONObject attributeObj, ScriptEngine engine) throws Exception {
         if (attributeObj != null && attributeObj.has("initArgs")) {

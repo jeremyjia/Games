@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中英翻译器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+        }
+        button {
+            padding: 12px 24px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            padding: 15px;
+            border: 2px solid #4CAF50;
+            border-radius: 5px;
+            min-height: 100px;
+            background-color: #f8f8f8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>中英翻译器</h1>
+        <textarea id="inputText" placeholder="请输入要翻译的中文内容..."></textarea>
+        <button onclick="translateText()">翻译成英语</button>
+        <div class="result" id="output"></div>
+    </div>
+
+    <script>
+        async function translateText() {
+            const inputText = document.getElementById('inputText').value.trim();
+            const outputDiv = document.getElementById('output');
+            
+            if (!inputText) {
+                outputDiv.innerHTML = "请输入要翻译的内容";
+                return;
+            }
+
+            outputDiv.innerHTML = "翻译中...";
+
+            try {
+                const response = await fetch(
+                    `https://api.mymemory.translated.net/get?q=${encodeURIComponent(inputText)}&langpair=zh-CN|en`
+                );
+
+                if (!response.ok) {
+                    throw new Error('翻译服务不可用');
+                }
+
+                const data = await response.json();
+                
+                if (data.responseStatus === 200 && data.responseData.translatedText) {
+                    outputDiv.innerHTML = data.responseData.translatedText;
+                } else {
+                    outputDiv.innerHTML = "翻译失败，请重试";
+                }
+            } catch (error) {
+                outputDiv.innerHTML = "翻译出错：" + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
