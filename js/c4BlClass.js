@@ -1,13 +1,20 @@
 /*
 file: c4BlClass.js 
 升级：实现 
-                    //在 win_about_me content 显示 this.name 
+     拖动窗口右边和底边可改大小
+
+*/
+/*
+file: c4BlClass.js 
+升级：实现 
+     拖动窗口右边和底边可改大小
 
 */
 function C4BlClass() {
     this.windows = {};          // 窗口实例集合
-    this.windowPositions = {};  // 窗口位置存储
+    this.windowPositions = {};  // 窗口位置和尺寸存储
     this.activeDrag = null;     // 当前拖动状态
+    this.activeResize = null;   // 当前调整大小状态
 
     this.aboutMe = function(btnHandle) {
         const colors = ['#ff0000', '#00ff00'];
@@ -48,19 +55,20 @@ function C4BlClass() {
         }
     };
 
-
     this.createWindow = function(id) {
         if (this.windows[id]) return this.windows[id];
 
+        const defaultPosition = { x: 100, y: 100, width: 200, height: 150 };
+        const savedPosition = this.windowPositions[id] || {};
+        const position = { ...defaultPosition, ...savedPosition };
+
         const win = document.createElement('div');
-        const position = this.windowPositions[id] || { x: 100, y: 100 };
-        
         win.style.cssText = `
             position: fixed;
             left: ${position.x}px;
             top: ${position.y}px;
-            width: 200px;
-            height: 150px;
+            width: ${position.width}px;
+            height: ${position.height}px;
             background: white;
             border: 2px solid #333;
             z-index: 9999;
@@ -97,6 +105,43 @@ function C4BlClass() {
             };
         });
 
+        // 调整大小的事件处理
+        win.addEventListener('mousedown', (e) => {
+            const rect = win.getBoundingClientRect();
+            const edgeThreshold = 5;
+            const isRightEdge = e.clientX >= rect.right - edgeThreshold;
+            const isBottomEdge = e.clientY >= rect.bottom - edgeThreshold;
+
+            if (isRightEdge || isBottomEdge) {
+                this.activeResize = {
+                    window: win,
+                    startX: e.clientX,
+                    startY: e.clientY,
+                    startWidth: win.offsetWidth,
+                    startHeight: win.offsetHeight,
+                    isRight: isRightEdge,
+                    isBottom: isBottomEdge
+                };
+                e.preventDefault();
+            }
+        });
+
+        // 调整光标样式
+        win.addEventListener('mousemove', (e) => {
+            const rect = win.getBoundingClientRect();
+            const edgeThreshold = 5;
+            const isRight = e.clientX >= rect.right - edgeThreshold;
+            const isBottom = e.clientY >= rect.bottom - edgeThreshold;
+
+            win.style.cursor = isRight && isBottom ? 'se-resize' :
+                               isRight ? 'e-resize' :
+                               isBottom ? 's-resize' : 'default';
+        });
+
+        win.addEventListener('mouseleave', () => {
+            win.style.cursor = 'default';
+        });
+
         this.windows[id] = win;
         win.addToolbar = function(btns) {
             const existingToolbar = this.querySelector('.c4-toolbar');
@@ -131,27 +176,52 @@ function C4BlClass() {
     };
 
     document.addEventListener('mousemove', (e) => {
-        if (!this.activeDrag) return;
-        
-        const dx = e.clientX - this.activeDrag.startX;
-        const dy = e.clientY - this.activeDrag.startY;
-        const win = this.activeDrag.window;
-        
-        win.style.left = (this.activeDrag.startLeft + dx) + "px";
-        win.style.top = (this.activeDrag.startTop + dy) + "px";
+        if (this.activeDrag) {
+            const dx = e.clientX - this.activeDrag.startX;
+            const dy = e.clientY - this.activeDrag.startY;
+            const win = this.activeDrag.window;
+            
+            win.style.left = (this.activeDrag.startLeft + dx) + "px";
+            win.style.top = (this.activeDrag.startTop + dy) + "px";
+        } else if (this.activeResize) {
+            const resize = this.activeResize;
+            const win = resize.window;
+            const deltaX = e.clientX - resize.startX;
+            const deltaY = e.clientY - resize.startY;
+
+            if (resize.isRight) {
+                const newWidth = Math.max(50, resize.startWidth + deltaX);
+                win.style.width = newWidth + 'px';
+            }
+            if (resize.isBottom) {
+                const newHeight = Math.max(50, resize.startHeight + deltaY);
+                win.style.height = newHeight + 'px';
+            }
+        }
     });
 
     document.addEventListener('mouseup', () => {
-        if (!this.activeDrag) return;
-        
-        const win = this.activeDrag.window;
-        const id = win.dataset.windowId;
-        this.windowPositions[id] = { 
-            x: win.offsetLeft, 
-            y: win.offsetTop 
-        };
-        
-        this.activeDrag = null;
+        if (this.activeDrag) {
+            const win = this.activeDrag.window;
+            const id = win.dataset.windowId;
+            this.windowPositions[id] = { 
+                x: win.offsetLeft, 
+                y: win.offsetTop,
+                width: win.offsetWidth,   // 保存宽度
+                height: win.offsetHeight  // 保存高度
+            };
+            this.activeDrag = null;
+        }
+        if (this.activeResize) {
+            const win = this.activeResize.window;
+            const id = win.dataset.windowId;
+            this.windowPositions[id] = {
+                ...this.windowPositions[id],
+                width: win.offsetWidth,
+                height: win.offsetHeight
+            };
+            this.activeResize = null;
+        }
     });
 
     this.showWindow = function(id) {
