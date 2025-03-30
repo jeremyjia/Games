@@ -22,20 +22,44 @@ function C4BlClass() {
         const buttons = [
             {
                 id: "1",
-                name: "name1",
+                name: "issues",
                 clickFunction: function() {
-                    const content = this.closest('[data-window-id]')
-                                    .querySelector('.c4-content');
-                    content.innerHTML = Date();
+                    const _v = this.closest('[data-window-id]')
+                                    .querySelector('.c4-content'); 
+                    _v.innerHTML = this.name;  
+					
+                    var tb = blo0.blDiv(_v,_v.id+"tb","tb",blGrey[5]);
+                    var v2 = blo0.blDiv(_v,_v.id+"v2","v2",blGrey[5]);
+                    var url = "https://api.github.com/repos/jeremyjia/Games/issues/702/comments";
+						blo0.blGetGithubCs(url,function(o){ 							
+							var _i = 0; 							
+							for(i in o){
+								_i++;
+								var a = o[i].body;
+								var btnJS = blo0.blBtn(tb, tb.id+"btnJS"+i,_i,blGrey[2]);
+								btnJS.onclick = function(_txt){
+										return function(){
+											v2.innerHTML = _txt;
+										}
+								}(a);
+							}
+						});
                 }
             },
             {
                 id: "2",
-                name: "name2",
+                name: "readMe",
                 clickFunction: function() {
                     const content = this.closest('[data-window-id]')
                                     .querySelector('.c4-content');
-                    content.textContent = this.textContent;
+                    content.innerHTML = `
+                      利用AI重构 blclass.
+                      现有功能： <br>
+                      this.aboutMe  <br>
+                      this.createWindow <br>
+                      this.showWindow <br>
+                      this.hideWindow <br>
+                    `;
                 }
             }
         ];
