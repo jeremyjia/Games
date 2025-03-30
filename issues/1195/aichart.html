@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>智能语音问答 - 修复版</title>
+    <style>
+        :root {
+            --primary-color: #2196F3;
+            --text-color: #333;
+            --bg-color: #fff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            color: var(--text-color);
+        }
+
+        .chat-container {
+            background: var(--bg-color);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            height: calc(100vh - 160px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .message {
+            margin: 10px 0;
+            padding: 12px;
+            border-radius: 12px;
+            max-width: 85%;
+            font-size: 16px;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .user-message {
+            background-color: #e3f2fd;
+            margin-left: auto;
+            border-radius: 12px 12px 0 12px;
+        }
+
+        .bot-message {
+            background-color: #f5f5f5;
+            border-radius: 12px 12px 12px 0;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            background: var(--bg-color);
+            padding: 10px;
+            border-radius: 25px;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+        }
+
+        #question {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            min-height: 50px;
+        }
+
+        button {
+            padding: 0 25px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            flex-shrink: 0;
+            height: 50px;
+            transition: opacity 0.2s;
+        }
+
+        button:active {
+            opacity: 0.8;
+        }
+
+        .audio-controls {
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .time-display {
+            font-size: 14px;
+            color: #666;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 6px;
+            background: #eee;
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+            touch-action: none;
+        }
+
+        .progress-filled {
+            height: 100%;
+            background: var(--primary-color);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .control-buttons {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .play-pause-btn {
+            cursor: pointer;
+            color: var(--primary-color);
+            font-size: 28px;
+            padding: 8px;
+        }
+
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 120px;
+        }
+
+        .volume-slider {
+            width: 100%;
+            height: 4px;
+            -webkit-appearance: none;
+            background: #ddd;
+            border-radius: 2px;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .loading {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .spinner {
+            animation: spin 1s linear infinite;
+            font-size: 18px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .chat-container {
+                height: calc(100vh - 140px);
+                padding: 10px;
+                border-radius: 10px;
+            }
+
+            .message {
+                max-width: 90%;
+                padding: 10px;
+                font-size: 15px;
+            }
+
+            .input-container {
+                bottom: 5px;
+                left: 5px;
+                right: 5px;
+                padding: 8px;
+                border-radius: 20px;
+            }
+
+            #question {
+                padding: 10px 12px;
+                font-size: 15px;
+                min-height: 45px;
+            }
+
+            button {
+                padding: 0 20px;
+                height: 45px;
+                font-size: 15px;
+            }
+
+            .time-display {
+                font-size: 13px;
+                min-width: 90px;
+            }
+
+            .play-pause-btn {
+                font-size: 24px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="chat-container" id="chatContainer"></div>
+    <div class="input-container">
+        <input type="text" id="question" placeholder="输入问题..." autocomplete="off">
+        <button onclick="submitQuestion()">发送</button>
+    </div>
+
+    <script>
+        const audioCache = new Map();
+        let currentAudio = null;
+        let currentPlayingId = null;
+
+        async function submitQuestion() {
+            const questionInput = document.getElementById('question');
+            const question = questionInput.value.trim();
+            
+            if (!question) return;
+
+            addMessage(question, 'user');
+            const loadingMsg = addMessage('正在生成回答...', 'bot', true);
+            
+            try {
+                const apiUrl = `https://text.pollinations.ai/${encodeURIComponent(question)}?model=openai-audio`;
+                console.log('请求API:', apiUrl); // 调试日志
+                
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error(`请求失败: ${response.status}`);
+                
+                // 确保响应是音频类型
+                if (!response.headers.get('content-type').startsWith('audio/')) {
+                    throw new Error('返回的不是音频内容');
+                }
+                
+                const audioBlob = await response.blob();
+                console.log('音频Blob:', audioBlob); // 调试日志
+                
+                const timestamp = Date.now();
+                audioCache.set(timestamp, audioBlob);
+                
+                updateMessage(loadingMsg, {
+                    text: '语音回答已就绪',
+                    timestamp: timestamp,
+                    loading: false
+                });
+            } catch (error) {
+                console.error('请求出错:', error); // 调试日志
+                updateMessage(loadingMsg, {
+                    text: `错误: ${error.message}`,
+                    loading: false
+                });
+            }
+
+            questionInput.value = '';
+            questionInput.focus();
+        }
+
+        function addMessage(text, sender, isLoading = false) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.dataset.timestamp = Date.now();
+
+            if (isLoading) {
+                messageDiv.innerHTML = `
+                    <div class="loading">
+                        <i class="fas fa-spinner spinner"></i>
+                        ${text}
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `<div>${text}</div>`;
+            }
+
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return messageDiv;
+        }
+
+        function updateMessage(messageElement, { text, timestamp, loading }) {
+            if (loading) {
+                messageElement.innerHTML = `
+                    <div class="loading">
+                        <i class="fas fa-spinner spinner"></i>
+                        ${text}
+                    </div>
+                `;
+            } else {
+                messageElement.innerHTML = `
+                    <div>${text}</div>
+                    ${timestamp ? createAudioControls(timestamp) : ''}
+                `;
+                if (timestamp) {
+                    // 延迟初始化确保DOM已渲染
+                    setTimeout(() => initAudioControls(timestamp), 50);
+                }
+            }
+        }
+
+        function createAudioControls(timestamp) {
+            return `
+                <div class="audio-controls" data-timestamp="${timestamp}">
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progressBar-${timestamp}">
+                            <div class="progress-filled" id="progress-${timestamp}"></div>
+                        </div>
+                        <div class="time-display" id="time-${timestamp}">00:00 / 00:00</div>
+                    </div>
+                    <div class="control-buttons">
+                        <i class="fas fa-play play-pause-btn" id="playBtn-${timestamp}"></i>
+                        <div class="volume-container">
+                            <i class="fas fa-volume-up"></i>
+                            <input type="range" class="volume-slider" min="0" max="1" step="0.1" value="1"
+                                id="volume-${timestamp}">
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function initAudioControls(timestamp) {
+            const progressBar = document.getElementById(`progressBar-${timestamp}`);
+            
+            // 点击进度条跳转
+            progressBar.addEventListener('click', (e) => {
+                if (!currentAudio || currentPlayingId !== timestamp) return;
+                
+                const rect = progressBar.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const percentage = Math.min(Math.max(clickX / rect.width, 0), 1);
+                currentAudio.currentTime = currentAudio.duration * percentage;
+            });
+
+            // 播放按钮事件
+            const playBtn = document.getElementById(`playBtn-${timestamp}`);
+            playBtn.addEventListener('click', () => handlePlayPause(timestamp));
+
+            // 音量控制
+            const volumeSlider = document.getElementById(`volume-${timestamp}`);
+            volumeSlider.addEventListener('input', (e) => {
+                if (currentAudio && currentPlayingId === timestamp) {
+                    currentAudio.volume = e.target.value;
+                }
+            });
+        }
+
+        function handlePlayPause(timestamp) {
+            const playBtn = document.getElementById(`playBtn-${timestamp}`);
+            
+            // 如果正在播放当前音频，则暂停
+            if (currentAudio && !currentAudio.paused && currentPlayingId === timestamp) {
+                currentAudio.pause();
+                playBtn.classList.remove('fa-pause');
+                playBtn.classList.add('fa-play');
+                return;
+            }
+            
+            // 如果切换播放不同音频，先停止当前
+            if (currentAudio && currentPlayingId !== timestamp) {
+                currentAudio.pause();
+                URL.revokeObjectURL(currentAudio.src);
+                const prevPlayBtn = document.getElementById(`playBtn-${currentPlayingId}`);
+                if (prevPlayBtn) {
+                    prevPlayBtn.classList.remove('fa-pause');
+                    prevPlayBtn.classList.add('fa-play');
+                }
+            }
+
+            // 获取音频数据
+            const blob = audioCache.get(timestamp);
+            if (!blob) {
+                console.error('找不到缓存的音频数据');
+                return;
+            }
+
+            // 创建新音频实例
+            currentAudio = new Audio(URL.createObjectURL(blob));
+            currentPlayingId = timestamp;
+            
+            // 设置音量
+            const volumeSlider = document.getElementById(`volume-${timestamp}`);
+            currentAudio.volume = volumeSlider ? volumeSlider.value : 1;
+
+            // 事件监听
+            currentAudio.addEventListener('timeupdate', () => updateProgress(timestamp));
+            currentAudio.addEventListener('loadedmetadata', () => {
+                updateProgress(timestamp);
+                // iOS需要用户交互才能播放
+                const playPromise = currentAudio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.error('播放失败:', error);
+                        // 显示播放按钮让用户手动点击
+                        playBtn.classList.remove('fa-pause');
+                        playBtn.classList.add('fa-play');
+                    });
+                }
+            });
+            
+            currentAudio.addEventListener('ended', () => {
+                playBtn.classList.remove('fa-pause');
+                playBtn.classList.add('fa-play');
+                URL.revokeObjectURL(currentAudio.src);
+                currentAudio = null;
+                currentPlayingId = null;
+            });
+
+            // 更新UI
+            playBtn.classList.remove('fa-play');
+            playBtn.classList.add('fa-pause');
+        }
+
+        function updateProgress(timestamp) {
+            if (!currentAudio || currentPlayingId !== timestamp) return;
+
+            const progress = (currentAudio.currentTime / currentAudio.duration) * 100;
+            const progressElement = document.getElementById(`progress-${timestamp}`);
+            if (progressElement) {
+                progressElement.style.width = `${progress}%`;
+            }
+
+            const currentTime = formatTime(currentAudio.currentTime);
+            const duration = formatTime(currentAudio.duration);
+            const timeElement = document.getElementById(`time-${timestamp}`);
+            if (timeElement) {
+                timeElement.textContent = `${currentTime} / ${duration}`;
+            }
+        }
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "00:00";
+            const minutes = Math.floor(seconds / 60);
+            seconds = Math.floor(seconds % 60);
+            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        // 输入控制
+        document.getElementById('question').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') submitQuestion();
+        });
+
+        // 初始化自动聚焦输入框
+        document.getElementById('question').focus();
+
+        // 清理资源
+        window.addEventListener('beforeunload', () => {
+            audioCache.clear();
+            if (currentAudio) {
+                currentAudio.pause();
+                URL.revokeObjectURL(currentAudio.src);
+            }
+        });
+    </script>
+</body>
+</html>
