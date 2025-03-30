@@ -86,6 +86,7 @@
     </style>
 </head>
 <body>
+    <script src="c4BlClass.js"></script>
     <canvas id="myCanvas"></canvas>
     <div id="tools">
         <button onclick="changeColor('#ff0000')">红</button>
@@ -93,6 +94,8 @@
         <button onclick="changeColor('#0000ff')">蓝</button>
         <button onclick="clearCanvas()">清空</button>  
         <button onclick="toggleAOI()">AOI控制</button>  
+        <button onclick="blo.aboutMe(this)" data-window-id="id_4_about_blClass">aboutBlClass</button>
+        <button onclick="newWnd(this)" >new wnd test</button>
         <input type="range" id="brushSize" min="1" max="50" value="5">
     </div>
 
@@ -283,6 +286,9 @@
 
         function toggleAOI() {
             drawingSystem.toggleAOI();
+        } 
+        function newWnd(){
+            blo.showWindow("id_4_new_window");
         }
     </script>
 </body>
