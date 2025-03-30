@@ -1,15 +1,8 @@
 /*
-file: c4BlClass.js 
-升级：实现 
-     拖动窗口右边和底边可改大小
+file: c4BlClass.js  
 
 */
-/*
-file: c4BlClass.js 
-升级：实现 
-     拖动窗口右边和底边可改大小
 
-*/
 function C4BlClass() {
     this.windows = {};          // 窗口实例集合
     this.windowPositions = {};  // 窗口位置和尺寸存储
