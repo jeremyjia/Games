@@ -71,6 +71,7 @@ const ChatRoom = (() => {
 
             this.createHeader();
             this.createMessageDisplay();
+            this.createMessageDisplay();
             this.createMessageInput();
             this.createUserList();
             this.container.appendChild(this.chatInterface);
@@ -261,16 +262,16 @@ const ChatRoom = (() => {
                 isDragging = true;
                 startX = e.clientX;
                 startY = e.clientY;
-                initialLeft = parseInt(element.offsetLeft);
-                initialTop = parseInt(element.offsetTop);
+                initialLeft = parseInt(this.container.offsetLeft);
+                initialTop = parseInt(this.container.offsetTop);
             });
 
             document.addEventListener('mousemove', (e) => {
                 if (!isDragging) return;
                 const deltaX = e.clientX - startX;
                 const deltaY = e.clientY - startY;
-                element.style.left = `${initialLeft + deltaX}px`;
-                element.style.top = `${initialTop + deltaY}px`;
+                this.container.style.left = `${initialLeft + deltaX}px`;
+                this.container.style.top = `${initialTop + deltaY}px`;
             });
 
             document.addEventListener('mouseup', () => isDragging = false);
@@ -388,7 +389,7 @@ const ChatRoom = (() => {
     };
 })();
 
-// 初始化聊天室
 const chatRoot = document.createElement('div');
 document.body.appendChild(chatRoot);
 const chatRoom = ChatRoom.init(chatRoot);
+    
