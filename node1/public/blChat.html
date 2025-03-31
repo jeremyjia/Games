@@ -20,6 +20,12 @@
             button.active {
                 background-color: #4CAF50 !important;
             }
+
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-5px); }
+                75% { transform: translateX(5px); }
+            }
         </style>
     </head>
     <body> 
@@ -58,12 +64,23 @@
                     this.container = container;
                     this.container.innerHTML = ''; // 清空容器
                     
-                    // 创建登录表单
+                    // 创建登录表单容器
                     const form = document.createElement('div');
                     form.style.display = "flex";
                     form.style.flexDirection = "column";
                     form.style.gap = "10px";
                     form.style.maxWidth = "200px";
+
+                    // 错误提示容器
+                    this.errorDiv = document.createElement('div');
+                    this.errorDiv.style.display = "none"; // 默认隐藏
+                    this.errorDiv.style.padding = "8px";
+                    this.errorDiv.style.color = "#dc3545";
+                    this.errorDiv.style.backgroundColor = "#f8d7da";
+                    this.errorDiv.style.border = "1px solid #f5c6cb";
+                    this.errorDiv.style.borderRadius = "4px";
+                    this.errorDiv.style.fontSize = "0.9em";
+                    this.errorDiv.style.margin = "2px 0";
 
                     // 用户名输入
                     this.usernameInput = document.createElement('input');
@@ -84,10 +101,18 @@
                     loginBtn.style.padding = "8px";
                     loginBtn.onclick = () => this.handleLogin();
 
+                    // 输入时隐藏错误提示
+                    [this.usernameInput, this.passwordInput].forEach(input => {
+                        input.addEventListener('input', () => {
+                            this.errorDiv.style.display = "none";
+                        });
+                    });
+
+                    // 组装表单
+                    form.appendChild(this.errorDiv);
                     form.appendChild(this.usernameInput);
                     form.appendChild(this.passwordInput);
                     form.appendChild(loginBtn);
-                    
                     this.container.appendChild(form);
                 }
 
@@ -96,11 +121,17 @@
                     const password = this.passwordInput.value.trim();
 
                     if (!username || !password) {
-                        alert("请输入用户名和密码！");
+                        this.errorDiv.textContent = "请输入用户名和密码！";
+                        this.errorDiv.style.display = "block";
+                        // 添加抖动动画增强提示
+                        this.container.querySelector('div').style.animation = "shake 0.4s";
+                        setTimeout(() => {
+                            this.container.querySelector('div').style.animation = "";
+                        }, 400);
                         return;
                     }
 
-                    // 简单模拟登录（实际需要对接API）
+                    // 简单模拟登录成功
                     this.container.innerHTML = `
                     <div style="padding:10px;color:#4CAF50">
                         ✔️ 已登录：${username}
@@ -109,7 +140,7 @@
                     `;
                 }
             }
-
+ 
 
             function toggleRoom2(btn){ 
                 const wndRoom2 = blo.createWindow('id_4_room2');
