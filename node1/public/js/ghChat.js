@@ -1,5 +1,5 @@
 /**
- * chato2.js - 聊天室模块
+ * ghChat.js - 聊天室模块
  * 功能：基于GitHub API的在线聊天室
  */
 const ChatRoom = (() => {
