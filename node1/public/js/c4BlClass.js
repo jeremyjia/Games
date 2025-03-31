@@ -91,6 +91,7 @@ function C4BlClass() {
             z-index: 9999;
             display: none;
         `;
+        const self = this;
         win.dataset.windowId = id;
 
         const titleBar = document.createElement('div');
@@ -188,6 +189,14 @@ function C4BlClass() {
             });
 
             titleBar.insertAdjacentElement('afterend', toolbar);
+        };
+        win.toggle = function() {
+            const windowId = this.dataset.windowId; 
+            if (this.style.display === 'none') {
+                self.showWindow(windowId);
+            } else {
+                self.hideWindow(windowId);
+            }
         };
         return win;
     };
