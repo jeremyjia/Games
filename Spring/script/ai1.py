@@ -52,6 +52,6 @@ if __name__ == "__main__":
                     f.write("\",\""+generated_files[index])
                 index+=1
 
-        print(f"成功生成 {len(generated_files)} 张图片，文件名列表已保存至 {args.output}")
+        print(f"Generated {len(generated_files)} pictures, The filenames have saved to {args.output}")
     except Exception as e:
         print(f"写入输出文件失败：{str(e)}")
