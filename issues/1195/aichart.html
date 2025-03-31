@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>智能问答系统</title>
+    <title>漂泊者乐园智能问答系统</title>
     <style>
         :root {
             --primary-color: #2196F3;
@@ -53,6 +53,72 @@
         .bot-message {
             background-color: #f5f5f5;
             border-radius: 12px 12px 12px 0;
+        }
+
+        /* 文本美化样式 */
+        .text-content {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #444;
+            white-space: pre-wrap;
+        }
+
+        .text-content p {
+            margin: 0.8em 0;
+            text-align: justify;
+        }
+
+        .text-content code {
+            background-color: #f3f3f3;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .text-content pre {
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1em 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .text-content pre code {
+            background: none;
+            padding: 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .text-content strong {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .text-content em {
+            color: #666;
+            font-style: italic;
+        }
+
+        .text-content ul,
+        .text-content ol {
+            padding-left: 1.5em;
+            margin: 0.8em 0;
+        }
+
+        .text-content li {
+            margin: 0.4em 0;
+            padding-left: 0.4em;
+        }
+
+        .text-content blockquote {
+            border-left: 4px solid var(--primary-color);
+            margin: 1em 0;
+            padding: 0.5em 1em;
+            background-color: #f9f9f9;
+            color: #666;
         }
 
         .input-container {
@@ -211,6 +277,16 @@
                 font-size: 15px;
             }
 
+            .text-content {
+                font-size: 15px;
+                line-height: 1.7;
+            }
+            
+            .text-content pre {
+                padding: 10px;
+                font-size: 13px;
+            }
+
             .input-container {
                 bottom: 5px;
                 left: 5px;
@@ -247,6 +323,38 @@
                 font-size: 24px;
             }
         }
+		/* 新增代码复制按钮样式 */
+		.copy-btn {
+			position: absolute;
+			top: 5px;
+			right: 5px;
+			padding: 2px 8px;
+			background: var(--primary-color);
+			color: white;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+			font-size: 12px;
+			opacity: 0.8;
+			transition: opacity 0.2s;
+		}
+
+		.copy-btn:hover {
+			opacity: 1;
+		}
+
+		/* 调整代码块样式 */
+		.text-content pre {
+			position: relative;
+			padding: 35px 15px 15px;
+			background-color: #f8f8f8;
+		}
+
+		.text-content pre code {
+			display: block;
+			overflow-x: auto;
+			padding: 0;
+		}
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -340,6 +448,28 @@
             return messageDiv;
         }
 
+        function formatTextContent(text) {
+            // 基础Markdown格式化
+            let formatted = text
+                .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+                .replace(/`([^`]+)`/g, '<code>$1</code>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>')
+                .replace(/^\s*-\s(.*$)/gm, '<li>$1</li>')
+                .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+                .replace(/^\s*\d+\.\s(.*$)/gm, '<li>$1</li>')
+                .replace(/(<li>.*<\/li>)/gs, '<ol>$1</ol>');
+
+            // 段落处理
+            formatted = formatted
+                .split('\n\n')
+                .map(para => para.trim() ? `<p>${para}</p>` : '')
+                .join('');
+
+            return formatted;
+        }
+
         function updateMessage(messageElement, { text, timestamp, loading }) {
             if (loading) {
                 messageElement.innerHTML = `
@@ -349,10 +479,16 @@
                     </div>
                 `;
             } else {
+                const isVoiceMode = !!timestamp;
+                const content = isVoiceMode ? 
+                    text : 
+                    `<div class="text-content">${formatTextContent(text)}</div>`;
+                
                 messageElement.innerHTML = `
-                    <div>${text}</div>
+                    <div>${content}</div>
                     ${timestamp ? createAudioControls(timestamp) : ''}
                 `;
+
                 if (timestamp) {
                     setTimeout(() => initAudioControls(timestamp), 50);
                 }
@@ -485,12 +621,15 @@
             return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         }
 
+        // 输入控制
         document.getElementById('question').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') submitQuestion();
         });
 
+        // 初始化自动聚焦输入框
         document.getElementById('question').focus();
 
+        // 清理资源
         window.addEventListener('beforeunload', () => {
             audioCache.clear();
             if (currentAudio) {
@@ -498,6 +637,81 @@
                 URL.revokeObjectURL(currentAudio.src);
             }
         });
+		
+		// 新增HTML转义函数
+		function escapeHtml(unsafe) {
+			return unsafe
+				.replace(/&/g, "&amp;")
+				.replace(/</g, "&lt;")
+				.replace(/>/g, "&gt;")
+				.replace(/"/g, "&quot;")
+				.replace(/'/g, "&#039;");
+		}
+
+		// 改进后的文本格式化函数
+		function formatTextContent(text) {
+			// 先转义所有HTML特殊字符
+			let safeText = escapeHtml(text);
+			
+			// 然后处理Markdown语法
+			return safeText
+				// 代码块处理（需要保留内部格式）
+				.replace(/```([\s\S]*?)```/g, (match, code) => {
+					return `<pre><code>${code.trim()}</code></pre>`;
+				})
+				// 其他Markdown处理保持不变
+				.replace(/`([^`]+)`/g, '<code>$1</code>')
+				.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+				.replace(/\*(.*?)\*/g, '<em>$1</em>')
+				// 保留换行和段落
+				.replace(/\n/g, '<br>')
+				.replace(/<br><br>/g, '</p><p>')
+				.replace(/^/, '<p>')
+				.replace(/$/, '</p>');
+		}
+
+		// 修改后的updateMessage函数
+		function updateMessage(messageElement, { text, timestamp, loading }) {
+			if (loading) {
+				messageElement.innerHTML = `
+					<div class="loading">
+						<i class="fas fa-spinner spinner"></i>
+						${text}
+					</div>
+				`;
+			} else {
+				const isVoiceMode = !!timestamp;
+				const content = isVoiceMode ? 
+					escapeHtml(text) :  // 语音模式也需要基础转义
+					`<div class="text-content">${formatTextContent(text)}</div>`;
+				
+				messageElement.innerHTML = `
+					<div>${content}</div>
+					${timestamp ? createAudioControls(timestamp) : ''}
+				`;
+
+				// 为代码块添加复制功能（可选）
+				if (!isVoiceMode) {
+					messageElement.querySelectorAll('pre code').forEach(codeBlock => {
+						codeBlock.insertAdjacentHTML('beforeend', 
+							`<button class="copy-btn" onclick="copyCode(this)">复制</button>`);
+					});
+				}
+
+				if (timestamp) {
+					setTimeout(() => initAudioControls(timestamp), 50);
+				}
+			}
+		}
+
+		// 新增复制代码功能
+		function copyCode(button) {
+			const code = button.previousSibling.textContent;
+			navigator.clipboard.writeText(code).then(() => {
+				button.textContent = '已复制!';
+				setTimeout(() => button.textContent = '复制', 2000);
+			});
+		}
     </script>
 </body>
 </html>
