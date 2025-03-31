@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>智能语音问答 - 修复版</title>
+    <title>智能问答系统</title>
     <style>
         :root {
             --primary-color: #2196F3;
@@ -66,6 +66,16 @@
             padding: 10px;
             border-radius: 25px;
             box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+        }
+
+        .mode-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            background: white;
+            font-size: 14px;
+            margin-right: 8px;
+            height: 50px;
         }
 
         #question {
@@ -209,6 +219,13 @@
                 border-radius: 20px;
             }
 
+            .mode-select {
+                padding: 6px 10px;
+                font-size: 13px;
+                height: 45px;
+                margin-right: 5px;
+            }
+
             #question {
                 padding: 10px 12px;
                 font-size: 15px;
@@ -236,6 +253,10 @@
 <body>
     <div class="chat-container" id="chatContainer"></div>
     <div class="input-container">
+        <select class="mode-select" id="modeSelect">
+            <option value="voice">语音</option>
+            <option value="text">文本</option>
+        </select>
         <input type="text" id="question" placeholder="输入问题..." autocomplete="off">
         <button onclick="submitQuestion()">发送</button>
     </div>
@@ -248,6 +269,7 @@
         async function submitQuestion() {
             const questionInput = document.getElementById('question');
             const question = questionInput.value.trim();
+            const mode = document.getElementById('modeSelect').value;
             
             if (!question) return;
 
@@ -255,30 +277,37 @@
             const loadingMsg = addMessage('正在生成回答...', 'bot', true);
             
             try {
-                const apiUrl = `https://text.pollinations.ai/${encodeURIComponent(question)}?model=openai-audio`;
-                console.log('请求API:', apiUrl); // 调试日志
-                
-                const response = await fetch(apiUrl);
-                if (!response.ok) throw new Error(`请求失败: ${response.status}`);
-                
-                // 确保响应是音频类型
-                if (!response.headers.get('content-type').startsWith('audio/')) {
-                    throw new Error('返回的不是音频内容');
+                if (mode === 'voice') {
+                    const apiUrl = `https://text.pollinations.ai/${encodeURIComponent(question)}?model=openai-audio`;
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`请求失败: ${response.status}`);
+                    
+                    if (!response.headers.get('content-type').startsWith('audio/')) {
+                        throw new Error('返回的不是音频内容');
+                    }
+                    
+                    const audioBlob = await response.blob();
+                    const timestamp = Date.now();
+                    audioCache.set(timestamp, audioBlob);
+                    
+                    updateMessage(loadingMsg, {
+                        text: '语音回答已就绪',
+                        timestamp: timestamp,
+                        loading: false
+                    });
+                } else {
+                    const apiUrl = `https://text.pollinations.ai/${encodeURIComponent(question)}`;
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`请求失败: ${response.status}`);
+                    
+                    const text = await response.text();
+                    updateMessage(loadingMsg, {
+                        text: text,
+                        loading: false
+                    });
                 }
-                
-                const audioBlob = await response.blob();
-                console.log('音频Blob:', audioBlob); // 调试日志
-                
-                const timestamp = Date.now();
-                audioCache.set(timestamp, audioBlob);
-                
-                updateMessage(loadingMsg, {
-                    text: '语音回答已就绪',
-                    timestamp: timestamp,
-                    loading: false
-                });
             } catch (error) {
-                console.error('请求出错:', error); // 调试日志
+                console.error('请求出错:', error);
                 updateMessage(loadingMsg, {
                     text: `错误: ${error.message}`,
                     loading: false
@@ -325,7 +354,6 @@
                     ${timestamp ? createAudioControls(timestamp) : ''}
                 `;
                 if (timestamp) {
-                    // 延迟初始化确保DOM已渲染
                     setTimeout(() => initAudioControls(timestamp), 50);
                 }
             }
@@ -355,7 +383,6 @@
         function initAudioControls(timestamp) {
             const progressBar = document.getElementById(`progressBar-${timestamp}`);
             
-            // 点击进度条跳转
             progressBar.addEventListener('click', (e) => {
                 if (!currentAudio || currentPlayingId !== timestamp) return;
                 
@@ -365,11 +392,9 @@
                 currentAudio.currentTime = currentAudio.duration * percentage;
             });
 
-            // 播放按钮事件
             const playBtn = document.getElementById(`playBtn-${timestamp}`);
             playBtn.addEventListener('click', () => handlePlayPause(timestamp));
 
-            // 音量控制
             const volumeSlider = document.getElementById(`volume-${timestamp}`);
             volumeSlider.addEventListener('input', (e) => {
                 if (currentAudio && currentPlayingId === timestamp) {
@@ -381,7 +406,6 @@
         function handlePlayPause(timestamp) {
             const playBtn = document.getElementById(`playBtn-${timestamp}`);
             
-            // 如果正在播放当前音频，则暂停
             if (currentAudio && !currentAudio.paused && currentPlayingId === timestamp) {
                 currentAudio.pause();
                 playBtn.classList.remove('fa-pause');
@@ -389,7 +413,6 @@
                 return;
             }
             
-            // 如果切换播放不同音频，先停止当前
             if (currentAudio && currentPlayingId !== timestamp) {
                 currentAudio.pause();
                 URL.revokeObjectURL(currentAudio.src);
@@ -400,32 +423,26 @@
                 }
             }
 
-            // 获取音频数据
             const blob = audioCache.get(timestamp);
             if (!blob) {
                 console.error('找不到缓存的音频数据');
                 return;
             }
 
-            // 创建新音频实例
             currentAudio = new Audio(URL.createObjectURL(blob));
             currentPlayingId = timestamp;
             
-            // 设置音量
             const volumeSlider = document.getElementById(`volume-${timestamp}`);
             currentAudio.volume = volumeSlider ? volumeSlider.value : 1;
 
-            // 事件监听
             currentAudio.addEventListener('timeupdate', () => updateProgress(timestamp));
             currentAudio.addEventListener('loadedmetadata', () => {
                 updateProgress(timestamp);
-                // iOS需要用户交互才能播放
                 const playPromise = currentAudio.play();
                 
                 if (playPromise !== undefined) {
                     playPromise.catch(error => {
                         console.error('播放失败:', error);
-                        // 显示播放按钮让用户手动点击
                         playBtn.classList.remove('fa-pause');
                         playBtn.classList.add('fa-play');
                     });
@@ -440,7 +457,6 @@
                 currentPlayingId = null;
             });
 
-            // 更新UI
             playBtn.classList.remove('fa-play');
             playBtn.classList.add('fa-pause');
         }
@@ -469,15 +485,12 @@
             return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         }
 
-        // 输入控制
         document.getElementById('question').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') submitQuestion();
         });
 
-        // 初始化自动聚焦输入框
         document.getElementById('question').focus();
 
-        // 清理资源
         window.addEventListener('beforeunload', () => {
             audioCache.clear();
             if (currentAudio) {
