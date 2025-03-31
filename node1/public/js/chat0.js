@@ -1,7 +1,7 @@
 /**
  * ghChat.js 重构自 chat0.js
  * 请帮我再优化 ghChat.js 
- * 修正 ghChat.js ：主窗口只有点header才会移动，现在点哪里都能移动
+ * 修正 ghChat.js ：chat窗口应该只有点蓝色区才能移动 
  *  以下代码保持原样不要动
  *  TOKENS: [
           "ghp_Od6GW3"+"J2NiP01Zsz"+"g9JQV0amzn"+"UxhF33iBES", //Jeremy
