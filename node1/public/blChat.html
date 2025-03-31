@@ -1,6 +1,3 @@
-<!--
-file: blChat.html
--->
 <html>
     <head> 
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,6 +17,9 @@ file: blChat.html
             
             .topnav a:hover {  background-color: #ddd;  color: black;}
             .active {  background-color: #4CAF50; color: white;}
+            button.active {
+                background-color: #4CAF50 !important;
+            }
         </style>
     </head>
     <body> 
@@ -52,9 +52,97 @@ file: blChat.html
                     x.style.display = "block";
                 }
             }
+
+            class C4ChatRoom {
+                constructor(container) {
+                    this.container = container;
+                    this.container.innerHTML = ''; // 清空容器
+                    
+                    // 创建登录表单
+                    const form = document.createElement('div');
+                    form.style.display = "flex";
+                    form.style.flexDirection = "column";
+                    form.style.gap = "10px";
+                    form.style.maxWidth = "200px";
+
+                    // 用户名输入
+                    this.usernameInput = document.createElement('input');
+                    this.usernameInput.placeholder = '用户名';
+                    this.usernameInput.style.padding = "5px";
+
+                    // 密码输入
+                    this.passwordInput = document.createElement('input');
+                    this.passwordInput.type = 'password';
+                    this.passwordInput.placeholder = '密码';
+                    this.passwordInput.style.padding = "5px";
+
+                    // 登录按钮
+                    const loginBtn = document.createElement('button');
+                    loginBtn.textContent = '登 录';
+                    loginBtn.style.backgroundColor = "#4CAF50";
+                    loginBtn.style.color = "white";
+                    loginBtn.style.padding = "8px";
+                    loginBtn.onclick = () => this.handleLogin();
+
+                    form.appendChild(this.usernameInput);
+                    form.appendChild(this.passwordInput);
+                    form.appendChild(loginBtn);
+                    
+                    this.container.appendChild(form);
+                }
+
+                handleLogin() {
+                    const username = this.usernameInput.value.trim();
+                    const password = this.passwordInput.value.trim();
+
+                    if (!username || !password) {
+                        alert("请输入用户名和密码！");
+                        return;
+                    }
+
+                    // 简单模拟登录（实际需要对接API）
+                    this.container.innerHTML = `
+                    <div style="padding:10px;color:#4CAF50">
+                        ✔️ 已登录：${username}
+                        <button onclick="location.reload()" style="margin-top:10px">退出</button>
+                    </div>
+                    `;
+                }
+            }
+
+
             function toggleRoom2(btn){ 
                 const wndRoom2 = blo.createWindow('id_4_room2');
+                const buttons = [
+                    {
+                        id: "1",
+                        name: "btnChat", 
+                        clickFunction: function() { 
+                            const v = this.closest('[data-window-id]')
+                                        .querySelector('.c4-content'); 
+                            const cr = new C4ChatRoom(v);
+                        }
+                    },
+                    {
+                        id: "2",
+                        name: "readMe",
+                        clickFunction: function() {
+                            const v = this.closest('[data-window-id]')
+                                            .querySelector('.c4-content');
+                            v.innerHTML = `
+                                使用说明：<br>
+                                1. 点击Login显示登录表单<br>
+                                2. 输入用户名密码提交<br>
+                                3. 支持登出操作
+                            `;
+                        }
+                    }
+                ];
+
+                wndRoom2.addToolbar(buttons);
+
                 wndRoom2.toggle();  
+                btn.classList.toggle('active');  
             }
         </script>
        
@@ -74,5 +162,4 @@ file: blChat.html
             }
         </script>
     </body>
-    </html>
-    
+</html>
