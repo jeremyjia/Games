@@ -129,6 +129,8 @@
                     const response = await this.apiRequest('GET', 'issues/comments/526806470');
                     this.allMessages = response.body || '';
                     this.messageDisplay.value = this.allMessages;
+                    // 新增：消息更新后自动滚动到底部
+                    this.messageDisplay.scrollTop = this.messageDisplay.scrollHeight;
                 } catch (error) {
                     console.error('Fetch messages error:', error);
                 }
@@ -142,6 +144,9 @@
                 const newMsg = `${timestamp}\n${this.currentUser}: ${msg}\n`;
                 this.allMessages += newMsg;
                 this.messageInput.value = '';
+                // 新增：发送后立即本地显示并滚动
+                this.messageDisplay.value = this.allMessages;
+                this.messageDisplay.scrollTop = this.messageDisplay.scrollHeight;
                 
                 try {
                     await this.apiRequest('PATCH', 'issues/comments/526806470', {
@@ -219,10 +224,6 @@
             }
         }
 
-        // 升级：来新消息自动滚动到底部
-        /**
-         * 返回完整代码
-        */
         const chatApp = new ChatApplication();
  
         function toggleMenu() {
