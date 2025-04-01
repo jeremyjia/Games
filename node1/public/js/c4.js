@@ -222,8 +222,9 @@ if(!md.run){
 	 
 	
 	function dispatchMessage(message){
+		var user_Name=md.vLogin.ta.value;
 		var sMsg = formateDate()+"\n"+user_Name+":"+message;
-			SendMsg(sMsg); 
+		SendMsg(sMsg); 
 	}
 	function SendMsg(ss)
 	{
