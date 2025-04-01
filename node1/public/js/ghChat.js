@@ -132,9 +132,12 @@ class ChatUI {
         this.userList = document.createElement('ul');
         this.userList.className = 'users';
 
+        const userListTitle = document.createElement('h3');
+        userListTitle.textContent = 'Online Users';
+
         this.userListContainer.append(
             this.refreshButton,
-            document.createElement('h3').textContent = 'Online Users',
+            userListTitle,
             this.userList
         );
 
@@ -248,7 +251,6 @@ class ChatUI {
     startPolling() {
         this.addTimer(setInterval(() => {
             this.fetchMessages();
-            this.fetchUsers();
         }, 1000));
         this.addTimer(setInterval(() => this.fetchUsers(), 5000));
     }
@@ -356,5 +358,6 @@ class ChatUI {
 
 const chatRoot = document.createElement('div');
 document.body.appendChild(chatRoot);
-const chatRoom = new ChatUI(chatRoot);
-    
+const chatRoom = new ChatUI(chatRoot);    
+
+//升级：让UI更漂亮些
