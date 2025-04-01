@@ -67,6 +67,7 @@ class ChatUI {
         this.createMessageDisplay();
         this.createMessageInput();
         this.createUserList();
+        this.createLogoutButton();
         this.container.appendChild(this.chatInterface);
     }
 
@@ -138,6 +139,14 @@ class ChatUI {
         );
 
         this.chatInterface.appendChild(this.userListContainer);
+    }
+
+    createLogoutButton() {
+        this.logoutButton = document.createElement('button');
+        this.logoutButton.textContent = 'Logout';
+        this.logoutButton.className = 'logout-btn';
+        this.logoutButton.onclick = () => this.handleLogout();
+        this.chatInterface.appendChild(this.logoutButton);
     }
 
     async handleLogin() {
@@ -314,9 +323,14 @@ class ChatUI {
         setTimeout(() => alertDiv.remove(), 3000);
     }
 
-    clearMessages() {
-        this.allMessages = '';
-        this.messageDisplay.value = '';
+    async clearMessages() {
+        const text = "Let's chat";
+        const newContent = ["", `${this.formatDate()}\n${this.currentUser.name}: ${text}`]
+            .filter(Boolean).join('\n');
+
+        await this.apiRequest('PATCH', GH_API.MESSAGE_URL, { body: newContent });
+        this.allMessages = newContent;
+        this.messageDisplay.value = newContent; 
     }
 
     async updateUserStatus(isLogin) {
@@ -340,3 +354,4 @@ class ChatUI {
 const chatRoot = document.createElement('div');
 document.body.appendChild(chatRoot);
 const chatRoom = new ChatUI(chatRoot);
+    
