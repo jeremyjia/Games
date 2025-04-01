@@ -219,10 +219,12 @@
             }
         }
 
-        // 初始化应用
+        // 升级：来新消息自动滚动到底部
+        /**
+         * 返回完整代码
+        */
         const chatApp = new ChatApplication();
-
-        // 顶部菜单切换
+ 
         function toggleMenu() {
             const menu = document.getElementById('myLinks');
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
