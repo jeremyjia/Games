@@ -246,7 +246,10 @@ class ChatUI {
     }
 
     startPolling() {
-        this.addTimer(setInterval(() => this.fetchMessages(), 1000));
+        this.addTimer(setInterval(() => {
+            this.fetchMessages();
+            this.fetchUsers();
+        }, 1000));
         this.addTimer(setInterval(() => this.fetchUsers(), 5000));
     }
 
