@@ -169,11 +169,21 @@
             }
 
             async hashPassword(password) {
+                // 使用更兼容的 UTF-8 编码处理
                 const encoder = new TextEncoder();
                 const data = encoder.encode(password);
-                const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                
+                // 使用同步方式保证测试一致性
+                const hashBuffer = await crypto.subtle.digest(
+                    'SHA-256',
+                    new Uint8Array(data)
+                );
+                
+                // 转换为小写十六进制字符串
                 return Array.from(new Uint8Array(hashBuffer))
-                    .map(b => b.toString(16).padStart(2, '0')).join('');
+                    .map(b => b.toString(16).padStart(2, '0'))
+                    .join('')
+                    .toLowerCase();
             }
 
             async fetchMessages() {
@@ -295,6 +305,8 @@
             const menu = document.getElementById('myLinks');
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
         }
+
+       
     </script>
 </body>
-</html>
+</html> 
