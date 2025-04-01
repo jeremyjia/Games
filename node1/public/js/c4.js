@@ -1,8 +1,8 @@
 //i4c4
  
-var s= "v0.11 "; 
+var s= "v0.12 "; 
   
-var md = blo0.blDiv(document.body, "div_ID_4_I4C4", s ,blGrey[0]);  
+var md = document.getElementById("id_chat_room_ui");
 md.addTimerUser = function(o){
 		if(!md.timerUsers) md.timerUsers = [];
 		if(o) md.timerUsers.push(o);
@@ -19,18 +19,9 @@ md.timer2Users = function(_u){
 }
 
 if(!md.run){
-    md.run = true; 
-	var style ="position: absolute;";
-	style += "z-index: 9;";
-	style += "background-color: #f1f1f1;";
-	style += "text-align: center;";
-	style += "border: 1px solid #d3d3d3;";
-	style += "left: 400px";
-	style += "top: 40px";
-	style += "width: 540px";
-	md.style =style;
+    md.run = true;  
 	
-	var title = blo0.blDiv(md , "div_ID_4_I4C4" + "Header", "Header");
+	var title = blo0.blDiv(md , "id_title", "ghChatRoom");
 	style ="padding: 10px;";
 	style += "z-index: 10;";
 	style += "cursor: move;";
@@ -38,8 +29,7 @@ if(!md.run){
 	style += "border: 1px solid #fff;";
 	style += "background-color: #2196F3;";
 	title.style =style;
- 
-    blo0.blMakeDivMovable(md);
+  
 	md.style.left = "400px";
 	md.style.top = "40px";
 
@@ -431,6 +421,6 @@ if(!md.run){
 		}
 	}
 }
-_on_off_div(this,md);
+
 
    
