@@ -1,14 +1,7 @@
 //i4c4
  
-var s= "v0.0.115 "; 
- 
-s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c4.js'"
-s += " style='color:blue;'";		s +=">"; s += "c4.js* ";
-s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c4.js'"
-s += " style='color:green;'";		s +=">"; s += "c4.js ";
-s += "<a target='_blank' href='https://jeremyjia.github.io/Games/issues/4/c4Test.html'"
-s += " style='color:brown;'";		s +=">"; s += "c4Test.html";
-
+var s= "v0.11 "; 
+  
 var md = blo0.blDiv(document.body, "div_ID_4_I4C4", s ,blGrey[0]);  
 md.addTimerUser = function(o){
 		if(!md.timerUsers) md.timerUsers = [];
@@ -369,7 +362,6 @@ if(!md.run){
 	
 	var tokenArray = new Array();
 	tokenArray[0] = "ghp_Od6GW3"+"J2NiP01Zsz"+"g9JQV0amzn"+"UxhF33iBES"; //Jeremy
-	//tokenArray[1] = "github_pat_11ARID6XI03"+"EPRn2jvrEaJ_9p1xckKElpo9D9Xt616u6w2hEUKA"+"TOFrBlFetLWKljrX562X3OMpeB8Dz1D"; //Wangxu's tk
 	tokenArray[1] = "ghp_LWbSRdeNb"+"tr0wykbm2Q"+"TFqxdP6x4u"+"A4MQH0M"; //XiYu	
 	function getToken(){	
 	  return tokenArray[nTokenNum];
@@ -416,7 +408,7 @@ if(!md.run){
 		continue;
 	  }
 	}
-	//This is a common method used for sending or receving information from Github
+	
 	function myAjaxCmd(method, url, data, callback){
 		var xmlHttpReg = null;
 		if (window.XMLHttpRequest){
