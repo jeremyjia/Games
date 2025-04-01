@@ -1,55 +1,232 @@
-
 <html>
-    <head> 
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-        <style>
-            body {  font-family: Arial, Helvetica, sans-serif;}
-            .mobile-container {  max-width: 480px;  margin: auto;  background-color: #555;
-            height: 500px;  color: white;  border-radius: 10px;}
-            
-            .topnav {  overflow: hidden;  background-color: #333;  position: relative;}
-            .topnav #myLinks {  display: none;}
-            .topnav a {  color: white;  padding: 14px 16px;  text-decoration: none;  
-            font-size: 17px;  display: block;}
-            .topnav a.icon {  background: black;  display: block;  position: absolute;
-            right: 0;  top: 0;}
-            
-            .topnav a:hover {  background-color: #ddd;  color: black;}
-            .active {  background-color: #4CAF50; color: white;}
-        </style>
-    </head>
-    <body> 
-        <div class="mobile-container"> 
-            <div class="topnav">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        /* 保持原有样式不变 */
+        body { font-family: Arial, Helvetica, sans-serif; }
+        .mobile-container { max-width: 480px; margin: auto; background-color: #555; height: 500px; color: white; border-radius: 10px; }
+        .topnav { overflow: hidden; background-color: #333; position: relative; }
+        .topnav #myLinks { display: none; }
+        .topnav a { color: white; padding: 14px 16px; text-decoration: none; font-size: 17px; display: block; }
+        .topnav a.icon { background: black; display: block; position: absolute; right: 0; top: 0; }
+        .topnav a:hover { background-color: #ddd; color: black; }
+        .active { background-color: #4CAF50; color: white; }
+        .chat-area { padding: 10px; }
+        .message-box { width: 98%; height: 240px; background: #444; color: white; border: none; resize: none; }
+        .input-box { width: 98%; height: 40px; margin-top: 10px; }
+        .user-list { background: #666; padding: 5px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="mobile-container">
+        <div class="topnav">
             <a href="#home" class="active">blChat v0.0.32</a>
             <div id="myLinks">
                 <a href="https://jeremyjia.github.io/Games/" target="_blank">Home Page</a>
-                <a href="https://github.com/jeremyjia/Games" target="_blank">Repo</a>  
+                <a href="https://github.com/jeremyjia/Games" target="_blank">Repo</a>
             </div>
-            <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+            <a href="javascript:void(0);" class="icon" onclick="toggleMenu()">
                 <i class="fa fa-bars"></i>
             </a>
-            </div>
-         
-            <div id="id_chat_room_ui"></div> 
         </div>
-    
+        <div id="chatContainer"></div>
+    </div>
+
     <script>
-        function myFunction() {
-        var x = document.getElementById("myLinks");
-        if (x.style.display === "block") {
-            x.style.display = "none";
-        } else {
-            x.style.display = "block";
+        class ChatApplication {
+            constructor() {
+                this.container = document.getElementById('chatContainer');
+                this.allMessages = '';
+                this.users = [];
+                this.currentUser = null;
+                this.timerId = null;
+                this.tokenIndex = Math.round(Math.random());
+                this.tokens = [
+                    "ghp_Od6GW3"+"J2NiP01Zsz"+"g9JQV0amzn"+"UxhF33iBES",//此行代码不要动
+                    "ghp_LWbSRdeNb"+"tr0wykbm2Q"+"TFqxdP6x4u"+"A4MQH0M" //此行代码不要动
+                ];
+                
+                this.initUI();
+            }
+
+            initUI() {
+                // 创建聊天界面
+                this.chatUI = this.createSection('chatUI', ['chat-area']);
+                this.userInfo = this.createElement('div', 'userInfo', 'User: ');
+                this.messageDisplay = this.createElement('textarea', 'messageDisplay', '', ['message-box']);
+                this.messageInput = this.createElement('textarea', 'messageInput', '', ['input-box']);
+                this.sendButton = this.createElement('button', 'sendButton', 'Send');
+                this.userList = this.createElement('div', 'userList', '', ['user-list']);
+                
+                // 组装聊天界面
+                this.chatUI.append(
+                    this.userInfo,
+                    this.messageDisplay,
+                    this.messageInput,
+                    this.sendButton,
+                    this.userList
+                );
+                
+                // 创建登录界面
+                this.loginUI = this.createSection('loginUI');
+                this.usernameInput = this.createElement('input', 'usernameInput');
+                this.loginButton = this.createElement('button', 'loginButton', 'Login');
+                this.loginUI.append(
+                    this.createElement('label', null, 'Username:'),
+                    this.usernameInput,
+                    this.loginButton
+                );
+
+                // 初始隐藏聊天界面
+                this.chatUI.style.display = 'none';
+                this.container.append(this.loginUI, this.chatUI);
+
+                // 事件绑定
+                this.sendButton.onclick = () => this.sendMessage();
+                this.loginButton.onclick = () => this.handleLogin();
+                document.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && document.activeElement === this.messageInput) {
+                        this.sendMessage();
+                    }
+                });
+            }
+
+            createElement(type, id, text, classes) {
+                const el = document.createElement(type);
+                if (id) el.id = id;
+                if (text) el.textContent = text;
+                if (classes) el.classList.add(...classes);
+                return el;
+            }
+
+            createSection(id, classes) {
+                const section = this.createElement('div', id, null, classes);
+                section.style.padding = '10px';
+                return section;
+            }
+
+            async handleLogin() {
+                const username = this.usernameInput.value.trim();
+                if (!username) return alert('Please enter username');
+                
+                this.currentUser = username;
+                this.userInfo.textContent = `User: ${username}`;
+                this.loginUI.style.display = 'none';
+                this.chatUI.style.display = 'block';
+                
+                await this.updateUserStatus(true);
+                this.timerId = setInterval(() => this.updateChat(), 1000);
+            }
+
+            async updateChat() {
+                await this.fetchMessages();
+                await this.fetchOnlineUsers();
+            }
+
+            async fetchMessages() {
+                try {
+                    const response = await this.apiRequest('GET', 'issues/comments/526806470');
+                    this.allMessages = response.body || '';
+                    this.messageDisplay.value = this.allMessages;
+                } catch (error) {
+                    console.error('Fetch messages error:', error);
+                }
+            }
+
+            async sendMessage() {
+                const msg = this.messageInput.value.trim();
+                if (!msg) return;
+                
+                const timestamp = new Date().toLocaleString();
+                const newMsg = `${timestamp}\n${this.currentUser}: ${msg}\n`;
+                this.allMessages += newMsg;
+                this.messageInput.value = '';
+                
+                try {
+                    await this.apiRequest('PATCH', 'issues/comments/526806470', {
+                        body: this.allMessages
+                    });
+                } catch (error) {
+                    console.error('Send message error:', error);
+                }
+            }
+
+            async fetchOnlineUsers() {
+                try {
+                    const response = await this.apiRequest('GET', 'issues/comments/543738078');
+                    this.users = JSON.parse(response.body).users || [];
+                    this.updateUserList();
+                } catch (error) {
+                    console.error('Fetch users error:', error);
+                }
+            }
+
+            async updateUserStatus(isLogin) {
+                const users = await this.getCurrentUsers();
+                const existing = users.find(u => u.name === this.currentUser);
+                
+                if (existing) {
+                    existing.LastloginTime = new Date().toISOString();
+                    existing.isLogin = isLogin;
+                } else {
+                    users.push({
+                        name: this.currentUser,
+                        LastloginTime: new Date().toISOString(),
+                        isLogin: true
+                    });
+                }
+                
+                await this.apiRequest('PATCH', 'issues/comments/543738078', {
+                    body: JSON.stringify({ users })
+                });
+            }
+
+            async getCurrentUsers() {
+                try {
+                    const response = await this.apiRequest('GET', 'issues/comments/543738078');
+                    return JSON.parse(response.body).users || [];
+                } catch {
+                    return [];
+                }
+            }
+
+            updateUserList() {
+                this.userList.innerHTML = '';
+                const onlineUsers = this.users.filter(u => u.isLogin);
+                onlineUsers.forEach(user => {
+                    this.userList.appendChild(
+                        this.createElement('div', null, `${user.name} (${new Date(user.LastloginTime).toLocaleTimeString()})`)
+                    );
+                });
+            }
+
+            async apiRequest(method, endpoint, data) {
+                const url = `https://api.github.com/repos/jeremyjia/Games/${endpoint}`;
+                const headers = {
+                    'Authorization': `token ${this.tokens[this.tokenIndex]}`,
+                    'Content-Type': 'application/json'
+                };
+
+                const response = await fetch(url, {
+                    method,
+                    headers,
+                    body: data ? JSON.stringify(data) : null
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json();
+            }
         }
+
+        // 初始化应用
+        const chatApp = new ChatApplication();
+
+        // 顶部菜单切换
+        function toggleMenu() {
+            const menu = document.getElementById('myLinks');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
         }
     </script>
-        
-    <script src="blclass.js"></script>  
-    <script>  
-      blo0.blScript("id_script_4_c4.js", "c4.js");
-    </script>
-    </body>
+</body>
 </html>
-    
