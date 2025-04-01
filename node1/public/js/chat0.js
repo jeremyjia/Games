@@ -1,7 +1,8 @@
 /**
  * ghChat.js 重构自 chat0.js
  * 去掉blo0相关代码
- * 测试发现 ClearMsg 实现不对
+ * 测试发现 ClearMsg 实现不对,清空后数据库也应该清空
+ * 测试发现 没有 logout 功能，请补上
  * 修正 ghChat.js ： 
  *  以下代码保持原样不要动
  *  TOKENS: [
