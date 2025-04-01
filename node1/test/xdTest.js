@@ -11,55 +11,15 @@ const spiderTest = require('./spider/index.js');
 describe(tag4xdTest, function(){ 
   
   //
-  it('T001# 2025/2/1: bls editor can play bls at right FPS;' + `
-    test->https://littleflute.github.io/Games/issues/21/index.html;
-    `,
-    function(){assert.equal("done",'done');  });
+  it("node1_spring_blsVideo",
+    function(){
+      assert.equal("done",'jsonWindow doing...');  
+     });
 
-  it('2024/10/27: [mp3lrc2bls]  node1 end point;' + `
-    test->http://localhost:3001/mp3lrc2bls?mp3=https://littleflute.github.io/blcd10/share152/Track%2001.mp3&lrc=https://littleflute.github.io/51voa/special/2021/11/20/anymore-any-longer-and-no-longer.lrc&bls=v1;
-    test->http://localhost:8080/image/json2video?script=http://localhost:3001/v1.json;
-    test->http://localhost:3001/bls2v?bls=http://localhost:3001/v1.json;
-    `,
-    function(){assert.equal("done",'2do');  });
-  
-  it('2024/10/26: [bls2v]  node1 end point;' + `
-    test->http://localhost:3001/bls2v?bls=http://localhost:3001/v1.json;
-    test->http://localhost:3001/bls2v?bls=http://localhost:8080/video.json;
-    `,
-    function(){assert.equal("done",'2do');  });
-
-  it('2024/10/9 : [mp3lrc2bls]  node1 end point;' + `
-    test->http://localhost:3001/mp3lrc2bls?mp3=https://files.21voa.com/audio/202410/two-americans-win-nobel-prize-in-medicine-for-microrna-discovery.mp3&lrc=/static/lrc/two-americans-win-nobel-prize-in-medicine-for-microrna-discovery.lrc&bls=test1;
-    test->http://localhost:3001/spider/21voa;
-    `,
-    function(){assert.equal("done",'done');  });
-
-  it('2024/10/7 : [mp3lrc2bls]  node1 end point;' + `
-    test->http://localhost:3001/mp3lrc2bls;
-    test->http://localhost:8080/image/json2video?script=http://localhost:3001/v1.json;
-    `,
-    function(){assert.equal("done",'done');  });
-  it('2024/10/7 : [Sprint\bat\r.bat];' + `
-    test->cmd r;
-    `,
-    function(){assert.equal("done",'done');  });
-
-  it('2024/10/7 : [links]  node1 end point;' + `
-    test->http://localhost:3001/links?url=https://www.21voa.com/;
-    test->http://localhost:3001/links?url=https://www.21voa.com/&file=lrc;
-    test->http://localhost:3001/links?url=https://www.21voa.com/&file=lrc&times=1;
-    `,
-    function(){assert.equal("done",'done');  });
-
-  it('2024/10/6 : plx_p1; test:Spring/script/1.html; test->http://localhost:8080/',
-    function(){assert.equal("done",'done');  });
-
-  it('2024/10/6 : issues/252 test fail;',
-    function(){assert.equal("done",'done');  });
-
-  it('2024/10/4 : 21voa; test->issues/455/index.html ',
-     function(){assert.equal("done",'done');  });
+  it("bls_objsO_video",
+    function(){assert.equal("done",'doing...');  });
+ 
+   
 
   it('spiderTest: test1', function(){     
     spiderTest.test1(assert);   

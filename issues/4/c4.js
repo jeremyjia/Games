@@ -369,8 +369,8 @@ if(!md.run){
 	
 	var tokenArray = new Array();
 	tokenArray[0] = "ghp_Od6GW3"+"J2NiP01Zsz"+"g9JQV0amzn"+"UxhF33iBES"; //Jeremy
-	tokenArray[1] = "github_pat_11ARID6XI03"+"EPRn2jvrEaJ_9p1xckKElpo9D9Xt616u6w2hEUKA"+"TOFrBlFetLWKljrX562X3OMpeB8Dz1D"; //Wangxu's tk
-	//tokenArray[1] = "1857ba0e9f"+"43db389d91"+"ec4b4ae4cb"+"63c1fa682e"; //XiYu	
+	//tokenArray[1] = "github_pat_11ARID6XI03"+"EPRn2jvrEaJ_9p1xckKElpo9D9Xt616u6w2hEUKA"+"TOFrBlFetLWKljrX562X3OMpeB8Dz1D"; //Wangxu's tk
+	tokenArray[1] = "ghp_LWbSRdeNb"+"tr0wykbm2Q"+"TFqxdP6x4u"+"A4MQH0M"; //XiYu	
 	function getToken(){	
 	  return tokenArray[nTokenNum];
 	}

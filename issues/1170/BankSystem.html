@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>智能银行排队系统 - 完整动画版</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            padding: 25px;
+            background: #f0f3f5;
+            margin: 0;
+        }
+
+        .controls {
+            margin: 20px auto;
+            width: 1000px;
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        #container {
+            position: relative;
+            width: 1000px;
+            height: 600px;
+            border: 2px solid #e1e5e9;
+            background: #ffffff;
+            margin: 20px auto;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+
+        .window {
+            position: absolute;
+            width: 160px;
+            height: 200px;
+            background: #f9fbfd;
+            border: 2px solid #d8e0e7;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            top: 50px;
+            transition: transform 0.3s ease;
+            will-change: transform;
+        }
+
+        .window:hover {
+            transform: translateY(-3px);
+        }
+
+        .queue-area {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            flex-wrap: wrap;
+            max-width: 800px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        #takeNumber {
+            padding: 12px 28px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #00c853;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        #takeNumber:hover {
+            background: #009624;
+            transform: translateY(-2px);
+        }
+
+        .status-light {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            margin: 20px 0;
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.08);
+            transition: background 0.3s ease;
+        }
+
+        .announcement {
+            font-size: 14px;
+            text-align: center;
+            margin: 15px 0;
+            height: 60px;
+            color: #607d8b;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
+        .window-number {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2d3e50;
+            margin-bottom: 15px;
+        }
+
+        .queue-label {
+            font-size: 15px;
+            color: #78909c;
+            margin-right: 15px;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .stats {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* 客户样式 */
+        .customer {
+            width: 70px;
+            height: 110px;
+            position: relative;
+            transition: all 0.5s ease;
+            cursor: pointer;
+            margin: 10px;
+            flex-shrink: 0;
+            transform-origin: bottom center;
+        }
+
+        .customer .head {
+            width: 40px;
+            height: 40px;
+            background: #FFE0B2;
+            border-radius: 50%;
+            position: absolute;
+            left: 15px;
+            top: 5px;
+            z-index: 2;
+        }
+
+        .customer .hair {
+            width: 50px;
+            height: 25px;
+            background: #5D4037;
+            border-radius: 20px 20px 0 0;
+            position: absolute;
+            top: -5px;
+            left: 10px;
+            z-index: 1;
+        }
+
+        .customer .eye {
+            width: 8px;
+            height: 8px;
+            background: #212121;
+            border-radius: 50%;
+            position: absolute;
+            top: 20px;
+        }
+
+        .customer .eye.left { left: 22px; }
+        .customer .eye.right { left: 32px; }
+
+        .customer .body {
+            width: 50px;
+            height: 60px;
+            background: #4A90E2;
+            position: absolute;
+            top: 45px;
+            left: 10px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        .customer .arm {
+            width: 12px;
+            height: 40px;
+            background: #FFE0B2;
+            position: absolute;
+            border-radius: 6px;
+            top: 50px;
+            transform-origin: top center;
+        }
+
+        .customer .arm.left {
+            left: -5px;
+            transform: rotate(20deg);
+        }
+
+        .customer .arm.right {
+            right: -5px;
+            transform: rotate(-20deg);
+        }
+
+        .customer .leg {
+            width: 15px;
+            height: 50px;
+            background: #4A90E2;
+            position: absolute;
+            border-radius: 5px;
+            bottom: -30px;
+        }
+
+        .customer .leg.left { left: 15px; }
+        .customer .leg.right { left: 40px; }
+
+        /* 动画系统 */
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes walk {
+            0% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-5px) rotate(2deg); }
+            50% { transform: translateY(0) rotate(0deg); }
+            75% { transform: translateY(-5px) rotate(-2deg); }
+            100% { transform: translateY(0) rotate(0deg); }
+        }
+
+        @keyframes armSwing {
+            0% { transform: rotate(20deg); }
+            50% { transform: rotate(-10deg); }
+            100% { transform: rotate(20deg); }
+        }
+
+        @keyframes pathAppear {
+            0% { width: 0; opacity: 0; }
+            100% { opacity: 0.5; }
+        }
+
+        .walking {
+            animation: walk 0.6s infinite linear;
+            z-index: 10;
+        }
+
+        .arm.walking {
+            animation: armSwing 0.6s infinite ease-in-out;
+        }
+
+        .path-line {
+            position: absolute;
+            border: 2px dashed #90a4ae;
+            pointer-events: none;
+            opacity: 0;
+            transform-origin: left center;
+            animation: pathAppear 0.5s ease-out forwards;
+        }
+
+        .serving {
+            transition: all 0.8s ease-in-out;
+            filter: brightness(0.9);
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button id="takeNumber">📟 取号</button>
+        <label>
+            <input type="checkbox" id="autoGenerate"> 🤖 自动生成客户
+        </label>
+        <div class="stats" id="stats">
+            <div>当前排队人数: <span id="queueCount">0</span></div>
+            <div>服务完成数: <span id="servedCount">0</span></div>
+        </div>
+    </div>
+    <div id="container"></div>
+
+    <script>
+        class UltimateBankSystem {
+            constructor(containerId, windowCount = 4) {
+                this.container = document.getElementById(containerId);
+                this.queue = [];
+                this.currentNumber = 0;
+                this.servedCount = 0;
+                this.windows = Array.from({ length: windowCount }, (_, i) => ({
+                    id: i + 1,
+                    isAvailable: true,
+                    currentCustomer: null,
+                    element: null,
+                    announcementEl: null,
+                    timer: null
+                }));
+                this.autoTimer = null;
+                this.hairColors = ['#5D4037', '#3E2723', '#6D4C41'];
+                this.clothColors = ['#4A90E2', '#00C853', '#D50000', '#AA00FF'];
+                
+                this.initUI();
+                this.renderStats();
+                this.assignCustomerToWindow();
+            }
+
+            initUI() {
+                this.windows.forEach((win, index) => {
+                    const windowEl = document.createElement('div');
+                    windowEl.className = 'window';
+                    windowEl.style.left = `${60 + index * 230}px`;
+                    windowEl.innerHTML = `
+                        <div class="window-number">窗口 ${win.id}</div>
+                        <div class="status-light"></div>
+                        <div class="announcement">等待客户...</div>
+                    `;
+                    this.container.appendChild(windowEl);
+                    win.element = windowEl;
+                    win.announcementEl = windowEl.querySelector('.announcement');
+                });
+
+                this.queueArea = document.createElement('div');
+                this.queueArea.className = 'queue-area';
+                this.queueArea.innerHTML = '<span class="queue-label">排队队列：</span>';
+                this.container.appendChild(this.queueArea);
+            }
+
+            takeNumber() {
+                if(this.queue.length >= 50) {
+                    alert('排队人数已达上限');
+                    return;
+                }
+                this.currentNumber++;
+                this.queue.push({
+                    number: this.currentNumber,
+                    element: this.createQueueElement(this.currentNumber)
+                });
+                this.renderQueue();
+                this.assignCustomerToWindow();
+                return this.currentNumber;
+            }
+
+            createQueueElement(number) {
+                const element = document.createElement('div');
+                element.className = 'customer';
+                element.innerHTML = `
+                    <div class="hair"></div>
+                    <div class="head">
+                        <div class="eye left"></div>
+                        <div class="eye right"></div>
+                    </div>
+                    <div class="arm left"></div>
+                    <div class="arm right"></div>
+                    <div class="body">${number}</div>
+                    <div class="leg left"></div>
+                    <div class="leg right"></div>
+                `;
+
+                const hairColor = this.hairColors[Math.floor(Math.random() * this.hairColors.length)];
+                const clothColor = this.clothColors[Math.floor(Math.random() * this.clothColors.length)];
+                
+                element.querySelector('.hair').style.background = hairColor;
+                element.querySelector('.body').style.background = clothColor;
+                element.querySelectorAll('.leg').forEach(leg => leg.style.background = clothColor);
+
+                return element;
+            }
+
+            toggleAutoGenerate(enable) {
+                if (enable) {
+                    this.autoTimer = setInterval(() => {
+                        const batchSize = Math.floor(Math.random() * 3) + 1;
+                        for(let i = 0; i < batchSize; i++) this.takeNumber();
+                    }, 4000 + Math.random() * 8000);
+                } else {
+                    clearInterval(this.autoTimer);
+                }
+            }
+
+            assignCustomerToWindow() {
+                this.windows.forEach(win => {
+                    if (win.isAvailable && this.queue.length > 0) {
+                        const customer = this.queue.shift();
+                        this.serveCustomer(win, customer);
+                        this.renderQueue();
+                    }else if(win.isAvailable && this.queue.length == 0){
+                        win.announcementEl.innerHTML = `等待客户...`;
+                    }
+                });
+            }
+
+            animateCustomerMovement(startPos, endPos, customerNumber, win) {
+                const pathLine = document.createElement('div');
+                pathLine.className = 'path-line';
+                this.container.appendChild(pathLine);
+                
+                const dx = endPos.x - startPos.x;
+                const dy = endPos.y - startPos.y;
+                const length = Math.sqrt(dx ** 2 + dy ** 2);
+                const angle = Math.atan2(dy, dx);
+                
+                pathLine.style.width = `${length}px`;
+                pathLine.style.left = `${startPos.x}px`;
+                pathLine.style.top = `${startPos.y}px`;
+                pathLine.style.transform = `rotate(${angle}rad)`;
+
+                const movingCustomer = this.createMovingCustomer(customerNumber, startPos);
+                movingCustomer.classList.add('walking');
+                movingCustomer.querySelectorAll('.arm').forEach(arm => arm.classList.add('walking'));
+                movingCustomer.style.transform = `rotateY(${angle > Math.PI/2 ? 180 : 0}deg)`;
+
+                movingCustomer.animate([
+                    { transform: `translate(0, 0)` },
+                    { transform: `translate(${dx}px, ${dy}px)` }
+                ], {
+                    duration: 2000,
+                    easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                }).onfinish = () => {
+                    pathLine.remove();
+                    movingCustomer.remove();
+                };
+            }
+
+            serveCustomer(win, customer) {
+                win.isAvailable = false;
+                win.currentCustomer = customer.number;
+                win.announcementEl.innerHTML = `请 <strong>${customer.number}</strong> 号<br>至 ${win.id} 号窗口`;
+                const light = win.element.querySelector('.status-light');
+                light.style.background = '#ff5252';
+
+                const startPos = {
+                    x: customer.element.offsetLeft + this.queueArea.offsetLeft + 35,
+                    y: customer.element.offsetTop + this.queueArea.offsetTop + 55
+                };
+
+                const endPos = {
+                    x: win.element.offsetLeft + 80,
+                    y: win.element.offsetTop + 120
+                };
+
+                this.animateCustomerMovement(startPos, endPos, customer.number, win);
+
+                win.timer = setTimeout(() => {
+                    this.completeService(win);
+                }, 6000 + Math.random() * 9000);
+            }
+
+            completeService(win) {
+                win.isAvailable = true;
+                this.servedCount++;
+                
+                const light = win.element.querySelector('.status-light');
+                light.style.background = '#4caf50';
+                light.style.animation = 'pulse 0.8s ease 3';
+                
+                const customerClone = win.element.querySelector('.serving');
+                if (customerClone) {
+                    customerClone.animate([
+                        { opacity: 1, transform: 'translateY(0)' },
+                        { opacity: 0, transform: 'translateY(-20px)' }
+                    ], {
+                        duration: 500,
+                        easing: 'ease-out'
+                    }).onfinish = () => customerClone.remove();
+                }
+
+                this.renderStats();
+                setTimeout(() => {
+                    this.assignCustomerToWindow();
+                    light.style.animation = '';
+                }, 500);
+            }
+
+            renderQueue() {
+                this.queueArea.innerHTML = '<span class="queue-label">排队队列：</span>';
+                this.queue.forEach(customer => {
+                    this.queueArea.appendChild(customer.element);
+                });
+                this.renderStats();
+            }
+
+            renderStats() {
+                document.getElementById('queueCount').textContent = this.queue.length;
+                document.getElementById('servedCount').textContent = this.servedCount;
+            }
+
+            createMovingCustomer(number, pos) {
+                const element = this.createQueueElement(number);
+                element.style.position = 'absolute';
+                element.style.left = `${pos.x}px`;
+                element.style.top = `${pos.y}px`;
+                this.container.appendChild(element);
+                return element;
+            }
+        }
+
+        const bankSystem = new UltimateBankSystem('container', 4);
+
+        document.getElementById('takeNumber').addEventListener('click', () => {
+            bankSystem.takeNumber();
+        });
+
+        document.getElementById('autoGenerate').addEventListener('change', function(e) {
+            bankSystem.toggleAutoGenerate(e.target.checked);
+        });
+    </script>
+</body>
+</html>

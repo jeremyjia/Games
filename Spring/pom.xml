@@ -15,7 +15,7 @@
 		<spring.boot.version>2.1.6.RELEASE</spring.boot.version>
 		<junit.jupiter.version>5.6.2</junit.jupiter.version>
 		<junit.platform.version>1.6.2</junit.platform.version>
-		<pbz.server.version>1.0.100</pbz.server.version>
+		<pbz.server.version>1.0.104</pbz.server.version>
 	</properties>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -165,7 +165,17 @@
 			<groupId>org.apache.xmlbeans</groupId>
 			<artifactId>xmlbeans</artifactId>
 			<version>5.2.0</version>
-		</dependency>		  
+		</dependency>
+		<dependency>
+			<groupId>net.java.dev.jna</groupId>
+			<artifactId>jna</artifactId>
+			<version>5.13.0</version>
+		</dependency>
+		<dependency>
+			<groupId>net.java.dev.jna</groupId>
+			<artifactId>jna-platform</artifactId>
+			<version>5.13.0</version>
+		</dependency>		
 	</dependencies>
 	<build>
 	    <finalName>pbz-demo-${pbz.server.version}-SNAPSHOT</finalName>

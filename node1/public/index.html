@@ -3,15 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>node1</title>
+    <title>node1</title> 
     <script src="js/util/NavigationMenu.js"></script>
+    
+    <script src="js/util/c4MusicScript.js"></script>
+    <script src="js/util/c4DrawingObjs.js"></script>
+    <script src="js/util/c4DraggableWindow.js"></script>
+    <script src="js/util/c4Scenes.js"></script>
+    <script src="js/util/c4Srt.js"></script>
+    <script src="js/util/c4JsonWnd.js"></script>
+    <script src="js/util/c4SpringWnd.js"></script>
+    <script src="js/util/c4VideoSetWnd.js"></script>
+    <script src="js/util/c4VideoEditor.js"></script>
 </head>
 <body>
 <script>
  
 const menuData = [
     {
-        text: '首页 v0.13',
+        text: '首页 v0.22',
         url: '/'
     },
     {
@@ -61,18 +71,7 @@ const menuData = [
 ];
 
 new NavigationMenu(menuData);
-
-// 添加页面内容
-const mainContent = document.createElement('main');
-mainContent.style.marginTop = '60px';
-mainContent.style.padding = '20px';
-mainContent.innerHTML = `
-    <h1>欢迎访问漂泊者乐园的网站</h1>
-    <p>这是一个演示导航菜单的示例页面。</p>
-`;
-document.body.appendChild(mainContent);
-
-// 点击页面其他区域关闭所有子菜单（保留增强体验）
+ 
 document.addEventListener('click', (e) => {
     if (!e.target.closest('.menu-item')) {
         document.querySelectorAll('.submenu').forEach(menu => {
@@ -80,6 +79,11 @@ document.addEventListener('click', (e) => {
         });
     }
 });
+
+
+
+
+new VideoEditor();
 </script>
 </body>
 </html>

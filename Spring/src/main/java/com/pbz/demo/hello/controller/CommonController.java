@@ -1,7 +1,6 @@
 package com.pbz.demo.hello.controller;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -15,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +26,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.pbz.demo.hello.model.VideoDoc;
 import com.pbz.demo.hello.service.DataStreamStoreService;
+import com.pbz.demo.hello.service.IDeepseekService;
 import com.pbz.demo.hello.service.VideoDocService;
 import com.pbz.demo.hello.util.ExecuteCommand;
 import com.pbz.demo.hello.util.FileUtil;
@@ -48,6 +49,14 @@ public class CommonController {
 
 	@Autowired
 	private VideoDocService videoDocService;
+	
+	private final IDeepseekService deepseekService;
+	
+    // 使用构造函数注入依赖
+    @Autowired
+    public CommonController(IDeepseekService deepseekService) {
+        this.deepseekService = deepseekService;
+    }
 
 	@ApiOperation(value = "执行服务器端命令", notes = "执行服务器端命令")
 	@ApiImplicitParams({
@@ -241,6 +250,24 @@ public class CommonController {
         String answerString = NetAccessUtil.getAnswerbyChatGPT(question);
         return answerString;
     }
+    
+    
+    @RequestMapping(value = "/api/deepseek/q", method = RequestMethod.GET)
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> handleDeepseekInput(
+            @RequestParam(name = "text", defaultValue = "Hello deepseek") String deepseekAutoInput)
+            throws Exception {
+
+        Map<String, Object> responseMap = new HashMap<>();
+        
+        deepseekService.processAutoInput(deepseekAutoInput);
+        
+        responseMap.put("status", 200);
+        responseMap.put("message", "OK");
+
+        return ResponseEntity.ok(responseMap);
+    }
+    
 	   
 	@ApiOperation(value = "获取版本信息", notes = "获取应用版本、服务器等信息")
 	@RequestMapping(value = "/getServerInfo", method = RequestMethod.GET)
