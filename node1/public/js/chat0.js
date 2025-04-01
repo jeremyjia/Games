@@ -1,5 +1,6 @@
 /**
  * ghChat.js 重构自 chat0.js
+ * 去掉blo0相关代码
  * 测试发现 ClearMsg 实现不对
  * 修正 ghChat.js ： 
  *  以下代码保持原样不要动
