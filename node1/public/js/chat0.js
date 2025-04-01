@@ -1,12 +1,13 @@
 /**
  * ghChat.js 重构自 chat0.js
- * 请帮我再优化 ghChat.js 
- * 修正 ghChat.js ：chat窗口应该只有点蓝色区才能移动 
+ * 测试发现 ClearMsg 实现不对
+ * 修正 ghChat.js ： 
  *  以下代码保持原样不要动
  *  TOKENS: [
           "ghp_Od6GW3"+"J2NiP01Zsz"+"g9JQV0amzn"+"UxhF33iBES", //Jeremy
        "ghp_LWbSRdeNb"+"tr0wykbm2Q"+"TFqxdP6x4u"+"A4MQH0M" //XiYu
       ]
+   请返回完整的新代码 ghChat.js    
  */
 
 //chat0.js 

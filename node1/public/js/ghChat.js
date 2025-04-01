@@ -1,3 +1,4 @@
+ 
 const ChatRoom = (() => {
     const GH_API = {
         MESSAGE_URL: "https://api.github.com/repos/jeremyjia/Games/issues/comments/526806470",
@@ -392,4 +393,3 @@ const ChatRoom = (() => {
 const chatRoot = document.createElement('div');
 document.body.appendChild(chatRoot);
 const chatRoom = ChatRoom.init(chatRoot);
-    
