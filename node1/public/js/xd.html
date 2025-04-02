@@ -147,10 +147,7 @@
     <script>
         class C4GithubAPI {
             constructor() {
-                this.n = 1;
                 this.container = document.getElementById('id_4_ui');
-                this.allMessages = '';    
-                
                 this.initUI();
                 this.fetchAllIssues(); // Initialize issues list
             }
@@ -165,10 +162,6 @@
 
                 this.toolbarUI = this.createSection('toolbarUI', ['login-area']); 
                 
-                this.btnGetI1C1 = this.createElement('button', 'btnGetI1C1', 'get_s177I1C1');
-                this.btnSetI1C1 = this.createElement('button', 'btnSetI1C1', 'set_s177I1C1');
-                this.btnGetIssue2Comments = this.createElement('button', 'btnGetIssue2Comments', '获取Issue2评论');
-                
                 this.inputIssueTitle = this.createElement('input', 'inputIssueTitle', '', ['issue-input', 'issue-title-input']);
                 this.inputIssueTitle.placeholder = 'Issue标题';
                 this.inputIssueBody = this.createElement('textarea', 'inputIssueBody', '', ['issue-input', 'issue-content-input']);
@@ -179,9 +172,6 @@
                 this.commentContent = this.createElement('div', 'commentContent', '', ['comment-content']);
 
                 this.toolbarUI.append(  
-                    this.btnGetI1C1,
-                    this.btnSetI1C1,
-                    this.btnGetIssue2Comments,
                     this.inputIssueTitle,
                     this.inputIssueBody,
                     this.btnCreateIssue,
@@ -192,10 +182,6 @@
                 this.appUI.style.display = 'none';
                 this.container.append(this.appUI, this.toolbarUI);
 
-                // Event listeners
-                this.btnGetI1C1.onclick = () => this.get_I1C1();
-                this.btnSetI1C1.onclick = () => this.set_I1C1();
-                this.btnGetIssue2Comments.onclick = () => this.getIssueComments(2);
                 this.btnCreateIssue.onclick = () => this.createNewIssue();
             }
 
@@ -259,26 +245,6 @@
                 } catch (error) {
                     console.error('获取评论失败:', error);
                     alert('获取评论失败，请检查控制台');
-                }
-            }
-
-            async set_I1C1() { 
-                try {
-                    await this.apiRequest('PATCH', 'issues/comments/1173345809', {
-                        body: this.allMessages + " " + this.n++
-                    });
-                } catch (error) {
-                    console.error('set_I1C1 error:', error);
-                }
-            }
-
-            async get_I1C1() {
-                try {
-                    const response = await this.apiRequest('GET', 'issues/comments/1173345809');
-                    this.allMessages = response.body || '';
-                    alert(this.allMessages);
-                } catch (error) {
-                    console.error('Fetch messages error:', error);
                 }
             }
 
