@@ -22,7 +22,7 @@
 <body>
     <div class="mobile-container">
         <div class="topnav">
-            <a href="#home" class="active">blChat v1.0.0</a>
+            <a href="#home" class="active">GithubAPI v1.0.0</a>
             <div id="myLinks">
                 <a href="https://jeremyjia.github.io/Games/" target="_blank">Home Page</a>
                 <a href="https://github.com/jeremyjia/Games" target="_blank">Repo</a>
@@ -35,70 +35,37 @@
     </div>
 
     <script>
-        class ChatApplication {
+        class C4GithubAPI {
             constructor() {
+                this.n = 1;
                 this.container = document.getElementById('chatContainer');
-                this.allMessages = '';
-                this.users = [];
-                this.currentUser = null;
-                this.timerId = null;
-                this.tokenIndex = 2;//Math.round(Math.random());
-                this.tokens = [
-                    "ghp_Od6GW3"+"J2NiP01Zsz"+"g9JQV0amzn"+"UxhF33iBES",
-                    "ghp_LWbSRdeNb"+"tr0wykbm2Q"+"TFqxdP6x4u"+"A4MQH0M",
-                    "ghp_2BF"+"JztcBlHHOkBybs"+"UVJZGHQ4S"+"wvFR0poLqc" //xd
-                ];
-                this.userDataCommentId = "2769941209"; // i=37,c=4
+                this.allMessages = '';    
                 
                 this.initUI();
             }
 
-            initUI() {
-                // Chat UI
-                this.chatUI = this.createSection('chatUI', ['chat-area']);
-                this.userInfo = this.createElement('div', 'userInfo', 'User: ');
-                this.messageDisplay = this.createElement('textarea', 'messageDisplay', '', ['message-box']);
-                this.messageInput = this.createElement('textarea', 'messageInput', '', ['input-box']);
-                this.sendButton = this.createElement('button', 'sendButton', 'Send');
-                this.userList = this.createElement('div', 'userList', '', ['user-list']);
+            initUI() { 
+                this.appUI = this.createSection('appUI', ['chat-area']); 
+                this.messageDisplay = this.createElement('textarea', 'messageDisplay', '', ['message-box']); 
                 
-                this.chatUI.append(
-                    this.userInfo,
-                    this.messageDisplay,
-                    this.messageInput,
-                    this.sendButton,
-                    this.userList
+                this.appUI.append( 
+                    this.messageDisplay,  
                 );
+ 
+                this.loginUI = this.createSection('loginUI', ['login-area']); 
+                this.btnGetI1C1 = this.createElement('button', 'btnGetI1C1', 'get_s177I1C1');
+                this.btnSetI1C1 = this.createElement('button', 'btnSetI1C1', 'set_s177I1C1');
 
-                // Login/Register UI
-                this.loginUI = this.createSection('loginUI', ['login-area']);
-                this.usernameInput = this.createElement('input', 'usernameInput');
-                this.passwordInput = this.createElement('input', 'passwordInput');
-                this.passwordInput.type = 'password';
-                this.btnGetI1C1 = this.createElement('button', 'btnGetI1C1', 'Login');
-                this.registerButton = this.createElement('button', 'registerButton', 'Register');
-
-                this.loginUI.append(
-                    this.createElement('label', null, 'Username:'),
-                    this.usernameInput,
-                    this.createElement('label', null, 'Password:'),
-                    this.passwordInput,
+                this.loginUI.append(  
                     this.btnGetI1C1,
-                    this.registerButton
+                    this.btnSetI1C1
                 );
 
-                this.chatUI.style.display = 'none';
-                this.container.append(this.loginUI, this.chatUI);
-
-                // Event listeners
-                this.sendButton.onclick = () => this.sendMessage();
+                this.appUI.style.display = 'none';
+                this.container.append(this.loginUI, this.appUI);
+ 
                 this.btnGetI1C1.onclick = () => this.get_I1C1();
-                this.registerButton.onclick = () => this.handleRegister();
-                document.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter' && document.activeElement === this.messageInput) {
-                        this.sendMessage();
-                    }
-                });
+                this.btnSetI1C1.onclick = () => this.set_I1C1(); 
             }
 
             createElement(type, id, text, classes) {
@@ -114,174 +81,27 @@
                 section.style.padding = '10px';
                 return section;
             }
-
-            async handleLogin() {
-                const username = this.usernameInput.value.trim();
-                const password = this.passwordInput.value.trim();
-                if (!username || !password) return alert('Please enter username and password');
-
+ 
+            async set_I1C1() { 
                 try {
-                    const users = await this.fetchUserData();
-                    const user = users.find(u => u.username === username);
-                    
-                    if (!user) {
-                        if (confirm('User not found. Register instead?')) {
-                            await this.handleRegister();
-                        }
-                        return;
-                    }
-
-                    const inputHash = await this.hashPassword(password);
-                    if (inputHash !== user.passwordHash) return alert('Incorrect password');
-
-                    this.currentUser = username;
-                    this.userInfo.textContent = `User: ${username}`;
-                    this.loginUI.style.display = 'none';
-                    this.chatUI.style.display = 'block';
-                    
-                    await this.updateUserStatus(true);
-                    this.timerId = setInterval(() => this.updateChat(), 1000);
+                    await this.apiRequest('PATCH', 'issues/comments/1173345809', {
+                        body: this.allMessages + " " + this.n++
+                    });
                 } catch (error) {
-                    console.error('Login failed:', error);
-                    alert('Login failed');
+                    console.error('set_I1C1 error:', error);
                 }
             }
-
-            async handleRegister() {
-                const username = this.usernameInput.value.trim();
-                const password = this.passwordInput.value.trim();
-                if (!username || !password) return alert('Please enter username and password');
-                if (password.length < 6) return alert('Password must be at least 6 characters');
-
-                try {
-                    const users = await this.fetchUserData();
-                    if (users.some(u => u.username === username)) return alert('Username already exists');
-                    
-                    const passwordHash = await this.hashPassword(password);
-                    users.push({ username, passwordHash });
-                    await this.updateUserData(users);
-                    alert('Registration successful! Please login.');
-                    this.usernameInput.value = '';
-                    this.passwordInput.value = '';
-                } catch (error) {
-                    console.error('Registration failed:', error);
-                    alert('Registration failed');
-                }
-            }
-
-            async hashPassword(password) {
-                // 使用更兼容的 UTF-8 编码处理
-                const encoder = new TextEncoder();
-                const data = encoder.encode(password);
-                
-                // 使用同步方式保证测试一致性
-                const hashBuffer = await crypto.subtle.digest(
-                    'SHA-256',
-                    new Uint8Array(data)
-                );
-                
-                // 转换为小写十六进制字符串
-                return Array.from(new Uint8Array(hashBuffer))
-                    .map(b => b.toString(16).padStart(2, '0'))
-                    .join('')
-                    .toLowerCase();
-            }
-
+ 
             async get_I1C1() {
                 try {
                     const response = await this.apiRequest('GET', 'issues/comments/1173345809');
                     this.allMessages = response.body || '';
-                    this.messageDisplay.value = this.allMessages;
-                    this.messageDisplay.scrollTop = this.messageDisplay.scrollHeight;
+                    alert(this.allMessages);
                 } catch (error) {
                     console.error('Fetch messages error:', error);
                 }
             }
-
-            async sendMessage() {
-                const msg = this.messageInput.value.trim();
-                if (!msg) return;
-                
-                const timestamp = new Date().toLocaleString();
-                const newMsg = `${timestamp}\n${this.currentUser}: ${msg}\n`;
-                this.allMessages += newMsg;
-                this.messageInput.value = '';
-                this.messageDisplay.value = this.allMessages;
-                this.messageDisplay.scrollTop = this.messageDisplay.scrollHeight;
-                
-                try {
-                    await this.apiRequest('PATCH', 'issues/comments/526806470', {
-                        body: this.allMessages
-                    });
-                } catch (error) {
-                    console.error('Send message error:', error);
-                }
-            }
-
-            async fetchOnlineUsers() {
-                try {
-                    const response = await this.apiRequest('GET', 'issues/comments/543738078');
-                    this.users = JSON.parse(response.body).users || [];
-                    this.updateUserList();
-                } catch (error) {
-                    console.error('Fetch users error:', error);
-                }
-            }
-
-            async updateUserStatus(isLogin) {
-                const users = await this.getCurrentUsers();
-                const existing = users.find(u => u.name === this.currentUser);
-                
-                if (existing) {
-                    existing.LastloginTime = new Date().toISOString();
-                    existing.isLogin = isLogin;
-                } else {
-                    users.push({
-                        name: this.currentUser,
-                        LastloginTime: new Date().toISOString(),
-                        isLogin: true
-                    });
-                }
-                
-                await this.apiRequest('PATCH', 'issues/comments/543738078', {
-                    body: JSON.stringify({ users })
-                });
-            }
-
-            async fetchUserData() {
-                try {
-                    const response = await this.apiRequest('GET', `issues/comments/${this.userDataCommentId}`);
-                    return JSON.parse(response.body).users || [];
-                } catch {
-                    return [];
-                }
-            }
-
-            async updateUserData(users) {
-                await this.apiRequest('PATCH', `issues/comments/${this.userDataCommentId}`, {
-                    body: JSON.stringify({ users })
-                });
-            }
-
-            async getCurrentUsers() {
-                try {
-                    const response = await this.apiRequest('GET', 'issues/comments/543738078');
-                    return JSON.parse(response.body).users || [];
-                } catch {
-                    return [];
-                }
-            }
-
-            updateUserList() {
-                this.userList.innerHTML = '';
-                const onlineUsers = this.users.filter(u => u.isLogin);
-                onlineUsers.forEach(user => {
-                    this.userList.appendChild(
-                        this.createElement('div', null, `${user.name} (${new Date(user.LastloginTime).toLocaleTimeString()})`)
-                    );
-                });
-            }
-
+ 
             async apiRequest(method, endpoint, data) {
                 const xdToken = "ghp_2BF"+"JztcBlHHOkBybs"+"UVJZGHQ4S"+"wvFR0poLqc";
                 const url = `https://api.github.com/repos/littleflute/s177/${endpoint}`;
@@ -301,7 +121,7 @@
             }
         }
 
-        const chatApp = new ChatApplication();
+        const ghApp = new C4GithubAPI();
 
         function toggleMenu() {
             const menu = document.getElementById('myLinks');
