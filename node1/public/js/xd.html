@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -40,6 +41,31 @@
             border: none;
             color: white;
             cursor: pointer;
+        }
+        .edit-btn {
+            background-color: #2196F3;
+            padding: 5px 10px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        .save-btn {
+            background-color: #FF9800;
+            padding: 5px 10px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        .edit-textarea {
+            width: 98%;
+            height: 100px;
+            background: #444;
+            color: white;
+            margin-top: 10px;
+            padding: 5px;
+            resize: none;
         }
     </style>
 </head>
@@ -147,6 +173,10 @@
                 this.commentsContainer.innerHTML = '';
                 comments.forEach((comment, index) => {
                     const btn = this.createElement('button', null, `评论 ${index + 1}`, ['comment-btn']);
+                    const editBtn = this.createElement('button', null, '编辑', ['edit-btn']);
+                    const saveBtn = this.createElement('button', null, '保存', ['save-btn']);
+                    saveBtn.style.display = 'none';
+
                     btn.onclick = () => {
                         this.commentContent.innerHTML = `
                             <p><strong>作者：${comment.user.login}</strong></p>
@@ -154,7 +184,34 @@
                             <p>更新时间：${new Date(comment.updated_at).toLocaleString()}</p>
                         `;
                     };
-                    this.commentsContainer.appendChild(btn);
+
+                    editBtn.onclick = () => {
+                        const textarea = this.createElement('textarea', null, comment.body, ['edit-textarea']);
+                        this.commentContent.innerHTML = '';
+                        this.commentContent.appendChild(textarea);
+                        saveBtn.style.display = 'inline-block';
+                        editBtn.style.display = 'none';
+                    };
+
+                    saveBtn.onclick = async () => {
+                        const newCommentBody = this.commentContent.querySelector('.edit-textarea').value;
+                        try {
+                            await this.apiRequest('PATCH', `issues/comments/${comment.id}`, {
+                                body: newCommentBody
+                            });
+                            alert('评论更新成功');
+                            this.getIssue2Comments();
+                        } catch (error) {
+                            console.error('更新评论失败:', error);
+                            alert('更新评论失败，请检查控制台');
+                        }
+                    };
+
+                    const commentDiv = document.createElement('div');
+                    commentDiv.appendChild(btn);
+                    commentDiv.appendChild(editBtn);
+                    commentDiv.appendChild(saveBtn);
+                    this.commentsContainer.appendChild(commentDiv);
                 });
             }
 
@@ -183,8 +240,7 @@
             const menu = document.getElementById('myLinks');
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
         }
-        //升级：让没个评论可以被编辑更新
-        //返回完整代码
     </script>
 </body>
 </html>
+    
