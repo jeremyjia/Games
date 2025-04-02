@@ -240,7 +240,9 @@
                     <p>创建者: ${issue.user.login}</p>
                     <p>创建时间: ${new Date(issue.created_at).toLocaleString()}</p>
                     <hr>
-                    <div>${issue.body || '暂无详细内容'}</div>
+                    <div id="issueBody">${issue.body || '暂无详细内容'}</div>
+                    <button class="edit-btn" onclick="ghApp.editIssue(${issue.number})">编辑</button>
+                    <button class="save-btn" style="display: none;" onclick="ghApp.saveIssue(${issue.number})">保存</button>
                     <button class="comment-btn" 
                         onclick="ghApp.getIssueComments(${issue.number})">
                         查看评论 (${issue.comments})
@@ -345,6 +347,30 @@
 
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 return response.json();
+            }
+
+            editIssue(issueNumber) {
+                const issueBody = document.getElementById('issueBody');
+                const textarea = this.createElement('textarea', null, issueBody.textContent, ['edit-textarea']);
+                issueBody.innerHTML = '';
+                issueBody.appendChild(textarea);
+                document.querySelector('.edit-btn').style.display = 'none';
+                document.querySelector('.save-btn').style.display = 'inline-block';
+            }
+
+            async saveIssue(issueNumber) {
+                const newBody = document.querySelector('.edit-textarea').value;
+                try {
+                    await this.apiRequest('PATCH', `issues/${issueNumber}`, {
+                        body: newBody
+                    });
+                    alert('Issue内容更新成功');
+                    this.fetchAllIssues();
+                    this.showIssueDetails(await this.apiRequest('GET', `issues/${issueNumber}`));
+                } catch (error) {
+                    console.error('更新Issue内容失败:', error);
+                    alert('更新Issue内容失败，请检查控制台');
+                }
             }
         }
 
