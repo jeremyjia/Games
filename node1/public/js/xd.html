@@ -107,6 +107,10 @@
         .issues-buttons button:hover {
             background: #888;
         }
+        /* 新增高亮样式 */
+        .issues-buttons button.active {
+            background: #4CAF50;
+        }
         .issue-details {
             background: #666;
             padding: 10px;
@@ -216,7 +220,14 @@
                     const btn = this.createElement('button', null, 
                         `#${issue.number} ${issue.title.slice(0, 15)}${issue.title.length > 15 ? '...' : ''}`, 
                         ['issue-btn']);
-                    btn.onclick = () => this.showIssueDetails(issue);
+                    btn.onclick = () => {
+                        this.showIssueDetails(issue);
+                        // 移除所有按钮的高亮状态
+                        const allButtons = container.querySelectorAll('button');
+                        allButtons.forEach(button => button.classList.remove('active'));
+                        // 为当前点击的按钮添加高亮状态
+                        btn.classList.add('active');
+                    };
                     container.appendChild(btn);
                 });
             }
@@ -345,4 +356,4 @@
         }
     </script>
 </body>
-</html>
+</html>    
