@@ -88,12 +88,42 @@
             padding: 10px;
             cursor: pointer;
         }
+        /* New issues toolbar styles */
+        .issues-toolbar {
+            background: #444;
+            padding: 5px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .issues-buttons button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            background: #666;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        .issues-buttons button:hover {
+            background: #888;
+        }
+        .issue-details {
+            background: #666;
+            padding: 10px;
+            margin: 10px;
+            color: white;
+            border-radius: 5px;
+        }
+        .issue-details h3 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
     </style>
 </head>
 <body>
     <div class="mobile-container">
         <div class="topnav">
-            <a href="#home" class="active">GithubAPI v1.2.0</a>
+            <a href="#home" class="active">GithubAPI v1.3.0</a>
             <div id="myLinks">
                 <a href="https://jeremyjia.github.io/Games/" target="_blank">Home Page</a>
                 <a href="https://github.com/jeremyjia/Games" target="_blank">Repo</a>
@@ -102,6 +132,15 @@
                 <i class="fa fa-bars"></i>
             </a>
         </div>
+        
+        <!-- New Issues Toolbar -->
+        <div class="issues-toolbar">
+            <div class="issues-buttons" id="issuesButtons"></div>
+        </div>
+        
+        <!-- Issue Details Display -->
+        <div id="issueDetails" class="issue-details"></div>
+
         <div id="id_4_ui"></div>
     </div>
 
@@ -113,6 +152,7 @@
                 this.allMessages = '';    
                 
                 this.initUI();
+                this.fetchAllIssues(); // Initialize issues list
             }
 
             initUI() { 
@@ -125,19 +165,16 @@
 
                 this.toolbarUI = this.createSection('toolbarUI', ['login-area']); 
                 
-                // Existing buttons
                 this.btnGetI1C1 = this.createElement('button', 'btnGetI1C1', 'get_s177I1C1');
                 this.btnSetI1C1 = this.createElement('button', 'btnSetI1C1', 'set_s177I1C1');
                 this.btnGetIssue2Comments = this.createElement('button', 'btnGetIssue2Comments', '获取Issue2评论');
                 
-                // New issue creation elements
                 this.inputIssueTitle = this.createElement('input', 'inputIssueTitle', '', ['issue-input', 'issue-title-input']);
                 this.inputIssueTitle.placeholder = 'Issue标题';
                 this.inputIssueBody = this.createElement('textarea', 'inputIssueBody', '', ['issue-input', 'issue-content-input']);
                 this.inputIssueBody.placeholder = 'Issue内容';
                 this.btnCreateIssue = this.createElement('button', 'btnCreateIssue', '创建新Issue', ['create-issue-btn']);
                 
-                // Comments section
                 this.commentsContainer = this.createElement('div', 'commentsContainer', '', ['comments-container']);
                 this.commentContent = this.createElement('div', 'commentContent', '', ['comment-content']);
 
@@ -158,7 +195,7 @@
                 // Event listeners
                 this.btnGetI1C1.onclick = () => this.get_I1C1();
                 this.btnSetI1C1.onclick = () => this.set_I1C1();
-                this.btnGetIssue2Comments.onclick = () => this.getIssue2Comments();
+                this.btnGetIssue2Comments.onclick = () => this.getIssueComments(2);
                 this.btnCreateIssue.onclick = () => this.createNewIssue();
             }
 
@@ -174,6 +211,55 @@
                 const section = this.createElement('div', id, null, classes);
                 section.style.padding = '10px';
                 return section;
+            }
+
+            async fetchAllIssues() {
+                try {
+                    const issues = await this.apiRequest('GET', 'issues?state=all');
+                    this.displayIssues(issues);
+                } catch (error) {
+                    console.error('获取issues失败:', error);
+                    alert('无法获取issues列表');
+                }
+            }
+
+            displayIssues(issues) {
+                const container = document.getElementById('issuesButtons');
+                container.innerHTML = '';
+                issues.forEach(issue => {
+                    const btn = this.createElement('button', null, 
+                        `#${issue.number} ${issue.title.slice(0, 15)}${issue.title.length > 15 ? '...' : ''}`, 
+                        ['issue-btn']);
+                    btn.onclick = () => this.showIssueDetails(issue);
+                    container.appendChild(btn);
+                });
+            }
+
+            showIssueDetails(issue) {
+                const detailsContainer = document.getElementById('issueDetails');
+                detailsContainer.innerHTML = `
+                    <h3>#${issue.number}: ${issue.title}</h3>
+                    <p>状态: ${issue.state === 'open' ? '🟢 打开' : '🔴 关闭'}</p>
+                    <p>创建者: ${issue.user.login}</p>
+                    <p>创建时间: ${new Date(issue.created_at).toLocaleString()}</p>
+                    <hr>
+                    <div>${issue.body || '暂无详细内容'}</div>
+                    <button class="comment-btn" 
+                        onclick="ghApp.getIssueComments(${issue.number})">
+                        查看评论 (${issue.comments})
+                    </button>
+                `;
+            }
+
+            async getIssueComments(issueNumber) {
+                try {
+                    const response = await this.apiRequest('GET', `issues/${issueNumber}/comments`);
+                    this.displayComments(response);
+                    document.getElementById('commentContent').scrollIntoView();
+                } catch (error) {
+                    console.error('获取评论失败:', error);
+                    alert('获取评论失败，请检查控制台');
+                }
             }
 
             async set_I1C1() { 
@@ -193,16 +279,6 @@
                     alert(this.allMessages);
                 } catch (error) {
                     console.error('Fetch messages error:', error);
-                }
-            }
-
-            async getIssue2Comments() {
-                try {
-                    const response = await this.apiRequest('GET', 'issues/2/comments');
-                    this.displayComments(response);
-                } catch (error) {
-                    console.error('获取评论失败:', error);
-                    alert('获取评论失败，请检查控制台');
                 }
             }
 
@@ -237,7 +313,7 @@
                                 body: newCommentBody
                             });
                             alert('评论更新成功');
-                            this.getIssue2Comments();
+                            this.getIssueComments(comment.issue_url.split('/').pop());
                         } catch (error) {
                             console.error('更新评论失败:', error);
                             alert('更新评论失败，请检查控制台');
@@ -269,6 +345,7 @@
                     alert("Issue创建成功！");
                     this.inputIssueTitle.value = '';
                     this.inputIssueBody.value = '';
+                    this.fetchAllIssues(); // Refresh issues list
                 } catch (error) {
                     console.error('创建失败:', error);
                     alert("创建失败，请检查控制台");
