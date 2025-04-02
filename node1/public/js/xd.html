@@ -17,12 +17,36 @@
         .user-list { background: #666; padding: 5px; margin-top: 10px; }
         .login-area input { margin: 5px 0; width: 95%; padding: 8px; }
         .login-area button { width: 48%; margin: 5px 1%; padding: 8px; }
+        
+        /* 新增样式 */
+        .comment-content {
+            width: 98%;
+            height: 100px;
+            background: #444;
+            color: white;
+            margin-top: 10px;
+            padding: 5px;
+            overflow-y: auto;
+        }
+        .comments-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .comment-btn {
+            background-color: #4CAF50;
+            padding: 5px 10px;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div class="mobile-container">
         <div class="topnav">
-            <a href="#home" class="active">GithubAPI v1.0.0</a>
+            <a href="#home" class="active">GithubAPI v1.1.0</a>
             <div id="myLinks">
                 <a href="https://jeremyjia.github.io/Games/" target="_blank">Home Page</a>
                 <a href="https://github.com/jeremyjia/Games" target="_blank">Repo</a>
@@ -48,24 +72,31 @@
                 this.appUI = this.createSection('appUI', ['chat-area']); 
                 this.messageDisplay = this.createElement('textarea', 'messageDisplay', '', ['message-box']); 
                 
-                this.appUI.append( 
-                    this.messageDisplay,  
+                this.appUI.append(
+                    this.messageDisplay,
                 );
- 
+
                 this.toolbarUI = this.createSection('toolbarUI', ['login-area']); 
                 this.btnGetI1C1 = this.createElement('button', 'btnGetI1C1', 'get_s177I1C1');
                 this.btnSetI1C1 = this.createElement('button', 'btnSetI1C1', 'set_s177I1C1');
+                this.btnGetIssue2Comments = this.createElement('button', 'btnGetIssue2Comments', '获取Issue2评论');
+                this.commentsContainer = this.createElement('div', 'commentsContainer', '', ['comments-container']);
+                this.commentContent = this.createElement('div', 'commentContent', '', ['comment-content']);
 
                 this.toolbarUI.append(  
                     this.btnGetI1C1,
-                    this.btnSetI1C1
+                    this.btnSetI1C1,
+                    this.btnGetIssue2Comments,
+                    this.commentsContainer,
+                    this.commentContent
                 );
 
                 this.appUI.style.display = 'none';
-                this.container.append(this.loginUI, this.appUI);
- 
+                this.container.append(this.appUI, this.toolbarUI);
+
                 this.btnGetI1C1.onclick = () => this.get_I1C1();
-                this.btnSetI1C1.onclick = () => this.set_I1C1(); 
+                this.btnSetI1C1.onclick = () => this.set_I1C1();
+                this.btnGetIssue2Comments.onclick = () => this.getIssue2Comments();
             }
 
             createElement(type, id, text, classes) {
@@ -81,7 +112,7 @@
                 section.style.padding = '10px';
                 return section;
             }
- 
+
             async set_I1C1() { 
                 try {
                     await this.apiRequest('PATCH', 'issues/comments/1173345809', {
@@ -91,7 +122,7 @@
                     console.error('set_I1C1 error:', error);
                 }
             }
- 
+
             async get_I1C1() {
                 try {
                     const response = await this.apiRequest('GET', 'issues/comments/1173345809');
@@ -101,7 +132,32 @@
                     console.error('Fetch messages error:', error);
                 }
             }
- 
+
+            async getIssue2Comments() {
+                try {
+                    const response = await this.apiRequest('GET', 'issues/2/comments');
+                    this.displayComments(response);
+                } catch (error) {
+                    console.error('获取评论失败:', error);
+                    alert('获取评论失败，请检查控制台');
+                }
+            }
+
+            displayComments(comments) {
+                this.commentsContainer.innerHTML = '';
+                comments.forEach((comment, index) => {
+                    const btn = this.createElement('button', null, `评论 ${index + 1}`, ['comment-btn']);
+                    btn.onclick = () => {
+                        this.commentContent.innerHTML = `
+                            <p><strong>作者：${comment.user.login}</strong></p>
+                            <p>${comment.body}</p>
+                            <p>更新时间：${new Date(comment.updated_at).toLocaleString()}</p>
+                        `;
+                    };
+                    this.commentsContainer.appendChild(btn);
+                });
+            }
+
             async apiRequest(method, endpoint, data) {
                 const xdToken = "ghp_2BF"+"JztcBlHHOkBybs"+"UVJZGHQ4S"+"wvFR0poLqc";
                 const url = `https://api.github.com/repos/littleflute/s177/${endpoint}`;
@@ -127,8 +183,6 @@
             const menu = document.getElementById('myLinks');
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
         }
-
-       
     </script>
 </body>
-</html> 
+</html>
