@@ -4,6 +4,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
     <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
@@ -326,6 +327,26 @@
             padding: 5px;
             margin-right: 5px;
         }
+
+        /* 新增翻页按钮样式 */
+        .pagination-btn {
+            background: #666;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            margin: 0 2px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .pagination-btn:hover {
+            background: #888;
+        }
+
+        .pagination-btn.disabled {
+            background: #444;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 
@@ -344,6 +365,7 @@
         <div class="issues-toolbar">
             <div id="repoButtons"></div>
             <div class="issues-buttons" id="issuesButtons"></div>
+            <div id="paginationButtons"></div>
         </div>
 
         <div id="issueDetails" class="issue-details"></div>
@@ -368,6 +390,8 @@
                 this.container = document.getElementById('id_4_ui');
                 this.initUI();
                 this.generateRepoButtons();
+                this.currentPage = 1;
+                this.perPage = 10;
                 this.fetchAllIssues();
                 this.modal = document.getElementById('myModal');
                 this.modalTitleInput = document.getElementById('modalIssueTitle');
@@ -438,8 +462,9 @@
 
             async fetchAllIssues() {
                 try {
-                    const issues = await this.apiRequest('GET', 'issues?state=all');
+                    const issues = await this.apiRequest('GET', `issues?state=all&page=${this.currentPage}&per_page=${this.perPage}`);
                     this.displayIssues(issues);
+                    this.generatePaginationButtons();
                 } catch (error) {
                     console.error('获取 issues 失败:', error);
                     alert('无法获取 issues 列表');
@@ -686,6 +711,7 @@
 
             switchRepo(repoName) {
                 this.currentRepo = repoName;
+                this.currentPage = 1;
                 document.querySelectorAll('.repo-btn').forEach(btn => {
                     btn.classList.toggle('active', btn.dataset.repo === repoName);
                 });
@@ -720,6 +746,34 @@
                     console.error('更新 Issue 标题失败:', error);
                     alert('更新 Issue 标题失败，请检查控制台');
                 }
+            }
+
+            generatePaginationButtons() {
+                const paginationContainer = document.getElementById('paginationButtons');
+                paginationContainer.innerHTML = '';
+
+                const prevBtn = this.createElement('button', null, '上一页', ['pagination-btn']);
+                prevBtn.onclick = () => this.prevPage();
+                if (this.currentPage === 1) {
+                    prevBtn.classList.add('disabled');
+                }
+                paginationContainer.appendChild(prevBtn);
+
+                const nextBtn = this.createElement('button', null, '下一页', ['pagination-btn']);
+                nextBtn.onclick = () => this.nextPage();
+                paginationContainer.appendChild(nextBtn);
+            }
+
+            prevPage() {
+                if (this.currentPage > 1) {
+                    this.currentPage--;
+                    this.fetchAllIssues();
+                }
+            }
+
+            nextPage() {
+                this.currentPage++;
+                this.fetchAllIssues();
             }
         }
 
