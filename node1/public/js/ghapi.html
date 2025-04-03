@@ -316,6 +316,16 @@
         .repo-btn.active {
             background: #4CAF50;
         }
+
+        /* 新增标题编辑样式 */
+        .edit-title-input {
+            width: 80%;
+            background: #444;
+            color: white;
+            border: none;
+            padding: 5px;
+            margin-right: 5px;
+        }
     </style>
 </head>
 
@@ -457,7 +467,12 @@
             showIssueDetails(issue) {
                 const detailsContainer = document.getElementById('issueDetails');
                 detailsContainer.innerHTML = `
-                    <h3>#${issue.number}: ${issue.title}</h3>
+                    <h3>
+                        <span id="issueTitleSpan">#${issue.number}: ${issue.title}</span>
+                        <input type="text" id="issueTitleInput" class="edit-title-input" value="${issue.title}" style="display: none;">
+                        <button class="edit-btn" onclick="ghApp.editIssueTitle(${issue.number})">编辑标题</button>
+                        <button class="save-btn" style="display: none;" onclick="ghApp.saveIssueTitle(${issue.number})">保存标题</button>
+                    </h3>
                     <p>状态: ${issue.state === 'open' ? '🟢 打开' : '🔴 关闭'}</p>
                     <p>创建者: ${issue.user.login}</p>
                     <p>创建时间: ${new Date(issue.created_at).toLocaleString()}</p>
@@ -677,6 +692,35 @@
                 });
                 this.fetchAllIssues();
                 document.getElementById('issueDetails').innerHTML = '';
+            }
+
+            editIssueTitle(issueNumber) {
+                const titleSpan = document.getElementById('issueTitleSpan');
+                const titleInput = document.getElementById('issueTitleInput');
+                const editBtn = document.querySelector('h3 .edit-btn');
+                const saveBtn = document.querySelector('h3 .save-btn');
+
+                titleSpan.style.display = 'none';
+                titleInput.style.display = 'inline-block';
+                editBtn.style.display = 'none';
+                saveBtn.style.display = 'inline-block';
+            }
+
+            async saveIssueTitle(issueNumber) {
+                const titleInput = document.getElementById('issueTitleInput');
+                const newTitle = titleInput.value;
+
+                try {
+                    await this.apiRequest('PATCH', `issues/${issueNumber}`, {
+                        title: newTitle
+                    });
+                    alert('Issue 标题更新成功');
+                    this.fetchAllIssues();
+                    this.showIssueDetails(await this.apiRequest('GET', `issues/${issueNumber}`));
+                } catch (error) {
+                    console.error('更新 Issue 标题失败:', error);
+                    alert('更新 Issue 标题失败，请检查控制台');
+                }
             }
         }
 
