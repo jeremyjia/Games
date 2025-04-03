@@ -2,676 +2,676 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <style>
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-        }
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <style>
+            body {
+                font-family: Arial, Helvetica, sans-serif;
+            }
 
-        .mobile-container {
-            max-width: 480px;
-            margin: auto;
-            background-color: #555;
-            height: 500px;
-            color: white;
-            border-radius: 10px;
-            position: relative;
-        }
+            .mobile-container {
+                max-width: 480px;
+                margin: auto;
+                background-color: #555;
+                height: 500px;
+                color: white;
+                border-radius: 10px;
+                position: relative;
+            }
 
-        .topnav {
-            overflow: hidden;
-            background-color: #333;
-            position: relative;
-        }
+            .topnav {
+                overflow: hidden;
+                background-color: #333;
+                position: relative;
+            }
 
-        .topnav #myLinks {
-            display: none;
-        }
+            .topnav #myLinks {
+                display: none;
+            }
 
-        .topnav a {
-            color: white;
-            padding: 14px 16px;
-            text-decoration: none;
-            font-size: 17px;
-            display: block;
-        }
+            .topnav a {
+                color: white;
+                padding: 14px 16px;
+                text-decoration: none;
+                font-size: 17px;
+                display: block;
+            }
 
-        .topnav a.icon {
-            background: black;
-            display: block;
-            position: absolute;
-            right: 0;
-            top: 0;
-        }
+            .topnav a.icon {
+                background: black;
+                display: block;
+                position: absolute;
+                right: 0;
+                top: 0;
+            }
 
-        .topnav a:hover {
-            background-color: #ddd;
-            color: black;
-        }
+            .topnav a:hover {
+                background-color: #ddd;
+                color: black;
+            }
 
-        .active {
-            background-color: #4CAF50;
-            color: white;
-        }
+            .active {
+                background-color: #4CAF50;
+                color: white;
+            }
 
-        .ui-area {
-            padding: 10px;
-        }
+            .ui-area {
+                padding: 10px;
+            }
 
-        .message-box {
-            width: 98%;
-            height: 240px;
-            background: #444;
-            color: white;
-            border: none;
-            resize: none;
-        }
+            .message-box {
+                width: 98%;
+                height: 240px;
+                background: #444;
+                color: white;
+                border: none;
+                resize: none;
+            }
 
-        .input-box {
-            width: 98%;
-            height: 40px;
-            margin-top: 10px;
-        }
+            .input-box {
+                width: 98%;
+                height: 40px;
+                margin-top: 10px;
+            }
 
-        .user-list {
-            background: #666;
-            padding: 5px;
-            margin-top: 10px;
-        }
+            .user-list {
+                background: #666;
+                padding: 5px;
+                margin-top: 10px;
+            }
 
-        .login-area input {
-            margin: 5px 0;
-            width: 95%;
-            padding: 8px;
-        }
+            .login-area input {
+                margin: 5px 0;
+                width: 95%;
+                padding: 8px;
+            }
 
-        .login-area button {
-            width: 48%;
-            margin: 5px 1%;
-            padding: 8px;
-        }
+            .login-area button {
+                width: 48%;
+                margin: 5px 1%;
+                padding: 8px;
+            }
 
-        .comment-content {
-            width: 98%;
-            height: 100px;
-            background: #444;
-            color: white;
-            margin-top: 10px;
-            padding: 5px;
-            overflow-y: auto;
-        }
+            .comment-content {
+                width: 98%;
+                height: 100px;
+                background: #444;
+                color: white;
+                margin-top: 10px;
+                padding: 5px;
+                overflow-y: auto;
+            }
 
-        .comments-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            margin-top: 10px;
-        }
+            .comments-container {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+                margin-top: 10px;
+            }
 
-        .comment-btn {
-            background-color: #4CAF50;
-            padding: 5px 10px;
-            border: none;
-            color: white;
-            cursor: pointer;
-        }
+            .comment-btn {
+                background-color: #4CAF50;
+                padding: 5px 10px;
+                border: none;
+                color: white;
+                cursor: pointer;
+            }
 
-        .edit-btn {
-            background-color: #2196F3;
-            padding: 5px 10px;
-            border: none;
-            color: white;
-            cursor: pointer;
-            margin-left: 5px;
-        }
+            .edit-btn {
+                background-color: #2196F3;
+                padding: 5px 10px;
+                border: none;
+                color: white;
+                cursor: pointer;
+                margin-left: 5px;
+            }
 
-        .save-btn {
-            background-color: #FF9800;
-            padding: 5px 10px;
-            border: none;
-            color: white;
-            cursor: pointer;
-            margin-left: 5px;
-        }
+            .save-btn {
+                background-color: #FF9800;
+                padding: 5px 10px;
+                border: none;
+                color: white;
+                cursor: pointer;
+                margin-left: 5px;
+            }
 
-        .edit-textarea {
-            width: 98%;
-            height: 100px;
-            background: #444;
-            color: white;
-            margin-top: 10px;
-            padding: 5px;
-            resize: none;
-        }
+            .edit-textarea {
+                width: 98%;
+                height: 100px;
+                background: #444;
+                color: white;
+                margin-top: 10px;
+                padding: 5px;
+                resize: none;
+            }
 
-        .issue-input {
-            width: 98%;
-            margin-top: 10px;
-            padding: 8px;
-            background: #444;
-            color: white;
-            border: none;
-            resize: vertical;
-        }
+            .issue-input {
+                width: 98%;
+                margin-top: 10px;
+                padding: 8px;
+                background: #444;
+                color: white;
+                border: none;
+                resize: vertical;
+            }
 
-        .issue-title-input {
-            height: 40px;
-        }
+            .issue-title-input {
+                height: 40px;
+            }
 
-        .issue-content-input {
-            height: 80px;
-        }
+            .issue-content-input {
+                height: 80px;
+            }
 
-        .create-issue-btn {
-            background-color: #9C27B0;
-            width: 98%;
-            margin: 10px 0;
-            padding: 10px;
-            cursor: pointer;
-        }
+            .create-issue-btn {
+                background-color: #9C27B0;
+                width: 98%;
+                margin: 10px 0;
+                padding: 10px;
+                cursor: pointer;
+            }
 
-        .issues-toolbar {
-            background: #444;
-            padding: 5px;
-            overflow-x: auto;
-            white-space: nowrap;
-        }
+            .issues-toolbar {
+                background: #444;
+                padding: 5px;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
 
-        .issues-buttons button {
-            margin: 0 5px;
-            padding: 5px 10px;
-            background: #666;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 3px;
-        }
+            .issues-buttons button {
+                margin: 0 5px;
+                padding: 5px 10px;
+                background: #666;
+                color: white;
+                border: none;
+                cursor: pointer;
+                border-radius: 3px;
+            }
 
-        .issues-buttons button:hover {
-            background: #888;
-        }
+            .issues-buttons button:hover {
+                background: #888;
+            }
 
-        .issues-buttons button.active {
-            background: #4CAF50;
-        }
+            .issues-buttons button.active {
+                background: #4CAF50;
+            }
 
-        .issue-details {
-            background: #666;
-            padding: 10px;
-            margin: 10px;
-            color: white;
-            border-radius: 5px;
-            position: relative;
-        }
+            .issue-details {
+                background: #666;
+                padding: 10px;
+                margin: 10px;
+                color: white;
+                border-radius: 5px;
+                position: relative;
+            }
 
-        .issue-details h3 {
-            margin-top: 0;
-            color: #4CAF50;
-        }
+            .issue-details h3 {
+                margin-top: 0;
+                color: #4CAF50;
+            }
 
-        .new-comment-input {
-            width: 98%;
-            margin-top: 10px;
-            padding: 8px;
-            background: #444;
-            color: white;
-            border: none;
-            resize: vertical;
-        }
+            .new-comment-input {
+                width: 98%;
+                margin-top: 10px;
+                padding: 8px;
+                background: #444;
+                color: white;
+                border: none;
+                resize: vertical;
+            }
 
-        .new-comment-btn {
-            background-color: #4CAF50;
-            width: 98%;
-            margin: 10px 0;
-            padding: 10px;
-            cursor: pointer;
-        }
+            .new-comment-btn {
+                background-color: #4CAF50;
+                width: 98%;
+                margin: 10px 0;
+                padding: 10px;
+                cursor: pointer;
+            }
 
-        .run-issue-code-btn {
-            background-color: #FF5722;
-            padding: 5px 10px;
-            border: none;
-            color: white;
-            cursor: pointer;
-            position: absolute;
-            right: 10px;
-            top: 10px;
-        }
+            .run-issue-code-btn {
+                background-color: #FF5722;
+                padding: 5px 10px;
+                border: none;
+                color: white;
+                cursor: pointer;
+                position: absolute;
+                right: 10px;
+                top: 10px;
+            }
 
-        .run-comment-code-btn {
-            background-color: #FF5722;
-            padding: 5px 10px;
-            border: none;
-            color: white;
-            cursor: pointer;
-            margin-left: 5px;
-        }
+            .run-comment-code-btn {
+                background-color: #FF5722;
+                padding: 5px 10px;
+                border: none;
+                color: white;
+                cursor: pointer;
+                margin-left: 5px;
+            }
 
-        .toggle-btn {
-            background-color: #4CAF50;
-            padding: 3px 8px;
-            border: none;
-            color: white;
-            cursor: pointer;
-            margin-left: 10px;
-            border-radius: 3px;
-            transition: background-color 0.3s;
-        }
+            .toggle-btn {
+                background-color: #4CAF50;
+                padding: 3px 8px;
+                border: none;
+                color: white;
+                cursor: pointer;
+                margin-left: 10px;
+                border-radius: 3px;
+                transition: background-color 0.3s;
+            }
 
-        .toggle-btn.collapsed {
-            background-color: #FF5722;
-        }
+            .toggle-btn.collapsed {
+                background-color: #FF5722;
+            }
 
-        .issue-body-content {
-            transition: all 0.3s ease;
-        }
+            .issue-body-content {
+                transition: all 0.3s ease;
+            }
 
-        /* 新增模态框样式 */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.4);
-        }
+            /* 新增模态框样式 */
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                background-color: rgba(0, 0, 0, 0.4);
+            }
 
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            color: black;
-        }
+            .modal-content {
+                background-color: #fefefe;
+                margin: 15% auto;
+                padding: 20px;
+                border: 1px solid #888;
+                width: 80%;
+                color: black;
+            }
 
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
+            .close {
+                color: #aaa;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+            }
 
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-    </style>
-</head>
+            .close:hover,
+            .close:focus {
+                color: black;
+                text-decoration: none;
+                cursor: pointer;
+            }
+        </style>
+    </head>
 
-<body>
-    <div class="mobile-container">
-        <div class="topnav">
-            <a href="#home" class="active">GithubAPI v1.33</a>
-            <div id="myLinks">
-                <a href="https://littleflute.github.io/s177/" target="_blank">s177 Home Page</a>
-                <a href="https://github.com/littleflute/s177" target="_blank">s177 Repo</a>
+    <body>
+        <div class="mobile-container">
+            <div class="topnav">
+                <a href="#home" class="active">GithubAPI v1.33</a>
+                <div id="myLinks">
+                    <a href="https://littleflute.github.io/s177/" target="_blank">s177 Home Page</a>
+                    <a href="https://github.com/littleflute/s177" target="_blank">s177 Repo</a>
+                </div>
+                <a href="javascript:void(0);" class="icon" onclick="toggleMenu()">
+                    <i class="fa fa-bars"></i>
+                </a>
             </div>
-            <a href="javascript:void(0);" class="icon" onclick="toggleMenu()">
-                <i class="fa fa-bars"></i>
-            </a>
+
+            <div class="issues-toolbar">
+                <div class="issues-buttons" id="issuesButtons"></div>
+            </div>
+
+            <div id="issueDetails" class="issue-details"></div>
+
+            <div id="id_4_ui"></div>
         </div>
 
-        <div class="issues-toolbar">
-            <div class="issues-buttons" id="issuesButtons"></div>
+        <!-- 新增模态框 -->
+        <div id="myModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>创建新 Issue</h2>
+                <input type="text" id="modalIssueTitle" class="issue-input issue-title-input" placeholder="Issue 标题">
+                <textarea id="modalIssueBody" class="issue-input issue-content-input" placeholder="Issue 内容"></textarea>
+                <button id="modalCreateIssueBtn" class="create-issue-btn">提交</button>
+            </div>
         </div>
 
-        <div id="issueDetails" class="issue-details"></div>
-
-        <div id="id_4_ui"></div>
-    </div>
-
-    <!-- 新增模态框 -->
-    <div id="myModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>创建新 Issue</h2>
-            <input type="text" id="modalIssueTitle" class="issue-input issue-title-input" placeholder="Issue 标题">
-            <textarea id="modalIssueBody" class="issue-input issue-content-input" placeholder="Issue 内容"></textarea>
-            <button id="modalCreateIssueBtn" class="create-issue-btn">提交</button>
-        </div>
-    </div>
-
-    <script>
-        class C4GithubAPI {
-            constructor() {
-                this.container = document.getElementById('id_4_ui');
-                this.initUI();
-                this.fetchAllIssues();
-                this.modal = document.getElementById('myModal');
-                this.modalTitleInput = document.getElementById('modalIssueTitle');
-                this.modalBodyInput = document.getElementById('modalIssueBody');
-                this.modalCreateBtn = document.getElementById('modalCreateIssueBtn');
-                this.setupModalEvents();
-            }
-
-            initUI() {
-                this.appUI = this.createSection('appUI', ['ui-area']);
-                this.messageDisplay = this.createElement('textarea', 'messageDisplay', '', ['message-box']);
-
-                this.appUI.append(
-                    this.messageDisplay,
-                );
-
-                this.toolbarUI = this.createSection('toolbarUI', ['login-area']);
-
-                this.inputIssueTitle = this.createElement('input', 'inputIssueTitle', '', ['issue-input', 'issue-title-input']);
-                this.inputIssueBody = this.createElement('textarea', 'inputIssueBody', '', ['issue-input', 'issue-content-input']);
-                this.btnCreateIssue = this.createElement('button', 'btnCreateIssue', '创建新Issue', ['create-issue-btn']);
-
-                this.commentsContainer = this.createElement('div', 'commentsContainer', '', ['comments-container']);
-                this.commentContent = this.createElement('div', 'commentContent', '', ['comment-content']);
-
-                this.newCommentInput = this.createElement('textarea', 'newCommentInput', '', ['new-comment-input']);
-                this.newCommentInput.placeholder = '输入新评论';
-                this.newCommentBtn = this.createElement('button', 'newCommentBtn', '提交新评论', ['new-comment-btn']);
-
-                this.toolbarUI.append(
-                    this.inputIssueTitle,
-                    this.inputIssueBody,
-                    this.btnCreateIssue,
-                    this.commentsContainer,
-                    this.commentContent,
-                    this.newCommentInput,
-                    this.newCommentBtn
-                );
-
-                this.appUI.style.display = 'none';
-                this.container.append(this.appUI, this.toolbarUI);
-
-                this.btnCreateIssue.onclick = () => this.openModal();
-                this.newCommentBtn.onclick = () => this.addNewComment();
-            }
-
-            createElement(type, id, text, classes) {
-                const el = document.createElement(type);
-                if (id) el.id = id;
-                if (text) el.textContent = text;
-                if (classes) el.classList.add(...classes);
-                return el;
-            }
-
-            createSection(id, classes) {
-                const section = this.createElement('div', id, null, classes);
-                section.style.padding = '10px';
-                return section;
-            }
-
-            async fetchAllIssues() {
-                try {
-                    const issues = await this.apiRequest('GET', 'issues?state=all');
-                    this.displayIssues(issues);
-                } catch (error) {
-                    console.error('获取 issues 失败:', error);
-                    alert('无法获取 issues 列表');
+        <script>
+            class C4GithubAPI {
+                constructor() {
+                    this.container = document.getElementById('id_4_ui');
+                    this.initUI();
+                    this.fetchAllIssues();
+                    this.modal = document.getElementById('myModal');
+                    this.modalTitleInput = document.getElementById('modalIssueTitle');
+                    this.modalBodyInput = document.getElementById('modalIssueBody');
+                    this.modalCreateBtn = document.getElementById('modalCreateIssueBtn');
+                    this.setupModalEvents();
                 }
-            }
 
-            displayIssues(issues) {
-                const container = document.getElementById('issuesButtons');
-                container.innerHTML = '';
-                issues.forEach(issue => {
-                    const btn = this.createElement('button', null,
-                        `#${issue.number} ${issue.title.slice(0, 15)}${issue.title.length > 15 ? '...' : ''}`,
-                        ['issue-btn']);
-                    btn.onclick = () => {
-                        this.showIssueDetails(issue);
-                        const allButtons = container.querySelectorAll('button');
-                        allButtons.forEach(button => button.classList.remove('active'));
-                        btn.classList.add('active');
-                    };
-                    container.appendChild(btn);
-                });
-            }
+                initUI() {
+                    this.appUI = this.createSection('appUI', ['ui-area']);
+                    this.messageDisplay = this.createElement('textarea', 'messageDisplay', '', ['message-box']);
 
-            showIssueDetails(issue) {
-                const detailsContainer = document.getElementById('issueDetails');
-                detailsContainer.innerHTML = `
-                    <h3>#${issue.number}: ${issue.title}</h3>
-                    <p>状态: ${issue.state === 'open' ? '🟢 打开' : '🔴 关闭'}</p>
-                    <p>创建者: ${issue.user.login}</p>
-                    <p>创建时间: ${new Date(issue.created_at).toLocaleString()}</p>
-                    <button class="toggle-btn" onclick="toggleContent(this)">▲ 折叠</button>
-                    <button class="run-issue-code-btn" onclick="ghApp.runIssueCode(${issue.number})">运行 issue 代码</button>
-                    <hr class="content-separator">
-                    <div class="issue-body-content">
-                        <div id="issueBody">${issue.body || '暂无详细内容'}</div>
-                        <button class="edit-btn" onclick="ghApp.editIssue(${issue.number})">编辑</button>
-                        <button class="save-btn" style="display: none;" onclick="ghApp.saveIssue(${issue.number})">保存</button>
-                    </div>
-                    <button class="comment-btn" 
-                        onclick="ghApp.getIssueComments(${issue.number})">
-                        查看评论 (${issue.comments})
-                    </button>
-                `;
-                this.currentIssueNumber = issue.number;
-            }
+                    this.appUI.append(
+                        this.messageDisplay,
+                    );
 
-            async getIssueComments(issueNumber) {
-                try {
-                    const response = await this.apiRequest('GET', `issues/${issueNumber}/comments`);
-                    this.displayComments(response);
-                    document.getElementById('commentContent').scrollIntoView();
-                } catch (error) {
-                    console.error('获取评论失败:', error);
-                    alert('获取评论失败，请检查控制台');
+                    this.toolbarUI = this.createSection('toolbarUI', ['login-area']);
+
+                    this.inputIssueTitle = this.createElement('input', 'inputIssueTitle', '', ['issue-input', 'issue-title-input']);
+                    this.inputIssueBody = this.createElement('textarea', 'inputIssueBody', '', ['issue-input', 'issue-content-input']);
+                    this.btnCreateIssue = this.createElement('button', 'btnCreateIssue', '创建新Issue', ['create-issue-btn']);
+
+                    this.commentsContainer = this.createElement('div', 'commentsContainer', '', ['comments-container']);
+                    this.commentContent = this.createElement('div', 'commentContent', '', ['comment-content']);
+
+                    this.newCommentInput = this.createElement('textarea', 'newCommentInput', '', ['new-comment-input']);
+                    this.newCommentInput.placeholder = '输入新评论';
+                    this.newCommentBtn = this.createElement('button', 'newCommentBtn', '提交新评论', ['new-comment-btn']);
+
+                    this.toolbarUI.append(
+                        this.inputIssueTitle,
+                        this.inputIssueBody,
+                        this.btnCreateIssue,
+                        this.commentsContainer,
+                        this.commentContent,
+                        this.newCommentInput,
+                        this.newCommentBtn
+                    );
+
+                    this.appUI.style.display = 'none';
+                    this.container.append(this.appUI, this.toolbarUI);
+
+                    this.btnCreateIssue.onclick = () => this.openModal();
+                    this.newCommentBtn.onclick = () => this.addNewComment();
                 }
-            }
 
-            displayComments(comments) {
-                this.commentsContainer.innerHTML = '';
-                comments.forEach((comment, index) => {
-                    const btn = this.createElement('button', null, `评论 ${index + 1}`, ['comment-btn']);
-                    const editBtn = this.createElement('button', null, '编辑', ['edit-btn']);
-                    const saveBtn = this.createElement('button', null, '保存', ['save-btn']);
-                    const runCommentCodeBtn = this.createElement('button', null, 'run', ['run-comment-code-btn']);
-                    saveBtn.style.display = 'none';
+                createElement(type, id, text, classes) {
+                    const el = document.createElement(type);
+                    if (id) el.id = id;
+                    if (text) el.textContent = text;
+                    if (classes) el.classList.add(...classes);
+                    return el;
+                }
 
-                    btn.onclick = () => {
-                        this.commentContent.innerHTML = `
-                            <p><strong>作者：${comment.user.login}</strong></p>
-                            <p>${comment.body}</p>
-                            <p>更新时间：${new Date(comment.updated_at).toLocaleString()}</p>
-                        `;
-                    };
+                createSection(id, classes) {
+                    const section = this.createElement('div', id, null, classes);
+                    section.style.padding = '10px';
+                    return section;
+                }
 
-                    editBtn.onclick = () => {
-                        const textarea = this.createElement('textarea', null, comment.body, ['edit-textarea']);
-                        this.commentContent.innerHTML = '';
-                        this.commentContent.appendChild(textarea);
-                        saveBtn.style.display = 'inline-block';
-                        editBtn.style.display = 'none';
-                    };
+                async fetchAllIssues() {
+                    try {
+                        const issues = await this.apiRequest('GET', 'issues?state=all');
+                        this.displayIssues(issues);
+                    } catch (error) {
+                        console.error('获取 issues 失败:', error);
+                        alert('无法获取 issues 列表');
+                    }
+                }
 
-                    saveBtn.onclick = async () => {
-                        const newCommentBody = this.commentContent.querySelector('.edit-textarea').value;
-                        try {
-                            await this.apiRequest('PATCH', `issues/comments/${comment.id}`, {
-                                body: newCommentBody
-                            });
-                            alert('评论更新成功');
-                            this.getIssueComments(comment.issue_url.split('/').pop());
-                        } catch (error) {
-                            console.error('更新评论失败:', error);
-                            alert('更新评论失败，请检查控制台');
+                displayIssues(issues) {
+                    const container = document.getElementById('issuesButtons');
+                    container.innerHTML = '';
+                    issues.forEach(issue => {
+                        const btn = this.createElement('button', null,
+                            `#${issue.number} ${issue.title.slice(0, 15)}${issue.title.length > 15 ? '...' : ''}`,
+                            ['issue-btn']);
+                        btn.onclick = () => {
+                            this.showIssueDetails(issue);
+                            const allButtons = container.querySelectorAll('button');
+                            allButtons.forEach(button => button.classList.remove('active'));
+                            btn.classList.add('active');
+                        };
+                        container.appendChild(btn);
+                    });
+                }
+
+                showIssueDetails(issue) {
+                    const detailsContainer = document.getElementById('issueDetails');
+                    detailsContainer.innerHTML = `
+                        <h3>#${issue.number}: ${issue.title}</h3>
+                        <p>状态: ${issue.state === 'open' ? '🟢 打开' : '🔴 关闭'}</p>
+                        <p>创建者: ${issue.user.login}</p>
+                        <p>创建时间: ${new Date(issue.created_at).toLocaleString()}</p>
+                        <button class="toggle-btn" onclick="toggleContent(this)">▲ 折叠</button>
+                        <button class="run-issue-code-btn" onclick="ghApp.runIssueCode(${issue.number})">运行 issue 代码</button>
+                        <hr class="content-separator">
+                        <div class="issue-body-content">
+                            <div id="issueBody">${issue.body || '暂无详细内容'}</div>
+                            <button class="edit-btn" onclick="ghApp.editIssue(${issue.number})">编辑</button>
+                            <button class="save-btn" style="display: none;" onclick="ghApp.saveIssue(${issue.number})">保存</button>
+                        </div>
+                        <button class="comment-btn" 
+                            onclick="ghApp.getIssueComments(${issue.number})">
+                            查看评论 (${issue.comments})
+                        </button>
+                    `;
+                    this.currentIssueNumber = issue.number;
+                }
+
+                async getIssueComments(issueNumber) {
+                    try {
+                        const response = await this.apiRequest('GET', `issues/${issueNumber}/comments`);
+                        this.displayComments(response);
+                        document.getElementById('commentContent').scrollIntoView();
+                    } catch (error) {
+                        console.error('获取评论失败:', error);
+                        alert('获取评论失败，请检查控制台');
+                    }
+                }
+
+                displayComments(comments) {
+                    this.commentsContainer.innerHTML = '';
+                    comments.forEach((comment, index) => {
+                        const btn = this.createElement('button', null, `评论 ${index + 1}`, ['comment-btn']);
+                        const editBtn = this.createElement('button', null, '编辑', ['edit-btn']);
+                        const saveBtn = this.createElement('button', null, '保存', ['save-btn']);
+                        const runCommentCodeBtn = this.createElement('button', null, 'run', ['run-comment-code-btn']);
+                        saveBtn.style.display = 'none';
+
+                        btn.onclick = () => {
+                            this.commentContent.innerHTML = `
+                                <p><strong>作者：${comment.user.login}</strong></p>
+                                <p>${comment.body}</p>
+                                <p>更新时间：${new Date(comment.updated_at).toLocaleString()}</p>
+                            `;
+                        };
+
+                        editBtn.onclick = () => {
+                            const textarea = this.createElement('textarea', null, comment.body, ['edit-textarea']);
+                            this.commentContent.innerHTML = '';
+                            this.commentContent.appendChild(textarea);
+                            saveBtn.style.display = 'inline-block';
+                            editBtn.style.display = 'none';
+                        };
+
+                        saveBtn.onclick = async () => {
+                            const newCommentBody = this.commentContent.querySelector('.edit-textarea').value;
+                            try {
+                                await this.apiRequest('PATCH', `issues/comments/${comment.id}`, {
+                                    body: newCommentBody
+                                });
+                                alert('评论更新成功');
+                                this.getIssueComments(comment.issue_url.split('/').pop());
+                            } catch (error) {
+                                console.error('更新评论失败:', error);
+                                alert('更新评论失败，请检查控制台');
+                            }
+                        };
+
+                        runCommentCodeBtn.onclick = () => {
+                            this.runCommentCode(comment.body);
+                        };
+
+                        const commentDiv = document.createElement('div');
+                        commentDiv.appendChild(btn);
+                        commentDiv.appendChild(editBtn);
+                        commentDiv.appendChild(saveBtn);
+                        commentDiv.appendChild(runCommentCodeBtn);
+                        this.commentsContainer.appendChild(commentDiv);
+                    });
+                }
+
+                openModal() {
+                    this.modal.style.display = 'block';
+                }
+
+                closeModal() {
+                    this.modal.style.display = 'none';
+                    this.modalTitleInput.value = '';
+                    this.modalBodyInput.value = '';
+                }
+
+                setupModalEvents() {
+                    const span = document.getElementsByClassName("close")[0];
+                    span.onclick = () => this.closeModal();
+                    window.onclick = (event) => {
+                        if (event.target == this.modal) {
+                            this.closeModal();
                         }
                     };
+                    this.modalCreateBtn.onclick = () => this.createNewIssueFromModal();
+                }
 
-                    runCommentCodeBtn.onclick = () => {
-                        this.runCommentCode(comment.body);
+                async createNewIssueFromModal() {
+                    const title = this.modalTitleInput.value;
+                    const body = this.modalBodyInput.value;
+
+                    if (!title || !body) {
+                        alert("请填写标题和内容");
+                        return;
+                    }
+
+                    try {
+                        await this.apiRequest('POST', 'issues', {
+                            title: title,
+                            body: body
+                        });
+                        alert("Issue 创建成功！");
+                        this.closeModal();
+                        this.fetchAllIssues();
+                    } catch (error) {
+                        console.error('创建失败:', error);
+                        alert("创建失败，请检查控制台");
+                    }
+                }
+
+                async apiRequest(method, endpoint, data) {
+                    const xdToken = "ghp_2BF" + "JztcBlHHOkBybs" + "UVJZGHQ4S" + "wvFR0poLqc";
+                    const url = `https://api.github.com/repos/littleflute/s177/${endpoint}`;
+                    const headers = {
+                        'Authorization': `token ${xdToken}`,
+                        'Content-Type': 'application/json'
                     };
 
-                    const commentDiv = document.createElement('div');
-                    commentDiv.appendChild(btn);
-                    commentDiv.appendChild(editBtn);
-                    commentDiv.appendChild(saveBtn);
-                    commentDiv.appendChild(runCommentCodeBtn);
-                    this.commentsContainer.appendChild(commentDiv);
-                });
-            }
-
-            openModal() {
-                this.modal.style.display = 'block';
-            }
-
-            closeModal() {
-                this.modal.style.display = 'none';
-                this.modalTitleInput.value = '';
-                this.modalBodyInput.value = '';
-            }
-
-            setupModalEvents() {
-                const span = document.getElementsByClassName("close")[0];
-                span.onclick = () => this.closeModal();
-                window.onclick = (event) => {
-                    if (event.target == this.modal) {
-                        this.closeModal();
-                    }
-                };
-                this.modalCreateBtn.onclick = () => this.createNewIssueFromModal();
-            }
-
-            async createNewIssueFromModal() {
-                const title = this.modalTitleInput.value;
-                const body = this.modalBodyInput.value;
-
-                if (!title || !body) {
-                    alert("请填写标题和内容");
-                    return;
-                }
-
-                try {
-                    await this.apiRequest('POST', 'issues', {
-                        title: title,
-                        body: body
+                    const response = await fetch(url, {
+                        method,
+                        headers,
+                        body: data ? JSON.stringify(data) : null
                     });
-                    alert("Issue 创建成功！");
-                    this.closeModal();
-                    this.fetchAllIssues();
-                } catch (error) {
-                    console.error('创建失败:', error);
-                    alert("创建失败，请检查控制台");
+
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return response.json();
                 }
-            }
 
-            async apiRequest(method, endpoint, data) {
-                const xdToken = "ghp_2BF" + "JztcBlHHOkBybs" + "UVJZGHQ4S" + "wvFR0poLqc";
-                const url = `https://api.github.com/repos/littleflute/s177/${endpoint}`;
-                const headers = {
-                    'Authorization': `token ${xdToken}`,
-                    'Content-Type': 'application/json'
-                };
-
-                const response = await fetch(url, {
-                    method,
-                    headers,
-                    body: data ? JSON.stringify(data) : null
-                });
-
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                return response.json();
-            }
-
-            editIssue(issueNumber) {
-                const issueBody = document.getElementById('issueBody');
-                const textarea = this.createElement('textarea', null, issueBody.textContent, ['edit-textarea']);
-                issueBody.innerHTML = '';
-                issueBody.appendChild(textarea);
-                document.querySelector('.edit-btn').style.display = 'none';
-                document.querySelector('.save-btn').style.display = 'inline-block';
-            }
-
-            async saveIssue(issueNumber) {
-                const newBody = document.querySelector('.edit-textarea').value;
-                try {
-                    await this.apiRequest('PATCH', `issues/${issueNumber}`, {
-                        body: newBody
-                    });
-                    alert('Issue 内容更新成功');
-                    this.fetchAllIssues();
-                    this.showIssueDetails(await this.apiRequest('GET', `issues/${issueNumber}`));
-                } catch (error) {
-                    console.error('更新 Issue 内容失败:', error);
-                    alert('更新 Issue 内容失败，请检查控制台');
+                editIssue(issueNumber) {
+                    const issueBody = document.getElementById('issueBody');
+                    const textarea = this.createElement('textarea', null, issueBody.textContent, ['edit-textarea']);
+                    issueBody.innerHTML = '';
+                    issueBody.appendChild(textarea);
+                    document.querySelector('.edit-btn').style.display = 'none';
+                    document.querySelector('.save-btn').style.display = 'inline-block';
                 }
-            }
 
-            async addNewComment() {
-                const commentBody = this.newCommentInput.value;
-                if (!commentBody) {
-                    alert('请输入评论内容');
-                    return;
-                }
-                try {
-                    await this.apiRequest('POST', `issues/${this.currentIssueNumber}/comments`, {
-                        body: commentBody
-                    });
-                    alert('评论提交成功');
-                    this.newCommentInput.value = '';
-                    this.getIssueComments(this.currentIssueNumber);
-                } catch (error) {
-                    console.error('提交评论失败:', error);
-                    alert('提交评论失败，请检查控制台');
-                }
-            }
-
-            async runIssueCode(issueNumber) {
-                try {
-                    const issue = await this.apiRequest('GET', `issues/${issueNumber}`);
-                    const issueBody = issue.body;
+                async saveIssue(issueNumber) {
+                    const newBody = document.querySelector('.edit-textarea').value;
                     try {
-                        eval(issueBody);
-                    } catch (evalError) {
-                        console.error('运行 issue 代码时出错:', evalError);
-                        alert('运行 issue 代码时出错，请检查控制台');
+                        await this.apiRequest('PATCH', `issues/${issueNumber}`, {
+                            body: newBody
+                        });
+                        alert('Issue 内容更新成功');
+                        this.fetchAllIssues();
+                        this.showIssueDetails(await this.apiRequest('GET', `issues/${issueNumber}`));
+                    } catch (error) {
+                        console.error('更新 Issue 内容失败:', error);
+                        alert('更新 Issue 内容失败，请检查控制台');
                     }
-                } catch (error) {
-                    console.error('获取 issue 内容失败:', error);
-                    alert('获取 issue 内容失败，请检查控制台');
+                }
+
+                async addNewComment() {
+                    const commentBody = this.newCommentInput.value;
+                    if (!commentBody) {
+                        alert('请输入评论内容');
+                        return;
+                    }
+                    try {
+                        await this.apiRequest('POST', `issues/${this.currentIssueNumber}/comments`, {
+                            body: commentBody
+                        });
+                        alert('评论提交成功');
+                        this.newCommentInput.value = '';
+                        this.getIssueComments(this.currentIssueNumber);
+                    } catch (error) {
+                        console.error('提交评论失败:', error);
+                        alert('提交评论失败，请检查控制台');
+                    }
+                }
+
+                async runIssueCode(issueNumber) {
+                    try {
+                        const issue = await this.apiRequest('GET', `issues/${issueNumber}`);
+                        const issueBody = issue.body;
+                        try {
+                            eval(issueBody);
+                        } catch (evalError) {
+                            console.error('运行 issue 代码时出错:', evalError);
+                            alert('运行 issue 代码时出错，请检查控制台');
+                        }
+                    } catch (error) {
+                        console.error('获取 issue 内容失败:', error);
+                        alert('获取 issue 内容失败，请检查控制台');
+                    }
+                }
+
+                runCommentCode(commentBody) {
+                    try {
+                        eval(commentBody);
+                    } catch (evalError) {
+                        console.error('运行评论代码时出错:', evalError);
+                        alert('运行评论代码时出错，请检查控制台');
+                    }
                 }
             }
 
-            runCommentCode(commentBody) {
-                try {
-                    eval(commentBody);
-                } catch (evalError) {
-                    console.error('运行评论代码时出错:', evalError);
-                    alert('运行评论代码时出错，请检查控制台');
+            const ghApp = new C4GithubAPI();
+
+            function toggleMenu() {
+                const menu = document.getElementById('myLinks');
+                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            }
+
+            function toggleContent(btn) {
+                const contentDiv = btn.parentElement.querySelector('.issue-body-content');
+                const separator = btn.parentElement.querySelector('.content-separator');
+
+                if (contentDiv.style.display === 'none') {
+                    contentDiv.style.display = 'block';
+                    separator.style.display = 'block';
+                    btn.textContent = '▲ 折叠';
+                    btn.classList.remove('collapsed');
+                } else {
+                    contentDiv.style.display = 'none';
+                    separator.style.display = 'none';
+                    btn.textContent = '▼ 展开';
+                    btn.classList.add('collapsed');
                 }
             }
-        }
-
-        const ghApp = new C4GithubAPI();
-
-        function toggleMenu() {
-            const menu = document.getElementById('myLinks');
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-        }
-
-        function toggleContent(btn) {
-            const contentDiv = btn.parentElement.querySelector('.issue-body-content');
-            const separator = btn.parentElement.querySelector('.content-separator');
-
-            if (contentDiv.style.display === 'none') {
-                contentDiv.style.display = 'block';
-                separator.style.display = 'block';
-                btn.textContent = '▲ 折叠';
-                btn.classList.remove('collapsed');
-            } else {
-                contentDiv.style.display = 'none';
-                separator.style.display = 'none';
-                btn.textContent = '▼ 展开';
-                btn.classList.add('collapsed');
-            }
-        }
-    </script>
-</body>
+        </script>
+    </body>
 
 </html>    
