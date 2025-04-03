@@ -9,7 +9,7 @@
                 font-family: Arial, Helvetica, sans-serif;
             }
 
-        .mobile-container {
+           .mobile-container {
                 max-width: 480px;
                 margin: auto;
                 background-color: #555;
@@ -18,17 +18,17 @@
                 border-radius: 10px;
             }
 
-        .topnav {
+           .topnav {
                 overflow: hidden;
                 background-color: #333;
                 position: relative;
             }
 
-        .topnav #myLinks {
+           .topnav #myLinks {
                 display: none;
             }
 
-        .topnav a {
+           .topnav a {
                 color: white;
                 padding: 14px 16px;
                 text-decoration: none;
@@ -36,7 +36,7 @@
                 display: block;
             }
 
-        .topnav a.icon {
+           .topnav a.icon {
                 background: black;
                 display: block;
                 position: absolute;
@@ -44,21 +44,21 @@
                 top: 0;
             }
 
-        .topnav a:hover {
+           .topnav a:hover {
                 background-color: #ddd;
                 color: black;
             }
 
-        .active {
+           .active {
                 background-color: #4CAF50;
                 color: white;
             }
 
-        .ui-area {
+           .ui-area {
                 padding: 10px;
             }
 
-        .message-box {
+           .message-box {
                 width: 98%;
                 height: 240px;
                 background: #444;
@@ -67,31 +67,31 @@
                 resize: none;
             }
 
-        .input-box {
+           .input-box {
                 width: 98%;
                 height: 40px;
                 margin-top: 10px;
             }
 
-        .user-list {
+           .user-list {
                 background: #666;
                 padding: 5px;
                 margin-top: 10px;
             }
 
-        .login-area input {
+           .login-area input {
                 margin: 5px 0;
                 width: 95%;
                 padding: 8px;
             }
 
-        .login-area button {
+           .login-area button {
                 width: 48%;
                 margin: 5px 1%;
                 padding: 8px;
             }
 
-        .comment-content {
+           .comment-content {
                 width: 98%;
                 height: 100px;
                 background: #444;
@@ -101,14 +101,14 @@
                 overflow-y: auto;
             }
 
-        .comments-container {
+           .comments-container {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 5px;
                 margin-top: 10px;
             }
 
-        .comment-btn {
+           .comment-btn {
                 background-color: #4CAF50;
                 padding: 5px 10px;
                 border: none;
@@ -116,7 +116,7 @@
                 cursor: pointer;
             }
 
-        .edit-btn {
+           .edit-btn {
                 background-color: #2196F3;
                 padding: 5px 10px;
                 border: none;
@@ -125,7 +125,7 @@
                 margin-left: 5px;
             }
 
-        .save-btn {
+           .save-btn {
                 background-color: #FF9800;
                 padding: 5px 10px;
                 border: none;
@@ -134,7 +134,7 @@
                 margin-left: 5px;
             }
 
-        .edit-textarea {
+           .edit-textarea {
                 width: 98%;
                 height: 100px;
                 background: #444;
@@ -144,7 +144,7 @@
                 resize: none;
             }
 
-        .issue-input {
+           .issue-input {
                 width: 98%;
                 margin-top: 10px;
                 padding: 8px;
@@ -154,15 +154,15 @@
                 resize: vertical;
             }
 
-        .issue-title-input {
+           .issue-title-input {
                 height: 40px;
             }
 
-        .issue-content-input {
+           .issue-content-input {
                 height: 80px;
             }
 
-        .create-issue-btn {
+           .create-issue-btn {
                 background-color: #9C27B0;
                 width: 98%;
                 margin: 10px 0;
@@ -171,14 +171,14 @@
             }
 
             /* New issues toolbar styles */
-        .issues-toolbar {
+           .issues-toolbar {
                 background: #444;
                 padding: 5px;
                 overflow-x: auto;
                 white-space: nowrap;
             }
 
-        .issues-buttons button {
+           .issues-buttons button {
                 margin: 0 5px;
                 padding: 5px 10px;
                 background: #666;
@@ -188,16 +188,16 @@
                 border-radius: 3px;
             }
 
-        .issues-buttons button:hover {
+           .issues-buttons button:hover {
                 background: #888;
             }
 
             /* 新增高亮样式 */
-        .issues-buttons button.active {
+           .issues-buttons button.active {
                 background: #4CAF50;
             }
 
-        .issue-details {
+           .issue-details {
                 background: #666;
                 padding: 10px;
                 margin: 10px;
@@ -205,12 +205,12 @@
                 border-radius: 5px;
             }
 
-        .issue-details h3 {
+           .issue-details h3 {
                 margin-top: 0;
                 color: #4CAF50;
             }
 
-        .new-comment-input {
+           .new-comment-input {
                 width: 98%;
                 margin-top: 10px;
                 padding: 8px;
@@ -220,7 +220,7 @@
                 resize: vertical;
             }
 
-        .new-comment-btn {
+           .new-comment-btn {
                 background-color: #4CAF50;
                 width: 98%;
                 margin: 10px 0;
@@ -228,12 +228,20 @@
                 cursor: pointer;
             }
 
-        .run-issue-code-btn {
+           .run-issue-code-btn {
                 background-color: #FF5722;
                 width: 98%;
                 margin: 10px 0;
                 padding: 10px;
                 cursor: pointer;
+            }
+           .run-comment-code-btn {
+                background-color: #FF5722;
+                padding: 5px 10px;
+                border: none;
+                color: white;
+                cursor: pointer;
+                margin-left: 5px;
             }
         </style>
     </head>
@@ -390,6 +398,7 @@
                         const btn = this.createElement('button', null, `评论 ${index + 1}`, ['comment-btn']);
                         const editBtn = this.createElement('button', null, '编辑', ['edit-btn']);
                         const saveBtn = this.createElement('button', null, '保存', ['save-btn']);
+                        const runCommentCodeBtn = this.createElement('button', null, 'run', ['run-comment-code-btn']);
                         saveBtn.style.display = 'none';
 
                         btn.onclick = () => {
@@ -422,10 +431,15 @@
                             }
                         };
 
+                        runCommentCodeBtn.onclick = () => {
+                            this.runCommentCode(comment.body);
+                        };
+
                         const commentDiv = document.createElement('div');
                         commentDiv.appendChild(btn);
                         commentDiv.appendChild(editBtn);
                         commentDiv.appendChild(saveBtn);
+                        commentDiv.appendChild(runCommentCodeBtn);
                         this.commentsContainer.appendChild(commentDiv);
                     });
                 }
@@ -530,6 +544,15 @@
                         alert('获取 issue 内容失败，请检查控制台');
                     }
                 }
+
+                runCommentCode(commentBody) {
+                    try {
+                        eval(commentBody);
+                    } catch (evalError) {
+                        console.error('运行评论代码时出错:', evalError);
+                        alert('运行评论代码时出错，请检查控制台');
+                    }
+                }
             }
 
             const ghApp = new C4GithubAPI();
@@ -542,5 +565,3 @@
     </body>
 
 </html>    
-<!--
-升级：添加按钮,运行评论中的代码-->
