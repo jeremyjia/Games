@@ -333,11 +333,7 @@
         </div>
 
         <div class="issues-toolbar">
-            <button class="repo-btn active" data-repo="s177" onclick="ghApp.switchRepo('s177')">s177</button>
-            <button class="repo-btn" data-repo="s281" onclick="ghApp.switchRepo('s281')">s281</button>
-            <button class="repo-btn" data-repo="Songs" onclick="ghApp.switchRepo('Songs')">Songs</button>
-            <button class="repo-btn" data-repo="cchess" onclick="ghApp.switchRepo('cchess')">cchess</button>
-            <button class="repo-btn" data-repo="voa" onclick="ghApp.switchRepo('voa')">voa</button>
+            <div id="repoButtons"></div>
             <div class="issues-buttons" id="issuesButtons"></div>
         </div>
 
@@ -358,9 +354,11 @@
     <script>
         class C4GithubAPI {
             constructor() {
+                this.repos = ['s177', 's281', 'Songs', 'cchess', 'voa'];
                 this.currentRepo = 's177';
                 this.container = document.getElementById('id_4_ui');
                 this.initUI();
+                this.generateRepoButtons();
                 this.fetchAllIssues();
                 this.modal = document.getElementById('myModal');
                 this.modalTitleInput = document.getElementById('modalIssueTitle');
@@ -414,6 +412,19 @@
                 const section = this.createElement('div', id, null, classes);
                 section.style.padding = '10px';
                 return section;
+            }
+
+            generateRepoButtons() {
+                const repoButtonsContainer = document.getElementById('repoButtons');
+                this.repos.forEach(repo => {
+                    const btn = this.createElement('button', null, repo, ['repo-btn']);
+                    btn.dataset.repo = repo;
+                    btn.onclick = () => this.switchRepo(repo);
+                    if (repo === this.currentRepo) {
+                        btn.classList.add('active');
+                    }
+                    repoButtonsContainer.appendChild(btn);
+                });
             }
 
             async fetchAllIssues() {
@@ -696,3 +707,4 @@
 </body>
 
 </html>
+    
