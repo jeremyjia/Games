@@ -361,9 +361,6 @@
                     );
 
                     this.toolbarUI = this.createSection('toolbarUI', ['login-area']);
-
-                    this.inputIssueTitle = this.createElement('input', 'inputIssueTitle', '', ['issue-input', 'issue-title-input']);
-                    this.inputIssueBody = this.createElement('textarea', 'inputIssueBody', '', ['issue-input', 'issue-content-input']);
                     this.btnCreateIssue = this.createElement('button', 'btnCreateIssue', '创建新Issue', ['create-issue-btn']);
 
                     this.commentsContainer = this.createElement('div', 'commentsContainer', '', ['comments-container']);
@@ -373,9 +370,7 @@
                     this.newCommentInput.placeholder = '输入新评论';
                     this.newCommentBtn = this.createElement('button', 'newCommentBtn', '提交新评论', ['new-comment-btn']);
 
-                    this.toolbarUI.append(
-                        this.inputIssueTitle,
-                        this.inputIssueBody,
+                    this.toolbarUI.append( 
                         this.btnCreateIssue,
                         this.commentsContainer,
                         this.commentContent,
@@ -675,3 +670,6 @@
     </body>
 
 </html>    
+<!--
+去掉 btnCreateIssue 相关冗余代码
+-->
