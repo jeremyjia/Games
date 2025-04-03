@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 # [v0.0.5](https://github.com/jeremyjia/Games/edit/master/issues/readme.md) [..](..) <button id="id_btn_4_blApp">+blApp</button>
-=======
-# [v0.0.4] [..](..) <button id="id_btn_4_blApp">+blApp</button>
->>>>>>> 74d5592147786c7502ef13e344e91e82fdc352da
 ## [4](4) [9](9)
 
 <div id="id_div_4_issue4" style="background:gold">
