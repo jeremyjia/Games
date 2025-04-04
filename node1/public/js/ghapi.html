@@ -4,7 +4,6 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
     <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
@@ -327,35 +326,16 @@
             padding: 5px;
             margin-right: 5px;
         }
-
-        /* 新增翻页按钮样式 */
-        .pagination-btn {
-            background: #666;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            margin: 0 2px;
-            cursor: pointer;
-            border-radius: 3px;
-        }
-
-        .pagination-btn:hover {
-            background: #888;
-        }
-
-        .pagination-btn.disabled {
-            background: #444;
-            cursor: not-allowed;
-        }
     </style>
 </head>
 
 <body>
     <div class="mobile-container">
         <div class="topnav">
-            <a href="#home" class="active">IssueManager v1.34</a>
+            <a href="#home" class="active">GithubAPI v1.34</a>
             <div id="myLinks">
-                <a href="index0.html" target="_blank">index0.html</a> 
+                <a href="https://littleflute.github.io/s177/" target="_blank">s177 Home Page</a>
+                <a href="https://github.com/littleflute/s177" target="_blank">s177 Repo</a>
             </div>
             <a href="javascript:void(0);" class="icon" onclick="toggleMenu()">
                 <i class="fa fa-bars"></i>
@@ -365,7 +345,6 @@
         <div class="issues-toolbar">
             <div id="repoButtons"></div>
             <div class="issues-buttons" id="issuesButtons"></div>
-            <div id="paginationButtons"></div>
         </div>
 
         <div id="issueDetails" class="issue-details"></div>
@@ -385,13 +364,11 @@
     <script>
         class C4GithubAPI {
             constructor() {
-                this.repos = ['Games',];
-                this.currentRepo = 'Games';
+                this.repos = ['s177', 's281', 'Songs', 'cchess', 'voa'];
+                this.currentRepo = 's177';
                 this.container = document.getElementById('id_4_ui');
                 this.initUI();
                 this.generateRepoButtons();
-                this.currentPage = 1;
-                this.perPage = 10;
                 this.fetchAllIssues();
                 this.modal = document.getElementById('myModal');
                 this.modalTitleInput = document.getElementById('modalIssueTitle');
@@ -462,9 +439,8 @@
 
             async fetchAllIssues() {
                 try {
-                    const issues = await this.apiRequest('GET', `issues?state=all&page=${this.currentPage}&per_page=${this.perPage}`);
+                    const issues = await this.apiRequest('GET', 'issues?state=all');
                     this.displayIssues(issues);
-                    this.generatePaginationButtons();
                 } catch (error) {
                     console.error('获取 issues 失败:', error);
                     alert('无法获取 issues 列表');
@@ -625,7 +601,7 @@
 
             async apiRequest(method, endpoint, data) {
                 const xdToken = "ghp_2BF" + "JztcBlHHOkBybs" + "UVJZGHQ4S" + "wvFR0poLqc";
-                const url = `https://api.github.com/repos/jeremyjia/${this.currentRepo}/${endpoint}`;
+                const url = `https://api.github.com/repos/littleflute/${this.currentRepo}/${endpoint}`;
                 const headers = {
                     'Authorization': `token ${xdToken}`,
                     'Content-Type': 'application/json'
@@ -711,7 +687,6 @@
 
             switchRepo(repoName) {
                 this.currentRepo = repoName;
-                this.currentPage = 1;
                 document.querySelectorAll('.repo-btn').forEach(btn => {
                     btn.classList.toggle('active', btn.dataset.repo === repoName);
                 });
@@ -747,34 +722,6 @@
                     alert('更新 Issue 标题失败，请检查控制台');
                 }
             }
-
-            generatePaginationButtons() {
-                const paginationContainer = document.getElementById('paginationButtons');
-                paginationContainer.innerHTML = '';
-
-                const prevBtn = this.createElement('button', null, '上一页', ['pagination-btn']);
-                prevBtn.onclick = () => this.prevPage();
-                if (this.currentPage === 1) {
-                    prevBtn.classList.add('disabled');
-                }
-                paginationContainer.appendChild(prevBtn);
-
-                const nextBtn = this.createElement('button', null, '下一页', ['pagination-btn']);
-                nextBtn.onclick = () => this.nextPage();
-                paginationContainer.appendChild(nextBtn);
-            }
-
-            prevPage() {
-                if (this.currentPage > 1) {
-                    this.currentPage--;
-                    this.fetchAllIssues();
-                }
-            }
-
-            nextPage() {
-                this.currentPage++;
-                this.fetchAllIssues();
-            }
         }
 
         const ghApp = new C4GithubAPI();
@@ -805,5 +752,3 @@
 
 </html>
     
-<!--
-升级：翻页 翻到 第？页-->
