@@ -14,7 +14,7 @@ class VideoEditor {
         this.currentFrame = 0;
         this.animationId = null;
         this.audio = new Audio();
-        this.audio.src = 'http://192.168.192.123:3000/deepseek/2025/02/03/i3/1.mp3';
+        this.audio.src = 'http://127.0.0.1:3000/937/pianoC4.mp3';
         this.audio.addEventListener('ended', () => this.stopPlay()); 
 
         this.createViewportMeta();
@@ -538,6 +538,7 @@ class VideoEditor {
             fps: parseInt(this.fpsInput.value) || 30,
             audio: this.audio.src,
             scenes: this.scenesHandler.scenes.map(scene => ({
+                uuid: scene.uuid, // 添加唯一标识
                 color: scene.color,
                 duration: scene.duration,
                 drawingObjs: scene.drawingObjs.map(obj => {
@@ -822,4 +823,4 @@ class VideoEditor {
         scene.drawingObjs.forEach(obj => obj.draw(this.ctx));
     }  
 }
- // 升级： 用配置数组重构 createVideoManagerToolbar
+ 

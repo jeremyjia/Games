@@ -1,10 +1,12 @@
 // c4Scenes.js 
 class C4Scenes {
     constructor(sceneToolbar, onSceneSelected, onScenesUpdated) {
+        this.nextUUID = Date.now(); // 使用时间戳初始化确保唯一性
         this.sceneWindow = new C4DraggableWindow('scenesManager', sceneToolbar, 444, 151);
         this.scenes = [];
         this.sceneToolbar = sceneToolbar;
         this.currentSceneIndex = -1;
+        this.nextSceneId = 1; // 新增ID计数器
         this.draggedScene = null;
         this.draggedIndex = -1;
         this.onSceneSelected = onSceneSelected;
@@ -106,7 +108,8 @@ class C4Scenes {
     } 
     addScene() {
         const scene = {
-            id: Date.now(),
+            uuid: this.nextUUID++, // 新增唯一标识
+            id: this.nextSceneId++, // 使用自增唯一ID
             color: this.getRandomColor(),
             duration: 30,
             element: null,

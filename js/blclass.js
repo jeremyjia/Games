@@ -1291,6 +1291,9 @@ function CBlClass ()
 	var _blVideo = this.blc4Video("id_4_blc_video");
 	 
 	this.v = g_ver_blClass;
+	this.aboutBlClass = function(btnHandle){
+
+	}
 	this.blrAboutMe= function(b,d){		
 		var s = ""; 
 		s += _blhMakeLink('blclass.js ','https://jeremyjia.github.io/Games/js/blclass.js','color:skyblue;','_blank');
