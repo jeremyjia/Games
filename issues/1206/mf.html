@@ -1,43 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>可拧转的3D魔方</title>
+    <title>3D魔方 - 颜色修复版</title>
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-        }
-        canvas {
-            cursor: grab;
-        }
+        body { margin: 0; overflow: hidden; background-color: #444; }
+        canvas { cursor: grab; display: block; }
         #info {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            color: white;
-            font-family: Arial;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px;
-            border-radius: 5px;
-            z-index: 100;
+            position: absolute; top: 20px; left: 20px; color: white;
+            font-family: Arial; background: rgba(0,0,0,0.7);
+            padding: 10px; border-radius: 5px; z-index: 100;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
-    <div id="info">
-        左键点击面旋转<br>
-        拖动鼠标旋转视角<br>
-        R键：重置视角
-    </div>
-
+    <div id="info">左键点击面旋转<br>拖动鼠标旋转视角<br>滚轮缩放<br>手机上手指缩放、按住旋转<br>R键：重置视角</div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         class RubiksCube {
             constructor() {
                 this.SIZE = 3;
-                this.CUBIE_SIZE = 2.8;
+                this.CUBIE_SIZE = 2.2; // 减小方块大小，让魔方整体变小
                 this.SPACING = 0.1;
                 this.rotating = false;
+                this.minZoom = 5;
+                this.maxZoom = 20;
                 this.initScene();
                 this.initCube();
                 this.initControls();
@@ -47,48 +34,34 @@
             initScene() {
                 this.scene = new THREE.Scene();
                 this.scene.background = new THREE.Color(0x444444);
-
-                this.camera = new THREE.PerspectiveCamera(
-                    45,
-                    window.innerWidth / window.innerHeight,
-                    0.1,
-                    100
-                );
+                this.camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 100);
                 this.camera.position.set(8, 8, 8);
                 this.camera.lookAt(0, 0, 0);
-
                 this.renderer = new THREE.WebGLRenderer({ antialias: true });
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
                 document.body.appendChild(this.renderer.domElement);
-
+                
                 const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
                 this.scene.add(ambientLight);
-
+                
                 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
                 directionalLight.position.set(10, 10, 10);
                 this.scene.add(directionalLight);
-
+                
                 this.raycaster = new THREE.Raycaster();
                 this.mouse = new THREE.Vector2();
-
-                const axesHelper = new THREE.AxesHelper(10);
-                this.scene.add(axesHelper);
             }
 
             initCube() {
                 this.cubeGroup = new THREE.Group();
                 const offset = (this.SIZE - 1) / 2;
-
                 this.cubies = [];
+                
                 for (let x = 0; x < this.SIZE; x++) {
                     for (let y = 0; y < this.SIZE; y++) {
                         for (let z = 0; z < this.SIZE; z++) {
                             if (x === 1 && y === 1 && z === 1) continue;
-                            const cubie = this.createCubie(
-                                x - offset,
-                                y - offset,
-                                z - offset
-                            );
+                            const cubie = this.createCubie(x-offset, y-offset, z-offset);
                             this.cubeGroup.add(cubie);
                             this.cubies.push(cubie);
                         }
@@ -99,23 +72,20 @@
 
             createCubie(x, y, z) {
                 const colors = [
-                    (x === 1) ? 0xff4444 : 0x222222,  // 右 (0)
-                    (x === -1) ? 0x44ff44 : 0x222222, // 左 (1)
-                    (y === 1) ? 0x333333 : 0x222222,  // 上 (2)
-                    (y === -1) ? 0xffff44 : 0x222222, // 下 (3)
-                    (z === 1) ? 0xffffff : 0x222222,  // 前 (4)
-                    (z === -1) ? 0x4444ff : 0x222222  // 后 (5)
+                    (x === 1) ? 0xff4444 : 0xff4444,  // 右 (0)
+                    (x === -1) ? 0x44ff44 : 0x44ff44, // 左 (1)
+                    (y === 1) ? 0x333333 : 0x333333,  // 上 (2)
+                    (y === -1) ? 0xffff44 : 0xffff44, // 下 (3)
+                    (z === 1) ? 0xffffff : 0xffffff,  // 前 (4)
+                    (z === -1) ? 0x4444ff : 0x4444ff  // 后 (5)
                 ];
 
                 const materials = colors.map(c => new THREE.MeshPhongMaterial({
-                    color: c,
-                    shininess: 100
+                    color: c, shininess: 100
                 }));
 
                 const geometry = new THREE.BoxGeometry(
-                    this.CUBIE_SIZE,
-                    this.CUBIE_SIZE,
-                    this.CUBIE_SIZE
+                    this.CUBIE_SIZE, this.CUBIE_SIZE, this.CUBIE_SIZE
                 );
 
                 const cubie = new THREE.Mesh(geometry, materials);
@@ -124,32 +94,33 @@
                     y * (this.CUBIE_SIZE + this.SPACING),
                     z * (this.CUBIE_SIZE + this.SPACING)
                 );
-
+                
+                // 数字标签
                 const textMaterials = [];
                 const numbers = this.getFaceNumbers(x, y, z);
                 for (let i = 0; i < 6; i++) {
                     if (numbers[i]) {
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
-                        canvas.width = 256;
-                        canvas.height = 256;
+                        canvas.width = canvas.height = 256;
                         ctx.font = '64px Arial';
                         ctx.fillStyle = 'black';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
-                        ctx.fillText(numbers[i], canvas.width / 2, canvas.height / 2);
+                        ctx.fillText(numbers[i], 128, 128);
                         const texture = new THREE.CanvasTexture(canvas);
-                        const textMaterial = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
-                        textMaterials.push(textMaterial);
+                        textMaterials.push(new THREE.MeshBasicMaterial({ 
+                            map: texture, transparent: true 
+                        }));
                     } else {
-                        textMaterials.push(new THREE.MeshBasicMaterial({ opacity: 0, transparent: true }));
+                        textMaterials.push(new THREE.MeshBasicMaterial({ 
+                            opacity: 0, transparent: true 
+                        }));
                     }
                 }
-
+                
                 const textGeometry = new THREE.BoxGeometry(
-                    this.CUBIE_SIZE * 0.95,
-                    this.CUBIE_SIZE * 0.95,
-                    this.CUBIE_SIZE * 0.95
+                    this.CUBIE_SIZE*0.95, this.CUBIE_SIZE*0.95, this.CUBIE_SIZE*0.95
                 );
                 const textMesh = new THREE.Mesh(textGeometry, textMaterials);
                 cubie.add(textMesh);
@@ -161,24 +132,12 @@
                 const numbers = new Array(6).fill(null);
                 const offset = (this.SIZE - 1) / 2;
 
-                if (x === 1) {
-                    numbers[0] = (y + offset) * 3 + (z + offset) + 1;
-                }
-                if (x === -1) {
-                    numbers[1] = (y + offset) * 3 + (2 - (z + offset)) + 1;
-                }
-                if (y === 1) {
-                    numbers[2] = (2 - (z + offset)) * 3 + (x + offset) + 1;
-                }
-                if (y === -1) {
-                    numbers[3] = (z + offset) * 3 + (x + offset) + 1;
-                }
-                if (z === 1) {
-                    numbers[4] = (2 - (y + offset)) * 3 + (x + offset) + 1;
-                }
-                if (z === -1) {
-                    numbers[5] = (2 - (y + offset)) * 3 + (2 - (x + offset)) + 1;
-                }
+                if (x === 1) numbers[0] = (y+offset)*3 + (z+offset) + 1;
+                if (x === -1) numbers[1] = (y+offset)*3 + (2-(z+offset)) + 1;
+                if (y === 1) numbers[2] = (2-(z+offset))*3 + (x+offset) + 1;
+                if (y === -1) numbers[3] = (z+offset)*3 + (x+offset) + 1;
+                if (z === 1) numbers[4] = (2-(y+offset))*3 + (x+offset) + 1;
+                if (z === -1) numbers[5] = (2-(y+offset))*3 + (2-(x+offset)) + 1;
 
                 return numbers;
             }
@@ -187,6 +146,7 @@
                 let isDragging = false;
                 let previousMouse = { x: 0, y: 0 };
                 let clickTimer;
+                let previousDistance = 0;
 
                 this.renderer.domElement.addEventListener('mousedown', (e) => {
                     if (e.button === 0) {
@@ -202,8 +162,8 @@
                     if (e.button === 0) {
                         clearTimeout(clickTimer);
                         if (!isDragging) {
-                            this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-                            this.mouse.y = - (e.clientY / window.innerHeight) * 2 + 1;
+                            this.mouse.x = (e.clientX/window.innerWidth)*2 - 1;
+                            this.mouse.y = -(e.clientY/window.innerHeight)*2 + 1;
                             this.raycaster.setFromCamera(this.mouse, this.camera);
                             const intersects = this.raycaster.intersectObjects(this.cubies);
                             if (intersects.length > 0 && !this.rotating) {
@@ -219,10 +179,8 @@
                     if (isDragging) {
                         const deltaX = e.clientX - previousMouse.x;
                         const deltaY = e.clientY - previousMouse.y;
-
                         this.cubeGroup.rotation.y += deltaX * 0.005;
                         this.cubeGroup.rotation.x += deltaY * 0.005;
-
                         previousMouse.x = e.clientX;
                         previousMouse.y = e.clientY;
                     }
@@ -231,6 +189,63 @@
                 document.addEventListener('keydown', (e) => {
                     if (e.key.toLowerCase() === 'r') {
                         this.cubeGroup.rotation.set(0, 0, 0);
+                        this.camera.position.set(8, 8, 8);
+                        this.camera.lookAt(0, 0, 0);
+                    }
+                });
+
+                this.renderer.domElement.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    const zoomFactor = 0.1;
+                    const distance = this.camera.position.length();
+                    if (e.deltaY < 0 && distance > this.minZoom) {
+                        this.camera.position.multiplyScalar(1 - zoomFactor);
+                    } else if (e.deltaY > 0 && distance < this.maxZoom) {
+                        this.camera.position.multiplyScalar(1 + zoomFactor);
+                    }
+                    this.camera.lookAt(0, 0, 0);
+                });
+
+                this.renderer.domElement.addEventListener('touchstart', (e) => {
+                    if (e.touches.length === 2) {
+                        const dx = e.touches[0].clientX - e.touches[1].clientX;
+                        const dy = e.touches[0].clientY - e.touches[1].clientY;
+                        previousDistance = Math.sqrt(dx * dx + dy * dy);
+                    } else if (e.touches.length === 1) {
+                        clickTimer = setTimeout(() => {
+                            isDragging = true;
+                            previousMouse.x = e.touches[0].clientX;
+                            previousMouse.y = e.touches[0].clientY;
+                        }, 200);
+                    }
+                });
+
+                this.renderer.domElement.addEventListener('touchmove', (e) => {
+                    if (e.touches.length === 2) {
+                        const dx = e.touches[0].clientX - e.touches[1].clientX;
+                        const dy = e.touches[0].clientY - e.touches[1].clientY;
+                        const currentDistance = Math.sqrt(dx * dx + dy * dy);
+                        const distance = this.camera.position.length();
+                        const zoomFactor = 0.001 * (currentDistance - previousDistance);
+                        if (distance + zoomFactor > this.minZoom && distance + zoomFactor < this.maxZoom) {
+                            this.camera.position.multiplyScalar(1 - zoomFactor);
+                            this.camera.lookAt(0, 0, 0);
+                        }
+                        previousDistance = currentDistance;
+                    } else if (e.touches.length === 1 && isDragging) {
+                        const deltaX = e.touches[0].clientX - previousMouse.x;
+                        const deltaY = e.touches[0].clientY - previousMouse.y;
+                        this.cubeGroup.rotation.y += deltaX * 0.005;
+                        this.cubeGroup.rotation.x += deltaY * 0.005;
+                        previousMouse.x = e.touches[0].clientX;
+                        previousMouse.y = e.touches[0].clientY;
+                    }
+                });
+
+                this.renderer.domElement.addEventListener('touchend', (e) => {
+                    if (e.touches.length === 0) {
+                        clearTimeout(clickTimer);
+                        isDragging = false;
                     }
                 });
             }
@@ -240,223 +255,157 @@
                 const rotationAxis = this.getRotationAxis(clickedCubie);
                 const layer = this.getLayer(clickedCubie, rotationAxis);
                 const targetRotation = new THREE.Vector3(0, 0, 0);
-                if (rotationAxis === 'x') {
-                    targetRotation.x = Math.PI / 2;
-                } else if (rotationAxis === 'y') {
-                    targetRotation.y = Math.PI / 2;
-                } else if (rotationAxis === 'z') {
-                    targetRotation.z = Math.PI / 2;
-                }
+                
+                if (rotationAxis === 'x') targetRotation.x = Math.PI/2;
+                else if (rotationAxis === 'y') targetRotation.y = Math.PI/2;
+                else if (rotationAxis === 'z') targetRotation.z = Math.PI/2;
+                
                 this.rotateLayer(layer, targetRotation, rotationAxis);
             }
 
             getRotationAxis(cubie) {
-                const position = cubie.position;
-                const absX = Math.abs(position.x);
-                const absY = Math.abs(position.y);
-                const absZ = Math.abs(position.z);
-                if (absX > absY && absX > absZ) {
-                    return 'x';
-                } else if (absY > absX && absY > absZ) {
-                    return 'y';
-                } else {
-                    return 'z';
-                }
+                const pos = cubie.position;
+                const absX = Math.abs(pos.x), absY = Math.abs(pos.y), absZ = Math.abs(pos.z);
+                if (absX > absY && absX > absZ) return 'x';
+                else if (absY > absX && absY > absZ) return 'y';
+                else return 'z';
             }
 
             getLayer(cubie, axis) {
-                const position = cubie.position;
-                const layer = [];
-                for (let i = 0; i < this.cubies.length; i++) {
-                    const currentCubie = this.cubies[i];
-                    if (axis === 'x' && currentCubie.position.x === position.x) {
-                        layer.push(currentCubie);
-                    } else if (axis === 'y' && currentCubie.position.y === position.y) {
-                        layer.push(currentCubie);
-                    } else if (axis === 'z' && currentCubie.position.z === position.z) {
-                        layer.push(currentCubie);
-                    }
-                }
-                return layer;
+                const pos = cubie.position;
+                return this.cubies.filter(c => {
+                    if (axis === 'x') return c.position.x === pos.x;
+                    else if (axis === 'y') return c.position.y === pos.y;
+                    else return c.position.z === pos.z;
+                });
             }
 
             rotateLayer(layer, targetRotation, rotationAxis) {
-                const rotationSpeed = 0.05;
                 const rotationGroup = new THREE.Group();
-                layer.forEach(cubie => {
-                    rotationGroup.add(cubie);
-                });
+                const originalColors = layer.map(c => c.material.map(m => m.color.getHex()));
+                
+                layer.forEach(cubie => rotationGroup.add(cubie));
                 this.scene.add(rotationGroup);
 
-                const animateRotation = () => {
+                const animate = () => {
                     if (this.rotating) {
-                        if (Math.abs(rotationGroup.rotation.x) < Math.abs(targetRotation.x)) {
-                            rotationGroup.rotation.x += rotationSpeed * (targetRotation.x > 0 ? 1 : -1);
-                        }
-                        if (Math.abs(rotationGroup.rotation.y) < Math.abs(targetRotation.y)) {
-                            rotationGroup.rotation.y += rotationSpeed * (targetRotation.y > 0 ? 1 : -1);
-                        }
-                        if (Math.abs(rotationGroup.rotation.z) < Math.abs(targetRotation.z)) {
-                            rotationGroup.rotation.z += rotationSpeed * (targetRotation.z > 0 ? 1 : -1);
-                        }
+                        if (Math.abs(rotationGroup.rotation.x) < Math.abs(targetRotation.x)) 
+                            rotationGroup.rotation.x += 0.05 * (targetRotation.x > 0 ? 1 : -1);
+                        if (Math.abs(rotationGroup.rotation.y) < Math.abs(targetRotation.y)) 
+                            rotationGroup.rotation.y += 0.05 * (targetRotation.y > 0 ? 1 : -1);
+                        if (Math.abs(rotationGroup.rotation.z) < Math.abs(targetRotation.z)) 
+                            rotationGroup.rotation.z += 0.05 * (targetRotation.z > 0 ? 1 : -1);
 
-                        if (
-                            Math.abs(rotationGroup.rotation.x) >= Math.abs(targetRotation.x) &&
+                        if (Math.abs(rotationGroup.rotation.x) >= Math.abs(targetRotation.x) &&
                             Math.abs(rotationGroup.rotation.y) >= Math.abs(targetRotation.y) &&
-                            Math.abs(rotationGroup.rotation.z) >= Math.abs(targetRotation.z)
-                        ) {
+                            Math.abs(rotationGroup.rotation.z) >= Math.abs(targetRotation.z)) {
+                            
                             rotationGroup.rotation.copy(targetRotation);
                             this.rotating = false;
-                            layer.forEach(cubie => {
+                            
+                            layer.forEach((cubie, index) => {
                                 rotationGroup.remove(cubie);
                                 this.cubeGroup.add(cubie);
                                 
-                                const oldPosition = cubie.position.clone();
-                                const matrix = new THREE.Matrix4().makeRotationFromEuler(rotationGroup.rotation);
-                                const newPosition = oldPosition.applyMatrix4(matrix);
-                                cubie.position.copy(newPosition);
-                                cubie.rotation.copy(rotationGroup.rotation);
+                                const oldPos = cubie.position.clone();
+                                const matrix = new THREE.Matrix4().makeRotationFromEuler(targetRotation);
+                                const newPos = oldPos.applyMatrix4(matrix);
+                                cubie.position.copy(newPos);
+                                cubie.rotation.copy(targetRotation);
 
-                                // 获取当前颜色
-                                const currentColors = cubie.material.map(m => m.color.getHex());
-                                
-                                // 根据旋转轴变换颜色
-                                const newColors = this.transformColors(currentColors, rotationAxis, targetRotation);
+                               //alert(rotationAxis);
+                                // 关键修复：根据旋转方向和轴正确变换颜色
+                                const newColors = this.transformColors(
+                                    originalColors[index], 
+                                    rotationAxis, 
+                                    targetRotation
+                                );
 
                                 // 更新材质
-                                const materials = newColors.map(c => new THREE.MeshPhongMaterial({
-                                    color: c,
-                                    shininess: 100
+                                cubie.material = newColors.map(c => new THREE.MeshPhongMaterial({
+                                    color: c, shininess: 100
                                 }));
-                                cubie.material = materials;
 
                                 // 更新数字标签
-                                const newX = Math.round(newPosition.x / (this.CUBIE_SIZE + this.SPACING));
-                                const newY = Math.round(newPosition.y / (this.CUBIE_SIZE + this.SPACING));
-                                const newZ = Math.round(newPosition.z / (this.CUBIE_SIZE + this.SPACING));
-
-                                const textMaterials = [];
+                                const newX = Math.round(newPos.x / (this.CUBIE_SIZE + this.SPACING));
+                                const newY = Math.round(newPos.y / (this.CUBIE_SIZE + this.SPACING));
+                                const newZ = Math.round(newPos.z / (this.CUBIE_SIZE + this.SPACING));
+                                
                                 const numbers = this.getFaceNumbers(newX, newY, newZ);
+                                const textMesh = cubie.children[0];
                                 for (let i = 0; i < 6; i++) {
                                     if (numbers[i]) {
                                         const canvas = document.createElement('canvas');
                                         const ctx = canvas.getContext('2d');
-                                        canvas.width = 256;
-                                        canvas.height = 256;
+                                        canvas.width = canvas.height = 256;
                                         ctx.font = '64px Arial';
                                         ctx.fillStyle = 'black';
                                         ctx.textAlign = 'center';
                                         ctx.textBaseline = 'middle';
-                                        ctx.fillText(numbers[i], canvas.width / 2, canvas.height / 2);
-                                        const texture = new THREE.CanvasTexture(canvas);
-                                        const textMaterial = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
-                                        textMaterials.push(textMaterial);
-                                    } else {
-                                        textMaterials.push(new THREE.MeshBasicMaterial({ opacity: 0, transparent: true }));
+                                        ctx.fillText(numbers[i], 128, 128);
+                                        textMesh.material[i].map = new THREE.CanvasTexture(canvas);
                                     }
                                 }
-                                const textMesh = cubie.children[0];
-                                textMesh.material = textMaterials;
                             });
+                            
                             this.scene.remove(rotationGroup);
                         } else {
-                            requestAnimationFrame(animateRotation);
+                            requestAnimationFrame(animate);
                         }
                     }
                 };
-                requestAnimationFrame(animateRotation);
+                requestAnimationFrame(animate);
             }
 
             transformColors(colors, axis, rotation) {
-                let newColors = [...colors];
                 const isClockwise = this.isRotationClockwise(rotation, axis);
+                const newColors = [...colors];
                 
                 // 颜色面索引:
-                // 0: 右 (x+)
-                // 1: 左 (x-)
-                // 2: 上 (y+)
-                // 3: 下 (y-)
-                // 4: 前 (z+)
-                // 5: 后 (z-)
+                // 0:右(x+), 1:左(x-), 2:上(y+), 3:下(y-), 4:前(z+), 5:后(z-)
                 
-                switch(axis) {
-                    case 'x': // 绕x轴旋转
-                        if (isClockwise) {
-                            newColors = [
-                                colors[0], // 右不变
-                                colors[1], // 左不变
-                                colors[4], // 上=前
-                                colors[5], // 下=后
-                                colors[3], // 前=下
-                                colors[2]  // 后=上
-                            ];
-                        } else {
-                            newColors = [
-                                colors[0], // 右不变
-                                colors[1], // 左不变
-                                colors[5], // 上=后
-                                colors[4], // 下=前
-                                colors[2], // 前=上
-                                colors[3]  // 后=下
-                            ];
-                        }
-                        break;
-                        
-                    case 'y': // 绕y轴旋转
-                        if (isClockwise) {
-                            newColors = [
-                                colors[4], // 右=前
-                                colors[5], // 左=后
-                                colors[2], // 上不变
-                                colors[3], // 下不变
-                                colors[1], // 前=左
-                                colors[0]  // 后=右
-                            ];
-                        } else {
-                            newColors = [
-                                colors[5], // 右=后
-                                colors[4], // 左=前
-                                colors[2], // 上不变
-                                colors[3], // 下不变
-                                colors[0], // 前=右
-                                colors[1]  // 后=左
-                            ];
-                        }
-                        break;
-                        
-                    case 'z': // 绕z轴旋转
-                        if (isClockwise) {
-                            newColors = [
-                                colors[3], // 右=下
-                                colors[2], // 左=上
-                                colors[0], // 上=右
-                                colors[1], // 下=左
-                                colors[4], // 前不变
-                                colors[5]  // 后不变
-                            ];
-                        } else {
-                            newColors = [
-                                colors[2], // 右=上
-                                colors[3], // 左=下
-                                colors[1], // 上=左
-                                colors[0], // 下=右
-                                colors[4], // 前不变
-                                colors[5]  // 后不变
-                            ];
-                        }
-                        break;
+                if (axis === 'x') {
+                    if (!isClockwise) {
+                        // 顺时针绕x轴旋转90度
+                        [newColors[2], newColors[4], newColors[3], newColors[5]] = 
+                        [newColors[4], newColors[3], newColors[5], newColors[2]];
+                    } else {
+                        // 逆时针绕x轴旋转90度
+                        [newColors[2], newColors[5], newColors[3], newColors[4]] = 
+                        [newColors[5], newColors[3], newColors[4], newColors[2]];
+                    }
+                } 
+                else if (axis === 'y') {
+                    if (isClockwise) {
+                        // 顺时针绕y轴旋转90度
+                        [newColors[0], newColors[4], newColors[1], newColors[5]] = 
+                        [newColors[4], newColors[1], newColors[5], newColors[0]];
+                    } else {
+                        // 逆时针绕y轴旋转90度
+                        [newColors[0], newColors[5], newColors[1], newColors[4]] = 
+                        [newColors[5], newColors[1], newColors[4], newColors[0]];
+                    }
+                } 
+                else if (axis === 'z') {
+                    if (!isClockwise) {
+                        // 顺时针绕z轴旋转90度
+                        [newColors[0], newColors[2], newColors[1], newColors[3]] = 
+                        [newColors[2], newColors[1], newColors[3], newColors[0]];
+                    } else {
+                        // 逆时针绕z轴旋转90度
+                        [newColors[0], newColors[3], newColors[1], newColors[2]] = 
+                        [newColors[3], newColors[1], newColors[2], newColors[0]];
+                    }
                 }
                 
                 return newColors;
             }
-            
+
             isRotationClockwise(rotation, axis) {
-                switch(axis) {
-                    case 'x': return rotation.x > 0;
-                    case 'y': return rotation.y > 0;
-                    case 'z': return rotation.z > 0;
-                    default: return true;
-                }
+                if (axis === 'x') return rotation.x > 0;
+                if (axis === 'y') return rotation.y > 0;
+                if (axis === 'z') return rotation.z > 0;
+                return true;
             }
 
             animate() {
@@ -466,12 +415,12 @@
         }
 
         const cube = new RubiksCube();
-
         window.addEventListener('resize', () => {
-            cube.camera.aspect = window.innerWidth / window.innerHeight;
+            cube.camera.aspect = window.innerWidth/window.innerHeight;
             cube.camera.updateProjectionMatrix();
             cube.renderer.setSize(window.innerWidth, window.innerHeight);
         });
     </script>
 </body>
 </html>
+    
