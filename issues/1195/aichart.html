@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>漂泊者乐园智能问答系统</title>
+    <title>漂泊者乐园智能问答系统v2.0.0</title>
     <style>
         :root {
             --primary-color: #2196F3;
@@ -55,7 +55,6 @@
             border-radius: 12px 12px 12px 0;
         }
 
-        /* 文本美化样式 */
         .text-content {
             font-size: 16px;
             line-height: 1.8;
@@ -77,15 +76,18 @@
         }
 
         .text-content pre {
-            background-color: #f8f8f8;
+            position: relative;
             padding: 15px;
+            background-color: #f8f8f8;
             border-radius: 8px;
             overflow-x: auto;
             margin: 1em 0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 5px;
         }
 
         .text-content pre code {
+            display: block;
             background: none;
             padding: 0;
             font-size: 14px;
@@ -264,6 +266,93 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* 代码操作按钮样式 */
+        .code-actions {
+            margin-top: 10px;
+            text-align: right;
+        }
+
+        .code-btn {
+            padding: 8px 15px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+            margin-left: 10px;
+        }
+
+        .code-btn.copy {
+            background: #2196F3;
+        }
+
+        .code-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .code-btn:active {
+            transform: translateY(1px);
+        }
+
+        /* 代码运行对话框样式 */
+        .dialog-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .code-dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 800px;
+            height: 70vh;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.3);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .dialog-header {
+            padding: 15px;
+            background: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dialog-title {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .dialog-close {
+            cursor: pointer;
+            font-size: 20px;
+            color: #666;
+        }
+
+        .dialog-content {
+            flex: 1;
+            padding: 15px;
+            overflow: auto;
+        }
+
         @media (max-width: 480px) {
             .chat-container {
                 height: calc(100vh - 140px);
@@ -322,39 +411,17 @@
             .play-pause-btn {
                 font-size: 24px;
             }
+
+            .code-dialog {
+                width: 95%;
+                height: 80vh;
+            }
+
+            .code-btn {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
         }
-		/* 新增代码复制按钮样式 */
-		.copy-btn {
-			position: absolute;
-			top: 5px;
-			right: 5px;
-			padding: 2px 8px;
-			background: var(--primary-color);
-			color: white;
-			border: none;
-			border-radius: 4px;
-			cursor: pointer;
-			font-size: 12px;
-			opacity: 0.8;
-			transition: opacity 0.2s;
-		}
-
-		.copy-btn:hover {
-			opacity: 1;
-		}
-
-		/* 调整代码块样式 */
-		.text-content pre {
-			position: relative;
-			padding: 35px 15px 15px;
-			background-color: #f8f8f8;
-		}
-
-		.text-content pre code {
-			display: block;
-			overflow-x: auto;
-			padding: 0;
-		}
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -367,6 +434,16 @@
         </select>
         <input type="text" id="question" placeholder="输入问题..." autocomplete="off">
         <button onclick="submitQuestion()">发送</button>
+    </div>
+
+    <!-- 代码运行对话框 -->
+    <div class="dialog-overlay" id="codeDialogOverlay"></div>
+    <div class="code-dialog" id="codeDialog">
+        <div class="dialog-header">
+            <div class="dialog-title">代码运行结果</div>
+            <div class="dialog-close" onclick="closeCodeDialog()">&times;</div>
+        </div>
+        <div class="dialog-content" id="dialogContent"></div>
     </div>
 
     <script>
@@ -448,26 +525,34 @@
             return messageDiv;
         }
 
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
         function formatTextContent(text) {
-            // 基础Markdown格式化
-            let formatted = text
-                .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+            // 先转义所有HTML特殊字符
+            let safeText = escapeHtml(text);
+            
+            // 然后处理Markdown语法
+            return safeText
+                // 代码块处理（需要保留内部格式）
+                .replace(/```([\s\S]*?)```/g, (match, code) => {
+                    return `<pre><code>${code.trim()}</code></pre>`;
+                })
+                // 其他Markdown处理保持不变
                 .replace(/`([^`]+)`/g, '<code>$1</code>')
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                 .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>')
-                .replace(/^\s*-\s(.*$)/gm, '<li>$1</li>')
-                .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
-                .replace(/^\s*\d+\.\s(.*$)/gm, '<li>$1</li>')
-                .replace(/(<li>.*<\/li>)/gs, '<ol>$1</ol>');
-
-            // 段落处理
-            formatted = formatted
-                .split('\n\n')
-                .map(para => para.trim() ? `<p>${para}</p>` : '')
-                .join('');
-
-            return formatted;
+                // 保留换行和段落
+                .replace(/\n/g, '<br>')
+                .replace(/<br><br>/g, '</p><p>')
+                .replace(/^/, '<p>')
+                .replace(/$/, '</p>');
         }
 
         function updateMessage(messageElement, { text, timestamp, loading }) {
@@ -481,13 +566,48 @@
             } else {
                 const isVoiceMode = !!timestamp;
                 const content = isVoiceMode ? 
-                    text : 
+                    escapeHtml(text) :
                     `<div class="text-content">${formatTextContent(text)}</div>`;
                 
                 messageElement.innerHTML = `
                     <div>${content}</div>
                     ${timestamp ? createAudioControls(timestamp) : ''}
                 `;
+
+                // 为代码块添加操作按钮
+                if (!isVoiceMode) {
+                    messageElement.querySelectorAll('pre').forEach(preBlock => {
+                        const code = preBlock.querySelector('code').textContent.trim();
+                        const isHtml = /<[a-z][\s\S]*>/i.test(code);
+                        const isJs = code.startsWith('function') || code.includes('=>') || 
+                                     code.includes('const ') || code.includes('let ') || 
+                                     code.includes('var ') || code.includes('document.') ||
+                                     code.includes('window.');
+                        
+                        // 创建操作按钮容器
+                        const actionsDiv = document.createElement('div');
+                        actionsDiv.className = 'code-actions';
+                        
+                        // 添加复制按钮
+                        const copyBtn = document.createElement('button');
+                        copyBtn.className = 'code-btn copy';
+                        copyBtn.textContent = '复制代码';
+                        copyBtn.onclick = function() { copyCode(this); };
+                        actionsDiv.appendChild(copyBtn);
+                        
+                        // 如果是HTML/JS代码，添加运行按钮
+                        if (isHtml || isJs) {
+                            const runBtn = document.createElement('button');
+                            runBtn.className = 'code-btn';
+                            runBtn.textContent = '运行代码';
+                            runBtn.onclick = function() { runCodeInDialog(code, isHtml); };
+                            actionsDiv.appendChild(runBtn);
+                        }
+                        
+                        // 将按钮添加到pre块后面
+                        preBlock.parentNode.insertBefore(actionsDiv, preBlock.nextSibling);
+                    });
+                }
 
                 if (timestamp) {
                     setTimeout(() => initAudioControls(timestamp), 50);
@@ -621,6 +741,114 @@
             return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         }
 
+        function runCodeInDialog(code, isHtml) {
+            const dialog = document.getElementById('codeDialog');
+            const overlay = document.getElementById('codeDialogOverlay');
+            const content = document.getElementById('dialogContent');
+            
+            // 清空之前的内容
+            content.innerHTML = '';
+            
+            try {
+                if (isHtml) {
+                    // 对于HTML代码，直接显示
+                    content.innerHTML = code;
+                } else {
+                    // 对于JavaScript代码，使用eval执行
+                    const originalConsoleLog = console.log;
+                    let logs = [];
+                    
+                    // 重写console.log捕获输出
+                    console.log = function() {
+                        const args = Array.from(arguments).map(arg => {
+                            if (typeof arg === 'object') {
+                                try {
+                                    return JSON.stringify(arg, null, 2);
+                                } catch (e) {
+                                    return arg.toString();
+                                }
+                            }
+                            return arg;
+                        }).join(' ');
+                        
+                        logs.push(args);
+                        originalConsoleLog.apply(console, arguments);
+                    };
+                    
+                    // 执行代码
+                    const result = eval(code);
+                    
+                    // 恢复原始console.log
+                    console.log = originalConsoleLog;
+                    
+                    // 显示执行结果
+                    let output = '';
+                    if (logs.length > 0) {
+                        output += '<h4>控制台输出:</h4>';
+                        output += '<div style="background:#f5f5f5;padding:10px;border-radius:5px;margin-bottom:15px;">';
+                        output += logs.join('<br>');
+                        output += '</div>';
+                    }
+                    
+                    if (result !== undefined) {
+                        output += '<h4>返回值:</h4>';
+                        output += '<div style="background:#f5f5f5;padding:10px;border-radius:5px;">';
+                        if (typeof result === 'object') {
+                            try {
+                                output += '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+                            } catch (e) {
+                                output += result.toString();
+                            }
+                        } else {
+                            output += result;
+                        }
+                        output += '</div>';
+                    } else if (logs.length === 0) {
+                        output = '<div>代码已执行，但没有输出。</div>';
+                    }
+                    
+                    content.innerHTML = output;
+                }
+                
+                // 显示对话框
+                dialog.style.display = 'flex';
+                overlay.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            } catch (error) {
+                content.innerHTML = `
+                    <div style="color:red;padding:15px;background:#ffeeee;border-radius:5px;">
+                        <h4>执行错误:</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+                dialog.style.display = 'flex';
+                overlay.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+                console.error('代码执行错误:', error);
+            }
+        }
+
+        function closeCodeDialog() {
+            document.getElementById('codeDialog').style.display = 'none';
+            document.getElementById('codeDialogOverlay').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        function copyCode(button) {
+            const codeBlock = button.closest('.code-actions').previousElementSibling.querySelector('code');
+            const code = codeBlock.textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const originalText = button.textContent;
+                button.textContent = '已复制!';
+                setTimeout(() => button.textContent = originalText, 2000);
+            }).catch(err => {
+                console.error('复制失败:', err);
+            });
+        }
+
+        // 点击遮罩层也关闭对话框
+        document.getElementById('codeDialogOverlay').addEventListener('click', closeCodeDialog);
+
         // 输入控制
         document.getElementById('question').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') submitQuestion();
@@ -637,81 +865,6 @@
                 URL.revokeObjectURL(currentAudio.src);
             }
         });
-		
-		// 新增HTML转义函数
-		function escapeHtml(unsafe) {
-			return unsafe
-				.replace(/&/g, "&amp;")
-				.replace(/</g, "&lt;")
-				.replace(/>/g, "&gt;")
-				.replace(/"/g, "&quot;")
-				.replace(/'/g, "&#039;");
-		}
-
-		// 改进后的文本格式化函数
-		function formatTextContent(text) {
-			// 先转义所有HTML特殊字符
-			let safeText = escapeHtml(text);
-			
-			// 然后处理Markdown语法
-			return safeText
-				// 代码块处理（需要保留内部格式）
-				.replace(/```([\s\S]*?)```/g, (match, code) => {
-					return `<pre><code>${code.trim()}</code></pre>`;
-				})
-				// 其他Markdown处理保持不变
-				.replace(/`([^`]+)`/g, '<code>$1</code>')
-				.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-				.replace(/\*(.*?)\*/g, '<em>$1</em>')
-				// 保留换行和段落
-				.replace(/\n/g, '<br>')
-				.replace(/<br><br>/g, '</p><p>')
-				.replace(/^/, '<p>')
-				.replace(/$/, '</p>');
-		}
-
-		// 修改后的updateMessage函数
-		function updateMessage(messageElement, { text, timestamp, loading }) {
-			if (loading) {
-				messageElement.innerHTML = `
-					<div class="loading">
-						<i class="fas fa-spinner spinner"></i>
-						${text}
-					</div>
-				`;
-			} else {
-				const isVoiceMode = !!timestamp;
-				const content = isVoiceMode ? 
-					escapeHtml(text) :  // 语音模式也需要基础转义
-					`<div class="text-content">${formatTextContent(text)}</div>`;
-				
-				messageElement.innerHTML = `
-					<div>${content}</div>
-					${timestamp ? createAudioControls(timestamp) : ''}
-				`;
-
-				// 为代码块添加复制功能（可选）
-				if (!isVoiceMode) {
-					messageElement.querySelectorAll('pre code').forEach(codeBlock => {
-						codeBlock.insertAdjacentHTML('beforeend', 
-							`<button class="copy-btn" onclick="copyCode(this)">复制</button>`);
-					});
-				}
-
-				if (timestamp) {
-					setTimeout(() => initAudioControls(timestamp), 50);
-				}
-			}
-		}
-
-		// 新增复制代码功能
-		function copyCode(button) {
-			const code = button.previousSibling.textContent;
-			navigator.clipboard.writeText(code).then(() => {
-				button.textContent = '已复制!';
-				setTimeout(() => button.textContent = '复制', 2000);
-			});
-		}
     </script>
 </body>
 </html>
