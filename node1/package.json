@@ -11,6 +11,7 @@
   "dependencies": {
     "@scrapingant/scrapingant-client": "^0.2.1",
     "@sendgrid/mail": "^7.4.4",
+    "abcjs": "^6.4.4",
     "audio-loader": "^1.0.3",
     "axios": "^1.8.1",
     "canvas": "^2.11.2",
