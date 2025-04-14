@@ -7,6 +7,10 @@
     <script src="util/NavigationMenu.js"></script>
 </head>
 <body>
+    <script src="https://littleflute.github.io/JavaScript/w3.js" ></script>
+    <script src="https://littleflute.github.io/Games/js/blclass.js"></script>
+    <script src="c4BlClass.js"></script>
+    
 <script>
  
 const menuData = [
@@ -29,6 +33,8 @@ const mainContent = document.createElement('main');
 mainContent.style.marginTop = '60px';
 mainContent.style.padding = '20px';
 mainContent.innerHTML = `
+
+        <button onclick="blo.aboutMe(this)" data-window-id="id_4_about_blClass">aboutBlClass</button>
     <h1>欢迎访问漂泊者乐园的网站</h1>
     <p>这是一个演示导航菜单的示例页面。</p>
 `;

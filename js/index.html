@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>智能画布系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        #myCanvas {
+            background: #f0f0f0;
+            touch-action: none;
+            position: relative;
+            z-index: 1;
+        }
+
+        #tools {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: flex;
+            gap: 6px;
+        }
+
+        #tools button {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        #tools button:hover {
+            background: #f5f5f5;
+        }
+
+        .aoi-container {
+            position: fixed;
+            left: 0;  /* 新增定位基准 */
+            top: 0;   /* 新增定位基准 */
+            border: 3px dashed rgba(255, 0, 0, 0.6);
+            pointer-events: none;
+            z-index: 2;
+            width: 200px;
+            height: 200px;
+            display: none;
+            background: rgba(255, 0, 0, 0.1);
+        }
+
+        .aoi-header {
+            height: 24px;
+            background: rgba(255, 0, 0, 0.3);
+            cursor: move;
+            pointer-events: auto;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            font-size: 12px;
+            color: #fff;
+            position: relative;
+        }
+
+        .aoi-header::after {
+            content: "↔";
+            position: absolute;
+            right: 8px;
+            opacity: 0.6;
+        }
+
+        #brushSize {
+            vertical-align: middle;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <script src="w3.js" ></script>
+    <script src="blclass.js"></script>
+    <script src="c4BlClass.js"></script>
+    <canvas id="myCanvas"></canvas>
+    <div id="tools">
+        <button onclick="changeColor('#ff0000')">红</button>
+        <button onclick="changeColor('#00ff00')">绿</button>
+        <button onclick="changeColor('#0000ff')">蓝</button>
+        <button onclick="clearCanvas()">清空</button>  
+        <button onclick="toggleAOI()">AOI控制</button>  
+        <button onclick="blo.aboutMe(this)" data-window-id="id_4_about_blClass">aboutBlClass</button>
+        <button onclick="newWnd(this)" >new wnd test</button>
+        <input type="range" id="brushSize" min="1" max="50" value="5">
+    </div>
+
+    <script>
+        class AOIController {
+            constructor() {
+                this.isVisible = false;
+                this.offsetX = 50;
+                this.offsetY = 100;
+                this.isDragging = false;
+
+                // 创建AOI元素
+                this.aoiElement = document.createElement('div');
+                this.aoiElement.className = 'aoi-container';
+                this.aoiElement.style.display = 'none'; // 初始隐藏
+                this.aoiElement.innerHTML = `
+                    <div class="aoi-header">分析区域（可拖动）</div>
+                `;
+                document.body.appendChild(this.aoiElement);
+
+                // 事件绑定
+                this.header = this.aoiElement.querySelector('.aoi-header');
+                this.bindDragEvents();
+            }
+
+            bindDragEvents() {
+                const startDrag = (e) => {
+                    this.isDragging = true;
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    this.startX = clientX - this.offsetX;
+                    this.startY = clientY - this.offsetY;
+                    e.preventDefault();
+                };
+
+                const doDrag = (e) => {
+                    if (!this.isDragging) return;
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    
+                    this.offsetX = Math.max(0, Math.min(clientX - this.startX, window.innerWidth - 200));
+                    this.offsetY = Math.max(0, Math.min(clientY - this.startY, window.innerHeight - 200));
+                    
+                    this.aoiElement.style.transform = `translate(${this.offsetX}px, ${this.offsetY}px)`;
+                    e.preventDefault();
+                };
+
+                const stopDrag = () => {
+                    this.isDragging = false;
+                };
+
+                // 桌面端事件
+                this.header.addEventListener('mousedown', startDrag);
+                document.addEventListener('mousemove', doDrag);
+                document.addEventListener('mouseup', stopDrag);
+
+                // 移动端事件
+                this.header.addEventListener('touchstart', startDrag, { passive: false });
+                document.addEventListener('touchmove', doDrag, { passive: false });
+                document.addEventListener('touchend', stopDrag);
+            }
+
+            toggle() {
+                this.isVisible = !this.isVisible;
+                this.aoiElement.style.display = this.isVisible ? 'block' : 'none';
+                this.aoiElement.style.transform = `translate(${this.offsetX}px, ${this.offsetY}px)`; // 强制更新位置
+            }
+
+            getAreaRect() {
+                return {
+                    x: this.offsetX,
+                    y: this.offsetY,
+                    width: 200,
+                    height: 200
+                };
+            }
+        }
+
+        // 主画布系统
+        class DrawingSystem {
+            constructor() {
+                this.canvas = document.getElementById('myCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.isDrawing = false;
+                this.lastX = 0;
+                this.lastY = 0;
+                this.currentColor = '#000000';
+                this.brushSize = 5;
+
+                this.initCanvas();
+                this.bindEvents();
+                this.aoiController = new AOIController();
+            }
+
+            initCanvas() {
+                const resize = () => {
+                    this.canvas.width = window.innerWidth;
+                    this.canvas.height = window.innerHeight;
+                };
+                window.addEventListener('resize', resize);
+                resize();
+            }
+
+            bindEvents() {
+                const getPosition = (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const clientX = e.touches?.[0]?.clientX || e.clientX;
+                    const clientY = e.touches?.[0]?.clientY || e.clientY;
+                    return {
+                        x: (clientX - rect.left) * (this.canvas.width / rect.width),
+                        y: (clientY - rect.top) * (this.canvas.height / rect.height)
+                    };
+                };
+
+                const startDrawing = (e) => {
+                    this.isDrawing = true;
+                    const pos = getPosition(e);
+                    [this.lastX, this.lastY] = [pos.x, pos.y];
+                };
+
+                const draw = (e) => {
+                    if (!this.isDrawing) return;
+                    const pos = getPosition(e);
+                    
+                    this.ctx.beginPath();
+                    this.ctx.lineWidth = this.brushSize;
+                    this.ctx.lineCap = 'round';
+                    this.ctx.strokeStyle = this.currentColor;
+                    
+                    this.ctx.moveTo(this.lastX, this.lastY);
+                    this.ctx.lineTo(pos.x, pos.y);
+                    this.ctx.stroke();
+                    
+                    [this.lastX, this.lastY] = [pos.x, pos.y];
+                };
+
+                const endDrawing = () => {
+                    this.isDrawing = false;
+                };
+
+                // 桌面端事件
+                this.canvas.addEventListener('mousedown', startDrawing);
+                this.canvas.addEventListener('mousemove', draw);
+                this.canvas.addEventListener('mouseup', endDrawing);
+                this.canvas.addEventListener('mouseout', endDrawing);
+
+                // 移动端事件
+                this.canvas.addEventListener('touchstart', e => {
+                    e.preventDefault();
+                    startDrawing(e);
+                });
+                this.canvas.addEventListener('touchmove', e => {
+                    e.preventDefault();
+                    draw(e);
+                });
+                this.canvas.addEventListener('touchend', endDrawing);
+
+                // 笔刷大小控制
+                document.getElementById('brushSize').addEventListener('input', (e) => {
+                    this.brushSize = parseInt(e.target.value);
+                });
+            }
+
+            clearCanvas() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+
+            changeColor(color) {
+                this.currentColor = color;
+            }
+
+            toggleAOI() {
+                this.aoiController.toggle();
+            }
+        }
+
+        // 初始化系统
+        const drawingSystem = new DrawingSystem();
+
+        // 工具函数导出
+        function changeColor(color) {
+            drawingSystem.changeColor(color);
+        }
+
+        function clearCanvas() {
+            drawingSystem.clearCanvas();
+        }
+
+        function toggleAOI() {
+            drawingSystem.toggleAOI();
+        } 
+        function newWnd(){
+            blo.showWindow("id_4_new_window");
+        }
+    </script>
+</body>
+</html>

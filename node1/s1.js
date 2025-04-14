@@ -56,9 +56,8 @@ async function generateSceneImage(scene, width, height, tempDir) {
   // 绘制图形
   console.log(`Drawing ${scene.drawingObjs.length} objects for scene ${scene.id}`);
   scene.drawingObjs.forEach(obj => drawShape(ctx, obj));
-
-  // 保存图片
-  const filePath = path.join(tempDir, `scene-${scene.id}.png`);
+ 
+  const filePath = path.join(tempDir, `scene-${scene.uuid}.png`);
   const out = fs.createWriteStream(filePath);
   const stream = canvas.createPNGStream();
   stream.pipe(out);
@@ -74,8 +73,8 @@ async function generateSceneImage(scene, width, height, tempDir) {
 
 // 创建场景视频片段
 async function createSceneClip(scene, pngPath, duration, fps, tempDir) {
-  console.log(`Creating video clip for scene ${scene.id} (${duration}s)`);
-  const outputPath = path.join(tempDir, `clip-${scene.id}.mp4`);
+  console.log(`Creating video clip for scene ${scene.id} (${duration}s)`);   
+  const outputPath = path.join(tempDir, `clip-${scene.uuid}.mp4`);
   
   return new Promise((resolve, reject) => {
     ffmpeg()
