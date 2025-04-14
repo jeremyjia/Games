@@ -307,6 +307,7 @@
                 this.initRubiksCube();
                 this.initCameraController();
                 this.initUI(); // 初始化用户界面
+                this.initInstructions(); // 初始化操作说明
                 this.animate();
             }
 
@@ -407,6 +408,15 @@
                     input[type="range"] {
                         width: 200px;
                     }
+                    .instructions {
+                        position: fixed;
+                        top: 10px;
+                        left: 10px;
+                        background-color: rgba(255, 255, 255, 0.8);
+                        padding: 10px;
+                        border-radius: 5px;
+                        z-index: 1000;
+                    }
                 `;
                 document.head.appendChild(style);
 
@@ -478,6 +488,28 @@
                 });
             }
 
+            initInstructions() {
+                const instructionsDiv = document.createElement('div');
+                instructionsDiv.className = 'instructions';
+                instructionsDiv.innerHTML = `
+                    <p>操作说明：</p>
+                    <ul>
+                        <li>鼠标拖动：旋转视角</li>
+                        <li>按键操作：
+                            <ul>
+                                <li>U：旋转上层</li>
+                                <li>D：旋转下层</li>
+                                <li>L：旋转左层</li>
+                                <li>R：旋转右层</li>
+                                <li>F：旋转前层</li>
+                                <li>B：旋转后层</li>
+                            </ul>
+                        </li>
+                    </ul>
+                `;
+                document.body.appendChild(instructionsDiv);
+            }
+
             toggleSettings() {
                 const isVisible = this.settingsWindow.style.display === 'block';
                 this.settingsWindow.style.display = isVisible ? 'none' : 'block';
@@ -516,8 +548,9 @@
     </script>
 </body>
 </html>
+    
 <!--
  //code11: 
  升级 
- 给每个面编号，如： f1-f9,u1-u9,编号显示在面上
+ 添加一个div 在窗口左上角，显示操作说明
 -->
