@@ -280,7 +280,10 @@
                     }
                     .settings-window {
                         position: fixed;
-                        background: rgba(255, 255, 255, 0.9);
+                        background: rgba(255, 255, 255, 0.9); 
+                        left: 0;
+                        top: 0;
+                        transform: none; /* 确保默认无transform */
                         border-radius: 8px;
                         padding: 15px;
                         box-shadow: 0 2px 10px rgba(0,0,0,0.2);
@@ -365,6 +368,7 @@
                     const rect = this.settingsWindow.getBoundingClientRect();
                     offsetX = e.clientX - rect.left;
                     offsetY = e.clientY - rect.top;
+                    this.settingsWindow.style.transform = 'none'; // 新增清除transform
                     e.preventDefault();
                 });
                 document.addEventListener('mousemove', (e) => {
@@ -378,13 +382,21 @@
             }
 
             toggleSettings() {
-                this.settingsWindow.style.display = 
-                    this.settingsWindow.style.display === 'none' ? 'block' : 'none';
-                if (this.settingsWindow.style.display === 'block') {
-                    // 初始位置居中
-                    this.settingsWindow.style.left = '50%';
-                    this.settingsWindow.style.top = '50%';
-                    this.settingsWindow.style.transform = 'translate(-50%, -50%)';
+                const isVisible = this.settingsWindow.style.display === 'block';
+                this.settingsWindow.style.display = isVisible ? 'none' : 'block';
+                if (!isVisible) {
+                    // 强制重绘以获取正确尺寸
+                    this.settingsWindow.style.opacity = '0';
+                    this.settingsWindow.getBoundingClientRect(); // 触发重绘
+                    this.settingsWindow.style.opacity = '';
+                    
+                    const rect = this.settingsWindow.getBoundingClientRect();
+                    const left = (window.innerWidth - rect.width) / 2;
+                    const top = (window.innerHeight - rect.height) / 2;
+                    
+                    this.settingsWindow.style.left = `${left}px`;
+                    this.settingsWindow.style.top = `${top}px`;
+                    this.settingsWindow.style.transform = 'none';
                 }
             }
 
@@ -409,5 +421,6 @@
 </html>
 <!--
  //code11: 
- 升级 settingsWindow 移动时，与鼠标不同步
+ 升级 
+ 单层旋转逻辑不对，不应该是单个小立方体旋转，应该是整个面一起转
 -->
