@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OOP Rubik's Cube</title>
+    <style>body { margin: 0; }</style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        class C4Cubelet {
+            constructor(x, y, z) {
+                this.position = new THREE.Vector3(x, y, z);
+                this.mesh = this.createMesh(x, y, z);
+                this.targetRotation = new THREE.Euler();
+            }
+
+            createMesh(x, y, z) {
+                const materials = C4Cubelet.COLORS.map((color, i) => 
+                    new THREE.MeshPhongMaterial({
+                        color: this.shouldPaintFace(x, y, z, i) ? color : 0x222222,
+                        shininess: 100
+                    })
+                );
+                
+                const mesh = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.95, 0.95, 0.95),
+                    materials
+                );
+                mesh.position.copy(this.position);
+                return mesh;
+            }
+
+            shouldPaintFace(x, y, z, faceIndex) {
+                const positions = {
+                    0: x === 1,   // Right
+                    1: x === -1,  // Left
+                    2: y === 1,   // Up
+                    3: y === -1,  // Down
+                    4: z === 1,   // Front
+                    5: z === -1   // Back
+                };
+                return positions[faceIndex];
+            }
+
+            update(delta) {
+                this.mesh.rotation.x += (this.targetRotation.x - this.mesh.rotation.x) * 0.1;
+                this.mesh.rotation.y += (this.targetRotation.y - this.mesh.rotation.y) * 0.1;
+            }
+        }
+
+        C4Cubelet.COLORS = [
+            new THREE.Color('red'),    // Right
+            new THREE.Color('orange'), // Left
+            new THREE.Color('white'),  // Up
+            new THREE.Color('yellow'), // Down
+            new THREE.Color('green'),  // Front
+            new THREE.Color('blue')    // Back
+        ];
+
+        class C4RubiksCube {
+            constructor() {
+                this.cubelets = [];
+                this.rotationQueue = [];
+                this.isRotating = false;
+                this.rotationDuration = 300; // 添加旋转持续时间属性
+                this.initCube();
+            }
+
+            initCube() {
+                for(let x = -1; x <= 1; x++) {
+                    for(let y = -1; y <= 1; y++) {
+                        for(let z = -1; z <= 1; z++) {
+                            const cubelet = new C4Cubelet(x, y, z);
+                            this.cubelets.push(cubelet);
+                        }
+                    }
+                }
+            }
+
+            rotateLayer(axis, position, direction) {
+                this.rotationQueue.push({ axis, position, direction });
+                if (!this.isRotating) this.processRotationQueue();
+            }
+
+            processRotationQueue() {
+                if (this.rotationQueue.length === 0) return;
+                
+                const { axis, position, direction } = this.rotationQueue.shift();
+                this.isRotating = true;
+                
+                const targetCubes = this.cubelets.filter(cube => 
+                    cube.position[axis] === position
+                );
+
+                const startTime = Date.now();
+                const animate = () => {
+                    const progress = (Date.now() - startTime) / this.rotationDuration; // 使用动态持续时间
+                    const angle = Math.PI/2 * direction * Math.min(progress, 1);
+                    
+                    targetCubes.forEach(cube => {
+                        cube.mesh.rotation[axis] = angle;
+                    });
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        this.updatePositions(axis, position, direction);
+                        this.isRotating = false;
+                        this.processRotationQueue();
+                    }
+                };
+                
+                animate();
+            }
+
+            updatePositions(axis, position, direction) {
+                this.cubelets.forEach(cube => {
+                    if (cube.position[axis] !== position) return;
+                    
+                    let x = cube.position.x;
+                    let y = cube.position.y;
+                    let z = cube.position.z;
+                    
+                    switch(axis) {
+                        case 'x':
+                            [y, z] = [-z*direction, y*direction];
+                            break;
+                        case 'y':
+                            [x, z] = [z*direction, -x*direction];
+                            break;
+                        case 'z':
+                            [x, y] = [-y*direction, x*direction];
+                            break;
+                    }
+                    
+                    cube.position.set(x, y, z);
+                    cube.mesh.position.copy(cube.position);
+                    cube.mesh.rotation[axis] = 0;
+                });
+            }
+        }
+
+        class C4CameraController {
+            constructor(camera, renderer, o4RubiksCube) {
+                this.camera = camera;
+                this.renderer = renderer;
+                this.o4RubiksCube = o4RubiksCube;
+                this.targetRotation = { x: 0, y: 0 };
+                this.initControls();
+            }
+
+            initControls() {
+                this.mouseDown = false;
+                this.startX = 0;
+                this.startY = 0;
+                
+                this.renderer.domElement.addEventListener('mousedown', this.onMouseDown);
+                this.renderer.domElement.addEventListener('mousemove', this.onMouseMove);
+                this.renderer.domElement.addEventListener('mouseup', this.onMouseUp);
+                document.addEventListener('keydown', this.onKeyDown);
+            }
+
+            onMouseDown = (e) => {
+                this.mouseDown = true;
+                this.startX = e.clientX;
+                this.startY = e.clientY;
+            }
+
+            onMouseMove = (e) => {
+                if (!this.mouseDown) return;
+                
+                this.targetRotation.y += (e.clientX - this.startX) * 0.005;
+                this.targetRotation.x += (e.clientY - this.startY) * 0.005;
+                
+                this.startX = e.clientX;
+                this.startY = e.clientY;
+            }
+
+            onMouseUp = () => {
+                this.mouseDown = false;
+            }
+
+            onKeyDown = (e) => {
+                const key = e.key.toLowerCase();
+                const moves = {
+                    'u': () => this.o4RubiksCube.rotateLayer('y', 1, 1),
+                    'd': () => this.o4RubiksCube.rotateLayer('y', -1, 1),
+                    'l': () => this.o4RubiksCube.rotateLayer('x', -1, 1),
+                    'r': () => this.o4RubiksCube.rotateLayer('x', 1, 1),
+                    'f': () => this.o4RubiksCube.rotateLayer('z', 1, 1),
+                    'b': () => this.o4RubiksCube.rotateLayer('z', -1, 1)
+                };
+                
+                if (moves[key]) moves[key]();
+            }
+
+            update() {
+                this.camera.position.x = 5 * Math.sin(this.targetRotation.y) * Math.cos(this.targetRotation.x);
+                this.camera.position.z = 5 * Math.cos(this.targetRotation.y) * Math.cos(this.targetRotation.x);
+                this.camera.position.y = 5 * Math.sin(this.targetRotation.x);
+                this.camera.lookAt(0, 0, 0);
+            }
+        }
+
+        class C4RubiksCubeApp {
+            constructor() {
+                this.initThree();
+                this.initScene();
+                this.initCamera();
+                this.initRubiksCube();
+                this.initCameraController();
+                this.initUI(); // 初始化用户界面
+                this.animate();
+            }
+
+            initThree() {
+                this.scene = new THREE.Scene();
+                this.renderer = new THREE.WebGLRenderer({ antialias: true });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                document.body.appendChild(this.renderer.domElement);
+            }
+
+            initScene() {
+                const ambient = new THREE.AmbientLight(0x404040);
+                const light = new THREE.DirectionalLight(0xffffff, 1);
+                light.position.set(5, 5, 5);
+                this.scene.add(ambient, light);
+            }
+
+            initCamera() {
+                this.camera = new THREE.PerspectiveCamera(
+                    75,
+                    window.innerWidth / window.innerHeight,
+                    0.1,
+                    1000
+                );
+                this.camera.position.z = 6;
+            }
+
+            initRubiksCube() {
+                this.o4RubiksCube = new C4RubiksCube();
+                this.o4RubiksCube.cubelets.forEach(cube => this.scene.add(cube.mesh));
+            }
+
+            initCameraController() {
+                this.oCameraController = new C4CameraController(
+                    this.camera,
+                    this.renderer,
+                    this.o4RubiksCube
+                );
+                window.addEventListener('resize', () => this.onResize());
+            }
+
+            initUI() {
+                // 添加CSS样式
+                const style = document.createElement('style');
+                style.textContent = `
+                    .toolbar {
+                        position: fixed;
+                        bottom: 0;
+                        left: 0;
+                        width: 100%;
+                        background: #333;
+                        padding: 10px;
+                        text-align: center;
+                        z-index: 1000;
+                    }
+                    .toolbar button {
+                        padding: 8px 16px;
+                        margin: 0 5px;
+                        background: #444;
+                        color: white;
+                        border: none;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        transition: background 0.3s;
+                    }
+                    .toolbar button:hover {
+                        background: #666;
+                    }
+                    .settings-window {
+                        position: fixed;
+                        background: rgba(255, 255, 255, 0.9);
+                        border-radius: 8px;
+                        padding: 15px;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                        display: none;
+                        z-index: 1001;
+                    }
+                    .settings-header {
+                        cursor: move;
+                        padding: 8px;
+                        margin: -15px -15px 15px;
+                        background: #f0f0f0;
+                        border-radius: 8px 8px 0 0;
+                    }
+                    .settings-content {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 10px;
+                    }
+                    .speed-control {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                    }
+                    input[type="range"] {
+                        width: 200px;
+                    }
+                `;
+                document.head.appendChild(style);
+
+                // 创建工具栏
+                const toolbar = document.createElement('div');
+                toolbar.className = 'toolbar';
+                
+                // 添加设置按钮
+                const settingsBtn = document.createElement('button');
+                settingsBtn.textContent = '⚙️ Settings';
+                settingsBtn.onclick = () => this.toggleSettings();
+                toolbar.appendChild(settingsBtn);
+
+                // 创建设置窗口
+                this.settingsWindow = document.createElement('div');
+                this.settingsWindow.className = 'settings-window';
+                
+                // 窗口标题栏
+                const header = document.createElement('div');
+                header.className = 'settings-header';
+                header.textContent = 'Rotation Settings';
+                
+                // 速度控制
+                const content = document.createElement('div');
+                content.className = 'settings-content';
+                const speedControl = document.createElement('div');
+                speedControl.className = 'speed-control';
+                speedControl.innerHTML = `
+                    <label>Speed:</label>
+                    <input type="range" min="50" max="1000" value="300" class="speed-slider">
+                    <span class="speed-value">300ms</span>
+                `;
+                
+                // 绑定事件
+                const slider = speedControl.querySelector('.speed-slider');
+                const valueDisplay = speedControl.querySelector('.speed-value');
+                slider.addEventListener('input', (e) => {
+                    const value = e.target.value;
+                    valueDisplay.textContent = `${value}ms`;
+                    this.o4RubiksCube.rotationDuration = parseInt(value);
+                });
+
+                content.appendChild(speedControl);
+                this.settingsWindow.appendChild(header);
+                this.settingsWindow.appendChild(content);
+                
+                // 添加元素到DOM
+                document.body.appendChild(toolbar);
+                document.body.appendChild(this.settingsWindow);
+
+                // 窗口拖动功能
+                let isDragging = false;
+                let offsetX = 0, offsetY = 0;
+                header.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    const rect = this.settingsWindow.getBoundingClientRect();
+                    offsetX = e.clientX - rect.left;
+                    offsetY = e.clientY - rect.top;
+                    e.preventDefault();
+                });
+                document.addEventListener('mousemove', (e) => {
+                    if (!isDragging) return;
+                    this.settingsWindow.style.left = `${e.clientX - offsetX}px`;
+                    this.settingsWindow.style.top = `${e.clientY - offsetY}px`;
+                });
+                document.addEventListener('mouseup', () => {
+                    isDragging = false;
+                });
+            }
+
+            toggleSettings() {
+                this.settingsWindow.style.display = 
+                    this.settingsWindow.style.display === 'none' ? 'block' : 'none';
+                if (this.settingsWindow.style.display === 'block') {
+                    // 初始位置居中
+                    this.settingsWindow.style.left = '50%';
+                    this.settingsWindow.style.top = '50%';
+                    this.settingsWindow.style.transform = 'translate(-50%, -50%)';
+                }
+            }
+
+            onResize() {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+            animate() {
+                requestAnimationFrame(() => this.animate());
+                this.o4RubiksCube.cubelets.forEach(cube => cube.update());
+                this.oCameraController.update();
+                this.renderer.render(this.scene, this.oCameraController.camera);
+            }
+        }
+
+        // 启动应用
+        new C4RubiksCubeApp();
+    </script>
+</body>
+</html>
+<!--
+ //code11: 
+ 升级 settingsWindow 移动时，与鼠标不同步
+-->
