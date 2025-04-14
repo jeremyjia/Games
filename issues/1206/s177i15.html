@@ -14,14 +14,111 @@
                 this.targetRotation = new THREE.Euler();
             }
 
+            getFaceType(faceIndex) {
+                const faceTypes = ['r', 'l', 'u', 'd', 'f', 'b'];
+                return faceTypes[faceIndex];
+            }
+
+            calculateNumber(faceType, x, y, z) {
+                let row, col;
+                switch(faceType) {
+                    case 'f': // front (z=1)
+                        row = (y === 1 ? 0 : y === 0 ? 1 : 2);
+                        col = (x === -1 ? 0 : x === 0 ? 1 : 2);
+                        break;
+                    case 'b': // back (z=-1)
+                        row = (y === 1 ? 0 : y === 0 ? 1 : 2);
+                        col = (x === 1 ? 2 : x === 0 ? 1 : 0);
+                        break;
+                    case 'r': // right (x=1)
+                        row = (y === 1 ? 0 : y === 0 ? 1 : 2);
+                        col = (z === 1 ? 0 : z === 0 ? 1 : 2);
+                        break;
+                    case 'l': // left (x=-1)
+                        row = (y === 1 ? 0 : y === 0 ? 1 : 2);
+                        col = (z === 1 ? 2 : z === 0 ? 1 : 0);
+                        break;
+                    case 'u': // up (y=1)
+                        row = (z === 1 ? 0 : z === 0 ? 1 : 2);
+                        col = (x === -1 ? 0 : x === 0 ? 1 : 2);
+                        break;
+                    case 'd': // down (y=-1)
+                        row = (z === -1 ? 0 : z === 0 ? 1 : 2);
+                        col = (x === -1 ? 0 : x === 0 ? 1 : 2);
+                        break;
+                    default:
+                        row = 0;
+                        col = 0;
+                }
+                const number = row * 3 + col + 1;
+                return faceType + number;
+            }
+
+            createNumberedMaterial(color, number, faceType) {
+                const canvas = document.createElement('canvas');
+                canvas.width = 128;
+                canvas.height = 128;
+                const context = canvas.getContext('2d');
+
+                // Adjust canvas based on face orientation
+                switch(faceType) {
+                    case 'r':
+                        context.translate(128, 0);
+                        context.rotate(Math.PI / 2);
+                        break;
+                    case 'l':
+                        context.translate(0, 128);
+                        context.rotate(-Math.PI / 2);
+                        break;
+                    case 'u':
+                        context.translate(0, 128);
+                        context.rotate(-Math.PI / 2);
+                        break;
+                    case 'd':
+                        context.translate(128, 0);
+                        context.rotate(Math.PI / 2);
+                        break;
+                    case 'b':
+                        context.translate(128, 128);
+                        context.rotate(Math.PI);
+                        break;
+                }
+
+                // Draw background
+                context.fillStyle = `#${color.getHexString()}`;
+                context.fillRect(0, 0, 128, 128);
+
+                // Draw number
+                context.fillStyle = 'black';
+                context.font = '50px Arial';
+                context.textAlign = 'center';
+                context.textBaseline = 'middle';
+                context.fillText(number, 64, 64);
+
+                const texture = new THREE.CanvasTexture(canvas);
+                texture.needsUpdate = true;
+
+                return new THREE.MeshPhongMaterial({
+                    map: texture,
+                    shininess: 100
+                });
+            }
+
             createMesh(x, y, z) {
-                const materials = C4Cubelet.COLORS.map((color, i) => 
-                    new THREE.MeshPhongMaterial({
-                        color: this.shouldPaintFace(x, y, z, i) ? color : 0x222222,
-                        shininess: 100
-                    })
-                );
-                
+                const materials = [];
+                for (let i = 0; i < 6; i++) {
+                    if (this.shouldPaintFace(x, y, z, i)) {
+                        const faceType = this.getFaceType(i);
+                        const number = this.calculateNumber(faceType, x, y, z);
+                        const color = C4Cubelet.COLORS[i];
+                        materials.push(this.createNumberedMaterial(color, number, faceType));
+                    } else {
+                        materials.push(new THREE.MeshPhongMaterial({
+                            color: 0x222222,
+                            shininess: 100
+                        }));
+                    }
+                }
                 const mesh = new THREE.Mesh(
                     new THREE.BoxGeometry(0.95, 0.95, 0.95),
                     materials
@@ -55,7 +152,7 @@
             new THREE.Color('yellow'), // Down
             new THREE.Color('green'),  // Front
             new THREE.Color('blue')    // Back
-        ];
+        ]; 
 
         class C4RubiksCube {
             constructor() {
@@ -422,5 +519,5 @@
 <!--
  //code11: 
  升级 
- 单层旋转逻辑不对，不应该是单个小立方体旋转，应该是整个面一起转
+ 给每个面编号，如： f1-f9,u1-u9,编号显示在面上
 -->
