@@ -219,8 +219,9 @@
                     const exampleCode = `V:1.0
                     3/"C" 3// 3// 3. 2/ 3/ 5/
                     // `;
-                    this.sheetMusicInput.value = exampleCode;
-                    const parsedSheetMusic = this.parseSheetMusic(exampleCode);
+                    const processedCode = this.processSpaces(exampleCode);
+                    this.sheetMusicInput.value = processedCode;
+                    const parsedSheetMusic = this.parseSheetMusic(processedCode);
                     this.canvas.innerHTML = `<pre>${parsedSheetMusic}</pre>`;
                 });
 
@@ -230,18 +231,20 @@
                     3/"C" 3// 3// 3. 2/ 3/ 5/
                     // 
                     // `;
-                    this.sheetMusicInput.value = newSheetCode;
-                    const parsedSheetMusic = this.parseSheetMusic(newSheetCode);
+                    const processedCode = this.processSpaces(newSheetCode);
+                    this.sheetMusicInput.value = processedCode;
+                    const parsedSheetMusic = this.parseSheetMusic(processedCode);
                     this.canvas.innerHTML = `<pre>${parsedSheetMusic}</pre>`;
                 });
 
                 this.sheetMusicInput.addEventListener('input', () => {
                     const input = this.sheetMusicInput.value;
+                    const processedInput = this.processSpaces(input);
                     let parsedSheetMusic;
-                    if (input.includes('V:')) {
-                        parsedSheetMusic = this.parseSheetMusic(input);
+                    if (processedInput.includes('V:')) {
+                        parsedSheetMusic = this.parseSheetMusic(processedInput);
                     } else {
-                        parsedSheetMusic = `<span class="error">${input}</span>`;
+                        parsedSheetMusic = `<span class="error">${processedInput}</span>`;
                     }
                     this.canvas.innerHTML = `<pre>${parsedSheetMusic}</pre>`;
                 });
@@ -325,19 +328,19 @@
                     const issueData = await this.apiRequest('GET', 'issues/11');
                     const issueBody = issueData.body;
                     if (issueBody) {
+                        const processedIssueBody = this.processSpaces(issueBody);
                         const issueButton = document.createElement('button');
                         issueButton.classList.add('bg-orange-500', 'hover:bg-orange-600', 'text-white', 'py-2', 'px-4', 'rounded', 'mr-2');
                         issueButton.textContent = '议题 11 内容';
                         issueButton.addEventListener('click', () => {
                             this.resetHighlight();
                             issueButton.classList.add('highlighted');
-                            // 添加空格处理
-                            this.sheetMusicInput.value = this.processSpaces(issueBody);
+                            this.sheetMusicInput.value = processedIssueBody;
                             let parsedSheetMusic;
-                            if (issueBody.includes('V:')) {
-                                parsedSheetMusic = this.parseSheetMusic(issueBody);
+                            if (processedIssueBody.includes('V:')) {
+                                parsedSheetMusic = this.parseSheetMusic(processedIssueBody);
                             } else {
-                                parsedSheetMusic = `<span class="error">${issueBody}</span>`;
+                                parsedSheetMusic = `<span class="error">${processedIssueBody}</span>`;
                             }
                             this.canvas.innerHTML = `<pre>${parsedSheetMusic}</pre>`;
                         });
@@ -350,19 +353,19 @@
                         n++;
                         const commentBody = comment.body;
                         if (commentBody) {
+                            const processedCommentBody = this.processSpaces(commentBody);
                             const commentButton = document.createElement('button');
                             commentButton.classList.add('bg-pink-500', 'hover:bg-pink-600', 'text-white', 'py-2', 'px-4', 'rounded', 'mr-2');
                             commentButton.textContent = `C${n}`;
                             commentButton.addEventListener('click', () => {
                                 this.resetHighlight();
                                 commentButton.classList.add('highlighted');
-                                // 添加空格处理
-                                this.sheetMusicInput.value = this.processSpaces(commentBody);
+                                this.sheetMusicInput.value = processedCommentBody;
                                 let parsedSheetMusic;
-                                if (commentBody.includes('V:')) {
-                                    parsedSheetMusic = this.parseSheetMusic(commentBody);
+                                if (processedCommentBody.includes('V:')) {
+                                    parsedSheetMusic = this.parseSheetMusic(processedCommentBody);
                                 } else {
-                                    parsedSheetMusic = `<span class="error">${commentBody}</span>`;
+                                    parsedSheetMusic = `<span class="error">${processedCommentBody}</span>`;
                                 }
                                 this.canvas.innerHTML = `<pre>${parsedSheetMusic}</pre>`;
                             });
@@ -473,11 +476,10 @@
 
 </html>
     
-    
 <!--
 升级 
-   以“Q:”开头才解析为乐谱，蓝色显示
-   其他不解析，以绿色显示
+     以“Q:”开头才解析为乐谱，蓝色显示
+ 其他不解析，以绿色显示
  
 return all new code
 -->
