@@ -6,27 +6,192 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
-    <title>手机编程系统</title>
+    <title>手机编程系统 v0.12</title>
+    <style>
+        .draggable {
+            touch-action: none;
+            user-select: none;
+            cursor: move;
+        }
+    </style>
 </head>
 
 <body class="bg-gray-100">
     <script>
         class C4MobileDevApp {
             constructor() {
-                this.version = "0.11";
-                this.currentRepo = 's177'; 
-                this.#applyStyles(); 
+                this.version = "0.12";
+                this.currentRepo = 's177';
+                this.#applyStyles();
                 this.#createMainUI();
-
+                this.#loadComments();
             }
-            #applyStyles(){
 
+            #applyStyles() {
+                document.body.innerHTML = '';
+                document.title = `手机编程系统 v${this.version}`;
             }
-            #createMainUI(){
-                //生成一个布满窗口的画布
-                //窗口底部固定有一个工具条，有以按钮，可以 toggle一个可移动的窗口，窗口顶部有2个工具条，底部有以个状态栏,中间有一个文本框
-                //遍历 currentRepo 的 issue#12的所有评论以按钮方式分布在工具条2上。 点按钮会在文本框中显示评论
-                //工具条1上有一个按钮可以生成新的评论
+
+            #createMainUI() {
+                // 主画布容器
+                this.canvas = document.createElement('div');
+                this.canvas.className = 'h-[calc(100vh-4rem)] bg-white';
+                document.body.appendChild(this.canvas);
+
+                // 底部固定工具条
+                this.bottomToolbar = this.#createToolbar(['toggle-panel'], 'bottom-0');
+                
+                // 浮动窗口
+                this.panel = this.#createPanel();
+                this.isPanelVisible = true;
+
+                // 事件绑定
+                this.#bindEvents();
+            }
+
+            #createToolbar(buttons, position) {
+                const toolbar = document.createElement('div');
+                toolbar.className = `fixed ${position} w-full h-16 bg-gray-800 flex items-center px-4 space-x-4`;
+                
+                buttons.forEach(btnId => {
+                    const btn = document.createElement('button');
+                    btn.className = 'p-2 bg-blue-500 text-white rounded';
+                    btn.innerHTML = btnId === 'toggle-panel' 
+                        ? '<i class="fas fa-window-restore"></i>'
+                        : '<i class="fas fa-plus"></i>';
+                    btn.dataset.action = btnId;
+                    toolbar.appendChild(btn);
+                });
+
+                document.body.appendChild(toolbar);
+                return toolbar;
+            }
+
+            #createPanel() {
+                const panel = document.createElement('div');
+                panel.className = 'fixed top-16 left-4 w-96 h-96 bg-white shadow-lg rounded-lg flex flex-col';
+                
+                // 添加可拖拽区域
+                const dragHandle = document.createElement('div');
+                dragHandle.className = 'draggable h-8 bg-gray-200 cursor-move rounded-t-lg flex items-center px-4';
+                dragHandle.innerHTML = '<span class="text-gray-600">≡ 拖动区域</span>';
+                
+                // 顶部工具条1
+                const toolbar1 = this.#createToolbar(['new-comment'], 'relative');
+                toolbar1.className = 'p-2 bg-gray-100 flex space-x-2';
+
+                // 顶部工具条2
+                const toolbar2 = document.createElement('div');
+                toolbar2.className = 'p-2 bg-gray-50 flex flex-wrap gap-2 overflow-auto';
+                toolbar2.id = 'comments-toolbar';
+                
+                // 文本框
+                const textarea = document.createElement('div');
+                textarea.className = 'flex-1 p-4 overflow-auto border-t';
+                textarea.id = 'comment-content';
+                
+                // 状态栏
+                const statusBar = document.createElement('div');
+                statusBar.className = 'p-2 bg-gray-100 text-sm text-gray-600';
+                statusBar.textContent = `当前仓库: ${this.currentRepo}`;
+
+                panel.append(dragHandle, toolbar1, toolbar2, textarea, statusBar);
+                document.body.appendChild(panel);
+                return panel;
+            }
+
+            async #loadComments() {
+                try {
+                    const comments = await this.apiRequest('GET', 'issues/12/comments');
+                    const toolbar = document.getElementById('comments-toolbar');
+                    toolbar.innerHTML = '';
+                    
+                    comments.forEach(comment => {
+                        const btn = document.createElement('button');
+                        btn.className = 'px-3 py-1 bg-gray-200 rounded text-sm hover:bg-gray-300 transition-colors';
+                        btn.textContent = `#${comment.id}`;
+                        btn.onclick = () => {
+                            document.getElementById('comment-content').textContent = comment.body;
+                        };
+                        toolbar.appendChild(btn);
+                    });
+                } catch (error) {
+                    console.error('加载评论失败:', error);
+                    alert('加载评论失败，请检查控制台');
+                }
+            }
+
+            #bindEvents() {
+                // 切换面板可见性
+                document.querySelector('[data-action="toggle-panel"]').onclick = () => {
+                    this.isPanelVisible = !this.isPanelVisible;
+                    this.panel.style.display = this.isPanelVisible ? 'block' : 'none';
+                };
+
+                // 新建评论
+                document.querySelector('[data-action="new-comment"]').onclick = async () => {
+                    const comment = prompt('输入新评论内容:');
+                    if (comment) {
+                        try {
+                            await this.apiRequest('POST', 'issues/12/comments', {
+                                body: comment
+                            });
+                            this.#loadComments();
+                            alert('评论已成功提交！');
+                        } catch (error) {
+                            alert('提交评论失败');
+                            console.error(error);
+                        }
+                    }
+                };
+
+                // 实现拖动功能
+                let isDragging = false;
+                let startX, startY, initialX, initialY;
+                const dragHandle = this.panel.querySelector('.draggable');
+
+                dragHandle.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    initialX = this.panel.offsetLeft;
+                    initialY = this.panel.offsetTop;
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (!isDragging) return;
+                    const dx = e.clientX - startX;
+                    const dy = e.clientY - startY;
+                    this.panel.style.left = `${initialX + dx}px`;
+                    this.panel.style.top = `${initialY + dy}px`;
+                });
+
+                document.addEventListener('mouseup', () => {
+                    isDragging = false;
+                });
+
+                // 移动端触摸支持
+                dragHandle.addEventListener('touchstart', (e) => {
+                    isDragging = true;
+                    const touch = e.touches[0];
+                    startX = touch.clientX;
+                    startY = touch.clientY;
+                    initialX = this.panel.offsetLeft;
+                    initialY = this.panel.offsetTop;
+                });
+
+                document.addEventListener('touchmove', (e) => {
+                    if (!isDragging) return;
+                    const touch = e.touches[0];
+                    const dx = touch.clientX - startX;
+                    const dy = touch.clientY - startY;
+                    this.panel.style.left = `${initialX + dx}px`;
+                    this.panel.style.top = `${initialY + dy}px`;
+                });
+
+                document.addEventListener('touchend', () => {
+                    isDragging = false;
+                });
             }
 
             async apiRequest(method, endpoint, data) {
@@ -46,16 +211,12 @@
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 return response.json();
             }
-              
         }
 
         new C4MobileDevApp();
     </script>
 </body>
-
 </html>
-    
-    
 <!--
 升级 
      code 
