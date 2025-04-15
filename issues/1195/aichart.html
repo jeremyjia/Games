@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>漂泊者乐园智能问答系统v2.0.0</title>
+    <title>漂泊者乐园智能问答系统v3.0.0</title>
     <style>
         :root {
             --primary-color: #2196F3;
@@ -29,7 +30,7 @@
             padding: 15px;
             margin-bottom: 15px;
             height: calc(100vh - 160px);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
@@ -82,7 +83,7 @@
             border-radius: 8px;
             overflow-x: auto;
             margin: 1em 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             margin-bottom: 5px;
         }
 
@@ -133,7 +134,7 @@
             background: var(--bg-color);
             padding: 10px;
             border-radius: 25px;
-            box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
         }
 
         .mode-select {
@@ -255,15 +256,20 @@
             color: #666;
             font-size: 16px;
         }
-        
+
         .spinner {
             animation: spin 1s linear infinite;
             font-size: 18px;
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         /* 代码操作按钮样式 */
@@ -305,7 +311,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 999;
             display: none;
         }
@@ -320,7 +326,7 @@
             height: 70vh;
             background: white;
             border-radius: 10px;
-            box-shadow: 0 5px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
             z-index: 1000;
             display: none;
             flex-direction: column;
@@ -353,6 +359,53 @@
             overflow: auto;
         }
 
+        /* 代码编辑器对话框样式 */
+        .code-editor-dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 1000px;
+            height: 80vh;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            display: none;
+            flex-direction: column;
+        }
+
+        .editor-header {
+            padding: 15px;
+            background: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .editor-title {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .editor-close {
+            cursor: pointer;
+            font-size: 20px;
+            color: #666;
+        }
+
+        .editor-content {
+            flex: 1;
+            padding: 15px;
+        }
+
+        .editor-buttons {
+            padding: 15px;
+            text-align: right;
+        }
+
         @media (max-width: 480px) {
             .chat-container {
                 height: calc(100vh - 140px);
@@ -370,7 +423,7 @@
                 font-size: 15px;
                 line-height: 1.7;
             }
-            
+
             .text-content pre {
                 padding: 10px;
                 font-size: 13px;
@@ -417,14 +470,99 @@
                 height: 80vh;
             }
 
+            .code-editor-dialog {
+                width: 95%;
+                height: 85vh;
+            }
+
             .code-btn {
                 padding: 6px 12px;
                 font-size: 13px;
             }
         }
+
+        /* 添加原生编辑器样式 */
+      /* 更新编辑器标签页样式 */
+      .editor-tabs {
+        display: flex;
+        background: #f5f7fa;
+        border-bottom: 1px solid #e1e4e8;
+        padding: 0 10px;
+    }
+    
+    .editor-tab {
+        padding: 10px 20px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        color: #586069;
+        position: relative;
+        transition: all 0.3s ease;
+        border-radius: 4px 4px 0 0;
+        margin-right: 4px;
+    }
+    
+    .editor-tab:hover {
+        color: #0366d6;
+        background: rgba(3, 102, 214, 0.1);
+    }
+    
+    .editor-tab.active {
+        color: #24292e;
+        background: #fff;
+        box-shadow: 0 1px 0 #fff;
+        border: 1px solid #e1e4e8;
+        border-bottom-color: transparent;
+        font-weight: 600;
+    }
+    
+    .editor-tab.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #f9826c;
+        border-radius: 2px 2px 0 0;
+    }
+    
+    /* 为不同语言标签添加不同颜色标识 */
+    .editor-tab[data-lang="html"].active {
+        color: #e34c26;
+    }
+    
+    .editor-tab[data-lang="html"].active::after {
+        background: #e34c26;
+    }
+    
+    .editor-tab[data-lang="css"].active {
+        color: #2965f1;
+    }
+    
+    .editor-tab[data-lang="css"].active::after {
+        background: #2965f1;
+    }
+    
+    .editor-tab[data-lang="js"].active {
+        color: #f1e05a;
+    }
+    
+    .editor-tab[data-lang="js"].active::after {
+        background: #f1e05a;
+    }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/javascript/javascript.min.js"></script>
 </head>
+
 <body>
     <div class="chat-container" id="chatContainer"></div>
     <div class="input-container">
@@ -446,35 +584,57 @@
         <div class="dialog-content" id="dialogContent"></div>
     </div>
 
+    <!-- 代码编辑器对话框 -->
+    <div class="dialog-overlay" id="codeEditorDialogOverlay"></div>
+    <div class="code-editor-dialog" id="codeEditorDialog">
+        <div class="editor-header">
+            <div class="editor-title">代码编辑器</div>
+            <div class="editor-close" onclick="closeCodeEditorDialog()">&times;</div>
+        </div>
+        <div class="editor-tabs">
+            <button class="editor-tab active" data-lang="html">HTML</button>
+            <button class="editor-tab" data-lang="css">CSS</button>
+            <button class="editor-tab" data-lang="js">JavaScript</button>
+        </div>
+        <textarea id="codeEditor" class="native-code-editor" spellcheck="false"></textarea>
+        <div class="editor-buttons">
+            <button class="code-btn" onclick="saveCode()">保存</button>
+            <button class="code-btn" onclick="runEditedCode()">运行</button>
+        </div>
+    </div>
+
     <script>
         const audioCache = new Map();
         let currentAudio = null;
         let currentPlayingId = null;
+        let codeEditor;
+        let currentCode;
+        let isHtmlCode;
 
         async function submitQuestion() {
             const questionInput = document.getElementById('question');
             const question = questionInput.value.trim();
             const mode = document.getElementById('modeSelect').value;
-            
+
             if (!question) return;
 
             addMessage(question, 'user');
             const loadingMsg = addMessage('正在生成回答...', 'bot', true);
-            
+
             try {
                 if (mode === 'voice') {
                     const apiUrl = `https://text.pollinations.ai/${encodeURIComponent(question)}?model=openai-audio`;
                     const response = await fetch(apiUrl);
                     if (!response.ok) throw new Error(`请求失败: ${response.status}`);
-                    
+
                     if (!response.headers.get('content-type').startsWith('audio/')) {
                         throw new Error('返回的不是音频内容');
                     }
-                    
+
                     const audioBlob = await response.blob();
                     const timestamp = Date.now();
                     audioCache.set(timestamp, audioBlob);
-                    
+
                     updateMessage(loadingMsg, {
                         text: '语音回答已就绪',
                         timestamp: timestamp,
@@ -484,7 +644,7 @@
                     const apiUrl = `https://text.pollinations.ai/${encodeURIComponent(question)}`;
                     const response = await fetch(apiUrl);
                     if (!response.ok) throw new Error(`请求失败: ${response.status}`);
-                    
+
                     const text = await response.text();
                     updateMessage(loadingMsg, {
                         text: text,
@@ -527,32 +687,32 @@
 
         function escapeHtml(unsafe) {
             return unsafe
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+               .replace(/&/g, "&amp;")
+               .replace(/</g, "&lt;")
+               .replace(/>/g, "&gt;")
+               .replace(/"/g, "&quot;")
+               .replace(/'/g, "&#039;");
         }
 
         function formatTextContent(text) {
             // 先转义所有HTML特殊字符
             let safeText = escapeHtml(text);
-            
+
             // 然后处理Markdown语法
             return safeText
                 // 代码块处理（需要保留内部格式）
-                .replace(/```([\s\S]*?)```/g, (match, code) => {
+               .replace(/```([\s\S]*?)```/g, (match, code) => {
                     return `<pre><code>${code.trim()}</code></pre>`;
                 })
                 // 其他Markdown处理保持不变
-                .replace(/`([^`]+)`/g, '<code>$1</code>')
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+               .replace(/`([^`]+)`/g, '<code>$1</code>')
+               .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+               .replace(/\*(.*?)\*/g, '<em>$1</em>')
                 // 保留换行和段落
-                .replace(/\n/g, '<br>')
-                .replace(/<br><br>/g, '</p><p>')
-                .replace(/^/, '<p>')
-                .replace(/$/, '</p>');
+               .replace(/\n/g, '<br>')
+               .replace(/<br><br>/g, '</p><p>')
+               .replace(/^/, '<p>')
+               .replace(/$/, '</p>');
         }
 
         function updateMessage(messageElement, { text, timestamp, loading }) {
@@ -565,10 +725,10 @@
                 `;
             } else {
                 const isVoiceMode = !!timestamp;
-                const content = isVoiceMode ? 
+                const content = isVoiceMode ?
                     escapeHtml(text) :
                     `<div class="text-content">${formatTextContent(text)}</div>`;
-                
+
                 messageElement.innerHTML = `
                     <div>${content}</div>
                     ${timestamp ? createAudioControls(timestamp) : ''}
@@ -579,31 +739,31 @@
                     messageElement.querySelectorAll('pre').forEach(preBlock => {
                         const code = preBlock.querySelector('code').textContent.trim();
                         const isHtml = /<[a-z][\s\S]*>/i.test(code);
-                        const isJs = code.startsWith('function') || code.includes('=>') || 
-                                     code.includes('const ') || code.includes('let ') || 
-                                     code.includes('var ') || code.includes('document.') ||
-                                     code.includes('window.');
-                        
+                        const isJs = code.startsWith('function') || code.includes('=>') ||
+                            code.includes('const ') || code.includes('let ') ||
+                            code.includes('var ') || code.includes('document.') ||
+                            code.includes('window.');
+
                         // 创建操作按钮容器
                         const actionsDiv = document.createElement('div');
                         actionsDiv.className = 'code-actions';
-                        
+
                         // 添加复制按钮
                         const copyBtn = document.createElement('button');
                         copyBtn.className = 'code-btn copy';
                         copyBtn.textContent = '复制代码';
-                        copyBtn.onclick = function() { copyCode(this); };
+                        copyBtn.onclick = function () { copyCode(this); };
                         actionsDiv.appendChild(copyBtn);
-                        
+
                         // 如果是HTML/JS代码，添加运行按钮
                         if (isHtml || isJs) {
                             const runBtn = document.createElement('button');
                             runBtn.className = 'code-btn';
                             runBtn.textContent = '运行代码';
-                            runBtn.onclick = function() { runCodeInDialog(code, isHtml); };
+                            runBtn.onclick = function () { openCodeEditor(code, isHtml); };
                             actionsDiv.appendChild(runBtn);
                         }
-                        
+
                         // 将按钮添加到pre块后面
                         preBlock.parentNode.insertBefore(actionsDiv, preBlock.nextSibling);
                     });
@@ -638,10 +798,10 @@
 
         function initAudioControls(timestamp) {
             const progressBar = document.getElementById(`progressBar-${timestamp}`);
-            
+
             progressBar.addEventListener('click', (e) => {
                 if (!currentAudio || currentPlayingId !== timestamp) return;
-                
+
                 const rect = progressBar.getBoundingClientRect();
                 const clickX = e.clientX - rect.left;
                 const percentage = Math.min(Math.max(clickX / rect.width, 0), 1);
@@ -661,14 +821,14 @@
 
         function handlePlayPause(timestamp) {
             const playBtn = document.getElementById(`playBtn-${timestamp}`);
-            
+
             if (currentAudio && !currentAudio.paused && currentPlayingId === timestamp) {
                 currentAudio.pause();
                 playBtn.classList.remove('fa-pause');
                 playBtn.classList.add('fa-play');
                 return;
             }
-            
+
             if (currentAudio && currentPlayingId !== timestamp) {
                 currentAudio.pause();
                 URL.revokeObjectURL(currentAudio.src);
@@ -687,7 +847,7 @@
 
             currentAudio = new Audio(URL.createObjectURL(blob));
             currentPlayingId = timestamp;
-            
+
             const volumeSlider = document.getElementById(`volume-${timestamp}`);
             currentAudio.volume = volumeSlider ? volumeSlider.value : 1;
 
@@ -695,7 +855,7 @@
             currentAudio.addEventListener('loadedmetadata', () => {
                 updateProgress(timestamp);
                 const playPromise = currentAudio.play();
-                
+
                 if (playPromise !== undefined) {
                     playPromise.catch(error => {
                         console.error('播放失败:', error);
@@ -704,7 +864,7 @@
                     });
                 }
             });
-            
+
             currentAudio.addEventListener('ended', () => {
                 playBtn.classList.remove('fa-pause');
                 playBtn.classList.add('fa-play');
@@ -741,96 +901,120 @@
             return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         }
 
-        function runCodeInDialog(code, isHtml) {
-            const dialog = document.getElementById('codeDialog');
-            const overlay = document.getElementById('codeDialogOverlay');
-            const content = document.getElementById('dialogContent');
-            
-            // 清空之前的内容
-            content.innerHTML = '';
-            
-            try {
-                if (isHtml) {
-                    // 对于HTML代码，直接显示
-                    content.innerHTML = code;
-                } else {
-                    // 对于JavaScript代码，使用eval执行
-                    const originalConsoleLog = console.log;
-                    let logs = [];
-                    
-                    // 重写console.log捕获输出
-                    console.log = function() {
-                        const args = Array.from(arguments).map(arg => {
-                            if (typeof arg === 'object') {
-                                try {
-                                    return JSON.stringify(arg, null, 2);
-                                } catch (e) {
-                                    return arg.toString();
-                                }
-                            }
-                            return arg;
-                        }).join(' ');
-                        
-                        logs.push(args);
-                        originalConsoleLog.apply(console, arguments);
-                    };
-                    
-                    // 执行代码
-                    const result = eval(code);
-                    
-                    // 恢复原始console.log
-                    console.log = originalConsoleLog;
-                    
-                    // 显示执行结果
-                    let output = '';
-                    if (logs.length > 0) {
-                        output += '<h4>控制台输出:</h4>';
-                        output += '<div style="background:#f5f5f5;padding:10px;border-radius:5px;margin-bottom:15px;">';
-                        output += logs.join('<br>');
-                        output += '</div>';
-                    }
-                    
-                    if (result !== undefined) {
-                        output += '<h4>返回值:</h4>';
-                        output += '<div style="background:#f5f5f5;padding:10px;border-radius:5px;">';
-                        if (typeof result === 'object') {
-                            try {
-                                output += '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
-                            } catch (e) {
-                                output += result.toString();
-                            }
-                        } else {
-                            output += result;
-                        }
-                        output += '</div>';
-                    } else if (logs.length === 0) {
-                        output = '<div>代码已执行，但没有输出。</div>';
-                    }
-                    
-                    content.innerHTML = output;
-                }
-                
-                // 显示对话框
-                dialog.style.display = 'flex';
-                overlay.style.display = 'block';
-                document.body.style.overflow = 'hidden';
-            } catch (error) {
-                content.innerHTML = `
-                    <div style="color:red;padding:15px;background:#ffeeee;border-radius:5px;">
-                        <h4>执行错误:</h4>
-                        <p>${error.message}</p>
-                    </div>
-                `;
-                dialog.style.display = 'flex';
-                overlay.style.display = 'block';
-                document.body.style.overflow = 'hidden';
-                console.error('代码执行错误:', error);
-            }
+        function saveCode() {
+            currentCode = codeEditor.getValue();
         }
+
+    // 更新编辑器相关函数
+    let currentEditorLang = 'html';
+    
+    function openCodeEditor(code, isHtml) {
+        const editorDialog = document.getElementById('codeEditorDialog');
+        const editorOverlay = document.getElementById('codeEditorDialogOverlay');
+        const codeEditor = document.getElementById('codeEditor');
+        
+        currentEditorLang = isHtml ? 'html' : 'js';
+        updateEditorTabs();
+        
+        codeEditor.value = code;
+        
+        // 显示编辑器对话框
+        editorDialog.style.display = 'flex';
+        editorOverlay.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        
+        // 自动聚焦编辑器
+        setTimeout(() => codeEditor.focus(), 100);
+    }
+    
+// 更新标签切换函数以支持新样式
+function updateEditorTabs() {
+    const tabs = document.querySelectorAll('.editor-tab');
+    tabs.forEach(tab => {
+        const isActive = tab.dataset.lang === currentEditorLang;
+        tab.classList.toggle('active', isActive);
+        
+        // 更新ARIA属性增强可访问性
+        tab.setAttribute('aria-selected', isActive);
+        tab.setAttribute('tabindex', isActive ? '0' : '-1');
+    });
+}
+
+// 添加键盘导航支持
+document.querySelectorAll('.editor-tab').forEach(tab => {
+    tab.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            this.click();
+        }
+    });
+});
+    
+    function saveCode() {
+        // 保存逻辑不变
+    }
+    
+    function runEditedCode() {
+        const code = document.getElementById('codeEditor').value;
+        const dialogContent = document.getElementById('dialogContent');
+        
+        dialogContent.innerHTML = '';
+        
+        try {
+            // 创建一个iframe来安全运行代码
+            const iframe = document.createElement('iframe');
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = 'none';
+            dialogContent.appendChild(iframe);
+            
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            
+            iframeDoc.open();
+            iframeDoc.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        ${currentEditorLang === 'css' ? code : ''}
+                    </style>
+                </head>
+                <body>
+                    ${currentEditorLang === 'html' ? code : ''}
+                    <script>
+                        ${currentEditorLang === 'js' ? code : ''}
+                    <\/script>
+                </body>
+                </html>
+            `);
+            iframeDoc.close();
+            
+            // 显示结果对话框
+            document.getElementById('codeDialog').style.display = 'flex';
+            document.getElementById('codeDialogOverlay').style.display = 'block';
+            
+            // 关闭编辑器对话框
+            closeCodeEditorDialog();
+        } catch (error) {
+            dialogContent.innerHTML = `
+                <div style="color:red;padding:15px;background:#ffeeee;border-radius:5px;">
+                    <h4>执行错误:</h4>
+                    <p>${error.message}</p>
+                </div>
+            `;
+        }
+    }
+
 
         function closeCodeDialog() {
             document.getElementById('codeDialog').style.display = 'none';
             document.getElementById('codeDialogOverlay').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        function closeCodeEditorDialog() {
+            document.getElementById('codeEditorDialog').style.display = 'none';
+            document.getElementById('codeEditorDialogOverlay').style.display = 'none';
             document.body.style.overflow = '';
         }
 
@@ -848,6 +1032,7 @@
 
         // 点击遮罩层也关闭对话框
         document.getElementById('codeDialogOverlay').addEventListener('click', closeCodeDialog);
+        document.getElementById('codeEditorDialogOverlay').addEventListener('click', closeCodeEditorDialog);
 
         // 输入控制
         document.getElementById('question').addEventListener('keypress', (e) => {
@@ -867,4 +1052,6 @@
         });
     </script>
 </body>
+
 </html>
+    
