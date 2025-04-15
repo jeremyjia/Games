@@ -6,12 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
-    <title>手机编程系统 v0.12</title>
+    <title>手机编程系统 v0.15</title>
     <style>
         .draggable {
             touch-action: none;
             user-select: none;
             cursor: move;
+        }
+        .active {
+            background-color: #3B82F6;
+            color: white;
+            border: 2px solid #1D4ED8;
         }
     </style>
 </head>
@@ -20,8 +25,9 @@
     <script>
         class C4MobileDevApp {
             constructor() {
-                this.version = "0.12";
+                this.version = "0.15";
                 this.currentRepo = 's177';
+                this.lastActiveButton = null;
                 this.#applyStyles();
                 this.#createMainUI();
                 this.#loadComments();
@@ -55,7 +61,7 @@
                 
                 buttons.forEach(btnId => {
                     const btn = document.createElement('button');
-                    btn.className = 'p-2 bg-blue-500 text-white rounded';
+                    btn.className = 'p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors';
                     btn.innerHTML = btnId === 'toggle-panel' 
                         ? '<i class="fas fa-window-restore"></i>'
                         : '<i class="fas fa-plus"></i>';
@@ -85,10 +91,12 @@
                 toolbar2.className = 'p-2 bg-gray-50 flex flex-wrap gap-2 overflow-auto';
                 toolbar2.id = 'comments-toolbar';
                 
-                // 文本框
-                const textarea = document.createElement('div');
-                textarea.className = 'flex-1 p-4 overflow-auto border-t';
+                // 可编辑的文本框
+                const textarea = document.createElement('textarea');
+                textarea.className = 'flex-1 p-4 overflow-auto border-t resize-y';
                 textarea.id = 'comment-content';
+                textarea.placeholder = '输入或编辑评论内容...';
+                textarea.rows = 6;
                 
                 // 状态栏
                 const statusBar = document.createElement('div');
@@ -106,12 +114,18 @@
                     const toolbar = document.getElementById('comments-toolbar');
                     toolbar.innerHTML = '';
                     
-                    comments.forEach(comment => {
+                    comments.forEach((comment, index) => {
                         const btn = document.createElement('button');
                         btn.className = 'px-3 py-1 bg-gray-200 rounded text-sm hover:bg-gray-300 transition-colors';
-                        btn.textContent = `#${comment.id}`;
+                        btn.textContent = `#${index + 1}`;
                         btn.onclick = () => {
-                            document.getElementById('comment-content').textContent = comment.body;
+                            document.getElementById('comment-content').value = comment.body;
+                            // 高亮处理
+                            if (this.lastActiveButton) {
+                                this.lastActiveButton.classList.remove('active');
+                            }
+                            btn.classList.add('active');
+                            this.lastActiveButton = btn;
                         };
                         toolbar.appendChild(btn);
                     });
@@ -130,18 +144,21 @@
 
                 // 新建评论
                 document.querySelector('[data-action="new-comment"]').onclick = async () => {
-                    const comment = prompt('输入新评论内容:');
-                    if (comment) {
+                    const content = document.getElementById('comment-content').value;
+                    if (content) {
                         try {
                             await this.apiRequest('POST', 'issues/12/comments', {
-                                body: comment
+                                body: content
                             });
                             this.#loadComments();
+                            document.getElementById('comment-content').value = '';
                             alert('评论已成功提交！');
                         } catch (error) {
                             alert('提交评论失败');
                             console.error(error);
                         }
+                    } else {
+                        alert('评论内容不能为空');
                     }
                 };
 
@@ -219,7 +236,7 @@
 </html>
 <!--
 升级 
-let textarea be a textarea element.
+ 高亮最新点击的评论按钮
 
 this.version++;
 return all new code

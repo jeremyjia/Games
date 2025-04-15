@@ -10,15 +10,83 @@
 </head>
 
 <body class="bg-gray-100">
-    <script>
+    <script> 
+        class C4Note {
+            constructor(note, duration, chord = null) {
+                this.note = note;
+                this.duration = duration;
+                this.chord = chord;
+            }
+            drawMe(ctx,x){
+
+            }
+            getWidth(){
+
+            }
+        }
+
+        class C4Bar {
+            constructor(barContent) {
+                this.barContent = barContent;
+                this.notes = this.#parseBarContent();
+                this.width = this.#calculateWidth();
+            }
+
+            #parseBarContent() {
+                const noteRegex = /(\d+)(\/+|[-]+)?(\w+)?/g;
+                const notes = [];
+                let match;
+                while ((match = noteRegex.exec(this.barContent))!== null) {
+                    const note = match[1];
+                    const durationSymbol = match[2] || '';
+                    let duration;
+                    if (durationSymbol === '///') {
+                        duration = '16th';
+                    } else if (durationSymbol === '/') {
+                        duration = '8th';
+                    } else if (durationSymbol === '') {
+                        duration = '4th';
+                    } else if (durationSymbol === '-') {
+                        duration = '2nd';
+                    } else if (durationSymbol === '---') {
+                        duration = 'whole';
+                    }
+                    const chord = match[3] || null;
+                    notes.push(new C4Note(note, duration, chord));
+                }
+                return notes;
+            }
+
+            #calculateWidth() {
+                // 简单示例，假设每个音符宽度为 20px
+                return this.notes.length * 20;
+            }
+
+            getWidth() {
+                return this.width;
+            }
+
+            drawMe(ctx, x, y) {
+                const padding = 5;
+                ctx.strokeRect(x - padding, y - 16 - padding, this.width + 2 * padding, 20 + 2 * padding);
+
+                let currentX = x;
+                this.notes.forEach(note => {
+                    note.drawMe(ctx,currentX)
+                    currentX += note.getWidth();
+                });
+            }
+        }
+
         class SheetMusicEditor {
             constructor() {
                 // 升级版本号
-                this.version = (parseFloat((parseFloat("0.13") + 0.01 + 0.02 + 0.01 + 0.01 + 0.01 + 0.01 + 0.01 + 0.01 + 0.01 + 0.01).toFixed(2))).toFixed(2);
+                this.version = parseFloat("0.13") + 0.14; // 原来的累加方式改为直接递增
+                this.version = this.version.toFixed(2);
                 this.currentRepo = 's177';
                 this.canvasX = 0;
                 this.canvasY = 0;
-                this.lineSpacing = 20; // 默认行间距
+                this.lineSpacing = 45; // 默认行间距
                 this.createElements();
                 this.applyStyles();
                 this.addEventListeners();
@@ -340,8 +408,7 @@ C: 开口道再见, @就让一切走@@远
 `;
                     const processedCode = this.processSpaces(exampleCode);
                     this.sheetMusicInput.value = processedCode;
-                    const parsedSheetMusic = this.parseSheetMusic(processedCode);
-                    this.drawSheetMusic(parsedSheetMusic);
+                    const parsedSheetMusic = this.parseSheetMusic(processedCode); 
                     this.updateStatusBar();
                 });
 
@@ -359,16 +426,14 @@ C: 开口道再见, @就让一切走@@远
 `;
                     const processedCode = this.processSpaces(newSheetCode);
                     this.sheetMusicInput.value = processedCode;
-                    const parsedSheetMusic = this.parseSheetMusic(processedCode);
-                    this.drawSheetMusic(parsedSheetMusic);
+                    const parsedSheetMusic = this.parseSheetMusic(processedCode); 
                     this.updateStatusBar();
                 });
 
                 this.sheetMusicInput.addEventListener('input', () => {
                     const input = this.sheetMusicInput.value;
                     const processedInput = this.processSpaces(input);
-                    const parsedSheetMusic = this.parseSheetMusic(processedInput);
-                    this.drawSheetMusic(parsedSheetMusic);
+                    const parsedSheetMusic = this.parseSheetMusic(processedInput); 
                     this.updateStatusBar();
                 });
 
@@ -461,13 +526,7 @@ C: 开口道再见, @就让一切走@@远
                             this.resetHighlight();
                             issueButton.classList.add('highlighted');
                             this.sheetMusicInput.value = processedIssueBody;
-                            let parsedSheetMusic;
-                            if (processedIssueBody.includes('V:')) {
-                                parsedSheetMusic = this.parseSheetMusic(processedIssueBody);
-                            } else {
-                                parsedSheetMusic = `<span class="error">${processedIssueBody}</span>`;
-                            }
-                            this.drawSheetMusic(parsedSheetMusic);
+                            let parsedSheetMusic = this.parseSheetMusic(processedIssueBody); 
                             this.updateStatusBar();
                         });
                         this.i11Toolbar.appendChild(issueButton);
@@ -488,13 +547,7 @@ C: 开口道再见, @就让一切走@@远
                                 this.resetHighlight();
                                 commentButton.classList.add('highlighted');
                                 this.sheetMusicInput.value = processedCommentBody;
-                                let parsedSheetMusic;
-                                if (processedCommentBody.includes('V:')) {
-                                    parsedSheetMusic = this.parseSheetMusic(processedCommentBody);
-                                } else {
-                                    parsedSheetMusic = `<span class="error">${processedCommentBody}</span>`;
-                                }
-                                this.drawSheetMusic(parsedSheetMusic);
+                                let parsedSheetMusic = this.parseSheetMusic(processedCommentBody); 
                                 this.updateStatusBar();
                             });
                             this.i11Toolbar.appendChild(commentButton);
@@ -506,100 +559,31 @@ C: 开口道再见, @就让一切走@@远
             }
             parseSheetMusic(input) {
                 const parts = input.split('Q:'); 
-                let musicLines = [];
-                let output = '';
+                let musicLines = []; 
                 for (let i = 1; i < parts.length; i++) {
-                    const line = parts[i].split('\n')[0].trim();
-                    const parsedLine = this.parseMusicLine(line);
-                    output += `<div class="music-line">${parsedLine}</div>`;
-                }
-                return output;
-            }
-            parseMusicLine(line) {
-                let output = '';
-                let currentNote = '';
-                for (let i = 0; i < line.length; i++) {
-                    const char = line[i];
-                    if (/[0-9]/.test(char)) {
-                        if (currentNote) {
-                            output += this.formatNote(currentNote);
-                            currentNote = '';
-                        }
-                        currentNote += char;
-                    } else if (char === '/') {
-                        currentNote += char;
-                    } else if (char === '"') {
-                        if (currentNote) {
-                            const chord = this.extractChord(line, i);
-                            output += this.formatNoteWithChord(currentNote, chord);
-                            currentNote = '';
-                            i += chord.length + 1;
-                        }
-                    } else {
-                        if (currentNote) {
-                            output += this.formatNote(currentNote);
-                            currentNote = '';
-                        }
-                        output += char;
+                    const line = parts[i].split('\n')[0].trim(); 
+                    musicLines.push(line);
+                } 
+                this.#drawMusicLines(musicLines);
+            } 
+            #drawMusicLines(lines){
+                const ctx = this.canvas.getContext('2d');
+                ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                ctx.font = '16px Arial';
+                ctx.fillStyle = 'black';
+
+                let y = this.y0;
+                lines.forEach((line, index) => { 
+                    const bars = line.split('|');
+                    let x = this.x0;
+                    for(let i = 0; i < bars.length; i++){
+                        const bar = new C4Bar(bars[i]);
+                        bar.drawMe(ctx,x,y);
+                        x += bar.getWidth() + 22;
                     }
-                }
-                if (currentNote) {
-                    output += this.formatNote(currentNote);
-                }
-                return output;
+                    y += this.lineSpacing;
+                });
             }
-
-            formatNote(note) {
-                const match = note.match(/^(\d+)(\/+)$/);
-                if (match) {
-                    const digit = match[1];
-                    const slashes = match[2].length;
-                    if (slashes === 1) {
-                        return `<span class="eighth-note">${digit}</span>`;
-                    } else if (slashes === 2) {
-                        return `<span class="sixteenth-note">${digit}</span>`;
-                    }
-                }
-                return note;
-            }
-
-            formatNoteWithChord(note, chord) {
-                const formattedNote = this.formatNote(note);
-                return `<span class="note-with-chord"><span class="chord">${chord}</span>${formattedNote}</span>`;
-            }
-
-            extractChord(input, startIndex) {
-                let chord = '';
-                for (let i = startIndex + 1; i < input.length; i++) {
-                    if (input[i] === '"') {
-                        break;
-                    }
-                    chord += input[i];
-                }
-                return chord;
-            }
-
-            generateRandomSheet() {
-                const notes = ['1', '2', '3', '4', '5', '6', '7'];
-                const chords = ['"C"', '"Am"', '"Dm"', '"G"'];
-                let randomSheet = '';
-                for (let i = 0; i < 4; i++) {
-                    for (let j = 0; j < 4; j++) {
-                        const randomNote = notes[Math.floor(Math.random() * notes.length)];
-                        const randomSlash = Math.random() > 0.5 ? '/' : '';
-                        randomSheet += randomNote + randomSlash;
-                        if (j === 3) {
-                            const randomChord = chords[Math.floor(Math.random() * chords.length)];
-                            randomSheet += ' ' + randomChord + ' ';
-                        } else {
-                            randomSheet += ' ';
-                        }
-                    }
-                    randomSheet += '| ';
-                }
-                return randomSheet;
-            }
-
             resetHighlight() {
                 const buttons = this.i11Toolbar.querySelectorAll('button');
                 buttons.forEach(button => {
@@ -639,19 +623,7 @@ C: 开口道再见, @就让一切走@@远
                 const input = this.sheetMusicInput.value;
                 const lines = this.#countLines(input);
                 this.statusBar.textContent = `当前乐谱行数: ${lines}`;
-            }
-            drawSheetMusic(parsedSheetMusic) {
-                const ctx = this.canvas.getContext('2d');
-                ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                ctx.font = '16px Arial';
-                const lines = parsedSheetMusic.match(/<div class="music-line">(.*?)<\/div>/g);
-                if (lines) {
-                    lines.forEach((line, index) => {
-                        const text = line.replace(/<\/?[^>]+>/g, '');
-                        ctx.fillText(text, this.x0, this.y0 + index * (this.lineSpacing + 20));
-                    });
-                }
-            }
+            } 
         }
 
         new SheetMusicEditor();
@@ -663,8 +635,8 @@ C: 开口道再见, @就让一切走@@远
     
 <!--
 升级 
-  设计一个 C4Note 类来处理音符 
-  
+  code C4Note
+
 this.version++;
 return all new code
 -->
