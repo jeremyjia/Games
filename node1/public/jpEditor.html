@@ -13,11 +13,30 @@
     <script>
         class SheetMusicEditor {
             constructor() {
+                this.currentRepo = 's177';
                 this.createElements();
                 this.applyStyles();
                 this.addEventListeners();
+                // 显示设置窗口
+                this.settingsModal.style.display = 'block';
             }
+            async apiRequest(method, endpoint, data) {
+                const xdToken = "ghp_2BF" + "JztcBlHHOkBybs" + "UVJZGHQ4S" + "wvFR0poLqc";
+                const url = `https://api.github.com/repos/littleflute/${this.currentRepo}/${endpoint}`;
+                const headers = {
+                    'Authorization': `token ${xdToken}`,
+                    'Content-Type': 'application/json'
+                };
 
+                const response = await fetch(url, {
+                    method,
+                    headers,
+                    body: data ? JSON.stringify(data) : null
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json();
+            }
             createElements() {
                 this.canvas = document.createElement('div');
                 this.canvas.id = 'canvas';
@@ -31,6 +50,19 @@
                 this.settingsButton.innerHTML = '<i class="fa-solid fa-gear"></i> 设置';
                 this.toolbar.appendChild(this.settingsButton);
 
+                this.toggleI11 = document.createElement('button');
+                this.toggleI11.id = 'toggle-new-toolbar-button';
+                this.toggleI11.classList.add('bg-purple-500', 'hover:bg-purple-600', 'text-white', 'py-2', 'px-4', 'rounded', 'ml-auto');
+                this.toggleI11.innerHTML = '<i class="fa-solid fa-plus"></i> I11';
+                this.toolbar.appendChild(this.toggleI11);
+
+                this.i11Toolbar = document.createElement('div');
+                this.i11Toolbar.id = 'new-toolbar';
+                this.i11Toolbar.classList.add('fixed', 'bottom-16', 'left-0', 'right-0', 'bg-white', 'p-4', 'shadow-md', 'hidden');
+
+                // 升级 i11Toolbar
+                this.loadIssueAndComments();
+
                 this.settingsModal = document.createElement('div');
                 this.settingsModal.id = 'settings-modal';
 
@@ -38,6 +70,23 @@
                 this.settingsModalHeader.id = 'settings-modal-header';
                 this.settingsModalHeader.innerHTML = '<h2 class="text-xl font-bold">简谱设置</h2>';
                 this.settingsModal.appendChild(this.settingsModalHeader);
+
+                this.modalToolbar = document.createElement('div');
+                this.modalToolbar.classList.add('bg-gray-200', 'p-2', 'mb-2');
+
+                this.exampleButton = document.createElement('button');
+                this.exampleButton.id = 'example-button';
+                this.exampleButton.classList.add('bg-green-500', 'hover:bg-green-600', 'text-white', 'py-1', 'px-2', 'rounded');
+                this.exampleButton.textContent = '使用示例代码';
+                this.modalToolbar.appendChild(this.exampleButton);
+
+                this.newSheetButton = document.createElement('button');
+                this.newSheetButton.id = 'new-sheet-button';
+                this.newSheetButton.classList.add('bg-yellow-500', 'hover:bg-yellow-600', 'text-white', 'py-1', 'px-2', 'rounded', 'ml-2');
+                this.newSheetButton.textContent = '谱';
+                this.modalToolbar.appendChild(this.newSheetButton);
+
+                this.settingsModal.appendChild(this.modalToolbar);
 
                 this.sheetMusicInput = document.createElement('textarea');
                 this.sheetMusicInput.id = 'sheet-music-input';
@@ -53,6 +102,7 @@
 
                 document.body.appendChild(this.canvas);
                 document.body.appendChild(this.toolbar);
+                document.body.appendChild(this.i11Toolbar);
                 document.body.appendChild(this.settingsModal);
             }
 
@@ -63,6 +113,7 @@
                         width: 100%;
                         height: calc(100vh - 64px);
                         border: 1px solid #ccc;
+                        font-family: monospace;
                     }
                     #settings-modal {
                         position: fixed;
@@ -80,6 +131,22 @@
                         background-color: #f0f0f0;
                         margin: -20px -20px 20px -20px;
                     }
+                   .eighth-note {
+                        position: relative;
+                    }
+                   .eighth-note::after {
+                        content: '';
+                        position: absolute;
+                        bottom: -2px;
+                        left: 0;
+                        right: 0;
+                        height: 1px;
+                        background-color: black;
+                    }
+                   .highlighted {
+                        background-color: #4a90e2;
+                        transform: scale(1.05);
+                    }
                 `;
                 document.head.appendChild(style);
             }
@@ -89,16 +156,31 @@
                 let offsetX, offsetY;
 
                 this.settingsButton.addEventListener('click', () => {
-                    this.settingsModal.style.display = 'block';
+                    this.settingsModal.style.display = this.settingsModal.style.display === 'block' ? 'none' : 'block';
                 });
 
                 this.closeModalButton.addEventListener('click', () => {
                     this.settingsModal.style.display = 'none';
                 });
 
+                this.exampleButton.addEventListener('click', () => {
+                    const exampleCode = '3/"C" 3// 3// 3. 2/ 3/ 5/';
+                    this.sheetMusicInput.value = exampleCode;
+                    const parsedSheetMusic = this.parseSheetMusic(exampleCode);
+                    this.canvas.innerHTML = `<pre>${parsedSheetMusic}</pre>`;
+                });
+
+                this.newSheetButton.addEventListener('click', () => {
+                    const newSheetCode = '3/"C" 3// 3// 3. 2/ 3/ 5/ | 6"Am" - - - | 4/"Dm" 4// 4// 4. 3/ 5/ 6/ | 2"G" - - 3/ 4/ |';
+                    this.sheetMusicInput.value = newSheetCode;
+                    const parsedSheetMusic = this.parseSheetMusic(newSheetCode);
+                    this.canvas.innerHTML = `<pre>${parsedSheetMusic}</pre>`;
+                });
+
                 this.sheetMusicInput.addEventListener('input', () => {
-                    const sheetMusic = this.sheetMusicInput.value;
-                    this.canvas.innerHTML = `<pre>${sheetMusic}</pre>`;
+                    const input = this.sheetMusicInput.value;
+                    const parsedSheetMusic = this.parseSheetMusic(input);
+                    this.canvas.innerHTML = `<pre>${parsedSheetMusic}</pre>`;
                 });
 
                 this.settingsModalHeader.addEventListener('mousedown', (e) => {
@@ -117,6 +199,117 @@
                 document.addEventListener('mouseup', () => {
                     isDragging = false;
                 });
+
+                this.toggleI11.addEventListener('click', () => {
+                    this.i11Toolbar.classList.toggle('hidden');
+                });
+            }
+
+            async loadIssueAndComments() {
+                try {
+                    const issueData = await this.apiRequest('GET', 'issues/11');
+                    const issueBody = issueData.body;
+                    if (issueBody) {
+                        const issueButton = document.createElement('button');
+                        issueButton.classList.add('bg-orange-500', 'hover:bg-orange-600', 'text-white', 'py-2', 'px-4', 'rounded', 'mr-2');
+                        issueButton.textContent = '议题 11 内容';
+                        issueButton.addEventListener('click', () => {
+                            this.resetHighlight();
+                            issueButton.classList.add('highlighted');
+                            this.sheetMusicInput.value = issueBody;
+                            const parsedSheetMusic = this.parseSheetMusic(issueBody);
+                            this.canvas.innerHTML = `<pre>${parsedSheetMusic}</pre>`;
+                        });
+                        this.i11Toolbar.appendChild(issueButton);
+                    }
+
+                    const commentsData = await this.apiRequest('GET', 'issues/11/comments');
+                    commentsData.forEach(comment => {
+                        const commentBody = comment.body;
+                        if (commentBody) {
+                            const commentButton = document.createElement('button');
+                            commentButton.classList.add('bg-pink-500', 'hover:bg-pink-600', 'text-white', 'py-2', 'px-4', 'rounded', 'mr-2');
+                            commentButton.textContent = `评论 ${comment.id}`;
+                            commentButton.addEventListener('click', () => {
+                                this.resetHighlight();
+                                commentButton.classList.add('highlighted');
+                                this.sheetMusicInput.value = commentBody;
+                                const parsedSheetMusic = this.parseSheetMusic(commentBody);
+                                this.canvas.innerHTML = `<pre>${parsedSheetMusic}</pre>`;
+                            });
+                            this.i11Toolbar.appendChild(commentButton);
+                        }
+                    });
+                } catch (error) {
+                    console.error('加载 issue 或评论时出错:', error);
+                }
+            }
+
+            parseSheetMusic(input) {
+                let output = '';
+                let currentNote = '';
+                for (let i = 0; i < input.length; i++) {
+                    const char = input[i];
+                    if (/[0-9]/.test(char)) {
+                        if (currentNote) {
+                            output += this.formatNote(currentNote);
+                            currentNote = '';
+                        }
+                        currentNote += char;
+                    } else if (char === '/') {
+                        currentNote += char;
+                    } else {
+                        if (currentNote) {
+                            output += this.formatNote(currentNote);
+                            currentNote = '';
+                        }
+                        output += char;
+                    }
+                }
+                if (currentNote) {
+                    output += this.formatNote(currentNote);
+                }
+                return output;
+            }
+
+            formatNote(note) {
+                const match = note.match(/^(\d+)(\/+)$/);
+                if (match) {
+                    const digit = match[1];
+                    const slashes = match[2].length;
+                    if (slashes === 1) {
+                        return `<span class="eighth-note">${digit}</span>`;
+                    }
+                }
+                return note;
+            }
+
+            generateRandomSheet() {
+                const notes = ['1', '2', '3', '4', '5', '6', '7'];
+                const chords = ['"C"', '"Am"', '"Dm"', '"G"'];
+                let randomSheet = '';
+                for (let i = 0; i < 4; i++) {
+                    for (let j = 0; j < 4; j++) {
+                        const randomNote = notes[Math.floor(Math.random() * notes.length)];
+                        const randomSlash = Math.random() > 0.5 ? '/' : '';
+                        randomSheet += randomNote + randomSlash;
+                        if (j === 3) {
+                            const randomChord = chords[Math.floor(Math.random() * chords.length)];
+                            randomSheet += ' ' + randomChord + ' ';
+                        } else {
+                            randomSheet += ' ';
+                        }
+                    }
+                    randomSheet += '| ';
+                }
+                return randomSheet;
+            }
+
+            resetHighlight() {
+                const buttons = this.i11Toolbar.querySelectorAll('button');
+                buttons.forEach(button => {
+                    button.classList.remove('highlighted');
+                });
             }
         }
 
@@ -126,3 +319,9 @@
 
 </html>
     
+<!--
+升级 i11Toolbar ,  高亮新点击按钮
+ 
+ 
+return all new code
+-->
