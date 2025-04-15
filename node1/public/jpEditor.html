@@ -13,6 +13,7 @@
     <script>
         class SheetMusicEditor {
             constructor() {
+                this.version = "0.11";
                 this.currentRepo = 's177';
                 this.createElements();
                 this.applyStyles();
@@ -50,7 +51,7 @@
                 this.settingsButton = document.createElement('button');
                 this.settingsButton.id = 'settings-button';
                 this.settingsButton.classList.add('bg-blue-500', 'hover:bg-blue-600', 'text-white', 'py-2', 'px-4', 'rounded');
-                this.settingsButton.innerHTML = '<i class="fa-solid fa-gear"></i> 设置';
+                this.settingsButton.innerHTML = '<i class="fa-solid fa-gear"></i>'+ `设置${this.version}`;
                 this.toolbar.appendChild(this.settingsButton);
 
                 this.toggleI11 = document.createElement('button');
@@ -132,6 +133,9 @@
                     }
                     .green-text {
                         color: #16a34a;
+                    }
+                    .brown-lyrics {
+                        color: #784d3c;
                     }
                     #canvas {
                         width: 100%;
@@ -391,6 +395,9 @@
                     if (line.startsWith('Q:')) {
                         const content = line.substring(2).trim();
                         output += `<span class="blue-note">${this.parseMusicLine(content)}</span>`;
+                    } else if (line.startsWith('C:')) {
+                        const lyrics = line.substring(2).trim();
+                        output += `<span class="brown-lyrics">${lyrics}</span>`;
                     } else {
                         output += `<span class="green-text">${line}</span>`;
                     }
@@ -497,10 +504,11 @@
 
 </html>
     
+    
 <!--
 升级 
-     以“Q:”开头才解析为乐谱，蓝色显示
- 其他不解析，以绿色显示
+     以“C:” “Q:”自动配对，一个歌词自动对上一个音符 
  
+this.version++;
 return all new code
 -->
