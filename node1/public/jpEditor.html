@@ -17,11 +17,85 @@
                 this.duration = duration;
                 this.chord = chord;
             }
-            drawMe(ctx,x){
 
+            drawMe(ctx, x, y) {
+                ctx.save();
+                const baseY = y + 5; // 基准线调整
+                
+                // 绘制和弦
+                if (this.chord) {
+                    ctx.font = '12px Arial';
+                    ctx.textBaseline = 'bottom';
+                    const chordWidth = ctx.measureText(this.chord).width;
+                    ctx.fillText(this.chord, x + (this.getWidth(ctx) - chordWidth)/2, y - 15);
+                }
+
+                // 绘制主音符
+                ctx.font = '20px Arial';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.note, x, baseY);
+
+                // 绘制时值符号
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 1.2;
+                const symbolX = x + ctx.measureText(this.note).width + 3;
+                
+                switch(this.duration) {
+                    case '8th':   // 八分音符：单下划线
+                        this.#drawLine(ctx, symbolX, baseY + 8, 12);
+                        break;
+                    case '16th':  // 十六分音符：双下划线
+                        this.#drawLine(ctx, symbolX, baseY + 8, 12);
+                        this.#drawLine(ctx, symbolX, baseY + 12, 12);
+                        break;
+                    case '2nd':   // 二分音符：右侧短线
+                        this.#drawLine(ctx, x + 15, baseY + 15, 8, -45);
+                        break;
+                    case 'whole': // 全音符：环绕圆圈
+                        ctx.beginPath();
+                        ctx.arc(x + 10, baseY, 6, 0, Math.PI * 2);
+                        ctx.stroke();
+                        break;
+                }
+                ctx.restore();
             }
-            getWidth(){
 
+            #drawLine(ctx, x, y, length, angle = 0) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(angle * Math.PI / 180);
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(length, 0);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            getWidth(ctx) {
+                ctx = ctx || document.createElement('canvas').getContext('2d'); // 兼容测量
+                
+                // 测量音符宽度
+                ctx.font = '20px Arial';
+                const noteWidth = ctx.measureText(this.note).width;
+                
+                // 符号附加宽度
+                let symbolWidth = 0;
+                switch(this.duration) {
+                    case '8th':  symbolWidth = 15; break;
+                    case '16th': symbolWidth = 18; break;
+                    case '2nd':   symbolWidth = 10; break;
+                    case 'whole':symbolWidth = 15; break;
+                    default:     symbolWidth = 5;
+                }
+
+                // 测量和弦宽度
+                let chordWidth = 0;
+                if (this.chord) {
+                    ctx.font = '12px Arial';
+                    chordWidth = ctx.measureText(this.chord).width;
+                }
+
+                return Math.max(noteWidth + symbolWidth, chordWidth) + 8; // 总宽度
             }
         }
 
@@ -33,60 +107,65 @@
             }
 
             #parseBarContent() {
-                const noteRegex = /(\d+)(\/+|[-]+)?(\w+)?/g;
+                const noteRegex = /(\d+)(\/+|[-]+)?(?:"(\w+)")?/g; // 改进正则匹配和弦
                 const notes = [];
                 let match;
-                while ((match = noteRegex.exec(this.barContent))!== null) {
-                    const note = match[1];
-                    const durationSymbol = match[2] || '';
-                    let duration;
-                    if (durationSymbol === '///') {
-                        duration = '16th';
-                    } else if (durationSymbol === '/') {
-                        duration = '8th';
-                    } else if (durationSymbol === '') {
-                        duration = '4th';
-                    } else if (durationSymbol === '-') {
-                        duration = '2nd';
-                    } else if (durationSymbol === '---') {
-                        duration = 'whole';
-                    }
-                    const chord = match[3] || null;
-                    notes.push(new C4Note(note, duration, chord));
+                
+                while ((match = noteRegex.exec(this.barContent)) !== null) {
+                    const durationMap = {
+                        '///': '16th',
+                        '/':   '8th',
+                        '':    '4th',
+                        '-':   '2nd',
+                        '---': 'whole'
+                    };
+                    notes.push(new C4Note(
+                        match[1],
+                        durationMap[match[2]?.trim() || '4th'],
+                        match[3] 
+                    ));
                 }
                 return notes;
             }
-
             #calculateWidth() {
                 // 简单示例，假设每个音符宽度为 20px
                 return this.notes.length * 20;
             }
 
-            getWidth() {
-                return this.width;
+            getWidth(ctx) {
+                return this.notes.reduce((sum, note) => sum + note.getWidth(ctx), 0) + 
+                       this.notes.length * 4; // 音符间距
             }
 
-            drawMe(ctx, x, y) {
-                const padding = 5;
-                ctx.strokeRect(x - padding, y - 16 - padding, this.width + 2 * padding, 20 + 2 * padding);
 
-                let currentX = x;
+            drawMe(ctx, x, y) {
+                ctx.save();
+                ctx.translate(x, y);
+                
+                // 绘制小节线
+                ctx.strokeStyle = '#666';
+                ctx.setLineDash([]);
+                ctx.strokeRect(-6, -24, this.getWidth(ctx) + 12, 40);
+
+                // 绘制音符
+                let currentX = 0;
                 this.notes.forEach(note => {
-                    note.drawMe(ctx,currentX)
-                    currentX += note.getWidth();
+                    note.drawMe(ctx, currentX, 0);
+                    currentX += note.getWidth(ctx);
                 });
+                
+                ctx.restore();
             }
         }
 
         class SheetMusicEditor {
             constructor() {
                 // 升级版本号
-                this.version = parseFloat("0.13") + 0.14; // 原来的累加方式改为直接递增
-                this.version = this.version.toFixed(2);
+                this.version = '0.14'; // 直接版本管理 
                 this.currentRepo = 's177';
                 this.canvasX = 0;
                 this.canvasY = 0;
-                this.lineSpacing = 45; // 默认行间距
+                this.lineSpacing = 115; // 默认行间距
                 this.createElements();
                 this.applyStyles();
                 this.addEventListeners();
@@ -400,8 +479,7 @@
                 });
 
                 this.exampleButton.addEventListener('click', () => { //exam1
-                    const exampleCode = `
-                    Q: 3/"C" 3// 3// 3. 2/ 3/ 5/ | 6"Am" - - - | 4/"Dm" 4// 4// 4. 3/ 5/ 6/ | 2"G" - - 3/ 4/ |
+                    const exampleCode = `Q: 3/"C" 3// 3// 3. 2/ 3/ 5/ | 6"Am" - - - | 4/"Dm" 4// 4// 4. 3/ 5/ 6/ | 2"G" - - 3/ 4/ |
 C: 某年某月的某一天, 就像一张破碎的脸。 难以
 Q: 5."C" 5/ 3. 2/ | 1"Am" - - 0/ 1/ | 6."Dm" 6/ 6 (4/ 5// 6//) | 5"G" - - - |
 C: 开口道再见, @就让一切走@@远
@@ -413,8 +491,7 @@ C: 开口道再见, @就让一切走@@远
                 });
 
                 this.newSheetButton.addEventListener('click', () => {//exam2
-                    const newSheetCode = `
-                    Q: 3/"C" 3// 3// 3. 2/ 3/ 5/ | 6"Am" - - - | 4/"Dm" 4// 4// 4. 3/ 5/ 6/ | 2"G" - - 3/ 4/ |
+                    const newSheetCode = `Q: 3/"C" 3// 3// 3. 2/ 3/ 5/ | 6"Am" - - - | 4/"Dm" 4// 4// 4. 3/ 5/ 6/ | 2"G" - - 3/ 4/ |
 C: 某年某月的某一天, 就像一张破碎的脸。 难以
 Q: 5."C" 5/ 3. 2/ | 1"Am" - - 0/ 1/ | 6."Dm" 6/ 6 (4/ 5// 6//) | 5"G" - - - |
 C: 开口道再见, @就让一切走@@远
@@ -558,29 +635,24 @@ C: 开口道再见, @就让一切走@@远
                 }
             }
             parseSheetMusic(input) {
-                const parts = input.split('Q:'); 
-                let musicLines = []; 
-                for (let i = 1; i < parts.length; i++) {
-                    const line = parts[i].split('\n')[0].trim(); 
-                    musicLines.push(line);
-                } 
+                const lines = input.split('\n').filter(l => l.startsWith('Q:'));
+                const musicLines = lines.map(line => line.replace('Q:', '').trim());
                 this.#drawMusicLines(musicLines);
-            } 
-            #drawMusicLines(lines){
+            }
+            #drawMusicLines(lines) {
                 const ctx = this.canvas.getContext('2d');
                 ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                ctx.font = '16px Arial';
-                ctx.fillStyle = 'black';
-
+                
                 let y = this.y0;
-                lines.forEach((line, index) => { 
-                    const bars = line.split('|');
+                lines.forEach(line => {
+                    const barGroup = line.split('|').map(b => new C4Bar(b));
                     let x = this.x0;
-                    for(let i = 0; i < bars.length; i++){
-                        const bar = new C4Bar(bars[i]);
-                        bar.drawMe(ctx,x,y);
-                        x += bar.getWidth() + 22;
-                    }
+                    
+                    barGroup.forEach(bar => {
+                        bar.drawMe(ctx, x, y);
+                        x += bar.getWidth(ctx) + 20; // 小节间距
+                    });
+                    
                     y += this.lineSpacing;
                 });
             }
