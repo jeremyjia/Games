@@ -74,7 +74,7 @@
                 // 添加可拖拽区域
                 const dragHandle = document.createElement('div');
                 dragHandle.className = 'draggable h-8 bg-gray-200 cursor-move rounded-t-lg flex items-center px-4';
-                dragHandle.innerHTML = '<span class="text-gray-600">≡ 拖动区域</span>';
+                dragHandle.innerHTML = `<span class="text-gray-600">≡ 拖动区域${this.version}</span>`;
                 
                 // 顶部工具条1
                 const toolbar1 = this.#createToolbar(['new-comment'], 'relative');
@@ -219,7 +219,8 @@
 </html>
 <!--
 升级 
-     code 
+let textarea be a textarea element.
+
 this.version++;
 return all new code
 -->

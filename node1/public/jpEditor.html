@@ -14,10 +14,11 @@
         class SheetMusicEditor {
             constructor() {
                 // 升级版本号
-                this.version = (parseFloat((parseFloat("0.13") + 0.01).toFixed(2)) + 0.02).toFixed(2);
+                this.version = (parseFloat((parseFloat("0.13") + 0.01 + 0.02 + 0.01 + 0.01 + 0.01 + 0.01 + 0.01 + 0.01 + 0.01 + 0.01).toFixed(2))).toFixed(2);
                 this.currentRepo = 's177';
                 this.canvasX = 0;
                 this.canvasY = 0;
+                this.lineSpacing = 20; // 默认行间距
                 this.createElements();
                 this.applyStyles();
                 this.addEventListeners();
@@ -45,8 +46,12 @@
                 return response.json();
             }
             createElements() {
-                this.canvas = document.createElement('div');
+                this.x0 = 50;
+                this.y0 = 50;
+                this.canvas = document.createElement('canvas');
                 this.canvas.id = 'canvas';
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight - 64;
 
                 this.toolbar = document.createElement('div');
                 this.toolbar.classList.add('fixed', 'bottom-0', 'left-0', 'right-0', 'bg-white', 'p-4', 'shadow-md');
@@ -154,23 +159,38 @@
                 this.xInput.classList.add('w-full', 'border', 'border-gray-300', 'p-2', 'mb-2');
                 this.xInput.type = 'number';
                 this.xInput.placeholder = 'X 坐标';
-                this.xInput.value = this.canvasX;
+                this.xInput.value = this.x0;
                 this.tab2Content.appendChild(this.xInput);
 
                 this.yInput = document.createElement('input');
                 this.yInput.id = 'y-input';
-                this.yInput.classList.add('w-full', 'border', 'border-gray-300', 'p-2', 'mb-4');
+                this.yInput.classList.add('w-full', 'border', 'border-gray-300', 'p-2', 'mb-2');
                 this.yInput.type = 'number';
                 this.yInput.placeholder = 'Y 坐标';
-                this.yInput.value = this.canvasY;
+                this.yInput.value = this.y0;
                 this.tab2Content.appendChild(this.yInput);
+
+                this.lineSpacingInput = document.createElement('input');
+                this.lineSpacingInput.id = 'line-spacing-input';
+                this.lineSpacingInput.classList.add('w-full', 'border', 'border-gray-300', 'p-2', 'mb-4');
+                this.lineSpacingInput.type = 'number';
+                this.lineSpacingInput.placeholder = '音乐行间距';
+                this.lineSpacingInput.value = this.lineSpacing;
+                this.tab2Content.appendChild(this.lineSpacingInput);
 
                 this.applyPositionButton = document.createElement('button');
                 this.applyPositionButton.id = 'apply-position-button';
                 this.applyPositionButton.classList.add('bg-blue-500', 'hover:bg-blue-600', 'text-white', 'py-2', 'px-4', 'rounded');
-                this.applyPositionButton.textContent = '应用位置';
+                this.applyPositionButton.textContent = "apply";
                 this.applyPositionButton.addEventListener('click', () => this.applyPosition());
                 this.tab2Content.appendChild(this.applyPositionButton);
+
+                // 调整状态栏的位置，确保基本设置显示时能看到
+                this.statusBar = document.createElement('div');
+                this.statusBar.id = 'status-bar';
+                this.statusBar.classList.add('bg-gray-200', 'p-2', 'text-center', 'mt-4');
+                this.statusBar.textContent = `当前乐谱行数: 0`;
+                this.settingsModal.appendChild(this.statusBar);
 
                 this.settingsModal.appendChild(this.tab2Content);
 
@@ -282,6 +302,7 @@
                         padding: 10px;
                         margin: 10px;
                         position: relative;
+                        display: inline-block;
                     }
                    .measure-number {
                         position: absolute;
@@ -290,6 +311,9 @@
                         background-color: white;
                         padding: 2px 5px;
                         border: 1px solid black;
+                    }
+                   .music-line {
+                        margin-bottom: ${this.lineSpacing}px;
                     }
                 `;
                 document.head.appendChild(style);
@@ -307,38 +331,45 @@
                     this.settingsModal.style.display = 'none';
                 });
 
-                this.exampleButton.addEventListener('click', () => {
-                    const exampleCode = `V:1.0
-                    3/"C" 3// 3// 3. 2/ 3/ 5/
-                    // `;
+                this.exampleButton.addEventListener('click', () => { //exam1
+                    const exampleCode = `
+                    Q: 3/"C" 3// 3// 3. 2/ 3/ 5/ | 6"Am" - - - | 4/"Dm" 4// 4// 4. 3/ 5/ 6/ | 2"G" - - 3/ 4/ |
+C: 某年某月的某一天, 就像一张破碎的脸。 难以
+Q: 5."C" 5/ 3. 2/ | 1"Am" - - 0/ 1/ | 6."Dm" 6/ 6 (4/ 5// 6//) | 5"G" - - - |
+C: 开口道再见, @就让一切走@@远
+`;
                     const processedCode = this.processSpaces(exampleCode);
                     this.sheetMusicInput.value = processedCode;
                     const parsedSheetMusic = this.parseSheetMusic(processedCode);
-                    this.canvas.innerHTML = `<pre>${parsedSheetMusic}</pre>`;
+                    this.drawSheetMusic(parsedSheetMusic);
+                    this.updateStatusBar();
                 });
 
-                this.newSheetButton.addEventListener('click', () => {
+                this.newSheetButton.addEventListener('click', () => {//exam2
                     const newSheetCode = `
-                    V:1.1
-                    3/"C" 3// 3// 3. 2/ 3/ 5/
-                    // 
-                    // `;
+                    Q: 3/"C" 3// 3// 3. 2/ 3/ 5/ | 6"Am" - - - | 4/"Dm" 4// 4// 4. 3/ 5/ 6/ | 2"G" - - 3/ 4/ |
+C: 某年某月的某一天, 就像一张破碎的脸。 难以
+Q: 5."C" 5/ 3. 2/ | 1"Am" - - 0/ 1/ | 6."Dm" 6/ 6 (4/ 5// 6//) | 5"G" - - - |
+C: 开口道再见, @就让一切走@@远
+
+ Q: 3/"C" 3// 3// 3. 2/ 3/ 5/ | 6"Am" - - - | 4/"Dm" 4// 4// 4. 3/ 5/ 6/ | 2"G" - - 3/ 4/ |
+C: 某年某月的某一天, 就像一张破碎的脸。 难以
+Q: 5."C" 5/ 3. 2/ | 1"Am" - - 0/ 1/ | 6."Dm" 6/ 6 (4/ 5// 6//) | 5"G" - - - |
+C: 开口道再见, @就让一切走@@远
+`;
                     const processedCode = this.processSpaces(newSheetCode);
                     this.sheetMusicInput.value = processedCode;
                     const parsedSheetMusic = this.parseSheetMusic(processedCode);
-                    this.canvas.innerHTML = `<pre>${parsedSheetMusic}</pre>`;
+                    this.drawSheetMusic(parsedSheetMusic);
+                    this.updateStatusBar();
                 });
 
                 this.sheetMusicInput.addEventListener('input', () => {
                     const input = this.sheetMusicInput.value;
                     const processedInput = this.processSpaces(input);
-                    let parsedSheetMusic;
-                    if (processedInput.includes('V:')) {
-                        parsedSheetMusic = this.parseSheetMusic(processedInput);
-                    } else {
-                        parsedSheetMusic = `<span class="error">${processedInput}</span>`;
-                    }
-                    this.canvas.innerHTML = `<pre>${parsedSheetMusic}</pre>`;
+                    const parsedSheetMusic = this.parseSheetMusic(processedInput);
+                    this.drawSheetMusic(parsedSheetMusic);
+                    this.updateStatusBar();
                 });
 
                 this.settingsModalHeader.addEventListener('mousedown', (e) => {
@@ -436,7 +467,8 @@
                             } else {
                                 parsedSheetMusic = `<span class="error">${processedIssueBody}</span>`;
                             }
-                            this.canvas.innerHTML = `<pre>${parsedSheetMusic}</pre>`;
+                            this.drawSheetMusic(parsedSheetMusic);
+                            this.updateStatusBar();
                         });
                         this.i11Toolbar.appendChild(issueButton);
                     }
@@ -462,7 +494,8 @@
                                 } else {
                                     parsedSheetMusic = `<span class="error">${processedCommentBody}</span>`;
                                 }
-                                this.canvas.innerHTML = `<pre>${parsedSheetMusic}</pre>`;
+                                this.drawSheetMusic(parsedSheetMusic);
+                                this.updateStatusBar();
                             });
                             this.i11Toolbar.appendChild(commentButton);
                         }
@@ -472,37 +505,14 @@
                 }
             }
             parseSheetMusic(input) {
-                const lines = input.split('\n');
+                const parts = input.split('Q:'); 
+                let musicLines = [];
                 let output = '';
-                let measureNumber = 1;
-                let currentMeasure = '';
-
-                lines.forEach(line => {
-                    if (line.startsWith('Q:')) {
-                        const parts = line.split('|');
-                        parts.forEach(part => {
-                            if (part.trim()) {
-                                const content = part.substring(2).trim();
-                                currentMeasure += `<span class="blue-note">${this.parseMusicLine(content)}</span>`;
-                                output += `<div class="measure"><span class="measure-number">${measureNumber}</span><pre>${currentMeasure}</pre></div>`;
-                                currentMeasure = '';
-                                measureNumber++;
-                            }
-                        });
-                    } else if (line.startsWith('C:')) {
-                        const lyrics = line.substring(2).trim();
-                        currentMeasure += `<span class="brown-lyrics">${lyrics}</span>`;
-                        currentMeasure += '<br>';
-                    } else {
-                        currentMeasure += `<span class="green-text">${line}</span>`;
-                        currentMeasure += '<br>';
-                    }
-                });
-
-                if (currentMeasure) {
-                    output += `<div class="measure"><span class="measure-number">${measureNumber}</span><pre>${currentMeasure}</pre></div>`;
+                for (let i = 1; i < parts.length; i++) {
+                    const line = parts[i].split('\n')[0].trim();
+                    const parsedLine = this.parseMusicLine(line);
+                    output += `<div class="music-line">${parsedLine}</div>`;
                 }
-
                 return output;
             }
             parseMusicLine(line) {
@@ -612,10 +622,35 @@
             }
 
             applyPosition() {
-                this.canvasX = parseInt(this.xInput.value);
-                this.canvasY = parseInt(this.yInput.value);
+                this.x0 = parseInt(this.xInput.value);
+                this.y0 = parseInt(this.yInput.value);
+                this.lineSpacing = parseInt(this.lineSpacingInput.value);
                 this.canvas.style.left = `${this.canvasX}px`;
                 this.canvas.style.top = `${this.canvasY}px`;
+                const style = document.querySelector('style');
+                style.textContent = style.textContent.replace(/margin-bottom: \d+px;/, `margin-bottom: ${this.lineSpacing}px;`);
+            }
+            #countLines(str){
+                let a = str.split('Q:');
+                let n = a.length;
+                return n-1;
+            }
+            updateStatusBar() {
+                const input = this.sheetMusicInput.value;
+                const lines = this.#countLines(input);
+                this.statusBar.textContent = `当前乐谱行数: ${lines}`;
+            }
+            drawSheetMusic(parsedSheetMusic) {
+                const ctx = this.canvas.getContext('2d');
+                ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                ctx.font = '16px Arial';
+                const lines = parsedSheetMusic.match(/<div class="music-line">(.*?)<\/div>/g);
+                if (lines) {
+                    lines.forEach((line, index) => {
+                        const text = line.replace(/<\/?[^>]+>/g, '');
+                        ctx.fillText(text, this.x0, this.y0 + index * (this.lineSpacing + 20));
+                    });
+                }
             }
         }
 
@@ -626,10 +661,10 @@
 </html>
     
     
-    
 <!--
 升级 
-只解析包含“Q:" 的行 
+  设计一个 C4Note 类来处理音符 
+  
 this.version++;
 return all new code
 -->
