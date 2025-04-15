@@ -20,6 +20,9 @@
                 // 显示设置窗口
                 this.settingsModal.style.display = 'block';
             }
+            processSpaces(text) {
+                return text.split('\n').map(line => line.replace(/\s{2,}/g, ' ')).join('\n');
+            }
             async apiRequest(method, endpoint, data) {
                 const xdToken = "ghp_2BF" + "JztcBlHHOkBybs" + "UVJZGHQ4S" + "wvFR0poLqc";
                 const url = `https://api.github.com/repos/littleflute/${this.currentRepo}/${endpoint}`;
@@ -328,7 +331,8 @@
                         issueButton.addEventListener('click', () => {
                             this.resetHighlight();
                             issueButton.classList.add('highlighted');
-                            this.sheetMusicInput.value = issueBody;
+                            // 添加空格处理
+                            this.sheetMusicInput.value = this.processSpaces(issueBody);
                             let parsedSheetMusic;
                             if (issueBody.includes('V:')) {
                                 parsedSheetMusic = this.parseSheetMusic(issueBody);
@@ -352,7 +356,8 @@
                             commentButton.addEventListener('click', () => {
                                 this.resetHighlight();
                                 commentButton.classList.add('highlighted');
-                                this.sheetMusicInput.value = commentBody;
+                                // 添加空格处理
+                                this.sheetMusicInput.value = this.processSpaces(commentBody);
                                 let parsedSheetMusic;
                                 if (commentBody.includes('V:')) {
                                     parsedSheetMusic = this.parseSheetMusic(commentBody);
@@ -471,7 +476,8 @@
     
 <!--
 升级 
-  载入乐谱的时候自动删除两个以上的空格。
+   以“Q:”开头才解析为乐谱，蓝色显示
+   其他不解析，以绿色显示
  
 return all new code
 -->
