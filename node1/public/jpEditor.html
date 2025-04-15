@@ -126,6 +126,13 @@
             applyStyles() {
                 const style = document.createElement('style');
                 style.textContent = `
+                    /* 新增样式 */
+                    .blue-note {
+                        color: #2563eb;
+                    }
+                    .green-text {
+                        color: #16a34a;
+                    }
                     #canvas {
                         width: 100%;
                         height: calc(100vh - 64px);
@@ -376,12 +383,26 @@
                     console.error('加载 issue 或评论时出错:', error);
                 }
             }
-
             parseSheetMusic(input) {
+                const lines = input.split('\n');
+                let output = '';
+                
+                lines.forEach(line => {
+                    if (line.startsWith('Q:')) {
+                        const content = line.substring(2).trim();
+                        output += `<span class="blue-note">${this.parseMusicLine(content)}</span>`;
+                    } else {
+                        output += `<span class="green-text">${line}</span>`;
+                    }
+                    output += '<br>';
+                });
+                return output;
+            }
+            parseMusicLine(line) {
                 let output = '';
                 let currentNote = '';
-                for (let i = 0; i < input.length; i++) {
-                    const char = input[i];
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
                     if (/[0-9]/.test(char)) {
                         if (currentNote) {
                             output += this.formatNote(currentNote);
@@ -392,10 +413,10 @@
                         currentNote += char;
                     } else if (char === '"') {
                         if (currentNote) {
-                            const chord = this.extractChord(input, i);
+                            const chord = this.extractChord(line, i);
                             output += this.formatNoteWithChord(currentNote, chord);
                             currentNote = '';
-                            i += chord.length + 1; // 跳过和弦部分
+                            i += chord.length + 1;
                         }
                     } else {
                         if (currentNote) {
