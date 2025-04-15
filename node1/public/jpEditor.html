@@ -59,7 +59,7 @@
                 this.createCommentButton = document.createElement('button');
                 this.createCommentButton.id = 'create-comment-button';
                 this.createCommentButton.classList.add('bg-green-500', 'hover:bg-green-600', 'text-white', 'py-2', 'px-4', 'rounded', 'ml-2');
-                this.createCommentButton.textContent = '生成新评论';
+                this.createCommentButton.textContent = '+C';
                 this.toolbar.appendChild(this.createCommentButton);
 
                 this.updateContentButton = document.createElement('button');
@@ -80,7 +80,15 @@
 
                 this.settingsModalHeader = document.createElement('div');
                 this.settingsModalHeader.id = 'settings-modal-header';
+                this.settingsModalHeader.classList.add('flex', 'items-center', 'justify-between');
                 this.settingsModalHeader.innerHTML = '<h2 class="text-xl font-bold">简谱设置</h2>';
+
+                this.closeModalButton = document.createElement('button');
+                this.closeModalButton.id = 'close-modal-button';
+                this.closeModalButton.classList.add('bg-red-500', 'hover:bg-red-600', 'text-white', 'py-1', 'px-2', 'rounded');
+                this.closeModalButton.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                this.settingsModalHeader.appendChild(this.closeModalButton);
+
                 this.settingsModal.appendChild(this.settingsModalHeader);
 
                 this.modalToolbar = document.createElement('div');
@@ -105,12 +113,6 @@
                 this.sheetMusicInput.classList.add('w-full', 'h-48', 'border', 'border-gray-300', 'p-2', 'mb-4');
                 this.sheetMusicInput.placeholder = '输入简谱';
                 this.settingsModal.appendChild(this.sheetMusicInput);
-
-                this.closeModalButton = document.createElement('button');
-                this.closeModalButton.id = 'close-modal-button';
-                this.closeModalButton.classList.add('bg-red-500', 'hover:bg-red-600', 'text-white', 'py-2', 'px-4', 'rounded');
-                this.closeModalButton.innerHTML = '<i class="fa-solid fa-xmark"></i> 关闭';
-                this.settingsModal.appendChild(this.closeModalButton);
 
                 document.body.appendChild(this.canvas);
                 document.body.appendChild(this.toolbar);
@@ -183,6 +185,16 @@
                    .error {
                         color: red;
                     }
+                   .note-with-chord {
+                        display: inline-block;
+                        text-align: center;
+                        vertical-align: middle;
+                        margin: 0 2px;
+                    }
+                   .chord {
+                        display: block;
+                        font-size: 0.8em;
+                    }
                 `;
                 document.head.appendChild(style);
             }
@@ -244,6 +256,23 @@
                 });
 
                 document.addEventListener('mouseup', () => {
+                    isDragging = false;
+                });
+
+                this.settingsModalHeader.addEventListener('touchstart', (e) => {
+                    isDragging = true;
+                    offsetX = e.touches[0].clientX - this.settingsModal.offsetLeft;
+                    offsetY = e.touches[0].clientY - this.settingsModal.offsetTop;
+                });
+
+                document.addEventListener('touchmove', (e) => {
+                    if (isDragging) {
+                        this.settingsModal.style.left = `${e.touches[0].clientX - offsetX}px`;
+                        this.settingsModal.style.top = `${e.touches[0].clientY - offsetY}px`;
+                    }
+                });
+
+                document.addEventListener('touchend', () => {
                     isDragging = false;
                 });
 
@@ -352,6 +381,13 @@
                         currentNote += char;
                     } else if (char === '/') {
                         currentNote += char;
+                    } else if (char === '"') {
+                        if (currentNote) {
+                            const chord = this.extractChord(input, i);
+                            output += this.formatNoteWithChord(currentNote, chord);
+                            currentNote = '';
+                            i += chord.length + 1; // 跳过和弦部分
+                        }
                     } else {
                         if (currentNote) {
                             output += this.formatNote(currentNote);
@@ -378,6 +414,22 @@
                     }
                 }
                 return note;
+            }
+
+            formatNoteWithChord(note, chord) {
+                const formattedNote = this.formatNote(note);
+                return `<span class="note-with-chord"><span class="chord">${chord}</span>${formattedNote}</span>`;
+            }
+
+            extractChord(input, startIndex) {
+                let chord = '';
+                for (let i = startIndex + 1; i < input.length; i++) {
+                    if (input[i] === '"') {
+                        break;
+                    }
+                    chord += input[i];
+                }
+                return chord;
             }
 
             generateRandomSheet() {
@@ -417,7 +469,7 @@
     
 <!--
 升级 
- 3/"C" ，像这样的例子把字符串显示在音符的正上方。
+  画布水平宽度固定与窗口大小一致  。垂直方向可以出现滚动条。画布显示内容宽度如果超出去也不要管。
  
 return all new code
 -->
