@@ -13,8 +13,11 @@
     <script>
         class SheetMusicEditor {
             constructor() {
-                this.version = "0.12";
+                // 升级版本号
+                this.version = (parseFloat((parseFloat("0.13") + 0.01).toFixed(2)) + 0.02).toFixed(2);
                 this.currentRepo = 's177';
+                this.canvasX = 0;
+                this.canvasY = 0;
                 this.createElements();
                 this.applyStyles();
                 this.addEventListeners();
@@ -95,6 +98,28 @@
 
                 this.settingsModal.appendChild(this.settingsModalHeader);
 
+                this.tabContainer = document.createElement('div');
+                this.tabContainer.classList.add('flex', 'mb-4');
+
+                this.tab1 = document.createElement('button');
+                this.tab1.id = 'tab1';
+                this.tab1.classList.add('bg-gray-200', 'text-gray-700', 'py-2', 'px-4', 'rounded-t', 'mr-2');
+                this.tab1.textContent = '基本设置';
+                this.tab1.addEventListener('click', () => this.showTab(1));
+                this.tabContainer.appendChild(this.tab1);
+
+                this.tab2 = document.createElement('button');
+                this.tab2.id = 'tab2';
+                this.tab2.classList.add('bg-gray-200', 'text-gray-700', 'py-2', 'px-4', 'rounded-t');
+                this.tab2.textContent = '位置设置';
+                this.tab2.addEventListener('click', () => this.showTab(2));
+                this.tabContainer.appendChild(this.tab2);
+
+                this.settingsModal.appendChild(this.tabContainer);
+
+                this.tab1Content = document.createElement('div');
+                this.tab1Content.id = 'tab1-content';
+
                 this.modalToolbar = document.createElement('div');
                 this.modalToolbar.classList.add('bg-gray-200', 'p-2', 'mb-2');
 
@@ -110,13 +135,44 @@
                 this.newSheetButton.textContent = 'exam2';
                 this.modalToolbar.appendChild(this.newSheetButton);
 
-                this.settingsModal.appendChild(this.modalToolbar);
+                this.tab1Content.appendChild(this.modalToolbar);
 
                 this.sheetMusicInput = document.createElement('textarea');
                 this.sheetMusicInput.id = 'sheet-music-input';
                 this.sheetMusicInput.classList.add('w-full', 'h-48', 'border', 'border-gray-300', 'p-2', 'mb-4');
                 this.sheetMusicInput.placeholder = '输入简谱';
-                this.settingsModal.appendChild(this.sheetMusicInput);
+                this.tab1Content.appendChild(this.sheetMusicInput);
+
+                this.settingsModal.appendChild(this.tab1Content);
+
+                this.tab2Content = document.createElement('div');
+                this.tab2Content.id = 'tab2-content';
+                this.tab2Content.style.display = 'none';
+
+                this.xInput = document.createElement('input');
+                this.xInput.id = 'x-input';
+                this.xInput.classList.add('w-full', 'border', 'border-gray-300', 'p-2', 'mb-2');
+                this.xInput.type = 'number';
+                this.xInput.placeholder = 'X 坐标';
+                this.xInput.value = this.canvasX;
+                this.tab2Content.appendChild(this.xInput);
+
+                this.yInput = document.createElement('input');
+                this.yInput.id = 'y-input';
+                this.yInput.classList.add('w-full', 'border', 'border-gray-300', 'p-2', 'mb-4');
+                this.yInput.type = 'number';
+                this.yInput.placeholder = 'Y 坐标';
+                this.yInput.value = this.canvasY;
+                this.tab2Content.appendChild(this.yInput);
+
+                this.applyPositionButton = document.createElement('button');
+                this.applyPositionButton.id = 'apply-position-button';
+                this.applyPositionButton.classList.add('bg-blue-500', 'hover:bg-blue-600', 'text-white', 'py-2', 'px-4', 'rounded');
+                this.applyPositionButton.textContent = '应用位置';
+                this.applyPositionButton.addEventListener('click', () => this.applyPosition());
+                this.tab2Content.appendChild(this.applyPositionButton);
+
+                this.settingsModal.appendChild(this.tab2Content);
 
                 document.body.appendChild(this.canvas);
                 document.body.appendChild(this.toolbar);
@@ -143,6 +199,9 @@
                         border: 1px solid #ccc;
                         font-family: monospace;
                         overflow-y: auto; /* 垂直方向出现滚动条 */
+                        position: relative;
+                        left: ${this.canvasX}px;
+                        top: ${this.canvasY}px;
                     }
                     #settings-modal {
                         position: fixed;
@@ -153,6 +212,9 @@
                         padding: 20px;
                         box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
                         display: none;
+                        width: 600px; /* 固定宽度 */
+                        height: 400px; /* 固定高度 */
+                        overflow: auto; /* 溢出时显示滚动条 */
                     }
                     #settings-modal-header {
                         cursor: move;
@@ -214,6 +276,20 @@
                         top: -1.2em;
                         left: 50%;
                         transform: translateX(-50%);
+                    }
+                   .measure {
+                        border: 1px solid black;
+                        padding: 10px;
+                        margin: 10px;
+                        position: relative;
+                    }
+                   .measure-number {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        background-color: white;
+                        padding: 2px 5px;
+                        border: 1px solid black;
                     }
                 `;
                 document.head.appendChild(style);
@@ -398,19 +474,35 @@
             parseSheetMusic(input) {
                 const lines = input.split('\n');
                 let output = '';
-                
+                let measureNumber = 1;
+                let currentMeasure = '';
+
                 lines.forEach(line => {
                     if (line.startsWith('Q:')) {
-                        const content = line.substring(2).trim();
-                        output += `<span class="blue-note">${this.parseMusicLine(content)}</span>`;
+                        const parts = line.split('|');
+                        parts.forEach(part => {
+                            if (part.trim()) {
+                                const content = part.substring(2).trim();
+                                currentMeasure += `<span class="blue-note">${this.parseMusicLine(content)}</span>`;
+                                output += `<div class="measure"><span class="measure-number">${measureNumber}</span><pre>${currentMeasure}</pre></div>`;
+                                currentMeasure = '';
+                                measureNumber++;
+                            }
+                        });
                     } else if (line.startsWith('C:')) {
                         const lyrics = line.substring(2).trim();
-                        output += `<span class="brown-lyrics">${lyrics}</span>`;
+                        currentMeasure += `<span class="brown-lyrics">${lyrics}</span>`;
+                        currentMeasure += '<br>';
                     } else {
-                        output += `<span class="green-text">${line}</span>`;
+                        currentMeasure += `<span class="green-text">${line}</span>`;
+                        currentMeasure += '<br>';
                     }
-                    output += '<br>';
                 });
+
+                if (currentMeasure) {
+                    output += `<div class="measure"><span class="measure-number">${measureNumber}</span><pre>${currentMeasure}</pre></div>`;
+                }
+
                 return output;
             }
             parseMusicLine(line) {
@@ -504,6 +596,27 @@
                     button.classList.remove('highlighted');
                 });
             }
+
+            showTab(tabNumber) {
+                if (tabNumber === 1) {
+                    this.tab1Content.style.display = 'block';
+                    this.tab2Content.style.display = 'none';
+                    this.tab1.classList.add('bg-gray-200', 'text-gray-700');
+                    this.tab2.classList.remove('bg-gray-200', 'text-gray-700');
+                } else {
+                    this.tab1Content.style.display = 'none';
+                    this.tab2Content.style.display = 'block';
+                    this.tab2.classList.add('bg-gray-200', 'text-gray-700');
+                    this.tab1.classList.remove('bg-gray-200', 'text-gray-700');
+                }
+            }
+
+            applyPosition() {
+                this.canvasX = parseInt(this.xInput.value);
+                this.canvasY = parseInt(this.yInput.value);
+                this.canvas.style.left = `${this.canvasX}px`;
+                this.canvas.style.top = `${this.canvasY}px`;
+            }
         }
 
         new SheetMusicEditor();
@@ -513,11 +626,10 @@
 </html>
     
     
+    
 <!--
 升级 
-     jpEditor.html:335  更新内容时出错: TypeError: Cannot read properties of null (reading '1')
-    at HTMLButtonElement.<anonymous> (jpEditor.html:329:94)
- 
+只解析包含“Q:" 的行 
 this.version++;
 return all new code
 -->
