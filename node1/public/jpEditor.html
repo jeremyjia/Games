@@ -13,7 +13,7 @@
     <script>
         class SheetMusicEditor {
             constructor() {
-                this.version = "0.11";
+                this.version = "0.12";
                 this.currentRepo = 's177';
                 this.createElements();
                 this.applyStyles();
@@ -205,10 +205,15 @@
                         text-align: center;
                         vertical-align: middle;
                         margin: 0 2px;
+                        position: relative;
                     }
                    .chord {
                         display: block;
                         font-size: 0.8em;
+                        position: absolute;
+                        top: -1.2em;
+                        left: 50%;
+                        transform: translateX(-50%);
                     }
                 `;
                 document.head.appendChild(style);
@@ -318,17 +323,18 @@
                     }
                     const content = this.sheetMusicInput.value;
                     try {
-                        if (highlightedButton.textContent === '议题 11 内容') {
+                        if (highlightedButton.dataset.isIssue) {
                             await this.apiRequest('PATCH', 'issues/11', { body: content });
                         } else {
-                            const commentId = highlightedButton.textContent.match(/评论 (\d+)/)[1];
+                            const commentId = highlightedButton.dataset.commentId;
+                            if (!commentId) throw new Error('无效的评论ID');
                             await this.apiRequest('PATCH', `issues/comments/${commentId}`, { body: content });
                         }
                         alert('内容更新成功');
                         this.loadIssueAndComments();
                     } catch (error) {
                         console.error('更新内容时出错:', error);
-                        alert('更新内容失败');
+                        alert(`更新内容失败: ${error.message}`);
                     }
                 });
             }
@@ -341,6 +347,7 @@
                     if (issueBody) {
                         const processedIssueBody = this.processSpaces(issueBody);
                         const issueButton = document.createElement('button');
+                        issueButton.dataset.isIssue = true; // 添加议题标识
                         issueButton.classList.add('bg-orange-500', 'hover:bg-orange-600', 'text-white', 'py-2', 'px-4', 'rounded', 'mr-2');
                         issueButton.textContent = '议题 11 内容';
                         issueButton.addEventListener('click', () => {
@@ -366,6 +373,7 @@
                         if (commentBody) {
                             const processedCommentBody = this.processSpaces(commentBody);
                             const commentButton = document.createElement('button');
+                            commentButton.dataset.commentId = comment.id; // 存储实际评论ID
                             commentButton.classList.add('bg-pink-500', 'hover:bg-pink-600', 'text-white', 'py-2', 'px-4', 'rounded', 'mr-2');
                             commentButton.textContent = `C${n}`;
                             commentButton.addEventListener('click', () => {
@@ -507,7 +515,8 @@
     
 <!--
 升级 
-     以“C:” “Q:”自动配对，一个歌词自动对上一个音符 
+     jpEditor.html:335  更新内容时出错: TypeError: Cannot read properties of null (reading '1')
+    at HTMLButtonElement.<anonymous> (jpEditor.html:329:94)
  
 this.version++;
 return all new code

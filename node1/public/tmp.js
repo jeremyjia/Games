@@ -1,105 +1,106 @@
  
-parseSheetMusic(input) {
-    const lines = input.split('\n');
-    let output = '';
-    let currentLyrics = [];
-    let currentMusicLine = null;
-
-    lines.forEach(line => {
-        if (line.startsWith('C:')) {
-            currentLyrics = line.substring(2).trim().split('');
-        } else if (line.startsWith('Q:')) {
-            currentMusicLine = this.parseMusicLineToElements(line.substring(2).trim());
-            output += this.createPairedLines(currentMusicLine, currentLyrics);
-            currentLyrics = [];
-        } else if (line.startsWith('V:')) {
-            output += `<div class="version-info">版本: ${line.substring(2).trim()}</div>`;
-        } else {
-            output += `<div class="other-line">${line}</div>`;
-        }
-    });
-
-    return output;
-}
-
-parseMusicLineToElements(line) {
-    let elements = [];
-    let currentElement = '';
-    
-    for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-        if (char === ' ' && currentElement) {
-            elements.push(this.formatNote(currentElement));
-            currentElement = '';
-        } else if (char === '"') {
-            const chordEnd = line.indexOf('"', i + 1);
-            if (chordEnd !== -1) {
-                const chord = line.substring(i + 1, chordEnd);
-                currentElement += `"${chord}"`;
-                i = chordEnd;
+        class SheetMusicEditor {
+            constructor() {
+                this.version = "0.13";
+                this.currentRepo = 's177';
+                this.createElements();
+                this.applyStyles();
+                this.addEventListeners();
+                this.settingsModal.style.display = 'block';
             }
-        } else {
-            currentElement += char;
+
+            processSpaces(text) {
+                return text.split('\n').map(line => line.replace(/\s{2,}/g, ' ')).join('\n');
+            }
+
+            async apiRequest(method, endpoint, data) {
+                const xdToken = "ghp_2BF" + "JztcBlHHOkBybs" + "UVJZGHQ4S" + "wvFR0poLqc";
+                const url = `https://api.github.com/repos/littleflute/${this.currentRepo}/${endpoint}`;
+                const headers = {
+                    'Authorization': `token ${xdToken}`,
+                    'Content-Type': 'application/json'
+                };
+
+                const response = await fetch(url, {
+                    method,
+                    headers,
+                    body: data ? JSON.stringify(data) : null
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json();
+            }
+
+            createElements() {
+                // ...（保持原有元素创建代码不变）...
+            }
+
+            applyStyles() {
+                // ...（保持原有样式代码不变）...
+            }
+
+            addEventListeners() {
+                // ...（保持原有事件监听代码，只修改更新内容部分）...
+
+                this.updateContentButton.addEventListener('click', async () => {
+                    const highlightedButton = this.i11Toolbar.querySelector('button.highlighted');
+                    if (!highlightedButton) {
+                        alert('请先选择一个议题或评论进行高亮');
+                        return;
+                    }
+                    const content = this.sheetMusicInput.value;
+                    try {
+                        if (highlightedButton.dataset.isIssue) {
+                            await this.apiRequest('PATCH', 'issues/11', { body: content });
+                        } else {
+                            const commentId = highlightedButton.dataset.commentId;
+                            if (!commentId) throw new Error('无效的评论ID');
+                            await this.apiRequest('PATCH', `issues/comments/${commentId}`, { body: content });
+                        }
+                        alert('内容更新成功');
+                        this.loadIssueAndComments();
+                    } catch (error) {
+                        console.error('更新内容时出错:', error);
+                        alert(`更新内容失败: ${error.message}`);
+                    }
+                });
+            }
+
+            async loadIssueAndComments() {
+                this.i11Toolbar.innerHTML = '';
+                try {
+                    const issueData = await this.apiRequest('GET', 'issues/11');
+                    const issueBody = issueData.body;
+                    if (issueBody) {
+                        const processedIssueBody = this.processSpaces(issueBody);
+                        const issueButton = document.createElement('button');
+                        issueButton.dataset.isIssue = true; // 添加议题标识
+                        // ...（保持原有样式和事件处理代码）...
+                        this.i11Toolbar.appendChild(issueButton);
+                    }
+
+                    const commentsData = await this.apiRequest('GET', 'issues/11/comments');
+                    let n = 0;
+                    commentsData.forEach(comment => {
+                        n++;
+                        const commentBody = comment.body;
+                        if (commentBody) {
+                            const processedCommentBody = this.processSpaces(commentBody);
+                            const commentButton = document.createElement('button');
+                            commentButton.dataset.commentId = comment.id; // 存储实际评论ID
+                            // ...（保持原有样式和事件处理代码）...
+                            this.i11Toolbar.appendChild(commentButton);
+                        }
+                    });
+                } catch (error) {
+                    console.error('加载 issue 或评论时出错:', error);
+                }
+            }
+
+            // ...（保持其他方法不变）...
         }
-    }
-    
-    if (currentElement) elements.push(this.formatNote(currentElement));
-    return elements;
-}
 
-createPairedLines(musicElements, lyrics) {
-    let output = '<div class="music-line">';
-    
-    musicElements.forEach((noteHtml, index) => {
-        const lyric = lyrics[index] || '?';
-        output += `
-            <div class="note-container">
-                <div class="note">${noteHtml}</div>
-                <div class="lyric brown-lyrics">${lyric}</div>
-            </div>
-        `;
-    });
-
-    if (musicElements.length !== lyrics.length) {
-        output += `<div class="error-message">歌词与音符数量不匹配 (${lyrics.length} vs ${musicElements.length})</div>`;
-    }
-
-    return output + '</div>';
-}
-
-formatNote(note) {
-    let html = note;
-    const slashCount = (note.match(/\//g) || []).length;
-    
-    if (note.includes('"')) {
-        const [notePart, chord] = note.split('"');
-        html = `<span class="blue-note">
-            <span class="chord">${chord}</span>
-            ${this.applyNoteStyle(notePart)}
-        </span>`;
-    } else {
-        html = this.applyNoteStyle(note);
-    }
-
-    return html;
-}
-
-applyNoteStyle(note) {
-    const slashCount = (note.match(/\//g) || []).length;
-    let styledNote = note;
-    
-    if (slashCount === 1) {
-        styledNote = `<span class="eighth-note">${note}</span>`;
-    } else if (slashCount >= 2) {
-        styledNote = `<span class="sixteenth-note">${note}</span>`;
-    }
-    
-    return styledNote;
-}
-
-// 保持其他方法不变
-// ...
-}
-
-new SheetMusicEditor();
-</script>
+        new SheetMusicEditor();
+    </script>
+</body>
+</html>
