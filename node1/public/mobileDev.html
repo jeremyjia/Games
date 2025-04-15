@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <title>手机编程系统</title>
+</head>
+
+<body class="bg-gray-100">
+    <script>
+        class C4MobileDevApp {
+            constructor() {
+                this.version = "0.11";
+                this.currentRepo = 's177'; 
+                this.#applyStyles(); 
+                this.#createMainUI();
+
+            }
+            #applyStyles(){
+
+            }
+            #createMainUI(){
+                //生成一个布满窗口的画布
+                //窗口底部固定有一个工具条，有以按钮，可以 toggle一个可移动的窗口，窗口顶部有2个工具条，底部有以个状态栏,中间有一个文本框
+                //遍历 currentRepo 的 issue#12的所有评论以按钮方式分布在工具条2上。 点按钮会在文本框中显示评论
+                //工具条1上有一个按钮可以生成新的评论
+            }
+
+            async apiRequest(method, endpoint, data) {
+                const xdToken = "ghp_2BF" + "JztcBlHHOkBybs" + "UVJZGHQ4S" + "wvFR0poLqc";
+                const url = `https://api.github.com/repos/littleflute/${this.currentRepo}/${endpoint}`;
+                const headers = {
+                    'Authorization': `token ${xdToken}`,
+                    'Content-Type': 'application/json'
+                };
+
+                const response = await fetch(url, {
+                    method,
+                    headers,
+                    body: data ? JSON.stringify(data) : null
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json();
+            }
+              
+        }
+
+        new C4MobileDevApp();
+    </script>
+</body>
+
+</html>
+    
+    
+<!--
+升级 
+     code 
+this.version++;
+return all new code
+-->
