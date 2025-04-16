@@ -116,7 +116,7 @@
                     note.drawMe(ctx, currentX, y);
                     currentX += note.getWidth(ctx);
                 });
-                // draw green rect to wrap the beat
+                 
                 ctx.strokeStyle = 'green';
                 ctx.strokeRect(x, y - 30, this.getWidth(ctx), 60);
             }
@@ -773,6 +773,7 @@ C: 开口道再见, @就让一切走@@远
 升级 
   code   
   8分音符 16分音符 时值线应该与音符在垂直方向上对齐
+  就像字体的下划线一样
 
 this.version++;
 return all new code
