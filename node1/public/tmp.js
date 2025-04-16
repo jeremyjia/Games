@@ -1,4 +1,16 @@
- 
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <title>简谱编辑系统</title>
+</head>
+
+<body class="bg-gray-100">
+    <script> 
         class C4Note {
             constructor(note, duration, chord = null) {
                 this.note = note;
@@ -86,38 +98,98 @@
                 return Math.max(noteWidth + symbolWidth, chordWidth) + 8; // 总宽度
             }
         }
+        class C4Beat {
+            constructor(...notes) {
+                this.notes = notes;
+            }
 
+            drawMe(ctx, x, y) {
+                let currentX = x;
+                this.notes.forEach(note => {
+                    note.drawMe(ctx, currentX, y);
+                    currentX += note.getWidth(ctx);
+                });
+                // draw green rect to wrap the beat
+                ctx.strokeStyle = 'green';
+                ctx.strokeRect(x, y - 30, this.getWidth(ctx), 60);
+            }
+
+            getWidth(ctx) {
+                return this.notes.reduce((sum, note) => sum + note.getWidth(ctx), 0);
+            }
+        }
         class C4Bar {
             constructor(barContent) {
                 this.barContent = barContent;
-                this.notes = this.#parseBarContent();
-            }
-
-            #parseBarContent() {
-                const noteRegex = /(\d+)(\/+|[-]+)?(?:"(\w+)")?/g; // 改进正则匹配和弦
-                const notes = [];
-                let match;
-                
-                while ((match = noteRegex.exec(this.barContent)) !== null) {
-                    const durationMap = {
-                        '///': '16th',
+                this.durationMap = {
+                        '//': '16th',  // 修改处：两个斜杠对应16分音符
                         '/':   '8th',
                         '':    '4th',
                         '-':   '2nd',
                         '---': 'whole'
                     };
-                    notes.push(new C4Note(
-                        match[1],
-                        durationMap[match[2]?.trim() || '4th'],
-                        match[3] 
+                this.durationValues = {  
+                    '16th': 0.25,
+                    '8th': 0.5,
+                    '4th': 1,
+                    '2nd': 2,
+                    'whole':4
+                };
+                this.beats = [];
+                // 解析小节内容并添加节拍
+                this.#parseBarContent();
+                this.width = this.#calculateWidth();
+            }
+            addBeat(...notes) {
+                this.beats.push(new C4Beat(...notes));
+            }
+
+            #parseBarContent() {
+                const noteRegex = /(\d+)([\/-]*)(?:\("([^"]+)"\))?/g;
+                let match;
+                let currentBeatNotes = [];
+                let currentDuration = 0;
+
+                while ((match = noteRegex.exec(this.barContent)) !== null) {
+                    const durationSymbol = this.#matchLongestSymbol(match[2]); // 新增最长匹配方法
+                    const duration = this.durationMap[durationSymbol];
+                    const durationValue = this.durationValues[duration];
+                    
+                    currentDuration += durationValue;
+                    currentBeatNotes.push(new C4Note(
+                        match[1], 
+                        duration,
+                        match[3]
                     ));
+
+                    if ([1, 2, 4].includes(currentDuration)) {
+                        this.addBeat(...currentBeatNotes);
+                        currentBeatNotes = [];
+                        currentDuration = 0;
+                    }
                 }
-                return notes;
+
+                if (currentBeatNotes.length > 0) {
+                    this.addBeat(...currentBeatNotes);
+                }
+            }
+
+            #matchLongestSymbol(symbols) {
+                // 优先匹配更长的符号组合
+                const possible = ['---', '//', '/', '-', ''];
+                for (const s of possible) {
+                    if (symbols.startsWith(s)) return s;
+                }
+                return '';
+            }
+            
+            #calculateWidth() {
+                return this.beats.reduce((sum, beat) => sum + beat.getWidth(), 0);
             }
 
             getWidth(ctx) {
-                return this.notes.reduce((sum, note) => sum + note.getWidth(ctx), 0) + 
-                       this.notes.length * 4; // 音符间距
+                return this.beats.reduce((sum, beat) => sum + beat.getWidth(ctx), 0) + 
+                       this.beats.length * 4; // 节拍间距
             }
 
             drawMe(ctx, x, y) {
@@ -127,13 +199,13 @@
                 // 绘制小节线
                 ctx.strokeStyle = '#666';
                 ctx.setLineDash([]);
-                ctx.strokeRect(-6, -24, this.getWidth(ctx) + 12, 40);
+                ctx.strokeRect(-6, -33, this.getWidth(ctx) + 12, 70);
 
                 // 绘制音符
                 let currentX = 0;
-                this.notes.forEach(note => {
-                    note.drawMe(ctx, currentX, 0);
-                    currentX += note.getWidth(ctx);
+                this.beats.forEach(beat => {
+                    beat.drawMe(ctx, currentX, 0);
+                    currentX += beat.getWidth(ctx);
                 });
                 
                 ctx.restore();
@@ -141,41 +213,18 @@
         }
 
         class SheetMusicEditor {
-            constructor() {
-                this.version = '0.14'; // 直接版本管理
+            constructor() { 
+                this.version = '0.22';  // 版本升级
                 this.currentRepo = 's177';
-                this.lineSpacing = 55;
+                this.canvasX = 0;
+                this.canvasY = 0;
+                this.lineSpacing = 115;
                 this.createElements();
                 this.applyStyles();
                 this.addEventListeners();
                 this.settingsModal.style.display = 'block';
             }
-
-            // ... [保持其他方法不变，主要修改解析和绘制部分] ...
-
-            parseSheetMusic(input) {
-                const lines = input.split('\n').filter(l => l.startsWith('Q:'));
-                const musicLines = lines.map(line => line.replace('Q:', '').trim());
-                this.#drawMusicLines(musicLines);
-            }
-
-            #drawMusicLines(lines) {
-                const ctx = this.canvas.getContext('2d');
-                ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                
-                let y = this.y0;
-                lines.forEach(line => {
-                    const barGroup = line.split('|').map(b => new C4Bar(b));
-                    let x = this.x0;
-                    
-                    barGroup.forEach(bar => {
-                        bar.drawMe(ctx, x, y);
-                        x += bar.getWidth(ctx) + 20; // 小节间距
-                    });
-                    
-                    y += this.lineSpacing;
-                });
-            }
+            // ...其余方法保持不变...
         }
 
         new SheetMusicEditor();

@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Jianpu Renderer</title>
+  <style>
+    /* 添加节拍按钮样式 */
+.delete-beat-btn {
+  background: #dc3545;
+  color: white;
+}
+
+/* 更新按钮样式 */
+#updateBeatBtn {
+  background: #ffc107;
+  color: black;
+}
+    #barToolbar {
+      display: flex;
+      gap: 5px;
+      overflow-x: auto;
+      padding: 5px 0;
+      margin: 8px 0;
+      background: #f8f9fa;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .bar-button:disabled,
+    .delete-bar-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background-color: #ddd;
+      border-color: #999;
+    }
+    .bar-button {
+      padding: 4px 8px;
+      min-width: 40px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+.bar-button.selected {
+  background: #007bff;
+  color: white;
+  border-color: #0056b3;
+}
+    #settingsBtn {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+    }
+    /* 添加按钮点击时的颜色样式 */
+    #settingsBtn.active {
+      background-color: #0056b3;
+      color: white;
+    }
+    /* 选中的小节样式 */
+    .selected-bar {
+      border: 2px solid red;
+    } 
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    #jianpuCanvas {
+      touch-action: none; /* 禁止默认触摸行为 */
+      width: 100%;
+      height: 100vh;
+      border: 1px red solid;
+    }
+    @media (max-width: 768px) {
+      #settingsBtn {
+        padding: 8px 16px;
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+
+<body> 
+  <button id="settingsBtn">显示设置</button>
+  <canvas id="jianpuCanvas"></canvas>
+
+  <script>
+    class C4Editor {
+      constructor(targetElementId, renderer) {
+    this.previewBeat = new C4Beat(); // 新增预览节拍
+    this.targetElement = document.getElementById(targetElementId);
+    this.renderer = renderer;
+    this._injectStyles();
+    this._createUI(); // 调用_createUI生成包含按钮的HTML
+
+    // 获取按钮元素
+    this.updateBtn = this.targetElement.querySelector('#updateBeatBtn');
+    this.addBeatBtn = this.targetElement.querySelector('#addBeatBtn');
+
+    // 绑定事件监听器
+    this.updateBtn.addEventListener('click', () => {
+      if (this.editingBeat) {
+        this.editingBeat.notes = [...this.currentNotes];
+        this.renderer.resetAllBars();
+        this.renderer.render();
+        this.currentNotes = [];
+        this.editingBeat = null;
+        this.updateBtn.style.display = 'none';
+        this.addBeatBtn.style.display = 'inline';
+      }
+    });
+  }
+
+      loadBeat(beat) {
+        this.editingBeat = beat;
+        this.currentNotes = [...beat.notes];
+        this.addBeatBtn.style.display = 'none';
+        this.updateBtn.style.display = 'inline';
+      }
+      _updatePreviewBeat() {
+          this.previewBeat = new C4Beat(...this.currentNotes);
+          this.renderer.renderPreview(this.previewBeat);
+      }
+      _injectStyles() {
+          const style = document.createElement('style');
+          style.textContent = `
+              .c4-editor {
+                  padding: 10px;
+                  background: #f5f5f5;
+                  border-radius: 4px;
+                  margin-top: 10px;
+              }
+              
+              .c4-editor h3 {
+                  margin: 0 0 10px 0;
+                  font-size: 14px;
+                  color: #333;
+              }
+              
+              .c4-editor .editor-row {
+                  display: flex;
+                  gap: 8px;
+                  margin-bottom: 8px;
+                  align-items: center;
+              }
+              
+              .c4-editor label {
+                  min-width: 60px;
+                  font-size: 12px;
+              }
+              
+              .c4-editor input[type="number"] {
+                  width: 60px;
+                  padding: 4px;
+                  border: 1px solid #ccc;
+                  border-radius: 3px;
+              }
+              
+              .c4-editor input[type="checkbox"] {
+                  margin: 0;
+              }
+              
+              .c4-editor button {
+                  padding: 6px 12px;
+                  background: #28a745;
+                  color: white;
+                  border: none;
+                  border-radius: 3px;
+                  cursor: pointer;
+                  transition: background 0.2s;
+              }
+              
+              .c4-editor button:hover {
+                  background: #218838;
+              }
+              
+              .c4-editor .duration-presets {
+                  display: flex;
+                  gap: 5px;
+                  flex-wrap: wrap;
+              }
+              
+              .c4-editor .duration-btn {
+                  padding: 4px 8px;
+                  background: #007bff;
+                  color: white;
+                  border: none;
+                  border-radius: 2px;
+                  cursor: pointer;
+              }
+          `;
+          document.head.appendChild(style);
+      }
+
+      _createUI() {
+          this.targetElement.innerHTML = `
+              <div class="c4-editor">
+                  <h3>添加节拍</h3>
+                  <div class="editor-row">
+                      <label>音高(1-7):</label>
+                      <input type="number" id="notePitch" min="1" max="7" value="1">
+                  </div>
+                  <div class="editor-row">
+                      <label>时值:</label>
+                      <input type="number" id="noteDuration" step="0.125" value="0.25">
+                  </div>
+                  <div class="editor-row">
+                      <label>八度:</label>
+                      <input type="number" id="noteOctave" value="0">
+                  </div>
+                  <div class="editor-row">
+                      <label>附点:</label>
+                      <input type="checkbox" id="noteDotted">
+                  </div>
+                  <div class="editor-row">
+                      <div class="duration-presets">
+                          ${[1, 0.5, 0.25, 0.125, 0.0625].map(d => `
+                              <button class="duration-btn" data-duration="${d}">${d}</button>
+                          `).join('')}
+                      </div>
+                  </div>
+                  <div class="editor-row">
+                      <button id="addNoteBtn">添加音符</button>
+                      <button id="addBeatBtn">完成节拍</button>
+                      <button id="updateBeatBtn" style="display:none;">更新节拍</button>
+                  </div>
+              </div>
+          `;
+
+          this.currentNotes = [];
+          
+          // 绑定预设时值按钮
+          this.targetElement.querySelectorAll('.duration-btn').forEach(btn => {
+              btn.addEventListener('click', () => {
+                  this.targetElement.querySelector('#noteDuration').value = btn.dataset.duration;
+              });
+          });
+
+          // 添加音符按钮
+          this.targetElement.querySelector('#addNoteBtn').addEventListener('click', () => {
+              const pitch = parseInt(this.targetElement.querySelector('#notePitch').value);
+              const duration = parseFloat(this.targetElement.querySelector('#noteDuration').value);
+              const octave = parseInt(this.targetElement.querySelector('#noteOctave').value);
+              const dotted = this.targetElement.querySelector('#noteDotted').checked;
+
+              if (pitch < 1 || pitch > 7) {
+                  alert('音高必须在1-7之间');
+                  return;
+              }
+
+              this.currentNotes.push(new C4Note(
+                  pitch,
+                  duration,
+                  { octave: octave, dotted: dotted }
+              ));
+              this._updatePreviewBeat(); // 新增预览更新
+              
+              this.targetElement.querySelector('#notePitch').value = 1;
+              this.targetElement.querySelector('#noteDuration').value = 0.25;
+              this.targetElement.querySelector('#noteOctave').value = 0;
+              this.targetElement.querySelector('#noteDotted').checked = false;
+          });
+
+          // 完成节拍按钮
+          this.targetElement.querySelector('#addBeatBtn').addEventListener('click', () => {
+              if (this.currentNotes.length === 0) {
+                  alert('请至少添加一个音符');
+                  return;
+              }
+
+              if (this.renderer.selectedBar) {
+                  this.renderer.selectedBar.addBeat(...this.currentNotes);
+                  this.currentNotes = [];
+                  this.renderer.resetAllBars();
+                  this.renderer.render();
+              } else {
+                  alert('请先选择一个小节');
+              }
+              this.renderer.clearPreview(); // 新增清除预览
+          });
+      }
+    }
+
+    class C4Bar {
+      constructor(index) {
+        this.index = index;
+        this.beats = [];
+        this.isSelected = false;
+        this.x = 0;
+        this.y = 0;
+      }
+     
+      getWidth(config) {
+        let totalWidth = 0;
+        this.beats.forEach(beat => {
+          totalWidth += beat.calculateWidth(config);
+        });
+        if (this.beats.length > 0) {
+          totalWidth += (this.beats.length - 1) * config.noteSpacing;
+        }
+        return totalWidth + 20; // 左右边距各10px
+      }
+
+      drawMe(ctx, x, y, config) {
+        this.x = x;
+        this.y = y;
+        const barWidth = this.getWidth(config);
+        const barHeight = config.barHeight;
+
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, y, barWidth, barHeight);
+
+        if (this.isSelected) {
+          ctx.strokeStyle = 'red';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(x, y, barWidth, barHeight);
+          ctx.strokeStyle = 'black';
+          ctx.lineWidth = 1;
+        }
+
+        ctx.fillText(this.index, x + 5, y + 20);
+
+        let currentX = x + 10;
+        const beatY = y + 30;
+        this.beats.forEach(beat => {
+          const beatWidth = beat.calculateWidth(config); 
+          ctx.strokeStyle = beat.isSelected ? 'red' : 'blue';
+          ctx.strokeRect(currentX - 2, beatY - 2, beatWidth + 4, 24);
+          ctx.strokeStyle = 'black';
+          beat.drawMe(ctx, currentX, beatY, config);
+          currentX += beatWidth + config.noteSpacing;
+        });
+      }
+
+      
+      addBeat(...notes) {
+        this.beats.push(new C4Beat(...notes));
+      }
+
+    }
+
+    class C4Beat {
+      constructor(...notes) {
+        this.notes = notes;
+        this.isSelected = false; // 新增选中状态
+      }
+      calculateWidth(config) {
+        let totalWidth = 0;
+        this.notes.forEach(note => {
+          totalWidth += this._calculateNoteWidth(note, config) + config.noteSpacing;
+        });
+        return totalWidth > 0 ? totalWidth - config.noteSpacing : 0; // 减去最后的间距
+      }
+      drawMe(ctx, x, y, config) {
+        let currentX = x;
+        let prevNote = null;
+        this.notes.forEach((note, index) => {
+          const noteWidth = this._calculateNoteWidth(note, config);
+          note.drawMe(ctx, currentX, y, config);
+          // 检查是否需要连接减时线
+          if (prevNote && note.duration <= 0.125 && prevNote.duration <= 0.125) {
+            const prevLineCount = prevNote._calculateUnderLines(prevNote.duration);
+            const lineCount = note._calculateUnderLines(note.duration);
+            const minLineCount = Math.min(prevLineCount, lineCount);
+            for (let i = 0; i < minLineCount; i++) {
+              const lineY = y + config.fontSize / 2 + 4 + i * 6;
+              ctx.fillRect(
+                currentX - config.noteSpacing,
+                lineY,
+                config.noteSpacing,
+                2
+              );
+            }
+          }
+          prevNote = note;
+          currentX += noteWidth + config.noteSpacing;
+        });
+      }
+
+
+      _calculateNoteWidth(note, config) {
+        const lineCount = Math.floor(note.duration * 4);
+        return lineCount * config.noteSpacing + config.fontSize;
+      }
+    }
+
+    class C4Note {
+      constructor(pitch, duration, options = {}) {
+        this.pitch = pitch;
+        this.duration = duration;
+        this.octave = options.octave || 0;
+        this.dotted = options.dotted || false;
+      }
+      drawMe(ctx, x, y, config) {
+        const centerX = x + config.fontSize / 2;
+        const noteY = y - config.fontSize / 2;
+
+        // 绘制音符数字
+        ctx.fillText(this.pitch, x, noteY + config.fontSize / 2);
+
+        // 绘制高低音点
+        this._drawOctaveDots(ctx, centerX, noteY, this.octave, config);
+
+        // 绘制减时线
+        this._drawUnderLines(ctx, x, y, this.duration, config);
+
+        // 绘制附点
+        if (this.dotted) {
+          this._drawDot(ctx, x, y, config);
+        }
+
+        // 绘制增时线
+        this._drawOverLines(ctx, x, y, this.duration, config);
+      }
+
+      _drawOctaveDots(ctx, x, y, octave, config) {
+        const dotSpacing = 6;
+        const pitchCenterY = y + config.fontSize / 2;
+
+        // 高音点（上方）
+        for (let i = 0; i < Math.max(0, octave); i++) {
+          ctx.beginPath();
+          ctx.arc(
+            x - config.fontSize / 5.5,
+            pitchCenterY - config.fontSize - i * dotSpacing,
+            config.dotRadius,
+            0,
+            Math.PI * 2
+          );
+          ctx.fill();
+        }
+
+        // 低音点（下方）
+        for (let i = 0; i < Math.max(0, -octave); i++) {
+          ctx.beginPath();
+          ctx.arc(
+            x - config.fontSize / 5.5, // 调整低音点的 x 坐标，往左移动
+            pitchCenterY + config.fontSize + i * dotSpacing,
+            config.dotRadius,
+            0,
+            Math.PI * 2
+          );
+          ctx.fill();
+        }
+      }
+
+      _drawUnderLines(ctx, x, y, duration, config) {
+        const lineCount = this._calculateUnderLines(duration);
+        const lineY = y + config.fontSize / 2 + 4;
+
+        for (let i = 0; i < lineCount; i++) {
+          ctx.fillRect(
+            x - 2,
+            lineY + i * 6,
+            config.fontSize + 4,
+            2
+          );
+        }
+      }
+
+      _drawOverLines(ctx, x, y, duration, config) {
+        const lineCount = Math.floor(duration * 4) - 1;
+        // 修改增时线的 Y 位置
+        const lineY = y;
+
+        for (let i = 0; i < lineCount; i++) {
+          ctx.fillRect(
+            x + config.fontSize + i * config.noteSpacing,
+            lineY,
+            config.noteSpacing - config.fontSize,
+            2
+          );
+        }
+      }
+
+      _drawDot(ctx, x, y, config) {
+        ctx.beginPath();
+        ctx.arc(
+          x + config.fontSize + 6,
+          y - config.fontSize / 4,
+          config.dotRadius,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+      }
+
+      _calculateUnderLines(duration) {
+        if (duration >= 0.25) return 0;
+        return Math.log2(0.25 / duration);
+      }
+    }
+
+    class JianpuRenderer {
+      constructor(canvasId, options = {}) {
+        this.previewBeat = null; // 新增预览节拍状态
+        this.deleteBarBtn = null;
+        this.barToolbarElement = null; // 新增工具栏元素引用
+        this.canvas = document.getElementById(canvasId);
+        this.ctx = this.canvas.getContext('2d');
+        this.isMobile = /Mobi|Android/i.test(navigator.userAgent);
+        this.config = {
+          width: window.innerWidth,
+          height: window.innerHeight,
+          margin: this.isMobile ? 10 : 20,
+          noteSpacing: this.isMobile ? 10 : 15,
+          fontSize: this.isMobile ? 18 : 24,
+          lineHeight: this.isMobile ? 100 : 140,
+          dotRadius: 2,
+          barWidth: this.isMobile ? 122 : 155,
+          barHeight: this.isMobile ? 60 : 80,
+          dpr: window.devicePixelRatio || 1
+        };
+        // 高DPI适配
+        this.canvas.width = this.config.width * this.config.dpr;
+        this.canvas.height = this.config.height * this.config.dpr;
+        this.canvas.style.width = this.config.width + 'px';
+        this.canvas.style.height = this.config.height + 'px';
+        this.ctx.scale(this.config.dpr, this.config.dpr);
+
+        this.canvas.width = this.config.width;
+        this.canvas.height = this.config.height;
+
+        this.noteList = [];
+        this.beatList = [];
+        this.barList = [];
+        this.keySignature = '1=C';
+        this.timeSignature = '4/4';
+        this.settingsWnd = null;
+        this.selectedBar = null;
+        this.isDragging = false;
+        this.offsetX = 0;
+        this.offsetY = 0;
+
+        this._injectStyles();
+        this._createSettingsWindow();
+        this._positionSettingsWindowToTop();
+        this.barEditor = new C4Editor('id4BarEditor', this);
+
+        this.canvas.addEventListener('mousedown', this._onMouseDown.bind(this));
+        this.canvas.addEventListener('mousemove', this._onMouseMove.bind(this));
+        this.canvas.addEventListener('mouseup', this._onMouseUp.bind(this));
+        this.canvas.addEventListener('touchstart', this._onTouchStart.bind(this));
+        this.canvas.addEventListener('touchmove', this._onTouchMove.bind(this));
+        this.canvas.addEventListener('touchend', this._onTouchEnd.bind(this));
+
+        window.addEventListener('resize', () => {
+          const dpr = window.devicePixelRatio || 1;
+          renderer.config.width = window.innerWidth;
+          renderer.config.height = window.innerHeight;
+          
+          renderer.canvas.width = renderer.config.width * dpr;
+          renderer.canvas.height = renderer.config.height * dpr;
+          renderer.canvas.style.width = renderer.config.width + 'px';
+          renderer.canvas.style.height = renderer.config.height + 'px';
+          renderer.ctx.scale(dpr, dpr);
+          
+          renderer.resetAllBars();
+        });
+      }
+      // 新增预览渲染方法
+      renderPreview(beat) {
+                this.previewBeat = beat;
+                this.render();
+            }
+
+      // 新增清除预览方法
+      clearPreview() {
+          this.previewBeat = null;
+          this.render();
+      }
+
+      _injectStyles() {
+        if (document.getElementById('jianpu-styles')) return;
+
+        const style = document.createElement('style');
+        style.id = 'jianpu-styles';
+        style.textContent = `
+          .jianpu-settings {
+            position: absolute;
+            background: white;
+            border: 2px solid #666;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            font-family: Arial, sans-serif;
+            min-width: 300px;
+          }
+
+          .settings-header {
+            cursor: move;
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            margin: -15px -15px 15px -15px;
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+          }
+
+          .settings-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+          }
+
+          .settings-tab {
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 4px;
+            transition: background 0.2s;
+          }
+
+          .settings-tab.active {
+            color: white;
+          }
+
+          .settings-tab[data-tab="general"] {
+            background: #007bff;
+          }
+
+          .settings-tab[data-tab="canvas"] {
+            background: #28a745;
+          }
+
+          .settings-tab[data-tab="bar"] {
+            background: #ffc107;
+          }
+
+          .settings-tab[data-tab="test-cases"] {
+            background: #dc3545;
+          }
+
+          .settings-tab-content {
+            display: none;
+          }
+
+          .settings-tab-content.active {
+            display: block;
+          }
+
+          .settings-tab-content#general {
+            background-color: #e7f3ff;
+          }
+
+          .settings-tab-content#canvas {
+            background-color: #e8f8ee;
+          }
+
+          .settings-tab-content#bar {
+            background-color: #fff6cc;
+          }
+
+          .settings-tab-content#test-cases {
+            background-color: #ffe8e9;
+          }
+
+          .settings-row {
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+          }
+
+          .settings-row label {
+            min-width: 120px;
+            font-size: 14px;
+            color: #333;
+          }
+
+          .settings-row input,
+          .settings-row select {
+            width: 80px;
+            padding: 4px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+          }
+
+          .settings-row select {
+            appearance: none;
+            background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23333' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e") no-repeat right 8px center/12px;
+          }
+
+          .settings-buttons {
+            margin-top: 15px;
+            text-align: right;
+          }
+
+          .settings-buttons button {
+            padding: 6px 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+          }
+
+          .settings-buttons button:hover {
+            background: #0056b3;
+          }
+
+          .hidden {
+            display: none !important;
+          }
+        `;
+        style.textContent += ` 
+          .bar-properties {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 4px;
+          }
+          .bar-properties h4 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #333;
+          }
+          .property-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 5px;
+          }
+          .property-label {
+            font-weight: bold;
+            min-width: 60px;
+          }
+          .property-value {
+            color: #666;
+          }
+        `;
+        document.head.appendChild(style);
+      }
+
+      toggleSettingWnd() {
+        if (!this.settingsWnd) {
+          this._createSettingsWindow();
+        }
+        this.settingsWnd.classList.toggle('hidden');
+        this._positionSettingsWindowToTop();
+      }
+
+      _createSettingsWindow() {
+        const wnd = document.createElement('div');
+        wnd.className = 'jianpu-settings hidden';
+        wnd.innerHTML = `
+          <div class="settings-header">设置</div>
+          <div class="settings-tabs">
+            <div class="settings-tab active" data-tab="general">常规设置</div>
+            <div class="settings-tab" data-tab="canvas">画布设置</div>
+            <div class="settings-tab" data-tab="bar">小节管理</div>
+            <div class="settings-tab" data-tab="test-cases">测试用例</div>
+          </div>
+          <div class="settings-tab-content active" id="general">
+            <div class="settings-row">
+              <label>调号:</label>
+              <select class="key-sig">
+                ${['C', 'G', 'D', 'A', 'E', 'B', 'F'].map(k =>
+                  `<option ${this.keySignature === `1=${k}` ? 'selected' : ''}>1=${k}</option>`
+                ).join('')}
+              </select>
+            </div>
+            <div class="settings-row">
+              <label>节拍:</label>
+              <input type="text" class="time-sig" value="${this.timeSignature}">
+            </div>
+            <div class="settings-row">
+              <label>音符间距:</label>
+              <input type="number" class="note-spacing" value="${this.config.noteSpacing}" min="10">
+            </div>
+            <div class="settings-row">
+              <label>字体大小:</label>
+              <input type="number" class="font-size" value="${this.config.fontSize}" min="10">
+            </div>
+          </div>
+          <div class="settings-tab-content" id="canvas">
+            <div class="settings-row">
+              <label>画布宽度:</label>
+              <input type="number" class="canvas-width" value="${this.config.width}" min="100">
+            </div>
+            <div class="settings-row">
+              <label>画布高度:</label>
+              <input type="number" class="canvas-height" value="${this.config.height}" min="100">
+            </div>
+          </div>
+          <div class="settings-tab-content" id="bar">
+            <div class="settings-row">
+              <button class="add-bar-btn">添加新小节</button>
+              <button class="btnResetAllBars">reset</button>
+            </div>
+            <div class="settings-row">
+              <button class="delete-bar-btn">删除选中小节</button>
+            </div>
+            <div id="barToolbar"></div> <!-- 工具栏移动到此处 -->
+            <div class="bar-properties">
+              <h4>选中小节属性</h4>
+              <div id="id4BarEditor"></div>
+              <div class="property-row">
+                  <span class="property-label">索引:</span>
+                  <span class="property-value" id="barIndex">无</span>
+              </div>
+              <div class="property-row">
+                  <span class="property-label">位置:</span>
+                  <span class="property-value" id="barPosition">无</span>
+              </div>
+            </div>
+          </div>
+          <div class="settings-tab-content" id="test-cases">
+            <div class="settings-row">
+              <button class="random-add-beat-btn">随机添加节拍</button>
+            </div>
+            <div class="settings-row">
+              <button class="random-add-note-btn">随机添加音符</button>
+            </div>
+          </div>
+          <div class="settings-buttons">
+            <button class="close-btn">应用并关闭</button>
+          </div>
+        `;
+        wnd.innerHTML += `
+          <div class="settings-row">
+            <button class="delete-beat-btn">删除选中节拍</button>
+          </div>
+        `;
+            // 绑定删除事件
+        this.deleteBeatBtn = wnd.querySelector('.delete-beat-btn');
+        this.deleteBeatBtn.addEventListener('click', () => {
+          if (this.selectedBar && this.selectedBeat) {
+            const index = this.selectedBar.beats.indexOf(this.selectedBeat);
+            if (index !== -1) {
+              this.selectedBar.beats.splice(index, 1);
+              this.resetAllBars();
+              this.render();
+            }
+          }
+        });
+
+        this.deleteBarBtn = wnd.querySelector('.delete-bar-btn'); // 新增
+        this.barToolbarElement = wnd.querySelector('#barToolbar');
+        // 事件绑定
+        wnd.querySelector('.key-sig').addEventListener('change', e => {
+          this.keySignature = e.target.value;
+          this.render();
+        });
+
+        wnd.querySelector('.time-sig').addEventListener('input', e => {
+          this.timeSignature = e.target.value.replace(/[^0-9\/]/g, '');
+          e.target.value = this.timeSignature;
+          this.render();
+        });
+        wnd.querySelector('.delete-bar-btn').addEventListener('click', () => {
+          // 直接使用 this.selectedBar 判断
+          if (this.selectedBar) {
+            const index = this.barList.indexOf(this.selectedBar);
+            if (index !== -1) {
+              this.barList.splice(index, 1);
+              // 更新索引并重置布局
+              this.barList.forEach((bar, i) => bar.index = i + 1);
+              this.resetAllBars();
+              this._updateBarToolbar();
+              this.selectedBar = null; // 清空当前选中
+              this.render();
+            }
+            
+            this._updateDeleteButtonState(); // 新增
+          }
+        });
+
+        const updateConfig = (key, parseFn = parseInt) => e => {
+          this.config[key] = parseFn(e.target.value);
+          if (['width', 'height'].includes(key)) {
+            this.canvas[key] = this.config[key];
+          }
+          this.render();
+        };
+
+        wnd.querySelector('.canvas-width').addEventListener('input', updateConfig('width'));
+        wnd.querySelector('.canvas-height').addEventListener('input', updateConfig('height'));
+        wnd.querySelector('.note-spacing').addEventListener('input', updateConfig('noteSpacing'));
+        wnd.querySelector('.font-size').addEventListener('input', updateConfig('fontSize'));
+
+        wnd.querySelector('.close-btn').addEventListener('click', () => {
+          wnd.classList.add('hidden');
+        });
+
+        // 标签页切换事件
+        const tabs = wnd.querySelectorAll('.settings-tab');
+        tabs.forEach(tab => {
+          tab.addEventListener('click', () => {
+            const tabId = tab.dataset.tab;
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const tabContents = wnd.querySelectorAll('.settings-tab-content');
+            tabContents.forEach(content => {
+              content.classList.remove('active');
+              if (content.id === tabId) {
+                content.classList.add('active');
+              }
+            });
+          });
+        });
+
+        // 添加可移动功能
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        const header = wnd.querySelector('.settings-header');
+        header.addEventListener('mousedown', (e) => {
+          isDragging = true;
+          offsetX = e.clientX - parseInt(wnd.style.left);
+          offsetY = e.clientY - parseInt(wnd.style.top);
+          e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+          if (isDragging) {
+            wnd.style.left = (e.clientX - offsetX) + 'px';
+            wnd.style.top = (e.clientY - offsetY) + 'px';
+          }
+        });
+
+        document.addEventListener('mouseup', () => {
+          isDragging = false;
+        });
+
+        header.addEventListener('touchstart', (e) => {
+          isDragging = true;
+          offsetX = e.touches[0].clientX - parseInt(wnd.style.left);
+          offsetY = e.touches[0].clientY - parseInt(wnd.style.top);
+          e.preventDefault();
+        });
+
+        document.addEventListener('touchmove', (e) => {
+          if (isDragging) {
+            wnd.style.left = (e.touches[0].clientX - offsetX) + 'px';
+            wnd.style.top = (e.touches[0].clientY - offsetY) + 'px';
+            e.preventDefault();
+          }
+        });
+
+        document.addEventListener('touchend', () => {
+          isDragging = false;
+        });
+
+        // 添加新小节按钮事件
+        wnd.querySelector('.add-bar-btn').addEventListener('click', () => {
+          const newBar = new C4Bar(this.barList.length + 1);
+          newBar.addBeat(new C4Note(1, 0.25));
+          newBar.addBeat(new C4Note(2, 0.25));
+          newBar.addBeat(new C4Note(3, 0.25));
+          newBar.addBeat(new C4Note(4, 0.25));
+  
+          this.barList.push(newBar);
+          this.resetAllBars();
+          this._updateBarToolbar();
+          this.render();
+        });
+
+        // 随机添加节拍按钮事件
+        wnd.querySelector('.random-add-beat-btn').addEventListener('click', () => {
+          const noteCount = Math.floor(Math.random() * 4) + 1;
+          const notes = [];
+          for (let i = 0; i < noteCount; i++) {
+            const pitch = Math.floor(Math.random() * 7) + 1;
+            const durationOptions = [1, 0.5, 0.25, 0.125, 0.0625];
+            const duration = durationOptions[Math.floor(Math.random() * durationOptions.length)];
+            notes.push(new C4Note(pitch, duration));
+          }
+          this.addBeat(...notes);
+          this.render();
+        });
+
+        // 随机添加音符按钮事件
+        wnd.querySelector('.random-add-note-btn').addEventListener('click', () => {
+          const pitch = Math.floor(Math.random() * 7) + 1;
+          const durationOptions = [1, 0.5, 0.25, 0.125, 0.0625];
+          const duration = durationOptions[Math.floor(Math.random() * durationOptions.length)];
+          const note = new C4Note(pitch, duration);
+          this.addNote(note);
+          this.render();
+        });
+
+        // 重置所有小节按钮事件
+        wnd.querySelector('.btnResetAllBars').addEventListener('click', () => {
+          this.resetAllBars();
+        });
+
+        document.body.appendChild(wnd);
+        this.settingsWnd = wnd;
+      }
+
+      _updateBarToolbar() {
+        if (!this.barToolbarElement) return;
+        const toolbar = this.barToolbarElement;
+        toolbar.innerHTML = '';
+        
+        this.barList.forEach((bar, index) => {
+          const btn = document.createElement('button');
+          btn.className = 'bar-button';
+          btn.textContent = index + 1;
+          btn.addEventListener('click', () => {
+            this._selectBar(bar);
+          });
+          if (bar.isSelected) {
+            btn.classList.add('selected');
+          }
+          toolbar.appendChild(btn);
+        });
+      }
+      _updateDeleteButtonState() {
+        const hasSelection = !!this.selectedBar;
+        this.deleteBarBtn.disabled = !hasSelection;
+      }
+
+      _selectBar(bar) {
+        // 清除所有选中状态
+        this.barList.forEach(b => b.isSelected = false);
+        bar.isSelected = true;
+        this.selectedBar = bar;
+        // 更新属性显示
+        const barIndexElement = this.settingsWnd.querySelector('#barIndex');
+        const barPositionElement = this.settingsWnd.querySelector('#barPosition');
+        if (barIndexElement && barPositionElement) {
+          barIndexElement.textContent = bar.index;
+          barPositionElement.textContent = `X: ${Math.round(bar.x)}, Y: ${Math.round(bar.y)}`;
+        }
+        this._updateBarToolbar(); // 确保及时更新按钮状态
+        this.render();
+        this._updateDeleteButtonState(); // 统一在此处更新按钮状态
+        if (this.barEditor) {
+            this.barEditor.currentNotes = []; // 重置当前正在编辑的音符
+        }
+      }
+
+      _positionSettingsWindowToTop() {
+        if (!this.settingsWnd) return;
+        this.settingsWnd.style.left = '10px';
+        this.settingsWnd.style.top = '40px';
+      }
+
+      setKeySignature(key) {
+        this.keySignature = key;
+      }
+
+      setTimeSignature(time) {
+        this.timeSignature = time;
+      }
+
+      addNote(note) {
+        if (note instanceof C4Note) {
+          this.noteList.push(note);
+        } else {
+          console.error('传入的参数不是 C4Note 类的实例');
+        }
+      }
+      addBeat(...notes) {
+        const oBeat = new C4Beat(...notes);
+        this.beatList.push(oBeat);
+      }
+      render() {
+        this.ctx.clearRect(0, 0, this.config.width, this.config.height);
+        this.ctx.font = `${this.config.fontSize}px Arial`;
+        this.ctx.textBaseline = 'middle';
+
+        this._drawHeader();
+
+        let currentX = this.config.margin;
+        let currentY = this.config.margin + 140;
+
+        this.noteList.forEach(note => {
+          const noteWidth = this._calculateNoteWidth(note);
+
+          if (currentX + noteWidth > this.config.width - this.config.margin) {
+            currentX = this.config.margin;
+            currentY += this.config.lineHeight;
+          }
+
+          note.drawMe(this.ctx, currentX, currentY, this.config);
+          currentX += noteWidth + this.config.noteSpacing;
+        });
+
+        this.beatList.forEach(beat => {
+          const beatWidth = this._calculateBeatWidth(beat);
+
+          if (currentX + beatWidth > this.config.width - this.config.margin) {
+            currentX = this.config.margin;
+            currentY += this.config.lineHeight;
+          }
+
+          beat.drawMe(this.ctx, currentX, currentY, this.config);
+          currentX += beatWidth + this.config.noteSpacing;
+        });
+
+        let barX = 50;
+        let barY = 50;
+        this.barList.forEach(bar => {
+          bar.drawMe(this.ctx, bar.x, bar.y, this.config);
+        });
+        if (this.previewBeat && this.selectedBar) {
+              this._drawPreviewBeat();
+          }
+      }
+      // 新增预览绘制方法
+      _drawPreviewBeat() {
+          const bar = this.selectedBar;
+          const config = this.config;
+          
+          // 计算预览位置
+          let previewX = bar.x + 10;
+          const previewY = bar.y + 30;
+          
+          // 找到最后一个beat的结束位置
+          bar.beats.forEach(beat => {
+              previewX += beat.calculateWidth(config) + config.noteSpacing;
+          });
+
+          // 绘制半透明预览
+          this.ctx.globalAlpha = 0.5;
+          this.previewBeat.drawMe(this.ctx, previewX, previewY, config);
+          this.ctx.globalAlpha = 1.0;
+
+          // 绘制虚线边框
+          this.ctx.setLineDash([5, 3]);
+          this.ctx.strokeStyle = 'green';
+          const beatWidth = this.previewBeat.calculateWidth(config);
+          this.ctx.strokeRect(previewX - 2, previewY - 2, beatWidth + 4, 24);
+          this.ctx.setLineDash([]);
+          this.ctx.strokeStyle = 'black';
+      }
+      _calculateBeatWidth(beat) {
+        let totalWidth = 0;
+        beat.notes.forEach(note => {
+          totalWidth += this._calculateNoteWidth(note) + this.config.noteSpacing;
+        });
+        return totalWidth - this.config.noteSpacing;
+      }
+
+      _drawHeader() {
+        this.ctx.fillText(
+          `${this.keySignature}  ${this.timeSignature}`,
+          this.config.margin,
+          this.config.margin + 20
+        );
+      }
+
+      _calculateNoteWidth(note) {
+        const lineCount = Math.floor(note.duration * 4);
+        return lineCount * this.config.noteSpacing + this.config.fontSize;
+      }
+
+      _onMouseDown(e) {
+        // 清除所有选中状态
+        this.barList.forEach(bar => {
+          bar.isSelected = false;
+          bar.beats.forEach(beat => beat.isSelected = false);
+        });
+        this.selectedBar = null;
+        this.selectedBeat = null;
+
+        const rect = this.canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        let hitBar = false;
+        this.barList.forEach(bar => {
+          const barWidth = bar.getWidth(this.config);
+          const barHeight = this.config.barHeight;
+
+          if (mouseX >= bar.x && mouseX <= bar.x + barWidth &&
+              mouseY >= bar.y && mouseY <= bar.y + barHeight) {
+            this._selectBar(bar);
+            hitBar = true;
+
+            // 检测节拍点击
+            let currentX = bar.x + 10;
+            const beatY = bar.y + 30;
+            bar.beats.forEach(beat => {
+              const beatWidth = beat.calculateWidth(this.config);
+              const beatRect = {
+                x: currentX - 2,
+                y: beatY - 2,
+                width: beatWidth + 4,
+                height: 24
+              };
+              
+              if (mouseX >= beatRect.x && mouseX <= beatRect.x + beatRect.width &&
+                  mouseY >= beatRect.y && mouseY <= beatRect.y + beatRect.height) {
+                beat.isSelected = true;
+                this.selectedBeat = beat;
+              }
+              currentX += beatWidth + this.config.noteSpacing;
+            });
+          }
+        });
+
+        // 更新UI状态
+        this._updateDeleteButtonState();
+        this.render();
+        if (this.selectedBeat) {
+          this.barEditor.loadBeat(this.selectedBeat);
+        }
+      }
+      _onMouseMove(e) {
+        if (this.isDragging && this.selectedBar) {
+          const rect = this.canvas.getBoundingClientRect();
+          const mouseX = e.clientX - rect.left;
+          const mouseY = e.clientY - rect.top;
+
+          const barWidth = this.selectedBar.getWidth(this.config);
+          const barHeight = this.config.barHeight;
+
+          
+          this.selectedBar.x = Math.max(0, 
+            Math.min(mouseX - this.offsetX, this.config.width - barWidth));
+          this.selectedBar.y = Math.max(0, 
+            Math.min(mouseY - this.offsetY, this.config.height - barHeight));
+
+          this.render();
+          const barPositionElement = this.settingsWnd.querySelector('#barPosition');
+          if (barPositionElement) {
+            barPositionElement.textContent = `X: ${Math.round(this.selectedBar.x)}, Y: ${Math.round(this.selectedBar.y)}`;
+          }
+        }
+      }
+
+      _onMouseUp() {
+        this.isDragging = false; 
+      }
+
+      _onTouchStart(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        const touchX = e.touches[0].clientX - rect.left;
+        const touchY = e.touches[0].clientY - rect.top; 
+
+        this.barList.forEach(bar => {
+          const barWidth = bar.getWidth(this.config);
+          const barHeight = this.config.barHeight;
+          if (touchX >= bar.x && 
+            touchX <= bar.x + barWidth &&
+            touchY >= bar.y && 
+            touchY <= bar.y + barHeight
+          ) 
+          {
+            this.selectedBar = bar;
+            bar.isSelected = true;
+            this.isDragging = true;
+            this.offsetX = touchX - bar.x;
+            this.offsetY = touchY - bar.y;
+            return;
+          }
+        });
+
+        this.render();
+      }
+
+      _onTouchMove(e) {
+        if (this.isDragging && this.selectedBar) {
+          const rect = this.canvas.getBoundingClientRect();
+          const touchX = e.touches[0].clientX - rect.left;
+          const touchY = e.touches[0].clientY - rect.top;
+
+          const barWidth = this.selectedBar.getWidth(this.config);
+          const barHeight = this.config.barHeight;
+
+          this.selectedBar.x = Math.max(0,
+            Math.min(touchX - this.offsetX, this.config.width - barWidth));
+          this.selectedBar.y = Math.max(0,
+            Math.min(touchY - this.offsetY, this.config.height - barHeight));
+
+          this.render();
+        }
+      }
+
+      _onTouchEnd() {
+        this.isDragging = false; 
+      }
+
+      resetAllBars() {
+        const barSpacing = this.isMobile ? 10 : 20;
+        let currentX = 50;
+        let currentY = 50;
+        let maxBarHeight = 0;
+
+        this.barList.forEach(bar => {
+          const barWidth = bar.getWidth(this.config);
+          const barHeight = this.config.barHeight;
+
+          if (currentX + barWidth > this.config.width - 50) {
+            currentX = 50;
+            currentY += maxBarHeight + barSpacing;
+            maxBarHeight = 0;
+          }
+
+          bar.x = currentX;
+          bar.y = currentY;
+
+          if (barHeight > maxBarHeight) {
+            maxBarHeight = barHeight;
+          }
+
+          currentX += barWidth + barSpacing;
+        });
+
+        this.render();
+        this._updateBarToolbar();
+      }
+
+    }
+
+    // 使用示例
+    const renderer = new JianpuRenderer('jianpuCanvas');
+
+    //test cases 
+    const scales = [1, 2, 3];
+    for (let i in scales) { //test1
+      renderer.addNote(new C4Note(scales[i], 0.25, { octave: -2 }));
+    }
+    for (let i in scales) { //test2
+      renderer.addNote(new C4Note(scales[i], 0.25, { octave: 0 }));
+    }
+    for (let i in scales) { //test3
+      renderer.addNote(new C4Note(scales[i], 0.25, { octave: 2 }));
+    }
+    for (let i in scales) { //test4
+      renderer.addNote(new C4Note(scales[i], 0.125, { octave: 0 }));
+    }
+    for (let i in scales) { //test5
+      renderer.addNote(new C4Note(scales[i], 0.0625, { octave: 0 }));
+    }
+    renderer.addNote(new C4Note(1, 1)); //   全音符，显示三条增时线
+    renderer.addNote(new C4Note(2, 0.5)); //   二分音符，一条增时线
+    renderer.addNote(new C4Note(3, 0.25)); //   四分音符，无增时线 
+    renderer.addNote(new C4Note(4, 0.125)); //   8分音符  
+    renderer.addNote(new C4Note(5, 0.0625)); //   16分音符  
+
+    renderer.addNote(new C4Note(3, 0.25, { dotted: true }));
+    renderer.addNote(new C4Note(5, 2, { octave: 1 }));
+    renderer.addNote(new C4Note(6, 0.5, { octave: -1 }));
+
+    renderer.addBeat(new C4Note(1, 0.0625), new C4Note(2, 0.0625), new C4Note(2, 0.0625), new C4Note(2, 0.0625)); //t11
+    renderer.addBeat(new C4Note(1, 0.0625), new C4Note(2, 0.125), new C4Note(2, 0.0625)); //t12
+    renderer.addBeat(new C4Note(1, 0.0625), new C4Note(2, 0.0625), new C4Note(2, 0.125)); //t13
+    renderer.addBeat(new C4Note(1, 0.125), new C4Note(2, 0.0625), new C4Note(3, 0.0625)); //t14
+    renderer.addBeat(new C4Note(3, 0.125), new C4Note(4, 0.125));
+    renderer.addBeat(new C4Note(2, 0.125), new C4Note(1, 0.125));
+
+    renderer.render();
+
+    const settingsBtn = document.getElementById('settingsBtn');
+    settingsBtn.addEventListener('click', () => {
+      renderer.toggleSettingWnd();
+      settingsBtn.classList.toggle('active');
+    });
+  </script>
+</body>
+
+</html>
+    
+<!--
+升级： 
+   小节中的节拍里面的音符可以被选择，编辑。删除
+
+-->
