@@ -217,48 +217,128 @@ app.oWnd1.toggleUI();
                 document.body.appendChild(panel);
                 return panel;
             }
-
             #createFuncWindow() {
                 const funcWindow = document.createElement('div');
-                funcWindow.className = 'fixed top-16 right-4 w-64 h-96 bg-white shadow-lg rounded-lg flex flex-col';
-                funcWindow.style.display = 'none';
+                funcWindow.className = 'fixed top-24 right-4 w-72 h-96 bg-white shadow-lg rounded-lg flex flex-col hidden';
                 
+                // 拖拽手柄
                 const dragHandle = document.createElement('div');
                 dragHandle.className = 'draggable h-8 bg-gray-200 cursor-move rounded-t-lg flex items-center justify-between px-4';
                 dragHandle.innerHTML = `
-                    <span class="text-gray-600">≡ apiWnd${this.version}</span>
+                    <span class="text-gray-600">≡ 功能窗口 v${this.version}</span>
                     <i class="fas fa-times close-btn"></i>
                 `;
 
-                // 添加关闭按钮事件
+                // 关闭按钮事件
                 dragHandle.querySelector('.fa-times').addEventListener('click', () => {
-                    this.funcWindow.style.display = 'none';
+                    funcWindow.style.display = 'none';
                     this.isFuncWindowVisible = false;
                 });
 
-                const funcButtonArea = document.createElement('div');
-                funcButtonArea.className = 'p-2 bg-gray-50 flex-1 flex flex-col gap-2 overflow-auto';
+                // 标签页按钮容器
+                const tabButtons = document.createElement('div');
+                tabButtons.className = 'flex border-b';
+                
+                // 创建两个标签页按钮
+                const funcTabBtn = this.#createTabButton('函数列表', true);
+                const docTabBtn = this.#createTabButton('类说明');
+                
+                // 标签页内容容器
+                const tabContents = document.createElement('div');
+                tabContents.className = 'flex-1 overflow-auto';
+                
+                // 函数列表内容
+                const funcContent = this.#createFunctionListContent();
+                funcContent.id = 'func-tab-content';
+                
+                // 文档内容
+                const docContent = this.#createClassDocContent();
+                docContent.id = 'doc-tab-content';
+                docContent.classList.add('hidden');
 
-                const proto = Object.getPrototypeOf(this);
-                const methodNames = Object.getOwnPropertyNames(proto).filter(name => 
-                    typeof this[name] === 'function' && 
-                    name.startsWith('bl') && 
-                    name !== 'constructor'
-                );
+                // 组装标签页结构
+                tabButtons.append(funcTabBtn, docTabBtn);
+                tabContents.append(funcContent, docContent);
+                funcWindow.append(dragHandle, tabButtons, tabContents);
 
-                methodNames.forEach(methodName => {
-                    const btn = document.createElement('button');
-                    btn.className = 'p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors';
-                    btn.textContent = methodName;
-                    btn.onclick = () => this[methodName]();
-                    funcButtonArea.appendChild(btn);
-                });
+                // 标签切换事件
+                funcTabBtn.addEventListener('click', () => this.#switchTab('func'));
+                docTabBtn.addEventListener('click', () => this.#switchTab('doc'));
 
-                funcWindow.append(dragHandle, funcButtonArea);
+                this.funcWindow = funcWindow;
                 document.body.appendChild(funcWindow);
                 return funcWindow;
             }
+            #createTabButton(text, isActive = false) {
+                const btn = document.createElement('button');
+                // 增加tab-button类名
+                btn.className = `tab-button px-4 py-2 ${isActive ? 'bg-blue-500 text-white' : 'bg-gray-100'} hover:bg-blue-100 transition-colors flex-1`;
+                btn.textContent = text;
+                return btn;
+            }
 
+            #switchTab(tabName) {
+                document.querySelectorAll('#func-tab-content, #doc-tab-content').forEach(el => {
+                    el.classList.add('hidden');
+                });
+                document.querySelectorAll('.tab-button').forEach(el => {
+                    el.classList.remove('bg-blue-500', 'text-white');
+                });
+                
+                if (tabName === 'func') {
+                    document.getElementById('func-tab-content').classList.remove('hidden');
+                    // 使用更可靠的选择器
+                    this.funcWindow.querySelector('.tab-button:first-child').classList.add('bg-blue-500', 'text-white');
+                } else {
+                    document.getElementById('doc-tab-content').classList.remove('hidden');
+                    this.funcWindow.querySelector('.tab-button:last-child').classList.add('bg-blue-500', 'text-white');
+                }
+            }
+
+            #createFunctionListContent() {
+                const content = document.createElement('div');
+                content.className = 'p-4 flex flex-col gap-2';
+                
+                // 获取所有以bl开头的方法
+                const blMethods = Object.getOwnPropertyNames(C4MobileDevApp.prototype)
+                    .filter(m => m.startsWith('bl') && typeof this[m] === 'function');
+                
+                // 创建功能按钮
+                blMethods.forEach(methodName => {
+                    const btn = document.createElement('button');
+                    btn.className = 'p-2 bg-gray-100 hover:bg-blue-100 rounded text-left text-sm';
+                    btn.textContent = methodName;
+                    btn.addEventListener('click', () => {
+                        try {
+                            this[methodName]();
+                        } catch (error) {
+                            alert(`执行${methodName}失败: ${error.message}`);
+                        }
+                    });
+                    content.appendChild(btn);
+                });
+                
+                return content;
+            }
+
+            #createClassDocContent() {
+                const content = document.createElement('div');
+                content.className = 'p-4 text-sm leading-relaxed';
+                content.innerHTML = `
+                    <h3 class="font-bold mb-2">C4MobileDevApp 类说明</h3>
+                    <p class="mb-2">版本: ${this.version}</p>
+                    <p class="mb-2">主要功能:</p>
+                    <ul class="list-disc pl-4">
+                        <li>GitHub Issue 评论管理</li>
+                        <li>代码沙箱执行功能</li>
+                        <li>可视化元素创建</li>
+                        <li>可拖拽窗口系统</li>
+                    </ul>
+                    <p class="mt-4 text-blue-600">类说明文档待完善...</p>
+                `;
+                return content;
+            }
+             
             async #loadComments() {
                 try {
                     const comments = await this.apiRequest('GET', 'issues/12/comments');
@@ -468,7 +548,7 @@ app.oWnd1.toggleUI();
     
 <!--
 升级 
- 给移动窗口右上角添加一个关闭按钮
+ code createFuncWindow 
 
 this.version++;
 return all new code
