@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
-    <title>手机编程系统 v0.16</title>
+    <title>手机编程系统 v0.23</title>
     <style>
         .draggable {
             touch-action: none;
@@ -18,6 +18,15 @@
             color: white;
             border: 2px solid #1D4ED8;
         }
+        .close-btn {
+            transition: all 0.2s;
+            padding: 2px 6px;
+            border-radius: 50%;
+        }
+        .close-btn:hover {
+            background-color: #dc2626;
+            color: white;
+        }
     </style>
 </head>
 
@@ -25,12 +34,95 @@
     <script>
         class C4MobileDevApp {
             constructor() {
-                this.version = "0.16";
+                this.version = "0.23"; // 版本号更新
                 this.currentRepo = 's177';
                 this.lastActiveButton = null;
                 this.#applyStyles();
                 this.#createMainUI();
                 this.#loadComments();
+                return this;
+            }
+            blClassSample1(){
+                const classCode = `帮我设计一个JavaScript类C4MovableWnd，调用这个类的toggle UI可以toggle一个可移动的窗口。
+按以下格式给返回代码。
+class C4MovableWnd{}
+if(!app.oWnd1) app.oWnd1 = new C4MovableWnd();
+app.oWnd1.toggleUI();
+             `;
+                document.getElementById('id4ta_in_sandbox').value = classCode;
+            }
+            blGo2End(){
+                this.#go_2_textarea_end('id4ta_in_sandbox');  
+            }
+            bladdTextAtCurrentPos(){
+                this.#input_text_2_current_pos('id4ta_in_sandbox',"[test input]");  
+            }
+            #go_2_textarea_end(textareaId){
+                const textarea = document.getElementById(textareaId);
+                if (textarea) {
+                    const valueLength = textarea.value.length;
+                    textarea.focus();
+                    textarea.setSelectionRange(valueLength, valueLength);
+                }
+            }
+            #input_text_2_current_pos(textareaId, textContent) {
+                // 获取指定 ID 的 textarea 元素
+                const textarea = document.getElementById(textareaId);
+                if (textarea) {
+                    // 获取当前光标的起始位置
+                    const startPos = textarea.selectionStart;
+                    // 获取当前光标的结束位置
+                    const endPos = textarea.selectionEnd;
+                    // 获取原有的文本内容
+                    const originalText = textarea.value;
+                    // 拼接新的文本内容
+                    const newText = originalText.substring(0, startPos) + textContent + originalText.substring(endPos);
+                    // 将新的文本内容赋值给 textarea
+                    textarea.value = newText;
+                    // 设置新的光标位置
+                    textarea.selectionStart = textarea.selectionEnd = startPos + textContent.length;
+                }
+            }
+            blDrawRect(){
+                const canvas = this.canvas;
+                const rect = document.createElement('div');
+                const maxWidth = canvas.offsetWidth;
+                const maxHeight = canvas.offsetHeight;
+                const randomX = Math.floor(Math.random() * (maxWidth - 50));
+                const randomY = Math.floor(Math.random() * (maxHeight - 50));
+                const randomWidth = Math.floor(Math.random() * 100) + 20;
+                const randomHeight = Math.floor(Math.random() * 100) + 20;
+                const randomColor = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
+
+                rect.style.width = `${randomWidth}px`;
+                rect.style.height = `${randomHeight}px`;
+                rect.style.backgroundColor = randomColor;
+                rect.style.position = 'absolute';
+                rect.style.left = `${randomX}px`;
+                rect.style.top = `${randomY}px`;
+
+                canvas.appendChild(rect);
+            }
+
+            blDrawCircle(){
+                const canvas = this.canvas;
+                const circle = document.createElement('div');
+                const maxWidth = canvas.offsetWidth;
+                const maxHeight = canvas.offsetHeight;
+                const randomX = Math.floor(Math.random() * (maxWidth - 50));
+                const randomY = Math.floor(Math.random() * (maxHeight - 50));
+                const randomRadius = Math.floor(Math.random() * 25) + 10;
+                const randomColor = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
+
+                circle.style.width = `${2 * randomRadius}px`;
+                circle.style.height = `${2 * randomRadius}px`;
+                circle.style.borderRadius = '50%';
+                circle.style.backgroundColor = randomColor;
+                circle.style.position = 'absolute';
+                circle.style.left = `${randomX}px`;
+                circle.style.top = `${randomY}px`;
+
+                canvas.appendChild(circle);
             }
 
             #applyStyles() {
@@ -39,19 +131,18 @@
             }
 
             #createMainUI() {
-                // 主画布容器
                 this.canvas = document.createElement('div');
                 this.canvas.className = 'h-[calc(100vh-4rem)] bg-white';
                 document.body.appendChild(this.canvas);
 
-                // 底部固定工具条
-                this.bottomToolbar = this.#createToolbar(['toggle-panel'], 'bottom-0');
+                this.bottomToolbar = this.#createToolbar(['toggle-panel', 'toggle-func-window'], 'bottom-0');
                 
-                // 浮动窗口
                 this.panel = this.#createPanel();
                 this.isPanelVisible = true;
 
-                // 事件绑定
+                this.funcWindow = this.#createFuncWindow();
+                this.isFuncWindowVisible = false;
+
                 this.#bindEvents();
             }
 
@@ -61,10 +152,13 @@
                 
                 buttons.forEach(btnId => {
                     const btn = document.createElement('button');
-                    btn.className = 'p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors';
-                    btn.innerHTML = btnId === 'toggle-panel' 
-                        ? '<i class="fas fa-window-restore"></i>'
-                        : '<i class="fas fa-plus"></i>';
+                    btn.className = 'p-2 bg-yellow-400 text-gray-800 font-bold rounded hover:bg-yellow-500 transition-colors';
+                    if (btnId === 'toggle-panel') {
+                        btn.innerHTML = '<i class="fas fa-window-restore"></i>';
+                    }  
+                    else if (btnId === 'toggle-func-window') {
+                        btn.textContent = 'mainAPIs';
+                    }
                     btn.dataset.action = btnId;
                     toolbar.appendChild(btn);
                 });
@@ -77,35 +171,44 @@
                 const panel = document.createElement('div');
                 panel.className = 'fixed top-16 left-4 w-96 h-96 bg-white shadow-lg rounded-lg flex flex-col';
                 
-                // 添加可拖拽区域
                 const dragHandle = document.createElement('div');
-                dragHandle.className = 'draggable h-8 bg-gray-200 cursor-move rounded-t-lg flex items-center px-4';
-                dragHandle.innerHTML = `<span class="text-gray-600">≡ 拖动区域${this.version}</span>`;
+                dragHandle.className = 'draggable h-8 bg-gray-200 cursor-move rounded-t-lg flex items-center justify-between px-4';
+                dragHandle.innerHTML = `
+                    <span class="text-gray-600">≡ i12CsManager${this.version}</span>
+                    <i class="fas fa-times close-btn"></i>
+                `;
                 
-                // 顶部工具条1
+                // 添加关闭按钮事件
+                dragHandle.querySelector('.fa-times').addEventListener('click', () => {
+                    this.panel.style.display = 'none';
+                    this.isPanelVisible = false;
+                });
+
                 const toolbar1 = this.#createToolbar(['new-comment'], 'relative');
                 toolbar1.className = 'p-2 bg-gray-100 flex space-x-2';
 
-                // 添加运行代码按钮
+                const updateCommentBtn = document.createElement('button');
+                updateCommentBtn.className = 'p-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors';
+                updateCommentBtn.textContent = '更新评论';
+                updateCommentBtn.dataset.action = 'update-comment';
+                toolbar1.appendChild(updateCommentBtn);
+
                 const runCodeBtn = document.createElement('button');
                 runCodeBtn.className = 'p-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors';
                 runCodeBtn.textContent = '运行代码';
                 runCodeBtn.dataset.action = 'run-code';
                 toolbar1.appendChild(runCodeBtn);
 
-                // 顶部工具条2
                 const toolbar2 = document.createElement('div');
                 toolbar2.className = 'p-2 bg-gray-50 flex flex-wrap gap-2 overflow-auto';
                 toolbar2.id = 'comments-toolbar';
                 
-                // 可编辑的文本框
                 const textarea = document.createElement('textarea');
                 textarea.className = 'flex-1 p-4 overflow-auto border-t resize-y';
-                textarea.id = 'comment-content';
+                textarea.id = 'id4ta_in_sandbox';
                 textarea.placeholder = '输入或编辑评论内容...';
                 textarea.rows = 6;
                 
-                // 状态栏
                 const statusBar = document.createElement('div');
                 statusBar.className = 'p-2 bg-gray-100 text-sm text-gray-600';
                 statusBar.textContent = `当前仓库: ${this.currentRepo}`;
@@ -113,6 +216,47 @@
                 panel.append(dragHandle, toolbar1, toolbar2, textarea, statusBar);
                 document.body.appendChild(panel);
                 return panel;
+            }
+
+            #createFuncWindow() {
+                const funcWindow = document.createElement('div');
+                funcWindow.className = 'fixed top-16 right-4 w-64 h-96 bg-white shadow-lg rounded-lg flex flex-col';
+                funcWindow.style.display = 'none';
+                
+                const dragHandle = document.createElement('div');
+                dragHandle.className = 'draggable h-8 bg-gray-200 cursor-move rounded-t-lg flex items-center justify-between px-4';
+                dragHandle.innerHTML = `
+                    <span class="text-gray-600">≡ apiWnd${this.version}</span>
+                    <i class="fas fa-times close-btn"></i>
+                `;
+
+                // 添加关闭按钮事件
+                dragHandle.querySelector('.fa-times').addEventListener('click', () => {
+                    this.funcWindow.style.display = 'none';
+                    this.isFuncWindowVisible = false;
+                });
+
+                const funcButtonArea = document.createElement('div');
+                funcButtonArea.className = 'p-2 bg-gray-50 flex-1 flex flex-col gap-2 overflow-auto';
+
+                const proto = Object.getPrototypeOf(this);
+                const methodNames = Object.getOwnPropertyNames(proto).filter(name => 
+                    typeof this[name] === 'function' && 
+                    name.startsWith('bl') && 
+                    name !== 'constructor'
+                );
+
+                methodNames.forEach(methodName => {
+                    const btn = document.createElement('button');
+                    btn.className = 'p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors';
+                    btn.textContent = methodName;
+                    btn.onclick = () => this[methodName]();
+                    funcButtonArea.appendChild(btn);
+                });
+
+                funcWindow.append(dragHandle, funcButtonArea);
+                document.body.appendChild(funcWindow);
+                return funcWindow;
             }
 
             async #loadComments() {
@@ -126,8 +270,7 @@
                         btn.className = 'px-3 py-1 bg-gray-200 rounded text-sm hover:bg-gray-300 transition-colors';
                         btn.textContent = `#${index + 1}`;
                         btn.onclick = () => {
-                            document.getElementById('comment-content').value = comment.body;
-                            // 高亮处理
+                            document.getElementById('id4ta_in_sandbox').value = comment.body;
                             if (this.lastActiveButton) {
                                 this.lastActiveButton.classList.remove('active');
                             }
@@ -151,14 +294,14 @@
 
                 // 新建评论
                 document.querySelector('[data-action="new-comment"]').onclick = async () => {
-                    const content = document.getElementById('comment-content').value;
+                    const content = document.getElementById('id4ta_in_sandbox').value;
                     if (content) {
                         try {
                             await this.apiRequest('POST', 'issues/12/comments', {
                                 body: content
                             });
                             this.#loadComments();
-                            document.getElementById('comment-content').value = '';
+                            document.getElementById('id4ta_in_sandbox').value = '';
                             alert('评论已成功提交！');
                         } catch (error) {
                             alert('提交评论失败');
@@ -169,9 +312,35 @@
                     }
                 };
 
+                // 更新评论
+                document.querySelector('[data-action="update-comment"]').onclick = async () => {
+                    if (this.lastActiveButton) {
+                        const commentIndex = parseInt(this.lastActiveButton.textContent.slice(1)) - 1;
+                        const comments = await this.apiRequest('GET', 'issues/12/comments');
+                        const commentId = comments[commentIndex].id;
+                        const content = document.getElementById('id4ta_in_sandbox').value;
+                        if (content) {
+                            try {
+                                await this.apiRequest('PATCH', `issues/comments/${commentId}`, {
+                                    body: content
+                                });
+                                this.#loadComments();
+                                alert('评论已成功更新！');
+                            } catch (error) {
+                                alert('更新评论失败');
+                                console.error(error);
+                            }
+                        } else {
+                            alert('评论内容不能为空');
+                        }
+                    } else {
+                        alert('请先选择要更新的评论');
+                    }
+                };
+
                 // 运行代码按钮事件
                 document.querySelector('[data-action="run-code"]').onclick = () => {
-                    const code = document.getElementById('comment-content').value;
+                    const code = document.getElementById('id4ta_in_sandbox').value;
                     try {
                         new Function(code)();
                     } catch (error) {
@@ -179,53 +348,95 @@
                         console.error(error);
                     }
                 };
+ 
+                // 切换函数窗口可见性
+                document.querySelector('[data-action="toggle-func-window"]').onclick = () => {
+                    this.isFuncWindowVisible = !this.isFuncWindowVisible;
+                    this.funcWindow.style.display = this.isFuncWindowVisible ? 'block' : 'none';
+                };
 
                 // 实现拖动功能
-                let isDragging = false;
-                let startX, startY, initialX, initialY;
-                const dragHandle = this.panel.querySelector('.draggable');
+                let panelIsDragging = false;
+                let funcWindowIsDragging = false;
+                let panelStartX, panelStartY, panelInitialX, panelInitialY;
+                let funcWindowStartX, funcWindowStartY, funcWindowInitialX, funcWindowInitialY;
 
-                dragHandle.addEventListener('mousedown', (e) => {
-                    isDragging = true;
-                    startX = e.clientX;
-                    startY = e.clientY;
-                    initialX = this.panel.offsetLeft;
-                    initialY = this.panel.offsetTop;
+                const panelDragHandle = this.panel.querySelector('.draggable');
+                const funcWindowDragHandle = this.funcWindow.querySelector('.draggable');
+
+                panelDragHandle.addEventListener('mousedown', (e) => {
+                    panelIsDragging = true;
+                    panelStartX = e.clientX;
+                    panelStartY = e.clientY;
+                    panelInitialX = this.panel.offsetLeft;
+                    panelInitialY = this.panel.offsetTop;
                 });
 
                 document.addEventListener('mousemove', (e) => {
-                    if (!isDragging) return;
-                    const dx = e.clientX - startX;
-                    const dy = e.clientY - startY;
-                    this.panel.style.left = `${initialX + dx}px`;
-                    this.panel.style.top = `${initialY + dy}px`;
+                    if (panelIsDragging) {
+                        const dx = e.clientX - panelStartX;
+                        const dy = e.clientY - panelStartY;
+                        this.panel.style.left = `${panelInitialX + dx}px`;
+                        this.panel.style.top = `${panelInitialY + dy}px`;
+                    } else if (funcWindowIsDragging) {
+                        const dx = e.clientX - funcWindowStartX;
+                        const dy = e.clientY - funcWindowStartY;
+                        this.funcWindow.style.left = `${funcWindowInitialX + dx}px`;
+                        this.funcWindow.style.top = `${funcWindowInitialY + dy}px`;
+                    }
                 });
 
                 document.addEventListener('mouseup', () => {
-                    isDragging = false;
+                    panelIsDragging = false;
+                    funcWindowIsDragging = false;
                 });
 
                 // 移动端触摸支持
-                dragHandle.addEventListener('touchstart', (e) => {
-                    isDragging = true;
+                panelDragHandle.addEventListener('touchstart', (e) => {
+                    panelIsDragging = true;
                     const touch = e.touches[0];
-                    startX = touch.clientX;
-                    startY = touch.clientY;
-                    initialX = this.panel.offsetLeft;
-                    initialY = this.panel.offsetTop;
+                    panelStartX = touch.clientX;
+                    panelStartY = touch.clientY;
+                    panelInitialX = this.panel.offsetLeft;
+                    panelInitialY = this.panel.offsetTop;
                 });
 
                 document.addEventListener('touchmove', (e) => {
-                    if (!isDragging) return;
-                    const touch = e.touches[0];
-                    const dx = touch.clientX - startX;
-                    const dy = touch.clientY - startY;
-                    this.panel.style.left = `${initialX + dx}px`;
-                    this.panel.style.top = `${initialY + dy}px`;
+                    if (panelIsDragging) {
+                        const touch = e.touches[0];
+                        const dx = touch.clientX - panelStartX;
+                        const dy = touch.clientY - panelStartY;
+                        this.panel.style.left = `${panelInitialX + dx}px`;
+                        this.panel.style.top = `${panelInitialY + dy}px`;
+                    } else if (funcWindowIsDragging) {
+                        const touch = e.touches[0];
+                        const dx = touch.clientX - funcWindowStartX;
+                        const dy = touch.clientY - funcWindowStartY;
+                        this.funcWindow.style.left = `${funcWindowInitialX + dx}px`;
+                        this.funcWindow.style.top = `${funcWindowInitialY + dy}px`;
+                    }
                 });
 
                 document.addEventListener('touchend', () => {
-                    isDragging = false;
+                    panelIsDragging = false;
+                    funcWindowIsDragging = false;
+                });
+
+                funcWindowDragHandle.addEventListener('mousedown', (e) => {
+                    funcWindowIsDragging = true;
+                    funcWindowStartX = e.clientX;
+                    funcWindowStartY = e.clientY;
+                    funcWindowInitialX = this.funcWindow.offsetLeft;
+                    funcWindowInitialY = this.funcWindow.offsetTop;
+                });
+
+                funcWindowDragHandle.addEventListener('touchstart', (e) => {
+                    funcWindowIsDragging = true;
+                    const touch = e.touches[0];
+                    funcWindowStartX = touch.clientX;
+                    funcWindowStartY = touch.clientY;
+                    funcWindowInitialX = this.funcWindow.offsetLeft;
+                    funcWindowInitialY = this.funcWindow.offsetTop;
                 });
             }
 
@@ -246,16 +457,18 @@
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 return response.json();
             }
+        
+
         }
 
-        new C4MobileDevApp();
+        const app = new C4MobileDevApp();
     </script>
 </body>
 </html>
     
 <!--
 升级 
- toolbar1 右边添加一按钮，点击运行文本框里的代码
+ 给移动窗口右上角添加一个关闭按钮
 
 this.version++;
 return all new code
