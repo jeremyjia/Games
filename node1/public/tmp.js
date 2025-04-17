@@ -1,33 +1,36 @@
  
-class C4MobileDevApp {
-    // ... 其他代码保持不变 ...
+        class C4MobileDevApp {
+            constructor() {
+                this.version = "0.25.1"; // 版本升级
+                // ...其他保持不变的代码...
+            }
 
-    #createTabButton(text, isActive = false) {
-        const btn = document.createElement('button');
-        // 增加tab-button类名
-        btn.className = `tab-button px-4 py-2 ${isActive ? 'bg-blue-500 text-white' : 'bg-gray-100'} hover:bg-blue-100 transition-colors flex-1`;
-        btn.textContent = text;
-        return btn;
-    }
+            blTogglePluginsWindow() {
+                this.isPluginsWindowVisible = !this.isPluginsWindowVisible;
+                this.pluginsWindow.style.display = this.isPluginsWindowVisible ? 'block' : 'none';
+                
+                // 新增：切换按钮激活状态
+                const btn = document.getElementById('id4togglePluginsWnd');
+                if(btn) btn.classList.toggle('active', this.isPluginsWindowVisible);
+            }
 
-    #switchTab(tabName) {
-        document.querySelectorAll('#func-tab-content, #doc-tab-content').forEach(el => {
-            el.classList.add('hidden');
-        });
-        document.querySelectorAll('.tab-button').forEach(el => {
-            el.classList.remove('bg-blue-500', 'text-white');
-        });
-        
-        if (tabName === 'func') {
-            document.getElementById('func-tab-content').classList.remove('hidden');
-            // 使用更可靠的选择器
-            this.funcWindow.querySelector('.tab-button:first-child').classList.add('bg-blue-500', 'text-white');
-        } else {
-            document.getElementById('doc-tab-content').classList.remove('hidden');
-            this.funcWindow.querySelector('.tab-button:last-child').classList.add('bg-blue-500', 'text-white');
+            #updateStatusBarLineCount() {
+                const textarea = document.getElementById('id4ta_in_sandbox');
+                const statusBar = this.panel.querySelector('.p-2.bg-gray-100.text-sm.text-gray-600');
+                const lineCount = textarea.value.split('\n').length;
+                
+                // 修改：创建按钮时携带激活状态
+                statusBar.innerHTML = `<div>当前仓库: ${this.currentRepo}，文本框行数: ${lineCount}<div>
+                    <button id="id4togglePluginsWnd" 
+                            onclick="app.blTogglePluginsWindow()"
+                            class="${this.isPluginsWindowVisible ? 'active' : ''}">
+                        plugIns
+                    </button>
+                    <div id="id4_plugIns"></div>`;
+            }
+
+            // ...其他保持不变的方法...
         }
-    }
-
-    // ... 其余代码保持不变 ...
-}
-</script>
+    </script>
+</body>
+</html>

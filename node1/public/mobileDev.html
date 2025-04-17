@@ -6,8 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
-    <title>手机编程系统 v0.23</title>
+    <title>手机编程系统 v0.24</title>
     <style>
+        #id4togglePluginsWnd.active {
+            background-color: #3B82F6;
+            color: white;
+        }
+        #id4togglePluginsWnd {
+            background-color: #0e3715;
+            color: rgb(144, 128, 128);
+        }
         .draggable {
             touch-action: none;
             user-select: none;
@@ -34,14 +42,165 @@
     <script>
         class C4MobileDevApp {
             constructor() {
-                this.version = "0.23"; // 版本号更新
+                this.version = "0.31";  
                 this.currentRepo = 's177';
                 this.lastActiveButton = null;
                 this.#applyStyles();
                 this.#createMainUI();
                 this.#loadComments();
+                this.#updateStatusBarLineCount();
+                
+                // 初始化插件窗口
+                this.pluginsWindow = this.#createPluginsWindow();
+                this.isPluginsWindowVisible = false;
+                
                 return this;
             }
+            blTogglePluginsWindow() {
+                this.isPluginsWindowVisible = !this.isPluginsWindowVisible;
+                this.pluginsWindow.style.display = this.isPluginsWindowVisible ? 'block' : 'none';
+                
+                // 新增：切换按钮激活状态
+                const btn = document.getElementById('id4togglePluginsWnd');
+                if(btn) btn.classList.toggle('active', this.isPluginsWindowVisible);
+            }
+
+            // 创建插件管理窗口
+            #createPluginsWindow() {
+                const pluginsWindow = document.createElement('div');
+                pluginsWindow.className = 'fixed top-24 left-4 w-72 h-96 bg-white shadow-lg rounded-lg flex flex-col hidden';
+                
+                const dragHandle = document.createElement('div');
+                dragHandle.className = 'draggable h-8 bg-gray-200 cursor-move rounded-t-lg flex items-center justify-between px-4';
+                dragHandle.innerHTML = `
+                    <span class="text-gray-600">≡ 插件管理器 v${this.version}</span>
+                    <i class="fas fa-times close-btn"></i>
+                `;
+
+                dragHandle.querySelector('.fa-times').addEventListener('click', () => {
+                    pluginsWindow.style.display = 'none';
+                    this.isPluginsWindowVisible = false;
+                });
+
+                const tabButtons = document.createElement('div');
+                tabButtons.className = 'flex border-b';
+                
+                const installedTabBtn = this.#createTabButton('已安装', true);
+                const storeTabBtn = this.#createTabButton('插件商店');
+                
+                const tabContents = document.createElement('div');
+                tabContents.className = 'flex-1 overflow-auto p-2';
+                
+                // 已安装插件内容
+                const installedContent = document.createElement('div');
+                installedContent.innerHTML = `
+                    <div class="text-sm mb-4">
+                        <div class="p-2 bg-gray-100 mb-2 rounded">示例插件 1.0</div>
+                        <div class="p-2 bg-gray-100 mb-2 rounded">代码格式化插件 2.1</div>
+                        <button class="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                            安装新插件...
+                        </button>
+                    </div>
+                `;
+
+                // 插件商店内容
+                const storeContent = document.createElement('div');
+                storeContent.className = 'hidden';
+                storeContent.innerHTML = `
+                    <div class="text-sm">
+                        <div class="p-2 bg-gray-100 mb-2 rounded">AI辅助插件 (点击安装)</div>
+                        <div class="p-2 bg-gray-100 mb-2 rounded">主题商店插件</div>
+                        <div class="p-2 bg-gray-100 mb-2 rounded">Git扩展插件</div>
+                    </div>
+                `;
+
+                // 添加标签切换
+                installedTabBtn.addEventListener('click', () => {
+                    installedContent.classList.remove('hidden');
+                    storeContent.classList.add('hidden');
+                    installedTabBtn.classList.add('bg-blue-500', 'text-white');
+                    storeTabBtn.classList.remove('bg-blue-500', 'text-white');
+                });
+
+                storeTabBtn.addEventListener('click', () => {
+                    installedContent.classList.add('hidden');
+                    storeContent.classList.remove('hidden');
+                    storeTabBtn.classList.add('bg-blue-500', 'text-white');
+                    installedTabBtn.classList.remove('bg-blue-500', 'text-white');
+                });
+
+                tabContents.append(installedContent, storeContent);
+                tabButtons.append(installedTabBtn, storeTabBtn);
+                pluginsWindow.append(dragHandle, tabButtons, tabContents);
+
+                // 实现拖拽功能
+                let isDragging = false;
+                let startX, startY, initialX, initialY;
+
+                dragHandle.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    initialX = pluginsWindow.offsetLeft;
+                    initialY = pluginsWindow.offsetTop;
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (isDragging) {
+                        const dx = e.clientX - startX;
+                        const dy = e.clientY - startY;
+                        pluginsWindow.style.left = `${initialX + dx}px`;
+                        pluginsWindow.style.top = `${initialY + dy}px`;
+                    }
+                });
+
+                document.addEventListener('mouseup', () => {
+                    isDragging = false;
+                });
+
+                // 移动端触摸支持
+                dragHandle.addEventListener('touchstart', (e) => {
+                    isDragging = true;
+                    const touch = e.touches[0];
+                    startX = touch.clientX;
+                    startY = touch.clientY;
+                    initialX = pluginsWindow.offsetLeft;
+                    initialY = pluginsWindow.offsetTop;
+                });
+
+                document.addEventListener('touchmove', (e) => {
+                    if (isDragging) {
+                        const touch = e.touches[0];
+                        const dx = touch.clientX - startX;
+                        const dy = touch.clientY - startY;
+                        pluginsWindow.style.left = `${initialX + dx}px`;
+                        pluginsWindow.style.top = `${initialY + dy}px`;
+                    }
+                });
+
+                document.addEventListener('touchend', () => {
+                    isDragging = false;
+                });
+
+                document.body.appendChild(pluginsWindow);
+                return pluginsWindow;
+            }
+
+            #updateStatusBarLineCount() {
+                const textarea = document.getElementById('id4ta_in_sandbox');
+                const statusBar = this.panel.querySelector('.p-2.bg-gray-100.text-sm.text-gray-600');
+                const lineCount = textarea.value.split('\n').length;
+                
+                // 修改：创建按钮时携带激活状态
+                statusBar.innerHTML = `<div>当前仓库: ${this.currentRepo}，文本框行数: ${lineCount}<div>
+                    <button id="id4togglePluginsWnd" 
+                            onclick="app.blTogglePluginsWindow()"
+                            class="${this.isPluginsWindowVisible ? 'active' : ''}">
+                        plugIns
+                    </button>
+                    <div id="id4_plugIns"></div>`;
+            }
+
             blClassSample1(){
                 const classCode = `帮我设计一个JavaScript类C4MovableWnd，调用这个类的toggle UI可以toggle一个可移动的窗口。
 按以下格式给返回代码。
@@ -50,12 +209,15 @@ if(!app.oWnd1) app.oWnd1 = new C4MovableWnd();
 app.oWnd1.toggleUI();
              `;
                 document.getElementById('id4ta_in_sandbox').value = classCode;
+                this.#updateStatusBarLineCount();
             }
             blGo2End(){
                 this.#go_2_textarea_end('id4ta_in_sandbox');  
+                this.#updateStatusBarLineCount();
             }
             bladdTextAtCurrentPos(){
                 this.#input_text_2_current_pos('id4ta_in_sandbox',"[test input]");  
+                this.#updateStatusBarLineCount();
             }
             #go_2_textarea_end(textareaId){
                 const textarea = document.getElementById(textareaId);
@@ -82,6 +244,7 @@ app.oWnd1.toggleUI();
                     // 设置新的光标位置
                     textarea.selectionStart = textarea.selectionEnd = startPos + textContent.length;
                 }
+                this.#updateStatusBarLineCount();
             }
             blDrawRect(){
                 const canvas = this.canvas;
@@ -208,6 +371,7 @@ app.oWnd1.toggleUI();
                 textarea.id = 'id4ta_in_sandbox';
                 textarea.placeholder = '输入或编辑评论内容...';
                 textarea.rows = 6;
+                textarea.addEventListener('input', () => this.#updateStatusBarLineCount());
                 
                 const statusBar = document.createElement('div');
                 statusBar.className = 'p-2 bg-gray-100 text-sm text-gray-600';
@@ -217,11 +381,11 @@ app.oWnd1.toggleUI();
                 document.body.appendChild(panel);
                 return panel;
             }
+           
             #createFuncWindow() {
                 const funcWindow = document.createElement('div');
                 funcWindow.className = 'fixed top-24 right-4 w-72 h-96 bg-white shadow-lg rounded-lg flex flex-col hidden';
                 
-                // 拖拽手柄
                 const dragHandle = document.createElement('div');
                 dragHandle.className = 'draggable h-8 bg-gray-200 cursor-move rounded-t-lg flex items-center justify-between px-4';
                 dragHandle.innerHTML = `
@@ -229,46 +393,47 @@ app.oWnd1.toggleUI();
                     <i class="fas fa-times close-btn"></i>
                 `;
 
-                // 关闭按钮事件
                 dragHandle.querySelector('.fa-times').addEventListener('click', () => {
                     funcWindow.style.display = 'none';
                     this.isFuncWindowVisible = false;
                 });
 
-                // 标签页按钮容器
                 const tabButtons = document.createElement('div');
                 tabButtons.className = 'flex border-b';
                 
-                // 创建两个标签页按钮
+                // 增加类模板标签页按钮
                 const funcTabBtn = this.#createTabButton('函数列表', true);
+                const classesTabBtn = this.#createTabButton('类模版');
                 const docTabBtn = this.#createTabButton('类说明');
                 
-                // 标签页内容容器
                 const tabContents = document.createElement('div');
                 tabContents.className = 'flex-1 overflow-auto';
                 
-                // 函数列表内容
                 const funcContent = this.#createFunctionListContent();
                 funcContent.id = 'func-tab-content';
                 
-                // 文档内容
+                const classesContent = this.#createClassTemplatesContent();
+                classesContent.id = 'classes-tab-content';
+                classesContent.classList.add('hidden');
+
                 const docContent = this.#createClassDocContent();
                 docContent.id = 'doc-tab-content';
                 docContent.classList.add('hidden');
 
-                // 组装标签页结构
-                tabButtons.append(funcTabBtn, docTabBtn);
-                tabContents.append(funcContent, docContent);
+                tabButtons.append(funcTabBtn, classesTabBtn, docTabBtn);
+                tabContents.append(funcContent, classesContent, docContent);
                 funcWindow.append(dragHandle, tabButtons, tabContents);
 
-                // 标签切换事件
+                // 添加标签切换事件
                 funcTabBtn.addEventListener('click', () => this.#switchTab('func'));
+                classesTabBtn.addEventListener('click', () => this.#switchTab('classes'));
                 docTabBtn.addEventListener('click', () => this.#switchTab('doc'));
 
                 this.funcWindow = funcWindow;
                 document.body.appendChild(funcWindow);
                 return funcWindow;
             }
+
             #createTabButton(text, isActive = false) {
                 const btn = document.createElement('button');
                 // 增加tab-button类名
@@ -278,22 +443,76 @@ app.oWnd1.toggleUI();
             }
 
             #switchTab(tabName) {
-                document.querySelectorAll('#func-tab-content, #doc-tab-content').forEach(el => {
+                // 隐藏所有内容
+                document.querySelectorAll('#func-tab-content, #classes-tab-content, #doc-tab-content').forEach(el => {
                     el.classList.add('hidden');
                 });
+                
+                // 重置按钮样式
                 document.querySelectorAll('.tab-button').forEach(el => {
                     el.classList.remove('bg-blue-500', 'text-white');
                 });
+
+                // 激活当前标签
+                const tabIndex = {
+                    func: 0,
+                    classes: 1,
+                    doc: 2
+                }[tabName];
                 
-                if (tabName === 'func') {
-                    document.getElementById('func-tab-content').classList.remove('hidden');
-                    // 使用更可靠的选择器
-                    this.funcWindow.querySelector('.tab-button:first-child').classList.add('bg-blue-500', 'text-white');
-                } else {
-                    document.getElementById('doc-tab-content').classList.remove('hidden');
-                    this.funcWindow.querySelector('.tab-button:last-child').classList.add('bg-blue-500', 'text-white');
-                }
+                const activeBtn = this.funcWindow.querySelector(`.tab-button:nth-child(${tabIndex + 1})`);
+                activeBtn.classList.add('bg-blue-500', 'text-white');
+                
+                // 显示对应内容
+                document.getElementById(`${tabName}-tab-content`).classList.remove('hidden');
             }
+
+            #createClassTemplatesContent() {
+                const content = document.createElement('div');
+                content.className = 'p-4 flex flex-col gap-2';
+                
+                const templates = {
+                    '可移动窗口类': `class C4MovableWnd {
+    constructor() {
+        this.window = document.createElement('div');
+        // 添加你的窗口初始化代码
+    }
+    
+    toggleUI() {
+        this.window.style.display = this.window.style.display === 'none' ? 'block' : 'none';
+    }
+}`,
+                    '数据管理类': `class C4DataManager {
+    constructor() {
+        this.data = {};
+    }
+    
+    save(key, value) {
+        this.data[key] = value;
+    }
+    
+    load(key) {
+        return this.data[key];
+    }
+}`
+                };
+
+                Object.entries(templates).forEach(([name, code]) => {
+                    const templateBtn = document.createElement('button');
+                    templateBtn.className = 'p-2 bg-gray-100 hover:bg-blue-100 rounded text-left text-sm';
+                    templateBtn.textContent = name;
+                    templateBtn.onclick = () => {
+                        const textarea = document.getElementById('id4ta_in_sandbox');
+                        textarea.value = code + '\n\n' + textarea.value;
+                        textarea.focus();
+                        this.#updateStatusBarLineCount();
+                    };
+                    content.appendChild(templateBtn);
+                });
+
+                return content;
+            }
+
 
             #createFunctionListContent() {
                 const content = document.createElement('div');
@@ -356,6 +575,7 @@ app.oWnd1.toggleUI();
                             }
                             btn.classList.add('active');
                             this.lastActiveButton = btn;
+                            this.#updateStatusBarLineCount();
                         };
                         toolbar.appendChild(btn);
                     });
@@ -383,6 +603,7 @@ app.oWnd1.toggleUI();
                             this.#loadComments();
                             document.getElementById('id4ta_in_sandbox').value = '';
                             alert('评论已成功提交！');
+                            this.#updateStatusBarLineCount();
                         } catch (error) {
                             alert('提交评论失败');
                             console.error(error);
@@ -406,6 +627,7 @@ app.oWnd1.toggleUI();
                                 });
                                 this.#loadComments();
                                 alert('评论已成功更新！');
+                                this.#updateStatusBarLineCount();
                             } catch (error) {
                                 alert('更新评论失败');
                                 console.error(error);
@@ -538,7 +760,7 @@ app.oWnd1.toggleUI();
                 return response.json();
             }
         
-
+            
         }
 
         const app = new C4MobileDevApp();
@@ -546,10 +768,11 @@ app.oWnd1.toggleUI();
 </body>
 </html>
     
+    
 <!--
 升级 
- code createFuncWindow 
-
+let id4togglePluginsWnd toggle color
+ 
 this.version++;
 return all new code
 -->
