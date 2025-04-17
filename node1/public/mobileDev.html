@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
-    <title>手机编程系统 v0.15</title>
+    <title>手机编程系统 v0.16</title>
     <style>
         .draggable {
             touch-action: none;
@@ -25,7 +25,7 @@
     <script>
         class C4MobileDevApp {
             constructor() {
-                this.version = "0.15";
+                this.version = "0.16";
                 this.currentRepo = 's177';
                 this.lastActiveButton = null;
                 this.#applyStyles();
@@ -85,6 +85,13 @@
                 // 顶部工具条1
                 const toolbar1 = this.#createToolbar(['new-comment'], 'relative');
                 toolbar1.className = 'p-2 bg-gray-100 flex space-x-2';
+
+                // 添加运行代码按钮
+                const runCodeBtn = document.createElement('button');
+                runCodeBtn.className = 'p-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors';
+                runCodeBtn.textContent = '运行代码';
+                runCodeBtn.dataset.action = 'run-code';
+                toolbar1.appendChild(runCodeBtn);
 
                 // 顶部工具条2
                 const toolbar2 = document.createElement('div');
@@ -162,6 +169,17 @@
                     }
                 };
 
+                // 运行代码按钮事件
+                document.querySelector('[data-action="run-code"]').onclick = () => {
+                    const code = document.getElementById('comment-content').value;
+                    try {
+                        new Function(code)();
+                    } catch (error) {
+                        alert(`代码运行出错: ${error.message}`);
+                        console.error(error);
+                    }
+                };
+
                 // 实现拖动功能
                 let isDragging = false;
                 let startX, startY, initialX, initialY;
@@ -234,9 +252,10 @@
     </script>
 </body>
 </html>
+    
 <!--
 升级 
- 高亮最新点击的评论按钮
+ toolbar1 右边添加一按钮，点击运行文本框里的代码
 
 this.version++;
 return all new code
