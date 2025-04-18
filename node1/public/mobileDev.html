@@ -6,59 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
-    <title>手机编程系统 v0.24</title>
+    <title>手机编程系统 v0.35</title>
     <style>
-        .uninstall-btn {
+        #id_4_togglePluginsWnd {
+            background-color: #e2e8f0;
             transition: all 0.2s;
-            padding: 2px 6px;
-            border-radius: 50%;
-        }
-        .uninstall-btn:hover {
-            background-color: #dc2626;
-            color: white;
-        }
-        .plugin-item {
-            transition: all 0.3s;
-            border-left: 4px solid transparent;
-        }
-        .plugin-item:hover {
-            border-left-color: #3B82F6;
-            background-color: #f8fafc;
         }
         #id_4_togglePluginsWnd.active {
             background-color: #3B82F6;
             color: white;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
         }
-        #id_4_togglePluginsWnd {
-            background-color: #0e3715;
-            color: rgb(144, 128, 128);
+        .plugin-item:hover {
+            background-color: #f1f5f9;
+            transform: translateX(4px);
         }
-        .draggable {
-            touch-action: none;
-            user-select: none;
-            cursor: move;
-        }
-        .active {
-            background-color: #3B82F6;
-            color: white;
-            border: 2px solid #1D4ED8;
-        }
-        .close-btn {
-            transition: all 0.2s;
-            padding: 2px 6px;
-            border-radius: 50%;
-        }
-        .close-btn:hover {
-            background-color: #dc2626;
-            color: white;
-        }
-        .plugin-detail-window {
-            transition: all 0.3s;
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
-        }
-        .plugin-detail-content {
-            max-height: 300px;
-            overflow-y: auto;
+        .tab-button {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
     </style>
 </head>
@@ -115,7 +79,7 @@
 
         class C4MobileDevApp {
             constructor() {
-                this.version = "0.33";  // 更新版本号
+                this.version = "0.35";  // 更新版本号
                 this.currentRepo = 's177';
                 this.lastActiveButton = null;
                 this.plis = this.#loadPlugins(); // 修改加载方式
