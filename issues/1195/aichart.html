@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>漂泊者乐园智能问答系统v3.0.0</title>
+    <title>漂泊者乐园智能问答系统v3.1.1</title>
     <style>
         :root {
             --primary-color: #2196F3;
@@ -266,7 +266,6 @@
             0% {
                 transform: rotate(0deg);
             }
-
             100% {
                 transform: rotate(360deg);
             }
@@ -360,50 +359,165 @@
         }
 
         /* 代码编辑器对话框样式 */
-        .code-editor-dialog {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%;
-            max-width: 1000px;
-            height: 80vh;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
-            z-index: 1001;
+        .dialog-container {
             display: none;
-            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
         }
 
-        .editor-header {
-            padding: 15px;
-            background: #f5f5f5;
-            border-bottom: 1px solid #ddd;
+        .dialog {
+            background-color: white;
+            width: 90%;
+            height: 90%;
+            max-width: 1200px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .dialog-header {
+            padding: 12px 20px;
+            background-color: #2c3e50;
+            color: white;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .editor-title {
+        .dialog-title {
+            font-size: 18px;
             font-weight: bold;
-            font-size: 16px;
         }
 
-        .editor-close {
-            cursor: pointer;
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
             font-size: 20px;
-            color: #666;
+            cursor: pointer;
         }
 
-        .editor-content {
+        .dialog-body {
             flex: 1;
-            padding: 15px;
+            display: flex;
+            overflow: hidden;
         }
 
-        .editor-buttons {
-            padding: 15px;
-            text-align: right;
+        .code-editor {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #ddd;
+        }
+
+        .editor-tabs {
+            display: flex;
+            background-color: #f0f0f0;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            border-right: 1px solid #ddd;
+            background-color: #e0e0e0;
+        }
+
+        .tab.active {
+            background-color: white;
+            font-weight: bold;
+        }
+
+        .editor-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .editor {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: none;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            padding: 10px;
+            resize: none;
+        }
+
+        .preview {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-header {
+            padding: 8px 16px;
+            background-color: #f0f0f0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .preview-content {
+            flex: 1;
+            border: none;
+            background-color: white;
+        }
+
+        .dialog-footer {
+            padding: 12px 20px;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-run {
+            background-color: #27ae60;
+            color: white;
+        }
+
+        .btn-run:hover {
+            background-color: #2ecc71;
+        }
+
+        .btn-close {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .btn-close:hover {
+            background-color: #c0392b;
+        }
+
+        .open-dialog-btn {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .open-dialog-btn:hover {
+            background-color: #2980b9;
         }
 
         @media (max-width: 480px) {
@@ -470,7 +584,7 @@
                 height: 80vh;
             }
 
-            .code-editor-dialog {
+            .dialog {
                 width: 95%;
                 height: 85vh;
             }
@@ -480,80 +594,6 @@
                 font-size: 13px;
             }
         }
-
-        /* 添加原生编辑器样式 */
-      /* 更新编辑器标签页样式 */
-      .editor-tabs {
-        display: flex;
-        background: #f5f7fa;
-        border-bottom: 1px solid #e1e4e8;
-        padding: 0 10px;
-    }
-    
-    .editor-tab {
-        padding: 10px 20px;
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        font-size: 14px;
-        font-weight: 500;
-        color: #586069;
-        position: relative;
-        transition: all 0.3s ease;
-        border-radius: 4px 4px 0 0;
-        margin-right: 4px;
-    }
-    
-    .editor-tab:hover {
-        color: #0366d6;
-        background: rgba(3, 102, 214, 0.1);
-    }
-    
-    .editor-tab.active {
-        color: #24292e;
-        background: #fff;
-        box-shadow: 0 1px 0 #fff;
-        border: 1px solid #e1e4e8;
-        border-bottom-color: transparent;
-        font-weight: 600;
-    }
-    
-    .editor-tab.active::after {
-        content: '';
-        position: absolute;
-        bottom: -1px;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: #f9826c;
-        border-radius: 2px 2px 0 0;
-    }
-    
-    /* 为不同语言标签添加不同颜色标识 */
-    .editor-tab[data-lang="html"].active {
-        color: #e34c26;
-    }
-    
-    .editor-tab[data-lang="html"].active::after {
-        background: #e34c26;
-    }
-    
-    .editor-tab[data-lang="css"].active {
-        color: #2965f1;
-    }
-    
-    .editor-tab[data-lang="css"].active::after {
-        background: #2965f1;
-    }
-    
-    .editor-tab[data-lang="js"].active {
-        color: #f1e05a;
-    }
-    
-    .editor-tab[data-lang="js"].active::after {
-        background: #f1e05a;
-    }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"></script>
@@ -585,21 +625,85 @@
     </div>
 
     <!-- 代码编辑器对话框 -->
-    <div class="dialog-overlay" id="codeEditorDialogOverlay"></div>
-    <div class="code-editor-dialog" id="codeEditorDialog">
-        <div class="editor-header">
-            <div class="editor-title">代码编辑器</div>
-            <div class="editor-close" onclick="closeCodeEditorDialog()">&times;</div>
-        </div>
-        <div class="editor-tabs">
-            <button class="editor-tab active" data-lang="html">HTML</button>
-            <button class="editor-tab" data-lang="css">CSS</button>
-            <button class="editor-tab" data-lang="js">JavaScript</button>
-        </div>
-        <textarea id="codeEditor" class="native-code-editor" spellcheck="false"></textarea>
-        <div class="editor-buttons">
-            <button class="code-btn" onclick="saveCode()">保存</button>
-            <button class="code-btn" onclick="runEditedCode()">运行</button>
+    <div class="dialog-container" id="dialogContainer">
+        <div class="dialog">
+            <div class="dialog-header">
+                <div class="dialog-title">HTML/JS/CSS 代码编辑器</div>
+                <button class="close-btn" id="closeDialogBtn">&times;</button>
+            </div>
+            <div class="dialog-body">
+                <div class="code-editor">
+                    <div class="editor-tabs">
+                        <div class="tab active" data-tab="html">HTML</div>
+                        <div class="tab" data-tab="css">CSS</div>
+                        <div class="tab" data-tab="js">JavaScript</div>
+                    </div>
+                    <div class="editor-container">
+                        <textarea class="editor" id="htmlEditor" spellcheck="false">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;我的页面&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;欢迎来到我的页面&lt;/h1&gt;
+    &lt;p&gt;这是一个示例页面，您可以编辑HTML、CSS和JavaScript代码。&lt;/p&gt;
+    &lt;button id="demoBtn"&gt;点击我&lt;/button&gt;
+    &lt;div id="output"&gt;&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</textarea>
+                        <textarea class="editor" id="cssEditor" spellcheck="false" style="display: none;">body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+h1 {
+    color: #3498db;
+}
+
+#demoBtn {
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#demoBtn:hover {
+    background-color: #27ae60;
+}
+
+#output {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}</textarea>
+                        <textarea class="editor" id="jsEditor" spellcheck="false" style="display: none;">document.getElementById('demoBtn').addEventListener('click', function() {
+    const output = document.getElementById('output');
+    output.innerHTML = '按钮被点击了! ' + new Date().toLocaleTimeString();
+    
+    // 随机改变背景颜色
+    const colors = ['#f1c40f', '#e67e22', '#e74c3c', '#9b59b6', '#3498db'];
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+    output.style.backgroundColor = randomColor;
+    output.style.color = 'white';
+});</textarea>
+                    </div>
+                </div>
+                <div class="preview">
+                    <div class="preview-header">预览</div>
+                    <iframe class="preview-content" id="previewFrame"></iframe>
+                </div>
+            </div>
+            <div class="dialog-footer">
+                <button class="btn btn-run" id="runBtn">运行代码</button>
+                <button class="btn btn-close" id="closeBtn">关闭</button>
+            </div>
         </div>
     </div>
 
@@ -607,7 +711,6 @@
         const audioCache = new Map();
         let currentAudio = null;
         let currentPlayingId = null;
-        let codeEditor;
         let currentCode;
         let isHtmlCode;
 
@@ -900,158 +1003,123 @@
             seconds = Math.floor(seconds % 60);
             return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         }
+        function openCodeEditor(code, isHtml) {
+            currentCode = code;
+            isHtmlCode = isHtml;
+            const dialogContainer = document.getElementById('dialogContainer');
+            const htmlEditor = document.getElementById('htmlEditor');
+            const cssEditor = document.getElementById('cssEditor');
+            const jsEditor = document.getElementById('jsEditor');
 
-        function saveCode() {
-            currentCode = codeEditor.getValue();
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            if (isHtml) {
+                htmlEditor.value = code;
+                htmlEditor.style.display = 'block';
+                cssEditor.style.display = 'none';
+                jsEditor.style.display = 'none';
+                document.querySelector('.tab[data-tab="html"]').classList.add('active');
+            } else {
+                jsEditor.value = code;
+                jsEditor.style.display = 'block';
+                htmlEditor.style.display = 'none';
+                cssEditor.style.display = 'none';
+                document.querySelector('.tab[data-tab="js"]').classList.add('active');
+            }
+
+            dialogContainer.style.display = 'flex';
         }
 
-    // 更新编辑器相关函数
-    let currentEditorLang = 'html';
-    
-    function openCodeEditor(code, isHtml) {
-        const editorDialog = document.getElementById('codeEditorDialog');
-        const editorOverlay = document.getElementById('codeEditorDialogOverlay');
-        const codeEditor = document.getElementById('codeEditor');
-        
-        currentEditorLang = isHtml ? 'html' : 'js';
-        updateEditorTabs();
-        
-        codeEditor.value = code;
-        
-        // 显示编辑器对话框
-        editorDialog.style.display = 'flex';
-        editorOverlay.style.display = 'block';
-        document.body.style.overflow = 'hidden';
-        
-        // 自动聚焦编辑器
-        setTimeout(() => codeEditor.focus(), 100);
-    }
-    
-// 更新标签切换函数以支持新样式
-function updateEditorTabs() {
-    const tabs = document.querySelectorAll('.editor-tab');
-    tabs.forEach(tab => {
-        const isActive = tab.dataset.lang === currentEditorLang;
-        tab.classList.toggle('active', isActive);
-        
-        // 更新ARIA属性增强可访问性
-        tab.setAttribute('aria-selected', isActive);
-        tab.setAttribute('tabindex', isActive ? '0' : '-1');
-    });
-}
-
-// 添加键盘导航支持
-document.querySelectorAll('.editor-tab').forEach(tab => {
-    tab.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            this.click();
-        }
-    });
-});
-    
-    function saveCode() {
-        // 保存逻辑不变
-    }
-    
-    function runEditedCode() {
-        const code = document.getElementById('codeEditor').value;
-        const dialogContent = document.getElementById('dialogContent');
-        
-        dialogContent.innerHTML = '';
-        
-        try {
-            // 创建一个iframe来安全运行代码
-            const iframe = document.createElement('iframe');
-            iframe.style.width = '100%';
-            iframe.style.height = '100%';
-            iframe.style.border = 'none';
-            dialogContent.appendChild(iframe);
-            
-            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-            
-            iframeDoc.open();
-            iframeDoc.write(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <style>
-                        ${currentEditorLang === 'css' ? code : ''}
-                    </style>
-                </head>
-                <body>
-                    ${currentEditorLang === 'html' ? code : ''}
-                    <script>
-                        ${currentEditorLang === 'js' ? code : ''}
-                    <\/script>
-                </body>
-                </html>
-            `);
-            iframeDoc.close();
-            
-            // 显示结果对话框
-            document.getElementById('codeDialog').style.display = 'flex';
-            document.getElementById('codeDialogOverlay').style.display = 'block';
-            
-            // 关闭编辑器对话框
-            closeCodeEditorDialog();
-        } catch (error) {
-            dialogContent.innerHTML = `
-                <div style="color:red;padding:15px;background:#ffeeee;border-radius:5px;">
-                    <h4>执行错误:</h4>
-                    <p>${error.message}</p>
-                </div>
-            `;
-        }
-    }
-
-
-        function closeCodeDialog() {
-            document.getElementById('codeDialog').style.display = 'none';
-            document.getElementById('codeDialogOverlay').style.display = 'none';
-            document.body.style.overflow = '';
+        function closeCodeEditor() {
+            const dialogContainer = document.getElementById('dialogContainer');
+            dialogContainer.style.display = 'none';
         }
 
-        function closeCodeEditorDialog() {
-            document.getElementById('codeEditorDialog').style.display = 'none';
-            document.getElementById('codeEditorDialogOverlay').style.display = 'none';
-            document.body.style.overflow = '';
-        }
+                    // 更新预览
+        function updatePreview() {
+                const html = htmlEditor.value;
+                const css = cssEditor.value;
+                const js = jsEditor.value;
+                
+                const fullHtml = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <style>${css}</style>
+                    </head>
+                    <body>
+                        ${html}
+                        <script>${js}<\/script>
+                    </body>
+                    </html>
+                `;
+                
+                previewFrame.srcdoc = fullHtml;
+            }
 
         function copyCode(button) {
-            const codeBlock = button.closest('.code-actions').previousElementSibling.querySelector('code');
-            const code = codeBlock.textContent;
+            const preBlock = button.parentNode.previousElementSibling;
+            const code = preBlock.querySelector('code').textContent;
+
             navigator.clipboard.writeText(code).then(() => {
-                const originalText = button.textContent;
-                button.textContent = '已复制!';
-                setTimeout(() => button.textContent = originalText, 2000);
-            }).catch(err => {
-                console.error('复制失败:', err);
+                button.textContent = '已复制';
+                setTimeout(() => {
+                    button.textContent = '复制代码';
+                }, 2000);
+            }).catch((err) => {
+                console.error('复制失败: ', err);
             });
         }
 
-        // 点击遮罩层也关闭对话框
-        document.getElementById('codeDialogOverlay').addEventListener('click', closeCodeDialog);
-        document.getElementById('codeEditorDialogOverlay').addEventListener('click', closeCodeEditorDialog);
+        function closeCodeDialog() {
+            const dialogOverlay = document.getElementById('codeDialogOverlay');
+            const codeDialog = document.getElementById('codeDialog');
+            dialogOverlay.style.display = 'none';
+            codeDialog.style.display = 'none';
+        }
 
-        // 输入控制
-        document.getElementById('question').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') submitQuestion();
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabType = tab.dataset.tab;
+                    const htmlEditor = document.getElementById('htmlEditor');
+                    const cssEditor = document.getElementById('cssEditor');
+                    const jsEditor = document.getElementById('jsEditor');
+
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    if (tabType === 'html') {
+                        htmlEditor.style.display = 'block';
+                        cssEditor.style.display = 'none';
+                        jsEditor.style.display = 'none';
+                    } else if (tabType === 'css') {
+                        htmlEditor.style.display = 'none';
+                        cssEditor.style.display = 'block';
+                        jsEditor.style.display = 'none';
+                    } else if (tabType === 'js') {
+                        htmlEditor.style.display = 'none';
+                        cssEditor.style.display = 'none';
+                        jsEditor.style.display = 'block';
+                    }
+                });
+            });
+
+            const runBtn = document.getElementById('runBtn');
+            runBtn.addEventListener('click', updatePreview);
+
+            const closeBtn = document.getElementById('closeBtn');
+            closeBtn.addEventListener('click', closeCodeEditor);
+
+            const closeDialogBtn = document.getElementById('closeDialogBtn');
+            closeDialogBtn.addEventListener('click', closeCodeEditor);
         });
 
-        // 初始化自动聚焦输入框
-        document.getElementById('question').focus();
-
-        // 清理资源
-        window.addEventListener('beforeunload', () => {
-            audioCache.clear();
-            if (currentAudio) {
-                currentAudio.pause();
-                URL.revokeObjectURL(currentAudio.src);
-            }
-        });
     </script>
 </body>
 
 </html>
-    
