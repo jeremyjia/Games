@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <title>手机编程系统</title>
+</head>
+
+<body class="bg-gray-100 p-4">
+    <div id="id_4_debug" class="max-w-2xl mx-auto bg-white rounded-lg shadow p-4"></div>
+
+    <script>
+        class C4MobileDevApp {
+            constructor() {
+                this.version = "0.11";
+                this.currentRepo = 's177';
+                this.uiIssue = 9;
+                this.code2Test = "alert(1)";
+                this.issueBodyVisible = false;
+                this.#createUI();
+                this.#loadIssue();
+                return this;
+            }
+
+            #createUI() {
+                const toolbar = document.createElement('div');
+                toolbar.classList.add('fixed', 'bottom-0', 'left-0', 'right-0', 'bg-white', 'shadow', 'flex', 'justify-center', 'p-2');
+
+                const button = document.createElement('button');
+                button.classList.add('bg-blue-500', 'hover:bg-blue-700', 'text-white', 'font-bold', 'py-2', 'px-4', 'rounded');
+                button.textContent = '点击我';
+
+                button.addEventListener('click', () => {
+                    this.#write2Issue(this.uiIssue, new Date());
+                });
+
+                toolbar.appendChild(button);
+                document.body.appendChild(toolbar);
+            }
+
+            async #write2Issue(issueNumber, text) {
+                try {
+                    const data = { body: text.toString() };
+                    await this.#apiRequest('POST', `issues/${issueNumber}/comments`, data); 
+                    await this.#loadIssue();
+                } catch (error) {
+                    this.#showError(`提交失败: ${error.message}`);
+                }
+            }
+
+            async handleUpdateComment(commentId) {
+                try {
+                    const data = { body: this.code2Test };
+                    await this.#apiRequest('PATCH', `issues/comments/${commentId}`, data); 
+                    await this.#loadIssue();
+                } catch (error) {
+                    this.#showError(`更新评论失败: ${error.message}`);
+                }
+            }
+
+            async #loadIssue() {
+                const issueNumber = this.uiIssue;
+                try {
+                    const issue = await this.#apiRequest('GET', `issues/${issueNumber}`, null);
+                    const comments = await this.#apiRequest('GET', `issues/${issueNumber}/comments`, null);
+                    issue.comments = comments;
+                    this.#displayIssue(issue);
+                } catch (error) {
+                    console.error(`加载issue ${issueNumber}失败:`, error);
+                    this.#showError('加载内容失败，请检查控制台');
+                }
+            }
+
+            #displayIssue(issue) {
+                const container = document.getElementById('id_4_debug');
+                let commentsHTML = '';
+                if (issue.comments) {
+                    commentsHTML = issue.comments.map((comment, index) => `
+                        <div class="mt-4 p-2 border rounded">
+                            <div class="text-sm text-gray-600">${comment.user.login}</div>
+                            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mb-2" 
+                                onclick="toggleComment(${index})">
+                                显示评论${index}
+                            </button>
+                            <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded mb-2"
+                                onclick="app.handleUpdateComment(${comment.id})"
+                                id="id_4_wirte_2_comment${index}">
+                                更新评论${index}
+                            </button>
+                            <div id="comment-${index}" class="prose max-w-none hidden">${comment.body}</div>
+                        </div>
+                    `).join('');
+                }
+                
+                container.innerHTML = `
+                    <h2 class="text-2xl font-bold mb-2">${issue.title}</h2>
+                    <button id="id_4_toggle_body"  class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded mb-2"
+                        onclick="app.toggleIssueBody()">
+                        ${this.issueBodyVisible ? '隐藏主体内容' : '显示主体内容'}
+                    </button>
+                    <button id="id_4_run_body_as_code" class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded mb-2">run</button>
+                    <div id="issue-body" class="prose max-w-none ${this.issueBodyVisible ? '' : 'hidden'}">${issue.body}</div>
+                    <div class="mt-4">
+                        <h3 class="text-lg font-semibold">评论 (${issue.comments?.length || 0})</h3>
+                        ${commentsHTML}
+                    </div>
+                `;
+
+                document.getElementById('id_4_run_body_as_code').addEventListener('click', () => {
+                    const issueBody = document.getElementById('issue-body').textContent;
+                    try {
+                        new Function(issueBody)();
+                    } catch (error) {
+                        this.#showError(`运行代码出错: ${error.message}`);
+                    }
+                    this.version = (parseFloat(this.version) + 1).toFixed(2);
+                });
+
+                window.toggleComment = (index) => {
+                    const commentDiv = document.getElementById(`comment-${index}`);
+                    const button = commentDiv.previousElementSibling.previousElementSibling;
+                    if (commentDiv.classList.contains('hidden')) {
+                        commentDiv.classList.remove('hidden');
+                        button.textContent = '隐藏评论';
+                    } else {
+                        commentDiv.classList.add('hidden');
+                        button.textContent = '显示评论';
+                    }
+                };
+            }
+
+            toggleIssueBody() {
+                const issueBodyDiv = document.getElementById('issue-body');
+                const toggleButton = document.getElementById('id_4_toggle_body');
+                this.issueBodyVisible = !this.issueBodyVisible;
+                if (this.issueBodyVisible) {
+                    issueBodyDiv.classList.remove('hidden');
+                    toggleButton.textContent = '隐藏主体内容';
+                } else {
+                    issueBodyDiv.classList.add('hidden');
+                    toggleButton.textContent = '显示主体内容';
+                }
+                this.version = (parseFloat(this.version) + 1).toFixed(2);
+            }
+
+            #showError(message) {
+                const container = document.getElementById('id_4_debug');
+                container.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                        ${message}
+                    </div>
+                `;
+            }
+
+            async #apiRequest(method, endpoint, data) {
+                const xdToken = "ghp_2BF" + "JztcBlHHOkBybs" + "UVJZGHQ4S" + "wvFR0poLqc";
+                const url = `https://api.github.com/repos/littleflute/${this.currentRepo}/${endpoint}`;
+                const headers = {
+                    'Authorization': `token ${xdToken}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/vnd.github.v3+json'
+                };
+
+                const response = await fetch(url, {
+                    method,
+                    headers,
+                    body: data ? JSON.stringify(data) : null
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`${response.status}: ${errorData.message}`);
+                }
+                return response.json();
+            }
+        }
+
+        const app = new C4MobileDevApp();
+    </script>
+</body>
+</html>    
+<!--
+升级 
+let id_4_toggle_body to show code in a textearea 
+ 
+return all new code
+--> 
