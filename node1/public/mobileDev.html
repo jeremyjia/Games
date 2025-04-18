@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
-    <title>手机编程系统 v0.35</title>
+    <title>手机编程系统 </title>
     <style>
         #id_4_togglePluginsWnd {
             background-color: #e2e8f0;
@@ -54,7 +54,8 @@
                         <p><strong>安装时间:</strong> ${this.installTime}</p>
                         <p><strong>描述:</strong> ${this.description}</p>
                         <div class="flex gap-2 mt-4">
-                            <button id = "id_4_btn_show_code" onclick="this.parentElement.querySelector('pre').classList.toggle('hidden')"
+                            <button id="id_4_btn_show_code" 
+                                    onclick="app.showCodeInTextarea(${JSON.stringify(this.code)})"
                                     class="flex-1 p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                                 查看代码
                             </button>
@@ -63,13 +64,11 @@
                                 卸载
                             </button>
                         </div>
-                        <pre class="bg-gray-100 p-2 rounded text-xs hidden">${this.code}</pre>
                     </div>
                 `;
                 document.body.appendChild(detailWindow);
             }
 
-            // 新增静态方法用于反序列化
             static fromJSON(json) {
                 const plugin = new C4Plugin();
                 Object.assign(plugin, json);
@@ -79,12 +78,12 @@
 
         class C4MobileDevApp {
             constructor() {
-                this.version = "0.35";  // 更新版本号
+                this.version = "0.34";  // 更新版本号
                 this.currentRepo = 's177';
                 this.lastActiveButton = null;
-                this.plis = this.#loadPlugins(); // 修改加载方式
+                this.plis = this.#loadPlugins();
                 this.#applyStyles();
-                this.#createMainUI();
+                this.#createMainUI(); 
                 this.#loadComments();
                 this.#updateStatusBarLineCount();
                 
@@ -93,12 +92,17 @@
                 this.#refreshPluginList();
                 return this;
             }
+            showCodeInTextarea(code) {
+                const ta = document.getElementById('id_4_ta_in_sandbox');
+                ta.value = code;
+                 
+            }
+
             _uninstallPlugin(pluginName) {
                 if (confirm(`确定要卸载 ${pluginName} 吗？`)) {
                     this.plis = this.plis.filter(p => p.name !== pluginName);
                     this.#savePlugins();
                     this.#refreshPluginList();
-                    // 关闭所有相关详情窗口
                     document.querySelectorAll('.plugin-detail-window').forEach(wnd => wnd.remove());
                 }
             }
@@ -128,20 +132,62 @@
             blTogglePluginsWindow() {
                 this.isPluginsWindowVisible = !this.isPluginsWindowVisible;
                 this.pluginsWindow.style.display = this.isPluginsWindowVisible ? 'block' : 'none';
-                
-                // 新增：切换按钮激活状态
                 const btn = document.getElementById('id_4_togglePluginsWnd');
-                if(btn) btn.classList.toggle('active', this.isPluginsWindowVisible);
+                btn?.classList.toggle('active', this.isPluginsWindowVisible);
+            }
+            // 提取的通用拖拽处理方法
+            #setupDragHandling(element, dragHandle) {
+                let isDragging = false;
+                let startX, startY, initialX, initialY;
+
+                const handleMove = (x, y) => {
+                    const dx = x - startX;
+                    const dy = y - startY;
+                    element.style.left = `${initialX + dx}px`;
+                    element.style.top = `${initialY + dy}px`;
+                };
+
+                // 鼠标事件
+                dragHandle.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    initialX = element.offsetLeft;
+                    initialY = element.offsetTop;
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (isDragging) handleMove(e.clientX, e.clientY);
+                });
+
+                document.addEventListener('mouseup', () => isDragging = false);
+
+                // 触摸事件
+                dragHandle.addEventListener('touchstart', (e) => {
+                    const touch = e.touches[0];
+                    isDragging = true;
+                    startX = touch.clientX;
+                    startY = touch.clientY;
+                    initialX = element.offsetLeft;
+                    initialY = element.offsetTop;
+                });
+
+                document.addEventListener('touchmove', (e) => {
+                    if (isDragging) handleMove(e.touches[0].clientX, e.touches[0].clientY);
+                });
+
+                document.addEventListener('touchend', () => isDragging = false);
             }
             #addPlugin(pliCode) {
-                const plugin = new C4Plugin(
-                    `插件${this.plis.length + 1}`,
+                const pluginName = `插件-${this.plis.length + 1}-${Date.now().toString(36)}`;
+                const newPlugin = new C4Plugin(
+                    pluginName,
                     pliCode,
                     `0.${this.plis.length + 1}.0`
                 );
-                this.plis.push(plugin);
-                this.#savePlugins(); // 新增保存
-                this.#refreshPluginList(); // 修改：改为刷新列表
+                this.plis.push(newPlugin);
+                this.#savePlugins();
+                this.#addPluginToUI(newPlugin);
             }
             #refreshPluginList() {
                 const pluginList = document.getElementById('id_4_installed_plugins_list');
@@ -236,14 +282,14 @@
                     </div>
                 `;
                 
+                this.#setupDragHandling(pluginsWindow, dragHandle);
                 installedContent.querySelector('#id_4_add_plugin').addEventListener('click', () => {
                     const code = document.getElementById('id_4_ta_in_sandbox').value.trim();
-                    if (code) {
-                        this.#addPlugin(code); 
-                        this.#refreshPluginList(); // 确保刷新列表
-                    } else {
-                        alert('请先在文本框中输入插件代码');
-                    }
+                    if (!code) return alert('请输入插件代码');
+                    
+                    this.#addPlugin(code);
+                    this.#refreshPluginList();
+                    this.blTogglePluginsWindow();
                 });
 
                 // 插件商店内容
@@ -331,19 +377,22 @@
 
             #updateStatusBarLineCount() {
                 const textarea = document.getElementById('id_4_ta_in_sandbox');
-                const statusBar = this.panel.querySelector('.p-2.bg-gray-100.text-sm.text-gray-600');
                 const lineCount = textarea.value.split('\n').length;
+                const statusText = `仓库: ${this.currentRepo} | 行数: ${lineCount} | 插件: ${this.plis.length}`;
                 
-                // 修改：创建按钮时携带激活状态
-                statusBar.innerHTML = `<div>当前仓库: ${this.currentRepo}，文本框行数: ${lineCount}<div>
-                    <button id="id_4_togglePluginsWnd" 
-                            onclick="app.blTogglePluginsWindow()"
-                            class="${this.isPluginsWindowVisible ? 'active' : ''}">
-                        plugIns
-                    </button>
-                    <div id="id_4__plugIns"></div>`;
+                // 添加null检查
+                const statusBar = this.panel.querySelector('.status-bar');
+                if (statusBar) {
+                    statusBar.innerHTML = `
+                        ${statusText}
+                        <button id="id_4_togglePluginsWnd" 
+                                onclick="app.blTogglePluginsWindow()"
+                                class="${this.isPluginsWindowVisible ? 'active' : ''}">
+                            ${this.isPluginsWindowVisible ? '▲' : '▼'} 插件管理
+                        </button>
+                    `;
+                }
             }
-
             blClassSample1(){
                 const classCode = `帮我设计一个JavaScript类C4MovableWnd，调用这个类的toggle UI可以toggle一个可移动的窗口。
 按以下格式给返回代码。
@@ -516,11 +565,16 @@ app.oWnd1.toggleUI();
                 textarea.rows = 6;
                 textarea.addEventListener('input', () => this.#updateStatusBarLineCount());
                 
-                const statusBar = document.createElement('div');
-                statusBar.className = 'p-2 bg-gray-100 text-sm text-gray-600';
+                const statusBar = document.createElement('div'); 
+                statusBar.className = 'status-bar p-2 bg-gray-100 text-sm text-gray-600';
                 statusBar.textContent = `当前仓库: ${this.currentRepo}`;
-
-                panel.append(dragHandle, toolbar1, toolbar2, textarea, statusBar);
+                panel.append(
+                    dragHandle, 
+                    toolbar1, 
+                    toolbar2, 
+                    textarea, 
+                    statusBar  // 最后添加statusBar
+                );
                 document.body.appendChild(panel);
                 return panel;
             }
@@ -916,7 +970,8 @@ app.oWnd1.toggleUI();
     
 <!--
 升级 
- let id_4_btn_show_code show code in id_4_ta_in_sandbox
+ mobileDev.html:384 
+ mobileDev.html:1  Uncaught SyntaxError: Unexpected end of input (at mobileDev.html:1:24)
 this.version++;
 return all new code
 -->
