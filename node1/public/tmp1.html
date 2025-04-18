@@ -1,38 +1,78 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>C4MobileDevApp Test</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Runner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        #codeEditor {
+            width: 100%;
+            height: 300px;
+            padding: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            resize: vertical;
+        }
+        .button-group {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        #runBtn, #loadExample {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #runBtn {
+            background-color: #4CAF50;
+        }
+        #runBtn:hover {
+            background-color: #45a049;
+        }
+        #loadExample {
+            background-color: #008CBA;
+        }
+        #loadExample:hover {
+            background-color: #007399;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 100px;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 font-sans p-6">
-    <h1 class="text-3xl font-bold mb-6">C4MobileDevApp Test Page</h1>
-    
-    <div class="bg-white p-4 rounded-lg shadow-md mb-6">
-        <button onclick="window.i9a.toggleWnd()" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 mr-2">
-            <i class="fa-solid fa-window-maximize"></i> Toggle App Window
-        </button>
-        <button onclick="location.reload()" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
-            <i class="fa-solid fa-arrows-rotate"></i> Refresh Page
-        </button>
-    </div>
-
-    <div class="bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded-md mb-6">
-        <h3 class="text-lg font-bold mb-2">Testing Instructions:</h3>
-        <ul class="list-disc pl-5">
-            <li>Window should appear automatically on page load</li>
-            <li>Drag header to move window</li>
-            <li>Use close button (×) to hide window</li>
-            <li>Select drawing tool from toolbar</li>
-            <li>Click/touch and drag on canvas to draw</li>
-            <li>Different colors indicate new shapes</li>
-            <li>Test both mouse and touch interactions</li>
-        </ul>
+<body>
+    <div class="container">
+        <h2>Code Runner</h2>
+        <textarea id="codeEditor" placeholder="Enter your JavaScript code here..."></textarea>
+        <div class="button-group">
+            <button id="runBtn" onclick="runCode()">Run Code</button>
+            <button id="loadExample">Load Example</button>
+        </div>
+        <div id="output"></div>
     </div>
 
     <script>
-        class C4MobileDevApp {
+        // Example code to load
+        const exampleCode = `class C4MobileDevApp {
             constructor(id) {
                 this.id = id;
                 this.windowElement = document.getElementById(id);
@@ -162,7 +202,7 @@
                 const rect = this.canvas.getBoundingClientRect();
                 this.startX = (e.clientX - rect.left) * (this.canvas.width / rect.width) / devicePixelRatio;
                 this.startY = (e.clientY - rect.top) * (this.canvas.height / rect.height) / devicePixelRatio;
-                this.currentColor = `hsl(${Math.random() * 360}, 70%, 50%)`;
+                this.currentColor = \`hsl(\${Math.random() * 360}, 70%, 50%)\`;
             }
 
             draw(e) {
@@ -263,8 +303,8 @@
                 const newX = clientX - this.initialX;
                 const newY = clientY - this.initialY;
 
-                this.windowElement.style.left = `${newX}px`;
-                this.windowElement.style.top = `${newY}px`;
+                this.windowElement.style.left = \`\${newX}px\`;
+                this.windowElement.style.top = \`\${newY}px\`;
             }
 
             stopDrag() {
@@ -285,13 +325,39 @@
         }
 
         if (!window.i9a) window.i9a = new C4MobileDevApp ('id_4_mobile_dev1');
-        window.i9a.toggleWnd();    
+        window.i9a.toggleWnd();`;
+
+        // Add click handler for Load Example button
+        document.getElementById('loadExample').addEventListener('click', function() {
+            document.getElementById('codeEditor').value = exampleCode;
+        });
+
+        function runCode() {
+            const code = document.getElementById('codeEditor').value;
+            const outputDiv = document.getElementById('output');
+            
+            try {
+                const originalLog = console.log;
+                let logs = [];
+                console.log = (...args) => {
+                    logs.push(args.join(' '));
+                };
+
+                const result = eval(code);
+
+                console.log = originalLog;
+
+                outputDiv.innerHTML = `
+                    ${logs.join('<br>')}
+                    ${typeof result !== 'undefined' ? '<hr>Result: ' + result : ''}
+                `;
+                outputDiv.style.color = 'black';
+                
+            } catch (error) {
+                outputDiv.textContent = 'Error: ' + error.message;
+                outputDiv.style.color = 'red';
+            }
+        }
     </script>
 </body>
 </html>
-    
-<!--
-画第2个图形后，第1个看不见了
-
-return all new code
--->
