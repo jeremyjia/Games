@@ -8,11 +8,28 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
     <title>手机编程系统 v0.24</title>
     <style>
-        #id4togglePluginsWnd.active {
+        .uninstall-btn {
+            transition: all 0.2s;
+            padding: 2px 6px;
+            border-radius: 50%;
+        }
+        .uninstall-btn:hover {
+            background-color: #dc2626;
+            color: white;
+        }
+        .plugin-item {
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+        .plugin-item:hover {
+            border-left-color: #3B82F6;
+            background-color: #f8fafc;
+        }
+        #id_4_togglePluginsWnd.active {
             background-color: #3B82F6;
             color: white;
         }
-        #id4togglePluginsWnd {
+        #id_4_togglePluginsWnd {
             background-color: #0e3715;
             color: rgb(144, 128, 128);
         }
@@ -35,35 +52,186 @@
             background-color: #dc2626;
             color: white;
         }
+        .plugin-detail-window {
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        }
+        .plugin-detail-content {
+            max-height: 300px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 
 <body class="bg-gray-100">
     <script>
+        class C4Plugin {
+            constructor(name = "新插件", code = "", version = "1.0.0") {
+                this.name = name;
+                this.code = code;
+                this.version = version;
+                this.enabled = true;
+                this.description = "这是一个新安装的插件";
+                this.installTime = new Date().toLocaleString();
+            }
+
+            showDetail() {
+                const detailWindow = document.createElement('div');
+                detailWindow.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 bg-white rounded-lg shadow-xl p-4 plugin-detail-window';
+                detailWindow.innerHTML = `
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold">${this.name}</h3>
+                        <button onclick="this.parentElement.parentElement.remove()" 
+                                class="close-btn px-2 py-1 hover:bg-gray-100 rounded">×</button>
+                    </div>
+                    <div class="plugin-detail-content space-y-2 text-sm">
+                        <p><strong>版本:</strong> ${this.version}</p>
+                        <p><strong>状态:</strong> ${this.enabled ? '已启用' : '已禁用'}</p>
+                        <p><strong>安装时间:</strong> ${this.installTime}</p>
+                        <p><strong>描述:</strong> ${this.description}</p>
+                        <div class="flex gap-2 mt-4">
+                            <button id = "id_4_btn_show_code" onclick="this.parentElement.querySelector('pre').classList.toggle('hidden')"
+                                    class="flex-1 p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                查看代码
+                            </button>
+                            <button class="uninstall-btn flex-1 p-2 bg-red-500 text-white rounded hover:bg-red-600"
+                                    onclick="app._uninstallPlugin('${this.name}')">
+                                卸载
+                            </button>
+                        </div>
+                        <pre class="bg-gray-100 p-2 rounded text-xs hidden">${this.code}</pre>
+                    </div>
+                `;
+                document.body.appendChild(detailWindow);
+            }
+
+            // 新增静态方法用于反序列化
+            static fromJSON(json) {
+                const plugin = new C4Plugin();
+                Object.assign(plugin, json);
+                return plugin;
+            }
+        }
+
         class C4MobileDevApp {
             constructor() {
-                this.version = "0.31";  
+                this.version = "0.33";  // 更新版本号
                 this.currentRepo = 's177';
                 this.lastActiveButton = null;
+                this.plis = this.#loadPlugins(); // 修改加载方式
                 this.#applyStyles();
                 this.#createMainUI();
                 this.#loadComments();
                 this.#updateStatusBarLineCount();
                 
-                // 初始化插件窗口
                 this.pluginsWindow = this.#createPluginsWindow();
                 this.isPluginsWindowVisible = false;
-                
+                this.#refreshPluginList();
                 return this;
+            }
+            _uninstallPlugin(pluginName) {
+                if (confirm(`确定要卸载 ${pluginName} 吗？`)) {
+                    this.plis = this.plis.filter(p => p.name !== pluginName);
+                    this.#savePlugins();
+                    this.#refreshPluginList();
+                    // 关闭所有相关详情窗口
+                    document.querySelectorAll('.plugin-detail-window').forEach(wnd => wnd.remove());
+                }
+            }
+            #loadPlugins() {
+                const stored = localStorage.getItem('c4-plugins');
+                if (!stored) return [];
+                
+                try {
+                    return JSON.parse(stored).map(p => C4Plugin.fromJSON(p));
+                } catch (e) {
+                    console.error('插件加载失败:', e);
+                    return [];
+                }
+            }
+            #savePlugins() {
+                // 只保存必要属性
+                const simplified = this.plis.map(p => ({
+                    name: p.name,
+                    code: p.code,
+                    version: p.version,
+                    enabled: p.enabled,
+                    description: p.description,
+                    installTime: p.installTime
+                }));
+                localStorage.setItem('c4-plugins', JSON.stringify(simplified));
             }
             blTogglePluginsWindow() {
                 this.isPluginsWindowVisible = !this.isPluginsWindowVisible;
                 this.pluginsWindow.style.display = this.isPluginsWindowVisible ? 'block' : 'none';
                 
                 // 新增：切换按钮激活状态
-                const btn = document.getElementById('id4togglePluginsWnd');
+                const btn = document.getElementById('id_4_togglePluginsWnd');
                 if(btn) btn.classList.toggle('active', this.isPluginsWindowVisible);
             }
+            #addPlugin(pliCode) {
+                const plugin = new C4Plugin(
+                    `插件${this.plis.length + 1}`,
+                    pliCode,
+                    `0.${this.plis.length + 1}.0`
+                );
+                this.plis.push(plugin);
+                this.#savePlugins(); // 新增保存
+                this.#refreshPluginList(); // 修改：改为刷新列表
+            }
+            #refreshPluginList() {
+                const pluginList = document.getElementById('id_4_installed_plugins_list');
+                pluginList.innerHTML = '';
+
+                if (this.plis.length === 0) {
+                    pluginList.innerHTML = '<div class="p-2 bg-gray-100 mb-2 rounded">还没安装插件。</div>';
+                    return;
+                }
+
+                this.plis.forEach(plugin => {
+                    const pluginItem = document.createElement('div');
+                    pluginItem.className = 'plugin-item p-2 bg-gray-100 mb-2 rounded cursor-pointer flex justify-between items-center';
+                    pluginItem.innerHTML = `
+                        <div>
+                            <span class="font-medium">${plugin.name}</span>
+                            <span class="text-xs text-gray-500 ml-2">v${plugin.version}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs ${plugin.enabled ? 'text-green-500' : 'text-red-500'}">
+                                ${plugin.enabled ? '已启用' : '已禁用'}
+                            </span>
+                            <button class="uninstall-btn px-2 py-1 hover:bg-red-100 rounded"
+                                    onclick="app._uninstallPlugin('${plugin.name}')">
+                                ×
+                            </button>
+                        </div>
+                    `;
+                    pluginItem.addEventListener('click', () => plugin.showDetail());
+                    pluginList.appendChild(pluginItem);
+                });
+            }
+
+            #addPluginToUI(plugin) {
+                const pluginList = document.getElementById('id_4_installed_plugins_list');
+                const defaultMsg = pluginList.querySelector('.bg-gray-100');
+                if (defaultMsg) defaultMsg.remove();
+
+                const pluginItem = document.createElement('div');
+                pluginItem.className = 'plugin-item p-2 bg-gray-100 mb-2 rounded cursor-pointer flex justify-between items-center';
+                pluginItem.innerHTML = `
+                    <div>
+                        <span class="font-medium">${plugin.name}</span>
+                        <span class="text-xs text-gray-500 ml-2">v${plugin.version}</span>
+                    </div>
+                    <span class="text-xs ${plugin.enabled ? 'text-green-500' : 'text-red-500'}">
+                        ${plugin.enabled ? '已启用' : '已禁用'}
+                    </span>
+                `;
+
+                pluginItem.addEventListener('click', () => plugin.showDetail());
+                pluginList.appendChild(pluginItem);
+            }
+
 
             // 创建插件管理窗口
             #createPluginsWindow() {
@@ -91,17 +259,28 @@
                 const tabContents = document.createElement('div');
                 tabContents.className = 'flex-1 overflow-auto p-2';
                 
-                // 已安装插件内容
                 const installedContent = document.createElement('div');
                 installedContent.innerHTML = `
                     <div class="text-sm mb-4">
-                        <div class="p-2 bg-gray-100 mb-2 rounded">示例插件 1.0</div>
-                        <div class="p-2 bg-gray-100 mb-2 rounded">代码格式化插件 2.1</div>
-                        <button class="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                            安装新插件...
+                        <button class="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600" 
+                                id="id_4_add_plugin">
+                            安装新插件（从文本框获取）
                         </button>
+                        <div id="id_4_installed_plugins_list" class="mt-2">
+                            <div class="p-2 bg-gray-100 mb-2 rounded">还没安装插件。</div>
+                        </div>
                     </div>
                 `;
+                
+                installedContent.querySelector('#id_4_add_plugin').addEventListener('click', () => {
+                    const code = document.getElementById('id_4_ta_in_sandbox').value.trim();
+                    if (code) {
+                        this.#addPlugin(code); 
+                        this.#refreshPluginList(); // 确保刷新列表
+                    } else {
+                        alert('请先在文本框中输入插件代码');
+                    }
+                });
 
                 // 插件商店内容
                 const storeContent = document.createElement('div');
@@ -187,18 +366,18 @@
             }
 
             #updateStatusBarLineCount() {
-                const textarea = document.getElementById('id4ta_in_sandbox');
+                const textarea = document.getElementById('id_4_ta_in_sandbox');
                 const statusBar = this.panel.querySelector('.p-2.bg-gray-100.text-sm.text-gray-600');
                 const lineCount = textarea.value.split('\n').length;
                 
                 // 修改：创建按钮时携带激活状态
                 statusBar.innerHTML = `<div>当前仓库: ${this.currentRepo}，文本框行数: ${lineCount}<div>
-                    <button id="id4togglePluginsWnd" 
+                    <button id="id_4_togglePluginsWnd" 
                             onclick="app.blTogglePluginsWindow()"
                             class="${this.isPluginsWindowVisible ? 'active' : ''}">
                         plugIns
                     </button>
-                    <div id="id4_plugIns"></div>`;
+                    <div id="id_4__plugIns"></div>`;
             }
 
             blClassSample1(){
@@ -208,15 +387,15 @@ class C4MovableWnd{}
 if(!app.oWnd1) app.oWnd1 = new C4MovableWnd();
 app.oWnd1.toggleUI();
              `;
-                document.getElementById('id4ta_in_sandbox').value = classCode;
+                document.getElementById('id_4_ta_in_sandbox').value = classCode;
                 this.#updateStatusBarLineCount();
             }
             blGo2End(){
-                this.#go_2_textarea_end('id4ta_in_sandbox');  
+                this.#go_2_textarea_end('id_4_ta_in_sandbox');  
                 this.#updateStatusBarLineCount();
             }
             bladdTextAtCurrentPos(){
-                this.#input_text_2_current_pos('id4ta_in_sandbox',"[test input]");  
+                this.#input_text_2_current_pos('id_4_ta_in_sandbox',"[test input]");  
                 this.#updateStatusBarLineCount();
             }
             #go_2_textarea_end(textareaId){
@@ -368,7 +547,7 @@ app.oWnd1.toggleUI();
                 
                 const textarea = document.createElement('textarea');
                 textarea.className = 'flex-1 p-4 overflow-auto border-t resize-y';
-                textarea.id = 'id4ta_in_sandbox';
+                textarea.id = 'id_4_ta_in_sandbox';
                 textarea.placeholder = '输入或编辑评论内容...';
                 textarea.rows = 6;
                 textarea.addEventListener('input', () => this.#updateStatusBarLineCount());
@@ -502,7 +681,7 @@ app.oWnd1.toggleUI();
                     templateBtn.className = 'p-2 bg-gray-100 hover:bg-blue-100 rounded text-left text-sm';
                     templateBtn.textContent = name;
                     templateBtn.onclick = () => {
-                        const textarea = document.getElementById('id4ta_in_sandbox');
+                        const textarea = document.getElementById('id_4_ta_in_sandbox');
                         textarea.value = code + '\n\n' + textarea.value;
                         textarea.focus();
                         this.#updateStatusBarLineCount();
@@ -569,7 +748,7 @@ app.oWnd1.toggleUI();
                         btn.className = 'px-3 py-1 bg-gray-200 rounded text-sm hover:bg-gray-300 transition-colors';
                         btn.textContent = `#${index + 1}`;
                         btn.onclick = () => {
-                            document.getElementById('id4ta_in_sandbox').value = comment.body;
+                            document.getElementById('id_4_ta_in_sandbox').value = comment.body;
                             if (this.lastActiveButton) {
                                 this.lastActiveButton.classList.remove('active');
                             }
@@ -594,14 +773,14 @@ app.oWnd1.toggleUI();
 
                 // 新建评论
                 document.querySelector('[data-action="new-comment"]').onclick = async () => {
-                    const content = document.getElementById('id4ta_in_sandbox').value;
+                    const content = document.getElementById('id_4_ta_in_sandbox').value;
                     if (content) {
                         try {
                             await this.apiRequest('POST', 'issues/12/comments', {
                                 body: content
                             });
                             this.#loadComments();
-                            document.getElementById('id4ta_in_sandbox').value = '';
+                            document.getElementById('id_4_ta_in_sandbox').value = '';
                             alert('评论已成功提交！');
                             this.#updateStatusBarLineCount();
                         } catch (error) {
@@ -619,7 +798,7 @@ app.oWnd1.toggleUI();
                         const commentIndex = parseInt(this.lastActiveButton.textContent.slice(1)) - 1;
                         const comments = await this.apiRequest('GET', 'issues/12/comments');
                         const commentId = comments[commentIndex].id;
-                        const content = document.getElementById('id4ta_in_sandbox').value;
+                        const content = document.getElementById('id_4_ta_in_sandbox').value;
                         if (content) {
                             try {
                                 await this.apiRequest('PATCH', `issues/comments/${commentId}`, {
@@ -642,7 +821,7 @@ app.oWnd1.toggleUI();
 
                 // 运行代码按钮事件
                 document.querySelector('[data-action="run-code"]').onclick = () => {
-                    const code = document.getElementById('id4ta_in_sandbox').value;
+                    const code = document.getElementById('id_4_ta_in_sandbox').value;
                     try {
                         new Function(code)();
                     } catch (error) {
@@ -764,6 +943,8 @@ app.oWnd1.toggleUI();
         }
 
         const app = new C4MobileDevApp();
+        
+        
     </script>
 </body>
 </html>
@@ -771,8 +952,7 @@ app.oWnd1.toggleUI();
     
 <!--
 升级 
-let id4togglePluginsWnd toggle color
- 
+ let id_4_btn_show_code show code in id_4_ta_in_sandbox
 this.version++;
 return all new code
 -->

@@ -1,143 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <!-- 保持原有head部分不变 -->
+    <!-- 其他头部内容保持不变 -->
+    <title>手机编程系统 v0.34</title>
+    <style>
+        /* 原有样式保持不变 */
+        .uninstall-btn {
+            transition: all 0.2s;
+            padding: 2px 6px;
+            border-radius: 50%;
+        }
+        .uninstall-btn:hover {
+            background-color: #dc2626;
+            color: white;
+        }
+    </style>
 </head>
+
 <body class="bg-gray-100">
     <script>
+        class C4Plugin {
+            // 原有构造函数保持不变
+            
+            showDetail() {
+                const detailWindow = document.createElement('div');
+                detailWindow.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 bg-white rounded-lg shadow-xl p-4 plugin-detail-window';
+                detailWindow.innerHTML = `
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold">${this.name}</h3>
+                        <button onclick="this.parentElement.parentElement.remove()" 
+                                class="close-btn px-2 py-1 hover:bg-gray-100 rounded">×</button>
+                    </div>
+                    <div class="plugin-detail-content space-y-2 text-sm">
+                        <p><strong>版本:</strong> ${this.version}</p>
+                        <p><strong>状态:</strong> ${this.enabled ? '已启用' : '已禁用'}</p>
+                        <p><strong>安装时间:</strong> ${this.installTime}</p>
+                        <p><strong>描述:</strong> ${this.description}</p>
+                        <div class="flex gap-2 mt-4">
+                            <button onclick="this.parentElement.querySelector('pre').classList.toggle('hidden')"
+                                    class="flex-1 p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                查看代码
+                            </button>
+                            <button class="uninstall-btn flex-1 p-2 bg-red-500 text-white rounded hover:bg-red-600"
+                                    onclick="app._uninstallPlugin('${this.name}')">
+                                卸载
+                            </button>
+                        </div>
+                        <pre class="bg-gray-100 p-2 rounded text-xs hidden">${this.code}</pre>
+                    </div>
+                `;
+                document.body.appendChild(detailWindow);
+            }
+
+            // 其他方法保持不变
+        }
+
         class C4MobileDevApp {
             constructor() {
-                this.version = "0.24"; // 版本号升级
-                // ... 保持其他原有属性不变 ...
+                this.version = "0.35";  // 更新版本号
+                // 其他初始化代码保持不变
             }
 
-            // ... 其他原有方法保持不变 ...
-
-            #createFuncWindow() {
-                const funcWindow = document.createElement('div');
-                funcWindow.className = 'fixed top-24 right-4 w-72 h-96 bg-white shadow-lg rounded-lg flex flex-col hidden';
-                
-                // 拖拽手柄
-                const dragHandle = document.createElement('div');
-                dragHandle.className = 'draggable h-8 bg-gray-200 cursor-move rounded-t-lg flex items-center justify-between px-4';
-                dragHandle.innerHTML = `
-                    <span class="text-gray-600">≡ 功能窗口 v${this.version}</span>
-                    <i class="fas fa-times close-btn"></i>
-                `;
-
-                // 关闭按钮事件
-                dragHandle.querySelector('.fa-times').addEventListener('click', () => {
-                    funcWindow.style.display = 'none';
-                    this.isFuncWindowVisible = false;
-                });
-
-                // 标签页按钮容器
-                const tabButtons = document.createElement('div');
-                tabButtons.className = 'flex border-b';
-                
-                // 创建两个标签页按钮
-                const funcTabBtn = this.#createTabButton('函数列表', true);
-                const docTabBtn = this.#createTabButton('类说明');
-                
-                // 标签页内容容器
-                const tabContents = document.createElement('div');
-                tabContents.className = 'flex-1 overflow-auto';
-                
-                // 函数列表内容
-                const funcContent = this.#createFunctionListContent();
-                funcContent.id = 'func-tab-content';
-                
-                // 文档内容
-                const docContent = this.#createClassDocContent();
-                docContent.id = 'doc-tab-content';
-                docContent.classList.add('hidden');
-
-                // 组装标签页结构
-                tabButtons.append(funcTabBtn, docTabBtn);
-                tabContents.append(funcContent, docContent);
-                funcWindow.append(dragHandle, tabButtons, tabContents);
-
-                // 标签切换事件
-                funcTabBtn.addEventListener('click', () => this.#switchTab('func'));
-                docTabBtn.addEventListener('click', () => this.#switchTab('doc'));
-
-                this.funcWindow = funcWindow;
-                document.body.appendChild(funcWindow);
-                return funcWindow;
-            }
-
-            #createTabButton(text, isActive = false) {
-                const btn = document.createElement('button');
-                btn.className = `px-4 py-2 ${isActive ? 'bg-blue-500 text-white' : 'bg-gray-100'} hover:bg-blue-100 transition-colors flex-1`;
-                btn.textContent = text;
-                return btn;
-            }
-
-            #switchTab(tabName) {
-                document.querySelectorAll('#func-tab-content, #doc-tab-content').forEach(el => {
-                    el.classList.add('hidden');
-                });
-                document.querySelectorAll('.tab-button').forEach(el => {
-                    el.classList.remove('bg-blue-500', 'text-white');
-                });
-                
-                if (tabName === 'func') {
-                    document.getElementById('func-tab-content').classList.remove('hidden');
-                    document.querySelector('.tab-button:first-child').classList.add('bg-blue-500', 'text-white');
-                } else {
-                    document.getElementById('doc-tab-content').classList.remove('hidden');
-                    document.querySelector('.tab-button:last-child').classList.add('bg-blue-500', 'text-white');
+            // 新增卸载方法
+            _uninstallPlugin(pluginName) {
+                if (confirm(`确定要卸载 ${pluginName} 吗？`)) {
+                    this.plis = this.plis.filter(p => p.name !== pluginName);
+                    this.#savePlugins();
+                    this.#refreshPluginList();
+                    // 关闭所有相关详情窗口
+                    document.querySelectorAll('.plugin-detail-window').forEach(wnd => wnd.remove());
                 }
             }
 
-            #createFunctionListContent() {
-                const content = document.createElement('div');
-                content.className = 'p-4 flex flex-col gap-2';
-                
-                // 获取所有以bl开头的方法
-                const blMethods = Object.getOwnPropertyNames(C4MobileDevApp.prototype)
-                    .filter(m => m.startsWith('bl') && typeof this[m] === 'function');
-                
-                // 创建功能按钮
-                blMethods.forEach(methodName => {
-                    const btn = document.createElement('button');
-                    btn.className = 'p-2 bg-gray-100 hover:bg-blue-100 rounded text-left text-sm';
-                    btn.textContent = methodName;
-                    btn.addEventListener('click', () => {
-                        try {
-                            this[methodName]();
-                        } catch (error) {
-                            alert(`执行${methodName}失败: ${error.message}`);
-                        }
-                    });
-                    content.appendChild(btn);
+            #refreshPluginList() {
+                const pluginList = document.getElementById('id_4_installed_plugins_list');
+                pluginList.innerHTML = '';
+
+                if (this.plis.length === 0) {
+                    pluginList.innerHTML = '<div class="p-2 bg-gray-100 mb-2 rounded">还没安装插件。</div>';
+                    return;
+                }
+
+                this.plis.forEach(plugin => {
+                    const pluginItem = document.createElement('div');
+                    pluginItem.className = 'plugin-item p-2 bg-gray-100 mb-2 rounded cursor-pointer flex justify-between items-center';
+                    pluginItem.innerHTML = `
+                        <div>
+                            <span class="font-medium">${plugin.name}</span>
+                            <span class="text-xs text-gray-500 ml-2">v${plugin.version}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs ${plugin.enabled ? 'text-green-500' : 'text-red-500'}">
+                                ${plugin.enabled ? '已启用' : '已禁用'}
+                            </span>
+                            <button class="uninstall-btn px-2 py-1 hover:bg-red-100 rounded"
+                                    onclick="app._uninstallPlugin('${plugin.name}')">
+                                ×
+                            </button>
+                        </div>
+                    `;
+                    pluginItem.addEventListener('click', () => plugin.showDetail());
+                    pluginList.appendChild(pluginItem);
                 });
-                
-                return content;
             }
 
-            #createClassDocContent() {
-                const content = document.createElement('div');
-                content.className = 'p-4 text-sm leading-relaxed';
-                content.innerHTML = `
-                    <h3 class="font-bold mb-2">C4MobileDevApp 类说明</h3>
-                    <p class="mb-2">版本: ${this.version}</p>
-                    <p class="mb-2">主要功能:</p>
-                    <ul class="list-disc pl-4">
-                        <li>GitHub Issue 评论管理</li>
-                        <li>代码沙箱执行功能</li>
-                        <li>可视化元素创建</li>
-                        <li>可拖拽窗口系统</li>
-                    </ul>
-                    <p class="mt-4 text-blue-600">类说明文档待完善...</p>
-                `;
-                return content;
-            }
-
-            // ... 保持其他原有方法不变 ...
+            // 其他方法保持不变
         }
 
-        const app = new C4MobileDevApp();
+        // 其余代码保持不变
     </script>
 </body>
 </html>
