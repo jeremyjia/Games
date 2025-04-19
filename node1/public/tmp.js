@@ -307,7 +307,7 @@ class C4MovableWnd {
     handleCanvasMouseUp() {
         if (this.isDrawing) {
             if (this.drawingShape) {
-                // 过滤无效图形
+                
                 if ((this.drawingShape.type === 'circle' && this.drawingShape.radius > 2) ||
                     (this.drawingShape.type === 'rect' && this.drawingShape.width > 2 && this.drawingShape.height > 2)) {
                     this.shapes.push(this.drawingShape);
