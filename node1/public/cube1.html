@@ -36,6 +36,16 @@
             padding: 4px;
             text-align: center;
         }
+        /* 调整样式以适应不同屏幕尺寸 */
+        @media (max-width: 640px) {
+            .settings-window, .readme-window {
+                width: 90%;
+                left: 5%;
+            }
+            .toolbar button {
+                padding: 0.5rem 1rem;
+            }
+        }
     </style>
 </head>
 <body class="flex justify-center items-center h-screen m-0 bg-gray-100">
@@ -163,7 +173,7 @@
         class C4Readme {
             constructor() {
                 this.element = document.createElement('div');
-                this.element.className = 'absolute bg-white border border-gray-300 shadow-lg p-4';
+                this.element.className = 'absolute bg-white border border-gray-300 shadow-lg p-4 readme-window';
                 this.element.style.cssText = 'top: 20px; left: 20px; width: 200px; z-index: 1000;';
                 this.element.innerHTML = `
                     <div class="drag-handle cursor-move font-bold mb-2 text-white">使用说明</div>
@@ -201,6 +211,25 @@
                 });
 
                 document.addEventListener('mouseup', () => isDragging = false);
+
+                // 触摸事件处理
+                handle.addEventListener('touchstart', (e) => {
+                    isDragging = true;
+                    const touch = e.touches[0];
+                    offset = [
+                        touch.clientX - this.element.offsetLeft,
+                        touch.clientY - this.element.offsetTop
+                    ];
+                });
+
+                document.addEventListener('touchmove', (e) => {
+                    if (!isDragging) return;
+                    const touch = e.touches[0];
+                    this.element.style.left = (touch.clientX - offset[0]) + 'px';
+                    this.element.style.top = (touch.clientY - offset[1]) + 'px';
+                });
+
+                document.addEventListener('touchend', () => isDragging = false);
             }
 
             initCloseButton() {
@@ -224,7 +253,7 @@
         class C4SettingsWindow {
             constructor() {
                 this.element = document.createElement('div');
-                this.element.className = 'absolute bg-white border border-gray-300 shadow-lg p-4 hidden';
+                this.element.className = 'absolute bg-white border border-gray-300 shadow-lg p-4 hidden settings-window';
                 this.element.style.cssText = 'top: 20px; left: 240px; z-index: 1000;';
                 
                 this.initUI();
@@ -276,6 +305,25 @@
                 });
 
                 document.addEventListener('mouseup', () => isDragging = false);
+
+                // 触摸事件处理
+                header.addEventListener('touchstart', (e) => {
+                    isDragging = true;
+                    const touch = e.touches[0];
+                    offset = [
+                        touch.clientX - this.element.offsetLeft,
+                        touch.clientY - this.element.offsetTop
+                    ];
+                });
+
+                document.addEventListener('touchmove', (e) => {
+                    if (!isDragging) return;
+                    const touch = e.touches[0];
+                    this.element.style.left = (touch.clientX - offset[0]) + 'px';
+                    this.element.style.top = (touch.clientY - offset[1]) + 'px';
+                });
+
+                document.addEventListener('touchend', () => isDragging = false);
             }
 
             show() { this.element.classList.remove('hidden'); }
@@ -303,7 +351,7 @@
 
             initToolbar() {
                 const toolbar = document.createElement('div');
-                toolbar.className = 'fixed bottom-0 left-0 right-0 bg-gray-800 p-2 flex justify-center';
+                toolbar.className = 'fixed bottom-0 left-0 right-0 bg-gray-800 p-2 flex justify-center toolbar';
                 toolbar.innerHTML = `
                     <button id="settingsBtn" class="bg-blue-500 text-white px-4 py-2 rounded">
                         设置
@@ -378,6 +426,27 @@
                 
                 document.addEventListener('mouseup', () => isDragging = false);
 
+                // 触摸拖拽旋转
+                this.canvas.canvas.addEventListener('touchstart', e => {
+                    isDragging = true;
+                    const touch = e.touches[0];
+                    lastPos = { x: touch.clientX, y: touch.clientY };
+                });
+
+                document.addEventListener('touchmove', e => {
+                    if (!isDragging) return;
+                    const touch = e.touches[0];
+                    const dx = touch.clientX - lastPos.x;
+                    const dy = touch.clientY - lastPos.y;
+                    lastPos = { x: touch.clientX, y: touch.clientY };
+                    
+                    this.canvas.rotation.y += dx * 0.01;
+                    this.canvas.rotation.x += dy * 0.01;
+                    this.canvas.draw();
+                });
+
+                document.addEventListener('touchend', () => isDragging = false);
+
                 // 自动旋转开关
                 const rotationSwitch = document.getElementById('rotationSwitch');
                 rotationSwitch.addEventListener('change', () => {
@@ -410,7 +479,6 @@
     
 <!--
 升级
-give window moving area a beautiful color.
-add a button to toggle readme window.
+让手机可完美运行
 返回完整可运行代码
 -->
