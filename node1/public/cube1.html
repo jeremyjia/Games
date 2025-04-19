@@ -176,7 +176,7 @@
 
         class C4Readme {
             constructor() {
-                this.version = "1.15";
+                this.version = "1.16";
                 this.element = document.createElement('div');
                 this.element.className = 'absolute bg-white border border-gray-300 shadow-lg p-4 readme-window';
                 this.element.style.cssText = 'top: 20px; left: 20px; width: 200px; z-index: 1000;';
@@ -241,12 +241,16 @@
             initCloseButton() {
                 const closeBtn = this.element.querySelector('button');
                 closeBtn.addEventListener('click', () => {
-                    this.element.remove();
+                    this.hide();
                 });
             }
 
-            show() { this.element.style.display = 'block'; }
-            hide() { this.element.style.display = 'none'; }
+            show() { 
+                this.element.style.display = 'block'; 
+            }
+            hide() { 
+                this.element.style.display = 'none'; 
+            }
             toggle() {
                 if (this.element.style.display === 'none') {
                     this.show();
@@ -509,7 +513,7 @@
     
 <!--
 升级
-让手机运行, 长按按钮，不要试图选择窗口上的文本
+单击按钮，也应该旋转
 
 this.version++
 返回完整可运行代码
