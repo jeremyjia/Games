@@ -172,7 +172,7 @@
 
         class C4Readme {
             constructor() {
-                this.version = "1.12";
+                this.version = "1.13";
                 this.element = document.createElement('div');
                 this.element.className = 'absolute bg-white border border-gray-300 shadow-lg p-4 readme-window';
                 this.element.style.cssText = 'top: 20px; left: 20px; width: 200px; z-index: 1000;';
@@ -203,17 +203,9 @@
                         e.clientX - this.element.offsetLeft,
                         e.clientY - this.element.offsetTop
                     ];
+                    e.preventDefault();
                 });
 
-                document.addEventListener('mousemove', (e) => {
-                    if (!isDragging) return;
-                    this.element.style.left = (e.clientX - offset[0]) + 'px';
-                    this.element.style.top = (e.clientY - offset[1]) + 'px';
-                });
-
-                document.addEventListener('mouseup', () => isDragging = false);
-
-                // 触摸事件处理
                 handle.addEventListener('touchstart', (e) => {
                     isDragging = true;
                     const touch = e.touches[0];
@@ -221,16 +213,25 @@
                         touch.clientX - this.element.offsetLeft,
                         touch.clientY - this.element.offsetTop
                     ];
+                    e.preventDefault();
                 });
 
-                document.addEventListener('touchmove', (e) => {
+                const moveHandler = (e) => {
                     if (!isDragging) return;
-                    const touch = e.touches[0];
-                    this.element.style.left = (touch.clientX - offset[0]) + 'px';
-                    this.element.style.top = (touch.clientY - offset[1]) + 'px';
-                });
+                    const event = e.touches ? e.touches[0] : e;
+                    this.element.style.left = (event.clientX - offset[0]) + 'px';
+                    this.element.style.top = (event.clientY - offset[1]) + 'px';
+                    e.preventDefault();
+                };
 
-                document.addEventListener('touchend', () => isDragging = false);
+                const upHandler = () => {
+                    isDragging = false;
+                };
+
+                document.addEventListener('mousemove', moveHandler);
+                document.addEventListener('touchmove', moveHandler);
+                document.addEventListener('mouseup', upHandler);
+                document.addEventListener('touchend', upHandler);
             }
 
             initCloseButton() {
@@ -297,17 +298,9 @@
                         e.clientX - this.element.offsetLeft,
                         e.clientY - this.element.offsetTop
                     ];
+                    e.preventDefault();
                 });
 
-                document.addEventListener('mousemove', (e) => {
-                    if (!isDragging) return;
-                    this.element.style.left = (e.clientX - offset[0]) + 'px';
-                    this.element.style.top = (e.clientY - offset[1]) + 'px';
-                });
-
-                document.addEventListener('mouseup', () => isDragging = false);
-
-                // 触摸事件处理
                 header.addEventListener('touchstart', (e) => {
                     isDragging = true;
                     const touch = e.touches[0];
@@ -315,16 +308,25 @@
                         touch.clientX - this.element.offsetLeft,
                         touch.clientY - this.element.offsetTop
                     ];
+                    e.preventDefault();
                 });
 
-                document.addEventListener('touchmove', (e) => {
+                const moveHandler = (e) => {
                     if (!isDragging) return;
-                    const touch = e.touches[0];
-                    this.element.style.left = (touch.clientX - offset[0]) + 'px';
-                    this.element.style.top = (touch.clientY - offset[1]) + 'px';
-                });
+                    const event = e.touches ? e.touches[0] : e;
+                    this.element.style.left = (event.clientX - offset[0]) + 'px';
+                    this.element.style.top = (event.clientY - offset[1]) + 'px';
+                    e.preventDefault();
+                };
 
-                document.addEventListener('touchend', () => isDragging = false);
+                const upHandler = () => {
+                    isDragging = false;
+                };
+
+                document.addEventListener('mousemove', moveHandler);
+                document.addEventListener('touchmove', moveHandler);
+                document.addEventListener('mouseup', upHandler);
+                document.addEventListener('touchend', upHandler);
             }
 
             show() { this.element.classList.remove('hidden'); }
@@ -492,7 +494,7 @@
     
 <!--
 升级
-让手机运行, 移动窗口时，背景不要动
+让手机运行, 长按按钮，立方体旋转，放开，还在转，这不对，请修复
 
 this.version++
 返回完整可运行代码
