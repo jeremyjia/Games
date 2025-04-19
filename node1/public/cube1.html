@@ -172,11 +172,12 @@
 
         class C4Readme {
             constructor() {
+                this.version = "1.12";
                 this.element = document.createElement('div');
                 this.element.className = 'absolute bg-white border border-gray-300 shadow-lg p-4 readme-window';
                 this.element.style.cssText = 'top: 20px; left: 20px; width: 200px; z-index: 1000;';
                 this.element.innerHTML = `
-                    <div class="drag-handle cursor-move font-bold mb-2 text-white">使用说明</div>
+                    <div class="drag-handle cursor-move font-bold mb-2 text-white">使用说明${this.version}</div>
                     <div class="text-sm space-y-2">
                         <p>1. 鼠标拖拽立方体任意位置进行自由旋转</p>
                         <p>2. 使用设置面板控制自动旋转和轴旋转</p>
@@ -392,6 +393,18 @@
                     
                     btn.addEventListener('mouseup', () => clearInterval(rotateInterval));
                     btn.addEventListener('mouseleave', () => clearInterval(rotateInterval));
+
+                    // 添加触摸事件处理
+                    btn.addEventListener('touchstart', () => {
+                        const axis = btn.dataset.axis;
+                        const angle = document.getElementById('angleInput').value * Math.PI/180;
+                        rotateInterval = setInterval(() => {
+                            this.canvas.rotation[axis] += angle;
+                            this.canvas.draw();
+                        }, 50);
+                    });
+
+                    btn.addEventListener('touchend', () => clearInterval(rotateInterval));
                 });
 
                 // 重置事件
@@ -479,6 +492,8 @@
     
 <!--
 升级
-让手机可完美运行
+让手机运行, 移动窗口时，背景不要动
+
+this.version++
 返回完整可运行代码
 -->
