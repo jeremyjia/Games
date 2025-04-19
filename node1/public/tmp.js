@@ -304,6 +304,7 @@ class C4MovableWnd {
         }
     }
 
+    
     handleCanvasMouseUp() {
         if (this.isDrawing) {
             if (this.drawingShape) {
