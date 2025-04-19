@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>3D Cube with Settings and Toolbar</title>
+    <style>
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            content: ""; position: absolute; height: 16px; width: 16px;
+            left: 4px; bottom: 4px; background-color: white;
+            transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #3b82f6; }
+        input:checked + .slider:before { transform: translateX(26px); }
+        .drag-handle { 
+            user-select: none; 
+            background-color: #3b82f6; 
+            color: white;
+            padding: 4px;
+            text-align: center;
+        }
+        /* 为设置窗口的移动区域添加美观颜色 */
+        .settings-drag-handle {
+            user-select: none;
+            background-color: #60a5fa; 
+            color: white;
+            padding: 4px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="flex justify-center items-center h-screen m-0 bg-gray-100">
+    <script>
+        class C4Cube {
+            constructor() {
+                this.vertices = [
+                    [-1, -1, -1], [1, -1, -1],
+                    [1, 1, -1], [-1, 1, -1],
+                    [-1, -1, 1], [1, -1, 1],
+                    [1, 1, 1], [-1, 1, 1]
+                ];
+                this.faces = [
+                    [0, 1, 2, 3], [1, 5, 6, 2],
+                    [5, 4, 7, 6], [4, 0, 3, 7],
+                    [3, 2, 6, 7], [4, 5, 1, 0]
+                ];
+            }
+        }
+
+        class C4Canvas {
+            constructor() {
+                this.canvas = document.createElement('canvas');
+                this.canvas.className = 'border border-gray-300';
+                this.canvas.width = 400;
+                this.canvas.height = 400;
+                this.ctx = this.canvas.getContext('2d');
+                
+                this.cube = new C4Cube();
+                this.axes = [
+                    { points: [[0,0,0], [2,0,0]], color: 'red', label: 'X' },
+                    { points: [[0,0,0], [0,2,0]], color: 'green', label: 'Y' },
+                    { points: [[0,0,0], [0,0,2]], color: 'blue', label: 'Z' }
+                ];
+                
+                this.rotation = { x: 0, y: Math.PI/4, z: 0 };
+                this.scale = 100;
+                this.zBuffer = 5;
+            }
+
+            project([x, y, z]) {
+                const factor = this.zBuffer / (this.zBuffer + z);
+                return [x * factor * this.scale, y * factor * this.scale];
+            }
+
+            rotatePoint([x, y, z], axis, angle) {
+                const cos = Math.cos(angle);
+                const sin = Math.sin(angle);
+                switch(axis) {
+                    case 'x': return [x, y*cos - z*sin, y*sin + z*cos];
+                    case 'y': return [x*cos + z*sin, y, -x*sin + z*cos];
+                    case 'z': return [x*cos - y*sin, x*sin + y*cos, z];
+                }
+            }
+
+            drawArrow(ctx, from, to, color) {
+                ctx.beginPath();
+                ctx.moveTo(...from);
+                ctx.lineTo(...to);
+                ctx.strokeStyle = color;
+                ctx.stroke();
+                
+                const headLen = 10;
+                const angle = Math.atan2(to[1]-from[1], to[0]-from[0]);
+                ctx.beginPath();
+                ctx.moveTo(...to);
+                ctx.lineTo(
+                    to[0] - headLen * Math.cos(angle - Math.PI/6),
+                    to[1] - headLen * Math.sin(angle - Math.PI/6)
+                );
+                ctx.lineTo(
+                    to[0] - headLen * Math.cos(angle + Math.PI/6),
+                    to[1] - headLen * Math.sin(angle + Math.PI/6)
+                );
+                ctx.closePath();
+                ctx.fillStyle = color;
+                ctx.fill();
+            }
+
+            draw() {
+                const ctx = this.ctx;
+                ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                ctx.save();
+                ctx.translate(this.canvas.width/2, this.canvas.height/2);
+
+                // 绘制立方体
+                const cubePoints = this.cube.vertices.map(v => {
+                    let p = [...v];
+                    p = this.rotatePoint(p, 'x', this.rotation.x);
+                    p = this.rotatePoint(p, 'y', this.rotation.y);
+                    p = this.rotatePoint(p, 'z', this.rotation.z);
+                    return this.project(p);
+                });
+
+                this.cube.faces.forEach(face => {
+                    ctx.beginPath();
+                    face.forEach((vi, i) => {
+                        const [x, y] = cubePoints[vi];
+                        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+                    });
+                    ctx.closePath();
+                    ctx.strokeStyle = 'black';
+                    ctx.stroke();
+                });
+
+                // 绘制坐标轴
+                this.axes.forEach(axis => {
+                    const rotated = axis.points.map(p => {
+                        let point = [...p];
+                        point = this.rotatePoint(point, 'x', this.rotation.x);
+                        point = this.rotatePoint(point, 'y', this.rotation.y);
+                        point = this.rotatePoint(point, 'z', this.rotation.z);
+                        return this.project(point);
+                    });
+                    
+                    this.drawArrow(ctx, rotated[0], rotated[1], axis.color);
+                    ctx.fillStyle = axis.color;
+                    ctx.fillText(axis.label, rotated[1][0] + 5, rotated[1][1] + 5);
+                });
+
+                ctx.restore();
+            }
+        }
+
+        class C4Readme {
+            constructor() {
+                this.element = document.createElement('div');
+                this.element.className = 'absolute bg-white border border-gray-300 shadow-lg p-4';
+                this.element.style.cssText = 'top: 20px; left: 20px; width: 200px; z-index: 1000;';
+                this.element.innerHTML = `
+                    <div class="drag-handle cursor-move font-bold mb-2 text-white">使用说明</div>
+                    <div class="text-sm space-y-2">
+                        <p>1. 鼠标拖拽立方体任意位置进行自由旋转</p>
+                        <p>2. 使用设置面板控制自动旋转和轴旋转</p>
+                        <p>3. 点击底部工具栏设置按钮开关控制面板</p>
+                        <p>4. 按住轴旋转按钮进行单轴旋转</p>
+                        <p>5. 拖动说明和控制面板可改变位置</p>
+                    </div>
+                    <button class="absolute top-1 right-2 text-gray-400 hover:text-gray-600">&times;</button>
+                `;
+                
+                this.initDrag();
+                this.initCloseButton();
+            }
+
+            initDrag() {
+                let isDragging = false;
+                let offset = [0, 0];
+                const handle = this.element.querySelector('.drag-handle');
+
+                handle.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    offset = [
+                        e.clientX - this.element.offsetLeft,
+                        e.clientY - this.element.offsetTop
+                    ];
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (!isDragging) return;
+                    this.element.style.left = (e.clientX - offset[0]) + 'px';
+                    this.element.style.top = (e.clientY - offset[1]) + 'px';
+                });
+
+                document.addEventListener('mouseup', () => isDragging = false);
+            }
+
+            initCloseButton() {
+                const closeBtn = this.element.querySelector('button');
+                closeBtn.addEventListener('click', () => {
+                    this.element.remove();
+                });
+            }
+
+            show() { this.element.style.display = 'block'; }
+            hide() { this.element.style.display = 'none'; }
+            toggle() {
+                if (this.element.style.display === 'none') {
+                    this.show();
+                } else {
+                    this.hide();
+                }
+            }
+        }
+
+        class C4SettingsWindow {
+            constructor() {
+                this.element = document.createElement('div');
+                this.element.className = 'absolute bg-white border border-gray-300 shadow-lg p-4 hidden';
+                this.element.style.cssText = 'top: 20px; left: 240px; z-index: 1000;';
+                
+                this.initUI();
+                this.initDrag();
+            }
+
+            initUI() {
+                this.element.innerHTML = `
+                    <div class="settings-drag-handle cursor-move mb-4">设置</div>
+                    <div class="mb-4 flex items-center">
+                        <label class="switch mr-4">
+                            <input type="checkbox" id="rotationSwitch">
+                            <span class="slider"></span>
+                        </label>
+                        <span>开启旋转</span>
+                    </div>
+                    <div class="mb-4">
+                        <input type="number" id="angleInput" class="border p-1 w-20 mr-2" value="5">
+                        <button id="resetBtn" class="bg-blue-500 text-white px-3 py-1 rounded">重置</button>
+                    </div>
+                    <div class="flex gap-2 mb-2">
+                        <button class="axisBtn bg-blue-500 text-white px-3 py-1 rounded" data-axis="x">X轴旋转</button>
+                        <button class="axisBtn bg-blue-500 text-white px-3 py-1 rounded" data-axis="y">Y轴旋转</button>
+                        <button class="axisBtn bg-blue-500 text-white px-3 py-1 rounded" data-axis="z">Z轴旋转</button>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="toggleAngleBtn" class="bg-blue-500 text-white px-3 py-1 rounded">反转角度</button>
+                    </div>
+                `;
+            }
+
+            initDrag() {
+                let isDragging = false;
+                let offset = [0, 0];
+                const header = this.element.querySelector('.settings-drag-handle');
+
+                header.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    offset = [
+                        e.clientX - this.element.offsetLeft,
+                        e.clientY - this.element.offsetTop
+                    ];
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (!isDragging) return;
+                    this.element.style.left = (e.clientX - offset[0]) + 'px';
+                    this.element.style.top = (e.clientY - offset[1]) + 'px';
+                });
+
+                document.addEventListener('mouseup', () => isDragging = false);
+            }
+
+            show() { this.element.classList.remove('hidden'); }
+            hide() { this.element.classList.add('hidden'); }
+            toggle() {
+                this.element.classList.toggle('hidden');
+            }
+        }
+
+        class C4App {
+            constructor() {
+                this.canvas = new C4Canvas();
+                this.settings = new C4SettingsWindow();
+                this.readme = new C4Readme();
+                
+                document.body.appendChild(this.canvas.canvas);
+                document.body.appendChild(this.settings.element);
+                document.body.appendChild(this.readme.element);
+                
+                this.initToolbar();
+                this.initEvents();
+                this.canvas.draw();
+                this.autoRotateInterval = null;
+            }
+
+            initToolbar() {
+                const toolbar = document.createElement('div');
+                toolbar.className = 'fixed bottom-0 left-0 right-0 bg-gray-800 p-2 flex justify-center';
+                toolbar.innerHTML = `
+                    <button id="settingsBtn" class="bg-blue-500 text-white px-4 py-2 rounded">
+                        设置
+                    </button>
+                    <button id="readmeBtn" class="bg-blue-500 text-white px-4 py-2 rounded ml-2">
+                        使用说明
+                    </button>
+                `;
+                document.body.appendChild(toolbar);
+            }
+
+            initEvents() {
+                const settingsBtn = document.getElementById('settingsBtn');
+                settingsBtn.addEventListener('click', () => {
+                    this.settings.toggle();
+                    settingsBtn.classList.toggle('bg-blue-500');
+                    settingsBtn.classList.toggle('bg-green-500');
+                });
+
+                const readmeBtn = document.getElementById('readmeBtn');
+                readmeBtn.addEventListener('click', () => {
+                    this.readme.toggle();
+                    readmeBtn.classList.toggle('bg-blue-500');
+                    readmeBtn.classList.toggle('bg-green-500');
+                });
+
+                // 旋转控制
+                let rotateInterval;
+                document.querySelectorAll('.axisBtn').forEach(btn => {
+                    btn.addEventListener('mousedown', () => {
+                        const axis = btn.dataset.axis;
+                        const angle = document.getElementById('angleInput').value * Math.PI/180;
+                        rotateInterval = setInterval(() => {
+                            this.canvas.rotation[axis] += angle;
+                            this.canvas.draw();
+                        }, 50);
+                    });
+                    
+                    btn.addEventListener('mouseup', () => clearInterval(rotateInterval));
+                    btn.addEventListener('mouseleave', () => clearInterval(rotateInterval));
+                });
+
+                // 重置事件
+                document.getElementById('resetBtn').addEventListener('click', () => {
+                    this.canvas.rotation = { x: 0, y: Math.PI/4, z: 0 };
+                    this.canvas.draw();
+                    if (this.autoRotateInterval) {
+                        clearInterval(this.autoRotateInterval);
+                        this.autoRotateInterval = null;
+                        document.getElementById('rotationSwitch').checked = false;
+                    }
+                });
+
+                // 鼠标拖拽旋转
+                let isDragging = false;
+                let lastPos = { x: 0, y: 0 };
+                this.canvas.canvas.addEventListener('mousedown', e => {
+                    isDragging = true;
+                    lastPos = { x: e.clientX, y: e.clientY };
+                });
+                
+                document.addEventListener('mousemove', e => {
+                    if (!isDragging) return;
+                    const dx = e.clientX - lastPos.x;
+                    const dy = e.clientY - lastPos.y;
+                    lastPos = { x: e.clientX, y: e.clientY };
+                    
+                    this.canvas.rotation.y += dx * 0.01;
+                    this.canvas.rotation.x += dy * 0.01;
+                    this.canvas.draw();
+                });
+                
+                document.addEventListener('mouseup', () => isDragging = false);
+
+                // 自动旋转开关
+                const rotationSwitch = document.getElementById('rotationSwitch');
+                rotationSwitch.addEventListener('change', () => {
+                    if (rotationSwitch.checked) {
+                        const angle = document.getElementById('angleInput').value * Math.PI/180;
+                        this.autoRotateInterval = setInterval(() => {
+                            this.canvas.rotation.y += angle;
+                            this.canvas.draw();
+                        }, 50);
+                    } else {
+                        if (this.autoRotateInterval) {
+                            clearInterval(this.autoRotateInterval);
+                            this.autoRotateInterval = null;
+                        }
+                    }
+                });
+
+                // 反转角度事件
+                document.getElementById('toggleAngleBtn').addEventListener('click', () => {
+                    const angleInput = document.getElementById('angleInput');
+                    angleInput.value = -parseFloat(angleInput.value);
+                });
+            }
+        }
+
+        new C4App();
+    </script>
+</body>
+</html>
+    
+<!--
+升级
+give window moving area a beautiful color.
+add a button to toggle readme window.
+返回完整可运行代码
+-->
