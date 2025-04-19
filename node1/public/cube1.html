@@ -46,6 +46,10 @@
                 padding: 0.5rem 1rem;
             }
         }
+        /* 防止文本被选中 */
+        .settings-window, .readme-window {
+            user-select: none;
+        }
     </style>
 </head>
 <body class="flex justify-center items-center h-screen m-0 bg-gray-100">
@@ -172,7 +176,7 @@
 
         class C4Readme {
             constructor() {
-                this.version = "1.13";
+                this.version = "1.15";
                 this.element = document.createElement('div');
                 this.element.className = 'absolute bg-white border border-gray-300 shadow-lg p-4 readme-window';
                 this.element.style.cssText = 'top: 20px; left: 20px; width: 200px; z-index: 1000;';
@@ -382,31 +386,42 @@
                 });
 
                 // 旋转控制
-                let rotateInterval;
                 document.querySelectorAll('.axisBtn').forEach(btn => {
+                    let rotateInterval;
+                    let longPressTimer;
+                    const longPressDuration = 500;
+
+                    const startRotation = () => {
+                        const axis = btn.dataset.axis;
+                        const angle = document.getElementById('angleInput').value * Math.PI/180;
+                        rotateInterval = setInterval(() => {
+                            this.canvas.rotation[axis] += angle;
+                            this.canvas.draw();
+                        }, 50);
+                    };
+
                     btn.addEventListener('mousedown', () => {
-                        const axis = btn.dataset.axis;
-                        const angle = document.getElementById('angleInput').value * Math.PI/180;
-                        rotateInterval = setInterval(() => {
-                            this.canvas.rotation[axis] += angle;
-                            this.canvas.draw();
-                        }, 50);
+                        longPressTimer = setTimeout(startRotation, longPressDuration);
                     });
-                    
-                    btn.addEventListener('mouseup', () => clearInterval(rotateInterval));
-                    btn.addEventListener('mouseleave', () => clearInterval(rotateInterval));
 
-                    // 添加触摸事件处理
+                    btn.addEventListener('mouseup', () => {
+                        clearTimeout(longPressTimer);
+                        clearInterval(rotateInterval);
+                    });
+
+                    btn.addEventListener('mouseleave', () => {
+                        clearTimeout(longPressTimer);
+                        clearInterval(rotateInterval);
+                    });
+
                     btn.addEventListener('touchstart', () => {
-                        const axis = btn.dataset.axis;
-                        const angle = document.getElementById('angleInput').value * Math.PI/180;
-                        rotateInterval = setInterval(() => {
-                            this.canvas.rotation[axis] += angle;
-                            this.canvas.draw();
-                        }, 50);
+                        longPressTimer = setTimeout(startRotation, longPressDuration);
                     });
 
-                    btn.addEventListener('touchend', () => clearInterval(rotateInterval));
+                    btn.addEventListener('touchend', () => {
+                        clearTimeout(longPressTimer);
+                        clearInterval(rotateInterval);
+                    });
                 });
 
                 // 重置事件
@@ -494,7 +509,7 @@
     
 <!--
 升级
-让手机运行, 长按按钮，立方体旋转，放开，还在转，这不对，请修复
+让手机运行, 长按按钮，不要试图选择窗口上的文本
 
 this.version++
 返回完整可运行代码
