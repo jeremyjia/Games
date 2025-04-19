@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>3D Cube on Canvas with Rotating Axes and Settings</title>
+</head>
+
+<body class="flex justify-center items-center h-screen m-0 bg-gray-100">
+    <script>
+        class Cube3D {
+            constructor() {
+                // 创建画布
+                this.canvas = document.createElement('canvas');
+                this.canvas.id = 'cubeCanvas';
+                this.canvas.classList.add('border', 'border-gray-300');
+                this.canvas.width = 400;
+                this.canvas.height = 400;
+                this.ctx = this.canvas.getContext('2d');
+
+                // 创建工具栏
+                this.toolbar = document.createElement('div');
+                this.toolbar.classList.add('fixed', 'bottom-0', 'left-0', 'w-full', 'bg-gray-800', 'text-white', 'flex', 'justify-center', 'items-center', 'p-2');
+                this.settingsButton = document.createElement('button');
+                this.settingsButton.id = 'settingsButton';
+                this.settingsButton.textContent = '打开设置';
+                this.toolbar.appendChild(this.settingsButton);
+
+                // 创建设置窗口
+                this.settingsWindow = document.createElement('div');
+                this.settingsWindow.classList.add('absolute', 'bg-white', 'border', 'border-gray-300', 'shadow-md', 'hidden');
+                this.settingsWindow.id = 'settingsWindow';
+
+                this.settingsHeader = document.createElement('div');
+                this.settingsHeader.classList.add('p-2', 'bg-gray-200', 'cursor-move');
+                this.settingsHeader.id = 'settingsHeader';
+                this.settingsHeader.textContent = '设置';
+                this.settingsWindow.appendChild(this.settingsHeader);
+
+                this.closeButton = document.createElement('span');
+                this.closeButton.classList.add('absolute', 'top-1', 'right-2', 'cursor-pointer');
+                this.closeButton.id = 'closeButton';
+                this.closeButton.textContent = '×';
+                this.settingsWindow.appendChild(this.closeButton);
+
+                const settingsContent = document.createElement('div');
+                settingsContent.classList.add('p-2');
+
+                this.rotationSwitchLabel = document.createElement('label');
+                this.rotationSwitchLabel.classList.add('relative', 'inline-block', 'w-14', 'h-7');
+                this.rotationSwitch = document.createElement('input');
+                this.rotationSwitch.type = 'checkbox';
+                this.rotationSwitch.id = 'rotationSwitch';
+                const slider = document.createElement('span');
+                slider.classList.add('absolute', 'inset-0', 'bg-gray-300', 'rounded-full', 'cursor-pointer', 'transition', 'duration-300');
+                const sliderCircle = document.createElement('span');
+                sliderCircle.classList.add('absolute', 'w-6', 'h-6', 'bg-white', 'rounded-full', 'top-1', 'left-1', 'transition', 'duration-300');
+                slider.appendChild(sliderCircle);
+                this.rotationSwitchLabel.appendChild(this.rotationSwitch);
+                this.rotationSwitchLabel.appendChild(slider);
+                settingsContent.appendChild(this.rotationSwitchLabel);
+
+                const rotationSwitchText = document.createElement('span');
+                rotationSwitchText.textContent = '开启旋转';
+                settingsContent.appendChild(rotationSwitchText);
+
+                this.resetButton = document.createElement('button');
+                this.resetButton.classList.add('bg-blue-500', 'text-white', 'px-4', 'py-2', 'rounded-md', 'cursor-pointer', 'ml-2', 'hover:bg-blue-600');
+                this.resetButton.id = 'resetButton';
+                this.resetButton.textContent = '重置坐标体系';
+                settingsContent.appendChild(this.resetButton);
+
+                this.rotationAngleInput = document.createElement('input');
+                this.rotationAngleInput.classList.add('px-2', 'py-1', 'border', 'border-gray-300', 'rounded-md', 'ml-2');
+                this.rotationAngleInput.id = 'rotationAngleInput';
+                this.rotationAngleInput.type = 'number';
+                this.rotationAngleInput.value = 45;
+                this.rotationAngleInput.placeholder = '旋转角度';
+                settingsContent.appendChild(this.rotationAngleInput);
+
+                this.rotateXButton = document.createElement('button');
+                this.rotateXButton.classList.add('bg-blue-500', 'text-white', 'px-4', 'py-2', 'rounded-md', 'cursor-pointer', 'ml-2', 'hover:bg-blue-600');
+                this.rotateXButton.id = 'rotateXButton';
+                this.rotateXButton.textContent = '绕 X 轴旋转';
+                settingsContent.appendChild(this.rotateXButton);
+
+                this.rotateYButton = document.createElement('button');
+                this.rotateYButton.classList.add('bg-blue-500', 'text-white', 'px-4', 'py-2', 'rounded-md', 'cursor-pointer', 'ml-2', 'hover:bg-blue-600');
+                this.rotateYButton.id = 'rotateYButton';
+                this.rotateYButton.textContent = '绕 Y 轴旋转';
+                settingsContent.appendChild(this.rotateYButton);
+
+                this.rotateZButton = document.createElement('button');
+                this.rotateZButton.classList.add('bg-blue-500', 'text-white', 'px-4', 'py-2', 'rounded-md', 'cursor-pointer', 'ml-2', 'hover:bg-blue-600');
+                this.rotateZButton.id = 'rotateZButton';
+                this.rotateZButton.textContent = '绕 Z 轴旋转';
+                settingsContent.appendChild(this.rotateZButton);
+
+                this.settingsWindow.appendChild(settingsContent);
+
+                // 将元素添加到页面
+                document.body.appendChild(this.canvas);
+                document.body.appendChild(this.toolbar);
+                document.body.appendChild(this.settingsWindow);
+
+                // 定义立方体的顶点
+                this.vertices = [
+                    [-1, -1, -1],
+                    [1, -1, -1],
+                    [1, 1, -1],
+                    [-1, 1, -1],
+                    [-1, -1, 1],
+                    [1, -1, 1],
+                    [1, 1, 1],
+                    [-1, 1, 1]
+                ];
+
+                // 定义立方体的面
+                this.faces = [
+                    [0, 1, 2, 3],
+                    [1, 5, 6, 2],
+                    [5, 4, 7, 6],
+                    [4, 0, 3, 7],
+                    [3, 2, 6, 7],
+                    [4, 5, 1, 0]
+                ];
+
+                // 定义坐标轴的顶点
+                this.axisLength = 2;
+                this.axesVertices = [
+                    [0, 0, 0],
+                    [this.axisLength, 0, 0],
+                    [0, this.axisLength, 0],
+                    [0, 0, this.axisLength]
+                ];
+
+                this.prevX = 0;
+                this.prevY = 0;
+                this.rotationX = 0;
+                this.rotationY = 45 * (Math.PI / 180);
+                this.rotationZ = 0;
+                this.isRotationEnabled = false;
+                this.rotationInterval = null;
+
+                this.initEventListeners();
+                this.draw();
+            }
+
+            // 投影函数
+            project(point) {
+                const d = 5;
+                const factor = d / (d + point[2]);
+                return [point[0] * factor, point[1] * factor];
+            }
+
+            // 旋转函数
+            rotateX(vertices, angle) {
+                const cos = Math.cos(angle);
+                const sin = Math.sin(angle);
+                return vertices.map(([x, y, z]) => [
+                    x,
+                    y * cos - z * sin,
+                    y * sin + z * cos
+                ]);
+            }
+
+            rotateY(vertices, angle) {
+                const cos = Math.cos(angle);
+                const sin = Math.sin(angle);
+                return vertices.map(([x, y, z]) => [
+                    x * cos + z * sin,
+                    y,
+                    -x * sin + z * cos
+                ]);
+            }
+
+            rotateZ(vertices, angle) {
+                const cos = Math.cos(angle);
+                const sin = Math.sin(angle);
+                return vertices.map(([x, y, z]) => [
+                    x * cos - y * sin,
+                    x * sin + y * cos,
+                    z
+                ]);
+            }
+
+            // 绘制箭头函数
+            drawArrow(fromX, fromY, toX, toY, color) {
+                this.ctx.beginPath();
+                this.ctx.moveTo(fromX, fromY);
+                this.ctx.lineTo(toX, toY);
+                this.ctx.strokeStyle = color;
+                this.ctx.stroke();
+
+                const headLength = 10;
+                const angle = Math.atan2(toY - fromY, toX - fromX);
+                this.ctx.beginPath();
+                this.ctx.moveTo(toX, toY);
+                this.ctx.lineTo(toX - headLength * Math.cos(angle - Math.PI / 6), toY - headLength * Math.sin(angle - Math.PI / 6));
+                this.ctx.lineTo(toX - headLength * Math.cos(angle + Math.PI / 6), toY - headLength * Math.sin(angle + Math.PI / 6));
+                this.ctx.closePath();
+                this.ctx.fillStyle = color;
+                this.ctx.fill();
+            }
+
+            // 绘制立方体
+            draw() {
+                let rotatedVertices = this.rotateX(this.vertices, this.rotationX);
+                rotatedVertices = this.rotateY(rotatedVertices, this.rotationY);
+                rotatedVertices = this.rotateZ(rotatedVertices, this.rotationZ);
+
+                let rotatedAxesVertices = this.rotateX(this.axesVertices, this.rotationX);
+                rotatedAxesVertices = this.rotateY(rotatedAxesVertices, this.rotationY);
+                rotatedAxesVertices = this.rotateZ(rotatedAxesVertices, this.rotationZ);
+
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2);
+
+                // 绘制面
+                for (let i = 0; i < this.faces.length; i++) {
+                    const face = this.faces[i];
+                    this.ctx.beginPath();
+                    for (let j = 0; j < face.length; j++) {
+                        const vertex = rotatedVertices[face[j]];
+                        const projected = this.project(vertex);
+                        if (j === 0) {
+                            this.ctx.moveTo(projected[0] * 100, projected[1] * 100);
+                        } else {
+                            this.ctx.lineTo(projected[0] * 100, projected[1] * 100);
+                        }
+                    }
+                    this.ctx.closePath();
+                    this.ctx.strokeStyle = 'black';
+                    this.ctx.stroke();
+                }
+
+                // 绘制坐标轴
+                const axisColors = ['red', 'green', 'blue'];
+                const axisLabels = ['X', 'Y', 'Z'];
+                for (let i = 1; i < rotatedAxesVertices.length; i++) {
+                    const start = rotatedAxesVertices[0];
+                    const end = rotatedAxesVertices[i];
+                    const startProjected = this.project(start);
+                    const endProjected = this.project(end);
+
+                    this.drawArrow(startProjected[0] * 100, startProjected[1] * 100, endProjected[0] * 100, endProjected[1] * 100, axisColors[i - 1]);
+
+                    this.ctx.font = '14px Arial';
+                    this.ctx.fillStyle = axisColors[i - 1];
+                    this.ctx.fillText(axisLabels[i - 1], endProjected[0] * 100 + 5, endProjected[1] * 100 + 5);
+                }
+
+                this.ctx.translate(-this.canvas.width / 2, -this.canvas.height / 2);
+            }
+
+            // 初始化事件监听器
+            initEventListeners() {
+                this.settingsButton.addEventListener('click', () => {
+                    this.settingsWindow.style.display = 'block';
+                });
+
+                this.closeButton.addEventListener('click', () => {
+                    this.settingsWindow.style.display = 'none';
+                });
+
+                this.rotationSwitch.addEventListener('change', () => {
+                    this.isRotationEnabled = this.rotationSwitch.checked;
+                });
+
+                this.canvas.addEventListener('mousemove', (e) => {
+                    if (this.isRotationEnabled) {
+                        const dx = e.clientX - this.prevX;
+                        const dy = e.clientY - this.prevY;
+                        const rotationSpeed = 0.01;
+
+                        this.rotationX += dy * rotationSpeed;
+                        this.rotationY += dx * rotationSpeed;
+
+                        this.draw();
+
+                        this.prevX = e.clientX;
+                        this.prevY = e.clientY;
+                    }
+                });
+
+                // 使设置窗口只有头部可移动
+                let isDragging = false;
+                let offsetX, offsetY;
+
+                this.settingsHeader.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    offsetX = e.clientX - this.settingsWindow.getBoundingClientRect().left;
+                    offsetY = e.clientY - this.settingsWindow.getBoundingClientRect().top;
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (isDragging) {
+                        this.settingsWindow.style.left = (e.clientX - offsetX) + 'px';
+                        this.settingsWindow.style.top = (e.clientY - offsetY) + 'px';
+                    }
+                });
+
+                document.addEventListener('mouseup', () => {
+                    isDragging = false;
+                });
+
+                // 重置坐标体系
+                this.resetButton.addEventListener('click', () => {
+                    this.rotationX = 0;
+                    this.rotationY = 45 * (Math.PI / 180);
+                    this.rotationZ = 0;
+                    this.draw();
+                });
+
+                const startRotation = (axis) => {
+                    const angle = parseInt(this.rotationAngleInput.value) * (Math.PI / 180);
+                    this.rotationInterval = setInterval(() => {
+                        if (axis === 'x') {
+                            this.rotationX += angle;
+                        } else if (axis === 'y') {
+                            this.rotationY += angle;
+                        } else if (axis === 'z') {
+                            this.rotationZ += angle;
+                        }
+                        this.draw();
+                    }, 100);
+                };
+
+                const stopRotation = () => {
+                    clearInterval(this.rotationInterval);
+                    this.rotationInterval = null;
+                };
+
+                // 绕 X 轴旋转
+                this.rotateXButton.addEventListener('mousedown', () => {
+                    startRotation('x');
+                });
+                this.rotateXButton.addEventListener('mouseup', stopRotation);
+                this.rotateXButton.addEventListener('mouseout', stopRotation);
+
+                // 绕 Y 轴旋转
+                this.rotateYButton.addEventListener('mousedown', () => {
+                    startRotation('y');
+                });
+                this.rotateYButton.addEventListener('mouseup', stopRotation);
+                this.rotateYButton.addEventListener('mouseout', stopRotation);
+
+                // 绕 Z 轴旋转
+                this.rotateZButton.addEventListener('mousedown', () => {
+                    startRotation('z');
+                });
+                this.rotateZButton.addEventListener('mouseup', stopRotation);
+                this.rotateZButton.addEventListener('mouseout', stopRotation);
+            }
+        }
+
+        // 创建 Cube3D 实例
+        const cube = new Cube3D();
+    </script>
+</body>
+
+</html>    
+<!--
+帮我生成一段提示语，输入到AI程序以后可以生成上面一模一样的程序。
+------------------------------------------------------------
+
+开发需求：创建一个包含以下功能的交互式3D立方体演示程序
+
+核心要求：
+
+使用纯HTML5 Canvas实现3D渲染
+
+包含完整的坐标系可视化（XYZ轴）
+
+实现鼠标交互与参数化控制结合的旋转系统
+
+集成可拖拽的设置面板
+
+具体功能模块：
+
+🖼 视觉呈现
+
+绘制具有透视投影的立方体（边长2单位）
+
+显示三色坐标系（红X/绿Y/蓝Z），带箭头和标签
+
+实现立方体面线框渲染（6个面黑色边框）
+
+保持45度初始Y轴视角
+
+🕹 交互系统
+
+拖拽旋转：
+
+鼠标拖拽时根据移动量计算X/Y轴旋转
+
+旋转速度系数0.01
+
+启用/禁用旋转的切换开关
+
+按钮控制：
+
+绕X/Y/Z轴按指定角度步进旋转（角度输入框）
+
+支持按住按钮持续旋转
+
+重置视角功能
+
+⚙ 设置面板
+
+可拖拽窗口（仅限标题栏拖动）
+
+包含以下控件：
+
+旋转启用开关（滑动样式）
+
+角度输入框（度数）
+
+XYZ轴旋转按钮组
+
+重置按钮
+
+开合动画（渐显/滑动效果）
+
+关闭按钮（×图标）
+
+📐 技术规范
+
+数学实现：
+
+三维旋转矩阵运算
+
+透视投影公式（d=5）
+
+弧度/角度转换
+
+坐标系：
+
+轴长度2单位
+
+箭头使用三角锥绘制
+
+响应式布局：
+
+主画布400x400居中
+
+工具栏底部固定
+
+设置面板初始隐藏
+
+🎨 样式要求
+
+使用Tailwind CSS类：
+
+画布灰色边框
+
+深灰底工具栏
+
+白色设置面板带阴影
+
+蓝色系按钮样式
+
+字体：
+
+坐标标签14px Arial
+
+按钮文本标准字体
+
+预期输出：
+单HTML文件，包含完整CSS/JS实现，无外部依赖（除Tailwind CDN）
+返回完整可运行代码
+-->

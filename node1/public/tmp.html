@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>C4MobileDevApp Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-sans p-6">
+    <h1 class="text-3xl font-bold mb-6">C4MobileDevApp Test Page</h1>
+    
+    <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+        <button onclick="window.i9a.toggleWnd()" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 mr-2">
+            <i class="fa-solid fa-window-maximize"></i> Toggle App Window
+        </button>
+        <button onclick="location.reload()" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+            <i class="fa-solid fa-arrows-rotate"></i> Refresh Page
+        </button>
+    </div>
+
+    <div class="bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded-md mb-6">
+        <h3 class="text-lg font-bold mb-2">Testing Instructions:</h3>
+        <ul class="list-disc pl-5">
+            <li>Window should appear automatically on page load</li>
+            <li>Drag header to move window</li>
+            <li>Use close button (×) to hide window</li>
+            <li>Select drawing tool from toolbar</li>
+            <li>Click/touch and drag on canvas to draw</li>
+            <li>Different colors indicate new shapes</li>
+            <li>Test both mouse and touch interactions</li>
+        </ul>
+    </div>
+
+    <script>
+        class C4MobileDevApp {
+            constructor(id) {
+                this.id = id;
+                this.windowElement = document.getElementById(id);
+                this.currentTool = null;
+                this.canvas = null;
+                this.ctx = null;
+                this.circleBtn = null;
+                this.rectBtn = null;
+                this.shapes = [];
+                this.currentColor = null;
+
+                if (!this.windowElement) {
+                    this.createWindow();
+                }
+
+                this.initCanvas();
+                this.isDragging = false;
+                this.initialX = 0;
+                this.initialY = 0;
+                this.currentX = 0;
+                this.currentY = 0;
+                this.isDrawing = false;
+                this.startX = 0;
+                this.startY = 0;
+                this.currentEndX = 0;
+                this.currentEndY = 0;
+
+                this.attachDragListeners();
+            }
+
+            createWindow() {
+                this.windowElement = document.createElement('div');
+                this.windowElement.id = this.id;
+                this.windowElement.classList.add('fixed', 'hidden', 'bg-white', 'border', 'border-gray-300', 'shadow-lg', 'w-[600px]', 'h-[400px]', 'z-1000', 'left-[100px]', 'top-[100px]', 'touch-none');
+
+                const header = document.createElement('div');
+                header.classList.add('p-2', 'bg-gray-200', 'cursor-move', 'flex', 'justify-between', 'items-center', 'border-b', 'border-gray-300');
+
+                const title = document.createElement('span');
+                title.textContent = this.id;
+                header.appendChild(title);
+
+                const closeBtn = document.createElement('button');
+                closeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                closeBtn.classList.add('bg-transparent', 'border-none', 'cursor-pointer', 'text-green-500', 'text-xl', 'p-1');
+                closeBtn.addEventListener('click', () => this.toggleWnd());
+                header.appendChild(closeBtn);
+
+                const toolbar = document.createElement('div');
+                toolbar.classList.add('p-2', 'bg-gray-100', 'border-b', 'border-gray-300', 'flex', 'gap-2');
+
+                this.circleBtn = this.createToolButton('画圆', () => this.selectTool('circle'));
+                this.rectBtn = this.createToolButton('矩形', () => this.selectTool('rect'));
+                toolbar.appendChild(this.circleBtn);
+                toolbar.appendChild(this.rectBtn);
+
+                const canvasContainer = document.createElement('div');
+                canvasContainer.classList.add('flex-1', 'overflow-hidden');
+
+                this.windowElement.appendChild(header);
+                this.windowElement.appendChild(toolbar);
+                this.windowElement.appendChild(canvasContainer);
+                document.body.appendChild(this.windowElement);
+            }
+
+            createToolButton(text, onClick) {
+                const btn = document.createElement('button');
+                btn.textContent = text;
+                btn.classList.add('px-3', 'py-1', 'border', 'border-gray-300', 'bg-gray-400', 'cursor-pointer', 'rounded-md');
+                btn.addEventListener('click', onClick);
+                return btn;
+            }
+
+            selectTool(tool) {
+                this.currentTool = tool;
+                if (tool === 'circle') {
+                    this.circleBtn.classList.add('bg-blue-500');
+                    this.circleBtn.classList.remove('bg-gray-400');
+                    this.rectBtn.classList.add('bg-gray-400');
+                    this.rectBtn.classList.remove('bg-blue-500');
+                } else if (tool === 'rect') {
+                    this.rectBtn.classList.add('bg-blue-500');
+                    this.rectBtn.classList.remove('bg-gray-400');
+                    this.circleBtn.classList.add('bg-gray-400');
+                    this.circleBtn.classList.remove('bg-blue-500');
+                }
+            }
+
+            initCanvas() {
+                this.canvas = document.createElement('canvas');
+                this.canvas.classList.add('w-full', 'h-full');
+                this.ctx = this.canvas.getContext('2d');
+
+                const container = this.windowElement.lastElementChild;
+                container.appendChild(this.canvas);
+                this.resizeCanvas();
+
+                this.canvas.addEventListener('mousedown', (e) => this.startDrawing(e));
+                this.canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.startDrawing(e.touches[0]);
+                });
+
+                this.canvas.addEventListener('mousemove', (e) => this.draw(e));
+                this.canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    this.draw(e.touches[0]);
+                });
+
+                this.canvas.addEventListener('mouseup', (e) => this.endDrawing(e));
+                this.canvas.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    this.endDrawing(e.changedTouches[0]);
+                });
+            }
+
+            resizeCanvas() {
+                const rect = this.canvas.getBoundingClientRect();
+                this.canvas.width = rect.width * devicePixelRatio;
+                this.canvas.height = rect.height * devicePixelRatio;
+                this.ctx.scale(devicePixelRatio, devicePixelRatio);
+            }
+
+            startDrawing(e) {
+                if (!this.currentTool) return;
+                this.isDrawing = true;
+                const rect = this.canvas.getBoundingClientRect();
+                this.startX = (e.clientX - rect.left) * (this.canvas.width / rect.width) / devicePixelRatio;
+                this.startY = (e.clientY - rect.top) * (this.canvas.height / rect.height) / devicePixelRatio;
+                this.currentColor = `hsl(${Math.random() * 360}, 70%, 50%)`;
+            }
+
+            draw(e) {
+                if (!this.isDrawing) return;
+                const rect = this.canvas.getBoundingClientRect();
+                this.currentEndX = (e.clientX - rect.left) * (this.canvas.width / rect.width) / devicePixelRatio;
+                this.currentEndY = (e.clientY - rect.top) * (this.canvas.height / rect.height) / devicePixelRatio;
+
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Draw existing shapes
+                this.shapes.forEach(shape => {
+                    this.ctx.fillStyle = shape.color;
+                    if (shape.tool === 'circle') {
+                        const radius = Math.sqrt(
+                            Math.pow(shape.endX - shape.startX, 2) + 
+                            Math.pow(shape.endY - shape.startY, 2)
+                        );
+                        this.ctx.beginPath();
+                        this.ctx.arc(shape.startX, shape.startY, radius, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    } else if (shape.tool === 'rect') {
+                        const width = Math.abs(shape.endX - shape.startX);
+                        const height = Math.abs(shape.endY - shape.startY);
+                        const startX = Math.min(shape.startX, shape.endX);
+                        const startY = Math.min(shape.startY, shape.endY);
+                        this.ctx.fillRect(startX, startY, width, height);
+                    }
+                });
+
+                // Draw current shape
+                this.ctx.fillStyle = this.currentColor;
+                if (this.currentTool === 'circle') {
+                    const radius = Math.sqrt(
+                        Math.pow(this.currentEndX - this.startX, 2) + 
+                        Math.pow(this.currentEndY - this.startY, 2)
+                    );
+                    this.ctx.beginPath();
+                    this.ctx.arc(this.startX, this.startY, radius, 0, Math.PI * 2);
+                    this.ctx.fill();
+                } else if (this.currentTool === 'rect') {
+                    const width = Math.abs(this.currentEndX - this.startX);
+                    const height = Math.abs(this.currentEndY - this.startY);
+                    const startX = Math.min(this.startX, this.currentEndX);
+                    const startY = Math.min(this.startY, this.currentEndY);
+                    this.ctx.fillRect(startX, startY, width, height);
+                }
+            }
+
+            endDrawing(e) {
+                if (!this.isDrawing) return;
+                this.isDrawing = false;
+
+                this.shapes.push({
+                    tool: this.currentTool,
+                    startX: this.startX,
+                    startY: this.startY,
+                    endX: this.currentEndX,
+                    endY: this.currentEndY,
+                    color: this.currentColor
+                });
+            }
+
+            attachDragListeners() {
+                const header = this.windowElement.querySelector('div');
+
+                header.addEventListener('mousedown', (e) => this.startDrag(e));
+                header.addEventListener('touchstart', (e) => this.startDrag(e));
+
+                document.addEventListener('mousemove', (e) => this.drag(e));
+                document.addEventListener('touchmove', (e) => this.drag(e), { passive: false });
+
+                document.addEventListener('mouseup', () => this.stopDrag());
+                document.addEventListener('touchend', () => this.stopDrag());
+            }
+
+            startDrag(e) {
+                this.isDragging = true;
+                const rect = this.windowElement.getBoundingClientRect();
+                this.currentX = rect.left;
+                this.currentY = rect.top;
+
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                this.initialX = clientX - this.currentX;
+                this.initialY = clientY - this.currentY;
+            }
+
+            drag(e) {
+                if (!this.isDragging) return;
+
+                e.preventDefault();
+
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                const newX = clientX - this.initialX;
+                const newY = clientY - this.initialY;
+
+                this.windowElement.style.left = `${newX}px`;
+                this.windowElement.style.top = `${newY}px`;
+            }
+
+            stopDrag() {
+                this.isDragging = false;
+            }
+
+            toggleWnd() {
+                const isVisible = !this.windowElement.classList.contains('hidden');
+                if (isVisible) {
+                    this.windowElement.classList.add('hidden');
+                } else {
+                    this.windowElement.classList.remove('hidden');
+                    const maxZ = Math.max(...[...document.querySelectorAll('*')]
+                       .map(el => parseInt(window.getComputedStyle(el).zIndex) || 0));
+                    this.windowElement.style.zIndex = maxZ + 1;
+                }
+            }
+        }
+
+        if (!window.i9a) window.i9a = new C4MobileDevApp ('id_4_mobile_dev1');
+        window.i9a.toggleWnd();    
+    </script>
+</body>
+</html>
+    
+<!--
+画第2个图形后，第1个看不见了
+
+return all new code
+-->

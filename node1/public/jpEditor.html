@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <title>简谱编辑系统</title>
+</head>
+
+<body class="bg-gray-100">
+    <script> 
+        class C4Note {
+            constructor(note, duration, chord = null) {
+                this.note = note;
+                this.duration = duration;
+                this.chord = chord;
+            }
+
+            drawMe(ctx, x, y, selectedNoteData) {
+                const isSelected = selectedNoteData && 
+                    this.note === selectedNoteData.note &&
+                    this.duration === selectedNoteData.duration &&
+                    this.chord === selectedNoteData.chord;
+
+                ctx.save();
+                const baseY = y + 5;
+                
+                if (isSelected) {
+                    ctx.fillStyle = '#FF0000';
+                    ctx.strokeStyle = '#FF0000';
+                } else {
+                    ctx.fillStyle = '#000000';
+                    ctx.strokeStyle = '#333';
+                }
+
+                if (this.chord) {
+                    ctx.font = '12px Arial';
+                    ctx.textBaseline = 'bottom';
+                    const chordWidth = ctx.measureText(this.chord).width;
+                    ctx.fillText(this.chord, x + (this.getWidth(ctx) - chordWidth)/2, y - 15);
+                }
+
+                ctx.font = '20px Arial';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.note, x, baseY);
+
+                const symbolX = x + ctx.measureText(this.note).width + 3;
+                
+                switch(this.duration) {
+                    case '8th':
+                        this.#drawLine(ctx, symbolX, baseY + 8, 12);
+                        break;
+                    case '16th':
+                        this.#drawLine(ctx, symbolX, baseY + 8, 12);
+                        this.#drawLine(ctx, symbolX, baseY + 12, 12);
+                        break;
+                    case '2nd':
+                        this.#drawLine(ctx, x + 15, baseY + 15, 8, -45);
+                        break;
+                    case 'whole':
+                        ctx.beginPath();
+                        ctx.arc(x + 10, baseY, 6, 0, Math.PI * 2);
+                        ctx.stroke();
+                        break;
+                    case 'dotted4th':
+                        ctx.beginPath();
+                        ctx.arc(x + ctx.measureText(this.note).width + 5, baseY, 2, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                }
+                ctx.restore();
+            }
+
+            #drawLine(ctx, x, y, length, angle = 0) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(angle * Math.PI / 180);
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(length, 0);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            getWidth(ctx) {
+                ctx = ctx || document.createElement('canvas').getContext('2d');
+                
+                ctx.font = '20px Arial';
+                const noteWidth = ctx.measureText(this.note).width;
+                
+                let symbolWidth = 0;
+                switch(this.duration) {
+                    case '8th':  symbolWidth = 15; break;
+                    case '16th': symbolWidth = 18; break;
+                    case '2nd':   symbolWidth = 10; break;
+                    case 'whole':symbolWidth = 15; break;
+                    case 'dotted4th': symbolWidth = 10; break;
+                    default:     symbolWidth = 5;
+                }
+
+                let chordWidth = 0;
+                if (this.chord) {
+                    ctx.font = '12px Arial';
+                    chordWidth = ctx.measureText(this.chord).width;
+                }
+
+                return Math.max(noteWidth + symbolWidth, chordWidth) + 8;
+            }
+        }
+
+        class C4Beat {
+            constructor(...notes) {
+                this.notes = notes;
+            }
+
+            drawMe(ctx, x, y, selectedNoteData) {
+                let currentX = x;
+                const notesInfo = [];
+                this.notes.forEach(note => {
+                    notesInfo.push({
+                        note,
+                        x: currentX,
+                        y,
+                        width: note.getWidth(ctx),
+                        height: 20
+                    });
+                    note.drawMe(ctx, currentX, y, selectedNoteData);
+                    currentX += note.getWidth(ctx);
+                });
+                return notesInfo;
+            }
+
+            getWidth(ctx) {
+                return this.notes.reduce((sum, note) => sum + note.getWidth(ctx), 0);
+            }
+        }
+       
+        class C4Bar {
+            constructor(barContent) {
+                this.barContent = barContent;
+                this.durationMap = {
+                    '//': '16th',
+                    '/':   '8th',
+                    '':    '4th',
+                    '-':   '2nd',
+                    '---': 'whole',
+                    '.': 'dotted4th'
+                };
+                this.durationValues = {  
+                    '16th': 0.25,
+                    '8th': 0.5,
+                    '4th': 1,
+                    '2nd': 2,
+                    'whole':4,
+                    'dotted4th': 1.5
+                };
+                this.beats = [];
+                this.#parseBarContent();
+                this.width = this.#calculateWidth();
+            }
+
+            addBeat(...notes) {
+                this.beats.push(new C4Beat(...notes));
+            }
+
+            #parseBarContent() {
+                const noteRegex = /(\d+)([\/-]*)(\.?)(?:\("([^"]+)"\))?/g;
+                let match;
+                let currentBeatNotes = [];
+                let currentDuration = 0;
+
+                while ((match = noteRegex.exec(this.barContent)) !== null) {
+                    const durationSymbol = this.#matchLongestSymbol(match[2]);
+                    let duration = this.durationMap[durationSymbol];
+                    if (match[3] === '.') duration = 'dotted4th';
+                    
+                    currentDuration += this.durationValues[duration];
+                    currentBeatNotes.push(new C4Note(
+                        match[1], 
+                        duration,
+                        match[4]
+                    ));
+
+                    if ([1, 2, 4].includes(currentDuration)) {
+                        this.addBeat(...currentBeatNotes);
+                        currentBeatNotes = [];
+                        currentDuration = 0;
+                    }
+                }
+
+                if (currentBeatNotes.length > 0) {
+                    this.addBeat(...currentBeatNotes);
+                }
+            }
+
+            #matchLongestSymbol(symbols) {
+                const possible = ['---', '//', '/', '-', ''];
+                for (const s of possible) {
+                    if (symbols.startsWith(s)) return s;
+                }
+                return '';
+            }
+            
+            #calculateWidth() {
+                return this.beats.reduce((sum, beat) => sum + beat.getWidth(), 0);
+            }
+
+            getWidth(ctx) {
+                return this.beats.reduce((sum, beat) => sum + beat.getWidth(ctx), 0) + 
+                       this.beats.length * 4;
+            }
+
+            drawMe(ctx, x, y, selectedNoteData) {
+                ctx.save();
+                ctx.translate(x, y);
+                
+                ctx.strokeStyle = '#666';
+                ctx.setLineDash([]);
+                ctx.strokeRect(-6, -33, this.getWidth(ctx) + 12, 70);
+
+                let currentX = 0;
+                const notesInfo = [];
+                this.beats.forEach(beat => {
+                    const beatNotes = beat.drawMe(ctx, currentX, 0, selectedNoteData);
+                    notesInfo.push(...beatNotes.map(n => ({
+                        ...n,
+                        x: x + n.x,
+                        y: y + n.y
+                    })));
+                    currentX += beat.getWidth(ctx);
+                });
+                
+                ctx.restore();
+                return notesInfo;
+            }
+        }
+
+
+        class SheetMusicEditor {
+            constructor() { 
+                this.version = '0.25'; // 版本号升级
+                this.currentRepo = 's177';
+                this.canvasX = 0;
+                this.canvasY = 0;
+                this.lineSpacing = 115;
+                this.selectedNoteData = null;
+                this.notesInfo = [];
+                this.createElements();
+                this.applyStyles();
+                this.addEventListeners();
+                this.settingsModal.style.display = 'block';
+            }
+            handleCanvasClick(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const scaleX = this.canvas.width / rect.width;
+                const scaleY = this.canvas.height / rect.height;
+                const canvasX = (e.clientX - rect.left) * scaleX;
+                const canvasY = (e.clientY - rect.top) * scaleY;
+
+                for (const noteInfo of this.notesInfo) {
+                    if (canvasX >= noteInfo.x && canvasX <= noteInfo.x + noteInfo.width &&
+                        canvasY >= noteInfo.y && canvasY <= noteInfo.y + noteInfo.height) {
+                        this.selectedNoteData = {
+                            note: noteInfo.note.note,
+                            duration: noteInfo.note.duration,
+                            chord: noteInfo.note.chord
+                        };
+                        this.parseSheetMusic(this.sheetMusicInput.value);
+                        break;
+                    }
+                }
+            }
+
+            processSpaces(text) {
+                return text.split('\n').map(line => line.replace(/\s{2,}/g, ' ')).join('\n');
+            }
+            async apiRequest(method, endpoint, data) {
+                const xdToken = "ghp_2BF" + "JztcBlHHOkBybs" + "UVJZGHQ4S" + "wvFR0poLqc";
+                const url = `https://api.github.com/repos/littleflute/${this.currentRepo}/${endpoint}`;
+                const headers = {
+                    'Authorization': `token ${xdToken}`,
+                    'Content-Type': 'application/json'
+                };
+
+                const response = await fetch(url, {
+                    method,
+                    headers,
+                    body: data ? JSON.stringify(data) : null
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json();
+            }
+            createElements() {
+                this.x0 = 50;
+                this.y0 = 50;
+                this.canvas = document.createElement('canvas');
+                this.canvas.id = 'canvas';
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight - 64;
+
+                this.toolbar = document.createElement('div');
+                this.toolbar.classList.add('fixed', 'bottom-0', 'left-0', 'right-0', 'bg-white', 'p-4', 'shadow-md');
+
+                this.settingsButton = document.createElement('button');
+                this.settingsButton.id = 'settings-button';
+                this.settingsButton.classList.add('bg-blue-500', 'hover:bg-blue-600', 'text-white', 'py-2', 'px-4', 'rounded');
+                this.settingsButton.innerHTML = '<i class="fa-solid fa-gear"></i>'+ `设置${this.version}`;
+                this.toolbar.appendChild(this.settingsButton);
+
+                this.toggleI11 = document.createElement('button');
+                this.toggleI11.id = 'toggle-new-toolbar-button';
+                this.toggleI11.classList.add('bg-purple-500', 'hover:bg-purple-600', 'text-white', 'py-2', 'px-4', 'rounded', 'ml-auto');
+                this.toggleI11.innerHTML = '<i class="fa-solid fa-plus"></i> I11';
+                this.toolbar.appendChild(this.toggleI11);
+
+                this.createCommentButton = document.createElement('button');
+                this.createCommentButton.id = 'create-comment-button';
+                this.createCommentButton.classList.add('bg-green-500', 'hover:bg-green-600', 'text-white', 'py-2', 'px-4', 'rounded', 'ml-2');
+                this.createCommentButton.textContent = '+C';
+                this.toolbar.appendChild(this.createCommentButton);
+
+                this.updateContentButton = document.createElement('button');
+                this.updateContentButton.id = 'update-content-button';
+                this.updateContentButton.classList.add('bg-yellow-500', 'hover:bg-yellow-600', 'text-white', 'py-2', 'px-4', 'rounded', 'ml-2');
+                this.updateContentButton.textContent = '更新内容';
+                this.toolbar.appendChild(this.updateContentButton);
+
+                this.i11Toolbar = document.createElement('div');
+                this.i11Toolbar.id = 'new-toolbar';
+                this.i11Toolbar.classList.add('fixed', 'bottom-16', 'left-0', 'right-0', 'bg-white', 'p-4', 'shadow-md', 'hidden');
+
+                // 升级 i11Toolbar
+                this.loadIssueAndComments();
+
+                this.settingsModal = document.createElement('div');
+                this.settingsModal.id = 'settings-modal';
+
+                this.settingsModalHeader = document.createElement('div');
+                this.settingsModalHeader.id = 'settings-modal-header';
+                this.settingsModalHeader.classList.add('flex', 'items-center', 'justify-between');
+                this.settingsModalHeader.innerHTML = '<h2 class="text-xl font-bold">简谱设置</h2>';
+
+                this.closeModalButton = document.createElement('button');
+                this.closeModalButton.id = 'close-modal-button';
+                this.closeModalButton.classList.add('bg-red-500', 'hover:bg-red-600', 'text-white', 'py-1', 'px-2', 'rounded');
+                this.closeModalButton.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                this.settingsModalHeader.appendChild(this.closeModalButton);
+
+                this.settingsModal.appendChild(this.settingsModalHeader);
+
+                this.tabContainer = document.createElement('div');
+                this.tabContainer.classList.add('flex', 'mb-4');
+
+                this.tab1 = document.createElement('button');
+                this.tab1.id = 'tab1';
+                this.tab1.classList.add('bg-gray-200', 'text-gray-700', 'py-2', 'px-4', 'rounded-t', 'mr-2');
+                this.tab1.textContent = '基本设置';
+                this.tab1.addEventListener('click', () => this.showTab(1));
+                this.tabContainer.appendChild(this.tab1);
+
+                this.tab2 = document.createElement('button');
+                this.tab2.id = 'tab2';
+                this.tab2.classList.add('bg-gray-200', 'text-gray-700', 'py-2', 'px-4', 'rounded-t');
+                this.tab2.textContent = '位置设置';
+                this.tab2.addEventListener('click', () => this.showTab(2));
+                this.tabContainer.appendChild(this.tab2);
+
+                this.settingsModal.appendChild(this.tabContainer);
+
+                this.tab1Content = document.createElement('div');
+                this.tab1Content.id = 'tab1-content';
+
+                this.modalToolbar = document.createElement('div');
+                this.modalToolbar.classList.add('bg-gray-200', 'p-2', 'mb-2');
+
+                this.exampleButton = document.createElement('button');
+                this.exampleButton.id = 'example-button';
+                this.exampleButton.classList.add('bg-green-500', 'hover:bg-green-600', 'text-white', 'py-1', 'px-2', 'rounded');
+                this.exampleButton.textContent = 'exam1';
+                this.modalToolbar.appendChild(this.exampleButton);
+
+                this.newSheetButton = document.createElement('button');
+                this.newSheetButton.id = 'new-sheet-button';
+                this.newSheetButton.classList.add('bg-yellow-500', 'hover:bg-yellow-600', 'text-white', 'py-1', 'px-2', 'rounded', 'ml-2');
+                this.newSheetButton.textContent = 'exam2';
+                this.modalToolbar.appendChild(this.newSheetButton);
+
+                this.tab1Content.appendChild(this.modalToolbar);
+
+                this.sheetMusicInput = document.createElement('textarea');
+                this.sheetMusicInput.id = 'sheet-music-input';
+                this.sheetMusicInput.classList.add('w-full', 'h-48', 'border', 'border-gray-300', 'p-2', 'mb-4');
+                this.sheetMusicInput.placeholder = '输入简谱';
+                this.tab1Content.appendChild(this.sheetMusicInput);
+
+                this.settingsModal.appendChild(this.tab1Content);
+
+                this.tab2Content = document.createElement('div');
+                this.tab2Content.id = 'tab2-content';
+                this.tab2Content.style.display = 'none';
+
+                this.xInput = document.createElement('input');
+                this.xInput.id = 'x-input';
+                this.xInput.classList.add('w-full', 'border', 'border-gray-300', 'p-2', 'mb-2');
+                this.xInput.type = 'number';
+                this.xInput.placeholder = 'X 坐标';
+                this.xInput.value = this.x0;
+                this.tab2Content.appendChild(this.xInput);
+
+                this.yInput = document.createElement('input');
+                this.yInput.id = 'y-input';
+                this.yInput.classList.add('w-full', 'border', 'border-gray-300', 'p-2', 'mb-2');
+                this.yInput.type = 'number';
+                this.yInput.placeholder = 'Y 坐标';
+                this.yInput.value = this.y0;
+                this.tab2Content.appendChild(this.yInput);
+
+                this.lineSpacingInput = document.createElement('input');
+                this.lineSpacingInput.id = 'line-spacing-input';
+                this.lineSpacingInput.classList.add('w-full', 'border', 'border-gray-300', 'p-2', 'mb-4');
+                this.lineSpacingInput.type = 'number';
+                this.lineSpacingInput.placeholder = '音乐行间距';
+                this.lineSpacingInput.value = this.lineSpacing;
+                this.tab2Content.appendChild(this.lineSpacingInput);
+
+                this.applyPositionButton = document.createElement('button');
+                this.applyPositionButton.id = 'apply-position-button';
+                this.applyPositionButton.classList.add('bg-blue-500', 'hover:bg-blue-600', 'text-white', 'py-2', 'px-4', 'rounded');
+                this.applyPositionButton.textContent = "apply";
+                this.applyPositionButton.addEventListener('click', () => this.applyPosition());
+                this.tab2Content.appendChild(this.applyPositionButton);
+
+                // 调整状态栏的位置，确保基本设置显示时能看到
+                this.statusBar = document.createElement('div');
+                this.statusBar.id = 'status-bar';
+                this.statusBar.classList.add('bg-gray-200', 'p-2', 'text-center', 'mt-4');
+                this.statusBar.textContent = `当前乐谱行数: 0`;
+                this.settingsModal.appendChild(this.statusBar);
+
+                this.settingsModal.appendChild(this.tab2Content);
+
+                document.body.appendChild(this.canvas);
+                document.body.appendChild(this.toolbar);
+                document.body.appendChild(this.i11Toolbar);
+                document.body.appendChild(this.settingsModal);
+            }
+
+            applyStyles() {
+                const style = document.createElement('style');
+                style.textContent = `
+                    /* 新增样式 */
+                    .blue-note {
+                        color: #2563eb;
+                    }
+                    .green-text {
+                        color: #16a34a;
+                    }
+                    .brown-lyrics {
+                        color: #784d3c;
+                    }
+                    #canvas {
+                        width: 100%;
+                        height: calc(100vh - 64px);
+                        border: 1px solid #ccc;
+                        font-family: monospace;
+                        overflow-y: auto; /* 垂直方向出现滚动条 */
+                        position: relative;
+                        left: ${this.canvasX}px;
+                        top: ${this.canvasY}px;
+                    }
+                    #settings-modal {
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background-color: white;
+                        padding: 20px;
+                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+                        display: none;
+                        width: 600px; /* 固定宽度 */
+                        height: 400px; /* 固定高度 */
+                        overflow: auto; /* 溢出时显示滚动条 */
+                    }
+                    #settings-modal-header {
+                        cursor: move;
+                        padding: 10px;
+                        background-color: #f0f0f0;
+                        margin: -20px -20px 20px -20px;
+                    }
+                   .eighth-note {
+                        position: relative;
+                    }
+                   .eighth-note::after {
+                        content: '';
+                        position: absolute;
+                        bottom: -2px;
+                        left: 0;
+                        right: 0;
+                        height: 1px;
+                        background-color: black;
+                    }
+                   .sixteenth-note {
+                        position: relative;
+                    }
+                   .sixteenth-note::after {
+                        content: '';
+                        position: absolute;
+                        bottom: -4px;
+                        left: 0;
+                        right: 0;
+                        height: 1px;
+                        background-color: black;
+                    }
+                   .sixteenth-note::before {
+                        content: '';
+                        position: absolute;
+                        bottom: -2px;
+                        left: 0;
+                        right: 0;
+                        height: 1px;
+                        background-color: black;
+                    }
+                   .highlighted {
+                        background-color: #4a90e2;
+                        transform: scale(1.05);
+                    }
+                   .error {
+                        color: red;
+                    }
+                   .note-with-chord {
+                        display: inline-block;
+                        text-align: center;
+                        vertical-align: middle;
+                        margin: 0 2px;
+                        position: relative;
+                    }
+                   .chord {
+                        display: block;
+                        font-size: 0.8em;
+                        position: absolute;
+                        top: -1.2em;
+                        left: 50%;
+                        transform: translateX(-50%);
+                    }
+                   .measure {
+                        border: 1px solid black;
+                        padding: 10px;
+                        margin: 10px;
+                        position: relative;
+                        display: inline-block;
+                    }
+                   .measure-number {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        background-color: white;
+                        padding: 2px 5px;
+                        border: 1px solid black;
+                    }
+                   .music-line {
+                        margin-bottom: ${this.lineSpacing}px;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            addEventListeners() {
+                let isDragging = false;
+                let offsetX, offsetY;
+
+                this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e));
+                this.settingsButton.addEventListener('click', () => {
+                    this.settingsModal.style.display = this.settingsModal.style.display === 'block' ? 'none' : 'block';
+                });
+
+                this.closeModalButton.addEventListener('click', () => {
+                    this.settingsModal.style.display = 'none';
+                });
+
+                this.exampleButton.addEventListener('click', () => { //exam1
+                    const exampleCode = `Q:  1 2/3/ 4//5//6//7// 1‘ | 1/2//3// 3/3//2// 1/5，/ 1 | 
+
+Q:  1 2/3/ 4//5//6//7// 1‘ | 1/2//3// 3/3//2// 1/5，/ 1 | 
+`;
+                    const processedCode = this.processSpaces(exampleCode);
+                    this.sheetMusicInput.value = processedCode;
+                    const parsedSheetMusic = this.parseSheetMusic(processedCode); 
+                    this.updateStatusBar();
+                });
+
+                this.newSheetButton.addEventListener('click', () => {//exam2
+                    const newSheetCode = `Q: 3/"C" 3// 3// 3. 2/ 3/ 5/ | 6"Am" - - - | 4/"Dm" 4// 4// 4. 3/ 5/ 6/ | 2"G" - - 3/ 4/ |
+C: 某年某月的某一天, 就像一张破碎的脸。 难以
+Q: 5."C" 5/ 3. 2/ | 1"Am" - - 0/ 1/ | 6."Dm" 6/ 6 (4/ 5// 6//) | 5"G" - - - |
+C: 开口道再见, @就让一切走@@远
+
+ Q: 3/"C" 3// 3// 3. 2/ 3/ 5/ | 6"Am" - - - | 4/"Dm" 4// 4// 4. 3/ 5/ 6/ | 2"G" - - 3/ 4/ |
+C: 某年某月的某一天, 就像一张破碎的脸。 难以
+Q: 5."C" 5/ 3. 2/ | 1"Am" - - 0/ 1/ | 6."Dm" 6/ 6 (4/ 5// 6//) | 5"G" - - - |
+C: 开口道再见, @就让一切走@@远
+`;
+                    const processedCode = this.processSpaces(newSheetCode);
+                    this.sheetMusicInput.value = processedCode;
+                    const parsedSheetMusic = this.parseSheetMusic(processedCode); 
+                    this.updateStatusBar();
+                });
+
+                this.sheetMusicInput.addEventListener('input', () => {
+                    const input = this.sheetMusicInput.value;
+                    const processedInput = this.processSpaces(input);
+                    const parsedSheetMusic = this.parseSheetMusic(processedInput); 
+                    this.updateStatusBar();
+                });
+
+                this.settingsModalHeader.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    offsetX = e.clientX - this.settingsModal.offsetLeft;
+                    offsetY = e.clientY - this.settingsModal.offsetTop;
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (isDragging) {
+                        this.settingsModal.style.left = `${e.clientX - offsetX}px`;
+                        this.settingsModal.style.top = `${e.clientY - offsetY}px`;
+                    }
+                });
+
+                document.addEventListener('mouseup', () => {
+                    isDragging = false;
+                });
+
+                this.settingsModalHeader.addEventListener('touchstart', (e) => {
+                    isDragging = true;
+                    offsetX = e.touches[0].clientX - this.settingsModal.offsetLeft;
+                    offsetY = e.touches[0].clientY - this.settingsModal.offsetTop;
+                });
+
+                document.addEventListener('touchmove', (e) => {
+                    if (isDragging) {
+                        this.settingsModal.style.left = `${e.touches[0].clientX - offsetX}px`;
+                        this.settingsModal.style.top = `${e.touches[0].clientY - offsetY}px`;
+                    }
+                });
+
+                document.addEventListener('touchend', () => {
+                    isDragging = false;
+                });
+
+                this.toggleI11.addEventListener('click', () => {
+                    this.i11Toolbar.classList.toggle('hidden');
+                });
+
+                this.createCommentButton.addEventListener('click', async () => {
+                    try {
+                        const commentBody = this.sheetMusicInput.value;
+                        await this.apiRequest('POST', 'issues/11/comments', { body: commentBody });
+                        alert('新评论创建成功');
+                        this.loadIssueAndComments();
+                    } catch (error) {
+                        console.error('创建评论时出错:', error);
+                        alert('创建评论失败');
+                    }
+                });
+
+                this.updateContentButton.addEventListener('click', async () => {
+                    const highlightedButton = this.i11Toolbar.querySelector('button.highlighted');
+                    if (!highlightedButton) {
+                        alert('请先选择一个议题或评论进行高亮');
+                        return;
+                    }
+                    const content = this.sheetMusicInput.value;
+                    try {
+                        if (highlightedButton.dataset.isIssue) {
+                            await this.apiRequest('PATCH', 'issues/11', { body: content });
+                        } else {
+                            const commentId = highlightedButton.dataset.commentId;
+                            if (!commentId) throw new Error('无效的评论ID');
+                            await this.apiRequest('PATCH', `issues/comments/${commentId}`, { body: content });
+                        }
+                        alert('内容更新成功');
+                        this.loadIssueAndComments();
+                    } catch (error) {
+                        console.error('更新内容时出错:', error);
+                        alert(`更新内容失败: ${error.message}`);
+                    }
+                });
+            }
+
+            async loadIssueAndComments() {
+                this.i11Toolbar.innerHTML = '';
+                try {
+                    const issueData = await this.apiRequest('GET', 'issues/11');
+                    const issueBody = issueData.body;
+                    if (issueBody) {
+                        const processedIssueBody = this.processSpaces(issueBody);
+                        const issueButton = document.createElement('button');
+                        issueButton.dataset.isIssue = true; // 添加议题标识
+                        issueButton.classList.add('bg-orange-500', 'hover:bg-orange-600', 'text-white', 'py-2', 'px-4', 'rounded', 'mr-2');
+                        issueButton.textContent = '议题 11 内容';
+                        issueButton.addEventListener('click', () => {
+                            this.resetHighlight();
+                            issueButton.classList.add('highlighted');
+                            this.sheetMusicInput.value = processedIssueBody;
+                            let parsedSheetMusic = this.parseSheetMusic(processedIssueBody); 
+                            this.updateStatusBar();
+                        });
+                        this.i11Toolbar.appendChild(issueButton);
+                    }
+
+                    const commentsData = await this.apiRequest('GET', 'issues/11/comments');
+                    let n = 0;
+                    commentsData.forEach(comment => {
+                        n++;
+                        const commentBody = comment.body;
+                        if (commentBody) {
+                            const processedCommentBody = this.processSpaces(commentBody);
+                            const commentButton = document.createElement('button');
+                            commentButton.dataset.commentId = comment.id; // 存储实际评论ID
+                            commentButton.classList.add('bg-pink-500', 'hover:bg-pink-600', 'text-white', 'py-2', 'px-4', 'rounded', 'mr-2');
+                            commentButton.textContent = `C${n}`;
+                            commentButton.addEventListener('click', () => {
+                                this.resetHighlight();
+                                commentButton.classList.add('highlighted');
+                                this.sheetMusicInput.value = processedCommentBody;
+                                let parsedSheetMusic = this.parseSheetMusic(processedCommentBody); 
+                                this.updateStatusBar();
+                            });
+                            this.i11Toolbar.appendChild(commentButton);
+                        }
+                    });
+                } catch (error) {
+                    console.error('加载 issue 或评论时出错:', error);
+                }
+            }
+            
+            parseSheetMusic(input) {
+                const lines = input.split('\n').filter(l => l.startsWith('Q:'));
+                const musicLines = lines.map(line => line.replace('Q:', '').trim());
+                this.#drawMusicLines(musicLines);
+            }
+
+            
+            #drawMusicLines(lines) {
+                const ctx = this.canvas.getContext('2d');
+                ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.notesInfo = [];
+
+                let y = this.y0;
+                lines.forEach(line => {
+                    const barGroup = line.split('|').map(b => new C4Bar(b));
+                    let x = this.x0;
+                    
+                    barGroup.forEach(bar => {
+                        const barNotes = bar.drawMe(ctx, x, y, this.selectedNoteData);
+                        this.notesInfo.push(...barNotes);
+                        x += bar.getWidth(ctx) + 20;
+                    });
+                    
+                    y += this.lineSpacing;
+                });
+            }
+            
+            
+            resetHighlight() {
+                const buttons = this.i11Toolbar.querySelectorAll('button');
+                buttons.forEach(button => {
+                    button.classList.remove('highlighted');
+                });
+            }
+
+            showTab(tabNumber) {
+                if (tabNumber === 1) {
+                    this.tab1Content.style.display = 'block';
+                    this.tab2Content.style.display = 'none';
+                    this.tab1.classList.add('bg-gray-200', 'text-gray-700');
+                    this.tab2.classList.remove('bg-gray-200', 'text-gray-700');
+                } else {
+                    this.tab1Content.style.display = 'none';
+                    this.tab2Content.style.display = 'block';
+                    this.tab2.classList.add('bg-gray-200', 'text-gray-700');
+                    this.tab1.classList.remove('bg-gray-200', 'text-gray-700');
+                }
+            }
+
+            applyPosition() {
+                this.x0 = parseInt(this.xInput.value);
+                this.y0 = parseInt(this.yInput.value);
+                this.lineSpacing = parseInt(this.lineSpacingInput.value);
+                this.canvas.style.left = `${this.canvasX}px`;
+                this.canvas.style.top = `${this.canvasY}px`;
+                const style = document.querySelector('style');
+                style.textContent = style.textContent.replace(/margin-bottom: \d+px;/, `margin-bottom: ${this.lineSpacing}px;`);
+            }
+            #countLines(str){
+                let a = str.split('Q:');
+                let n = a.length;
+                return n-1;
+            }
+            updateStatusBar() {
+                const input = this.sheetMusicInput.value;
+                const lines = this.#countLines(input);
+                this.statusBar.textContent = `当前乐谱行数: ${lines}`;
+            } 
+        }
+
+        new SheetMusicEditor();
+    </script>
+</body>
+
+</html>
+    
+<!--
+升级 
+  给节拍画一个绿色包围的矩形
+this.version++;
+return all new code
+-->

@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <title>手机编程系统 </title>
+    <style>
+        #id_4_togglePluginsWnd {
+            background-color: #e2e8f0;
+            transition: all 0.2s;
+        }
+        #id_4_togglePluginsWnd.active {
+            background-color: #3B82F6;
+            color: white;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+        }
+        .plugin-item:hover {
+            background-color: #f1f5f9;
+            transform: translateX(4px);
+        }
+        .tab-button {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+    <script>
+        class C4Plugin {
+            constructor(name = "新插件", code = "", version = "1.0.0") {
+                this.name = name;
+                this.code = code;
+                this.version = version;
+                this.enabled = true;
+                this.description = "这是一个新安装的插件";
+                this.installTime = new Date().toLocaleString();
+            }
+
+            showDetail() {
+                const detailWindow = document.createElement('div');
+                detailWindow.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 bg-white rounded-lg shadow-xl p-4 plugin-detail-window';
+                detailWindow.innerHTML = `
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold">${this.name}</h3>
+                        <button onclick="this.parentElement.parentElement.remove()" 
+                                class="close-btn px-2 py-1 hover:bg-gray-100 rounded">×</button>
+                    </div>
+                    <div class="plugin-detail-content space-y-2 text-sm">
+                        <p><strong>版本:</strong> ${this.version}</p>
+                        <p><strong>状态:</strong> ${this.enabled ? '已启用' : '已禁用'}</p>
+                        <p><strong>安装时间:</strong> ${this.installTime}</p>
+                        <p><strong>描述:</strong> ${this.description}</p>
+                        <div class="flex gap-2 mt-4">
+                            <button id="id_4_btn_show_code" 
+                                    onclick="app.showCodeInTextarea(${JSON.stringify(this.code)})"
+                                    class="flex-1 p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                查看代码
+                            </button>
+                            <button class="uninstall-btn flex-1 p-2 bg-red-500 text-white rounded hover:bg-red-600"
+                                    onclick="app._uninstallPlugin('${this.name}')">
+                                卸载
+                            </button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(detailWindow);
+            }
+
+            static fromJSON(json) {
+                const plugin = new C4Plugin();
+                Object.assign(plugin, json);
+                return plugin;
+            }
+        }
+
+        class C4MobileDevApp {
+            constructor() {
+                this.version = "0.34";  // 更新版本号
+                this.currentRepo = 's177';
+                this.lastActiveButton = null;
+                this.plis = this.#loadPlugins();
+                this.#applyStyles();
+                this.#createMainUI(); 
+                this.#loadComments();
+                this.#updateStatusBarLineCount();
+                
+                this.pluginsWindow = this.#createPluginsWindow();
+                this.isPluginsWindowVisible = false;
+                this.#refreshPluginList();
+                return this;
+            }
+            showCodeInTextarea(code) {
+                const ta = document.getElementById('id_4_ta_in_sandbox');
+                ta.value = code;
+                 
+            }
+
+            _uninstallPlugin(pluginName) {
+                if (confirm(`确定要卸载 ${pluginName} 吗？`)) {
+                    this.plis = this.plis.filter(p => p.name !== pluginName);
+                    this.#savePlugins();
+                    this.#refreshPluginList();
+                    document.querySelectorAll('.plugin-detail-window').forEach(wnd => wnd.remove());
+                }
+            }
+            #loadPlugins() {
+                const stored = localStorage.getItem('c4-plugins');
+                if (!stored) return [];
+                
+                try {
+                    return JSON.parse(stored).map(p => C4Plugin.fromJSON(p));
+                } catch (e) {
+                    console.error('插件加载失败:', e);
+                    return [];
+                }
+            }
+            #savePlugins() {
+                // 只保存必要属性
+                const simplified = this.plis.map(p => ({
+                    name: p.name,
+                    code: p.code,
+                    version: p.version,
+                    enabled: p.enabled,
+                    description: p.description,
+                    installTime: p.installTime
+                }));
+                localStorage.setItem('c4-plugins', JSON.stringify(simplified));
+            }
+            blTogglePluginsWindow() {
+                this.isPluginsWindowVisible = !this.isPluginsWindowVisible;
+                this.pluginsWindow.style.display = this.isPluginsWindowVisible ? 'block' : 'none';
+                const btn = document.getElementById('id_4_togglePluginsWnd');
+                btn?.classList.toggle('active', this.isPluginsWindowVisible);
+            }
+            // 提取的通用拖拽处理方法
+            #setupDragHandling(element, dragHandle) {
+                let isDragging = false;
+                let startX, startY, initialX, initialY;
+
+                const handleMove = (x, y) => {
+                    const dx = x - startX;
+                    const dy = y - startY;
+                    element.style.left = `${initialX + dx}px`;
+                    element.style.top = `${initialY + dy}px`;
+                };
+
+                // 鼠标事件
+                dragHandle.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    initialX = element.offsetLeft;
+                    initialY = element.offsetTop;
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (isDragging) handleMove(e.clientX, e.clientY);
+                });
+
+                document.addEventListener('mouseup', () => isDragging = false);
+
+                // 触摸事件
+                dragHandle.addEventListener('touchstart', (e) => {
+                    const touch = e.touches[0];
+                    isDragging = true;
+                    startX = touch.clientX;
+                    startY = touch.clientY;
+                    initialX = element.offsetLeft;
+                    initialY = element.offsetTop;
+                });
+
+                document.addEventListener('touchmove', (e) => {
+                    if (isDragging) handleMove(e.touches[0].clientX, e.touches[0].clientY);
+                });
+
+                document.addEventListener('touchend', () => isDragging = false);
+            }
+            #addPlugin(pliCode) {
+                const pluginName = `插件-${this.plis.length + 1}-${Date.now().toString(36)}`;
+                const newPlugin = new C4Plugin(
+                    pluginName,
+                    pliCode,
+                    `0.${this.plis.length + 1}.0`
+                );
+                this.plis.push(newPlugin);
+                this.#savePlugins();
+                this.#addPluginToUI(newPlugin);
+            }
+            #refreshPluginList() {
+                const pluginList = document.getElementById('id_4_installed_plugins_list');
+                pluginList.innerHTML = '';
+
+                if (this.plis.length === 0) {
+                    pluginList.innerHTML = '<div class="p-2 bg-gray-100 mb-2 rounded">还没安装插件。</div>';
+                    return;
+                }
+
+                this.plis.forEach(plugin => {
+                    const pluginItem = document.createElement('div');
+                    pluginItem.className = 'plugin-item p-2 bg-gray-100 mb-2 rounded cursor-pointer flex justify-between items-center';
+                    pluginItem.innerHTML = `
+                        <div>
+                            <span class="font-medium">${plugin.name}</span>
+                            <span class="text-xs text-gray-500 ml-2">v${plugin.version}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs ${plugin.enabled ? 'text-green-500' : 'text-red-500'}">
+                                ${plugin.enabled ? '已启用' : '已禁用'}
+                            </span>
+                            <button class="uninstall-btn px-2 py-1 hover:bg-red-100 rounded"
+                                    onclick="app._uninstallPlugin('${plugin.name}')">
+                                ×
+                            </button>
+                        </div>
+                    `;
+                    pluginItem.addEventListener('click', () => plugin.showDetail());
+                    pluginList.appendChild(pluginItem);
+                });
+            }
+
+            #addPluginToUI(plugin) {
+                const pluginList = document.getElementById('id_4_installed_plugins_list');
+                const defaultMsg = pluginList.querySelector('.bg-gray-100');
+                if (defaultMsg) defaultMsg.remove();
+
+                const pluginItem = document.createElement('div');
+                pluginItem.className = 'plugin-item p-2 bg-gray-100 mb-2 rounded cursor-pointer flex justify-between items-center';
+                pluginItem.innerHTML = `
+                    <div>
+                        <span class="font-medium">${plugin.name}</span>
+                        <span class="text-xs text-gray-500 ml-2">v${plugin.version}</span>
+                    </div>
+                    <span class="text-xs ${plugin.enabled ? 'text-green-500' : 'text-red-500'}">
+                        ${plugin.enabled ? '已启用' : '已禁用'}
+                    </span>
+                `;
+
+                pluginItem.addEventListener('click', () => plugin.showDetail());
+                pluginList.appendChild(pluginItem);
+            }
+
+
+            // 创建插件管理窗口
+            #createPluginsWindow() {
+                const pluginsWindow = document.createElement('div');
+                pluginsWindow.className = 'fixed top-24 left-4 w-72 h-96 bg-white shadow-lg rounded-lg flex flex-col hidden';
+                
+                const dragHandle = document.createElement('div');
+                dragHandle.className = 'draggable h-8 bg-gray-200 cursor-move rounded-t-lg flex items-center justify-between px-4';
+                dragHandle.innerHTML = `
+                    <span class="text-gray-600">≡ 插件管理器 v${this.version}</span>
+                    <i class="fas fa-times close-btn"></i>
+                `;
+
+                dragHandle.querySelector('.fa-times').addEventListener('click', () => {
+                    pluginsWindow.style.display = 'none';
+                    this.isPluginsWindowVisible = false;
+                });
+
+                const tabButtons = document.createElement('div');
+                tabButtons.className = 'flex border-b';
+                
+                const installedTabBtn = this.#createTabButton('已安装', true);
+                const storeTabBtn = this.#createTabButton('插件商店');
+                
+                const tabContents = document.createElement('div');
+                tabContents.className = 'flex-1 overflow-auto p-2';
+                
+                const installedContent = document.createElement('div');
+                installedContent.innerHTML = `
+                    <div class="text-sm mb-4">
+                        <button class="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600" 
+                                id="id_4_add_plugin">
+                            安装新插件（从文本框获取）
+                        </button>
+                        <div id="id_4_installed_plugins_list" class="mt-2">
+                            <div class="p-2 bg-gray-100 mb-2 rounded">还没安装插件。</div>
+                        </div>
+                    </div>
+                `;
+                
+                this.#setupDragHandling(pluginsWindow, dragHandle);
+                installedContent.querySelector('#id_4_add_plugin').addEventListener('click', () => {
+                    const code = document.getElementById('id_4_ta_in_sandbox').value.trim();
+                    if (!code) return alert('请输入插件代码');
+                    
+                    this.#addPlugin(code);
+                    this.#refreshPluginList();
+                    this.blTogglePluginsWindow();
+                });
+
+                // 插件商店内容
+                const storeContent = document.createElement('div');
+                storeContent.className = 'hidden';
+                storeContent.innerHTML = `
+                    <div class="text-sm">
+                        <div class="p-2 bg-gray-100 mb-2 rounded">AI辅助插件 (点击安装)</div>
+                        <div class="p-2 bg-gray-100 mb-2 rounded">主题商店插件</div>
+                        <div class="p-2 bg-gray-100 mb-2 rounded">Git扩展插件</div>
+                    </div>
+                `;
+
+                // 添加标签切换
+                installedTabBtn.addEventListener('click', () => {
+                    installedContent.classList.remove('hidden');
+                    storeContent.classList.add('hidden');
+                    installedTabBtn.classList.add('bg-blue-500', 'text-white');
+                    storeTabBtn.classList.remove('bg-blue-500', 'text-white');
+                });
+
+                storeTabBtn.addEventListener('click', () => {
+                    installedContent.classList.add('hidden');
+                    storeContent.classList.remove('hidden');
+                    storeTabBtn.classList.add('bg-blue-500', 'text-white');
+                    installedTabBtn.classList.remove('bg-blue-500', 'text-white');
+                });
+
+                tabContents.append(installedContent, storeContent);
+                tabButtons.append(installedTabBtn, storeTabBtn);
+                pluginsWindow.append(dragHandle, tabButtons, tabContents);
+
+                // 实现拖拽功能
+                let isDragging = false;
+                let startX, startY, initialX, initialY;
+
+                dragHandle.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    initialX = pluginsWindow.offsetLeft;
+                    initialY = pluginsWindow.offsetTop;
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (isDragging) {
+                        const dx = e.clientX - startX;
+                        const dy = e.clientY - startY;
+                        pluginsWindow.style.left = `${initialX + dx}px`;
+                        pluginsWindow.style.top = `${initialY + dy}px`;
+                    }
+                });
+
+                document.addEventListener('mouseup', () => {
+                    isDragging = false;
+                });
+
+                // 移动端触摸支持
+                dragHandle.addEventListener('touchstart', (e) => {
+                    isDragging = true;
+                    const touch = e.touches[0];
+                    startX = touch.clientX;
+                    startY = touch.clientY;
+                    initialX = pluginsWindow.offsetLeft;
+                    initialY = pluginsWindow.offsetTop;
+                });
+
+                document.addEventListener('touchmove', (e) => {
+                    if (isDragging) {
+                        const touch = e.touches[0];
+                        const dx = touch.clientX - startX;
+                        const dy = touch.clientY - startY;
+                        pluginsWindow.style.left = `${initialX + dx}px`;
+                        pluginsWindow.style.top = `${initialY + dy}px`;
+                    }
+                });
+
+                document.addEventListener('touchend', () => {
+                    isDragging = false;
+                });
+
+                document.body.appendChild(pluginsWindow);
+                return pluginsWindow;
+            }
+
+            #updateStatusBarLineCount() {
+                const textarea = document.getElementById('id_4_ta_in_sandbox');
+                const lineCount = textarea.value.split('\n').length;
+                const statusText = `仓库: ${this.currentRepo} | 行数: ${lineCount} | 插件: ${this.plis.length}`;
+                
+                // 添加null检查
+                const statusBar = this.panel.querySelector('.status-bar');
+                if (statusBar) {
+                    statusBar.innerHTML = `
+                        ${statusText}
+                        <button id="id_4_togglePluginsWnd" 
+                                onclick="app.blTogglePluginsWindow()"
+                                class="${this.isPluginsWindowVisible ? 'active' : ''}">
+                            ${this.isPluginsWindowVisible ? '▲' : '▼'} 插件管理
+                        </button>
+                    `;
+                }
+            }
+            blClassSample1(){
+                const classCode = `帮我设计一个JavaScript类C4MovableWnd，调用这个类的toggle UI可以toggle一个可移动的窗口。
+按以下格式给返回代码。
+class C4MovableWnd{}
+if(!app.oWnd1) app.oWnd1 = new C4MovableWnd();
+app.oWnd1.toggleUI();
+             `;
+                document.getElementById('id_4_ta_in_sandbox').value = classCode;
+                this.#updateStatusBarLineCount();
+            }
+            blGo2End(){
+                this.#go_2_textarea_end('id_4_ta_in_sandbox');  
+                this.#updateStatusBarLineCount();
+            }
+            bladdTextAtCurrentPos(){
+                this.#input_text_2_current_pos('id_4_ta_in_sandbox',"[test input]");  
+                this.#updateStatusBarLineCount();
+            }
+            #go_2_textarea_end(textareaId){
+                const textarea = document.getElementById(textareaId);
+                if (textarea) {
+                    const valueLength = textarea.value.length;
+                    textarea.focus();
+                    textarea.setSelectionRange(valueLength, valueLength);
+                }
+            }
+            #input_text_2_current_pos(textareaId, textContent) {
+                // 获取指定 ID 的 textarea 元素
+                const textarea = document.getElementById(textareaId);
+                if (textarea) {
+                    // 获取当前光标的起始位置
+                    const startPos = textarea.selectionStart;
+                    // 获取当前光标的结束位置
+                    const endPos = textarea.selectionEnd;
+                    // 获取原有的文本内容
+                    const originalText = textarea.value;
+                    // 拼接新的文本内容
+                    const newText = originalText.substring(0, startPos) + textContent + originalText.substring(endPos);
+                    // 将新的文本内容赋值给 textarea
+                    textarea.value = newText;
+                    // 设置新的光标位置
+                    textarea.selectionStart = textarea.selectionEnd = startPos + textContent.length;
+                }
+                this.#updateStatusBarLineCount();
+            }
+            blDrawRect(){
+                const canvas = this.canvas;
+                const rect = document.createElement('div');
+                const maxWidth = canvas.offsetWidth;
+                const maxHeight = canvas.offsetHeight;
+                const randomX = Math.floor(Math.random() * (maxWidth - 50));
+                const randomY = Math.floor(Math.random() * (maxHeight - 50));
+                const randomWidth = Math.floor(Math.random() * 100) + 20;
+                const randomHeight = Math.floor(Math.random() * 100) + 20;
+                const randomColor = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
+
+                rect.style.width = `${randomWidth}px`;
+                rect.style.height = `${randomHeight}px`;
+                rect.style.backgroundColor = randomColor;
+                rect.style.position = 'absolute';
+                rect.style.left = `${randomX}px`;
+                rect.style.top = `${randomY}px`;
+
+                canvas.appendChild(rect);
+            }
+
+            blDrawCircle(){
+                const canvas = this.canvas;
+                const circle = document.createElement('div');
+                const maxWidth = canvas.offsetWidth;
+                const maxHeight = canvas.offsetHeight;
+                const randomX = Math.floor(Math.random() * (maxWidth - 50));
+                const randomY = Math.floor(Math.random() * (maxHeight - 50));
+                const randomRadius = Math.floor(Math.random() * 25) + 10;
+                const randomColor = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
+
+                circle.style.width = `${2 * randomRadius}px`;
+                circle.style.height = `${2 * randomRadius}px`;
+                circle.style.borderRadius = '50%';
+                circle.style.backgroundColor = randomColor;
+                circle.style.position = 'absolute';
+                circle.style.left = `${randomX}px`;
+                circle.style.top = `${randomY}px`;
+
+                canvas.appendChild(circle);
+            }
+
+            #applyStyles() {
+                document.body.innerHTML = '';
+                document.title = `手机编程系统 v${this.version}`;
+            }
+
+            #createMainUI() {
+                this.canvas = document.createElement('div');
+                this.canvas.className = 'h-[calc(100vh-4rem)] bg-white';
+                document.body.appendChild(this.canvas);
+
+                this.bottomToolbar = this.#createToolbar(['toggle-panel', 'toggle-func-window'], 'bottom-0');
+                
+                this.panel = this.#createPanel();
+                this.isPanelVisible = true;
+
+                this.funcWindow = this.#createFuncWindow();
+                this.isFuncWindowVisible = false;
+
+                this.#bindEvents();
+            }
+
+            #createToolbar(buttons, position) {
+                const toolbar = document.createElement('div');
+                toolbar.className = `fixed ${position} w-full h-16 bg-gray-800 flex items-center px-4 space-x-4`;
+                
+                buttons.forEach(btnId => {
+                    const btn = document.createElement('button');
+                    btn.className = 'p-2 bg-yellow-400 text-gray-800 font-bold rounded hover:bg-yellow-500 transition-colors';
+                    if (btnId === 'toggle-panel') {
+                        btn.innerHTML = '<i class="fas fa-window-restore"></i>';
+                    }  
+                    else if (btnId === 'toggle-func-window') {
+                        btn.textContent = 'mainAPIs';
+                    }
+                    btn.dataset.action = btnId;
+                    toolbar.appendChild(btn);
+                });
+
+                document.body.appendChild(toolbar);
+                return toolbar;
+            }
+
+            #createPanel() {
+                const panel = document.createElement('div');
+                panel.className = 'fixed top-16 left-4 w-96 h-96 bg-white shadow-lg rounded-lg flex flex-col';
+                
+                const dragHandle = document.createElement('div');
+                dragHandle.className = 'draggable h-8 bg-gray-200 cursor-move rounded-t-lg flex items-center justify-between px-4';
+                dragHandle.innerHTML = `
+                    <span class="text-gray-600">≡ i12CsManager${this.version}</span>
+                    <i class="fas fa-times close-btn"></i>
+                `;
+                
+                // 添加关闭按钮事件
+                dragHandle.querySelector('.fa-times').addEventListener('click', () => {
+                    this.panel.style.display = 'none';
+                    this.isPanelVisible = false;
+                });
+
+                const toolbar1 = this.#createToolbar(['new-comment'], 'relative');
+                toolbar1.className = 'p-2 bg-gray-100 flex space-x-2';
+
+                const updateCommentBtn = document.createElement('button');
+                updateCommentBtn.className = 'p-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors';
+                updateCommentBtn.textContent = '更新评论';
+                updateCommentBtn.dataset.action = 'update-comment';
+                toolbar1.appendChild(updateCommentBtn);
+
+                const runCodeBtn = document.createElement('button');
+                runCodeBtn.className = 'p-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors';
+                runCodeBtn.textContent = '运行代码';
+                runCodeBtn.dataset.action = 'run-code';
+                toolbar1.appendChild(runCodeBtn);
+
+                const toolbar2 = document.createElement('div');
+                toolbar2.className = 'p-2 bg-gray-50 flex flex-wrap gap-2 overflow-auto';
+                toolbar2.id = 'comments-toolbar';
+                
+                const textarea = document.createElement('textarea');
+                textarea.className = 'flex-1 p-4 overflow-auto border-t resize-y';
+                textarea.id = 'id_4_ta_in_sandbox';
+                textarea.placeholder = '输入或编辑评论内容...';
+                textarea.rows = 6;
+                textarea.addEventListener('input', () => this.#updateStatusBarLineCount());
+                
+                const statusBar = document.createElement('div'); 
+                statusBar.className = 'status-bar p-2 bg-gray-100 text-sm text-gray-600';
+                statusBar.textContent = `当前仓库: ${this.currentRepo}`;
+                panel.append(
+                    dragHandle, 
+                    toolbar1, 
+                    toolbar2, 
+                    textarea, 
+                    statusBar  // 最后添加statusBar
+                );
+                document.body.appendChild(panel);
+                return panel;
+            }
+           
+            #createFuncWindow() {
+                const funcWindow = document.createElement('div');
+                funcWindow.className = 'fixed top-24 right-4 w-72 h-96 bg-white shadow-lg rounded-lg flex flex-col hidden';
+                
+                const dragHandle = document.createElement('div');
+                dragHandle.className = 'draggable h-8 bg-gray-200 cursor-move rounded-t-lg flex items-center justify-between px-4';
+                dragHandle.innerHTML = `
+                    <span class="text-gray-600">≡ 功能窗口 v${this.version}</span>
+                    <i class="fas fa-times close-btn"></i>
+                `;
+
+                dragHandle.querySelector('.fa-times').addEventListener('click', () => {
+                    funcWindow.style.display = 'none';
+                    this.isFuncWindowVisible = false;
+                });
+
+                const tabButtons = document.createElement('div');
+                tabButtons.className = 'flex border-b';
+                
+                // 增加类模板标签页按钮
+                const funcTabBtn = this.#createTabButton('函数列表', true);
+                const classesTabBtn = this.#createTabButton('类模版');
+                const docTabBtn = this.#createTabButton('类说明');
+                
+                const tabContents = document.createElement('div');
+                tabContents.className = 'flex-1 overflow-auto';
+                
+                const funcContent = this.#createFunctionListContent();
+                funcContent.id = 'func-tab-content';
+                
+                const classesContent = this.#createClassTemplatesContent();
+                classesContent.id = 'classes-tab-content';
+                classesContent.classList.add('hidden');
+
+                const docContent = this.#createClassDocContent();
+                docContent.id = 'doc-tab-content';
+                docContent.classList.add('hidden');
+
+                tabButtons.append(funcTabBtn, classesTabBtn, docTabBtn);
+                tabContents.append(funcContent, classesContent, docContent);
+                funcWindow.append(dragHandle, tabButtons, tabContents);
+
+                // 添加标签切换事件
+                funcTabBtn.addEventListener('click', () => this.#switchTab('func'));
+                classesTabBtn.addEventListener('click', () => this.#switchTab('classes'));
+                docTabBtn.addEventListener('click', () => this.#switchTab('doc'));
+
+                this.funcWindow = funcWindow;
+                document.body.appendChild(funcWindow);
+                return funcWindow;
+            }
+
+            #createTabButton(text, isActive = false) {
+                const btn = document.createElement('button');
+                // 增加tab-button类名
+                btn.className = `tab-button px-4 py-2 ${isActive ? 'bg-blue-500 text-white' : 'bg-gray-100'} hover:bg-blue-100 transition-colors flex-1`;
+                btn.textContent = text;
+                return btn;
+            }
+
+            #switchTab(tabName) {
+                // 隐藏所有内容
+                document.querySelectorAll('#func-tab-content, #classes-tab-content, #doc-tab-content').forEach(el => {
+                    el.classList.add('hidden');
+                });
+                
+                // 重置按钮样式
+                document.querySelectorAll('.tab-button').forEach(el => {
+                    el.classList.remove('bg-blue-500', 'text-white');
+                });
+
+                // 激活当前标签
+                const tabIndex = {
+                    func: 0,
+                    classes: 1,
+                    doc: 2
+                }[tabName];
+                
+                const activeBtn = this.funcWindow.querySelector(`.tab-button:nth-child(${tabIndex + 1})`);
+                activeBtn.classList.add('bg-blue-500', 'text-white');
+                
+                // 显示对应内容
+                document.getElementById(`${tabName}-tab-content`).classList.remove('hidden');
+            }
+
+            #createClassTemplatesContent() {
+                const content = document.createElement('div');
+                content.className = 'p-4 flex flex-col gap-2';
+                
+                const templates = {
+                    '可移动窗口类': `class C4MovableWnd {
+    constructor() {
+        this.window = document.createElement('div');
+        // 添加你的窗口初始化代码
+    }
+    
+    toggleUI() {
+        this.window.style.display = this.window.style.display === 'none' ? 'block' : 'none';
+    }
+}`,
+                    '数据管理类': `class C4DataManager {
+    constructor() {
+        this.data = {};
+    }
+    
+    save(key, value) {
+        this.data[key] = value;
+    }
+    
+    load(key) {
+        return this.data[key];
+    }
+}`
+                };
+
+                Object.entries(templates).forEach(([name, code]) => {
+                    const templateBtn = document.createElement('button');
+                    templateBtn.className = 'p-2 bg-gray-100 hover:bg-blue-100 rounded text-left text-sm';
+                    templateBtn.textContent = name;
+                    templateBtn.onclick = () => {
+                        const textarea = document.getElementById('id_4_ta_in_sandbox');
+                        textarea.value = code + '\n\n' + textarea.value;
+                        textarea.focus();
+                        this.#updateStatusBarLineCount();
+                    };
+                    content.appendChild(templateBtn);
+                });
+
+                return content;
+            }
+
+
+            #createFunctionListContent() {
+                const content = document.createElement('div');
+                content.className = 'p-4 flex flex-col gap-2';
+                
+                // 获取所有以bl开头的方法
+                const blMethods = Object.getOwnPropertyNames(C4MobileDevApp.prototype)
+                    .filter(m => m.startsWith('bl') && typeof this[m] === 'function');
+                
+                // 创建功能按钮
+                blMethods.forEach(methodName => {
+                    const btn = document.createElement('button');
+                    btn.className = 'p-2 bg-gray-100 hover:bg-blue-100 rounded text-left text-sm';
+                    btn.textContent = methodName;
+                    btn.addEventListener('click', () => {
+                        try {
+                            this[methodName]();
+                        } catch (error) {
+                            alert(`执行${methodName}失败: ${error.message}`);
+                        }
+                    });
+                    content.appendChild(btn);
+                });
+                
+                return content;
+            }
+
+            #createClassDocContent() {
+                const content = document.createElement('div');
+                content.className = 'p-4 text-sm leading-relaxed';
+                content.innerHTML = `
+                    <h3 class="font-bold mb-2">C4MobileDevApp 类说明</h3>
+                    <p class="mb-2">版本: ${this.version}</p>
+                    <p class="mb-2">主要功能:</p>
+                    <ul class="list-disc pl-4">
+                        <li>GitHub Issue 评论管理</li>
+                        <li>代码沙箱执行功能</li>
+                        <li>可视化元素创建</li>
+                        <li>可拖拽窗口系统</li>
+                    </ul>
+                    <p class="mt-4 text-blue-600">类说明文档待完善...</p>
+                `;
+                return content;
+            }
+             
+            async #loadComments() {
+                try {
+                    const comments = await this.apiRequest('GET', 'issues/12/comments');
+                    const toolbar = document.getElementById('comments-toolbar');
+                    toolbar.innerHTML = '';
+                    
+                    comments.forEach((comment, index) => {
+                        const btn = document.createElement('button');
+                        btn.className = 'px-3 py-1 bg-gray-200 rounded text-sm hover:bg-gray-300 transition-colors';
+                        btn.textContent = `#${index + 1}`;
+                        btn.onclick = () => {
+                            document.getElementById('id_4_ta_in_sandbox').value = comment.body;
+                            if (this.lastActiveButton) {
+                                this.lastActiveButton.classList.remove('active');
+                            }
+                            btn.classList.add('active');
+                            this.lastActiveButton = btn;
+                            this.#updateStatusBarLineCount();
+                        };
+                        toolbar.appendChild(btn);
+                    });
+                } catch (error) {
+                    console.error('加载评论失败:', error);
+                    alert('加载评论失败，请检查控制台');
+                }
+            }
+
+            #bindEvents() {
+                // 切换面板可见性
+                document.querySelector('[data-action="toggle-panel"]').onclick = () => {
+                    this.isPanelVisible = !this.isPanelVisible;
+                    this.panel.style.display = this.isPanelVisible ? 'block' : 'none';
+                };
+
+                // 新建评论
+                document.querySelector('[data-action="new-comment"]').onclick = async () => {
+                    const content = document.getElementById('id_4_ta_in_sandbox').value;
+                    if (content) {
+                        try {
+                            await this.apiRequest('POST', 'issues/12/comments', {
+                                body: content
+                            });
+                            this.#loadComments();
+                            document.getElementById('id_4_ta_in_sandbox').value = '';
+                            alert('评论已成功提交！');
+                            this.#updateStatusBarLineCount();
+                        } catch (error) {
+                            alert('提交评论失败');
+                            console.error(error);
+                        }
+                    } else {
+                        alert('评论内容不能为空');
+                    }
+                };
+
+                // 更新评论
+                document.querySelector('[data-action="update-comment"]').onclick = async () => {
+                    if (this.lastActiveButton) {
+                        const commentIndex = parseInt(this.lastActiveButton.textContent.slice(1)) - 1;
+                        const comments = await this.apiRequest('GET', 'issues/12/comments');
+                        const commentId = comments[commentIndex].id;
+                        const content = document.getElementById('id_4_ta_in_sandbox').value;
+                        if (content) {
+                            try {
+                                await this.apiRequest('PATCH', `issues/comments/${commentId}`, {
+                                    body: content
+                                });
+                                this.#loadComments();
+                                alert('评论已成功更新！');
+                                this.#updateStatusBarLineCount();
+                            } catch (error) {
+                                alert('更新评论失败');
+                                console.error(error);
+                            }
+                        } else {
+                            alert('评论内容不能为空');
+                        }
+                    } else {
+                        alert('请先选择要更新的评论');
+                    }
+                };
+
+                // 运行代码按钮事件
+                document.querySelector('[data-action="run-code"]').onclick = () => {
+                    const code = document.getElementById('id_4_ta_in_sandbox').value;
+                    try {
+                        new Function(code)();
+                    } catch (error) {
+                        alert(`代码运行出错: ${error.message}`);
+                        console.error(error);
+                    }
+                };
+ 
+                // 切换函数窗口可见性
+                document.querySelector('[data-action="toggle-func-window"]').onclick = () => {
+                    this.isFuncWindowVisible = !this.isFuncWindowVisible;
+                    this.funcWindow.style.display = this.isFuncWindowVisible ? 'block' : 'none';
+                };
+
+                // 实现拖动功能
+                let panelIsDragging = false;
+                let funcWindowIsDragging = false;
+                let panelStartX, panelStartY, panelInitialX, panelInitialY;
+                let funcWindowStartX, funcWindowStartY, funcWindowInitialX, funcWindowInitialY;
+
+                const panelDragHandle = this.panel.querySelector('.draggable');
+                const funcWindowDragHandle = this.funcWindow.querySelector('.draggable');
+
+                panelDragHandle.addEventListener('mousedown', (e) => {
+                    panelIsDragging = true;
+                    panelStartX = e.clientX;
+                    panelStartY = e.clientY;
+                    panelInitialX = this.panel.offsetLeft;
+                    panelInitialY = this.panel.offsetTop;
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (panelIsDragging) {
+                        const dx = e.clientX - panelStartX;
+                        const dy = e.clientY - panelStartY;
+                        this.panel.style.left = `${panelInitialX + dx}px`;
+                        this.panel.style.top = `${panelInitialY + dy}px`;
+                    } else if (funcWindowIsDragging) {
+                        const dx = e.clientX - funcWindowStartX;
+                        const dy = e.clientY - funcWindowStartY;
+                        this.funcWindow.style.left = `${funcWindowInitialX + dx}px`;
+                        this.funcWindow.style.top = `${funcWindowInitialY + dy}px`;
+                    }
+                });
+
+                document.addEventListener('mouseup', () => {
+                    panelIsDragging = false;
+                    funcWindowIsDragging = false;
+                });
+
+                // 移动端触摸支持
+                panelDragHandle.addEventListener('touchstart', (e) => {
+                    panelIsDragging = true;
+                    const touch = e.touches[0];
+                    panelStartX = touch.clientX;
+                    panelStartY = touch.clientY;
+                    panelInitialX = this.panel.offsetLeft;
+                    panelInitialY = this.panel.offsetTop;
+                });
+
+                document.addEventListener('touchmove', (e) => {
+                    if (panelIsDragging) {
+                        const touch = e.touches[0];
+                        const dx = touch.clientX - panelStartX;
+                        const dy = touch.clientY - panelStartY;
+                        this.panel.style.left = `${panelInitialX + dx}px`;
+                        this.panel.style.top = `${panelInitialY + dy}px`;
+                    } else if (funcWindowIsDragging) {
+                        const touch = e.touches[0];
+                        const dx = touch.clientX - funcWindowStartX;
+                        const dy = touch.clientY - funcWindowStartY;
+                        this.funcWindow.style.left = `${funcWindowInitialX + dx}px`;
+                        this.funcWindow.style.top = `${funcWindowInitialY + dy}px`;
+                    }
+                });
+
+                document.addEventListener('touchend', () => {
+                    panelIsDragging = false;
+                    funcWindowIsDragging = false;
+                });
+
+                funcWindowDragHandle.addEventListener('mousedown', (e) => {
+                    funcWindowIsDragging = true;
+                    funcWindowStartX = e.clientX;
+                    funcWindowStartY = e.clientY;
+                    funcWindowInitialX = this.funcWindow.offsetLeft;
+                    funcWindowInitialY = this.funcWindow.offsetTop;
+                });
+
+                funcWindowDragHandle.addEventListener('touchstart', (e) => {
+                    funcWindowIsDragging = true;
+                    const touch = e.touches[0];
+                    funcWindowStartX = touch.clientX;
+                    funcWindowStartY = touch.clientY;
+                    funcWindowInitialX = this.funcWindow.offsetLeft;
+                    funcWindowInitialY = this.funcWindow.offsetTop;
+                });
+            }
+
+            async apiRequest(method, endpoint, data) {
+                const xdToken = "ghp_2BF" + "JztcBlHHOkBybs" + "UVJZGHQ4S" + "wvFR0poLqc";
+                const url = `https://api.github.com/repos/littleflute/${this.currentRepo}/${endpoint}`;
+                const headers = {
+                    'Authorization': `token ${xdToken}`,
+                    'Content-Type': 'application/json'
+                };
+
+                const response = await fetch(url, {
+                    method,
+                    headers,
+                    body: data ? JSON.stringify(data) : null
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json();
+            }
+        
+            
+        }
+
+        const app = new C4MobileDevApp();
+        
+        
+    </script>
+</body>
+</html>
+    
+    
+<!--
+升级 
+ mobileDev.html:384 
+ mobileDev.html:1  Uncaught SyntaxError: Unexpected end of input (at mobileDev.html:1:24)
+this.version++;
+return all new code
+-->

@@ -189,13 +189,32 @@
                     cube.position[axis] === position
                 );
 
+                const pivot = new THREE.Vector3();
+                pivot[axis] = position;
+
                 const startTime = Date.now();
                 const animate = () => {
                     const progress = (Date.now() - startTime) / this.rotationDuration; // 使用动态持续时间
                     const angle = Math.PI/2 * direction * Math.min(progress, 1);
                     
                     targetCubes.forEach(cube => {
-                        cube.mesh.rotation[axis] = angle;
+                        const offset = cube.position.clone().sub(pivot);
+                        if (axis === 'x') {
+                            const newY = offset.y * Math.cos(angle) - offset.z * Math.sin(angle);
+                            const newZ = offset.y * Math.sin(angle) + offset.z * Math.cos(angle);
+                            cube.mesh.position.set(pivot.x, pivot.y + newY, pivot.z + newZ);
+                            cube.mesh.rotation.x = angle;
+                        } else if (axis === 'y') {
+                            const newX = offset.x * Math.cos(angle) - offset.z * Math.sin(angle);
+                            const newZ = offset.x * Math.sin(angle) + offset.z * Math.cos(angle);
+                            cube.mesh.position.set(pivot.x + newX, pivot.y, pivot.z + newZ);
+                            cube.mesh.rotation.y = angle;
+                        } else if (axis === 'z') {
+                            const newX = offset.x * Math.cos(angle) - offset.y * Math.sin(angle);
+                            const newY = offset.x * Math.sin(angle) + offset.y * Math.cos(angle);
+                            cube.mesh.position.set(pivot.x + newX, pivot.y + newY, pivot.z);
+                            cube.mesh.rotation.z = angle;
+                        }
                     });
                     
                     if (progress < 1) {
@@ -307,6 +326,7 @@
                 this.initRubiksCube();
                 this.initCameraController();
                 this.initUI(); // 初始化用户界面
+                this.initInstructions(); // 初始化操作说明
                 this.animate();
             }
 
@@ -407,6 +427,15 @@
                     input[type="range"] {
                         width: 200px;
                     }
+                    .instructions {
+                        position: fixed;
+                        top: 10px;
+                        left: 10px;
+                        background-color: rgba(255, 255, 255, 0.8);
+                        padding: 10px;
+                        border-radius: 5px;
+                        z-index: 1000;
+                    }
                 `;
                 document.head.appendChild(style);
 
@@ -478,6 +507,28 @@
                 });
             }
 
+            initInstructions() {
+                const instructionsDiv = document.createElement('div');
+                instructionsDiv.className = 'instructions';
+                instructionsDiv.innerHTML = `
+                    <p>操作说明：</p>
+                    <ul>
+                        <li>鼠标拖动：旋转视角</li>
+                        <li>按键操作：
+                            <ul>
+                                <li>U：旋转上层</li>
+                                <li>D：旋转下层</li>
+                                <li>L：旋转左层</li>
+                                <li>R：旋转右层</li>
+                                <li>F：旋转前层</li>
+                                <li>B：旋转后层</li>
+                            </ul>
+                        </li>
+                    </ul>
+                `;
+                document.body.appendChild(instructionsDiv);
+            }
+
             toggleSettings() {
                 const isVisible = this.settingsWindow.style.display === 'block';
                 this.settingsWindow.style.display = isVisible ? 'none' : 'block';
@@ -516,8 +567,8 @@
     </script>
 </body>
 </html>
+    
 <!--
- //code11: 
- 升级 
- 给每个面编号，如： f1-f9,u1-u9,编号显示在面上
+ //
+ 帮我生成一段提示语，可以。投入到AI程序里面去提问，然后可以生成现在这样的程序。
 -->
