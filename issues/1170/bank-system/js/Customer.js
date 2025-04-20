@@ -1,4 +1,4 @@
-export default class Customer {
+class Customer {
     constructor(number, bankSystem) {
         this.number = number;
         this.bankSystem = bankSystem;

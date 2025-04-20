@@ -1,6 +1,4 @@
-import Customer from './Customer.js';
-
-export default class UltimateBankSystem {
+class UltimateBankSystem {
     constructor(containerId, windowCount = 4) {
         this.container = document.getElementById(containerId);
         this.queue = [];
