@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>智能银行排队系统 - 完整动画版</title>
+    <title>智能银行排队系统 - 完整版v2.0</title>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -120,14 +120,58 @@
             flex-shrink: 0;
         }
 
-        .stats {
+        /* 可拖动面板样式 */
+        .draggable-panel {
             position: absolute;
-            top: 30px;
-            right: 30px;
             background: white;
-            padding: 15px;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: move;
+            z-index: 100;
+        }
+
+        .draggable-panel .header {
+            padding: 10px 15px;
+            background: #f5f5f5;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            border-bottom: 1px solid #eee;
+            font-weight: bold;
+            color: #2d3e50;
+            user-select: none;
+        }
+
+        .draggable-panel .content {
+            padding: 15px;
+            overflow: auto;
+        }
+
+        /* 统计信息面板 */
+        #statsPanel {
+            width: 200px;
+            top: 30px;
+            left: 30px;
+        }
+
+        /* 留言板面板 */
+        #messagePanel {
+            width: 250px;
+            top: 180px;
+            left: 30px;
+            max-height: 300px;
+        }
+
+        .message {
+            margin: 8px 0;
+            padding: 8px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .message .number {
+            font-weight: bold;
+            color: #4A90E2;
         }
 
         /* 客户样式 */
@@ -285,14 +329,127 @@
         <label>
             <input type="checkbox" id="autoGenerate"> 🤖 自动生成客户
         </label>
-        <div class="stats" id="stats">
-            <div>当前排队人数: <span id="queueCount">0</span></div>
-            <div>服务完成数: <span id="servedCount">0</span></div>
+    </div>
+    <div id="container">
+        <!-- 可拖动统计面板 -->
+        <div id="statsPanel" class="draggable-panel">
+            <div class="header">系统统计</div>
+            <div class="content">
+                <div>当前排队人数: <span id="queueCount">0</span></div>
+                <div>服务完成数: <span id="servedCount">0</span></div>
+            </div>
+        </div>
+        
+        <!-- 可拖动留言板 -->
+        <div id="messagePanel" class="draggable-panel">
+            <div class="header">客户留言板</div>
+            <div class="content" id="messageBoard"></div>
         </div>
     </div>
-    <div id="container"></div>
 
     <script>
+        // 拖动功能实现
+        function makeDraggable(panel) {
+            const header = panel.querySelector('.header');
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            header.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                offsetX = e.clientX - panel.getBoundingClientRect().left;
+                offsetY = e.clientY - panel.getBoundingClientRect().top;
+                panel.style.cursor = 'grabbing';
+                e.preventDefault(); // 防止文本选中
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                
+                const container = document.getElementById('container');
+                const containerRect = container.getBoundingClientRect();
+                
+                // 计算新位置
+                let newLeft = e.clientX - offsetX - containerRect.left;
+                let newTop = e.clientY - offsetY - containerRect.top;
+                
+                // 边界检查
+                newLeft = Math.max(0, Math.min(newLeft, containerRect.width - panel.offsetWidth));
+                newTop = Math.max(0, Math.min(newTop, containerRect.height - panel.offsetHeight));
+                
+                panel.style.left = `${newLeft}px`;
+                panel.style.top = `${newTop}px`;
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                panel.style.cursor = 'move';
+            });
+        }
+
+        class Customer {
+            constructor(number, bankSystem) {
+                this.number = number;
+                this.bankSystem = bankSystem;
+                this.messages = [];
+                this.hairColors = ['#5D4037', '#3E2723', '#6D4C41'];
+                this.clothColors = ['#4A90E2', '#00C853', '#D50000', '#AA00FF'];
+                this.messageChance = 0.3;
+                this.element = this.createCustomerElement();
+            }
+
+            createCustomerElement() {
+                const element = document.createElement('div');
+                element.className = 'customer';
+                element.innerHTML = `
+                    <div class="hair"></div>
+                    <div class="head">
+                        <div class="eye left"></div>
+                        <div class="eye right"></div>
+                    </div>
+                    <div class="arm left"></div>
+                    <div class="arm right"></div>
+                    <div class="body">${this.number}</div>
+                    <div class="leg left"></div>
+                    <div class="leg right"></div>
+                `;
+
+                const hairColor = this.hairColors[Math.floor(Math.random() * this.hairColors.length)];
+                const clothColor = this.clothColors[Math.floor(Math.random() * this.clothColors.length)];
+                
+                element.querySelector('.hair').style.background = hairColor;
+                element.querySelector('.body').style.background = clothColor;
+                element.querySelectorAll('.leg').forEach(leg => leg.style.background = clothColor);
+
+                element.addEventListener('click', () => this.showCustomerInfo());
+                return element;
+            }
+
+            showCustomerInfo() {
+                alert(`客户 ${this.number} 信息\n留言数量: ${this.messages.length}`);
+            }
+
+            leaveMessage() {
+                if (Math.random() < this.messageChance) {
+                    const messages = [
+                        `服务很好，但等待时间有点长`,
+                        `窗口工作人员非常专业`,
+                        `希望能增加更多的服务窗口`,
+                        `系统效率很高，点赞！`,
+                        `排队时间太久了，建议改进`,
+                        `环境很舒适，服务态度好`,
+                        `希望能有更多的自助服务设备`,
+                        `这是我见过最有效率的银行`
+                    ];
+                    
+                    const message = messages[Math.floor(Math.random() * messages.length)];
+                    this.messages.push(message);
+                    this.bankSystem.addMessageToBoard(this.number, message);
+                    return true;
+                }
+                return false;
+            }
+        }
+
         class UltimateBankSystem {
             constructor(containerId, windowCount = 4) {
                 this.container = document.getElementById(containerId);
@@ -308,12 +465,15 @@
                     timer: null
                 }));
                 this.autoTimer = null;
-                this.hairColors = ['#5D4037', '#3E2723', '#6D4C41'];
-                this.clothColors = ['#4A90E2', '#00C853', '#D50000', '#AA00FF'];
+                this.messages = [];
                 
                 this.initUI();
                 this.renderStats();
                 this.assignCustomerToWindow();
+                
+                // 初始化拖动功能
+                makeDraggable(document.getElementById('statsPanel'));
+                makeDraggable(document.getElementById('messagePanel'));
             }
 
             initUI() {
@@ -340,42 +500,19 @@
             takeNumber() {
                 if(this.queue.length >= 50) {
                     alert('排队人数已达上限');
-                    return;
+                    return null;
                 }
                 this.currentNumber++;
-                this.queue.push({
+                const customer = new Customer(this.currentNumber, this);
+                const queueItem = {
                     number: this.currentNumber,
-                    element: this.createQueueElement(this.currentNumber)
-                });
+                    customer: customer,
+                    element: customer.element
+                };
+                this.queue.push(queueItem);
                 this.renderQueue();
                 this.assignCustomerToWindow();
                 return this.currentNumber;
-            }
-
-            createQueueElement(number) {
-                const element = document.createElement('div');
-                element.className = 'customer';
-                element.innerHTML = `
-                    <div class="hair"></div>
-                    <div class="head">
-                        <div class="eye left"></div>
-                        <div class="eye right"></div>
-                    </div>
-                    <div class="arm left"></div>
-                    <div class="arm right"></div>
-                    <div class="body">${number}</div>
-                    <div class="leg left"></div>
-                    <div class="leg right"></div>
-                `;
-
-                const hairColor = this.hairColors[Math.floor(Math.random() * this.hairColors.length)];
-                const clothColor = this.clothColors[Math.floor(Math.random() * this.clothColors.length)];
-                
-                element.querySelector('.hair').style.background = hairColor;
-                element.querySelector('.body').style.background = clothColor;
-                element.querySelectorAll('.leg').forEach(leg => leg.style.background = clothColor);
-
-                return element;
             }
 
             toggleAutoGenerate(enable) {
@@ -392,10 +529,10 @@
             assignCustomerToWindow() {
                 this.windows.forEach(win => {
                     if (win.isAvailable && this.queue.length > 0) {
-                        const customer = this.queue.shift();
-                        this.serveCustomer(win, customer);
+                        const queueItem = this.queue.shift();
+                        this.serveCustomer(win, queueItem);
                         this.renderQueue();
-                    }else if(win.isAvailable && this.queue.length == 0){
+                    } else if(win.isAvailable && this.queue.length == 0) {
                         win.announcementEl.innerHTML = `等待客户...`;
                     }
                 });
@@ -433,16 +570,16 @@
                 };
             }
 
-            serveCustomer(win, customer) {
+            serveCustomer(win, queueItem) {
                 win.isAvailable = false;
-                win.currentCustomer = customer.number;
-                win.announcementEl.innerHTML = `请 <strong>${customer.number}</strong> 号<br>至 ${win.id} 号窗口`;
+                win.currentCustomer = queueItem.number;
+                win.announcementEl.innerHTML = `请 <strong>${queueItem.number}</strong> 号<br>至 ${win.id} 号窗口`;
                 const light = win.element.querySelector('.status-light');
                 light.style.background = '#ff5252';
 
                 const startPos = {
-                    x: customer.element.offsetLeft + this.queueArea.offsetLeft + 35,
-                    y: customer.element.offsetTop + this.queueArea.offsetTop + 55
+                    x: queueItem.element.offsetLeft + this.queueArea.offsetLeft + 35,
+                    y: queueItem.element.offsetTop + this.queueArea.offsetTop + 55
                 };
 
                 const endPos = {
@@ -450,7 +587,9 @@
                     y: win.element.offsetTop + 120
                 };
 
-                this.animateCustomerMovement(startPos, endPos, customer.number, win);
+                this.animateCustomerMovement(startPos, endPos, queueItem.number, win);
+
+                queueItem.customer.leaveMessage();
 
                 win.timer = setTimeout(() => {
                     this.completeService(win);
@@ -485,8 +624,8 @@
 
             renderQueue() {
                 this.queueArea.innerHTML = '<span class="queue-label">排队队列：</span>';
-                this.queue.forEach(customer => {
-                    this.queueArea.appendChild(customer.element);
+                this.queue.forEach(queueItem => {
+                    this.queueArea.appendChild(queueItem.element);
                 });
                 this.renderStats();
             }
@@ -497,12 +636,29 @@
             }
 
             createMovingCustomer(number, pos) {
-                const element = this.createQueueElement(number);
+                const customer = new Customer(number, this);
+                const element = customer.element;
                 element.style.position = 'absolute';
                 element.style.left = `${pos.x}px`;
                 element.style.top = `${pos.y}px`;
                 this.container.appendChild(element);
                 return element;
+            }
+
+            addMessageToBoard(customerNumber, message) {
+                const messageEl = document.createElement('div');
+                messageEl.className = 'message';
+                messageEl.innerHTML = `<span class="number">${customerNumber}号客户：</span>${message}`;
+                document.getElementById('messageBoard').appendChild(messageEl);
+                
+                // 自动滚动到底部
+                const board = document.getElementById('messageBoard');
+                board.scrollTop = board.scrollHeight;
+                
+                // 限制留言数量
+                if (board.children.length > 10) {
+                    board.removeChild(board.children[0]);
+                }
             }
         }
 
