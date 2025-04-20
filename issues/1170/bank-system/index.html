@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>智能银行排队系统 - 模块化版</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="controls">
+        <button id="takeNumber">📟 取号</button>
+        <label>
+            <input type="checkbox" id="autoGenerate"> 🤖 自动生成客户
+        </label>
+    </div>
+    <div id="container">
+        <!-- 可拖动统计面板 -->
+        <div id="statsPanel" class="draggable-panel">
+            <div class="header">系统统计</div>
+            <div class="content">
+                <div>当前排队人数: <span id="queueCount">0</span></div>
+                <div>服务完成数: <span id="servedCount">0</span></div>
+            </div>
+        </div>
+        
+        <!-- 可拖动留言板 -->
+        <div id="messagePanel" class="draggable-panel">
+            <div class="header">客户留言板</div>
+            <div class="content" id="messageBoard"></div>
+        </div>
+    </div>
+
+    <!-- 修改为使用非模块化的内联脚本加载方式 -->
+    <script src="js/Customer.js"></script>
+    <script src="js/BankSystem.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
