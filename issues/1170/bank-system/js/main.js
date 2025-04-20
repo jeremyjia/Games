@@ -1,5 +1,3 @@
-import UltimateBankSystem from './BankSystem.js';
-
 // 拖动功能实现
 function makeDraggable(panel) {
     const header = panel.querySelector('.header');
