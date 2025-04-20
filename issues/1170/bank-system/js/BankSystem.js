@@ -15,6 +15,11 @@ class UltimateBankSystem {
         this.autoTimer = null;
         this.messages = [];
         
+                // 确保留言板初始化
+                this.messageBoard = document.getElementById('messageBoard');
+                if (!this.messageBoard) {
+                    this.createMessageBoard();
+                }
         this.initUI();
         this.renderStats();
         this.assignCustomerToWindow();
@@ -121,6 +126,11 @@ class UltimateBankSystem {
         const light = win.element.querySelector('.status-light');
         light.style.background = '#ff5252';
 
+        const messageContent = queueItem.customer.leaveMessage();
+        if (messageContent) {
+            this.addMessageToBoard(messageContent);
+        }
+
         const startPos = {
             x: queueItem.element.offsetLeft + this.queueArea.offsetLeft + 35,
             y: queueItem.element.offsetTop + this.queueArea.offsetTop + 55
@@ -189,17 +199,65 @@ class UltimateBankSystem {
         return element;
     }
 
-    addMessageToBoard(customerNumber, message) {
+    createMessageBoard() {
+        const panel = document.createElement('div');
+        panel.id = 'messagePanel';
+        panel.className = 'draggable-panel';
+        panel.innerHTML = `
+            <div class="header">客户留言板</div>
+            <div class="content" id="messageBoard"></div>
+        `;
+        this.container.appendChild(panel);
+        this.messageBoard = document.getElementById('messageBoard');
+    }
+
+    addMessageToBoard(messageContent) {
+        if (!this.messageBoard) {
+            console.error("Message board element not found");
+            return;
+        }
+
+        let messageEl;
+        
+        // 处理字符串消息
+        if (typeof messageContent === 'string') {
+            messageEl = this.createTextMessage(this.lastCustomerNumber, messageContent);
+        } 
+        // 处理DOM元素消息
+        else if (messageContent instanceof HTMLElement) {
+            messageEl = messageContent;
+        }
+        // 处理对象形式的客户消息
+        else if (messageContent && messageContent.number && messageContent.message) {
+            messageEl = this.createTextMessage(messageContent.number, messageContent.message);
+        }
+        else {
+            console.error("Invalid message content:", messageContent);
+            return;
+        }
+
+        // 确保是有效的DOM节点
+        if (!(messageEl instanceof Node)) {
+            console.error("Created message is not a valid DOM node:", messageEl);
+            return;
+        }
+
+        this.messageBoard.appendChild(messageEl);
+        this.messageBoard.scrollTop = this.messageBoard.scrollHeight;
+        
+        // 限制留言数量
+        if (this.messageBoard.children.length > 10) {
+            this.messageBoard.removeChild(this.messageBoard.children[0]);
+        }
+    }
+
+    createTextMessage(customerNumber, message) {
         const messageEl = document.createElement('div');
         messageEl.className = 'message';
-        messageEl.innerHTML = `<span class="number">${customerNumber}号客户：</span>${message}`;
-        document.getElementById('messageBoard').appendChild(messageEl);
-        
-        const board = document.getElementById('messageBoard');
-        board.scrollTop = board.scrollHeight;
-        
-        if (board.children.length > 10) {
-            board.removeChild(board.children[0]);
-        }
+        messageEl.innerHTML = `
+            <span class="number">${customerNumber}号客户：</span>
+            <span class="text">${message}</span>
+        `;
+        return messageEl;
     }
 }
