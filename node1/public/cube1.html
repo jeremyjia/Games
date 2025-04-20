@@ -5,6 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <title>3D Cube with Settings and Toolbar</title>
+    <style>
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            content: ""; position: absolute; height: 16px; width: 16px;
+            left: 4px; bottom: 4px; background-color: white;
+            transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #3b82f6; }
+        input:checked + .slider:before { transform: translateX(26px); }
+        .drag-handle { 
+            user-select: none; 
+            background-color: #3b82f6; 
+            color: white;
+            padding: 4px;
+            text-align: center;
+        }
+        /* 为设置窗口的移动区域添加美观颜色 */
+        .settings-drag-handle {
+            user-select: none;
+            background-color: #60a5fa; 
+            color: white;
+            padding: 4px;
+            text-align: center;
+        }
+        /* 调整样式以适应不同屏幕尺寸 */
+        @media (max-width: 640px) {
+            .settings-window, .readme-window {
+                width: 90%;
+                left: 5%;
+            }
+            .toolbar button {
+                padding: 0.5rem 1rem;
+            }
+        }
+        /* 防止文本被选中 */
+        .settings-window, .readme-window {
+            user-select: none;
+        }
+    </style>
 </head>
 <body class="flex justify-center items-center h-screen m-0 bg-gray-100">
     <script>
@@ -128,12 +174,97 @@
             }
         }
 
+        class C4Readme {
+            constructor() {
+                this.version = "1.16";
+                this.element = document.createElement('div');
+                this.element.className = 'absolute bg-white border border-gray-300 shadow-lg p-4 readme-window';
+                this.element.style.cssText = 'top: 20px; left: 20px; width: 200px; z-index: 1000;';
+                this.element.innerHTML = `
+                    <div class="drag-handle cursor-move font-bold mb-2 text-white">使用说明${this.version}</div>
+                    <div class="text-sm space-y-2">
+                        <p>1. 鼠标拖拽立方体任意位置进行自由旋转</p>
+                        <p>2. 使用设置面板控制自动旋转和轴旋转</p>
+                        <p>3. 点击底部工具栏设置按钮开关控制面板</p>
+                        <p>4. 按住轴旋转按钮进行单轴旋转</p>
+                        <p>5. 拖动说明和控制面板可改变位置</p>
+                    </div>
+                    <button class="absolute top-1 right-2 text-gray-400 hover:text-gray-600">&times;</button>
+                `;
+                
+                this.initDrag();
+                this.initCloseButton();
+            }
+
+            initDrag() {
+                let isDragging = false;
+                let offset = [0, 0];
+                const handle = this.element.querySelector('.drag-handle');
+
+                handle.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    offset = [
+                        e.clientX - this.element.offsetLeft,
+                        e.clientY - this.element.offsetTop
+                    ];
+                    e.preventDefault();
+                });
+
+                handle.addEventListener('touchstart', (e) => {
+                    isDragging = true;
+                    const touch = e.touches[0];
+                    offset = [
+                        touch.clientX - this.element.offsetLeft,
+                        touch.clientY - this.element.offsetTop
+                    ];
+                    e.preventDefault();
+                });
+
+                const moveHandler = (e) => {
+                    if (!isDragging) return;
+                    const event = e.touches ? e.touches[0] : e;
+                    this.element.style.left = (event.clientX - offset[0]) + 'px';
+                    this.element.style.top = (event.clientY - offset[1]) + 'px';
+                    e.preventDefault();
+                };
+
+                const upHandler = () => {
+                    isDragging = false;
+                };
+
+                document.addEventListener('mousemove', moveHandler);
+                document.addEventListener('touchmove', moveHandler);
+                document.addEventListener('mouseup', upHandler);
+                document.addEventListener('touchend', upHandler);
+            }
+
+            initCloseButton() {
+                const closeBtn = this.element.querySelector('button');
+                closeBtn.addEventListener('click', () => {
+                    this.hide();
+                });
+            }
+
+            show() { 
+                this.element.style.display = 'block'; 
+            }
+            hide() { 
+                this.element.style.display = 'none'; 
+            }
+            toggle() {
+                if (this.element.style.display === 'none') {
+                    this.show();
+                } else {
+                    this.hide();
+                }
+            }
+        }
+
         class C4SettingsWindow {
             constructor() {
                 this.element = document.createElement('div');
-                this.element.className = 'absolute bg-white border border-gray-300 shadow-lg p-4 hidden';
-                this.element.style.top = '20px';
-                this.element.style.left = '20px';
+                this.element.className = 'absolute bg-white border border-gray-300 shadow-lg p-4 hidden settings-window';
+                this.element.style.cssText = 'top: 20px; left: 240px; z-index: 1000;';
                 
                 this.initUI();
                 this.initDrag();
@@ -141,6 +272,7 @@
 
             initUI() {
                 this.element.innerHTML = `
+                    <div class="settings-drag-handle cursor-move mb-4">设置</div>
                     <div class="mb-4 flex items-center">
                         <label class="switch mr-4">
                             <input type="checkbox" id="rotationSwitch">
@@ -166,22 +298,43 @@
             initDrag() {
                 let isDragging = false;
                 let offset = [0, 0];
-                
-                this.element.querySelector('div').addEventListener('mousedown', e => {
+                const header = this.element.querySelector('.settings-drag-handle');
+
+                header.addEventListener('mousedown', (e) => {
                     isDragging = true;
                     offset = [
                         e.clientX - this.element.offsetLeft,
                         e.clientY - this.element.offsetTop
                     ];
+                    e.preventDefault();
                 });
 
-                document.addEventListener('mousemove', e => {
+                header.addEventListener('touchstart', (e) => {
+                    isDragging = true;
+                    const touch = e.touches[0];
+                    offset = [
+                        touch.clientX - this.element.offsetLeft,
+                        touch.clientY - this.element.offsetTop
+                    ];
+                    e.preventDefault();
+                });
+
+                const moveHandler = (e) => {
                     if (!isDragging) return;
-                    this.element.style.left = (e.clientX - offset[0]) + 'px';
-                    this.element.style.top = (e.clientY - offset[1]) + 'px';
-                });
+                    const event = e.touches ? e.touches[0] : e;
+                    this.element.style.left = (event.clientX - offset[0]) + 'px';
+                    this.element.style.top = (event.clientY - offset[1]) + 'px';
+                    e.preventDefault();
+                };
 
-                document.addEventListener('mouseup', () => isDragging = false);
+                const upHandler = () => {
+                    isDragging = false;
+                };
+
+                document.addEventListener('mousemove', moveHandler);
+                document.addEventListener('touchmove', moveHandler);
+                document.addEventListener('mouseup', upHandler);
+                document.addEventListener('touchend', upHandler);
             }
 
             show() { this.element.classList.remove('hidden'); }
@@ -195,9 +348,11 @@
             constructor() {
                 this.canvas = new C4Canvas();
                 this.settings = new C4SettingsWindow();
+                this.readme = new C4Readme();
                 
                 document.body.appendChild(this.canvas.canvas);
                 document.body.appendChild(this.settings.element);
+                document.body.appendChild(this.readme.element);
                 
                 this.initToolbar();
                 this.initEvents();
@@ -207,10 +362,13 @@
 
             initToolbar() {
                 const toolbar = document.createElement('div');
-                toolbar.className = 'fixed bottom-0 left-0 right-0 bg-gray-800 p-2 flex justify-center';
+                toolbar.className = 'fixed bottom-0 left-0 right-0 bg-gray-800 p-2 flex justify-center toolbar';
                 toolbar.innerHTML = `
                     <button id="settingsBtn" class="bg-blue-500 text-white px-4 py-2 rounded">
                         设置
+                    </button>
+                    <button id="readmeBtn" class="bg-blue-500 text-white px-4 py-2 rounded ml-2">
+                        使用说明
                     </button>
                 `;
                 document.body.appendChild(toolbar);
@@ -224,20 +382,50 @@
                     settingsBtn.classList.toggle('bg-green-500');
                 });
 
+                const readmeBtn = document.getElementById('readmeBtn');
+                readmeBtn.addEventListener('click', () => {
+                    this.readme.toggle();
+                    readmeBtn.classList.toggle('bg-blue-500');
+                    readmeBtn.classList.toggle('bg-green-500');
+                });
+
                 // 旋转控制
-                let rotateInterval;
                 document.querySelectorAll('.axisBtn').forEach(btn => {
-                    btn.addEventListener('mousedown', () => {
+                    let rotateInterval;
+                    let longPressTimer;
+                    const longPressDuration = 500;
+
+                    const startRotation = () => {
                         const axis = btn.dataset.axis;
                         const angle = document.getElementById('angleInput').value * Math.PI/180;
                         rotateInterval = setInterval(() => {
                             this.canvas.rotation[axis] += angle;
                             this.canvas.draw();
                         }, 50);
+                    };
+
+                    btn.addEventListener('mousedown', () => {
+                        longPressTimer = setTimeout(startRotation, longPressDuration);
                     });
-                    
-                    btn.addEventListener('mouseup', () => clearInterval(rotateInterval));
-                    btn.addEventListener('mouseleave', () => clearInterval(rotateInterval));
+
+                    btn.addEventListener('mouseup', () => {
+                        clearTimeout(longPressTimer);
+                        clearInterval(rotateInterval);
+                    });
+
+                    btn.addEventListener('mouseleave', () => {
+                        clearTimeout(longPressTimer);
+                        clearInterval(rotateInterval);
+                    });
+
+                    btn.addEventListener('touchstart', () => {
+                        longPressTimer = setTimeout(startRotation, longPressDuration);
+                    });
+
+                    btn.addEventListener('touchend', () => {
+                        clearTimeout(longPressTimer);
+                        clearInterval(rotateInterval);
+                    });
                 });
 
                 // 重置事件
@@ -272,6 +460,27 @@
                 
                 document.addEventListener('mouseup', () => isDragging = false);
 
+                // 触摸拖拽旋转
+                this.canvas.canvas.addEventListener('touchstart', e => {
+                    isDragging = true;
+                    const touch = e.touches[0];
+                    lastPos = { x: touch.clientX, y: touch.clientY };
+                });
+
+                document.addEventListener('touchmove', e => {
+                    if (!isDragging) return;
+                    const touch = e.touches[0];
+                    const dx = touch.clientX - lastPos.x;
+                    const dy = touch.clientY - lastPos.y;
+                    lastPos = { x: touch.clientX, y: touch.clientY };
+                    
+                    this.canvas.rotation.y += dx * 0.01;
+                    this.canvas.rotation.x += dy * 0.01;
+                    this.canvas.draw();
+                });
+
+                document.addEventListener('touchend', () => isDragging = false);
+
                 // 自动旋转开关
                 const rotationSwitch = document.getElementById('rotationSwitch');
                 rotationSwitch.addEventListener('change', () => {
@@ -299,27 +508,13 @@
 
         new C4App();
     </script>
-    <style>
-        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute; cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #ccc; transition: .4s;
-            border-radius: 24px;
-        }
-        .slider:before {
-            content: ""; position: absolute; height: 16px; width: 16px;
-            left: 4px; bottom: 4px; background-color: white;
-            transition: .4s; border-radius: 50%;
-        }
-        input:checked + .slider { background-color: #3b82f6; }
-        input:checked + .slider:before { transform: translateX(26px); }
-    </style>
 </body>
 </html>
+    
 <!--
 升级
- angleInput 体现正负
+单击按钮，也应该旋转
+
+this.version++
 返回完整可运行代码
 -->

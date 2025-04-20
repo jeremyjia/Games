@@ -112,6 +112,15 @@
                 }
             }
 
+            async handleDeleteComment(commentId, index) {
+                try {
+                    await this.#apiRequest('DELETE', `issues/comments/${commentId}`, null);
+                    await this.#loadIssue();
+                } catch (error) {
+                    this.#showError(`删除评论失败: ${error.message}`);
+                }
+            }
+
             async #loadIssue() {
                 const issueNumber = this.uiIssue;
                 try {
@@ -141,6 +150,10 @@
                                 onclick="app.handleUpdateComment(${comment.id}, ${index})"
                                 id="id_4_wirte_2_comment${index}">
                                 更新评论${index}
+                            </button>
+                            <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded mb-2"
+                                onclick="app.handleDeleteComment(${comment.id}, ${index})">
+                                删除评论${index}
                             </button>
                             <textarea id="comment-${index}" class="w-full h-32 p-2 border rounded hidden" spellcheck="false">${comment.body}</textarea>
                             <button id="run-comment-${index}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded mb-2 hidden" onclick="app.runCommentCode(${index})">运行评论${index}内容</button>
@@ -201,8 +214,9 @@
 
                 window.toggleComment = (index) => {
                     const commentDiv = document.getElementById(`comment-${index}`);
-                    const showButton = commentDiv.previousElementSibling.previousElementSibling;
-                    const updateButton = commentDiv.previousElementSibling;
+                    const showButton = commentDiv.previousElementSibling.previousElementSibling.previousElementSibling;
+                    const updateButton = commentDiv.previousElementSibling.previousElementSibling;
+                    const deleteButton = commentDiv.previousElementSibling;
                     const runButton = commentDiv.nextElementSibling;
                     if (commentDiv.classList.contains('hidden')) {
                         commentDiv.classList.remove('hidden');
@@ -286,9 +300,8 @@
 </body>
 
 </html>
-    
 <!--
 升级  
-code createBody
+add a button to delete comment
 return all new code
 --> 
