@@ -338,3 +338,37 @@ body {
     transition: all 0.8s ease-in-out;
     filter: brightness(0.9);
 }
+
+/* 留言板中的canvas样式 */
+.message canvas {
+    display: block;
+    margin-top: 8px;
+    background: white;
+    border-radius: 4px;
+}
+
+/* 客户点击区域 */
+.customer {
+    position: relative;
+}
+
+/* 添加绘图按钮样式 */
+.customer .draw-btn {
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #4A90E2;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 10px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.customer:hover .draw-btn {
+    opacity: 1;
+}
