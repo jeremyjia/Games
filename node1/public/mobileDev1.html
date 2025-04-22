@@ -128,8 +128,17 @@
 
             #createHeader() {
                 const header = document.createElement('div');
-                header.classList.add('bg-gray-200', 'p-2', 'cursor-move', 'select-none');
+                header.classList.add('bg-gray-200', 'p-2', 'cursor-move', 'select-none', 'flex', 'justify-between', 'items-center');
                 header.textContent = '可拖动头部';
+
+                const closeButton = document.createElement('button');
+                closeButton.classList.add('text-gray-600', 'hover:text-gray-800', 'focus:outline-none');
+                closeButton.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                closeButton.addEventListener('click', () => {
+                    this.element.style.display = 'none';
+                });
+                header.appendChild(closeButton);
+
                 this.element.prepend(header);
             }
             makeDraggable() {
@@ -725,10 +734,11 @@
 </body>
 
 </html>
+    
       
 <!--
 升级  
-oIssueMngWnd 移动时与鼠标不同步 
+手机上，不能画画，fix it
 
 return all new code
 --> 
