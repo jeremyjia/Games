@@ -13,30 +13,9 @@
         class SampleClassManager {
             constructor() {
                 this.sampleClasses = {
-                    'Person类': `class Person {
-            constructor(name, age) {
-                this.name = name;
-                this.age = age;
-            }
-
-            greet() {
-                return \`大家好，我是\${this.name}，今年\${this.age}岁\`;
-            }
-        }
-
-        // 使用示例
-        const p = new Person('小明', 25);
-        console.log(p.greet());`,
-                    '计算器类': `class Calculator {
-            static add(a, b) { return a + b; }
-            static sub(a, b) { return a - b; }
-            static mul(a, b) { return a * b; }
-            static div(a, b) { return a / b; }
-        }
-
-        // 使用示例
-        console.log('加法:', Calculator.add(5, 3));
-        console.log('减法:', Calculator.sub(5, 3));`,
+                    'Rect类': `class C4Rect {  
+ 
+                            } `,
                     '动物类': `class Animal {
             constructor(name, sound) {
                 this.name = name;
@@ -273,6 +252,19 @@
                 }, { passive: false });
                 window.addEventListener('resize', this.handleResize.bind(this));
                 this.handleResize();
+                this.#createClearButton();
+            }
+            #createClearButton() {
+                const clearBtn = document.createElement('button');
+                clearBtn.textContent = '清空画布';
+                clearBtn.classList.add('bg-red-500', 'hover:bg-red-700', 'text-white', 
+                                    'font-bold', 'py-2', 'px-4', 'rounded', 'ml-4',
+                                    'transition-colors');
+                clearBtn.addEventListener('click', () => {
+                    this.drawnObjects = [];
+                    this.redrawObjects();
+                });
+                this.toolbar.appendChild(clearBtn);
             }
             handleResize() {
                 this.canvas.width = window.innerWidth;
@@ -316,8 +308,23 @@
                 this.tools.push(tool);
                 const button = document.createElement('button');
                 button.textContent = tool.name;
-                button.classList.add('bg-blue-500', 'hover:bg-blue-700', 'text-white', 'font-bold', 'py-2', 'px-4', 'rounded', 'mr-2');
-                button.addEventListener('click', () => this.selectedTool = tool);
+                button.classList.add('bg-blue-500', 'hover:bg-blue-700', 'text-white', 
+                                  'font-bold', 'py-2', 'px-4', 'rounded', 'mr-2',
+                                  'transition-colors');  // 添加过渡效果
+                
+                // 添加点击事件处理
+                button.addEventListener('click', () => {
+                    // 移除所有工具按钮的高亮
+                    this.toolbar.querySelectorAll('button').forEach(btn => {
+                        btn.classList.remove('bg-orange-500', 'hover:bg-orange-600');
+                        btn.classList.add('bg-blue-500', 'hover:bg-blue-700');
+                    });
+                    // 设置当前按钮高亮
+                    button.classList.remove('bg-blue-500', 'hover:bg-blue-700');
+                    button.classList.add('bg-orange-500', 'hover:bg-orange-600');
+                    this.selectedTool = tool;
+                });
+
                 this.toolbar.appendChild(button);
             }
 
@@ -540,6 +547,9 @@
                 this.blackboard = new C4Blackboard();
                 this.blackboard.registerTool(new LineTool());
                 this.blackboard.registerTool(new CircleTool());
+                setTimeout(() => {
+                    this.blackboard.toolbar.querySelector('button').click();
+                }, 100);
                 this.#createUI();
                 this.#loadIssue();
                 this.sampleClassManager = new SampleClassManager();
@@ -809,7 +819,8 @@
       
 <!--
 升级  
-画图按钮高亮用更明显的颜色
+code: Rect类
+运行此类代码后，黑板工具条上多出 Rect
 
 return all new code
 --> 
