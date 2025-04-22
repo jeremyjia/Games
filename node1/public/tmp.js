@@ -1,141 +1,80 @@
- 
-class TriangleTool extends DrawingTool {
-    constructor() {
-        super();
-        this.name = '三角形';
+// 在 DrawingTool 基类中添加抽象方法
+class DrawingTool {
+    // ... 其他原有代码
+    
+    containsPoint(x, y, obj) {
+        throw new Error("必须实现 containsPoint 方法");
     }
+}
 
-    drawShape(ctx, obj) {
-        const x1 = obj.startX + obj.width / 2;
+// 直线工具类
+class LineTool extends DrawingTool {
+    // ... 其他原有代码
+    
+    containsPoint(x, y, obj) {
+        // 直线点击检测逻辑
+        const dx = x - obj.startX;
+        const dy = y - obj.startY;
+        const distance = Math.abs(dx * (obj.endY - obj.startY) - dy * (obj.endX - obj.startX)) 
+                        / Math.sqrt((obj.endY - obj.startY) ** 2 + (obj.endX - obj.startX) ** 2);
+        return distance < 5;
+    }
+}
+
+// 圆形工具类 
+class CircleTool extends DrawingTool {
+    // ... 其他原有代码
+    
+    containsPoint(x, y, obj) {
+        const radius = Math.sqrt((obj.endX - obj.startX) ** 2 + (obj.endY - obj.startY) ** 2);
+        const dist = Math.sqrt((x - obj.startX) ** 2 + (y - obj.startY) ** 2);
+        return dist <= radius;
+    }
+}
+
+// 矩形工具类
+class RectTool extends DrawingTool {
+    // ... 其他原有代码
+    
+    containsPoint(x, y, obj) {
+        return x >= obj.startX && x <= obj.startX + obj.width &&
+               y >= obj.startY && y <= obj.startY + obj.height;
+    }
+}
+
+// 三角形工具类
+class TriangleTool extends DrawingTool {
+    // ... 其他原有代码
+    
+    containsPoint(x, y, obj) {
+        const x1 = obj.startX + obj.width/2;
         const y1 = obj.startY;
         const x2 = obj.startX;
         const y2 = obj.startY + obj.height;
         const x3 = obj.startX + obj.width;
         const y3 = y2;
 
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.lineTo(x3, y3);
-        ctx.closePath();
-        ctx.stroke();
-    }
-
-    drawTemp(ctx) {
-        if (!this.isDrawing) return;
-        const width = this.currentX - this.startX;
-        const height = this.currentY - this.startY;
-
-        const x1 = this.startX + width / 2;
-        const y1 = this.startY;
-        const x2 = this.startX;
-        const y2 = this.startY + height;
-        const x3 = this.startX + width;
-        const y3 = y2;
-
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.lineTo(x3, y3);
-        ctx.closePath();
-        ctx.stroke();
+        const areaOrig = Math.abs((x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1));
+        const area1 = Math.abs((x1 - x) * (y2 - y) - (x2 - x) * (y1 - y));
+        const area2 = Math.abs((x2 - x) * (y3 - y) - (x3 - x) * (y2 - y));
+        const area3 = Math.abs((x3 - x) * (y1 - y) - (x1 - x) * (y3 - y));
+        
+        return (area1 + area2 + area3) <= (areaOrig + 0.001);
     }
 }
 
-// 在C4Blackboard的getObjectAtPoint方法中添加三角形碰撞检测
+// 修改 Blackboard 类中的检测方法
 class C4Blackboard {
-    // ...其他现有代码...
-
+    // ... 其他原有代码
+    
     getObjectAtPoint(x, y) {
         for (let i = this.drawnObjects.length - 1; i >= 0; i--) {
             const obj = this.drawnObjects[i];
-            if (obj.type === '三角形') {
-                const x1 = obj.startX + obj.width / 2;
-                const y1 = obj.startY;
-                const x2 = obj.startX;
-                const y2 = obj.startY + obj.height;
-                const x3 = obj.startX + obj.width;
-                const y3 = y2;
-
-                const areaOrig = Math.abs((x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1));
-                const area1 = Math.abs((x1 - x) * (y2 - y) - (x2 - x) * (y1 - y));
-                const area2 = Math.abs((x2 - x) * (y3 - y) - (x3 - x) * (y2 - y));
-                const area3 = Math.abs((x3 - x) * (y1 - y) - (x1 - x) * (y3 - y));
-                const epsilon = 0.001;
-                if ((area1 + area2 + area3) <= (areaOrig + epsilon)) {
-                    return obj;
-                }
+            const tool = this.tools.find(t => t.name === obj.type);
+            if (tool && tool.containsPoint(x, y, obj)) {
+                return obj;
             }
-            // 其他形状的检测...
         }
         return null;
     }
 }
-
-// 在SampleClassManager中添加示例代码
-class SampleClassManager {
-    constructor() {
-        this.sampleClasses = {
-            '三角形类': `class TriangleTool extends DrawingTool {
-                constructor() {
-                    super();
-                    this.name = '三角形';
-                }
-
-                drawShape(ctx, obj) {
-                    const x1 = obj.startX + obj.width/2;
-                    const y1 = obj.startY;
-                    const x2 = obj.startX;
-                    const y2 = obj.startY + obj.height;
-                    const x3 = obj.startX + obj.width;
-                    const y3 = y2;
-                    
-                    ctx.beginPath();
-                    ctx.moveTo(x1, y1);
-                    ctx.lineTo(x2, y2);
-                    ctx.lineTo(x3, y3);
-                    ctx.closePath();
-                    ctx.stroke();
-                }
-
-                drawTemp(ctx) {
-                    if (!this.isDrawing) return;
-                    const width = this.currentX - this.startX;
-                    const height = this.currentY - this.startY;
-                    
-                    const x1 = this.startX + width/2;
-                    const y1 = this.startY;
-                    const x2 = this.startX;
-                    const y2 = this.startY + height;
-                    const x3 = this.startX + width;
-                    const y3 = y2;
-                    
-                    ctx.beginPath();
-                    ctx.moveTo(x1, y1);
-                    ctx.lineTo(x2, y2);
-                    ctx.lineTo(x3, y3);
-                    ctx.closePath();
-                    ctx.stroke();
-                }
-            }
-
-            // 注册三角形工具
-            app.blackboard.registerTool(new TriangleTool());
-            // 自动选择新工具
-            setTimeout(() => {
-                const buttons = app.blackboard.toolbar.querySelectorAll('button');
-                buttons[buttons.length - 1].click();
-            }, 50);`
-        };
-    }
-}
-
-// 在C4MobileDevApp中注册三角形工具
-class C4MobileDevApp {
-    constructor() {
-        // ...其他初始化代码...
-        this.blackboard.registerTool(new TriangleTool());
-        // ...后续代码...
-    }
-}
-</script>
