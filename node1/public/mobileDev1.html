@@ -28,7 +28,6 @@
         // 使用示例
         const p = new Person('小明', 25);
         console.log(p.greet());`,
-                    
                     '计算器类': `class Calculator {
             static add(a, b) { return a + b; }
             static sub(a, b) { return a - b; }
@@ -39,7 +38,6 @@
         // 使用示例
         console.log('加法:', Calculator.add(5, 3));
         console.log('减法:', Calculator.sub(5, 3));`,
-                    
                     '动物类': `class Animal {
             constructor(name, sound) {
                 this.name = name;
@@ -59,17 +57,25 @@
 
             createSampleButtons(containerId, textareaId) {
                 const container = document.getElementById(containerId);
-                if (!container) return;
+                if (!container) {
+                    console.error(`未找到容器元素，ID 为: ${containerId}`);
+                    return '';
+                }
 
-                container.innerHTML = Object.entries(this.sampleClasses)
-                    .map(([name, code]) => `
+                const buttonsHTML = Object.entries(this.sampleClasses)
+                   .map(([name, code]) => `
                         <button class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-1 px-2 rounded m-1"
                             onclick="document.getElementById('${textareaId}').value += \`\\n\\n${code.replace(/\n/g, '\\n').replace(/"/g, '\\"')}\`">
                             插入${name}
                         </button>
                     `).join('');
+
+                container.innerHTML = buttonsHTML;
+                console.log(`已向容器 ${containerId} 插入按钮`);
+                return buttonsHTML;
             }
         }
+
         class C4IssueManager {
             constructor() {
                 this.element = document.createElement('div');
@@ -85,12 +91,14 @@
                 document.body.appendChild(this.element);
                 this.element.style.display = 'none';
             }
+
             #createBody() {
                 const body = document.createElement('div');
                 body.id = 'id_4_debug_wnd_body';
                 body.classList.add('p-2');
                 this.element.appendChild(body);
             }
+
             #createHeader() {
                 const header = document.createElement('div');
                 header.classList.add('bg-gray-200', 'p-2', 'cursor-move', 'select-none');
@@ -205,7 +213,7 @@
                 if (this.draggingObject) {
                     const dx = x - this.dragOffsetX - this.draggingObject.startX;
                     const dy = y - this.dragOffsetY - this.draggingObject.startY;
-                    
+
                     // 修改后的条件判断，包含圆形
                     if (this.draggingObject.type === '直线' || this.draggingObject.type === '圆形') {
                         this.draggingObject.startX += dx;
@@ -222,6 +230,7 @@
                     this.selectedTool?.continueDrawing(this.ctx, x, y);
                 }
             }
+
             onMouseUp(e) {
                 const x = e.offsetX;
                 const y = e.offsetY;
@@ -349,7 +358,7 @@
                 this.blackboard.registerTool(new LineTool());
                 this.blackboard.registerTool(new CircleTool());
                 this.#createUI();
-                this.#loadIssue(); 
+                this.#loadIssue();
                 this.sampleClassManager = new SampleClassManager();
                 return this;
             }
@@ -362,13 +371,14 @@
                 btn4MngUI.classList.add('bg-blue-500', 'hover:bg-blue-700', 'text-white', 'font-bold', 'py-2', 'px-4', 'rounded');
                 btn4MngUI.textContent = 'IssueMng';
                 btn4MngUI.addEventListener('click', () => {
-                    this.oIssueMngWnd.element.style.display = 
+                    this.oIssueMngWnd.element.style.display =
                         this.oIssueMngWnd.element.style.display === 'none' ? 'block' : 'none';
                 });
 
                 toolbar.appendChild(btn4MngUI);
                 document.body.appendChild(toolbar);
             }
+
             async #write2Issue(issueNumber, text) {
                 try {
                     const data = { body: text.toString() };
@@ -416,7 +426,6 @@
             #displayIssue(issue) {
                 const container = document.getElementById('id_4_debug_wnd_body');
                 let commentsHTML = '';
-                this.sampleClassManager.createSampleButtons('id_4_class_examples', 'id_4_ta_issue_body');
 
                 if (issue.comments) {
                     commentsHTML = issue.comments.map((comment, index) => `
@@ -459,13 +468,20 @@
 
                     <div class="mt-4" id="id_4_class_examples">
                         <h4 class="font-bold mb-2">示例类模板：</h4>
-                        ${new SampleClassManager().createSampleButtons('id_4_class_examples', 'id_4_ta_issue_body')}
                     </div>
                     <div class="mt-4">
                         <h3 class="text-lg font-semibold">评论 (${issue.comments?.length || 0})</h3>
                         ${commentsHTML}
                     </div>
                 `;
+
+                // 移动调用 createSampleButtons 的代码到这里
+                const sampleClassContainer = document.getElementById('id_4_class_examples');
+                if (sampleClassContainer) {
+                    this.sampleClassManager.createSampleButtons('id_4_class_examples', 'id_4_ta_issue_body');
+                } else {
+                    console.error('未找到 id_4_class_examples 容器');
+                }
 
                 document.getElementById('id_4_run_body_as_code').addEventListener('click', () => {
                     try {
@@ -593,7 +609,7 @@
 </body>
 
 </html>
-    
+      
 <!--
 升级  
 can't see any bottons in id_4_class_examples, fix it.
