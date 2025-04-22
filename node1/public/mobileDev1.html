@@ -256,11 +256,21 @@
                 document.body.appendChild(this.toolbar);
 
                 this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
-                this.canvas.addEventListener('touchstart', this.onTouchStart.bind(this));
+                this.canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.onMouseDown(e);
+                }, { passive: false });
+                
                 this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
-                this.canvas.addEventListener('touchmove', this.onTouchMove.bind(this));
+                this.canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    this.onMouseMove(e);
+                }, { passive: false });
                 this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
-                this.canvas.addEventListener('touchend', this.onTouchEnd.bind(this));
+                this.canvas.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    this.onMouseUp(e);
+                }, { passive: false });
                 window.addEventListener('resize', this.handleResize.bind(this));
                 this.handleResize();
             }
@@ -270,16 +280,20 @@
                 this.redrawObjects();
             }
             getCanvasCoordinates(e) {
-                if (e.type.startsWith('touch')) {
-                    const rect = this.canvas.getBoundingClientRect();
-                    return {
-                        x: e.touches[0].clientX - rect.left,
-                        y: e.touches[0].clientY - rect.top
-                    };
+                const rect = this.canvas.getBoundingClientRect();
+                let clientX, clientY;
+                
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
                 }
+
                 return {
-                    x: e.offsetX,
-                    y: e.offsetY
+                    x: clientX - rect.left,
+                    y: clientY - rect.top
                 };
             }
 
@@ -308,9 +322,11 @@
             }
 
             onMouseDown(e) {
-                const x = e.offsetX;
-                const y = e.offsetY;
+                const coords = this.getCanvasCoordinates(e);
+                const x = coords.x;
+                const y = coords.y;
                 this.draggingObject = this.getObjectAtPoint(x, y);
+                
                 if (this.draggingObject) {
                     this.dragOffsetX = x - this.draggingObject.startX;
                     this.dragOffsetY = y - this.draggingObject.startY;
@@ -320,13 +336,14 @@
             }
 
             onMouseMove(e) {
-                const x = e.offsetX;
-                const y = e.offsetY;
+                const coords = this.getCanvasCoordinates(e);
+                const x = coords.x;
+                const y = coords.y;
+
                 if (this.draggingObject) {
                     const dx = x - this.dragOffsetX - this.draggingObject.startX;
                     const dy = y - this.dragOffsetY - this.draggingObject.startY;
 
-                    // 修改后的条件判断，包含圆形
                     if (this.draggingObject.type === '直线' || this.draggingObject.type === '圆形') {
                         this.draggingObject.startX += dx;
                         this.draggingObject.startY += dy;
@@ -344,8 +361,10 @@
             }
 
             onMouseUp(e) {
-                const x = e.offsetX;
-                const y = e.offsetY;
+                const coords = this.getCanvasCoordinates(e);
+                const x = coords.x;
+                const y = coords.y;
+
                 if (this.draggingObject) {
                     this.draggingObject = null;
                 } else {
@@ -738,7 +757,7 @@
       
 <!--
 升级  
-手机上，不能画画，fix it
+手机上，看不见已经画的对象，fix it
 
 return all new code
 --> 
