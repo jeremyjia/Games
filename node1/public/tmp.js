@@ -1,43 +1,15 @@
- 
-        class SampleClassManager {
-            constructor() {
-                this.sampleClasses = {
-                    'tree': `class TreeTool extends DrawingTool {
+class TreeTool extends DrawingTool {
     constructor() {
         super();
         this.name = '树木';
-        this.trunkWidth = 20;  // 树干固定宽度
+        this.trunkWidth = 20;
     }
 
-    containsPoint(x, y, obj) {
-        // 检测树干区域
-        const trunkLeft = obj.startX - this.trunkWidth/2;
-        const trunkRight = obj.startX + this.trunkWidth/2;
-        const trunkBottom = obj.startY + obj.trunkHeight;
-        
-        // 检测树冠区域（三角形）
-        const canopyTop = obj.startY - obj.canopyHeight;
-        const canopyLeft = obj.startX - obj.canopyWidth/2;
-        const canopyRight = obj.startX + obj.canopyWidth/2;
-
-        // 检查是否在树干范围内
-        const inTrunk = x >= trunkLeft && x <= trunkRight && 
-                       y >= obj.startY && y <= trunkBottom;
-
-        // 检查是否在树冠范围内（三角形）
-        const inCanopy = (
-            y >= canopyTop && y <= obj.startY &&
-            x >= canopyLeft && x <= canopyRight &&
-            (x - obj.startX) <= (obj.canopyWidth/2 * (y - canopyTop)/obj.canopyHeight) &&
-            (obj.startX - x) <= (obj.canopyWidth/2 * (y - canopyTop)/obj.canopyHeight)
-        );
-
-        return inTrunk || inCanopy;
-    }
+    // containsPoint 方法保持不变...
 
     drawShape(ctx, obj) {
         // 绘制树干
-        ctx.fillStyle = '#8B4513';
+        ctx.fillStyle = obj.fillColor || '#8B4513';
         ctx.fillRect(
             obj.startX - this.trunkWidth/2,
             obj.startY,
@@ -46,11 +18,11 @@
         );
 
         // 绘制树冠
-        ctx.fillStyle = '#228B22';
+        ctx.fillStyle = obj.canopyColor || '#228B22';
         ctx.beginPath();
-        ctx.moveTo(obj.startX, obj.startY - obj.canopyHeight);  // 顶点
-        ctx.lineTo(obj.startX - obj.canopyWidth/2, obj.startY); // 左下角
-        ctx.lineTo(obj.startX + obj.canopyWidth/2, obj.startY); // 右下角
+        ctx.moveTo(obj.startX, obj.startY - obj.canopyHeight);
+        ctx.lineTo(obj.startX - obj.canopyWidth/2, obj.startY);
+        ctx.lineTo(obj.startX + obj.canopyWidth/2, obj.startY);
         ctx.closePath();
         ctx.fill();
     }
@@ -58,13 +30,13 @@
     drawTemp(ctx) {
         if (!this.isDrawing) return;
         
-        // 计算树干高度和树冠尺寸
+        // 实时计算尺寸
         const trunkHeight = Math.abs(this.currentY - this.startY);
         const canopyHeight = trunkHeight * 0.8;
         const canopyWidth = trunkHeight * 0.6;
 
-        // 绘制临时树干
-        ctx.fillStyle = '#8B451366';
+        // 半透明预览
+        ctx.fillStyle = '#8B451344';
         ctx.fillRect(
             this.startX - this.trunkWidth/2,
             this.startY,
@@ -72,8 +44,7 @@
             trunkHeight
         );
 
-        // 绘制临时树冠
-        ctx.fillStyle = '#228B2266';
+        ctx.fillStyle = '#228B2244';
         ctx.beginPath();
         ctx.moveTo(this.startX, this.startY - canopyHeight);
         ctx.lineTo(this.startX - canopyWidth/2, this.startY);
@@ -84,7 +55,7 @@
 
     endDrawing(ctx, x, y) {
         super.endDrawing();
-        const trunkHeight = y - this.startY;
+        const trunkHeight = Math.abs(y - this.startY);
         const canopyHeight = trunkHeight * 0.8;
         const canopyWidth = trunkHeight * 0.6;
         
@@ -94,40 +65,29 @@
             startY: this.startY,
             trunkHeight: trunkHeight,
             canopyHeight: canopyHeight,
-            canopyWidth: canopyWidth
+            canopyWidth: canopyWidth,
+            fillColor: '#8B4513',  // 保存颜色信息
+            canopyColor: '#228B22'
         });
     }
 }
 
-app.blackboard.registerTool(new TreeTool());
-// 自动选择新工具
-setTimeout(() => {
-    const buttons = app.blackboard.toolbar.querySelectorAll('button');
-    buttons[buttons.length - 1].click();
-}, 50);`,
-                    // 其他类保持不变...
-                };
-            }
-            // 其余代码保持不变...
+// 修改黑板的重绘方法
+class C4Blackboard {
+    // ... 其他方法保持不变 ...
+
+    redrawObjects(currentTool) {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // 绘制已保存对象
+        this.drawnObjects.forEach(obj => {
+            const tool = this.tools.find(t => t.name === obj.type);
+            tool?.draw(this.ctx, obj, obj === this.draggingObject);
+        });
+
+        // 实时绘制临时对象
+        if (currentTool?.isDrawing) {
+            currentTool.drawTemp(this.ctx);
         }
-
-        // 其他类保持不变...
-
-        class C4MobileDevApp {
-            constructor() {
-                // 初始化代码保持不变...
-                this.blackboard.registerTool(new LineTool());
-                this.blackboard.registerTool(new CircleTool());
-                // 移除旧的TreeTool注册
-                setTimeout(() => {
-                    this.blackboard.toolbar.querySelector('button').click();
-                }, 100);
-                // 其余初始化代码保持不变...
-            }
-            // 其余方法保持不变...
-        }
-
-        // 其他类保持不变...
-    </script>
-</body>
-</html>
+    }
+}
