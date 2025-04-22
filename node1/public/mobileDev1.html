@@ -57,21 +57,49 @@
 
             createSampleButtons(containerId, textareaId) {
                 const container = document.getElementById(containerId);
+                const ta = document.getElementById(textareaId);
                 if (!container) {
                     console.error(`未找到容器元素，ID 为: ${containerId}`);
                     return '';
                 }
-
+                
                 const buttonsHTML = Object.entries(this.sampleClasses)
-                   .map(([name, code]) => `
-                        <button class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-1 px-2 rounded m-1"
-                            onclick="document.getElementById('${textareaId}').value += \`\\n\\n${code.replace(/\n/g, '\\n').replace(/"/g, '\\"')}\`">
-                            插入${name}
-                        </button>
-                    `).join('');
+                    .map(([name, code]) => {  
+                        const encodedCode = encodeURIComponent(code);
+                        return `
+                            <button class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-1 px-2 rounded m-1"
+                                data-code="${encodedCode}">
+                                插入${name}
+                            </button>
+                        `;
+                    }).join('');
 
                 container.innerHTML = buttonsHTML;
-                console.log(`已向容器 ${containerId} 插入按钮`);
+                
+                container.addEventListener('click', (e) => {
+                    const button = e.target.closest('button');
+                    if (button && button.dataset.code) {
+                        const code = decodeURIComponent(button.dataset.code);
+                        const ta = document.getElementById(textareaId);
+                        if (ta) {
+                            const currentTime = new Date().toLocaleString();
+                            const timeComment = `// 代码生成时间：${currentTime}\n`;
+                            const modifiedCode = code.replace(/\/\/ 使用示例/g, `// 使用示例 - 生成于 ${currentTime}`);
+                            const fullCode = timeComment + modifiedCode;
+                            
+                            const startPos = ta.selectionStart;
+                            const endPos = ta.selectionEnd;
+                            ta.value = fullCode;
+                            
+                            const newPos = startPos + fullCode.length + 2;
+                            ta.selectionStart = newPos;
+                            ta.selectionEnd = newPos;
+                            ta.focus();
+                            ta.dispatchEvent(new Event('input'));
+                        }
+                    }
+                });
+                
                 return buttonsHTML;
             }
         }
@@ -611,7 +639,7 @@
       
 <!--
 升级  
-点击 样本按钮， 代码没有加入 id_4_ta_issue_body
+when run on cell phone, window can move really good. and can draw object.
 
 return all new code
 --> 
