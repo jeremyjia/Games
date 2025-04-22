@@ -5,35 +5,41 @@ makeDraggable() {
 
     const handleStart = (clientX, clientY) => {
         isDragging = true;
-        const rect = this.element.getBoundingClientRect(); // 使用实际渲染位置
-        initialX = clientX - rect.left;  // 改用getBoundingClientRect
-        initialY = clientY - rect.top;   // 获取准确的位置信息
+        const rect = this.element.getBoundingClientRect();
+        // 计算正确的初始偏移（考虑滚动和元素实际位置）
+        initialX = clientX - rect.left;
+        initialY = clientY - rect.top;
+        // 记录元素当前的实际位置
+        startX = rect.left;
+        startY = rect.top;
         this.element.style.transition = 'none';
     };
 
     const handleMove = (clientX, clientY) => {
         if (!isDragging) return;
         
-        // 计算新的位置时考虑元素的实际尺寸
-        const newX = clientX - initialX;
-        const newY = clientY - initialY;
+        // 计算基于初始点击位置的增量
+        const deltaX = clientX - startX;
+        const deltaY = clientY - startY;
+        
+        // 计算新位置
+        let newX = startX + deltaX - initialX;
+        let newY = startY + deltaY - initialY;
 
-        // 限制移动范围时包含元素宽度高度
+        // 应用边界限制
         const maxX = window.innerWidth - this.element.offsetWidth;
         const maxY = window.innerHeight - this.element.offsetHeight;
 
-        // 应用边界限制
-        const clampedX = Math.min(Math.max(newX, 0), maxX);
-        const clampedY = Math.min(Math.max(newY, 0), maxY);
+        newX = Math.min(Math.max(newX, 0), maxX);
+        newY = Math.min(Math.max(newY, 0), maxY);
 
-        // 直接设置left/top而不是使用transform
-        this.element.style.left = clampedX + 'px';
-        this.element.style.top = clampedY + 'px';
+        // 直接设置元素位置
+        this.element.style.left = `${newX}px`;
+        this.element.style.top = `${newY}px`;
     };
 
     const handleEnd = () => {
         isDragging = false;
-        // 移除transition重置以便下次拖动时实时响应
         this.element.style.transition = 'all 0.3s ease';
     };
 
@@ -43,16 +49,18 @@ makeDraggable() {
             const clientX = e.clientX || e.touches[0].clientX;
             const clientY = e.clientY || e.touches[0].clientY;
             handleStart(clientX, clientY);
+            e.preventDefault();
         }
     };
 
     const handlePointerMove = (e) => {
+        if (!isDragging) return;
         const clientX = e.clientX || e.touches[0].clientX;
         const clientY = e.clientY || e.touches[0].clientY;
         handleMove(clientX, clientY);
+        e.preventDefault();
     };
 
-    // 使用更现代的指针事件处理
     header.addEventListener('pointerdown', handlePointerDown);
     document.addEventListener('pointermove', handlePointerMove);
     document.addEventListener('pointerup', handleEnd);
