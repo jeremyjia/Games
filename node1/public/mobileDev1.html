@@ -15,12 +15,16 @@
             constructor() {
                 this.element = document.createElement('div');
                 this.element.id = 'id_4_debug_wnd_wnd';
-                this.element.classList.add('max-w-2xl', 'mx-auto', 'bg-white', 'rounded-lg', 'shadow', 'p-4', 'absolute');
+                this.element.classList.add('max-w-2xl', 'bg-white', 'rounded-lg', 'shadow', 'p-4', 'fixed');
+                this.element.style.zIndex = '100';
+                this.element.style.left = '50%';
+                this.element.style.top = '50%';
+                this.element.style.transform = 'translate(-50%, -50%)';
                 this.#createHeader();
                 this.#createBody();
                 this.makeDraggable();
                 document.body.appendChild(this.element);
-                this.element.style.display = 'none'; // 新增：默认隐藏
+                this.element.style.display = 'none';
             }
             #createBody() {
                 const body = document.createElement('div');
@@ -30,10 +34,10 @@
             }
             #createHeader() {
                 const header = document.createElement('div');
-                header.classList.add('bg-gray-200', 'p-2', 'cursor-move');
+                header.classList.add('bg-gray-200', 'p-2', 'cursor-move', 'select-none');
                 header.textContent = '可拖动头部';
                 this.element.prepend(header);
-            } 
+            }
 
             makeDraggable() {
                 const header = this.element.firstChild;
@@ -42,19 +46,25 @@
 
                 header.addEventListener('mousedown', (e) => {
                     isDragging = true;
-                    offsetX = e.clientX - this.element.offsetLeft;
-                    offsetY = e.clientY - this.element.offsetTop;
+                    const rect = this.element.getBoundingClientRect();
+                    offsetX = e.clientX - rect.left;
+                    offsetY = e.clientY - rect.top;
+                    this.element.style.cursor = 'grabbing';
                 });
 
                 document.addEventListener('mousemove', (e) => {
                     if (isDragging) {
-                        this.element.style.left = (e.clientX - offsetX) + 'px';
-                        this.element.style.top = (e.clientY - offsetY) + 'px';
+                        const x = e.clientX - offsetX;
+                        const y = e.clientY - offsetY;
+                        this.element.style.left = x + 'px';
+                        this.element.style.top = y + 'px';
+                        this.element.style.transform = 'none';
                     }
                 });
 
                 document.addEventListener('mouseup', () => {
                     isDragging = false;
+                    this.element.style.cursor = 'default';
                 });
             }
         }
@@ -62,29 +72,25 @@
         class C4NavigationMenu {
             constructor() {
                 this.element = document.createElement('nav');
-                this.element.classList.add('fixed', 'top-0', 'left-0', 'right-0', 'bg-white', 'shadow', 'flex', 'justify-center', 'p-2', 'z-50'); // 添加 z-index
+                this.element.classList.add('fixed', 'top-0', 'left-0', 'right-0', 'bg-white', 'shadow', 'flex', 'justify-center', 'p-2', 'z-50');
                 this.#createMenuItems();
                 document.body.prepend(this.element);
             }
 
             #createMenuItems() {
-                const homeMenuItem = document.createElement('a');
-                homeMenuItem.classList.add('mr-4', 'text-blue-500', 'hover:text-blue-700', 'font-bold');
-                homeMenuItem.textContent = '主页';
-                homeMenuItem.href = '#';
-                this.element.appendChild(homeMenuItem);
+                const items = [
+                    { text: '主页', href: '#' },
+                    { text: '关于', href: '#' },
+                    { text: '联系我们', href: '#' }
+                ];
 
-                const aboutMenuItem = document.createElement('a');
-                aboutMenuItem.classList.add('mr-4', 'text-blue-500', 'hover:text-blue-700', 'font-bold');
-                aboutMenuItem.textContent = '关于';
-                aboutMenuItem.href = '#';
-                this.element.appendChild(aboutMenuItem);
-
-                const contactMenuItem = document.createElement('a');
-                contactMenuItem.classList.add('text-blue-500', 'hover:text-blue-700', 'font-bold');
-                contactMenuItem.textContent = '联系我们';
-                contactMenuItem.href = '#';
-                this.element.appendChild(contactMenuItem);
+                items.forEach(item => {
+                    const menuItem = document.createElement('a');
+                    menuItem.classList.add('mr-4', 'text-blue-500', 'hover:text-blue-700', 'font-bold');
+                    menuItem.textContent = item.text;
+                    menuItem.href = item.href;
+                    this.element.appendChild(menuItem);
+                });
             }
         }
 
@@ -100,7 +106,7 @@
                 this.tools = [];
                 this.selectedTool = null;
                 this.toolbar = document.createElement('div');
-                this.toolbar.classList.add('fixed', 'top-0', 'left-0', 'right-0', 'bg-white', 'shadow', 'flex', 'p-2');
+                this.toolbar.classList.add('fixed', 'top-12', 'left-0', 'right-0', 'bg-white', 'shadow', 'flex', 'p-2');
                 document.body.appendChild(this.canvas);
                 document.body.appendChild(this.toolbar);
 
@@ -114,28 +120,20 @@
                 const button = document.createElement('button');
                 button.textContent = tool.name;
                 button.classList.add('bg-blue-500', 'hover:bg-blue-700', 'text-white', 'font-bold', 'py-2', 'px-4', 'rounded', 'mr-2');
-                button.addEventListener('click', () => {
-                    this.selectedTool = tool;
-                });
+                button.addEventListener('click', () => this.selectedTool = tool);
                 this.toolbar.appendChild(button);
             }
 
             onMouseDown(e) {
-                if (this.selectedTool) {
-                    this.selectedTool.startDrawing(this.ctx, e.offsetX, e.offsetY);
-                }
+                this.selectedTool?.startDrawing(this.ctx, e.offsetX, e.offsetY);
             }
 
             onMouseMove(e) {
-                if (this.selectedTool) {
-                    this.selectedTool.continueDrawing(this.ctx, e.offsetX, e.offsetY);
-                }
+                this.selectedTool?.continueDrawing(this.ctx, e.offsetX, e.offsetY);
             }
 
             onMouseUp(e) {
-                if (this.selectedTool) {
-                    this.selectedTool.endDrawing(this.ctx, e.offsetX, e.offsetY);
-                }
+                this.selectedTool?.endDrawing(this.ctx, e.offsetX, e.offsetY);
             }
         }
 
@@ -151,15 +149,8 @@
                 this.startY = y;
             }
 
-            continueDrawing(ctx, x, y) {
-                if (this.isDrawing) {
-                    // 具体的绘制逻辑在子类中实现
-                }
-            }
-
-            endDrawing(ctx, x, y) {
-                this.isDrawing = false;
-            }
+            continueDrawing() {}
+            endDrawing() { this.isDrawing = false; }
         }
 
         class LineTool extends DrawingTool {
@@ -186,9 +177,9 @@
             continueDrawing(ctx, x, y) {
                 if (this.isDrawing) {
                     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                    const radius = Math.sqrt(Math.pow(x - this.startX, 2) + Math.pow(y - this.startY, 2));
+                    const radius = Math.sqrt((x-this.startX)**2 + (y-this.startY)**2);
                     ctx.beginPath();
-                    ctx.arc(this.startX, this.startY, radius, 0, 2 * Math.PI);
+                    ctx.arc(this.startX, this.startY, radius, 0, Math.PI*2);
                     ctx.stroke();
                 }
             }
@@ -196,9 +187,9 @@
 
         class C4MobileDevApp {
             constructor() {
-                this.version = "0.12";
+                this.version = "0.13";
                 this.currentRepo = 's177';
-                this.uiIssue = 9; 
+                this.uiIssue = 9;
                 this.issueScript = "";
                 this.issueBodyVisible = false;
                 this.oIssueMngWnd = new C4IssueManager();
@@ -218,19 +209,14 @@
                 const btn4MngUI = document.createElement('button');
                 btn4MngUI.classList.add('bg-blue-500', 'hover:bg-blue-700', 'text-white', 'font-bold', 'py-2', 'px-4', 'rounded');
                 btn4MngUI.textContent = 'IssueMng';
-
                 btn4MngUI.addEventListener('click', () => {
-                    if (this.oIssueMngWnd.element.style.display === 'none') {
-                        this.oIssueMngWnd.element.style.display = 'block';
-                    } else {
-                        this.oIssueMngWnd.element.style.display = 'none';
-                    }
+                    this.oIssueMngWnd.element.style.display = 
+                        this.oIssueMngWnd.element.style.display === 'none' ? 'block' : 'none';
                 });
 
                 toolbar.appendChild(btn4MngUI);
                 document.body.appendChild(toolbar);
             }
-
             async #write2Issue(issueNumber, text) {
                 try {
                     const data = { body: text.toString() };
@@ -442,9 +428,8 @@
 </html>
     
     
-    
 <!--
 升级  
-can't operate oIssueMngWnd，请修复
+让已经画的对象可移动
 return all new code
 --> 
