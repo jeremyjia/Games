@@ -1,20 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
     <title>手机编程系统</title>
-    <style>
-        canvas {
-            touch-action: none; /* 防止画布上的默认触摸行为 */
-        }
-        .draggable-window {
-            touch-action: none; /* 防止窗口拖动时的页面滚动 */
-        }
-    </style>
 </head>
 
 <body class="bg-gray-100 p-4">
@@ -23,25 +14,9 @@
 
         class C4IssueManager {
             constructor() {
-                this.element = document.createElement('div');
-                this.element.id = 'id_4_debug_wnd_wnd';
-                this.element.classList.add('max-w-2xl', 'bg-white', 'rounded-lg', 'shadow', 'p-4', 'fixed', 'draggable-window');
-                this.element.style.zIndex = '100';
-                this.element.style.left = '50%';
-                this.element.style.top = '50%';
-                this.element.style.transform = 'translate(-50%, -50%)';
-                this.#createHeader();
-                this.#createBody();
-                this.makeDraggable();
-                document.body.appendChild(this.element);
-                this.element.style.display = 'none';
-            }
+                // ...其他构造函数代码不变...
 
-            #createHeader() {
-                const header = document.createElement('div');
-                header.classList.add('bg-gray-200', 'p-2', 'cursor-move', 'select-none');
-                header.textContent = '可拖动头部';
-                this.element.prepend(header);
+                this.makeDraggable();
             }
 
             makeDraggable() {
@@ -49,141 +24,148 @@
                 let isDragging = false;
                 let startX, startY, initialX, initialY;
 
-                const startDrag = (clientX, clientY) => {
+                const handleStart = (clientX, clientY) => {
                     isDragging = true;
                     initialX = clientX - this.element.offsetLeft;
                     initialY = clientY - this.element.offsetTop;
                     this.element.style.transition = 'none';
                 };
 
-                const duringDrag = (clientX, clientY) => {
+                const handleMove = (clientX, clientY) => {
                     if (!isDragging) return;
                     const newX = clientX - initialX;
                     const newY = clientY - initialY;
                     
-                    // 限制窗口在可视区域内
+                    // 限制在可视区域内
                     const maxX = window.innerWidth - this.element.offsetWidth;
                     const maxY = window.innerHeight - this.element.offsetHeight;
                     
-                    this.element.style.left = `${Math.min(Math.max(newX, 0), maxX}px`;
-                    this.element.style.top = `${Math.min(Math.max(newY, 0), maxY}px`;
+                    this.element.style.left = Math.min(Math.max(newX, 0), maxX) + 'px';
+                    this.element.style.top = Math.min(Math.max(newY, 0), maxY) + 'px';
                 };
 
-                const stopDrag = () => {
+                const handleEnd = () => {
                     isDragging = false;
                     this.element.style.transition = 'all 0.3s ease';
                 };
 
                 // 鼠标事件
-                header.addEventListener('mousedown', (e) => startDrag(e.clientX, e.clientY));
-                document.addEventListener('mousemove', (e) => duringDrag(e.clientX, e.clientY));
-                document.addEventListener('mouseup', stopDrag);
+                header.addEventListener('mousedown', (e) => handleStart(e.clientX, e.clientY));
+                document.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
+                document.addEventListener('mouseup', handleEnd);
 
                 // 触摸事件
                 header.addEventListener('touchstart', (e) => {
                     e.preventDefault();
-                    startDrag(e.touches[0].clientX, e.touches[0].clientY);
-                });
+                    handleStart(e.touches[0].clientX, e.touches[0].clientY);
+                }, { passive: false });
+                
                 document.addEventListener('touchmove', (e) => {
                     e.preventDefault();
-                    duringDrag(e.touches[0].clientX, e.touches[0].clientY);
-                });
-                document.addEventListener('touchend', stopDrag);
+                    handleMove(e.touches[0].clientX, e.touches[0].clientY);
+                }, { passive: false });
+                
+                document.addEventListener('touchend', handleEnd);
             }
+            
         }
 
         class C4Blackboard {
             constructor() {
-                this.canvas = document.createElement('canvas');
+                // ...其他构造函数代码不变...
+
+                // 更新事件监听器支持触摸
+                this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
+                this.canvas.addEventListener('touchstart', this.onTouchStart.bind(this));
+                this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
+                this.canvas.addEventListener('touchmove', this.onTouchMove.bind(this));
+                this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
+                this.canvas.addEventListener('touchend', this.onTouchEnd.bind(this));
+
+                // 响应式画布大小
+                window.addEventListener('resize', this.handleResize.bind(this));
+                this.handleResize();
+            }
+
+            handleResize() {
                 this.canvas.width = window.innerWidth;
                 this.canvas.height = window.innerHeight;
-                this.canvas.style.position = 'fixed';
-                this.canvas.style.top = '0';
-                this.canvas.style.left = '0';
-                this.ctx = this.canvas.getContext('2d');
-                this.tools = [];
-                this.selectedTool = null;
-                this.toolbar = document.createElement('div');
-                this.toolbar.classList.add('fixed', 'top-12', 'left-0', 'right-0', 'bg-white', 'shadow', 'flex', 'p-2');
-                this.drawnObjects = [];
-                this.draggingObject = null;
-                this.dragOffsetX = 0;
-                this.dragOffsetY = 0;
-                document.body.appendChild(this.canvas);
-                document.body.appendChild(this.toolbar);
+                this.redrawObjects();
+            }
 
-                // 统一的事件处理
-                const handleEvent = (handler) => (e) => {
-                    const isTouch = e.type.startsWith('touch');
-                    const clientX = isTouch ? e.touches[0].clientX : e.clientX;
-                    const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+            getCanvasCoordinates(e) {
+                if (e.type.startsWith('touch')) {
                     const rect = this.canvas.getBoundingClientRect();
-                    handler(clientX - rect.left, clientY - rect.top);
+                    return {
+                        x: e.touches[0].clientX - rect.left,
+                        y: e.touches[0].clientY - rect.top
+                    };
+                }
+                return {
+                    x: e.offsetX,
+                    y: e.offsetY
                 };
-
-                this.canvas.addEventListener('mousedown', handleEvent(this.onMouseDown.bind(this)));
-                this.canvas.addEventListener('touchstart', handleEvent(this.onMouseDown.bind(this)));
-                this.canvas.addEventListener('mousemove', handleEvent(this.onMouseMove.bind(this)));
-                this.canvas.addEventListener('touchmove', handleEvent(this.onMouseMove.bind(this)));
-                this.canvas.addEventListener('mouseup', handleEvent(this.onMouseUp.bind(this)));
-                this.canvas.addEventListener('touchend', handleEvent(this.onMouseUp.bind(this)));
             }
 
-            // 保持其他方法不变，更新坐标获取逻辑...
-            
-            onMouseDown(x, y) {
-                this.draggingObject = this.getObjectAtPoint(x, y);
-                if (this.draggingObject) {
-                    this.dragOffsetX = x - this.draggingObject.startX;
-                    this.dragOffsetY = y - this.draggingObject.startY;
-                } else {
-                    this.selectedTool?.startDrawing(this.ctx, x, y);
-                }
+            onTouchStart(e) {
+                e.preventDefault();
+                this.onMouseDown(e.touches[0]);
             }
 
-            onMouseMove(x, y) {
-                if (this.draggingObject) {
-                    const dx = x - this.dragOffsetX - this.draggingObject.startX;
-                    const dy = y - this.dragOffsetY - this.draggingObject.startY;
-
-                    if (this.draggingObject.type === '直线' || this.draggingObject.type === '圆形') {
-                        this.draggingObject.startX += dx;
-                        this.draggingObject.startY += dy;
-                        this.draggingObject.endX += dx;
-                        this.draggingObject.endY += dy;
-                    } else {
-                        this.draggingObject.startX = x - this.dragOffsetX;
-                        this.draggingObject.startY = y - this.dragOffsetY;
-                    }
-                    this.redrawObjects();
-                } else {
-                    this.redrawObjects();
-                    this.selectedTool?.continueDrawing(this.ctx, x, y);
-                }
+            onTouchMove(e) {
+                e.preventDefault();
+                this.onMouseMove(e.touches[0]);
             }
 
-            onMouseUp(x, y) {
-                if (this.draggingObject) {
-                    this.draggingObject = null;
-                } else {
-                    this.selectedTool?.endDrawing(this.ctx, x, y);
-                    if (this.selectedTool) {
-                        const newObject = {
-                            type: this.selectedTool.name,
-                            startX: this.selectedTool.startX,
-                            startY: this.selectedTool.startY,
-                            endX: x,
-                            endY: y
-                        };
-                        this.drawnObjects.push(newObject);
-                    }
-                }
+            onTouchEnd(e) {
+                e.preventDefault();
+                this.onMouseUp(e.changedTouches[0]);
             }
 
-            // 保持其他方法不变...
+            onMouseDown(e) {
+                const { x, y } = this.getCanvasCoordinates(e);
+                // ...原有逻辑不变...
+            }
+
+            onMouseMove(e) {
+                const { x, y } = this.getCanvasCoordinates(e);
+                // ...原有逻辑不变...
+            }
+
+            onMouseUp(e) {
+                const { x, y } = this.getCanvasCoordinates(e);
+                // ...原有逻辑不变...
+            }
+
+            // ...其他方法保持不变...
         }
 
-        // 保持其他类不变（DrawingTool, LineTool, CircleTool, C4MobileDevApp 等）...
+        // ...保持其他类不变...
+
+        class C4MobileDevApp {
+            constructor() {
+                // ...构造函数不变...
+
+                // 添加移动端样式调整
+                this.#addMobileStyles();
+            }
+
+            #addMobileStyles() {
+                const style = document.createElement('style');
+                style.textContent = `
+                    button, input, textarea {
+                        font-size: 16px !important; /* 防止iOS缩放 */
+                        touch-action: manipulation; /* 改善触摸响应 */
+                    }
+                    canvas {
+                        touch-action: none; /* 禁用画布默认触摸行为 */
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            // ...其他方法保持不变...
+        }
 
         const app = new C4MobileDevApp();
     </script>

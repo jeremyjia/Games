@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
-    <title>手机编程系统</title>
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+        <title>手机编程系统</title>
+    </head>
 
 <body class="bg-gray-100 p-4">
     <script>
@@ -137,31 +136,52 @@
             makeDraggable() {
                 const header = this.element.firstChild;
                 let isDragging = false;
-                let offsetX, offsetY;
+                let startX, startY, initialX, initialY;
 
-                header.addEventListener('mousedown', (e) => {
+                const handleStart = (clientX, clientY) => {
                     isDragging = true;
-                    const rect = this.element.getBoundingClientRect();
-                    offsetX = e.clientX - rect.left;
-                    offsetY = e.clientY - rect.top;
-                    this.element.style.cursor = 'grabbing';
-                });
+                    initialX = clientX - this.element.offsetLeft;
+                    initialY = clientY - this.element.offsetTop;
+                    this.element.style.transition = 'none';
+                };
 
-                document.addEventListener('mousemove', (e) => {
-                    if (isDragging) {
-                        const x = e.clientX - offsetX;
-                        const y = e.clientY - offsetY;
-                        this.element.style.left = x + 'px';
-                        this.element.style.top = y + 'px';
-                        this.element.style.transform = 'none';
-                    }
-                });
+                const handleMove = (clientX, clientY) => {
+                    if (!isDragging) return;
+                    const newX = clientX - initialX;
+                    const newY = clientY - initialY;
+                    
+                    // 限制在可视区域内
+                    const maxX = window.innerWidth - this.element.offsetWidth;
+                    const maxY = window.innerHeight - this.element.offsetHeight;
+                    
+                    this.element.style.left = Math.min(Math.max(newX, 0), maxX) + 'px';
+                    this.element.style.top = Math.min(Math.max(newY, 0), maxY) + 'px';
+                };
 
-                document.addEventListener('mouseup', () => {
+                const handleEnd = () => {
                     isDragging = false;
-                    this.element.style.cursor = 'default';
-                });
+                    this.element.style.transition = 'all 0.3s ease';
+                };
+
+                // 鼠标事件
+                header.addEventListener('mousedown', (e) => handleStart(e.clientX, e.clientY));
+                document.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
+                document.addEventListener('mouseup', handleEnd);
+
+                // 触摸事件
+                header.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    handleStart(e.touches[0].clientX, e.touches[0].clientY);
+                }, { passive: false });
+                
+                document.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    handleMove(e.touches[0].clientX, e.touches[0].clientY);
+                }, { passive: false });
+                
+                document.addEventListener('touchend', handleEnd);
             }
+         
         }
 
         class C4NavigationMenu {
@@ -210,8 +230,46 @@
                 document.body.appendChild(this.toolbar);
 
                 this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
+                this.canvas.addEventListener('touchstart', this.onTouchStart.bind(this));
                 this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
+                this.canvas.addEventListener('touchmove', this.onTouchMove.bind(this));
                 this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
+                this.canvas.addEventListener('touchend', this.onTouchEnd.bind(this));
+                window.addEventListener('resize', this.handleResize.bind(this));
+                this.handleResize();
+            }
+            handleResize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.redrawObjects();
+            }
+            getCanvasCoordinates(e) {
+                if (e.type.startsWith('touch')) {
+                    const rect = this.canvas.getBoundingClientRect();
+                    return {
+                        x: e.touches[0].clientX - rect.left,
+                        y: e.touches[0].clientY - rect.top
+                    };
+                }
+                return {
+                    x: e.offsetX,
+                    y: e.offsetY
+                };
+            }
+
+            onTouchStart(e) {
+                e.preventDefault();
+                this.onMouseDown(e.touches[0]);
+            }
+
+            onTouchMove(e) {
+                e.preventDefault();
+                this.onMouseMove(e.touches[0]);
+            }
+
+            onTouchEnd(e) {
+                e.preventDefault();
+                this.onMouseUp(e.changedTouches[0]);
             }
 
             registerTool(tool) {
@@ -388,7 +446,21 @@
                 this.#createUI();
                 this.#loadIssue();
                 this.sampleClassManager = new SampleClassManager();
+                this.#addMobileStyles();
                 return this;
+            }
+            #addMobileStyles() {
+                const style = document.createElement('style');
+                style.textContent = `
+                    button, input, textarea {
+                        font-size: 16px !important; /* 防止iOS缩放 */
+                        touch-action: manipulation; /* 改善触摸响应 */
+                    }
+                    canvas {
+                        touch-action: none; /* 禁用画布默认触摸行为 */
+                    }
+                `;
+                document.head.appendChild(style);
             }
 
             #createUI() {
@@ -639,7 +711,7 @@
       
 <!--
 升级  
-when run on cell phone, window can move really good. and can draw object.
+oIssueMngWnd 移动时与鼠标不同步
 
 return all new code
 --> 
