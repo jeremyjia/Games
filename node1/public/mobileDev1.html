@@ -107,6 +107,10 @@
                 this.selectedTool = null;
                 this.toolbar = document.createElement('div');
                 this.toolbar.classList.add('fixed', 'top-12', 'left-0', 'right-0', 'bg-white', 'shadow', 'flex', 'p-2');
+                this.drawnObjects = [];
+                this.draggingObject = null;
+                this.dragOffsetX = 0;
+                this.dragOffsetY = 0;
                 document.body.appendChild(this.canvas);
                 document.body.appendChild(this.toolbar);
 
@@ -125,15 +129,95 @@
             }
 
             onMouseDown(e) {
-                this.selectedTool?.startDrawing(this.ctx, e.offsetX, e.offsetY);
+                const x = e.offsetX;
+                const y = e.offsetY;
+                this.draggingObject = this.getObjectAtPoint(x, y);
+                if (this.draggingObject) {
+                    this.dragOffsetX = x - this.draggingObject.startX;
+                    this.dragOffsetY = y - this.draggingObject.startY;
+                } else {
+                    this.selectedTool?.startDrawing(this.ctx, x, y);
+                }
             }
 
             onMouseMove(e) {
-                this.selectedTool?.continueDrawing(this.ctx, e.offsetX, e.offsetY);
+                const x = e.offsetX;
+                const y = e.offsetY;
+                if (this.draggingObject) {
+                    this.draggingObject.startX = x - this.dragOffsetX;
+                    this.draggingObject.startY = y - this.dragOffsetY;
+                    this.redrawObjects();
+                } else {
+                    this.redrawObjects();
+                    this.selectedTool?.continueDrawing(this.ctx, x, y);
+                }
             }
 
             onMouseUp(e) {
-                this.selectedTool?.endDrawing(this.ctx, e.offsetX, e.offsetY);
+                const x = e.offsetX;
+                const y = e.offsetY;
+                if (this.draggingObject) {
+                    this.draggingObject = null;
+                } else {
+                    this.selectedTool?.endDrawing(this.ctx, x, y);
+                    if (this.selectedTool) {
+                        const newObject = {
+                            type: this.selectedTool.name,
+                            startX: this.selectedTool.startX,
+                            startY: this.selectedTool.startY,
+                            endX: x,
+                            endY: y
+                        };
+                        this.drawnObjects.push(newObject);
+                    }
+                }
+            }
+
+            getObjectAtPoint(x, y) {
+                for (let i = this.drawnObjects.length - 1; i >= 0; i--) {
+                    const obj = this.drawnObjects[i];
+                    if (obj.type === '直线') {
+                        // 简单判断是否在直线附近
+                        const dx = x - obj.startX;
+                        const dy = y - obj.startY;
+                        const distance = Math.abs(dx * (obj.endY - obj.startY) - dy * (obj.endX - obj.startX)) /
+                            Math.sqrt((obj.endY - obj.startY) ** 2 + (obj.endX - obj.startX) ** 2);
+                        if (distance < 5) {
+                            return obj;
+                        }
+                    } else if (obj.type === '圆形') {
+                        const radius = Math.sqrt((obj.endX - obj.startX) ** 2 + (obj.endY - obj.startY) ** 2);
+                        const dist = Math.sqrt((x - obj.startX) ** 2 + (y - obj.startY) ** 2);
+                        if (dist <= radius) {
+                            return obj;
+                        }
+                    }
+                }
+                return null;
+            }
+
+            redrawObjects() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.drawnObjects.forEach(obj => {
+                    if (obj === this.draggingObject) {
+                        this.ctx.strokeStyle = 'red';
+                        this.ctx.lineWidth = 3;
+                    } else {
+                        this.ctx.strokeStyle = 'black';
+                        this.ctx.lineWidth = 1;
+                    }
+                    if (obj.type === '直线') {
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(obj.startX, obj.startY);
+                        this.ctx.lineTo(obj.endX, obj.endY);
+                        this.ctx.stroke();
+                    } else if (obj.type === '圆形') {
+                        const radius = Math.sqrt((obj.endX - obj.startX) ** 2 + (obj.endY - obj.startY) ** 2);
+                        this.ctx.beginPath();
+                        this.ctx.arc(obj.startX, obj.startY, radius, 0, Math.PI * 2);
+                        this.ctx.stroke();
+                    }
+                });
             }
         }
 
@@ -160,7 +244,6 @@
 
             continueDrawing(ctx, x, y) {
                 if (this.isDrawing) {
-                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                     ctx.beginPath();
                     ctx.moveTo(this.startX, this.startY);
                     ctx.lineTo(x, y);
@@ -176,10 +259,9 @@
 
             continueDrawing(ctx, x, y) {
                 if (this.isDrawing) {
-                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                    const radius = Math.sqrt((x-this.startX)**2 + (y-this.startY)**2);
+                    const radius = Math.sqrt((x - this.startX) ** 2 + (y - this.startY) ** 2);
                     ctx.beginPath();
-                    ctx.arc(this.startX, this.startY, radius, 0, Math.PI*2);
+                    ctx.arc(this.startX, this.startY, radius, 0, Math.PI * 2);
                     ctx.stroke();
                 }
             }
@@ -430,6 +512,6 @@
     
 <!--
 升级  
-让已经画的对象可移动
+直线移动逻辑不对，只有一个端点动，修复
 return all new code
 --> 
