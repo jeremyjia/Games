@@ -395,6 +395,8 @@
                     <button id="id_4_update_body" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mb-2 ${this.issueBodyVisible ? '' : 'hidden'}">更新内容</button>
                     <button id="id_4_save_as_new_comment" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mb-2 ${this.issueBodyVisible ? '' : 'hidden'}">存为新评论</button>
 
+                    <div class="mt-4" id="id_4_class_examples"> 
+                    </div>
                     <div class="mt-4">
                         <h3 class="text-lg font-semibold">评论 (${issue.comments?.length || 0})</h3>
                         ${commentsHTML}
@@ -460,16 +462,19 @@
                 const issueBodyDiv = document.getElementById('id_4_ta_issue_body');
                 const toggleButton = document.getElementById('id_4_toggle_body');
                 const updateButton = document.getElementById('id_4_update_body');
+                const saveAsCommentButton = document.getElementById('id_4_save_as_new_comment');
                 const runTextareaButton = document.getElementById('run-textarea-code');
                 this.issueBodyVisible = !this.issueBodyVisible;
                 if (this.issueBodyVisible) {
                     issueBodyDiv.classList.remove('hidden');
                     updateButton.classList.remove('hidden');
+                    saveAsCommentButton.classList.remove('hidden');
                     runTextareaButton.classList.remove('hidden');
                     toggleButton.textContent = '隐藏代码编辑';
                 } else {
                     issueBodyDiv.classList.add('hidden');
                     updateButton.classList.add('hidden');
+                    saveAsCommentButton.classList.add('hidden');
                     runTextareaButton.classList.add('hidden');
                     toggleButton.textContent = '显示代码编辑';
                 }
@@ -525,9 +530,8 @@
 
 </html>
     
-    
 <!--
 升级  
-  id_4_save_as_new_comment, id_4_update_body should be shou up at the same time
+添加一个新类。设计几个样本类代码。类代码以按钮添加到 id_4_class_examples ，点击按钮会把代码添加到文本框
 return all new code
 --> 
