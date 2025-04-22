@@ -146,7 +146,9 @@
                 if (this.draggingObject) {
                     const dx = x - this.dragOffsetX - this.draggingObject.startX;
                     const dy = y - this.dragOffsetY - this.draggingObject.startY;
-                    if (this.draggingObject.type === '直线') {
+                    
+                    // 修改后的条件判断，包含圆形
+                    if (this.draggingObject.type === '直线' || this.draggingObject.type === '圆形') {
                         this.draggingObject.startX += dx;
                         this.draggingObject.startY += dy;
                         this.draggingObject.endX += dx;
@@ -161,7 +163,6 @@
                     this.selectedTool?.continueDrawing(this.ctx, x, y);
                 }
             }
-
             onMouseUp(e) {
                 const x = e.offsetX;
                 const y = e.offsetY;
@@ -392,6 +393,7 @@
                     >${issue.body}</textarea>
                     <button id="run-textarea-code" class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded mb-2 ${this.issueBodyVisible ? '' : 'hidden'}">运行文本框内容</button>
                     <button id="id_4_update_body" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mb-2 ${this.issueBodyVisible ? '' : 'hidden'}">更新内容</button>
+                    <button id="id_4_save_as_new_comment" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mb-2 ${this.issueBodyVisible ? '' : 'hidden'}">存为新评论</button>
 
                     <div class="mt-4">
                         <h3 class="text-lg font-semibold">评论 (${issue.comments?.length || 0})</h3>
@@ -427,6 +429,11 @@
                     } catch (error) {
                         this.#showError(`更新内容失败: ${error.message}`);
                     }
+                });
+
+                document.getElementById('id_4_save_as_new_comment').addEventListener('click', async () => {
+                    const textareaContent = document.getElementById('id_4_ta_issue_body').value;
+                    await this.#write2Issue(this.uiIssue, textareaContent);
                 });
 
                 window.toggleComment = (index) => {
@@ -521,6 +528,6 @@
     
 <!--
 升级  
-圆移动逻辑不对，不应该改变大小，修复
+  id_4_save_as_new_comment, id_4_update_body should be shou up at the same time
 return all new code
 --> 
