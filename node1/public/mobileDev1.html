@@ -11,6 +11,65 @@
 
 <body class="bg-gray-100 p-4">
     <script>
+        class SampleClassManager {
+            constructor() {
+                this.sampleClasses = {
+                    'Person类': `class Person {
+            constructor(name, age) {
+                this.name = name;
+                this.age = age;
+            }
+
+            greet() {
+                return \`大家好，我是\${this.name}，今年\${this.age}岁\`;
+            }
+        }
+
+        // 使用示例
+        const p = new Person('小明', 25);
+        console.log(p.greet());`,
+                    
+                    '计算器类': `class Calculator {
+            static add(a, b) { return a + b; }
+            static sub(a, b) { return a - b; }
+            static mul(a, b) { return a * b; }
+            static div(a, b) { return a / b; }
+        }
+
+        // 使用示例
+        console.log('加法:', Calculator.add(5, 3));
+        console.log('减法:', Calculator.sub(5, 3));`,
+                    
+                    '动物类': `class Animal {
+            constructor(name, sound) {
+                this.name = name;
+                this.sound = sound;
+            }
+
+            makeSound() {
+                return \`\${this.name} 发出声音：\${this.sound}！\`;
+            }
+        }
+
+        // 使用示例
+        const dog = new Animal('小狗', '汪汪汪');
+        console.log(dog.makeSound());`
+                };
+            }
+
+            createSampleButtons(containerId, textareaId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                container.innerHTML = Object.entries(this.sampleClasses)
+                    .map(([name, code]) => `
+                        <button class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-1 px-2 rounded m-1"
+                            onclick="document.getElementById('${textareaId}').value += \`\\n\\n${code.replace(/\n/g, '\\n').replace(/"/g, '\\"')}\`">
+                            插入${name}
+                        </button>
+                    `).join('');
+            }
+        }
         class C4IssueManager {
             constructor() {
                 this.element = document.createElement('div');
@@ -290,7 +349,8 @@
                 this.blackboard.registerTool(new LineTool());
                 this.blackboard.registerTool(new CircleTool());
                 this.#createUI();
-                this.#loadIssue();
+                this.#loadIssue(); 
+                this.sampleClassManager = new SampleClassManager();
                 return this;
             }
 
@@ -356,6 +416,8 @@
             #displayIssue(issue) {
                 const container = document.getElementById('id_4_debug_wnd_body');
                 let commentsHTML = '';
+                this.sampleClassManager.createSampleButtons('id_4_class_examples', 'id_4_ta_issue_body');
+
                 if (issue.comments) {
                     commentsHTML = issue.comments.map((comment, index) => `
                         <div class="mt-4 p-2 border rounded">
@@ -395,7 +457,9 @@
                     <button id="id_4_update_body" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mb-2 ${this.issueBodyVisible ? '' : 'hidden'}">更新内容</button>
                     <button id="id_4_save_as_new_comment" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mb-2 ${this.issueBodyVisible ? '' : 'hidden'}">存为新评论</button>
 
-                    <div class="mt-4" id="id_4_class_examples"> 
+                    <div class="mt-4" id="id_4_class_examples">
+                        <h4 class="font-bold mb-2">示例类模板：</h4>
+                        ${new SampleClassManager().createSampleButtons('id_4_class_examples', 'id_4_ta_issue_body')}
                     </div>
                     <div class="mt-4">
                         <h3 class="text-lg font-semibold">评论 (${issue.comments?.length || 0})</h3>
@@ -532,6 +596,6 @@
     
 <!--
 升级  
-添加一个新类。设计几个样本类代码。类代码以按钮添加到 id_4_class_examples ，点击按钮会把代码添加到文本框
+can't see any bottons in id_4_class_examples, fix it.
 return all new code
 --> 
