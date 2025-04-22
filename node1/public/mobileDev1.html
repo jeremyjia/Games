@@ -22,11 +22,9 @@ class RectTool extends DrawingTool {
 
     continueDrawing(ctx, x, y) {
         if (this.isDrawing) {
-            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-            this.redrawObjects(ctx);
-            const width = x - this.startX;
-            const height = y - this.startY;
-            ctx.strokeRect(this.startX, this.startY, width, height);
+            this.currentX = x;
+            this.currentY = y;
+            app.blackboard.redrawObjects(ctx, this);
         }
     }
 
@@ -467,32 +465,81 @@ setTimeout(() => {
                 }
                 return null;
             }
-
-            redrawObjects() {
+            redrawObjects(ctx, currentTool) {
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                this.drawnObjects.forEach(obj => {
-                    if (obj === this.draggingObject) {
-                        this.ctx.strokeStyle = 'red';
-                        this.ctx.lineWidth = 3;
-                    } else {
-                        this.ctx.strokeStyle = 'black';
-                        this.ctx.lineWidth = 1;
-                    }
-                    if (obj.type === '直线') {
-                        this.ctx.beginPath();
-                        this.ctx.moveTo(obj.startX, obj.startY);
-                        this.ctx.lineTo(obj.endX, obj.endY);
-                        this.ctx.stroke();
-                    } else if (obj.type === '圆形') {
-                        const radius = Math.sqrt((obj.endX - obj.startX) ** 2 + (obj.endY - obj.startY) ** 2);
-                        this.ctx.beginPath();
-                        this.ctx.arc(obj.startX, obj.startY, radius, 0, Math.PI * 2);
-                        this.ctx.stroke();
-                    } else if (obj.type === '矩形') {
-                        this.ctx.strokeRect(obj.startX, obj.startY, obj.width, obj.height);
-                    }
-                });
+                
+                // 绘制已保存的对象
+                this.drawnObjects.forEach(obj => this.drawSingleObject(obj, ctx));
+                
+                // 绘制当前正在绘制的临时对象
+                if (currentTool && currentTool.isDrawing) {
+                    this.drawTempObject(currentTool, ctx);
+                }
             }
+            drawSingleObject(obj, ctx = this.ctx) {
+                ctx.save();
+                this.applyObjectStyle(obj, ctx);
+                
+                switch(obj.type) {
+                    case '直线':
+                        this.drawLine(obj, ctx);
+                        break;
+                    case '圆形':
+                        this.drawCircle(obj, ctx);
+                        break;
+                    case '矩形':
+                        this.drawRect(obj, ctx);
+                        break;
+                }
+                
+                ctx.restore();
+            }
+            applyObjectStyle(obj, ctx) {
+                if (obj === this.draggingObject) {
+                    ctx.strokeStyle = 'red';
+                    ctx.lineWidth = 3;
+                } else {
+                    ctx.strokeStyle = 'black';
+                    ctx.lineWidth = 1;
+                }
+            }
+            drawLine(obj, ctx) {
+                ctx.beginPath();
+                ctx.moveTo(obj.startX, obj.startY);
+                ctx.lineTo(obj.endX, obj.endY);
+                ctx.stroke();
+            }
+
+            drawCircle(obj, ctx) {
+                const radius = Math.sqrt((obj.endX - obj.startX) ** 2 + (obj.endY - obj.startY) ** 2);
+                ctx.beginPath();
+                ctx.arc(obj.startX, obj.startY, radius, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            drawRect(obj, ctx) {
+                ctx.strokeRect(obj.startX, obj.startY, obj.width, obj.height);
+            }
+            drawTempObject(tool, ctx) {
+                ctx.save();
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 1;
+                
+                switch(tool.name) {
+                    case '直线':
+                        this.drawLine(tool.getTempObject(), ctx);
+                        break;
+                    case '圆形':
+                        this.drawCircle(tool.getTempObject(), ctx);
+                        break;
+                    case '矩形':
+                        this.drawRect(tool.getTempObject(), ctx);
+                        break;
+                }
+                
+                ctx.restore();
+            }
+
         }
 
         class DrawingTool {
@@ -500,7 +547,17 @@ setTimeout(() => {
                 this.name = name;
                 this.isDrawing = false;
             }
-
+            getTempObject() {
+                return {
+                    type: this.name,
+                    startX: this.startX,
+                    startY: this.startY,
+                    endX: this.currentX,
+                    endY: this.currentY,
+                    width: this.currentX - this.startX,
+                    height: this.currentY - this.startY
+                };
+            }
             startDrawing(ctx, x, y) {
                 this.isDrawing = true;
                 this.startX = x;
@@ -518,12 +575,9 @@ setTimeout(() => {
 
             continueDrawing(ctx, x, y) {
                 if (this.isDrawing) {
-                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                    this.redrawObjects(ctx);
-                    ctx.beginPath();
-                    ctx.moveTo(this.startX, this.startY);
-                    ctx.lineTo(x, y);
-                    ctx.stroke();
+                    this.currentX = x;
+                    this.currentY = y;
+                    app.blackboard.redrawObjects(ctx, this);
                 }
             }
 
@@ -558,12 +612,9 @@ setTimeout(() => {
 
             continueDrawing(ctx, x, y) {
                 if (this.isDrawing) {
-                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                    this.redrawObjects(ctx);
-                    const radius = Math.sqrt((x - this.startX) ** 2 + (y - this.startY) ** 2);
-                    ctx.beginPath();
-                    ctx.arc(this.startX, this.startY, radius, 0, Math.PI * 2);
-                    ctx.stroke();
+                    this.currentX = x;
+                    this.currentY = y;
+                    app.blackboard.redrawObjects(ctx, this);
                 }
             }
 
