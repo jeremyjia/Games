@@ -13,10 +13,48 @@
         class SampleClassManager {
             constructor() {
                 this.sampleClasses = {
-                    'Rect类': `class C4Rect {  
- 
-                            } `,
-                    '动物类': `class Animal {
+                    'Rect类': ` 
+
+class RectTool extends DrawingTool {
+    constructor() {
+        super('矩形');
+    }
+
+    continueDrawing(ctx, x, y) {
+        if (this.isDrawing) {
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            this.redrawObjects(ctx);
+            const width = x - this.startX;
+            const height = y - this.startY;
+            ctx.strokeRect(this.startX, this.startY, width, height);
+        }
+    }
+
+    redrawObjects(ctx) {
+        app.blackboard.drawnObjects.forEach(obj => {
+            if (obj === app.blackboard.draggingObject) {
+                ctx.strokeStyle = 'red';
+                ctx.lineWidth = 3;
+            } else {
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 1;
+            }
+            if (obj.type === '矩形') {
+                ctx.strokeRect(obj.startX, obj.startY, obj.width, obj.height);
+            }
+        });
+    }
+}
+
+// 注册矩形工具
+app.blackboard.registerTool(new RectTool());
+// 自动选择新工具
+setTimeout(() => {
+    const buttons = app.blackboard.toolbar.querySelectorAll('button');
+    buttons[buttons.length - 1].click();
+}, 50);`,
+
+'动物类': `class Animal {
             constructor(name, sound) {
                 this.name = name;
                 this.sound = sound;
@@ -383,7 +421,9 @@
                             startX: this.selectedTool.startX,
                             startY: this.selectedTool.startY,
                             endX: x,
-                            endY: y
+                            endY: y,
+                            width: x - this.selectedTool.startX,
+                            height: y - this.selectedTool.startY
                         };
                         this.drawnObjects.push(newObject);
                     }
@@ -407,6 +447,12 @@
                         const radius = Math.sqrt((obj.endX - obj.startX) ** 2 + (obj.endY - obj.startY) ** 2);
                         const dist = Math.sqrt((x - obj.startX) ** 2 + (y - obj.startY) ** 2);
                         if (dist <= radius) {
+                            return obj;
+                        }
+                    }
+                    else if (obj.type === '矩形') {
+                        if (x >= obj.startX && x <= obj.startX + obj.width &&
+                            y >= obj.startY && y <= obj.startY + obj.height) {
                             return obj;
                         }
                     }
@@ -434,6 +480,8 @@
                         this.ctx.beginPath();
                         this.ctx.arc(obj.startX, obj.startY, radius, 0, Math.PI * 2);
                         this.ctx.stroke();
+                    } else if (obj.type === '矩形') {
+                        this.ctx.strokeRect(obj.startX, obj.startY, obj.width, obj.height);
                     }
                 });
             }
