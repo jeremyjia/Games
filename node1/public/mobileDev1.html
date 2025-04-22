@@ -46,27 +46,46 @@
         return inTrunk || inCanopy;
     }
 
-    drawShape(ctx, obj) {
+    drawShape(ctx, obj, isDragging) {
+        // 保存原始样式
+        ctx.save();
+        
+        // 应用高亮样式
+        this.applyStyle(ctx, isDragging);
+        
+        // 设置树干颜色（高亮时使用红色半透明，否则使用存储颜色）
+        ctx.fillStyle = isDragging ? 'rgba(255, 0, 0, 0.5)' : (obj.fillColor || '#8B4513');
+        ctx.strokeStyle = isDragging ? 'red' : 'black';
+        ctx.lineWidth = isDragging ? 3 : 1;
+        
         // 绘制树干
-        ctx.fillStyle = obj.fillColor || '#8B4513';
         ctx.fillRect(
             obj.startX - this.trunkWidth/2,
             obj.startY,
             this.trunkWidth,
             obj.trunkHeight
         );
+        ctx.strokeRect(
+            obj.startX - this.trunkWidth/2,
+            obj.startY,
+            this.trunkWidth,
+            obj.trunkHeight
+        );
 
-        // 绘制树冠
-        ctx.fillStyle = obj.canopyColor || '#228B22';
+        // 设置树冠颜色（高亮时使用绿色半透明）
+        ctx.fillStyle = isDragging ? 'rgba(0, 255, 0, 0.5)' : (obj.canopyColor || '#228B22');
         ctx.beginPath();
         ctx.moveTo(obj.startX, obj.startY - obj.canopyHeight);
         ctx.lineTo(obj.startX - obj.canopyWidth/2, obj.startY);
         ctx.lineTo(obj.startX + obj.canopyWidth/2, obj.startY);
         ctx.closePath();
         ctx.fill();
+        ctx.stroke();
+
+        // 恢复原始样式
+        ctx.restore();
     }
 
-    
     drawTemp(ctx) {
         if (!this.isDrawing) return;
         
@@ -75,7 +94,12 @@
         const canopyHeight = trunkHeight * 0.8;
         const canopyWidth = trunkHeight * 0.6;
 
-        // 半透明预览
+        // 半透明预览（添加红色边框）
+        ctx.save();
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 2;
+        
+        // 树干预览
         ctx.fillStyle = '#8B451344';
         ctx.fillRect(
             this.startX - this.trunkWidth/2,
@@ -83,7 +107,14 @@
             this.trunkWidth,
             trunkHeight
         );
+        ctx.strokeRect(
+            this.startX - this.trunkWidth/2,
+            this.startY,
+            this.trunkWidth,
+            trunkHeight
+        );
 
+        // 树冠预览
         ctx.fillStyle = '#228B2244';
         ctx.beginPath();
         ctx.moveTo(this.startX, this.startY - canopyHeight);
@@ -91,6 +122,9 @@
         ctx.lineTo(this.startX + canopyWidth/2, this.startY);
         ctx.closePath();
         ctx.fill();
+        ctx.stroke();
+        
+        ctx.restore();
     }
 
     endDrawing(ctx, x, y) {
@@ -106,11 +140,12 @@
             trunkHeight: trunkHeight,
             canopyHeight: canopyHeight,
             canopyWidth: canopyWidth,
-            fillColor: '#8B4513',  // 保存颜色信息
+            fillColor: '#8B4513',
             canopyColor: '#228B22'
         });
     }
 }
+
 
 app.blackboard.registerTool(new TreeTool());
 // 自动选择新工具
@@ -961,7 +996,7 @@ setTimeout(() => {
       
 <!--
 升级  
-  TreeTool, 选择时高亮显示
+  TreeTool, 选择移动时，应该高亮显示
 
 return all new code
 --> 
