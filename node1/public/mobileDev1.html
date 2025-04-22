@@ -20,6 +20,7 @@
                 this.#createBody();
                 this.makeDraggable();
                 document.body.appendChild(this.element);
+                this.element.style.display = 'none'; // 新增：默认隐藏
             }
             #createBody() {
                 const body = document.createElement('div');
@@ -58,14 +59,153 @@
             }
         }
 
+        class C4NavigationMenu {
+            constructor() {
+                this.element = document.createElement('nav');
+                this.element.classList.add('fixed', 'top-0', 'left-0', 'right-0', 'bg-white', 'shadow', 'flex', 'justify-center', 'p-2', 'z-50'); // 添加 z-index
+                this.#createMenuItems();
+                document.body.prepend(this.element);
+            }
+
+            #createMenuItems() {
+                const homeMenuItem = document.createElement('a');
+                homeMenuItem.classList.add('mr-4', 'text-blue-500', 'hover:text-blue-700', 'font-bold');
+                homeMenuItem.textContent = '主页';
+                homeMenuItem.href = '#';
+                this.element.appendChild(homeMenuItem);
+
+                const aboutMenuItem = document.createElement('a');
+                aboutMenuItem.classList.add('mr-4', 'text-blue-500', 'hover:text-blue-700', 'font-bold');
+                aboutMenuItem.textContent = '关于';
+                aboutMenuItem.href = '#';
+                this.element.appendChild(aboutMenuItem);
+
+                const contactMenuItem = document.createElement('a');
+                contactMenuItem.classList.add('text-blue-500', 'hover:text-blue-700', 'font-bold');
+                contactMenuItem.textContent = '联系我们';
+                contactMenuItem.href = '#';
+                this.element.appendChild(contactMenuItem);
+            }
+        }
+
+        class C4Blackboard {
+            constructor() {
+                this.canvas = document.createElement('canvas');
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.canvas.style.position = 'fixed';
+                this.canvas.style.top = '0';
+                this.canvas.style.left = '0';
+                this.ctx = this.canvas.getContext('2d');
+                this.tools = [];
+                this.selectedTool = null;
+                this.toolbar = document.createElement('div');
+                this.toolbar.classList.add('fixed', 'top-0', 'left-0', 'right-0', 'bg-white', 'shadow', 'flex', 'p-2');
+                document.body.appendChild(this.canvas);
+                document.body.appendChild(this.toolbar);
+
+                this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
+                this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
+                this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
+            }
+
+            registerTool(tool) {
+                this.tools.push(tool);
+                const button = document.createElement('button');
+                button.textContent = tool.name;
+                button.classList.add('bg-blue-500', 'hover:bg-blue-700', 'text-white', 'font-bold', 'py-2', 'px-4', 'rounded', 'mr-2');
+                button.addEventListener('click', () => {
+                    this.selectedTool = tool;
+                });
+                this.toolbar.appendChild(button);
+            }
+
+            onMouseDown(e) {
+                if (this.selectedTool) {
+                    this.selectedTool.startDrawing(this.ctx, e.offsetX, e.offsetY);
+                }
+            }
+
+            onMouseMove(e) {
+                if (this.selectedTool) {
+                    this.selectedTool.continueDrawing(this.ctx, e.offsetX, e.offsetY);
+                }
+            }
+
+            onMouseUp(e) {
+                if (this.selectedTool) {
+                    this.selectedTool.endDrawing(this.ctx, e.offsetX, e.offsetY);
+                }
+            }
+        }
+
+        class DrawingTool {
+            constructor(name) {
+                this.name = name;
+                this.isDrawing = false;
+            }
+
+            startDrawing(ctx, x, y) {
+                this.isDrawing = true;
+                this.startX = x;
+                this.startY = y;
+            }
+
+            continueDrawing(ctx, x, y) {
+                if (this.isDrawing) {
+                    // 具体的绘制逻辑在子类中实现
+                }
+            }
+
+            endDrawing(ctx, x, y) {
+                this.isDrawing = false;
+            }
+        }
+
+        class LineTool extends DrawingTool {
+            constructor() {
+                super('直线');
+            }
+
+            continueDrawing(ctx, x, y) {
+                if (this.isDrawing) {
+                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                    ctx.beginPath();
+                    ctx.moveTo(this.startX, this.startY);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        class CircleTool extends DrawingTool {
+            constructor() {
+                super('圆形');
+            }
+
+            continueDrawing(ctx, x, y) {
+                if (this.isDrawing) {
+                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                    const radius = Math.sqrt(Math.pow(x - this.startX, 2) + Math.pow(y - this.startY, 2));
+                    ctx.beginPath();
+                    ctx.arc(this.startX, this.startY, radius, 0, 2 * Math.PI);
+                    ctx.stroke();
+                }
+            }
+        }
+
         class C4MobileDevApp {
             constructor() {
-                this.version = "0.11";
+                this.version = "0.12";
                 this.currentRepo = 's177';
                 this.uiIssue = 9; 
                 this.issueScript = "";
                 this.issueBodyVisible = false;
-                this.debugWindow = new C4IssueManager();
+                this.oIssueMngWnd = new C4IssueManager();
+                this.oNavigationMenu = new C4NavigationMenu();
+                this.blackboard = new C4Blackboard();
+                this.blackboard.registerTool(new LineTool());
+                this.blackboard.registerTool(new CircleTool());
                 this.#createUI();
                 this.#loadIssue();
                 return this;
@@ -75,19 +215,19 @@
                 const toolbar = document.createElement('div');
                 toolbar.classList.add('fixed', 'bottom-0', 'left-0', 'right-0', 'bg-white', 'shadow', 'flex', 'justify-center', 'p-2');
 
-                const btnToggleDebugWnd = document.createElement('button');
-                btnToggleDebugWnd.classList.add('bg-blue-500', 'hover:bg-blue-700', 'text-white', 'font-bold', 'py-2', 'px-4', 'rounded');
-                btnToggleDebugWnd.textContent = 'toggleDebugWnd';
+                const btn4MngUI = document.createElement('button');
+                btn4MngUI.classList.add('bg-blue-500', 'hover:bg-blue-700', 'text-white', 'font-bold', 'py-2', 'px-4', 'rounded');
+                btn4MngUI.textContent = 'IssueMng';
 
-                btnToggleDebugWnd.addEventListener('click', () => {
-                    if (this.debugWindow.element.style.display === 'none') {
-                        this.debugWindow.element.style.display = 'block';
+                btn4MngUI.addEventListener('click', () => {
+                    if (this.oIssueMngWnd.element.style.display === 'none') {
+                        this.oIssueMngWnd.element.style.display = 'block';
                     } else {
-                        this.debugWindow.element.style.display = 'none';
+                        this.oIssueMngWnd.element.style.display = 'none';
                     }
                 });
 
-                toolbar.appendChild(btnToggleDebugWnd);
+                toolbar.appendChild(btn4MngUI);
                 document.body.appendChild(toolbar);
             }
 
@@ -264,7 +404,7 @@
             }
 
             #showError(message) {
-                const container = this.debugWindow.element;
+                const container = this.oIssueMngWnd.element;
                 container.innerHTML = `
                     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                         ${message}
@@ -300,8 +440,11 @@
 </body>
 
 </html>
+    
+    
+    
 <!--
 升级  
-add a button to delete comment
+can't operate oIssueMngWnd，请修复
 return all new code
 --> 
