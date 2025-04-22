@@ -258,18 +258,18 @@
                 this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
                 this.canvas.addEventListener('touchstart', (e) => {
                     e.preventDefault();
-                    this.onMouseDown(e);
+                    this.onMouseDown(e.touches[0]);
                 }, { passive: false });
                 
                 this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
                 this.canvas.addEventListener('touchmove', (e) => {
                     e.preventDefault();
-                    this.onMouseMove(e);
+                    this.onMouseMove(e.touches[0]);
                 }, { passive: false });
                 this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
                 this.canvas.addEventListener('touchend', (e) => {
                     e.preventDefault();
-                    this.onMouseUp(e);
+                    this.onMouseUp(e.changedTouches[0]);
                 }, { passive: false });
                 window.addEventListener('resize', this.handleResize.bind(this));
                 this.handleResize();
@@ -333,6 +333,7 @@
                 } else {
                     this.selectedTool?.startDrawing(this.ctx, x, y);
                 }
+                this.redrawObjects();
             }
 
             onMouseMove(e) {
@@ -380,6 +381,7 @@
                         this.drawnObjects.push(newObject);
                     }
                 }
+                this.redrawObjects();
             }
 
             getObjectAtPoint(x, y) {
@@ -453,11 +455,36 @@
 
             continueDrawing(ctx, x, y) {
                 if (this.isDrawing) {
+                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                    this.redrawObjects(ctx);
                     ctx.beginPath();
                     ctx.moveTo(this.startX, this.startY);
                     ctx.lineTo(x, y);
                     ctx.stroke();
                 }
+            }
+
+            redrawObjects(ctx) {
+                app.blackboard.drawnObjects.forEach(obj => {
+                    if (obj === app.blackboard.draggingObject) {
+                        ctx.strokeStyle = 'red';
+                        ctx.lineWidth = 3;
+                    } else {
+                        ctx.strokeStyle = 'black';
+                        ctx.lineWidth = 1;
+                    }
+                    if (obj.type === '直线') {
+                        ctx.beginPath();
+                        ctx.moveTo(obj.startX, obj.startY);
+                        ctx.lineTo(obj.endX, obj.endY);
+                        ctx.stroke();
+                    } else if (obj.type === '圆形') {
+                        const radius = Math.sqrt((obj.endX - obj.startX) ** 2 + (obj.endY - obj.startY) ** 2);
+                        ctx.beginPath();
+                        ctx.arc(obj.startX, obj.startY, radius, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+                });
             }
         }
 
@@ -468,11 +495,36 @@
 
             continueDrawing(ctx, x, y) {
                 if (this.isDrawing) {
+                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                    this.redrawObjects(ctx);
                     const radius = Math.sqrt((x - this.startX) ** 2 + (y - this.startY) ** 2);
                     ctx.beginPath();
                     ctx.arc(this.startX, this.startY, radius, 0, Math.PI * 2);
                     ctx.stroke();
                 }
+            }
+
+            redrawObjects(ctx) {
+                app.blackboard.drawnObjects.forEach(obj => {
+                    if (obj === app.blackboard.draggingObject) {
+                        ctx.strokeStyle = 'red';
+                        ctx.lineWidth = 3;
+                    } else {
+                        ctx.strokeStyle = 'black';
+                        ctx.lineWidth = 1;
+                    }
+                    if (obj.type === '直线') {
+                        ctx.beginPath();
+                        ctx.moveTo(obj.startX, obj.startY);
+                        ctx.lineTo(obj.endX, obj.endY);
+                        ctx.stroke();
+                    } else if (obj.type === '圆形') {
+                        const radius = Math.sqrt((obj.endX - obj.startX) ** 2 + (obj.endY - obj.startY) ** 2);
+                        ctx.beginPath();
+                        ctx.arc(obj.startX, obj.startY, radius, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+                });
             }
         }
 
@@ -757,7 +809,7 @@
       
 <!--
 升级  
-手机上，看不见已经画的对象，fix it
+画图按钮高亮用更明显的颜色
 
 return all new code
 --> 
