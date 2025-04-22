@@ -144,8 +144,17 @@
                 const x = e.offsetX;
                 const y = e.offsetY;
                 if (this.draggingObject) {
-                    this.draggingObject.startX = x - this.dragOffsetX;
-                    this.draggingObject.startY = y - this.dragOffsetY;
+                    const dx = x - this.dragOffsetX - this.draggingObject.startX;
+                    const dy = y - this.dragOffsetY - this.draggingObject.startY;
+                    if (this.draggingObject.type === '直线') {
+                        this.draggingObject.startX += dx;
+                        this.draggingObject.startY += dy;
+                        this.draggingObject.endX += dx;
+                        this.draggingObject.endY += dy;
+                    } else {
+                        this.draggingObject.startX = x - this.dragOffsetX;
+                        this.draggingObject.startY = y - this.dragOffsetY;
+                    }
                     this.redrawObjects();
                 } else {
                     this.redrawObjects();
@@ -512,6 +521,6 @@
     
 <!--
 升级  
-直线移动逻辑不对，只有一个端点动，修复
+圆移动逻辑不对，不应该改变大小，修复
 return all new code
 --> 
