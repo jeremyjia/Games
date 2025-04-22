@@ -387,8 +387,9 @@ setTimeout(() => {
                     }
                     this.redrawObjects();
                 } else {
-                    this.redrawObjects();
-                    this.selectedTool?.continueDrawing(this.ctx, x, y);
+                    // 更新当前坐标并重绘
+                    this.selectedTool?.continueDrawing(x, y);
+                    this.redrawObjects(this.selectedTool); // 传递当前工具
                 }
             }
 
@@ -445,18 +446,19 @@ setTimeout(() => {
                 }
                 return null;
             }
-            redrawObjects(ctx, currentTool) {
+            redrawObjects(currentTool) {
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                 
-                // 绘制已保存的对象
+                // 绘制已保存对象
                 this.drawnObjects.forEach(obj => {
                     const tool = this.tools.find(t => t.name === obj.type);
                     tool?.draw(this.ctx, obj, obj === this.draggingObject);
                 });
-                
-                // 绘制当前正在绘制的临时对象
-                if (currentTool && currentTool.isDrawing) {
-                    currentTool.drawTemp(this.ctx);
+
+                // 绘制临时对象
+                if (currentTool?.isDrawing) {
+                    const tempObj = currentTool.getTempObject();
+                    currentTool.draw(this.ctx, tempObj);
                 }
             }
              
@@ -496,7 +498,10 @@ setTimeout(() => {
                 this.startY = y;
             }
 
-            continueDrawing() {}
+            continueDrawing(x, y) {
+                this.currentX = x;
+                this.currentY = y;
+            }
             endDrawing() { this.isDrawing = false; }
         }
 
@@ -515,10 +520,8 @@ setTimeout(() => {
 
             drawTemp(ctx) {
                 if (!this.isDrawing) return;
-                ctx.beginPath();
-                ctx.moveTo(this.startX, this.startY);
-                ctx.lineTo(this.currentX, this.currentY);
-                ctx.stroke();
+                const tempObj = this.getTempObject();
+                this.draw(ctx, tempObj);
             }
         }
         class CircleTool extends DrawingTool {
@@ -539,13 +542,8 @@ setTimeout(() => {
 
             drawTemp(ctx) {
                 if (!this.isDrawing) return;
-                const radius = Math.sqrt(
-                    (this.currentX - this.startX) ** 2 + 
-                    (this.currentY - this.startY) ** 2
-                );
-                ctx.beginPath();
-                ctx.arc(this.startX, this.startY, radius, 0, Math.PI * 2);
-                ctx.stroke();
+                const tempObj = this.getTempObject();
+                this.draw(ctx, tempObj);
             }
         }
 
@@ -833,7 +831,7 @@ setTimeout(() => {
       
 <!--
 升级  
-  感觉 drawLine 这样的函数不应出现在黑板类中，而是应该由直线类实现
+  看不见正在画的对象
 
 return all new code
 --> 

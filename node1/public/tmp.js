@@ -1,109 +1,74 @@
- 
 class C4Blackboard {
-    // ... 其他方法保持不变
+    // ... 其他保持不变 ...
 
-    redrawObjects(ctx, currentTool) {
+    onMouseMove(e) {
+        const coords = this.getCanvasCoordinates(e);
+        const x = coords.x;
+        const y = coords.y;
+
+        if (this.draggingObject) {
+            // ... 拖动逻辑保持不变 ...
+        } else {
+            // 更新当前坐标并重绘
+            this.selectedTool?.continueDrawing(x, y);
+            this.redrawObjects(this.selectedTool); // 传递当前工具
+        }
+    }
+
+    redrawObjects(currentTool) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // 绘制已保存的对象
+        // 绘制已保存对象
         this.drawnObjects.forEach(obj => {
             const tool = this.tools.find(t => t.name === obj.type);
             tool?.draw(this.ctx, obj, obj === this.draggingObject);
         });
-        
-        // 绘制当前正在绘制的临时对象
-        if (currentTool && currentTool.isDrawing) {
-            currentTool.drawTemp(this.ctx);
+
+        // 绘制临时对象
+        if (currentTool?.isDrawing) {
+            const tempObj = currentTool.getTempObject();
+            currentTool.draw(this.ctx, tempObj);
         }
     }
-
-    // 移除旧的绘图方法 ： drawLine, drawCircle, drawRect等
 }
 
 class DrawingTool {
-    // 添加通用绘制方法
-    draw(ctx, obj, isDragging) {
-        ctx.save();
-        this.applyStyle(ctx, isDragging);
-        this.drawShape(ctx, obj);
-        ctx.restore();
+    // ... 其他保持不变 ...
+
+    continueDrawing(x, y) {
+        this.currentX = x;
+        this.currentY = y;
     }
 
-    applyStyle(ctx, isDragging) {
-        ctx.strokeStyle = isDragging ? 'red' : 'black';
-        ctx.lineWidth = isDragging ? 3 : 1;
+    getTempObject() {
+        return {
+            type: this.name,
+            startX: this.startX,
+            startY: this.startY,
+            endX: this.currentX,
+            endY: this.currentY,
+            width: this.currentX - this.startX,
+            height: this.currentY - this.startY
+        };
     }
-
-    drawShape(ctx, obj) {} // 由子类实现
 }
 
 class LineTool extends DrawingTool {
-    constructor() {
-        super();
-        this.name = '直线';
-    }
-
-    drawShape(ctx, obj) {
-        ctx.beginPath();
-        ctx.moveTo(obj.startX, obj.startY);
-        ctx.lineTo(obj.endX, obj.endY);
-        ctx.stroke();
-    }
+    // ... 其他保持不变 ...
 
     drawTemp(ctx) {
         if (!this.isDrawing) return;
-        ctx.beginPath();
-        ctx.moveTo(this.startX, this.startY);
-        ctx.lineTo(this.currentX, this.currentY);
-        ctx.stroke();
+        const tempObj = this.getTempObject();
+        this.draw(ctx, tempObj);
     }
 }
 
 class CircleTool extends DrawingTool {
-    constructor() {
-        super();
-        this.name = '圆形';
-    }
-
-    drawShape(ctx, obj) {
-        const radius = Math.sqrt(
-            (obj.endX - obj.startX) ** 2 + 
-            (obj.endY - obj.startY) ** 2
-        );
-        ctx.beginPath();
-        ctx.arc(obj.startX, obj.startY, radius, 0, Math.PI * 2);
-        ctx.stroke();
-    }
+    // ... 其他保持不变 ...
 
     drawTemp(ctx) {
         if (!this.isDrawing) return;
-        const radius = Math.sqrt(
-            (this.currentX - this.startX) ** 2 + 
-            (this.currentY - this.startY) ** 2
-        );
-        ctx.beginPath();
-        ctx.arc(this.startX, this.startY, radius, 0, Math.PI * 2);
-        ctx.stroke();
+        const tempObj = this.getTempObject();
+        this.draw(ctx, tempObj);
     }
 }
-
-class RectTool extends DrawingTool {
-    constructor() {
-        super();
-        this.name = '矩形';
-    }
-
-    drawShape(ctx, obj) {
-        ctx.strokeRect(obj.startX, obj.startY, obj.width, obj.height);
-    }
-
-    drawTemp(ctx) {
-        if (!this.isDrawing) return;
-        const width = this.currentX - this.startX;
-        const height = this.currentY - this.startY;
-        ctx.strokeRect(this.startX, this.startY, width, height);
-    }
-}
-
-// 其他工具类保持类似结构...
-</script>
