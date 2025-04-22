@@ -32,6 +32,7 @@ class RectTool extends DrawingTool {
 
     redrawObjects(ctx) {
         app.blackboard.drawnObjects.forEach(obj => {
+            ctx.beginPath();
             if (obj === app.blackboard.draggingObject) {
                 ctx.strokeStyle = 'red';
                 ctx.lineWidth = 3;
@@ -41,7 +42,14 @@ class RectTool extends DrawingTool {
             }
             if (obj.type === '矩形') {
                 ctx.strokeRect(obj.startX, obj.startY, obj.width, obj.height);
+            } else if (obj.type === '直线') {
+                ctx.moveTo(obj.startX, obj.startY);
+                ctx.lineTo(obj.endX, obj.endY);
+            } else if (obj.type === '圆形') {
+                const radius = Math.sqrt((obj.endX - obj.startX) ** 2 + (obj.endY - obj.startY) ** 2);
+                ctx.arc(obj.startX, obj.startY, radius, 0, Math.PI * 2);
             }
+            ctx.stroke();
         });
     }
 }
@@ -521,6 +529,7 @@ setTimeout(() => {
 
             redrawObjects(ctx) {
                 app.blackboard.drawnObjects.forEach(obj => {
+                    ctx.beginPath();
                     if (obj === app.blackboard.draggingObject) {
                         ctx.strokeStyle = 'red';
                         ctx.lineWidth = 3;
@@ -529,16 +538,15 @@ setTimeout(() => {
                         ctx.lineWidth = 1;
                     }
                     if (obj.type === '直线') {
-                        ctx.beginPath();
                         ctx.moveTo(obj.startX, obj.startY);
                         ctx.lineTo(obj.endX, obj.endY);
-                        ctx.stroke();
                     } else if (obj.type === '圆形') {
                         const radius = Math.sqrt((obj.endX - obj.startX) ** 2 + (obj.endY - obj.startY) ** 2);
-                        ctx.beginPath();
                         ctx.arc(obj.startX, obj.startY, radius, 0, Math.PI * 2);
-                        ctx.stroke();
+                    } else if (obj.type === '矩形') {
+                        ctx.strokeRect(obj.startX, obj.startY, obj.width, obj.height);
                     }
+                    ctx.stroke();
                 });
             }
         }
@@ -561,6 +569,7 @@ setTimeout(() => {
 
             redrawObjects(ctx) {
                 app.blackboard.drawnObjects.forEach(obj => {
+                    ctx.beginPath();
                     if (obj === app.blackboard.draggingObject) {
                         ctx.strokeStyle = 'red';
                         ctx.lineWidth = 3;
@@ -568,17 +577,16 @@ setTimeout(() => {
                         ctx.strokeStyle = 'black';
                         ctx.lineWidth = 1;
                     }
-                    if (obj.type === '直线') {
-                        ctx.beginPath();
+                    if (obj.type === '圆形') {
+                        const radius = Math.sqrt((obj.endX - obj.startX) ** 2 + (obj.endY - obj.startY) ** 2);
+                        ctx.arc(obj.startX, obj.startY, radius, 0, Math.PI * 2);
+                    } else if (obj.type === '直线') {
                         ctx.moveTo(obj.startX, obj.startY);
                         ctx.lineTo(obj.endX, obj.endY);
-                        ctx.stroke();
-                    } else if (obj.type === '圆形') {
-                        const radius = Math.sqrt((obj.endX - obj.startX) ** 2 + (obj.endY - obj.startY) ** 2);
-                        ctx.beginPath();
-                        ctx.arc(obj.startX, obj.startY, radius, 0, Math.PI * 2);
-                        ctx.stroke();
+                    } else if (obj.type === '矩形') {
+                        ctx.strokeRect(obj.startX, obj.startY, obj.width, obj.height);
                     }
+                    ctx.stroke();
                 });
             }
         }
@@ -867,7 +875,7 @@ setTimeout(() => {
       
 <!--
 升级  
-code: Rect类,运行此类代码后，黑板工具条上多出 Rect
+  感觉重复太多了 redrawObjects 能否重构
 
 return all new code
 --> 
