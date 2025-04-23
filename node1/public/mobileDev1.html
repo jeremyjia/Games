@@ -302,7 +302,10 @@ setTimeout(() => {
                 const closeButton = document.createElement('button');
                 closeButton.classList.add('text-gray-600', 'hover:text-gray-800', 'focus:outline-none');
                 closeButton.innerHTML = '<i class="fa-solid fa-xmark"></i>';
-                closeButton.addEventListener('click', () => {
+                
+                // 统一使用 pointer 事件处理
+                closeButton.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
                     this.element.style.display = 'none';
                 });
                 header.appendChild(closeButton);
@@ -388,7 +391,7 @@ setTimeout(() => {
 
             #createMenuItems() {
                 const items = [
-                    { text: '主页', href: '#' },
+                    { text: '主页V0.11', href: '#' },
                     { text: '关于', href: '#' },
                     { text: '联系我们', href: '#' }
                 ];
@@ -744,6 +747,15 @@ setTimeout(() => {
                         touch-action: none; /* 禁用画布默认触摸行为 */
                     }
                 `;
+                style.textContent += `
+                    .touch-callout-none {
+                        -webkit-touch-callout: none;
+                    }
+                    button {
+                        min-width: 44px;
+                        min-height: 44px;
+                    }
+                `;
                 document.head.appendChild(style);
             }
 
@@ -996,7 +1008,7 @@ setTimeout(() => {
       
 <!--
 升级  
-  TreeTool, 选择移动时，应该高亮显示
+ 选择对象以后放开鼠标，对象依然处于被选择状态，只有点击空白处的时候才会取消
 
 return all new code
 --> 
