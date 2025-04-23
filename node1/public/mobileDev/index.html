@@ -121,7 +121,7 @@
                     this.samplesDiv = document.getElementById('id_4_samples');
                     this.lastClickedButton = null;
                     this.loadIssue();
-                    this.snapshotList = [];
+                    this.snapshotList = JSON.parse(localStorage.getItem('snapshots')) || [];
                     this.snapshotListDiv = document.getElementById('snapshot_list');
                     this.lastClickedSnapshotButton = null;
                     
@@ -130,6 +130,7 @@
                         this.originalConsoleLog(...args);
                         this.outputDiv.textContent += args.join(' ') + '\n';
                     };
+                    this.renderSnapshots();
                 }
 
                 async updateComment() {
@@ -220,6 +221,7 @@
                 takeSnapshot() {
                     const snapshot = this.issueTextarea.value;
                     this.snapshotList.push(snapshot);
+                    localStorage.setItem('snapshots', JSON.stringify(this.snapshotList));
                     const snapshotIndex = this.snapshotList.length - 1;
                     const snapshotButton = document.createElement('button');
                     snapshotButton.textContent = `快照 ${snapshotIndex + 1}`;
@@ -242,7 +244,26 @@
                     }
                     const snapshotIndex = parseInt(this.lastClickedSnapshotButton.textContent.split(' ')[1]) - 1;
                     this.snapshotList[snapshotIndex] = this.issueTextarea.value;
+                    localStorage.setItem('snapshots', JSON.stringify(this.snapshotList));
                     alert('高亮快照更新成功');
+                }
+
+                renderSnapshots() {
+                    this.snapshotListDiv.innerHTML = '';
+                    this.snapshotList.forEach((snapshot, index) => {
+                        const snapshotButton = document.createElement('button');
+                        snapshotButton.textContent = `快照 ${index + 1}`;
+                        snapshotButton.classList.add('px-4', 'py-2', 'bg-orange-500', 'text-white', 'rounded', 'hover:bg-orange-600');
+                        snapshotButton.addEventListener('click', () => {
+                            if (this.lastClickedSnapshotButton) {
+                                this.lastClickedSnapshotButton.classList.remove('snapshot-highlight');
+                            }
+                            this.lastClickedSnapshotButton = snapshotButton;
+                            this.lastClickedSnapshotButton.classList.add('snapshot-highlight');
+                            this.issueTextarea.value = this.snapshotList[index];
+                        });
+                        this.snapshotListDiv.appendChild(snapshotButton);
+                    });
                 }
             }
 
