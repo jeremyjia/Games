@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!-- 之前的head部分保持不变 -->
+    </head>
+    <body class="bg-gray-100 p-4">
+        <!-- 页面主体结构保持不变 -->
+        
+        <script>  
+            class C4GithubIssueClient {
+                // 之前的Github客户端代码保持不变
+            }
+
+            class C4MobileDevApp {
+                constructor() {
+                    this.githubClient = new C4GithubIssueClient();
+                    this.progressBar = document.getElementById('progress_bar');
+                    this.progressContainer = document.getElementById('progress_container');
+                    this.reloadButton = document.getElementById('reload_button');
+                    this.issueTextarea = document.getElementById('id_4_ta');
+                    this.outputDiv = document.getElementById('output');
+                    this.samplesDiv = document.getElementById('id_4_samples');
+                    this.lastClickedButton = null;
+                    
+                    // 新增代码历史记录
+                    this.codeHistory = JSON.parse(localStorage.getItem('codeHistory')) || [];
+                    this.executeCodeHistory(); // 加载时执行历史代码
+                    
+                    this.loadIssue();
+                    this.snapshotList = JSON.parse(localStorage.getItem('snapshots')) || [];
+                    this.snapshotListDiv = document.getElementById('snapshot_list');
+                    this.lastClickedSnapshotButton = null;
+                    
+                    this.originalConsoleLog = console.log;
+                    console.log = (...args) => {
+                        this.originalConsoleLog(...args);
+                        this.outputDiv.textContent += args.join(' ') + '\n';
+                    };
+                    this.renderSnapshots();
+                }
+
+                // 新增方法：执行历史代码
+                executeCodeHistory() {
+                    try {
+                        const combinedCode = this.codeHistory.join('\n');
+                        window.eval(combinedCode);
+                    } catch (e) {
+                        console.error('执行历史代码时出错:', e);
+                    }
+                }
+
+                runCode() {
+                    try {
+                        this.outputDiv.textContent = '';
+                        const code = this.issueTextarea.value;
+                        
+                        // 修改为在全局作用域执行
+                        const result = window.eval(code);
+                        
+                        // 保存到代码历史
+                        this.codeHistory.push(code);
+                        localStorage.setItem('codeHistory', JSON.stringify(this.codeHistory));
+                        
+                        if (result !== undefined) {
+                            this.outputDiv.textContent += '\n> ' + result;
+                        }
+                    } catch (error) {
+                        this.outputDiv.textContent = '错误: ' + error.message;
+                    }
+                }
+
+                // 其他方法保持不变...
+            }
+
+            const app = new C4MobileDevApp();
+        </script>
+    </body>
+</html>

@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
-        <title>手机编程系统</title>
+        <title>手机编程系统v0.13</title>
         <style>
           .highlight {
             background-color: #48bb78 !important;
@@ -15,6 +15,10 @@
           .snapshot-highlight {
             background-color: #3182ce !important;
             box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.5);
+          }
+          /* 新增样式，使快照列表超出宽度时自动换行 */
+          #snapshot_list {
+            flex-wrap: wrap;
           }
         </style>
     </head>
@@ -28,7 +32,7 @@
         
         <!-- 工具栏 -->
         <div class="mb-4 flex flex-wrap gap-2">
-            <div class="flex space-x-2" id="id_4_samples"> 
+            <div class="flex space-x-2 flex-wrap" id="id_4_samples"> 
             </div>
             
             <!-- 新增运行按钮和更新按钮 -->
@@ -45,10 +49,10 @@
             <!-- 新增快照工具栏 -->
             <div id="snapshot_toolbar" class="flex space-x-2 mb-4">
                 <button id="take_snapshot" class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600" onclick="app.takeSnapshot()">
-                    <i class="fas fa-camera mr-2"></i>创建快照
+                    <i class="fas fa-camera mr-2"></i>+
                 </button>
                 <button id="update_snapshot" class="px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600" onclick="app.updateHighlightedSnapshot()">
-                    <i class="fas fa-pen mr-2"></i>更新高亮快照
+                    <i class="fas fa-pen mr-2"></i>更新
                 </button>
                 <div id="snapshot_list" class="flex space-x-2"></div>
             </div>
@@ -120,6 +124,11 @@
                     this.outputDiv = document.getElementById('output');
                     this.samplesDiv = document.getElementById('id_4_samples');
                     this.lastClickedButton = null;
+                    
+                    // 新增代码历史记录
+                    this.codeHistory = JSON.parse(localStorage.getItem('codeHistory')) || [];
+                    this.executeCodeHistory(); // 加载时执行历史代码
+                    
                     this.loadIssue();
                     this.snapshotList = JSON.parse(localStorage.getItem('snapshots')) || [];
                     this.snapshotListDiv = document.getElementById('snapshot_list');
@@ -133,6 +142,14 @@
                     this.renderSnapshots();
                 }
 
+                executeCodeHistory() {
+                    try {
+                        const combinedCode = this.codeHistory.join('\n');
+                        window.eval(combinedCode);
+                    } catch (e) {
+                        console.error('执行历史代码时出错:', e);
+                    }
+                }
                 async updateComment() {
                     if (!this.lastClickedButton) {
                         alert('请先选择要更新的评论');
@@ -154,7 +171,14 @@
                     try {
                         this.outputDiv.textContent = '';
                         const code = this.issueTextarea.value;
-                        const result = eval(code);
+                        
+                        // 修改为在全局作用域执行
+                        const result = window.eval(code);
+                        
+                        // 保存到代码历史
+                        this.codeHistory.push(code);
+                        localStorage.setItem('codeHistory', JSON.stringify(this.codeHistory));
+                        
                         if (result !== undefined) {
                             this.outputDiv.textContent += '\n> ' + result;
                         }
@@ -224,7 +248,7 @@
                     localStorage.setItem('snapshots', JSON.stringify(this.snapshotList));
                     const snapshotIndex = this.snapshotList.length - 1;
                     const snapshotButton = document.createElement('button');
-                    snapshotButton.textContent = `快照 ${snapshotIndex + 1}`;
+                    snapshotButton.textContent = `#${snapshotIndex + 1}`;
                     snapshotButton.classList.add('px-4', 'py-2', 'bg-orange-500', 'text-white', 'rounded', 'hover:bg-orange-600');
                     snapshotButton.addEventListener('click', () => {
                         if (this.lastClickedSnapshotButton) {
@@ -242,7 +266,7 @@
                         alert('请先选择一个快照进行高亮显示');
                         return;
                     }
-                    const snapshotIndex = parseInt(this.lastClickedSnapshotButton.textContent.split(' ')[1]) - 1;
+                    const snapshotIndex = parseInt(this.lastClickedSnapshotButton.textContent.slice(1)) - 1;
                     this.snapshotList[snapshotIndex] = this.issueTextarea.value;
                     localStorage.setItem('snapshots', JSON.stringify(this.snapshotList));
                     alert('高亮快照更新成功');
@@ -252,7 +276,7 @@
                     this.snapshotListDiv.innerHTML = '';
                     this.snapshotList.forEach((snapshot, index) => {
                         const snapshotButton = document.createElement('button');
-                        snapshotButton.textContent = `快照 ${index + 1}`;
+                        snapshotButton.textContent = `#${index + 1}`;
                         snapshotButton.classList.add('px-4', 'py-2', 'bg-orange-500', 'text-white', 'rounded', 'hover:bg-orange-600');
                         snapshotButton.addEventListener('click', () => {
                             if (this.lastClickedSnapshotButton) {
@@ -272,7 +296,9 @@
     </body>
 </html>
     
+    
 <!--
 升级  
-save snapshots to localstorage
+如果一个类曾经在 runCode 里运行过，之后任何时候都可以再次创建这个类的实例
+
 --> 
