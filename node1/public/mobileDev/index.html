@@ -1,1 +1,257 @@
-index.html
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+        <title>手机编程系统</title>
+        <style>
+          .highlight {
+            background-color: #48bb78 !important;
+            box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.5);
+          }
+          /* 新增快照高亮样式 */
+          .snapshot-highlight {
+            background-color: #3182ce !important;
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.5);
+          }
+        </style>
+    </head>
+    <body class="bg-gray-100 p-4">
+        <div id="progress_container" class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+            <div id="progress_bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+        </div>
+        <button id="reload_button" class="hidden px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 mb-4" onclick="app.reloadIssue()">
+            <i class="fas fa-redo mr-2"></i>重装
+        </button>
+        
+        <!-- 工具栏 -->
+        <div class="mb-4 flex flex-wrap gap-2">
+            <div class="flex space-x-2" id="id_4_samples"> 
+            </div>
+            
+            <!-- 新增运行按钮和更新按钮 -->
+            <button onclick="app.runCode()" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                <i class="fas fa-play mr-2"></i>运行代码
+            </button>
+            <button onclick="app.updateComment()" class="px-4 py-2 bg-green-700 text-white rounded hover:bg-green-800">
+                <i class="fas fa-save mr-2"></i>更新评论
+            </button>
+        </div>
+
+        <div id="issue_body" class="bg-white p-4 rounded shadow">
+            <textarea id="id_4_ta" class="w-full h-48 border border-gray-300 p-2 rounded mb-4"></textarea>
+            <!-- 新增快照工具栏 -->
+            <div id="snapshot_toolbar" class="flex space-x-2 mb-4">
+                <button id="take_snapshot" class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600" onclick="app.takeSnapshot()">
+                    <i class="fas fa-camera mr-2"></i>创建快照
+                </button>
+                <button id="update_snapshot" class="px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600" onclick="app.updateHighlightedSnapshot()">
+                    <i class="fas fa-pen mr-2"></i>更新高亮快照
+                </button>
+                <div id="snapshot_list" class="flex space-x-2"></div>
+            </div>
+            <div id="output" class="bg-gray-800 text-green-400 p-4 rounded font-mono text-sm overflow-auto max-h-48"></div>
+        </div>
+
+        <script>  
+
+            class C4GithubIssueClient {
+                async getIssueBody(owner, repo, issueNumber) {
+                    try {
+                        const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/issues/${issueNumber}`);
+                        if (!response.ok) {
+                            throw new Error(`获取 Issue 内容失败，状态码: ${response.status}`);
+                        }
+                        const data = await response.json();
+                        return data.body;
+                    } catch (error) {
+                        console.error('获取 Issue 内容时出错:', error);
+                        throw error;
+                    }
+                }
+
+                async getIssueComments(owner, repo, issueNumber) {
+                    try {
+                        const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/issues/${issueNumber}/comments`);
+                        if (!response.ok) {
+                            throw new Error(`获取 Issue 评论失败，状态码: ${response.status}`);
+                        }
+                        const data = await response.json();
+                        return data.map(comment => ({ id: comment.id, body: comment.body }));
+                    } catch (error) {
+                        console.error('获取 Issue 评论时出错:', error);
+                        throw error;
+                    }
+                }
+
+                async updateComment(owner, repo, commentId, body) {
+                    try {
+                        const xdToken = "ghp_2BF" + "JztcBlHHOkBybs" + "UVJZGHQ4S" + "wvFR0poLqc";
+                        const url = `https://api.github.com/repos/${owner}/${repo}/issues/comments/${commentId}`;
+                        const headers = {
+                            'Authorization': `token ${xdToken}`,
+                            'Content-Type': 'application/json'
+                        };
+                        const response = await fetch(url, {
+                            method: 'PATCH',
+                            headers,
+                            body: JSON.stringify({ body })
+                        });
+                        if (!response.ok) {
+                            throw new Error(`更新评论失败，状态码: ${response.status}`);
+                        }
+                        return await response.json();
+                    } catch (error) {
+                        console.error('更新评论时出错:', error);
+                        throw error;
+                    }
+                }
+            }
+
+            class C4MobileDevApp {
+                constructor() {
+                    this.githubClient = new C4GithubIssueClient();
+                    this.progressBar = document.getElementById('progress_bar');
+                    this.progressContainer = document.getElementById('progress_container');
+                    this.reloadButton = document.getElementById('reload_button');
+                    this.issueTextarea = document.getElementById('id_4_ta');
+                    this.outputDiv = document.getElementById('output');
+                    this.samplesDiv = document.getElementById('id_4_samples');
+                    this.lastClickedButton = null;
+                    this.loadIssue();
+                    this.snapshotList = [];
+                    this.snapshotListDiv = document.getElementById('snapshot_list');
+                    this.lastClickedSnapshotButton = null;
+                    
+                    this.originalConsoleLog = console.log;
+                    console.log = (...args) => {
+                        this.originalConsoleLog(...args);
+                        this.outputDiv.textContent += args.join(' ') + '\n';
+                    };
+                }
+
+                async updateComment() {
+                    if (!this.lastClickedButton) {
+                        alert('请先选择要更新的评论');
+                        return;
+                    }
+                    
+                    const commentId = this.lastClickedButton.dataset.commentId;
+                    const newBody = this.issueTextarea.value;
+                    
+                    try {
+                        await this.githubClient.updateComment('littleflute', 's177', commentId, newBody);
+                        alert('评论更新成功！');
+                    } catch (error) {
+                        alert('更新失败: ' + error.message);
+                    }
+                }
+
+                runCode() {
+                    try {
+                        this.outputDiv.textContent = '';
+                        const code = this.issueTextarea.value;
+                        const result = eval(code);
+                        if (result !== undefined) {
+                            this.outputDiv.textContent += '\n> ' + result;
+                        }
+                    } catch (error) {
+                        this.outputDiv.textContent = '错误: ' + error.message;
+                    }
+                }
+
+                async loadIssue() {
+                    const owner = 'littleflute';
+                    const repo = 's177';
+                    const issueNumber = 2;
+
+                    const totalSteps = 100;
+                    let currentStep = 0;
+                    const interval = setInterval(() => {
+                        if (currentStep < totalSteps) {
+                            currentStep++;
+                            this.progressBar.style.width = `${currentStep}%`;
+                        } else {
+                            clearInterval(interval);
+                            this.progressContainer.style.display = 'none';
+                            this.reloadButton.classList.remove('hidden');
+                        }
+                    }, 20);
+
+                    try {
+                        const issueBody = await this.githubClient.getIssueBody(owner, repo, issueNumber);
+                        this.issueTextarea.value = issueBody;
+
+                        const comments = await this.githubClient.getIssueComments(owner, repo, issueNumber);
+                        this.samplesDiv.innerHTML = '';
+                        comments.forEach((comment, index) => {
+                            const button = document.createElement('button');
+                            button.textContent = `#c${index + 1}`;
+                            button.dataset.commentId = comment.id;  // 存储评论ID
+                            button.classList.add('px-4', 'py-2', 'bg-green-500', 'text-white', 'rounded', 'hover:bg-green-600');
+                            button.addEventListener('click', () => {
+                                if (this.lastClickedButton) {
+                                    this.lastClickedButton.classList.remove('highlight');
+                                }
+                                this.lastClickedButton = button;
+                                this.lastClickedButton.classList.add('highlight');
+                                this.issueTextarea.value = comment.body;
+                            });
+                            this.samplesDiv.appendChild(button);
+                        });
+                    } catch (error) {
+                        this.issueTextarea.value = `Error: ${error.message}`;
+                    }
+                }
+
+                reloadIssue() {
+                    this.progressContainer.style.display = 'block';
+                    this.reloadButton.classList.add('hidden');
+                    this.progressBar.style.width = '0%';
+                    if (this.lastClickedButton) {
+                        this.lastClickedButton.classList.remove('highlight');
+                        this.lastClickedButton = null;
+                    }
+                    this.loadIssue();
+                }
+
+                takeSnapshot() {
+                    const snapshot = this.issueTextarea.value;
+                    this.snapshotList.push(snapshot);
+                    const snapshotIndex = this.snapshotList.length - 1;
+                    const snapshotButton = document.createElement('button');
+                    snapshotButton.textContent = `快照 ${snapshotIndex + 1}`;
+                    snapshotButton.classList.add('px-4', 'py-2', 'bg-orange-500', 'text-white', 'rounded', 'hover:bg-orange-600');
+                    snapshotButton.addEventListener('click', () => {
+                        if (this.lastClickedSnapshotButton) {
+                            this.lastClickedSnapshotButton.classList.remove('snapshot-highlight');
+                        }
+                        this.lastClickedSnapshotButton = snapshotButton;
+                        this.lastClickedSnapshotButton.classList.add('snapshot-highlight');
+                        this.issueTextarea.value = this.snapshotList[snapshotIndex];
+                    });
+                    this.snapshotListDiv.appendChild(snapshotButton);
+                }
+
+                updateHighlightedSnapshot() {
+                    if (!this.lastClickedSnapshotButton) {
+                        alert('请先选择一个快照进行高亮显示');
+                        return;
+                    }
+                    const snapshotIndex = parseInt(this.lastClickedSnapshotButton.textContent.split(' ')[1]) - 1;
+                    this.snapshotList[snapshotIndex] = this.issueTextarea.value;
+                    alert('高亮快照更新成功');
+                }
+            }
+
+            const app = new C4MobileDevApp();
+        </script>
+    </body>
+</html>
+    
+<!--
+升级  
+create a snapshot toolbar under id_4_ta, can make some snapshots from id_4_ta.
+--> 
