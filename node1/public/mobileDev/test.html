@@ -154,11 +154,11 @@
                 d.id = id;
                 d.note = new CNote();
 
-                d.classList.add('absolute', 'w-[300px]', 'h-[400px]', 'bg-white', 'border', 'border-gray-300', 'rounded-lg', 'shadow-md', 'z-1000', 'hidden', 'flex-col');
+                d.classList.add('absolute', 'w-[300px]', 'h-[400px]', 'bg-white', 'border', 'border-gray-300', 'rounded-lg', 'shadow-md', 'z-1000', 'hidden', 'flex', 'flex-col');
 
                 const titleBar = document.createElement('div');
                 titleBar.classList.add('p-2', 'bg-gray-100', 'cursor-move', 'border-b', 'border-gray-300', 'flex-shrink-0');
-                titleBar.textContent = "简谱编辑器v0.11";
+                titleBar.textContent = "简谱编辑器v0.12";
 
                 const closeBtn = document.createElement('button');
                 closeBtn.textContent = '×';
@@ -171,7 +171,7 @@
                 d.appendChild(titleBar);
 
                 const editorContainer = document.createElement('div');
-                editorContainer.classList.add('p-2', 'flex-1', 'overflow-y-auto', 'border-b', 'border-gray-300');
+                editorContainer.classList.add('p-2', 'flex-grow', 'overflow-y-auto', 'border-b', 'border-gray-300');
 
                 const noteToolbar = document.createElement('div');
                 noteToolbar.classList.add('flex', 'justify-center', 'mb-2');
@@ -275,7 +275,7 @@
                 d.appendChild(editorContainer);
 
                 const canvasContainer = document.createElement('div');
-                canvasContainer.classList.add('p-2', 'flex-1', 'flex', 'justify-center', 'items-center', 'border-b', 'border-gray-300', 'min-h-[100px]');
+                canvasContainer.classList.add('p-2', 'flex-grow', 'flex', 'justify-center', 'items-center', 'border-b', 'border-gray-300', 'min-h-[100px]');
 
                 const canvas = document.createElement('canvas');
                 canvas.classList.add('w-full', 'h-full', 'border', 'border-gray-200', 'cursor-crosshair', 'bg-gray-50');
@@ -283,7 +283,7 @@
                 d.appendChild(canvasContainer);
 
                 const statusBar = document.createElement('div');
-                statusBar.classList.add('p-2', 'bg-gray-100', 'border-t', 'border-gray-300', 'text-xs', 'text-gray-600', 'text-left', 'h-8', 'leading-8');
+                statusBar.classList.add('p-2', 'bg-gray-100', 'border-t', 'border-gray-300', 'text-xs', 'text-gray-600', 'text-left', 'flex-shrink-0');
                 statusBar.textContent = "状态栏";
                 d.appendChild(statusBar);
 
@@ -359,7 +359,6 @@
 
 </html>
     
-    
 <!--
-把音符绘制由CNote实现
+让状态栏固定在窗口底部
 -->
