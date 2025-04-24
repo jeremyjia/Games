@@ -284,7 +284,50 @@
 
                 const statusBar = document.createElement('div');
                 statusBar.classList.add('p-2', 'bg-gray-100', 'border-t', 'border-gray-300', 'text-xs', 'text-gray-600', 'text-left', 'flex-shrink-0');
-                statusBar.textContent = "状态栏";
+
+                const playButton = document.createElement('button');
+                playButton.textContent = '播放音符';
+                playButton.classList.add('bg-blue-500', 'text-white', 'px-2', 'py-1', 'rounded', 'hover:bg-blue-600', 'transition-colors');
+                playButton.onclick = function () {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+
+                    const noteFrequencies = {
+                        '1': 261.63,
+                        '2': 293.66,
+                        '3': 329.63,
+                        '4': 349.23,
+                        '5': 392.00,
+                        '6': 440.00,
+                        '7': 493.88,
+                        '0': 0
+                    };
+
+                    const frequency = noteFrequencies[d.note.currentNote] * Math.pow(2, d.note.octave);
+                    oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+
+                    const noteLengthMultiplier = {
+                        '1': 4,
+                        '2': 2,
+                        '4': 1,
+                        '8': 0.5,
+                        '16': 0.25
+                    };
+
+                    const duration = noteLengthMultiplier[d.note.noteLength] * 0.5;
+
+                    gainNode.gain.setValueAtTime(1, audioContext.currentTime);
+                    oscillator.start(audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+                    oscillator.stop(audioContext.currentTime + duration);
+                };
+
+                statusBar.appendChild(playButton);
+                statusBar.appendChild(document.createTextNode("  状态栏"));
                 d.appendChild(statusBar);
 
                 document.body.appendChild(d);
@@ -357,8 +400,8 @@
     </script>
 </body>
 
-</html>
+</html>    
     
 <!--
-让状态栏固定在窗口底部
+add a button to status to play the note
 -->
