@@ -47,6 +47,8 @@
         <h1>C4CanvasWnd Test Page</h1>
         <p>Click the button below to show/hide the canvas window. Use the title bar to drag the window.</p>
         <button onclick="window.app.c4.toggleUI()">Toggle Canvas Window</button>
+        <button onclick="window.app.c4.registerObject()">Register Object</button>
+        <button onclick="window.app.c4.unregisterObject()">Unregister Object</button>
         <p>Test features:</p>
         <ul>
             <li>Drag title bar to move window</li>
@@ -54,6 +56,8 @@
             <li>Close using X button or toggle button</li>
             <li>Responsive canvas on window resize</li>
             <li>Proper touch event handling</li>
+            <li>Register and unregister objects</li>
+            <li>Display registered objects as circles on canvas</li>
         </ul>
     </div>
 
@@ -69,6 +73,7 @@
                 this.dragStartY = 0;
                 this.offsetX = 0;
                 this.offsetY = 0;
+                this.objects = [];
 
                 // Create floating window
                 this.wnd = document.createElement('div');
@@ -95,7 +100,7 @@
 
                 // Title text
                 const titleText = document.createElement('div');
-                titleText.textContent = 'Canvas Window';
+                titleText.textContent = '画板v0.11';
 
                 // Close button
                 this.closeBtn = document.createElement('div');
@@ -109,8 +114,10 @@
                 // Create canvas
                 this.canvas = document.createElement('canvas');
                 this.canvas.id = 'id_4_canvas';
+                this.canvas.boss = this;
                 this.canvas.style.width = '100%';
                 this.canvas.style.height = '100%';
+                this.ctx = this.canvas.getContext('2d');
 
                 // Create status bar
                 this.statusBar = document.createElement('div');
@@ -138,6 +145,7 @@
                 this.onDrag = this.onDrag.bind(this);
                 this.stopDrag = this.stopDrag.bind(this);
                 this.resizeCanvas = this.resizeCanvas.bind(this);
+                this.drawObjects = this.drawObjects.bind(this);
 
                 // Event listeners
                 this.canvas.addEventListener('mousedown', this.handleCanvasClick);
@@ -158,6 +166,7 @@
                 const rect = this.wnd.getBoundingClientRect();
                 this.canvas.width = rect.width;
                 this.canvas.height = rect.height - 40; // Account for title/status bars
+                this.drawObjects();
             }
 
             handleCanvasClick(e) {
@@ -225,18 +234,51 @@
                     this.resizeCanvas();
                 }
             }
-        }
 
-        // Initialize and show the canvas window
+            registerObject() {
+                const radius = 10;
+                this.objects.push({ radius });
+                this.drawObjects();
+            }
+
+            unregisterObject() {
+                if (this.objects.length > 0) {
+                    this.objects.pop();
+                    this.drawObjects();
+                }
+            }
+
+            drawObjects() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // 显示已注册对象数
+                this.ctx.font = '20px Arial';
+                this.ctx.fillStyle = 'black';
+                this.ctx.fillText(`Registered objects: ${this.objects.length}`, 10, 30);
+
+                const radius = 10;
+                const spacing = 30;
+                const y = 60;
+                this.objects.forEach((obj, index) => {
+                    const x = index * spacing + radius + 10;
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                    this.ctx.fillStyle = 'blue';
+                    this.ctx.fill();
+                    this.ctx.closePath();
+                });
+                this.statusBar.textContent = `Registered objects: ${this.objects.length}`;
+            }
+        }
+ 
         if (!app.c4) app.c4 = new C4CanvasWnd();
         app.c4.toggleUI();
     </script>
 </body>
 </html>
+    
 <!--
 升级
-可以注册对象到 C4CanvasWnd
-在画布上显示已经注册对象数，画圆代表对象
-可演示注册，也可以注销
+已经注册对象数显示在画布上，圆按顺序画在画布顶部同一排
 -->
     
