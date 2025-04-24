@@ -1,160 +1,127 @@
-class C4CanvasWnd {
-    constructor() {
-        this.isVisible = false;
-        this.isDragging = false;
-        this.dragStartX = 0;
-        this.dragStartY = 0;
-        this.offsetX = 0;
-        this.offsetY = 0;
-        
-        // 创建浮动窗口
-        this.wnd = document.createElement('div');
-        this.wnd.style.cssText = `
-            position: fixed;
-            border: 2px solid #666;
-            background: white;
-            box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
-            display: none;
-            touch-action: none;
-        `;
-        
-        // 创建标题栏
-        const titleBar = document.createElement('div');
-        titleBar.style.cssText = `
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #666;
-            color: white;
-            padding: 5px;
-            cursor: move;
-        `;
-        
-        // 标题文字
-        const titleText = document.createElement('div');
-        titleText.textContent = 'Canvas Window';
-        
-        // 关闭按钮
-        this.closeBtn = document.createElement('div');
-        this.closeBtn.innerHTML = '&times;';
-        this.closeBtn.style.cssText = `
-            cursor: pointer;
-            padding: 0 8px;
-            font-size: 20px;
-            &:hover { background: #999 }
-        `;
-        
-        // 组装标题栏
-        titleBar.appendChild(titleText);
-        titleBar.appendChild(this.closeBtn);
-        
-        // 创建画布
-        this.canvas = document.createElement('canvas');
-        this.canvas.id = 'id_4_canvas';
-        this.canvas.style.width = '100%';
-        this.canvas.style.height = '100%';
-        
-        // 创建状态栏
-        this.statusBar = document.createElement('div');
-        this.statusBar.style.cssText = `
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #eee;
-            padding: 5px;
-            border-top: 1px solid #ccc;
-        `;
-        
-        // 组装窗口
-        this.wnd.appendChild(titleBar);
-        this.wnd.appendChild(this.canvas);
-        this.wnd.appendChild(this.statusBar);
-        document.body.appendChild(this.wnd);
-        
-        // 事件监听
-        this.canvas.addEventListener('mousedown', this.handleCanvasClick.bind(this));
-        this.canvas.addEventListener('touchstart', this.handleCanvasClick.bind(this));
-        this.canvas.addEventListener('mousemove', this.handleCanvasMove.bind(this));
-        this.canvas.addEventListener('touchmove', this.handleCanvasMove.bind(this));
-        this.canvas.addEventListener('mouseup', this.handleCanvasUp.bind(this));
-        this.canvas.addEventListener('touchend', this.handleCanvasUp.bind(this));
-        titleBar.addEventListener('mousedown', this.startDrag.bind(this));
-        titleBar.addEventListener('touchstart', this.startDrag.bind(this));
-        this.closeBtn.addEventListener('click', () => this.toggleUI());
-        window.addEventListener('resize', this.resizeCanvas.bind(this));
-        
-        this.resizeCanvas();
-    }
-
-    resizeCanvas() {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
-    }
-
-    handleCanvasClick(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        const x = (e.clientX || e.touches[0].clientX) - rect.left;
-        const y = (e.clientY || e.touches[0].clientY) - rect.top;
-        this.statusBar.textContent = `Clicked at: X:${x.toFixed(0)}, Y:${y.toFixed(0)}`;
-    }
-
-    handleCanvasMove(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        const x = (e.clientX || e.touches[0].clientX) - rect.left;
-        const y = (e.clientY || e.touches[0].clientY) - rect.top;
-        this.statusBar.textContent = `Moving at: X:${x.toFixed(0)}, Y:${y.toFixed(0)}`;
-        e.preventDefault();
-    }
-
-    handleCanvasUp(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        const x = (e.clientX || e.changedTouches[0].clientX) - rect.left;
-        const y = (e.clientY || e.changedTouches[0].clientY) - rect.top;
-        this.statusBar.textContent = `Released at: X:${x.toFixed(0)}, Y:${y.toFixed(0)}`;
-    }
-
-    startDrag(e) {
-        this.isDragging = true;
-        this.dragStartX = e.clientX || e.touches[0].clientX;
-        this.dragStartY = e.clientY || e.touches[0].clientY;
-        this.offsetX = this.wnd.offsetLeft;
-        this.offsetY = this.wnd.offsetTop;
-        
-        document.addEventListener('mousemove', this.onDrag.bind(this));
-        document.addEventListener('touchmove', this.onDrag.bind(this));
-        document.addEventListener('mouseup', this.stopDrag.bind(this));
-        document.addEventListener('touchend', this.stopDrag.bind(this));
-    }
-
-    onDrag(e) {
-        if (!this.isDragging) return;
-        e.preventDefault();
-        
-        const x = (e.clientX || e.touches[0].clientX) - this.dragStartX;
-        const y = (e.clientY || e.touches[0].clientY) - this.dragStartY;
-        
-        this.wnd.style.left = `${this.offsetX + x}px`;
-        this.wnd.style.top = `${this.offsetY + y}px`;
-    }
-
-    stopDrag() {
-        this.isDragging = false;
-        document.removeEventListener('mousemove', this.onDrag);
-        document.removeEventListener('touchmove', this.onDrag);
-    }
-
-    toggleUI() {
-        this.isVisible = !this.isVisible;
-        this.wnd.style.display = this.isVisible ? 'block' : 'none';
-        if (this.isVisible) {
-            this.wnd.style.width = '80%';
-            this.wnd.style.height = '70%';
-            this.wnd.style.left = '10%';
-            this.wnd.style.top = '15%';
+ 
+        if (typeof app === 'undefined') {
+            app = {};
         }
-    }
-}
 
-if (!app.c4) app.c4= new C4CanvasWnd();
-app.c4.toggleUI();
+        app.C4Note = function (id) {
+            let d = document.getElementById(id);
+            if (!d) {
+                class Note {
+                    constructor() {
+                        this.currentNote = '3';
+                        this.noteLength = '4';
+                        this.fontSize = '24px';
+                        this.fontFamily = 'Arial';
+                        this.octave = 0;
+                    }
+                }
+
+                d = document.createElement('div');
+                d.id = id;
+                d.note = new Note();
+
+                // 修改容器为flex布局
+                d.style.cssText = `
+                    position: absolute;
+                    width: 300px;
+                    height: 400px;  /* 增加总高度以更好容纳内容 */
+                    background: white;
+                    border: 1px solid #ccc;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    z-index: 1000;
+                    display: none;
+                    flex-direction: column;
+                `;
+
+                const titleBar = document.createElement('div');
+                titleBar.style.cssText = `
+                    padding: 8px;
+                    background: #f0f0f0;
+                    cursor: move;
+                    border-bottom: 1px solid #ccc;
+                    flex-shrink: 0;  /* 固定标题栏高度 */
+                `;
+
+                // 关闭按钮保持不变...
+
+                const editorContainer = document.createElement('div');
+                editorContainer.style.cssText = `
+                    padding: 10px;
+                    flex: 1;  /* 弹性填充剩余空间 */
+                    overflow-y: auto;
+                    border-bottom: 1px solid #ccc;
+                `;
+
+                const canvasContainer = document.createElement('div');
+                canvasContainer.style.cssText = `
+                    padding: 10px;
+                    flex: 1;  /* 弹性填充剩余空间 */
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    border-bottom: 1px solid #ccc;
+                    min-height: 100px;  /* 最小高度保障 */
+                `;
+
+                const canvas = document.createElement('canvas');
+                canvas.style.cssText = `
+                    width: 100%;
+                    height: 100%;
+                    border: 1px solid #eee;
+                    cursor: crosshair;
+                    background-color: #fafafa;
+                `;
+
+                // 修改绘制逻辑
+                function updateCanvas() {
+                    const ctx = canvas.getContext('2d');
+                    const container = canvas.parentElement;
+                    const width = container.clientWidth - 20;  // 计算有效宽度
+                    const height = container.clientHeight - 20;  // 计算有效高度
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    // 后续绘制逻辑保持不变...
+                }
+
+                // 其他逻辑保持不变...
+
+                // 窗口拖动时添加边界检查
+                function checkBoundary() {
+                    const rect = d.getBoundingClientRect();
+                    if (rect.left < 0) d.style.left = '0px';
+                    if (rect.top < 0) d.style.top = '0px';
+                    if (rect.right > window.innerWidth) 
+                        d.style.left = (window.innerWidth - rect.width) + 'px';
+                    if (rect.bottom > window.innerHeight) 
+                        d.style.top = (window.innerHeight - rect.height) + 'px';
+                }
+
+                // 在拖动事件中添加边界检查
+                document.onmousemove = function (e) {
+                    if (isDragging) {
+                        d.style.left = Math.max(0, Math.min(e.clientX - offsetX, window.innerWidth - d.offsetWidth)) + 'px';
+                        d.style.top = Math.max(0, Math.min(e.clientY - offsetY, window.innerHeight - d.offsetHeight)) + 'px';
+                    }
+                };
+
+                document.ontouchmove = function (e) {
+                    if (isDragging) {
+                        const touch = e.touches[0];
+                        d.style.left = Math.max(0, Math.min(touch.clientX - offsetX, window.innerWidth - d.offsetWidth)) + 'px';
+                        d.style.top = Math.max(0, Math.min(touch.clientY - offsetY, window.innerHeight - d.offsetHeight)) + 'px';
+                        e.preventDefault();
+                    }
+                };
+            }
+
+            // 其他原有逻辑保持不变...
+        }
+
+        app.C4Note('n1c11');
+    </script>
+</body>
+
+</html>
