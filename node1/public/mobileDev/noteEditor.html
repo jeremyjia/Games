@@ -145,6 +145,44 @@
                     }
                 }
             }
+
+            play() {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                const noteFrequencies = {
+                    '1': 261.63,
+                    '2': 293.66,
+                    '3': 329.63,
+                    '4': 349.23,
+                    '5': 392.00,
+                    '6': 440.00,
+                    '7': 493.88,
+                    '0': 0
+                };
+
+                const frequency = noteFrequencies[this.currentNote] * Math.pow(2, this.octave);
+                oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+
+                const noteLengthMultiplier = {
+                    '1': 4,
+                    '2': 2,
+                    '4': 1,
+                    '8': 0.5,
+                    '16': 0.25
+                };
+
+                const duration = noteLengthMultiplier[this.noteLength] * 0.5;
+
+                gainNode.gain.setValueAtTime(1, audioContext.currentTime);
+                oscillator.start(audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+                oscillator.stop(audioContext.currentTime + duration);
+            }
         }
 
         app.C4NoteEditor = function (id) {
@@ -289,41 +327,7 @@
                 playButton.textContent = '播放音符';
                 playButton.classList.add('bg-blue-500', 'text-white', 'px-2', 'py-1', 'rounded', 'hover:bg-blue-600', 'transition-colors');
                 playButton.onclick = function () {
-                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
-
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-
-                    const noteFrequencies = {
-                        '1': 261.63,
-                        '2': 293.66,
-                        '3': 329.63,
-                        '4': 349.23,
-                        '5': 392.00,
-                        '6': 440.00,
-                        '7': 493.88,
-                        '0': 0
-                    };
-
-                    const frequency = noteFrequencies[d.note.currentNote] * Math.pow(2, d.note.octave);
-                    oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
-
-                    const noteLengthMultiplier = {
-                        '1': 4,
-                        '2': 2,
-                        '4': 1,
-                        '8': 0.5,
-                        '16': 0.25
-                    };
-
-                    const duration = noteLengthMultiplier[d.note.noteLength] * 0.5;
-
-                    gainNode.gain.setValueAtTime(1, audioContext.currentTime);
-                    oscillator.start(audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
-                    oscillator.stop(audioContext.currentTime + duration);
+                    d.note.play();
                 };
 
                 statusBar.appendChild(playButton);
