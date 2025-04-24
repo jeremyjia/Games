@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>C4CanvasWnd Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
             margin: 20px;
@@ -30,6 +31,14 @@
         }
         .close-btn:hover {
             background: #999;
+        }
+        @media (max-width: 768px) {
+            body {
+                margin: 10px;
+            }
+            .test-content {
+                max-width: 100%;
+            }
         }
     </style>
 </head>
@@ -224,3 +233,10 @@
     </script>
 </body>
 </html>
+<!--
+升级
+可以注册对象到 C4CanvasWnd
+在画布上显示已经注册对象数，画圆代表对象
+可演示注册，也可以注销
+-->
+    
