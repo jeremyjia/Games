@@ -53,7 +53,7 @@ function UltimateBankSystem(containerId, options) {
 /* ========== UI 初始化方法 ========== */
 
 UltimateBankSystem.prototype._initUI = function() {
-    this._addStyles(); // 添加样式
+    this._addStyles();
     
     // 创建窗口元素
     this.windows.forEach((win, index) => {
@@ -75,153 +75,91 @@ UltimateBankSystem.prototype._initUI = function() {
     this.queueArea.className = 'queue-area';
     this.queueArea.innerHTML = '<span class="queue-label">排队队列：</span>';
     this.container.appendChild(this.queueArea);
+    
+    
+    // 创建留言板
+    this.messageBoard = document.getElementById('messageBoard');
+    if (!this.messageBoard) {
+        this._createMessageBoard();
+    }
 };
+
+/* ========== 修改后的样式方法 ========== */
 
 UltimateBankSystem.prototype._addStyles = function() {
     const style = document.createElement('style');
     style.textContent = `
+        /* 客户在窗口中的样式 */
+        .window .serving {
+            position: absolute;
+            left: 60px;
+            top: 120px;
+            transform: scale(0.8);
+            z-index: 10;
+        }
+        
+        /* 确保窗口可以作为定位上下文 */
         .window {
             position: relative;
-            width: 180px;
-            height: 200px;
-            background: #f5f5f5;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            padding: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
+            overflow: visible;
         }
         
-        .window-number {
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        
-        .status-light {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #4caf50;
-            margin: 10px auto;
-            transition: background 0.3s ease;
-        }
-        
-        .announcement {
-            text-align: center;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-        
-        .queue-area {
-            position: absolute;
-            bottom: 20px;
-            left: 0;
-            right: 0;
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            background: #e9f5ff;
-            border-top: 1px solid #ddd;
-            min-height: 60px;
-        }
-        
-        .queue-label {
-            font-weight: bold;
-            margin-right: 10px;
-        }
-        
-        .customer {
-            margin: 0 5px;
-            transition: all 0.3s ease;
-        }
-        
-        .path-line {
-            position: absolute;
-            height: 2px;
-            background: rgba(0,0,0,0.1);
-            transform-origin: 0 0;
-            z-index: -1;
-        }
-        
-        .walking {
-            animation: walk 0.5s infinite alternate;
-        }
-        
-        .walking .arm {
-            animation: swing 0.5s infinite alternate;
-        }
-        
-        .serving {
-            position: absolute;
-            transform: scale(0.8);
-            transition: transform 0.3s ease;
-        }
-        
-        @keyframes walk {
-            from { transform: translateY(0); }
-            to { transform: translateY(-5px); }
-        }
-        
-        @keyframes swing {
-            from { transform: rotate(-10deg); }
-            to { transform: rotate(10deg); }
-        }
-        
+        /* 新增移动端优化样式 */
         .draggable-panel {
             position: fixed;
-            right: 20px;
-            top: 20px;
-            width: 300px;
+            width: 280px;
+            max-width: 80vw;
             background: white;
             border: 1px solid #ddd;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             z-index: 1000;
+            touch-action: none; /* 防止触摸滚动冲突 */
+        }
+        
+        .stats-panel {
+            left: 20px;
+            top: 20px;
         }
         
         .draggable-panel .header {
-            padding: 10px;
+            padding: 12px 15px;
             background: #f5f5f5;
             border-bottom: 1px solid #ddd;
-            cursor: move;
+            cursor: grab;
             font-weight: bold;
+            user-select: none;
+            -webkit-user-select: none;
+            border-radius: 8px 8px 0 0;
         }
         
         .draggable-panel .content {
-            padding: 10px;
-            max-height: 300px;
+            padding: 15px;
+            max-height: 50vh;
             overflow-y: auto;
         }
         
-        .message {
-            margin-bottom: 10px;
-            padding: 8px;
-            background: #f9f9f9;
-            border-radius: 4px;
-        }
-        
-        .message .number {
-            font-weight: bold;
-            color: #2196F3;
-        }
-        
-        .drawing-header {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 5px;
-        }
-        
-        .customer-drawing {
-            margin: 10px 0;
-        }
-        
-        .customer-drawing canvas {
-            display: block;
-            margin: 0 auto;
+        /* 移动端优化 */
+        @media (max-width: 768px) {
+            .draggable-panel {
+                width: 250px;
+            }
+            
+            .window {
+                width: 140px;
+                margin: 0 10px;
+            }
+            
+            .queue-area {
+                flex-wrap: wrap;
+                padding: 5px;
+            }
         }
     `;
     document.head.appendChild(style);
 };
+
+/* ========== 修改后的留言板创建方法 ========== */
 
 UltimateBankSystem.prototype._createMessageBoard = function() {
     const panel = document.createElement('div');
@@ -234,27 +172,100 @@ UltimateBankSystem.prototype._createMessageBoard = function() {
     this.container.appendChild(panel);
     this.messageBoard = document.getElementById('messageBoard');
     
-    // 简单实现拖拽功能
+    // 增强的拖拽功能，支持触摸设备
+    this._makeDraggable(panel);
+};
+
+/* ========== 新增统计面板创建方法 ========== */
+
+UltimateBankSystem.prototype._createStatsPanel = function() {
+    const panel = document.createElement('div');
+    panel.id = 'statsPanel';
+    panel.className = 'draggable-panel stats-panel';
+    panel.innerHTML = `
+        <div class="header">系统统计</div>
+        <div class="content">
+            <div>当前排队: <span id="queueCount">0</span></div>
+            <div>已服务: <span id="servedCount">0</span></div>
+        </div>
+    `;
+    this.container.appendChild(panel);
+    
+    // 使统计面板也可拖动
+    this._makeDraggable(panel);
+};
+
+/* ========== 新增通用拖拽方法 ========== */
+
+UltimateBankSystem.prototype._makeDraggable = function(panel) {
     let isDragging = false;
     let offsetX, offsetY;
+    const header = panel.querySelector('.header');
     
-    panel.querySelector('.header').addEventListener('mousedown', (e) => {
+    // 鼠标事件处理器
+    const onMouseDown = (e) => {
         isDragging = true;
         offsetX = e.clientX - panel.getBoundingClientRect().left;
         offsetY = e.clientY - panel.getBoundingClientRect().top;
         panel.style.cursor = 'grabbing';
-    });
+        e.preventDefault();
+    };
     
-    document.addEventListener('mousemove', (e) => {
+    const onMouseMove = (e) => {
         if (!isDragging) return;
         panel.style.left = `${e.clientX - offsetX}px`;
         panel.style.top = `${e.clientY - offsetY}px`;
-    });
+    };
     
-    document.addEventListener('mouseup', () => {
+    const onMouseUp = () => {
         isDragging = false;
         panel.style.cursor = 'grab';
-    });
+    };
+    
+    // 触摸事件处理器
+    const onTouchStart = (e) => {
+        const touch = e.touches[0];
+        isDragging = true;
+        offsetX = touch.clientX - panel.getBoundingClientRect().left;
+        offsetY = touch.clientY - panel.getBoundingClientRect().top;
+        e.preventDefault();
+    };
+    
+    const onTouchMove = (e) => {
+        if (!isDragging) return;
+        const touch = e.touches[0];
+        panel.style.left = `${touch.clientX - offsetX}px`;
+        panel.style.top = `${touch.clientY - offsetY}px`;
+        e.preventDefault();
+    };
+    
+    const onTouchEnd = () => {
+        isDragging = false;
+    };
+    
+    // 添加事件监听器
+    header.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    
+    header.addEventListener('touchstart', onTouchStart, { passive: false });
+    document.addEventListener('touchmove', onTouchMove, { passive: false });
+    document.addEventListener('touchend', onTouchEnd);
+    
+    // 初始位置和样式
+    panel.style.position = 'fixed';
+    panel.style.cursor = 'grab';
+    
+    // 清理函数
+    panel.cleanupDrag = () => {
+        header.removeEventListener('mousedown', onMouseDown);
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        
+        header.removeEventListener('touchstart', onTouchStart);
+        document.removeEventListener('touchmove', onTouchMove);
+        document.removeEventListener('touchend', onTouchEnd);
+    };
 };
 
 /* ========== 客户管理方法 ========== */
@@ -382,10 +393,10 @@ UltimateBankSystem.prototype._getCustomerPosition = function(customerElement) {
 };
 
 UltimateBankSystem.prototype._getWindowPosition = function(win) {
-    // 调整客户在窗口的位置，使其更靠近窗口
+    // 保持窗口位置不变，只调整客户在窗口内的相对位置
     return {
-        x: win.element.offsetLeft + 60,
-        y: win.element.offsetTop + 100
+        x: win.element.offsetLeft + 60,  // 与客户style.left一致
+        y: win.element.offsetTop + 120   // 与客户style.top一致
     };
 };
 
@@ -428,6 +439,17 @@ UltimateBankSystem.prototype._animateCustomerMovement = function(startPos, endPo
 UltimateBankSystem.prototype._showCustomerAtWindow = function(win, customerNumber) {
     const customer = this._createMovingCustomer(customerNumber, this._getWindowPosition(win));
     customer.classList.add('serving');
+    
+    // 修复客户在窗口中的位置
+    customer.style.position = 'absolute';
+    customer.style.left = '60px';  // 调整这个值使客户靠近窗口
+    customer.style.top = '120px';  // 调整这个值使客户靠近窗口
+    customer.style.transform = 'scale(0.8)';
+    
+    // 确保窗口是定位上下文
+    win.element.style.position = 'relative';
+    win.element.style.overflow = 'visible';
+    
     win.element.appendChild(customer);
 };
 
@@ -546,4 +568,19 @@ UltimateBankSystem.prototype.reset = function() {
     if (this.messageBoard) {
         this.messageBoard.innerHTML = '';
     }
+
+        // 重置面板位置
+        const messagePanel = document.getElementById('messagePanel');
+        if (messagePanel) {
+            messagePanel.style.left = '';
+            messagePanel.style.top = '';
+            messagePanel.style.right = '20px';
+            messagePanel.style.bottom = '';
+        }
+        
+        const statsPanel = document.getElementById('statsPanel');
+        if (statsPanel) {
+            statsPanel.style.left = '20px';
+            statsPanel.style.top = '20px';
+        }
 };
