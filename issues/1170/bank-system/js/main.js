@@ -38,23 +38,7 @@ function makeDraggable(panel) {
 const bankSystem = new UltimateBankSystem('container', 4);
 
 // 在银行系统初始化后添加
-document.querySelectorAll('.customer').forEach(customerEl => {
-    const drawBtn = document.createElement('button');
-    drawBtn.className = 'draw-btn';
-    drawBtn.textContent = '绘图';
-    customerEl.appendChild(drawBtn);
-    
-    drawBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const customerNumber = parseInt(customerEl.querySelector('.body').textContent);
-        const customer = bankSystem.queue.find(c => c.number === customerNumber)?.customer;
-        if (customer) {
-            // 随机选择绘制类型
-            const type = Math.random() > 0.5 ? 'circle' : 'like';
-            customer.drawOnMessageBoard(type);
-        }
-    });
-});
+
 
 // 初始化拖动功能
 makeDraggable(document.getElementById('statsPanel'));
