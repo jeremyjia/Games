@@ -89,7 +89,20 @@ UltimateBankSystem.prototype._initUI = function() {
 UltimateBankSystem.prototype._addStyles = function() {
     const style = document.createElement('style');
     style.textContent = `
-        /* 原有样式保持不变... */
+        /* 客户在窗口中的样式 */
+        .window .serving {
+            position: absolute;
+            left: 60px;
+            top: 120px;
+            transform: scale(0.8);
+            z-index: 10;
+        }
+        
+        /* 确保窗口可以作为定位上下文 */
+        .window {
+            position: relative;
+            overflow: visible;
+        }
         
         /* 新增移动端优化样式 */
         .draggable-panel {
@@ -380,10 +393,10 @@ UltimateBankSystem.prototype._getCustomerPosition = function(customerElement) {
 };
 
 UltimateBankSystem.prototype._getWindowPosition = function(win) {
-    // 调整客户在窗口的位置，使其更靠近窗口
+    // 保持窗口位置不变，只调整客户在窗口内的相对位置
     return {
-        x: win.element.offsetLeft + 60,
-        y: win.element.offsetTop + 100
+        x: win.element.offsetLeft + 60,  // 与客户style.left一致
+        y: win.element.offsetTop + 120   // 与客户style.top一致
     };
 };
 
@@ -427,15 +440,15 @@ UltimateBankSystem.prototype._showCustomerAtWindow = function(win, customerNumbe
     const customer = this._createMovingCustomer(customerNumber, this._getWindowPosition(win));
     customer.classList.add('serving');
     
-    // 修改1：调整客户在窗口中的位置
+    // 修复客户在窗口中的位置
     customer.style.position = 'absolute';
-    customer.style.left = '50%';
-    customer.style.top = '70%';
-    customer.style.transform = 'translate(-50%, -50%) scale(0.8)';
+    customer.style.left = '60px';  // 调整这个值使客户靠近窗口
+    customer.style.top = '120px';  // 调整这个值使客户靠近窗口
+    customer.style.transform = 'scale(0.8)';
     
-    // 修改2：确保客户在窗口内部
-    win.element.style.position = 'relative'; // 确保窗口是定位上下文
-    win.element.style.overflow = 'visible';  // 确保客户可见
+    // 确保窗口是定位上下文
+    win.element.style.position = 'relative';
+    win.element.style.overflow = 'visible';
     
     win.element.appendChild(customer);
 };
