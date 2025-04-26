@@ -1,8 +1,52 @@
-if (typeof app === 'undefined') {
-    app = {};
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>节拍器测试页面</title>
+    <!-- 引入 Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 添加自定义样式用于画布渲染 */
+        canvas {
+            touch-action: none;
+        }
+        .z-1000 {
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-4">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-3xl font-bold mb-4">节拍器测试页面</h1>
+        
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-semibold mb-3">使用说明</h2>
+            <ul class="list-disc pl-6 space-y-2 text-gray-700">
+                <li>点击下方按钮显示/隐藏节拍器面板</li>
+                <li>拖动标题栏可移动面板位置</li>
+                <li>通过+/-按钮或直接输入调整速度（40-240 BPM）</li>
+                <li>选择不同的拍号组合</li>
+                <li>点击▶按钮开始节拍，⏹按钮停止</li>
+                <li>红色圆点指示当前节拍位置</li>
+                <li class="text-red-500">注意：首次使用需要点击页面任意位置激活音频</li>
+            </ul>
+        </div>
 
-class CBeat {
+        <button id="id_4_btn_toggle_window" onclick="document.getElementById('beatc9').classList.toggle('hidden')" 
+                class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            切换节拍器面板
+        </button>
+    </div>
+
+    <!-- 节拍器脚本 -->
+    <script>
+    // 这里插入提供的节拍器代码
+    if (typeof app === 'undefined') {
+        app = {};
+    }
+
+    class CBeat {
     constructor() {
         this.tempo = 120;       // 节拍速度
         this.timeSignature = 4; // 拍号分子
@@ -106,19 +150,24 @@ app.C4Beat = function (id) {
                        'border-gray-300', 'rounded-lg', 'shadow-md', 'z-1000', 
                        'hidden', 'flex', 'flex-col');
 
-        // 标题栏（同原代码结构）
-        const titleBar = document.createElement('div');
+       // 创建标题栏时添加关闭按钮
+       const titleBar = document.createElement('div');
         titleBar.classList.add('p-2', 'bg-gray-100', 'cursor-move', 
-                             'border-b', 'border-gray-300', 'flex-shrink-0');
+                            'border-b', 'border-gray-300', 'flex-shrink-0');
         titleBar.textContent = "节拍器v0.1";
         
+        // 修复关闭按钮创建逻辑
         const closeBtn = document.createElement('button');
         closeBtn.textContent = '×';
-        closeBtn.classList.add('float-right', '-mt-4', '-mr-2', 'bg-transparent', 
-                             'border-none', 'text-lg', 'cursor-pointer', 'text-gray-600');
-        closeBtn.onclick = () => d.classList.add('hidden');
+        closeBtn.classList.add('float-right', 'text-lg', 'cursor-pointer', 'text-gray-600');
+        closeBtn.style.margin = '-8px -4px 0 0'; // 替换原来的负margin类
+        
+        // 确保先添加元素再绑定事件
         titleBar.appendChild(closeBtn);
         d.appendChild(titleBar);
+
+        // 事件绑定应在元素创建后
+        closeBtn.onclick = () => d.classList.add('hidden');
 
         // 控制面板
         const controls = document.createElement('div');
@@ -225,7 +274,25 @@ app.C4Beat = function (id) {
 
     d.style.left = '150px';
     d.style.top = '150px';
-    d.toggleUI();
+    //d.toggleUI();
 }
-
-app.C4Beat('beatc9');
+    // 初始化节拍器
+    document.addEventListener('DOMContentLoaded', function() {
+        app.C4Beat('beatc9');
+        
+        // 激活音频上下文的手势处理
+        document.body.addEventListener('click', function() {
+            if (!app.CBeat?.audioContext) return;
+            if (app.CBeat.audioContext.state === 'suspended') {
+                app.CBeat.audioContext.resume();
+            }
+        }, { once: true });
+    });
+    </script>
+</body>
+</html>
+<!--
+beat.html:194  Uncaught TypeError: Cannot set properties of null (setting 'onclick')
+    at app.C4Beat (beat.html:194:29)
+    at HTMLDocument.<anonymous> (beat.html:281:13)
+-->
