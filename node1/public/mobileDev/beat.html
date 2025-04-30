@@ -244,7 +244,7 @@
         updateCanvas(); // 初始渲染
     }
 
-    // 和弦组件（保持不变）
+    // 和弦组件
     class ChordGenerator {
         constructor() {
             this.chordTypes = {
@@ -265,21 +265,55 @@
 
         draw(ctx, width, height) {
             ctx.clearRect(0, 0, width, height);
-            const keyWidth = width / 14;
-            
-            // 绘制钢琴键盘
-            for(let i = 0; i < 14; i++) {
-                const whiteKey = [0,2,3,5,6,8,9,11,12,14,15,17,18,20][i] % 12 === 0;
-                ctx.fillStyle = whiteKey ? '#fff' : '#000';
-                ctx.fillRect(i*keyWidth, 0, keyWidth-1, height);
+            const whiteKeyWidth = width / 7;
+            const blackKeyWidth = whiteKeyWidth * 0.6;
+            const blackKeyHeight = height * 0.6;
+
+            // 绘制白键
+            for (let i = 0; i < 7; i++) {
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(i * whiteKeyWidth, 0, whiteKeyWidth, height);
                 ctx.strokeStyle = '#666';
-                ctx.strokeRect(i*keyWidth, 0, keyWidth-1, height);
+                ctx.strokeRect(i * whiteKeyWidth, 0, whiteKeyWidth, height);
+
+                // 白键高光
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.fillRect(i * whiteKeyWidth, 0, whiteKeyWidth, 10);
+
+                // 白键阴影
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.fillRect(i * whiteKeyWidth, height - 10, whiteKeyWidth, 10);
             }
-            
+
+            // 绘制黑键
+            const blackKeyPositions = [1, 2, 4, 5, 6];
+            blackKeyPositions.forEach(pos => {
+                ctx.fillStyle = '#000';
+                ctx.fillRect((pos - 0.3) * whiteKeyWidth, 0, blackKeyWidth, blackKeyHeight);
+                ctx.strokeStyle = '#666';
+                ctx.strokeRect((pos - 0.3) * whiteKeyWidth, 0, blackKeyWidth, blackKeyHeight);
+
+                // 黑键高光
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.fillRect((pos - 0.3) * whiteKeyWidth, 0, blackKeyWidth, 5);
+
+                // 黑键阴影
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.fillRect((pos - 0.3) * whiteKeyWidth, blackKeyHeight - 5, blackKeyWidth, 5);
+            });
+
             // 绘制和弦音
             this.getFrequencies().forEach(freq => {
                 const note = Math.round(12 * Math.log2(freq/440) + 69);
-                const pos = ((note - 60) % 12) * (width/12);
+                const noteIndex = (note - 60) % 12;
+                let pos;
+                if ([1, 3, 6, 8, 10].includes(noteIndex)) {
+                    const blackKeyPos = [1, 2, 4, 5, 6][[1, 3, 6, 8, 10].indexOf(noteIndex)];
+                    pos = (blackKeyPos - 0.3) * whiteKeyWidth + blackKeyWidth / 2;
+                } else {
+                    const whiteKeyPos = [0, 2, 3, 5, 7, 8, 10].indexOf(noteIndex % 12);
+                    pos = whiteKeyPos * whiteKeyWidth + whiteKeyWidth / 2;
+                }
                 ctx.fillStyle = '#ff000080';
                 ctx.beginPath();
                 ctx.arc(pos, height/2, 10, 0, Math.PI*2);
@@ -408,6 +442,7 @@
     </script>
 </body>
 </html>
+    
     
 <!--
     钢琴键盘不真实
