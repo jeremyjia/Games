@@ -3,296 +3,409 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>节拍器测试页面</title>
-    <!-- 引入 Tailwind CSS CDN -->
+    <title>音乐训练工具</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 添加自定义样式用于画布渲染 */
-        canvas {
-            touch-action: none;
-        }
-        .z-1000 {
-            z-index: 1000;
-        }
+        canvas { touch-action: none; }
+        .z-1000 { z-index: 1000; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen p-4">
+    <!-- 主界面 -->
     <div class="max-w-2xl mx-auto">
-        <h1 class="text-3xl font-bold mb-4">节拍器测试页面</h1>
+        <h1 class="text-3xl font-bold mb-4">音乐训练工具</h1>
         
         <div class="bg-white p-6 rounded-lg shadow-md mb-6">
-            <h2 class="text-xl font-semibold mb-3">使用说明</h2>
-            <ul class="list-disc pl-6 space-y-2 text-gray-700">
-                <li>点击下方按钮显示/隐藏节拍器面板</li>
-                <li>拖动标题栏可移动面板位置</li>
-                <li>通过+/-按钮或直接输入调整速度（40-240 BPM）</li>
-                <li>选择不同的拍号组合</li>
-                <li>点击▶按钮开始节拍，⏹按钮停止</li>
-                <li>红色圆点指示当前节拍位置</li>
-                <li class="text-red-500">注意：首次使用需要点击页面任意位置激活音频</li>
-            </ul>
+            <h2 class="text-xl font-semibold mb-3">功能说明</h2>
+            <div class="grid grid-cols-2 gap-4 text-gray-700">
+                <div>
+                    <h3 class="font-semibold mb-2">节拍器功能</h3>
+                    <ul class="list-disc pl-6 space-y-1">
+                        <li>可调速度范围：40-240 BPM</li>
+                        <li>支持多种拍号组合</li>
+                        <li>可视化节拍指示</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-2">和弦功能</h3>
+                    <ul class="list-disc pl-6 space-y-1">
+                        <li>5种和弦类型选择</li>
+                        <li>MIDI标准频率生成</li>
+                        <li>钢琴键盘可视化</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="mt-4 text-red-500">注意：首次使用需要点击页面激活音频系统</p>
         </div>
 
-        <button id="id_4_btn_toggle_window" onclick="document.getElementById('beatc9').classList.toggle('hidden')" 
-                class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-            切换节拍器面板
-        </button>
+        <div class="flex gap-4">
+            <button onclick="document.getElementById('beatc9').classList.toggle('hidden')" 
+                    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                节拍器面板
+            </button>
+            <button onclick="document.getElementById('chord_panel').classList.toggle('hidden')"
+                    class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">
+                和弦面板
+            </button>
+        </div>
     </div>
 
-    <!-- 节拍器脚本 -->
+    <!-- 节拍器组件 -->
     <script>
-    // 这里插入提供的节拍器代码
-    if (typeof app === 'undefined') {
-        app = {};
-    }
-
     class CBeat {
-    constructor() {
-        this.tempo = 120;       // 节拍速度
-        this.timeSignature = 4; // 拍号分子
-        this.beatUnit = 4;      // 拍号分母（音符类型）
-        this.isPlaying = false;
-        this.currentBeat = 0;
-        this.audioContext = null;
-        this.timer = null;
-    }
+        constructor() {
+            this.tempo = 120;
+            this.timeSignature = 4;
+            this.beatUnit = 4;
+            this.isPlaying = false;
+            this.currentBeat = 0;
+            this.audioContext = null;
+            this.timer = null;
+        }
 
-    draw(ctx, width, height) {
-        ctx.clearRect(0, 0, width, height);
-        ctx.font = '20px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#000';
+        draw(ctx, width, height) {
+            ctx.clearRect(0, 0, width, height);
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#000';
+            ctx.fillText(`速度：${this.tempo} BPM`, width/2, 30);
+            ctx.fillText(`拍号：${this.timeSignature}/${this.beatUnit}`, width/2, 60);
 
-        // 绘制节拍器参数
-        ctx.fillText(`速度：${this.tempo} BPM`, width/2, 30);
-        ctx.fillText(`拍号：${this.timeSignature}/${this.beatUnit}`, width/2, 60);
-
-        // 绘制节拍指示器
-        const radius = Math.min(width, height) * 0.3;
-        const centerX = width/2;
-        const centerY = height/2 + 30;
-        
-        // 绘制外圆
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-        ctx.strokeStyle = '#666';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-
-        // 绘制节拍标记
-        for (let i = 0; i < this.timeSignature; i++) {
-            const angle = (i * (Math.PI * 2) / this.timeSignature) - Math.PI/2;
-            const x = centerX + Math.cos(angle) * (radius - 10);
-            const y = centerY + Math.sin(angle) * (radius - 10);
+            const radius = Math.min(width, height) * 0.3;
+            const centerX = width/2;
+            const centerY = height/2 + 30;
             
             ctx.beginPath();
-            ctx.arc(x, y, 5, 0, Math.PI * 2);
-            ctx.fillStyle = i === this.currentBeat ? '#f00' : '#666';
-            ctx.fill();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            for (let i = 0; i < this.timeSignature; i++) {
+                const angle = (i * (Math.PI * 2) / this.timeSignature) - Math.PI/2;
+                const x = centerX + Math.cos(angle) * (radius - 10);
+                const y = centerY + Math.sin(angle) * (radius - 10);
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fillStyle = i === this.currentBeat ? '#f00' : '#666';
+                ctx.fill();
+            }
+        }
+
+        play() {
+            if (!this.audioContext) {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            const oscillator = this.audioContext.createOscillator();
+            const gainNode = this.audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
+
+            oscillator.frequency.setValueAtTime(this.currentBeat === 0 ? 880 : 440, 
+                                             this.audioContext.currentTime);
+            gainNode.gain.setValueAtTime(0.5, this.audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
+            
+            oscillator.start();
+            oscillator.stop(this.audioContext.currentTime + 0.1);
+        }
+
+        start() {
+            if (!this.isPlaying) {
+                this.isPlaying = true;
+                this.schedule();
+            }
+        }
+
+        stop() {
+            this.isPlaying = false;
+            clearTimeout(this.timer);
+        }
+
+        schedule() {
+            if (!this.isPlaying) return;
+            const interval = 60000 / this.tempo;
+            this.play();
+            this.currentBeat = (this.currentBeat + 1) % this.timeSignature;
+            
+            this.timer = setTimeout(() => this.schedule(), interval);
         }
     }
 
-    play() {
-        if (!this.audioContext) {
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        }
+    function createBeatPanel() {
+        const panel = document.createElement('div');
+        panel.id = 'beatc9';
+        panel.className = 'absolute w-[300px] h-[400px] bg-white border border-gray-300 rounded-lg shadow-md z-1000 hidden flex flex-col';
+        panel.style.left = '150px';
+        panel.style.top = '150px';
 
-        const oscillator = this.audioContext.createOscillator();
-        const gainNode = this.audioContext.createGain();
+        // 标题栏
+        const titleBar = document.createElement('div');
+        titleBar.className = 'p-2 bg-gray-100 cursor-move border-b border-gray-300 flex-shrink-0 flex justify-between';
         
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioContext.destination);
-
-        // 主拍音
-        oscillator.frequency.setValueAtTime(this.currentBeat === 0 ? 880 : 440, 
-                                         this.audioContext.currentTime);
-        gainNode.gain.setValueAtTime(0.5, this.audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
-        
-        oscillator.start();
-        oscillator.stop(this.audioContext.currentTime + 0.1);
-    }
-
-    start() {
-        if (!this.isPlaying) {
-            this.isPlaying = true;
-            this.schedule();
-        }
-    }
-
-    stop() {
-        this.isPlaying = false;
-        clearTimeout(this.timer);
-    }
-
-    schedule() {
-        if (!this.isPlaying) return;
-
-        const interval = 60000 / this.tempo;
-        this.play();
-        this.currentBeat = (this.currentBeat + 1) % this.timeSignature;
-        
-        this.timer = setTimeout(() => {
-            this.schedule();
-        }, interval);
-    }
-}
-
-app.C4Beat = function (id) {
-    let d = document.getElementById(id);
-    if (!d) {
-        d = document.createElement('div');
-        d.id = id;
-        d.beat = new CBeat();
-
-        // UI结构
-        d.classList.add('absolute', 'w-[300px]', 'h-[400px]', 'bg-white', 'border', 
-                       'border-gray-300', 'rounded-lg', 'shadow-md', 'z-1000', 
-                       'hidden', 'flex', 'flex-col');
-
-       // 创建标题栏时添加关闭按钮
-       const titleBar = document.createElement('div');
-        titleBar.classList.add('p-2', 'bg-gray-100', 'cursor-move', 
-                            'border-b', 'border-gray-300', 'flex-shrink-0');
-        titleBar.textContent = "节拍器v0.1";
-        
-        // 修复关闭按钮创建逻辑
+        const titleText = document.createTextNode("节拍器 v1.2");
         const closeBtn = document.createElement('button');
-        closeBtn.textContent = '×';
-        closeBtn.classList.add('float-right', 'text-lg', 'cursor-pointer', 'text-gray-600');
-        closeBtn.style.margin = '-8px -4px 0 0'; // 替换原来的负margin类
-        
-        // 确保先添加元素再绑定事件
+        closeBtn.innerHTML = '&times;';
+        closeBtn.className = 'text-xl text-gray-600 hover:text-red-500';
+        closeBtn.onclick = () => panel.classList.add('hidden');
+
+        titleBar.appendChild(titleText);
         titleBar.appendChild(closeBtn);
-        d.appendChild(titleBar);
-
-        // 事件绑定应在元素创建后
-        closeBtn.onclick = () => d.classList.add('hidden');
-
-        // 控制面板
+        
+        // 控制区域
         const controls = document.createElement('div');
-        controls.classList.add('p-2', 'flex', 'flex-col', 'gap-2');
-
-        // 速度控制
-        const tempoControl = document.createElement('div');
-        tempoControl.classList.add('flex', 'items-center', 'gap-2');
-        tempoControl.innerHTML = `
-            <span class="text-sm">速度：</span>
-            <input type="number" value="120" min="40" max="240" 
-                   class="w-20 px-2 py-1 border rounded">
-            <button class="px-2 py-1 bg-blue-100 rounded">-</button>
-            <button class="px-2 py-1 bg-blue-100 rounded">+</button>
+        controls.className = 'p-2 flex flex-col gap-2';
+        controls.innerHTML = `
+            <div class="flex items-center gap-2">
+                <span class="text-sm">速度：</span>
+                <input type="number" value="120" min="40" max="240" class="w-20 px-2 py-1 border rounded">
+                <button class="px-2 py-1 bg-blue-100 rounded">-</button>
+                <button class="px-2 py-1 bg-blue-100 rounded">+</button>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-sm">拍号：</span>
+                <select class="px-2 py-1 border rounded">
+                    <option>2/4</option>
+                    <option selected>3/4</option>
+                    <option>4/4</option>
+                    <option>6/8</option>
+                </select>
+            </div>
+            <div class="flex gap-2 justify-center">
+                <button class="px-4 py-2 bg-green-500 text-white rounded">▶</button>
+                <button class="px-4 py-2 bg-red-500 text-white rounded">⏹</button>
+            </div>
         `;
-        const tempoInput = tempoControl.querySelector('input');
-        const tempoDecBtn = tempoControl.querySelector('button:nth-child(2)');
-        const tempoIncBtn = tempoControl.querySelector('button:nth-child(3)');
-        
-        tempoInput.addEventListener('change', () => {
-            d.beat.tempo = Math.min(240, Math.max(40, tempoInput.valueAsNumber));
-            tempoInput.value = d.beat.tempo;
-        });
-        tempoDecBtn.onclick = () => tempoInput.stepDown() && tempoInput.dispatchEvent(new Event('change'));
-        tempoIncBtn.onclick = () => tempoInput.stepUp() && tempoInput.dispatchEvent(new Event('change'));
-
-        // 拍号控制
-        const timeSigControl = document.createElement('div');
-        timeSigControl.classList.add('flex', 'items-center', 'gap-2');
-        timeSigControl.innerHTML = `
-            <span class="text-sm">拍号：</span>
-            <select class="px-2 py-1 border rounded">
-                <option>2/4</option>
-                <option selected>3/4</option>
-                <option>4/4</option>
-                <option>6/8</option>
-            </select>
-        `;
-        const timeSigSelect = timeSigControl.querySelector('select');
-        timeSigSelect.addEventListener('change', () => {
-            const [ts, bu] = timeSigSelect.value.split('/');
-            d.beat.timeSignature = parseInt(ts);
-            d.beat.beatUnit = parseInt(bu);
-            updateCanvas();
-        });
-
-        // 播放控制
-        const playControl = document.createElement('div');
-        playControl.classList.add('flex', 'gap-2', 'justify-center');
-        const startBtn = document.createElement('button');
-        startBtn.textContent = '▶';
-        startBtn.classList.add('px-4', 'py-2', 'bg-green-500', 'text-white', 'rounded');
-        const stopBtn = document.createElement('button');
-        stopBtn.textContent = '⏹';
-        stopBtn.classList.add('px-4', 'py-2', 'bg-red-500', 'text-white', 'rounded');
-        
-        startBtn.onclick = () => d.beat.start();
-        stopBtn.onclick = () => d.beat.stop();
-
-        playControl.append(startBtn, stopBtn);
-        controls.append(tempoControl, timeSigControl, playControl);
-        d.appendChild(controls);
 
         // 画布区域
         const canvasContainer = document.createElement('div');
-        canvasContainer.classList.add('flex-grow', 'p-2');
-        
+        canvasContainer.className = 'flex-grow p-2';
         const canvas = document.createElement('canvas');
         canvasContainer.appendChild(canvas);
-        d.appendChild(canvasContainer);
 
-        document.body.appendChild(d);
+        panel.append(titleBar, controls, canvasContainer);
+        document.body.appendChild(panel);
 
-        // 更新画布
+        // 功能实现
+        const beat = new CBeat();
+        const ctx = canvas.getContext('2d');
+        
+        // 事件绑定
+        let isDragging = false;
+        let offsetX, offsetY;
+        titleBar.onmousedown = e => {
+            isDragging = true;
+            offsetX = e.clientX - panel.offsetLeft;
+            offsetY = e.clientY - panel.offsetTop;
+        };
+        document.onmouseup = () => isDragging = false;
+        document.onmousemove = e => {
+            if (isDragging) {
+                panel.style.left = `${e.clientX - offsetX}px`;
+                panel.style.top = `${e.clientY - offsetY}px`;
+            }
+        };
+
+        const tempoInput = controls.querySelector('input');
+        const [decreaseBtn, increaseBtn] = controls.querySelectorAll('button');
+        const timeSigSelect = controls.querySelector('select');
+        const [startBtn, stopBtn] = controls.querySelectorAll('.bg-green-500, .bg-red-500');
+
+        tempoInput.addEventListener('change', () => {
+            beat.tempo = Math.min(240, Math.max(40, tempoInput.valueAsNumber));
+            tempoInput.value = beat.tempo;
+        });
+        decreaseBtn.onclick = () => tempoInput.stepDown() && tempoInput.dispatchEvent(new Event('change'));
+        increaseBtn.onclick = () => tempoInput.stepUp() && tempoInput.dispatchEvent(new Event('change'));
+        timeSigSelect.addEventListener('change', () => {
+            const [ts, bu] = timeSigSelect.value.split('/');
+            beat.timeSignature = parseInt(ts);
+            beat.beatUnit = parseInt(bu);
+        });
+        startBtn.onclick = () => beat.start();
+        stopBtn.onclick = () => beat.stop();
+
+        // 渲染循环
         function updateCanvas() {
-            const ctx = canvas.getContext('2d');
             const rect = canvasContainer.getBoundingClientRect();
             canvas.width = rect.width;
             canvas.height = rect.height;
-            d.beat.draw(ctx, canvas.width, canvas.height);
+            beat.draw(ctx, canvas.width, canvas.height);
         }
-
-        window.addEventListener('resize', updateCanvas);
         setInterval(updateCanvas, 100);
     }
 
-    // 拖拽逻辑（与原代码相同）
-    d.toggleUI = () => d.classList.toggle('hidden');
-    
-    let isDragging = false;
-    let offsetX, offsetY;
-    titleBar.onmousedown = e => {
-        isDragging = true;
-        offsetX = e.clientX - d.offsetLeft;
-        offsetY = e.clientY - d.offsetTop;
-    };
-    document.onmouseup = () => isDragging = false;
-    document.onmousemove = e => {
-        if (isDragging) {
-            d.style.left = `${e.clientX - offsetX}px`;
-            d.style.top = `${e.clientY - offsetY}px`;
+    // 和弦组件
+    class ChordGenerator {
+        constructor() {
+            this.chordTypes = {
+                'maj': [0, 4, 7],
+                'min': [0, 3, 7],
+                '7': [0, 4, 7, 10],
+                'maj7': [0, 4, 7, 11],
+                'min7': [0, 3, 7, 10]
+            };
+            this.currentChord = { root: 60, type: 'maj' };
         }
-    };
 
-    d.style.left = '150px';
-    d.style.top = '150px';
-    //d.toggleUI();
-}
-    // 初始化节拍器
-    document.addEventListener('DOMContentLoaded', function() {
-        app.C4Beat('beatc9');
+        getFrequencies() {
+            return this.chordTypes[this.currentChord.type].map(interval => 
+                440 * Math.pow(2, (this.currentChord.root + interval - 69) / 12)
+            );
+        }
+
+        draw(ctx, width, height) {
+            ctx.clearRect(0, 0, width, height);
+            const keyWidth = width / 14;
+            
+            // 绘制钢琴键盘
+            for(let i = 0; i < 14; i++) {
+                const whiteKey = [0,2,3,5,6,8,9,11,12,14,15,17,18,20][i] % 12 === 0;
+                ctx.fillStyle = whiteKey ? '#fff' : '#000';
+                ctx.fillRect(i*keyWidth, 0, keyWidth-1, height);
+                ctx.strokeStyle = '#666';
+                ctx.strokeRect(i*keyWidth, 0, keyWidth-1, height);
+            }
+            
+            // 绘制和弦音
+            this.getFrequencies().forEach(freq => {
+                const note = Math.round(12 * Math.log2(freq/440) + 69);
+                const pos = ((note - 60) % 12) * (width/12);
+                ctx.fillStyle = '#ff000080';
+                ctx.beginPath();
+                ctx.arc(pos, height/2, 10, 0, Math.PI*2);
+                ctx.fill();
+            });
+        }
+    }
+
+    function createChordPanel() {
+        const panel = document.createElement('div');
+        panel.id = 'chord_panel';
+        panel.className = 'absolute right-4 bottom-20 w-64 h-64 bg-white border rounded-lg shadow-md z-1000 hidden flex flex-col';
         
-        // 激活音频上下文的手势处理
-        document.body.addEventListener('click', function() {
-            if (!app.CBeat?.audioContext) return;
-            if (app.CBeat.audioContext.state === 'suspended') {
-                app.CBeat.audioContext.resume();
+        // 标题栏
+        const titleBar = document.createElement('div');
+        titleBar.className = 'p-2 bg-gray-100 cursor-move border-b border-gray-300 flex justify-between';
+        titleBar.innerHTML = `
+            <span>和弦生成器</span>
+            <button class="text-gray-600 hover:text-red-500">&times;</button>
+        `;
+        titleBar.querySelector('button').onclick = () => panel.classList.add('hidden');
+        
+        // 控制区域
+        const controls = document.createElement('div');
+        controls.className = 'p-2 flex flex-col gap-2';
+        controls.innerHTML = `
+            <div class="flex gap-2">
+                <select class="flex-1 px-2 py-1 border rounded">
+                    ${['C','C#','D','D#','E','F','F#','G','G#','A','A#','B']
+                      .map((n,i) => `<option value="${60+i}">${n}</option>`).join('')}
+                </select>
+                <select class="flex-1 px-2 py-1 border rounded">
+                    ${Object.keys(new ChordGenerator().chordTypes)
+                      .map(t => `<option>${t}</option>`).join('')}
+                </select>
+            </div>
+            <button class="w-full py-2 bg-purple-500 text-white rounded hover:bg-purple-600">
+                播放和弦
+            </button>
+        `;
+
+        // 画布区域
+        const canvas = document.createElement('canvas');
+        canvas.className = 'flex-grow';
+        
+        panel.append(titleBar, controls, canvas);
+        document.body.appendChild(panel);
+
+        // 功能实现
+        const chordGen = new ChordGenerator();
+        const ctx = canvas.getContext('2d');
+        let audioContext;
+
+        // 事件绑定
+        controls.querySelector('button').onclick = () => {
+            if (!audioContext) audioContext = new AudioContext();
+            const frequencies = chordGen.getFrequencies();
+            
+            frequencies.forEach(freq => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, audioContext.currentTime);
+                
+                gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+                
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.start();
+                osc.stop(audioContext.currentTime + 1);
+            });
+        };
+
+        controls.querySelectorAll('select').forEach(select => {
+            select.addEventListener('change', () => {
+                chordGen.currentChord = {
+                    root: parseInt(controls.querySelector('select:first-child').value),
+                    type: controls.querySelector('select:last-child').value
+                };
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+                chordGen.draw(ctx, canvas.width, canvas.height);
+            });
+        });
+
+        // 拖拽逻辑
+        let chordDragging = false;
+        let chordOffsetX, chordOffsetY;
+        titleBar.addEventListener('mousedown', e => {
+            chordDragging = true;
+            chordOffsetX = e.clientX - panel.offsetLeft;
+            chordOffsetY = e.clientY - panel.offsetTop;
+        });
+        document.addEventListener('mouseup', () => chordDragging = false);
+        document.addEventListener('mousemove', e => {
+            if (chordDragging) {
+                panel.style.left = `${e.clientX - chordOffsetX}px`;
+                panel.style.top = `${e.clientY - chordOffsetY}px`;
+            }
+        });
+
+        // 初始渲染
+        setInterval(() => {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            chordGen.draw(ctx, canvas.width, canvas.height);
+        }, 100);
+    }
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+        createBeatPanel();
+        createChordPanel();
+        
+        // 音频激活
+        document.addEventListener('click', () => {
+            if (window.AudioContext && !document.audioActivated) {
+                new AudioContext().resume();
+                document.audioActivated = true;
             }
         }, { once: true });
     });
     </script>
 </body>
 </html>
+    
 <!--
-beat.html:194  Uncaught TypeError: Cannot set properties of null (setting 'onclick')
-    at app.C4Beat (beat.html:194:29)
-    at HTMLDocument.<anonymous> (beat.html:281:13)
+    节拍器的圆圈不应该往下移动
+
+    return all new code.
+     
 -->
