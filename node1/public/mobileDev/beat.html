@@ -8,6 +8,10 @@
     <style>
         canvas { touch-action: none; }
         .z-1000 { z-index: 1000; }
+        .canvas-container { 
+            box-sizing: border-box;
+            height: 200px; /* 固定画布容器高度 */
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen p-4">
@@ -73,14 +77,16 @@
 
             const radius = Math.min(width, height) * 0.3;
             const centerX = width/2;
-            const centerY = height/2 + 30;
+            const centerY = height/2;  // 保持垂直居中
             
+            // 绘制节拍圆环
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
             ctx.strokeStyle = '#666';
             ctx.lineWidth = 3;
             ctx.stroke();
 
+            // 绘制节拍点
             for (let i = 0; i < this.timeSignature; i++) {
                 const angle = (i * (Math.PI * 2) / this.timeSignature) - Math.PI/2;
                 const x = centerX + Math.cos(angle) * (radius - 10);
@@ -180,9 +186,9 @@
             </div>
         `;
 
-        // 画布区域
+        // 画布容器
         const canvasContainer = document.createElement('div');
-        canvasContainer.className = 'flex-grow p-2';
+        canvasContainer.className = 'canvas-container flex-grow p-2';
         const canvas = document.createElement('canvas');
         canvasContainer.appendChild(canvas);
 
@@ -230,15 +236,15 @@
 
         // 渲染循环
         function updateCanvas() {
-            const rect = canvasContainer.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = rect.height;
+            canvas.width = canvasContainer.clientWidth;
+            canvas.height = canvasContainer.clientHeight;
             beat.draw(ctx, canvas.width, canvas.height);
         }
         setInterval(updateCanvas, 100);
+        updateCanvas(); // 初始渲染
     }
 
-    // 和弦组件
+    // 和弦组件（保持不变）
     class ChordGenerator {
         constructor() {
             this.chordTypes = {
@@ -404,7 +410,7 @@
 </html>
     
 <!--
-    节拍器的圆圈不应该往下移动
+    钢琴键盘不真实
 
     return all new code.
      
