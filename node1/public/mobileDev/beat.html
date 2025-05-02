@@ -59,8 +59,8 @@
     class CBeat {
         constructor() {
             this.tempo = 120;
-            this.timeSignature = 4;
-            this.beatUnit = 4;
+            this.timeSignature = 3;  // 修复：初始值改为3
+            this.beatUnit = 4;       // 保持4
             this.isPlaying = false;
             this.currentBeat = 0;
             this.audioContext = null;
@@ -213,18 +213,29 @@
         const toggleBtn = controls.querySelector('.toggle-btn');
 
         tempoInput.addEventListener('change', () => {
-            beat.tempo = Math.min(240, Math.max(40, tempoInput.valueAsNumber));
-            tempoInput.value = beat.tempo;
+            const newTempo = Math.min(240, Math.max(40, tempoInput.valueAsNumber));
+            beat.tempo = newTempo;
+            tempoInput.value = newTempo;
+
+            if (beat.isPlaying) {
+                clearTimeout(beat.timer);
+                beat.schedule();
+            }
         });
-        decreaseBtn.onclick = () => tempoInput.stepDown() && tempoInput.dispatchEvent(new Event('change'));
-        increaseBtn.onclick = () => tempoInput.stepUp() && tempoInput.dispatchEvent(new Event('change'));
+        decreaseBtn.onclick = () => {
+            tempoInput.stepDown();
+            tempoInput.dispatchEvent(new Event('change'));
+        };
+        increaseBtn.onclick = () => {
+            tempoInput.stepUp();
+            tempoInput.dispatchEvent(new Event('change'));
+        };
         timeSigSelect.addEventListener('change', () => {
             const [ts, bu] = timeSigSelect.value.split('/');
             beat.timeSignature = parseInt(ts);
             beat.beatUnit = parseInt(bu);
         });
         
-        // 修改后的切换按钮逻辑
         toggleBtn.onclick = () => {
             if (beat.isPlaying) {
                 beat.stop();
@@ -248,7 +259,7 @@
         updateCanvas();
     }
 
-    <!-- 和弦组件（保持不变） -->
+    <!-- 和弦组件 -->
     class ChordGenerator {
         constructor() {
             this.chordTypes = {
@@ -258,7 +269,7 @@
                 'maj7': [0, 4, 7, 11],
                 'min7': [0, 3, 7, 10]
             };
-            this.currentChord = { root: 60, type: '7' }; // 默认设置为 C7
+            this.currentChord = { root: 60, type: '7' };
             this.whiteKeyNotes = [60, 62, 64, 65, 67, 69, 71];
         }
 
@@ -279,7 +290,6 @@
             const blackKeyWidth = whiteKeyWidth * 0.6;
             const blackKeyHeight = height * 0.6;
 
-            // 绘制白键
             for (let i = 0; i < 7; i++) {
                 const isPressed = pressedKeys.includes(this.whiteKeyNotes[i]);
                 ctx.fillStyle = isPressed? '#ccc' : '#fff';
@@ -288,7 +298,6 @@
                 ctx.strokeRect(i * whiteKeyWidth, isPressed? 5 : 0, whiteKeyWidth, height);
             }
 
-            // 绘制黑键
             const blackKeyPositions = [1, 2, 4, 5, 6];
             blackKeyPositions.forEach(pos => {
                 const note = this.whiteKeyNotes[pos - 1] + 1;
@@ -299,31 +308,26 @@
                 ctx.strokeRect((pos - 0.3) * whiteKeyWidth, 0, blackKeyWidth, blackKeyHeight);
             });
 
-            // 绘制和弦指示
             this.getFrequencies().forEach(freq => {
                 const note = Math.round(12 * Math.log2(freq/440) + 69);
                 const noteMod12 = note % 12;
                 const whiteKeyIndices = {0:0, 2:1, 4:2, 5:3, 7:4, 9:5, 11:6};
                 let pos;
 
-                // 计算键位位置
                 if (noteMod12 in whiteKeyIndices) {
-                    // 白键位置
                     const whiteKeyIndex = whiteKeyIndices[noteMod12];
                     pos = whiteKeyIndex * whiteKeyWidth + whiteKeyWidth / 2;
                 } else {
-                    // 黑键位置
                     const blackKeyMap = {1:0, 3:1, 6:2, 8:3, 10:4};
                     const bkIndex = blackKeyMap[noteMod12];
                     if (bkIndex !== undefined) {
                         const posX = (blackKeyPositions[bkIndex] - 0.3) * whiteKeyWidth + blackKeyWidth / 2;
                         pos = posX;
                     } else {
-                        return; // 不支持的键位
+                        return;
                     }
                 }
 
-                // 绘制红圈
                 ctx.fillStyle = '#ff000080';
                 ctx.beginPath();
                 ctx.arc(pos, height/2 + (pressedKeys.includes(note)? 5 : 0), 10, 0, Math.PI*2);
@@ -374,13 +378,11 @@
         let audioContext;
         let pressedKeys = [];
 
-        // 初始化下拉框选择为 C7
         const rootSelect = controls.querySelector('select:first-child');
         const typeSelect = controls.querySelector('select:last-child');
         rootSelect.value = 60;
         typeSelect.value = '7';
 
-        // 点击键盘发声功能
         canvas.addEventListener('mousedown', function(e) {
             const rect = this.getBoundingClientRect();
             const x = e.clientX - rect.left;
@@ -389,7 +391,6 @@
             const whiteKeyWidth = this.width / 7;
             const blackKeyWidth = whiteKeyWidth * 0.6;
             
-            // 检查黑键点击
             const blackKeyPositions = [1, 2, 4, 5, 6];
             for (let j = 0; j < blackKeyPositions.length; j++) {
                 const pos = blackKeyPositions[j];
@@ -404,7 +405,6 @@
                 }
             }
 
-            // 检查白键点击
             const whiteKeyIndex = Math.floor(x / whiteKeyWidth);
             if (whiteKeyIndex >= 0 && whiteKeyIndex < 7) {
                 const note = chordGen.whiteKeyNotes[whiteKeyIndex];
@@ -439,7 +439,6 @@
         controls.querySelector('button').onclick = () => {
             if (!audioContext) audioContext = new AudioContext();
             const frequencies = chordGen.getFrequencies();
-            // 新增：获取MIDI音符并更新按下状态
             const midiNotes = chordGen.getMidiNotes();
             pressedKeys = [...midiNotes];
             chordGen.draw(ctx, canvas.width, canvas.height, pressedKeys);
@@ -459,7 +458,6 @@
                 osc.stop(audioContext.currentTime + 1);
             });
 
-            // 新增：1秒后清除按下状态
             setTimeout(() => {
                 pressedKeys = [];
                 chordGen.draw(ctx, canvas.width, canvas.height, pressedKeys);
@@ -468,8 +466,8 @@
         controls.querySelectorAll('select').forEach(select => {
             select.addEventListener('change', () => {
                 chordGen.currentChord = {
-                    root: parseInt(controls.querySelector('select:first-child').value),
-                    type: controls.querySelector('select:last-child').value
+                    root: parseInt(rootSelect.value),
+                    type: typeSelect.value
                 };
                 chordGen.draw(ctx, canvas.width, canvas.height, pressedKeys);
             });
@@ -492,7 +490,7 @@
 
         function updateCanvas() {
             canvas.width = panel.clientWidth;
-            canvas.height = panel.clientHeight - 80; // 减去标题栏和控件高度
+            canvas.height = panel.clientHeight - 80;
             chordGen.draw(ctx, canvas.width, canvas.height, pressedKeys);
         }
         setInterval(updateCanvas, 100);
@@ -513,7 +511,6 @@
     </script>
 </body>
 </html>
-    
 <!--
     升级：
     速度改变 ，应该立即让节拍器生效。 
