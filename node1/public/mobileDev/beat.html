@@ -10,12 +10,11 @@
         .z-1000 { z-index: 1000; }
         .canvas-container { 
             box-sizing: border-box;
-            height: 200px; /* 固定画布容器高度 */
+            height: 200px;
         }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen p-4">
-    <!-- 主界面 -->
     <div class="max-w-2xl mx-auto">
         <h1 class="text-3xl font-bold mb-4">音乐训练工具</h1>
         
@@ -36,6 +35,7 @@
                         <li>5种和弦类型选择</li>
                         <li>MIDI标准频率生成</li>
                         <li>钢琴键盘可视化</li>
+                        <li>点击键盘发声</li>
                     </ul>
                 </div>
             </div>
@@ -77,16 +77,14 @@
 
             const radius = Math.min(width, height) * 0.3;
             const centerX = width/2;
-            const centerY = height/2;  // 保持垂直居中
+            const centerY = height/2;
             
-            // 绘制节拍圆环
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
             ctx.strokeStyle = '#666';
             ctx.lineWidth = 3;
             ctx.stroke();
 
-            // 绘制节拍点
             for (let i = 0; i < this.timeSignature; i++) {
                 const angle = (i * (Math.PI * 2) / this.timeSignature) - Math.PI/2;
                 const x = centerX + Math.cos(angle) * (radius - 10);
@@ -148,7 +146,6 @@
         panel.style.left = '150px';
         panel.style.top = '150px';
 
-        // 标题栏
         const titleBar = document.createElement('div');
         titleBar.className = 'p-2 bg-gray-100 cursor-move border-b border-gray-300 flex-shrink-0 flex justify-between';
         
@@ -161,7 +158,6 @@
         titleBar.appendChild(titleText);
         titleBar.appendChild(closeBtn);
         
-        // 控制区域
         const controls = document.createElement('div');
         controls.className = 'p-2 flex flex-col gap-2';
         controls.innerHTML = `
@@ -186,7 +182,6 @@
             </div>
         `;
 
-        // 画布容器
         const canvasContainer = document.createElement('div');
         canvasContainer.className = 'canvas-container flex-grow p-2';
         const canvas = document.createElement('canvas');
@@ -195,11 +190,9 @@
         panel.append(titleBar, controls, canvasContainer);
         document.body.appendChild(panel);
 
-        // 功能实现
         const beat = new CBeat();
         const ctx = canvas.getContext('2d');
         
-        // 事件绑定
         let isDragging = false;
         let offsetX, offsetY;
         titleBar.onmousedown = e => {
@@ -234,17 +227,16 @@
         startBtn.onclick = () => beat.start();
         stopBtn.onclick = () => beat.stop();
 
-        // 渲染循环
         function updateCanvas() {
             canvas.width = canvasContainer.clientWidth;
             canvas.height = canvasContainer.clientHeight;
             beat.draw(ctx, canvas.width, canvas.height);
         }
         setInterval(updateCanvas, 100);
-        updateCanvas(); // 初始渲染
+        updateCanvas();
     }
 
-    // 和弦组件
+    <!-- 和弦组件 -->
     class ChordGenerator {
         constructor() {
             this.chordTypes = {
@@ -255,6 +247,7 @@
                 'min7': [0, 3, 7, 10]
             };
             this.currentChord = { root: 60, type: 'maj' };
+            this.whiteKeyNotes = [60, 62, 64, 65, 67, 69, 71];
         }
 
         getFrequencies() {
@@ -269,23 +262,19 @@
             const blackKeyWidth = whiteKeyWidth * 0.6;
             const blackKeyHeight = height * 0.6;
 
-            // 绘制白键
             for (let i = 0; i < 7; i++) {
                 ctx.fillStyle = '#fff';
                 ctx.fillRect(i * whiteKeyWidth, 0, whiteKeyWidth, height);
                 ctx.strokeStyle = '#666';
                 ctx.strokeRect(i * whiteKeyWidth, 0, whiteKeyWidth, height);
 
-                // 白键高光
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
                 ctx.fillRect(i * whiteKeyWidth, 0, whiteKeyWidth, 10);
 
-                // 白键阴影
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
                 ctx.fillRect(i * whiteKeyWidth, height - 10, whiteKeyWidth, 10);
             }
 
-            // 绘制黑键
             const blackKeyPositions = [1, 2, 4, 5, 6];
             blackKeyPositions.forEach(pos => {
                 ctx.fillStyle = '#000';
@@ -293,16 +282,13 @@
                 ctx.strokeStyle = '#666';
                 ctx.strokeRect((pos - 0.3) * whiteKeyWidth, 0, blackKeyWidth, blackKeyHeight);
 
-                // 黑键高光
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
                 ctx.fillRect((pos - 0.3) * whiteKeyWidth, 0, blackKeyWidth, 5);
 
-                // 黑键阴影
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
                 ctx.fillRect((pos - 0.3) * whiteKeyWidth, blackKeyHeight - 5, blackKeyWidth, 5);
             });
 
-            // 绘制和弦音
             this.getFrequencies().forEach(freq => {
                 const note = Math.round(12 * Math.log2(freq/440) + 69);
                 const noteIndex = (note - 60) % 12;
@@ -327,7 +313,6 @@
         panel.id = 'chord_panel';
         panel.className = 'absolute right-4 bottom-20 w-64 h-64 bg-white border rounded-lg shadow-md z-1000 hidden flex flex-col';
         
-        // 标题栏
         const titleBar = document.createElement('div');
         titleBar.className = 'p-2 bg-gray-100 cursor-move border-b border-gray-300 flex justify-between';
         titleBar.innerHTML = `
@@ -336,7 +321,6 @@
         `;
         titleBar.querySelector('button').onclick = () => panel.classList.add('hidden');
         
-        // 控制区域
         const controls = document.createElement('div');
         controls.className = 'p-2 flex flex-col gap-2';
         controls.innerHTML = `
@@ -355,19 +339,63 @@
             </button>
         `;
 
-        // 画布区域
         const canvas = document.createElement('canvas');
         canvas.className = 'flex-grow';
         
         panel.append(titleBar, controls, canvas);
         document.body.appendChild(panel);
 
-        // 功能实现
         const chordGen = new ChordGenerator();
         const ctx = canvas.getContext('2d');
         let audioContext;
 
-        // 事件绑定
+        // 点击键盘发声功能
+        canvas.addEventListener('click', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const whiteKeyWidth = this.width / 7;
+            const blackKeyWidth = whiteKeyWidth * 0.6;
+            const blackKeyHeight = this.height * 0.6;
+            
+            // 检查黑键点击
+            const blackKeyPositions = [0, 1, 3, 4, 5];
+            for (let j = 0; j < blackKeyPositions.length; j++) {
+                const whiteKeyIndex = blackKeyPositions[j];
+                const pos = whiteKeyIndex + 1;
+                const blackKeyX = (pos - 0.3) * whiteKeyWidth;
+                
+                if (x >= blackKeyX && x <= blackKeyX + blackKeyWidth && y <= blackKeyHeight) {
+                    playNote(chordGen.whiteKeyNotes[whiteKeyIndex] + 1);
+                    return;
+                }
+            }
+
+            // 检查白键点击
+            const whiteKeyIndex = Math.floor(x / whiteKeyWidth);
+            if (whiteKeyIndex >= 0 && whiteKeyIndex < 7) {
+                playNote(chordGen.whiteKeyNotes[whiteKeyIndex]);
+            }
+        });
+
+        function playNote(midiNote) {
+            if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(440 * Math.pow(2, (midiNote - 69)/12), audioContext.currentTime);
+            
+            gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.5);
+        }
+
         controls.querySelector('button').onclick = () => {
             if (!audioContext) audioContext = new AudioContext();
             const frequencies = chordGen.getFrequencies();
@@ -401,7 +429,6 @@
             });
         });
 
-        // 拖拽逻辑
         let chordDragging = false;
         let chordOffsetX, chordOffsetY;
         titleBar.addEventListener('mousedown', e => {
@@ -417,7 +444,6 @@
             }
         });
 
-        // 初始渲染
         setInterval(() => {
             const rect = canvas.getBoundingClientRect();
             canvas.width = rect.width;
@@ -426,12 +452,10 @@
         }, 100);
     }
 
-    // 初始化
     document.addEventListener('DOMContentLoaded', () => {
         createBeatPanel();
         createChordPanel();
         
-        // 音频激活
         document.addEventListener('click', () => {
             if (window.AudioContext && !document.audioActivated) {
                 new AudioContext().resume();
@@ -445,8 +469,9 @@
     
     
 <!--
-    钢琴键盘不真实
+    升级：
+    让键盘有被按下的感觉
 
-    return all new code.
+    return all new code so that I can run it at this page
      
 -->
