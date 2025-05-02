@@ -1,231 +1,126 @@
-if (typeof app === 'undefined') {
-    app = {};
-}
+ 
+    class ChordGenerator {
+        constructor() {
+            this.chordTypes = {
+                'maj': [0, 4, 7],
+                'min': [0, 3, 7],
+                '7': [0, 4, 7, 10],
+                'maj7': [0, 4, 7, 11],
+                'min7': [0, 3, 7, 10]
+            };
+            this.currentChord = { root: 60, type: 'maj' };
+            this.whiteKeyNotes = [60, 62, 64, 65, 67, 69, 71];
+            this.pressedKeys = new Set(); // 新增：跟踪按下的键
+        }
 
-class CBeat {
-    constructor() {
-        this.tempo = 120;       // 节拍速度
-        this.timeSignature = 4; // 拍号分子
-        this.beatUnit = 4;      // 拍号分母（音符类型）
-        this.isPlaying = false;
-        this.currentBeat = 0;
-        this.audioContext = null;
-        this.timer = null;
+        // ...保持其他方法不变...
+
+        draw(ctx, width, height) {
+            ctx.clearRect(0, 0, width, height);
+            const whiteKeyWidth = width / 7;
+            const blackKeyWidth = whiteKeyWidth * 0.6;
+            const blackKeyHeight = height * 0.6;
+
+            // 绘制白键（添加按下状态）
+            for (let i = 0; i < 7; i++) {
+                const note = this.whiteKeyNotes[i];
+                const isPressed = this.pressedKeys.has(note);
+                
+                ctx.fillStyle = isPressed ? '#add8e6' : '#fff'; // 按下时变为浅蓝色
+                ctx.fillRect(i * whiteKeyWidth, 0, whiteKeyWidth, height);
+                ctx.strokeStyle = '#666';
+                ctx.strokeRect(i * whiteKeyWidth, 0, whiteKeyWidth, height);
+
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.fillRect(i * whiteKeyWidth, 0, whiteKeyWidth, 10);
+
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.fillRect(i * whiteKeyWidth, height - 10, whiteKeyWidth, 10);
+            }
+
+            // 绘制黑键（添加按下状态）
+            const blackKeyPositions = [1, 2, 4, 5, 6];
+            blackKeyPositions.forEach((pos, index) => {
+                const note = this.whiteKeyNotes[pos - 1] + 1;
+                const isPressed = this.pressedKeys.has(note);
+                
+                ctx.fillStyle = isPressed ? '#000080' : '#000'; // 按下时变为深蓝色
+                ctx.fillRect((pos - 0.3) * whiteKeyWidth, 0, blackKeyWidth, blackKeyHeight);
+                ctx.strokeStyle = '#666';
+                ctx.strokeRect((pos - 0.3) * whiteKeyWidth, 0, blackKeyWidth, blackKeyHeight);
+
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.fillRect((pos - 0.3) * whiteKeyWidth, 0, blackKeyWidth, 5);
+
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.fillRect((pos - 0.3) * whiteKeyWidth, blackKeyHeight - 5, blackKeyWidth, 5);
+            });
+
+            // ...保持和弦指示逻辑不变...
+        }
     }
 
-    draw(ctx, width, height) {
-        ctx.clearRect(0, 0, width, height);
-        ctx.font = '20px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#000';
+    function createChordPanel() {
+        // ...前面代码保持不变...
 
-        // 绘制节拍器参数
-        ctx.fillText(`速度：${this.tempo} BPM`, width/2, 30);
-        ctx.fillText(`拍号：${this.timeSignature}/${this.beatUnit}`, width/2, 60);
-
-        // 绘制节拍指示器
-        const radius = Math.min(width, height) * 0.3;
-        const centerX = width/2;
-        const centerY = height/2 + 30;
-        
-        // 绘制外圆
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-        ctx.strokeStyle = '#666';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-
-        // 绘制节拍标记
-        for (let i = 0; i < this.timeSignature; i++) {
-            const angle = (i * (Math.PI * 2) / this.timeSignature) - Math.PI/2;
-            const x = centerX + Math.cos(angle) * (radius - 10);
-            const y = centerY + Math.sin(angle) * (radius - 10);
+        // 更新点击事件处理
+        canvas.addEventListener('click', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
             
-            ctx.beginPath();
-            ctx.arc(x, y, 5, 0, Math.PI * 2);
-            ctx.fillStyle = i === this.currentBeat ? '#f00' : '#666';
-            ctx.fill();
-        }
-    }
+            const whiteKeyWidth = this.width / 7;
+            const blackKeyWidth = whiteKeyWidth * 0.6;
+            const blackKeyHeight = this.height * 0.6;
+            
+            let pressedNote = null;
 
-    play() {
-        if (!this.audioContext) {
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        }
+            // 检查黑键点击
+            const blackKeyPositions = [0, 1, 3, 4, 5];
+            for (let j = 0; j < blackKeyPositions.length; j++) {
+                const whiteKeyIndex = blackKeyPositions[j];
+                const pos = whiteKeyIndex + 1;
+                const blackKeyX = (pos - 0.3) * whiteKeyWidth;
+                
+                if (x >= blackKeyX && x <= blackKeyX + blackKeyWidth && y <= blackKeyHeight) {
+                    pressedNote = chordGen.whiteKeyNotes[whiteKeyIndex] + 1;
+                    break;
+                }
+            }
 
-        const oscillator = this.audioContext.createOscillator();
-        const gainNode = this.audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioContext.destination);
+            // 检查白键点击
+            if (!pressedNote) {
+                const whiteKeyIndex = Math.floor(x / whiteKeyWidth);
+                if (whiteKeyIndex >= 0 && whiteKeyIndex < 7) {
+                    pressedNote = chordGen.whiteKeyNotes[whiteKeyIndex];
+                }
+            }
 
-        // 主拍音
-        oscillator.frequency.setValueAtTime(this.currentBeat === 0 ? 880 : 440, 
-                                         this.audioContext.currentTime);
-        gainNode.gain.setValueAtTime(0.5, this.audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
-        
-        oscillator.start();
-        oscillator.stop(this.audioContext.currentTime + 0.1);
-    }
-
-    start() {
-        if (!this.isPlaying) {
-            this.isPlaying = true;
-            this.schedule();
-        }
-    }
-
-    stop() {
-        this.isPlaying = false;
-        clearTimeout(this.timer);
-    }
-
-    schedule() {
-        if (!this.isPlaying) return;
-
-        const interval = 60000 / this.tempo;
-        this.play();
-        this.currentBeat = (this.currentBeat + 1) % this.timeSignature;
-        
-        this.timer = setTimeout(() => {
-            this.schedule();
-        }, interval);
-    }
-}
-
-app.C4Beat = function (id) {
-    let d = document.getElementById(id);
-    if (!d) {
-        d = document.createElement('div');
-        d.id = id;
-        d.beat = new CBeat();
-
-        // UI结构
-        d.classList.add('absolute', 'w-[300px]', 'h-[400px]', 'bg-white', 'border', 
-                       'border-gray-300', 'rounded-lg', 'shadow-md', 'z-1000', 
-                       'hidden', 'flex', 'flex-col');
-
-        // 标题栏（同原代码结构）
-        const titleBar = document.createElement('div');
-        titleBar.classList.add('p-2', 'bg-gray-100', 'cursor-move', 
-                             'border-b', 'border-gray-300', 'flex-shrink-0');
-        titleBar.textContent = "节拍器v0.1";
-        
-        const closeBtn = document.createElement('button');
-        closeBtn.textContent = '×';
-        closeBtn.classList.add('float-right', '-mt-4', '-mr-2', 'bg-transparent', 
-                             'border-none', 'text-lg', 'cursor-pointer', 'text-gray-600');
-        closeBtn.onclick = () => d.classList.add('hidden');
-        titleBar.appendChild(closeBtn);
-        d.appendChild(titleBar);
-
-        // 控制面板
-        const controls = document.createElement('div');
-        controls.classList.add('p-2', 'flex', 'flex-col', 'gap-2');
-
-        // 速度控制
-        const tempoControl = document.createElement('div');
-        tempoControl.classList.add('flex', 'items-center', 'gap-2');
-        tempoControl.innerHTML = `
-            <span class="text-sm">速度：</span>
-            <input type="number" value="120" min="40" max="240" 
-                   class="w-20 px-2 py-1 border rounded">
-            <button class="px-2 py-1 bg-blue-100 rounded">-</button>
-            <button class="px-2 py-1 bg-blue-100 rounded">+</button>
-        `;
-        const tempoInput = tempoControl.querySelector('input');
-        const tempoDecBtn = tempoControl.querySelector('button:nth-child(2)');
-        const tempoIncBtn = tempoControl.querySelector('button:nth-child(3)');
-        
-        tempoInput.addEventListener('change', () => {
-            d.beat.tempo = Math.min(240, Math.max(40, tempoInput.valueAsNumber));
-            tempoInput.value = d.beat.tempo;
-        });
-        tempoDecBtn.onclick = () => tempoInput.stepDown() && tempoInput.dispatchEvent(new Event('change'));
-        tempoIncBtn.onclick = () => tempoInput.stepUp() && tempoInput.dispatchEvent(new Event('change'));
-
-        // 拍号控制
-        const timeSigControl = document.createElement('div');
-        timeSigControl.classList.add('flex', 'items-center', 'gap-2');
-        timeSigControl.innerHTML = `
-            <span class="text-sm">拍号：</span>
-            <select class="px-2 py-1 border rounded">
-                <option>2/4</option>
-                <option selected>3/4</option>
-                <option>4/4</option>
-                <option>6/8</option>
-            </select>
-        `;
-        const timeSigSelect = timeSigControl.querySelector('select');
-        timeSigSelect.addEventListener('change', () => {
-            const [ts, bu] = timeSigSelect.value.split('/');
-            d.beat.timeSignature = parseInt(ts);
-            d.beat.beatUnit = parseInt(bu);
-            updateCanvas();
+            if (pressedNote) {
+                // 添加按下状态并设置自动取消
+                chordGen.pressedKeys.add(pressedNote);
+                setTimeout(() => {
+                    chordGen.pressedKeys.delete(pressedNote);
+                    const rect = canvas.getBoundingClientRect();
+                    canvas.width = rect.width;
+                    canvas.height = rect.height;
+                    chordGen.draw(ctx, canvas.width, canvas.height);
+                }, 200); // 200毫秒后取消按下状态
+                
+                playNote(pressedNote);
+                
+                // 立即重绘画布
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+                chordGen.draw(ctx, canvas.width, canvas.height);
+            }
         });
 
-        // 播放控制
-        const playControl = document.createElement('div');
-        playControl.classList.add('flex', 'gap-2', 'justify-center');
-        const startBtn = document.createElement('button');
-        startBtn.textContent = '▶';
-        startBtn.classList.add('px-4', 'py-2', 'bg-green-500', 'text-white', 'rounded');
-        const stopBtn = document.createElement('button');
-        stopBtn.textContent = '⏹';
-        stopBtn.classList.add('px-4', 'py-2', 'bg-red-500', 'text-white', 'rounded');
-        
-        startBtn.onclick = () => d.beat.start();
-        stopBtn.onclick = () => d.beat.stop();
-
-        playControl.append(startBtn, stopBtn);
-        controls.append(tempoControl, timeSigControl, playControl);
-        d.appendChild(controls);
-
-        // 画布区域
-        const canvasContainer = document.createElement('div');
-        canvasContainer.classList.add('flex-grow', 'p-2');
-        
-        const canvas = document.createElement('canvas');
-        canvasContainer.appendChild(canvas);
-        d.appendChild(canvasContainer);
-
-        document.body.appendChild(d);
-
-        // 更新画布
-        function updateCanvas() {
-            const ctx = canvas.getContext('2d');
-            const rect = canvasContainer.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = rect.height;
-            d.beat.draw(ctx, canvas.width, canvas.height);
-        }
-
-        window.addEventListener('resize', updateCanvas);
-        setInterval(updateCanvas, 100);
+        // ...其余代码保持不变...
     }
 
-    // 拖拽逻辑（与原代码相同）
-    d.toggleUI = () => d.classList.toggle('hidden');
-    
-    let isDragging = false;
-    let offsetX, offsetY;
-    titleBar.onmousedown = e => {
-        isDragging = true;
-        offsetX = e.clientX - d.offsetLeft;
-        offsetY = e.clientY - d.offsetTop;
-    };
-    document.onmouseup = () => isDragging = false;
-    document.onmousemove = e => {
-        if (isDragging) {
-            d.style.left = `${e.clientX - offsetX}px`;
-            d.style.top = `${e.clientY - offsetY}px`;
-        }
-    };
-
-    d.style.left = '150px';
-    d.style.top = '150px';
-    d.toggleUI();
-}
-
-app.C4Beat('beatc9');
+    // ...保持其他部分代码不变...
+    </script>
+</body>
+</html>

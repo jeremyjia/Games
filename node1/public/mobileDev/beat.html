@@ -256,53 +256,60 @@
             );
         }
 
-        draw(ctx, width, height) {
+        draw(ctx, width, height, pressedKeys = []) {
             ctx.clearRect(0, 0, width, height);
             const whiteKeyWidth = width / 7;
             const blackKeyWidth = whiteKeyWidth * 0.6;
             const blackKeyHeight = height * 0.6;
 
+            // 绘制白键
             for (let i = 0; i < 7; i++) {
-                ctx.fillStyle = '#fff';
-                ctx.fillRect(i * whiteKeyWidth, 0, whiteKeyWidth, height);
+                const isPressed = pressedKeys.includes(this.whiteKeyNotes[i]);
+                ctx.fillStyle = isPressed? '#ccc' : '#fff';
+                ctx.fillRect(i * whiteKeyWidth, isPressed? 5 : 0, whiteKeyWidth, height);
                 ctx.strokeStyle = '#666';
-                ctx.strokeRect(i * whiteKeyWidth, 0, whiteKeyWidth, height);
-
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                ctx.fillRect(i * whiteKeyWidth, 0, whiteKeyWidth, 10);
-
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-                ctx.fillRect(i * whiteKeyWidth, height - 10, whiteKeyWidth, 10);
+                ctx.strokeRect(i * whiteKeyWidth, isPressed? 5 : 0, whiteKeyWidth, height);
             }
 
+            // 绘制黑键
             const blackKeyPositions = [1, 2, 4, 5, 6];
             blackKeyPositions.forEach(pos => {
-                ctx.fillStyle = '#000';
+                const note = this.whiteKeyNotes[pos - 1] + 1;
+                const isPressed = pressedKeys.includes(note);
+                ctx.fillStyle = isPressed? '#333' : '#000';
                 ctx.fillRect((pos - 0.3) * whiteKeyWidth, 0, blackKeyWidth, blackKeyHeight);
                 ctx.strokeStyle = '#666';
                 ctx.strokeRect((pos - 0.3) * whiteKeyWidth, 0, blackKeyWidth, blackKeyHeight);
-
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-                ctx.fillRect((pos - 0.3) * whiteKeyWidth, 0, blackKeyWidth, 5);
-
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-                ctx.fillRect((pos - 0.3) * whiteKeyWidth, blackKeyHeight - 5, blackKeyWidth, 5);
             });
 
+            // 绘制和弦指示
             this.getFrequencies().forEach(freq => {
                 const note = Math.round(12 * Math.log2(freq/440) + 69);
-                const noteIndex = (note - 60) % 12;
+                const noteMod12 = note % 12;
+                const whiteKeyIndices = {0:0, 2:1, 4:2, 5:3, 7:4, 9:5, 11:6};
                 let pos;
-                if ([1, 3, 6, 8, 10].includes(noteIndex)) {
-                    const blackKeyPos = [1, 2, 4, 5, 6][[1, 3, 6, 8, 10].indexOf(noteIndex)];
-                    pos = (blackKeyPos - 0.3) * whiteKeyWidth + blackKeyWidth / 2;
+
+                // 计算键位位置
+                if (noteMod12 in whiteKeyIndices) {
+                    // 白键位置
+                    const whiteKeyIndex = whiteKeyIndices[noteMod12];
+                    pos = whiteKeyIndex * whiteKeyWidth + whiteKeyWidth / 2;
                 } else {
-                    const whiteKeyPos = [0, 2, 3, 5, 7, 8, 10].indexOf(noteIndex % 12);
-                    pos = whiteKeyPos * whiteKeyWidth + whiteKeyWidth / 2;
+                    // 黑键位置
+                    const blackKeyMap = {1:0, 3:1, 6:2, 8:3, 10:4};
+                    const bkIndex = blackKeyMap[noteMod12];
+                    if (bkIndex !== undefined) {
+                        const posX = (blackKeyPositions[bkIndex] - 0.3) * whiteKeyWidth + blackKeyWidth / 2;
+                        pos = posX;
+                    } else {
+                        return; // 不支持的键位
+                    }
                 }
+
+                // 绘制红圈
                 ctx.fillStyle = '#ff000080';
                 ctx.beginPath();
-                ctx.arc(pos, height/2, 10, 0, Math.PI*2);
+                ctx.arc(pos, height/2 + (pressedKeys.includes(note)? 5 : 0), 10, 0, Math.PI*2);
                 ctx.fill();
             });
         }
@@ -348,26 +355,28 @@
         const chordGen = new ChordGenerator();
         const ctx = canvas.getContext('2d');
         let audioContext;
+        let pressedKeys = [];
 
         // 点击键盘发声功能
-        canvas.addEventListener('click', function(e) {
+        canvas.addEventListener('mousedown', function(e) {
             const rect = this.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
             
             const whiteKeyWidth = this.width / 7;
             const blackKeyWidth = whiteKeyWidth * 0.6;
-            const blackKeyHeight = this.height * 0.6;
             
             // 检查黑键点击
-            const blackKeyPositions = [0, 1, 3, 4, 5];
+            const blackKeyPositions = [1, 2, 4, 5, 6];
             for (let j = 0; j < blackKeyPositions.length; j++) {
-                const whiteKeyIndex = blackKeyPositions[j];
-                const pos = whiteKeyIndex + 1;
+                const pos = blackKeyPositions[j];
                 const blackKeyX = (pos - 0.3) * whiteKeyWidth;
                 
-                if (x >= blackKeyX && x <= blackKeyX + blackKeyWidth && y <= blackKeyHeight) {
-                    playNote(chordGen.whiteKeyNotes[whiteKeyIndex] + 1);
+                if (x >= blackKeyX && x <= blackKeyX + blackKeyWidth && y <= this.height * 0.6) {
+                    const note = chordGen.whiteKeyNotes[pos - 1] + 1;
+                    pressedKeys.push(note);
+                    playNote(note);
+                    chordGen.draw(ctx, canvas.width, canvas.height, pressedKeys);
                     return;
                 }
             }
@@ -375,8 +384,16 @@
             // 检查白键点击
             const whiteKeyIndex = Math.floor(x / whiteKeyWidth);
             if (whiteKeyIndex >= 0 && whiteKeyIndex < 7) {
-                playNote(chordGen.whiteKeyNotes[whiteKeyIndex]);
+                const note = chordGen.whiteKeyNotes[whiteKeyIndex];
+                pressedKeys.push(note);
+                playNote(note);
+                chordGen.draw(ctx, canvas.width, canvas.height, pressedKeys);
             }
+        });
+
+        document.addEventListener('mouseup', () => {
+            pressedKeys = [];
+            chordGen.draw(ctx, canvas.width, canvas.height, pressedKeys);
         });
 
         function playNote(midiNote) {
@@ -422,10 +439,7 @@
                     root: parseInt(controls.querySelector('select:first-child').value),
                     type: controls.querySelector('select:last-child').value
                 };
-                const rect = canvas.getBoundingClientRect();
-                canvas.width = rect.width;
-                canvas.height = rect.height;
-                chordGen.draw(ctx, canvas.width, canvas.height);
+                chordGen.draw(ctx, canvas.width, canvas.height, pressedKeys);
             });
         });
 
@@ -444,12 +458,13 @@
             }
         });
 
-        setInterval(() => {
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = rect.height;
-            chordGen.draw(ctx, canvas.width, canvas.height);
-        }, 100);
+        function updateCanvas() {
+            canvas.width = panel.clientWidth;
+            canvas.height = panel.clientHeight - 80; // 减去标题栏和控件高度
+            chordGen.draw(ctx, canvas.width, canvas.height, pressedKeys);
+        }
+        setInterval(updateCanvas, 100);
+        updateCanvas();
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -467,10 +482,9 @@
 </body>
 </html>
     
-    
 <!--
     升级：
-    让键盘有被按下的感觉
+    id_4_btn_play_chord 按下时，键盘相关键也应该显示按下
 
     return all new code so that I can run it at this page
      
