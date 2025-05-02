@@ -246,13 +246,18 @@
                 'maj7': [0, 4, 7, 11],
                 'min7': [0, 3, 7, 10]
             };
-            this.currentChord = { root: 60, type: 'maj' };
+            this.currentChord = { root: 60, type: '7' }; // 默认设置为 C7
             this.whiteKeyNotes = [60, 62, 64, 65, 67, 69, 71];
         }
 
         getFrequencies() {
             return this.chordTypes[this.currentChord.type].map(interval => 
                 440 * Math.pow(2, (this.currentChord.root + interval - 69) / 12)
+            );
+        }
+        getMidiNotes() {
+            return this.chordTypes[this.currentChord.type].map(interval => 
+                this.currentChord.root + interval
             );
         }
 
@@ -357,6 +362,12 @@
         let audioContext;
         let pressedKeys = [];
 
+        // 初始化下拉框选择为 C7
+        const rootSelect = controls.querySelector('select:first-child');
+        const typeSelect = controls.querySelector('select:last-child');
+        rootSelect.value = 60;
+        typeSelect.value = '7';
+
         // 点击键盘发声功能
         canvas.addEventListener('mousedown', function(e) {
             const rect = this.getBoundingClientRect();
@@ -416,6 +427,10 @@
         controls.querySelector('button').onclick = () => {
             if (!audioContext) audioContext = new AudioContext();
             const frequencies = chordGen.getFrequencies();
+            // 新增：获取MIDI音符并更新按下状态
+            const midiNotes = chordGen.getMidiNotes();
+            pressedKeys = [...midiNotes];
+            chordGen.draw(ctx, canvas.width, canvas.height, pressedKeys);
             
             frequencies.forEach(freq => {
                 const osc = audioContext.createOscillator();
@@ -431,8 +446,13 @@
                 osc.start();
                 osc.stop(audioContext.currentTime + 1);
             });
-        };
 
+            // 新增：1秒后清除按下状态
+            setTimeout(() => {
+                pressedKeys = [];
+                chordGen.draw(ctx, canvas.width, canvas.height, pressedKeys);
+            }, 1000);
+        };
         controls.querySelectorAll('select').forEach(select => {
             select.addEventListener('change', () => {
                 chordGen.currentChord = {
@@ -484,7 +504,8 @@
     
 <!--
     升级：
-    id_4_btn_play_chord 按下时，键盘相关键也应该显示按下
+    默认时，显示的是 C7, id_4_btn_play_chord 点击时弹的好像是 C maj, 修复一致
+
 
     return all new code so that I can run it at this page
      
