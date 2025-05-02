@@ -177,8 +177,7 @@
                 </select>
             </div>
             <div class="flex gap-2 justify-center">
-                <button class="px-4 py-2 bg-green-500 text-white rounded">▶</button>
-                <button class="px-4 py-2 bg-red-500 text-white rounded">⏹</button>
+                <button class="px-4 py-2 bg-green-500 text-white rounded toggle-btn">▶</button>
             </div>
         `;
 
@@ -211,7 +210,7 @@
         const tempoInput = controls.querySelector('input');
         const [decreaseBtn, increaseBtn] = controls.querySelectorAll('button');
         const timeSigSelect = controls.querySelector('select');
-        const [startBtn, stopBtn] = controls.querySelectorAll('.bg-green-500, .bg-red-500');
+        const toggleBtn = controls.querySelector('.toggle-btn');
 
         tempoInput.addEventListener('change', () => {
             beat.tempo = Math.min(240, Math.max(40, tempoInput.valueAsNumber));
@@ -224,8 +223,21 @@
             beat.timeSignature = parseInt(ts);
             beat.beatUnit = parseInt(bu);
         });
-        startBtn.onclick = () => beat.start();
-        stopBtn.onclick = () => beat.stop();
+        
+        // 修改后的切换按钮逻辑
+        toggleBtn.onclick = () => {
+            if (beat.isPlaying) {
+                beat.stop();
+                toggleBtn.textContent = '▶';
+                toggleBtn.classList.remove('bg-red-500');
+                toggleBtn.classList.add('bg-green-500');
+            } else {
+                beat.start();
+                toggleBtn.textContent = '⏹';
+                toggleBtn.classList.remove('bg-green-500');
+                toggleBtn.classList.add('bg-red-500');
+            }
+        };
 
         function updateCanvas() {
             canvas.width = canvasContainer.clientWidth;
@@ -236,7 +248,7 @@
         updateCanvas();
     }
 
-    <!-- 和弦组件 -->
+    <!-- 和弦组件（保持不变） -->
     class ChordGenerator {
         constructor() {
             this.chordTypes = {
@@ -504,8 +516,7 @@
     
 <!--
     升级：
-    节拍器播放按钮和停止按钮合并成一个按钮
-
+    速度改变 ，应该立即让节拍器生效。 
 
     return all new code so that I can run it at this page
      
