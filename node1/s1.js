@@ -150,9 +150,10 @@ class C4VideoClient {
         });
     }
 }
-
+class C4IssueWnd{}
 const ghc = new C4GithubClient();
 const vc = new C4VideoClient();
+const iw = new C4IssueWnd();
 const app = express();
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -416,8 +417,6 @@ app.post('/generate_video', async (req, res) => {
 // 新增路由，用于显示当前时间的网页
 app.get('/timePage', async (req, res) => {
     const currentTime = new Date().toLocaleTimeString();
-    const videoPath = await vc.createVideo1(publicDir);
-    const relativeVideoPath = path.relative(publicDir, videoPath);
     const html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -425,17 +424,170 @@ app.get('/timePage', async (req, res) => {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Current Time</title>
+    <style>
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        video {
+            margin-top: 20px;
+        }
+        #issueWnd {
+            position: absolute;
+            width: 300px;
+            height: 200px;
+            background-color: white;
+            border: 1px solid black;
+            display: none;
+            cursor: move;
+        }
+        #issueWndToolbar {
+            background-color: lightgray;
+            padding: 5px;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
     <h1>当前时间: ${currentTime}</h1>
-    <video width="640" height="480" controls>
-        <source src="${relativeVideoPath}" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
+    <button id="generateVideoButton">生成视频</button>
+    <button id="toggleIssueWnd">切换窗口</button>
+
+    <div id="videoContainer"></div>
+    <div id="issueWnd">
+        <div id="issueWndToolbar">
+            <button id="getIssueButton">获取第一个问题</button>
+        </div>
+        <div id="issueWndHeader" style="background-color: lightgray; padding: 5px;">窗口标题</div>
+        <div id="issueWndContent" style="padding: 10px;">
+            <textarea id="issueBodyTextarea" readonly></textarea>
+        </div>
+    </div>
+    <script>
+        const generateVideoButton = document.getElementById('generateVideoButton');
+        const videoContainer = document.getElementById('videoContainer');
+        const toggleIssueWnd = document.getElementById('toggleIssueWnd');
+        const issueWnd = document.getElementById('issueWnd');
+        const issueWndHeader = document.getElementById('issueWndHeader');
+        const getIssueButton = document.getElementById('getIssueButton');
+        const issueBodyTextarea = document.getElementById('issueBodyTextarea');
+
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        issueWndHeader.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            offsetX = e.clientX - issueWnd.offsetLeft;
+            offsetY = e.clientY - issueWnd.offsetTop;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                issueWnd.style.left = (e.clientX - offsetX) + 'px';
+                issueWnd.style.top = (e.clientY - offsetY) + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        generateVideoButton.addEventListener('click', async () => {
+            generateVideoButton.disabled = true;
+            generateVideoButton.textContent = '正在生成视频...';
+            try {
+                const response = await fetch('/createVideo1');
+                if (response.ok) {
+                    const videoPath = await response.text();
+                    const video = document.createElement('video');
+                    video.width = 640;
+                    video.height = 480;
+                    video.controls = true;
+                    video.src = videoPath;
+                    videoContainer.appendChild(video);
+                    generateVideoButton.textContent = '视频已生成';
+                } else {
+                    console.error('视频生成失败');
+                    generateVideoButton.textContent = '生成失败，请重试';
+                }
+            } catch (error) {
+                console.error('请求出错:', error);
+                generateVideoButton.textContent = '生成失败，请重试';
+            } finally {
+                generateVideoButton.disabled = false;
+            }
+        });
+
+        let isFirstClick = true;
+        let windowColors = ['white', 'lightblue'];
+        let windowColorIndex = 0;
+        let buttonColors = ['lightgray', 'orange'];
+        let buttonColorIndex = 0;
+
+        toggleIssueWnd.addEventListener('click', () => {
+            if (isFirstClick) {
+                issueWnd.style.display = 'block';
+                isFirstClick = false;
+            } else {
+                issueWnd.style.display = issueWnd.style.display === 'block' ? 'none' : 'block';
+            }
+            issueWnd.style.backgroundColor = windowColors[windowColorIndex];
+            windowColorIndex = (windowColorIndex + 1) % windowColors.length;
+
+            toggleIssueWnd.style.backgroundColor = buttonColors[buttonColorIndex];
+            buttonColorIndex = (buttonColorIndex + 1) % buttonColors.length;
+        });
+
+        getIssueButton.addEventListener('click', async () => {
+            try {
+                const response = await fetch('/getFirstIssueBody');
+                if (response.ok) {
+                    const issueBody = await response.text();
+                    issueBodyTextarea.value = issueBody;
+                } else {
+                    console.error('获取问题正文失败');
+                }
+            } catch (error) {
+                console.error('请求出错:', error);
+            }
+        });
+    </script>
 </body>
 </html>
 `;
     res.send(html);
+});
+
+// 新增路由，用于生成 video1
+app.get('/createVideo1', async (req, res) => {
+    try {
+        const videoPath = await vc.createVideo1(publicDir);
+        const relativeVideoPath = path.relative(publicDir, videoPath);
+        res.send(relativeVideoPath);
+    } catch (error) {
+        console.error('Video1 creation failed:', error);
+        res.status(500).send('Video1 creation failed');
+    }
+});
+
+// 新增路由，用于获取第一个问题的正文
+app.get('/getFirstIssueBody', async (req, res) => {
+    try {
+        const issueBody = await ghc.getIssueBody('littleflute', 's177', 1);
+        if (issueBody) {
+            res.send(issueBody);
+        } else {
+            res.status(500).send('获取问题正文失败');
+        }
+    } catch (error) {
+        console.error('获取问题正文失败:', error);
+        res.status(500).send('获取问题正文失败');
+    }
 });
 
 const PORT = process.env.PORT || 3000;
@@ -456,10 +608,11 @@ process.on('SIGINT', () => {
 });
 
 // 初始化时写入空文件
-fs.writeFileSync(logPath, '');    
+fs.writeFileSync(logPath, '');
+        
 /**
  * 升级
- * video1 是一个钟表
- * 
+ *  create a toolbar on  issueWnd, a button on the toolbar.
+ * when click the button, to get the first issue of littleflute's s177 repo, and show the issue body in a textarea 
  * 
  */
