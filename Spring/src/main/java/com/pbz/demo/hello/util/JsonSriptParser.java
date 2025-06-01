@@ -19,6 +19,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -76,6 +78,7 @@ public final class JsonSriptParser {
     private static final Color[] COLORS = {Color.RED, Color.GREEN, Color.BLUE, Color.MAGENTA, Color.ORANGE, Color.PINK, Color.CYAN, Color.YELLOW};
     private static final String currentScript = "VAR_CURRENT_SCRIPT";
     public static final String current_Subtitle_Script = "VAR_CURRENT_SUBTITLE_SCRIPT";
+    public static final String VAR_AUDIO_START_TIME = "VAR_AUDIO_START_TIME";
     public static HashMap<String, String> spriteScriptMap = new HashMap<>();  //防止精灵对象的脚本被重复加载
    
     private static SubtitleImageService subtitleImageService = new SubtitleImageService();
@@ -270,6 +273,7 @@ public final class JsonSriptParser {
         engineMap.clear();
         MacroResolver.setProperty(currentScript, "");
         MacroResolver.setProperty(current_Subtitle_Script, "");
+        MacroResolver.setProperty(VAR_AUDIO_START_TIME, "");
         MacroResolver.setProperty("VAR_BGAUDIO", "");
         spriteScriptMap.clear();
         titleOfLRC = "";
@@ -287,6 +291,18 @@ public final class JsonSriptParser {
         if (audioFilePath == null || audioFilePath.trim().length() == 0) {
             audioFilePath = requestObj.optString("music");
         }
+        
+        long startTimeOfAudio = 0;
+        long endTimeOfAudio = 0;
+        if(requestObj.has("duration")) {
+            String duration = requestObj.optString("duration");
+            String numbers = duration.substring(1, duration.length()-1);
+            String[] times = numbers.split(",");        
+            startTimeOfAudio = Long.parseLong(times[0]);
+            endTimeOfAudio = Long.parseLong(times[1]);
+            MacroResolver.setProperty(VAR_AUDIO_START_TIME, Long.toString(startTimeOfAudio));
+        }
+        
         String videoFilePath = requestObj.optString("video");
         String rate = requestObj.getString("rate");
         MacroResolver.setProperty(VAR_RATE, rate);
@@ -438,6 +454,13 @@ public final class JsonSriptParser {
             audioFile = MacroResolver.getProperty("VAR_BGAUDIO");
         } else {
             audioFile = FileUtil.downloadFileIfNeed(audioFilePath);
+
+            if (startTimeOfAudio > 0) {
+                // 截取指定时间段的音频
+                String tempPath = "temp_cut_output.mp3";
+                FileUtil.cutAudioFile(audioFile, tempPath, startTimeOfAudio * 1000, endTimeOfAudio * 1000);
+                audioFile = System.getProperty("user.dir") + "/"+ tempPath;
+            }
         }
 
         boolean bRunScript = false;
@@ -1225,6 +1248,12 @@ public final class JsonSriptParser {
         String rate = MacroResolver.getProperty(VAR_RATE);
         int r = Integer.parseInt(rate);
         int s = number / r;
+
+        String start = MacroResolver.getProperty(VAR_AUDIO_START_TIME);
+        if (start != null && start.trim().length() > 0) {
+            int startTime = Integer.parseInt(start);
+            s += startTime;
+        }
 
         for (SubtitleModel info : ls) {
             if (s >= info.star / 1000 && s <= info.end / 1000) {

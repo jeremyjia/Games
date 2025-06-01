@@ -687,6 +687,27 @@ public class FileUtil {
         String fileName = simpleDateFormat.format(date);
         return fileName;
     }
+
+    public static void cutAudioFile(String sourcePath, String targetPath,
+            long startMs, long endMs) throws IOException, InterruptedException {
+        
+        // 计算持续时间（秒）
+        double duration = (endMs - startMs) / 1000.0;
+        // 构建FFmpeg命令
+        String[] cmd = {
+                "ffmpeg",
+                "-y",
+                "-i", sourcePath,
+                "-ss", String.valueOf(startMs / 1000), // 开始时间(秒)
+                "-t", String.valueOf(duration), // 持续时间(秒)
+                "-acodec", "copy", // 保持原编码
+                targetPath
+        };
+        // 执行命令
+        Process process = Runtime.getRuntime().exec(cmd);
+        process.waitFor();
+    }
+    
 	public static void main(String[] args) {
 	    try {
             downloadFileByCurl("https://littleflute.github.io/english/NewConceptEnglish/Book2/3.mp3", "3.mp3");
