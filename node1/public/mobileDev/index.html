@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
-        <title>手机编程系统v0.15</title>
+        <title>手机编程系统v0.21</title>
         <style>
           /* 修改高亮样式为红色系 */
           .highlight {
@@ -67,8 +67,13 @@
         </div>
 
         <div id="issue_body" class="bg-white p-4 rounded shadow">
-            <textarea id="id_4_ta" class="w-full h-48 border border-gray-300 p-2 rounded mb-4"></textarea>
-            <div id="snapshot_toolbar" class="flex space-x-2 mb-4">
+            <div class="relative">
+                <textarea id="id_4_ta" class="w-full h-48 border border-gray-300 p-2 rounded mb-0 resize-none" oninput="app.updateLineCount()"></textarea>
+                <div id="line_count_status" class="absolute right-2 bottom-2 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                    行数: 0
+                </div>
+            </div>
+            <div id="snapshot_toolbar" class="flex space-x-2 mb-4 mt-2">
                 <button id="take_snapshot" class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600" onclick="app.takeSnapshot()">
                     <i class="fas fa-camera mr-2"></i>+
                 </button>
@@ -169,6 +174,7 @@
                     this.outputDiv = document.getElementById('output');
                     this.samplesDiv = document.getElementById('id_4_samples');
                     this.lastClickedButton = null;
+                    this.lineCountStatus = document.getElementById('line_count_status');
                     
                     this.codeHistory = JSON.parse(localStorage.getItem('codeHistory')) || [];
                     this.executeCodeHistory();
@@ -193,6 +199,9 @@
                         this.outputDiv.textContent += args.join(' ') + '\n';
                     };
                     this.renderSnapshots();
+                    
+                    // 初始化行数统计
+                    this.updateLineCount();
                 }
 
                 executeCodeHistory() {
@@ -277,6 +286,7 @@
                     try {
                         const issueBody = await this.githubClient.getIssueBody(owner, repo, issueNumber);
                         this.issueTextarea.value = issueBody;
+                        this.updateLineCount();
 
                         const comments = await this.githubClient.getIssueComments(owner, repo, issueNumber);
                         this.samplesDiv.innerHTML = '';
@@ -292,11 +302,13 @@
                                 this.lastClickedButton = button;
                                 this.lastClickedButton.classList.add('highlight');
                                 this.issueTextarea.value = comment.body;
+                                this.updateLineCount();
                             });
                             this.samplesDiv.appendChild(button);
                         });
                     } catch (error) {
                         this.issueTextarea.value = `Error: ${error.message}`;
+                        this.updateLineCount();
                     }
                 }
 
@@ -326,6 +338,7 @@
                         this.lastClickedSnapshotButton = snapshotButton;
                         this.lastClickedSnapshotButton.classList.add('snapshot-highlight');
                         this.issueTextarea.value = this.snapshotList[snapshotIndex];
+                        this.updateLineCount();
                     });
                     this.snapshotListDiv.appendChild(snapshotButton);
                 }
@@ -354,6 +367,7 @@
                             this.lastClickedSnapshotButton = snapshotButton;
                             this.lastClickedSnapshotButton.classList.add('snapshot-highlight');
                             this.issueTextarea.value = this.snapshotList[index];
+                            this.updateLineCount();
                         });
                         this.snapshotListDiv.appendChild(snapshotButton);
                     });
@@ -418,15 +432,22 @@
                         this.codeButtonsContainer.appendChild(btn);
                     });
                 }
+                
+                // 新增行数统计方法
+                updateLineCount() {
+                    const text = this.issueTextarea.value;
+                    // 计算行数：换行符数量加1
+                    const lines = text.split('\n').length;
+                    this.lineCountStatus.textContent = `行数: ${lines}`;
+                }
             }
 
             const app = new C4MobileDevApp();
         </script>
     </body>
 </html>
-    
 <!--
 升级 
-添加一个工具条。第一个按钮是添加按钮。点击添加按钮，会添加一个新的按钮。新按钮用文本框里的代码作为执行代码。
+文本框底部建立一个状态栏，实时监测文本框里的行数
 return all new code
 -->
