@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
-        <title>手机编程系统v0.14</title>
+        <title>手机编程系统v0.15</title>
         <style>
           /* 修改高亮样式为红色系 */
           .highlight {
@@ -26,6 +26,9 @@
           }
           .add-comment-btn:hover {
             background-color: #d53f8c !important;
+          }
+          .code-btn {
+            margin: 2px;
           }
         </style>
     </head>
@@ -52,6 +55,15 @@
             <button onclick="app.addNewComment()" class="px-4 py-2 add-comment-btn text-white rounded hover:bg-pink-700">
                 <i class="fas fa-plus-circle mr-2"></i>添加评论
             </button>
+        </div>
+
+        <!-- 新增的代码按钮工具条 -->
+        <div class="mb-4 flex flex-wrap gap-2 bg-gray-200 p-2 rounded">
+            <button id="add_code_button" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                <i class="fas fa-plus mr-2"></i>添加代码按钮
+            </button>
+            <input type="text" id="button_name_input" placeholder="按钮名称" class="px-3 py-2 border border-gray-300 rounded">
+            <div id="code_buttons_container" class="flex flex-wrap gap-2"></div>
         </div>
 
         <div id="issue_body" class="bg-white p-4 rounded shadow">
@@ -165,6 +177,15 @@
                     this.snapshotList = JSON.parse(localStorage.getItem('snapshots')) || [];
                     this.snapshotListDiv = document.getElementById('snapshot_list');
                     this.lastClickedSnapshotButton = null;
+                    
+                    // 初始化代码按钮相关
+                    this.codeButtons = JSON.parse(localStorage.getItem('codeButtons')) || [];
+                    this.codeButtonsContainer = document.getElementById('code_buttons_container');
+                    this.buttonNameInput = document.getElementById('button_name_input');
+                    this.renderCodeButtons();
+                    
+                    // 添加代码按钮事件监听
+                    document.getElementById('add_code_button').addEventListener('click', () => this.addCodeButton());
                     
                     this.originalConsoleLog = console.log;
                     console.log = (...args) => {
@@ -337,6 +358,66 @@
                         this.snapshotListDiv.appendChild(snapshotButton);
                     });
                 }
+                
+                // 新增代码按钮相关方法
+                addCodeButton() {
+                    const buttonName = this.buttonNameInput.value.trim() || `按钮${this.codeButtons.length + 1}`;
+                    const code = this.issueTextarea.value;
+                    
+                    if (!code.trim()) {
+                        alert('代码不能为空！');
+                        return;
+                    }
+                    
+                    const newButton = {
+                        id: Date.now().toString(),
+                        name: buttonName,
+                        code: code
+                    };
+                    
+                    this.codeButtons.push(newButton);
+                    localStorage.setItem('codeButtons', JSON.stringify(this.codeButtons));
+                    this.renderCodeButtons();
+                    
+                    // 清空输入框
+                    this.buttonNameInput.value = '';
+                }
+                
+                renderCodeButtons() {
+                    this.codeButtonsContainer.innerHTML = '';
+                    
+                    this.codeButtons.forEach(button => {
+                        const btn = document.createElement('button');
+                        btn.textContent = button.name;
+                        btn.dataset.id = button.id;
+                        btn.classList.add('px-3', 'py-1', 'bg-indigo-500', 'text-white', 'rounded', 'hover:bg-indigo-600', 'code-btn');
+                        
+                        // 添加点击事件执行代码
+                        btn.addEventListener('click', () => {
+                            this.outputDiv.textContent = '';
+                            try {
+                                const result = window.eval(button.code);
+                                if (result !== undefined) {
+                                    this.outputDiv.textContent += `执行结果: ${result}`;
+                                }
+                            } catch (error) {
+                                this.outputDiv.textContent = `执行错误: ${error.message}`;
+                            }
+                        });
+                        
+                        // 添加右键菜单删除功能
+                        btn.addEventListener('contextmenu', (e) => {
+                            e.preventDefault();
+                            if (confirm(`确定要删除 "${button.name}" 按钮吗？`)) {
+                                this.codeButtons = this.codeButtons.filter(b => b.id !== button.id);
+                                localStorage.setItem('codeButtons', JSON.stringify(this.codeButtons));
+                                this.renderCodeButtons();
+                            }
+                        });
+                        
+                        this.codeButtonsContainer.appendChild(btn);
+                    });
+                }
             }
 
             const app = new C4MobileDevApp();
@@ -346,7 +427,6 @@
     
 <!--
 升级 
-1. 在更新评论按钮后面添加一个新按钮。实现添加新评论。
-2. 高亮按钮边框用红色系表示。
+添加一个工具条。第一个按钮是添加按钮。点击添加按钮，会添加一个新的按钮。新按钮用文本框里的代码作为执行代码。
 return all new code
 -->
