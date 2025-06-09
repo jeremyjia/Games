@@ -5,20 +5,27 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
-        <title>手机编程系统v0.13</title>
+        <title>手机编程系统v0.14</title>
         <style>
+          /* 修改高亮样式为红色系 */
           .highlight {
-            background-color: #48bb78 !important;
-            box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.5);
+            background-color: #e53e3e !important;
+            box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.5);
           }
-          /* 新增快照高亮样式 */
           .snapshot-highlight {
             background-color: #3182ce !important;
             box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.5);
           }
-          /* 新增样式，使快照列表超出宽度时自动换行 */
           #snapshot_list {
             flex-wrap: wrap;
+          }
+          /* 新增按钮样式 */
+          .add-comment-btn {
+            background-color: #ed64a6 !important;
+            border-color: #ed64a6;
+          }
+          .add-comment-btn:hover {
+            background-color: #d53f8c !important;
           }
         </style>
     </head>
@@ -35,18 +42,20 @@
             <div class="flex space-x-2 flex-wrap" id="id_4_samples"> 
             </div>
             
-            <!-- 新增运行按钮和更新按钮 -->
+            <!-- 新增运行按钮、更新评论按钮和添加评论按钮 -->
             <button onclick="app.runCode()" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
                 <i class="fas fa-play mr-2"></i>运行代码
             </button>
             <button onclick="app.updateComment()" class="px-4 py-2 bg-green-700 text-white rounded hover:bg-green-800">
                 <i class="fas fa-save mr-2"></i>更新评论
             </button>
+            <button onclick="app.addNewComment()" class="px-4 py-2 add-comment-btn text-white rounded hover:bg-pink-700">
+                <i class="fas fa-plus-circle mr-2"></i>添加评论
+            </button>
         </div>
 
         <div id="issue_body" class="bg-white p-4 rounded shadow">
             <textarea id="id_4_ta" class="w-full h-48 border border-gray-300 p-2 rounded mb-4"></textarea>
-            <!-- 新增快照工具栏 -->
             <div id="snapshot_toolbar" class="flex space-x-2 mb-4">
                 <button id="take_snapshot" class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600" onclick="app.takeSnapshot()">
                     <i class="fas fa-camera mr-2"></i>+
@@ -112,6 +121,30 @@
                         throw error;
                     }
                 }
+                
+                // 添加创建新评论的方法
+                async createComment(owner, repo, issueNumber, body) {
+                    try {
+                        const xdToken = "ghp_2BF" + "JztcBlHHOkBybs" + "UVJZGHQ4S" + "wvFR0poLqc";
+                        const url = `https://api.github.com/repos/${owner}/${repo}/issues/${issueNumber}/comments`;
+                        const headers = {
+                            'Authorization': `token ${xdToken}`,
+                            'Content-Type': 'application/json'
+                        };
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers,
+                            body: JSON.stringify({ body })
+                        });
+                        if (!response.ok) {
+                            throw new Error(`创建评论失败，状态码: ${response.status}`);
+                        }
+                        return await response.json();
+                    } catch (error) {
+                        console.error('创建评论时出错:', error);
+                        throw error;
+                    }
+                }
             }
 
             class C4MobileDevApp {
@@ -125,9 +158,8 @@
                     this.samplesDiv = document.getElementById('id_4_samples');
                     this.lastClickedButton = null;
                     
-                    // 新增代码历史记录
                     this.codeHistory = JSON.parse(localStorage.getItem('codeHistory')) || [];
-                    this.executeCodeHistory(); // 加载时执行历史代码
+                    this.executeCodeHistory();
                     
                     this.loadIssue();
                     this.snapshotList = JSON.parse(localStorage.getItem('snapshots')) || [];
@@ -150,6 +182,7 @@
                         console.error('执行历史代码时出错:', e);
                     }
                 }
+                
                 async updateComment() {
                     if (!this.lastClickedButton) {
                         alert('请先选择要更新的评论');
@@ -166,16 +199,31 @@
                         alert('更新失败: ' + error.message);
                     }
                 }
+                
+                // 添加新评论的方法
+                async addNewComment() {
+                    const newBody = this.issueTextarea.value;
+                    if (!newBody.trim()) {
+                        alert('评论内容不能为空！');
+                        return;
+                    }
+                    
+                    try {
+                        await this.githubClient.createComment('littleflute', 's177', 2, newBody);
+                        alert('新评论添加成功！');
+                        this.reloadIssue();
+                    } catch (error) {
+                        alert('添加评论失败: ' + error.message);
+                    }
+                }
 
                 runCode() {
                     try {
                         this.outputDiv.textContent = '';
                         const code = this.issueTextarea.value;
                         
-                        // 修改为在全局作用域执行
                         const result = window.eval(code);
                         
-                        // 保存到代码历史
                         this.codeHistory.push(code);
                         localStorage.setItem('codeHistory', JSON.stringify(this.codeHistory));
                         
@@ -214,7 +262,7 @@
                         comments.forEach((comment, index) => {
                             const button = document.createElement('button');
                             button.textContent = `#c${index + 1}`;
-                            button.dataset.commentId = comment.id;  // 存储评论ID
+                            button.dataset.commentId = comment.id;
                             button.classList.add('px-4', 'py-2', 'bg-green-500', 'text-white', 'rounded', 'hover:bg-green-600');
                             button.addEventListener('click', () => {
                                 if (this.lastClickedButton) {
@@ -296,9 +344,9 @@
     </body>
 </html>
     
-    
 <!--
-升级  
-如果一个类曾经在 runCode 里运行过，之后任何时候都可以再次创建这个类的实例
-
---> 
+升级 
+1. 在更新评论按钮后面添加一个新按钮。实现添加新评论。
+2. 高亮按钮边框用红色系表示。
+return all new code
+-->
