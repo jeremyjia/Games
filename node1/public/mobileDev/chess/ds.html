@@ -257,14 +257,14 @@
         </div>
         
         <footer>
-            <p>中国象棋棋谱演示器 v1.0.2 | 传统文化与现代技术的完美结合</p>
+            <p>中国象棋棋谱演示器 v1.0.3 | 传统文化与现代技术的完美结合</p>
         </footer>
     </div>
     
     <script>
         // 控制器脚本
         class XiangqiController {
-    static VERSION = "1.0.2";
+    static VERSION = "1.0.3";
 
     constructor(id) {
         if (!window.xiangqiControllers) window.xiangqiControllers = [];
@@ -621,7 +621,7 @@
         document.addEventListener('touchend', stopDrag);
     }
     
-    // 绘制棋盘
+    // 绘制棋盘（升级版）
     drawBoard() {
         if (!this.ctx) return;
         
@@ -636,7 +636,7 @@
         this.ctx.strokeStyle = '#000';
         this.ctx.lineWidth = 2;
         
-        // 绘制横线
+        // 绘制横线（完整）
         for (let i = 0; i <= 10; i++) {
             this.ctx.beginPath();
             this.ctx.moveTo(50, 50 + i * 50);
@@ -644,35 +644,49 @@
             this.ctx.stroke();
         }
         
-        // 绘制竖线
+        // 绘制竖线（在河界处断开）
         for (let i = 0; i <= 8; i++) {
+            // 上半部分（从第0行到第4行）
             this.ctx.beginPath();
             this.ctx.moveTo(50 + i * 50, 50);
-            this.ctx.lineTo(50 + i * 50, 500);
+            this.ctx.lineTo(50 + i * 50, 250); // 只画到河界上方
+            this.ctx.stroke();
+            
+            // 下半部分（从第5行到第10行）
+            this.ctx.beginPath();
+            this.ctx.moveTo(50 + i * 50, 300); // 从河界下方开始
+            this.ctx.lineTo(50 + i * 50, 550); // 画到底部
             this.ctx.stroke();
         }
         
-        // 绘制河界线
+        // 绘制河界线（完整横线）
         this.ctx.beginPath();
         this.ctx.moveTo(50, 250);
         this.ctx.lineTo(450, 250);
         this.ctx.stroke();
         
+        // 绘制"楚河汉界"文字
+        this.ctx.fillStyle = "#000";
+        this.ctx.font = "bold 24px KaiTi";
+        this.ctx.textAlign = "center";
+        this.ctx.fillText("楚 河", 150, 270);
+        this.ctx.fillText("汉 界", 350, 270);
+        
         // 修正后的九宫格绘制（3-5列）
         // 红方九宫格（0-2行，3-5列）
         this.ctx.beginPath();
         this.ctx.moveTo(50 + 3 * 50, 50); // 左上到右下
-        this.ctx.lineTo(50 + 5 * 50, 50 + 2 * 50); // 5列到7列，2行
+        this.ctx.lineTo(50 + 5 * 50, 50 + 2 * 50); 
         this.ctx.moveTo(50 + 5 * 50, 50); // 右上到左下
-        this.ctx.lineTo(50 + 3 * 50, 50 + 2 * 50); // 3列到5列，2行
+        this.ctx.lineTo(50 + 3 * 50, 50 + 2 * 50); 
         this.ctx.stroke();
         
         // 黑方九宫格（7-9行，3-5列）
         this.ctx.beginPath();
         this.ctx.moveTo(50 + 3 * 50, 50 + 7 * 50); // 左上到右下
-        this.ctx.lineTo(50 + 5 * 50, 50 + 9 * 50); // 5列到7列，9行
+        this.ctx.lineTo(50 + 5 * 50, 50 + 9 * 50); 
         this.ctx.moveTo(50 + 5 * 50, 50 + 7 * 50); // 右上到左下
-        this.ctx.lineTo(50 + 3 * 50, 50 + 9 * 50); // 3列到5列，9行
+        this.ctx.lineTo(50 + 3 * 50, 50 + 9 * 50); 
         this.ctx.stroke();
         
         // 绘制棋子
