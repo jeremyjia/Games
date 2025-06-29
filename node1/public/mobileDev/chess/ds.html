@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国象棋棋谱演示器测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #ffd700, #ff8c00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 2px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .board-container {
+            flex: 1;
+            min-width: 550px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .board-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #ffd700;
+            text-align: center;
+        }
+        
+        #id_4_canvas {
+            background: #e8c48f;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .instructions {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+        
+        .instructions h2 {
+            color: #ffd700;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.8rem;
+        }
+        
+        .instructions ul {
+            padding-left: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .instructions li {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .notation-examples {
+            background: rgba(255, 215, 0, 0.1);
+            border-left: 4px solid #ffd700;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        
+        .notation-examples h3 {
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+        
+        .notation-examples pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+        }
+        
+        .feature-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-card h3 {
+            color: #ffd700;
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .feature-card h3 i {
+            margin-right: 10px;
+            font-size: 1.6rem;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .btn {
+            display: inline-block;
+            background: linear-gradient(to right, #ff8c00, #ffd700);
+            color: #1a1a2e;
+            padding: 12px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 15px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 140, 0, 0.5);
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .board-container {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>中国象棋棋谱演示器</h1>
+            <p class="subtitle">一个功能强大的象棋棋谱演示工具，支持棋谱加载、回放和可视化移动轨迹</p>
+        </header>
+        
+        <div class="content">
+            <div class="board-container">
+                <h2 class="board-title">象棋棋盘</h2>
+                <canvas id="id_4_canvas" width="500" height="550"></canvas>
+                <button class="btn" onclick="showController()">显示控制器</button>
+            </div>
+            
+            <div class="instructions">
+                <h2>使用说明</h2>
+                <ul>
+                    <li>控制器窗口默认显示在棋盘左上角，可拖拽移动位置</li>
+                    <li>输入棋谱格式：四位数字表示一步棋，前两位是起始位置（列行），后两位是目标位置（列行）</li>
+                    <li>例如："0001" 表示将(0,0)位置的棋子移动到(0,1)位置</li>
+                    <li>多个棋步之间用空格分隔，如："0001 0102 0203"</li>
+                    <li>点击"播放"按钮开始自动演示棋谱</li>
+                    <li>点击"暂停"按钮暂停演示，点击"重置"按钮恢复初始棋盘</li>
+                    <li>使用示例棋谱快速测试演示功能</li>
+                </ul>
+                
+                <div class="notation-examples">
+                    <h3>棋谱示例：</h3>
+                    <pre>
+示例1（炮二平五）：7770 0304 1710
+示例2（马八进七）：1710 7275 2522
+示例3（车一进一）：0001 9091 0100</pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="features">
+            <div class="feature-card">
+                <h3><i>📜</i> 棋谱加载</h3>
+                <p>支持加载自定义棋谱或使用预设示例棋谱。棋谱格式简洁明了，只需输入棋子移动的坐标序列。</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3><i>▶️</i> 自动演示</h3>
+                <p>自动播放功能可按照设定的速度逐步演示棋谱，清晰展示每一步的移动轨迹和结果。</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3><i>🔄</i> 可视化路径</h3>
+                <p>演示过程中会高亮显示当前步的起始位置和目标位置，并用线段连接显示移动路径。</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3><i>⚙️</i> 灵活控制</h3>
+                <p>可随时暂停、继续或重置演示，控制器显示当前步数、棋谱长度和演示状态。</p>
+            </div>
+        </div>
+        
+        <footer>
+            <p>中国象棋棋谱演示器 v1.0.3 | 传统文化与现代技术的完美结合</p>
+        </footer>
+    </div>
+    
+    <script>
+        // 控制器脚本
+        class XiangqiController {
+    static VERSION = "1.0.3";
+
+    constructor(id) {
+        if (!window.xiangqiControllers) window.xiangqiControllers = [];
+        const existing = window.xiangqiControllers.find(obj => obj.id === id);
+        if (existing) return existing;
+
+        this.id = id;
+        this.canvasId = 'id_4_canvas'; // 指定的 Canvas 元素 ID
+        this.chessNotation = ''; // 棋谱
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.playInterval = null;
+        this.playSpeed = 2000; // 每步演示间隔（毫秒）
+        
+        // 棋盘状态
+        this.board = this.createEmptyBoard();
+        this.selectedPiece = null;
+        this.lastMove = null;
+        this.highlightedStep = null; // 用于高亮当前步
+        
+        // 初始化界面
+        this.initUI();
+        
+        window.xiangqiControllers.push(this);
+    }
+    
+    // 创建空棋盘
+    createEmptyBoard() {
+        const board = Array(10).fill().map(() => Array(9).fill(null));
+        
+        // 放置红方棋子
+        board[0][0] = { name: '车', color: 'red', type: '车', row: 0, col: 0 };
+        board[0][1] = { name: '马', color: 'red', type: '马', row: 0, col: 1 };
+        board[0][2] = { name: '相', color: 'red', type: '相', row: 0, col: 2 };
+        board[0][3] = { name: '士', color: 'red', type: '士', row: 0, col: 3 };
+        board[0][4] = { name: '帅', color: 'red', type: '帅', row: 0, col: 4 };
+        board[0][5] = { name: '士', color: 'red', type: '士', row: 0, col: 5 };
+        board[0][6] = { name: '相', color: 'red', type: '相', row: 0, col: 6 };
+        board[0][7] = { name: '马', color: 'red', type: '马', row: 0, col: 7 };
+        board[0][8] = { name: '车', color: 'red', type: '车', row: 0, col: 8 };
+        
+        board[2][1] = { name: '炮', color: 'red', type: '炮', row: 2, col: 1 };
+        board[2][7] = { name: '炮', color: 'red', type: '炮', row: 2, col: 7 };
+        
+        board[3][0] = { name: '兵', color: 'red', type: '兵', row: 3, col: 0 };
+        board[3][2] = { name: '兵', color: 'red', type: '兵', row: 3, col: 2 };
+        board[3][4] = { name: '兵', color: 'red', type: '兵', row: 3, col: 4 };
+        board[3][6] = { name: '兵', color: 'red', type: '兵', row: 3, col: 6 };
+        board[3][8] = { name: '兵', color: 'red', type: '兵', row: 3, col: 8 };
+        
+        // 放置黑方棋子
+        board[9][0] = { name: '车', color: 'black', type: '车', row: 9, col: 0 };
+        board[9][1] = { name: '马', color: 'black', type: '马', row: 9, col: 1 };
+        board[9][2] = { name: '象', color: 'black', type: '象', row: 9, col: 2 };
+        board[9][3] = { name: '士', color: 'black', type: '士', row: 9, col: 3 };
+        board[9][4] = { name: '将', color: 'black', type: '将', row: 9, col: 4 };
+        board[9][5] = { name: '士', color: 'black', type: '士', row: 9, col: 5 };
+        board[9][6] = { name: '象', color: 'black', type: '象', row: 9, col: 6 };
+        board[9][7] = { name: '马', color: 'black', type: '马', row: 9, col: 7 };
+        board[9][8] = { name: '车', color: 'black', type: '车', row: 9, col: 8 };
+        
+        board[7][1] = { name: '炮', color: 'black', type: '炮', row: 7, col: 1 };
+        board[7][7] = { name: '炮', color: 'black', type: '炮', row: 7, col: 7 };
+        
+        board[6][0] = { name: '卒', color: 'black', type: '卒', row: 6, col: 0 };
+        board[6][2] = { name: '卒', color: 'black', type: '卒', row: 6, col: 2 };
+        board[6][4] = { name: '卒', color: 'black', type: '卒', row: 6, col: 4 };
+        board[6][6] = { name: '卒', color: 'black', type: '卒', row: 6, col: 6 };
+        board[6][8] = { name: '卒', color: 'black', type: '卒', row: 6, col: 8 };
+        
+        return board;
+    }
+
+    // 初始化用户界面
+    initUI() {
+        // 移除旧的控制窗口（如果存在）
+        const oldWindow = document.querySelector('.xiangqi-controller');
+        if (oldWindow) {
+            oldWindow.remove();
+        }
+        
+        // 创建新控制窗口
+        this.window = document.createElement('div');
+        this.window.className = 'xiangqi-controller';
+        this.window.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: white;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.15);
+            z-index: 9999;
+            width: 350px;
+            font-family: Arial, sans-serif;
+        `;
+        
+        // 标题栏
+        const titleBar = document.createElement('div');
+        titleBar.style.cssText = `
+            padding: 12px 16px;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: move;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to right, #8b0000, #cd5c5c);
+            color: white;
+        `;
+        
+        const titleContainer = document.createElement('div');
+        titleContainer.style = 'display: flex; align-items: center;';
+        const title = document.createElement('h3');
+        title.textContent = '中国象棋棋谱演示器';
+        title.style = 'margin: 0; font-size: 16px; font-weight: 500;';
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = '×';
+        closeBtn.style = `
+            margin-left: 12px;
+            font-size: 16px;
+            background: transparent;
+            border: none;
+            color: white;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        `;
+        closeBtn.onclick = () => this.toggleWindow();
+        closeBtn.onmouseover = () => { closeBtn.style.opacity = '1'; };
+        closeBtn.onmouseout = () => { closeBtn.style.opacity = '0.8'; };
+        
+        titleContainer.appendChild(title);
+        titleContainer.appendChild(closeBtn);
+        titleBar.appendChild(titleContainer);
+        
+        // 添加工具条
+        const toolBar = document.createElement('div');
+        toolBar.style.cssText = `
+            padding: 10px 15px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        `;
+        
+        // 示例按钮样式定义
+        const buttonStyle = `
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        `;
+        
+        this.sampleBtn1 = document.createElement('button');
+        this.sampleBtn1.textContent = '示例1';
+        this.sampleBtn1.style = `
+            ${buttonStyle}
+            background: #2196f3;
+        `;
+        this.sampleBtn1.onclick = () => this.loadSampleNotation('7770 0304 1710');
+        
+        this.sampleBtn2 = document.createElement('button');
+        this.sampleBtn2.textContent = '示例2';
+        this.sampleBtn2.style = `
+            ${buttonStyle}
+            background: #4caf50;
+        `;
+        this.sampleBtn2.onclick = () => this.loadSampleNotation('1710 7275 2522');
+        
+        this.sampleBtn3 = document.createElement('button');
+        this.sampleBtn3.textContent = '示例3';
+        this.sampleBtn3.style = `
+            ${buttonStyle}
+            background: #ff9800;
+        `;
+        this.sampleBtn3.onclick = () => this.loadSampleNotation('0001 9091 0100');
+        
+        toolBar.appendChild(this.sampleBtn1);
+        toolBar.appendChild(this.sampleBtn2);
+        toolBar.appendChild(this.sampleBtn3);
+        
+        // 棋谱输入区域
+        const notationArea = document.createElement('div');
+        notationArea.style.cssText = `
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        `;
+        
+        const notationLabel = document.createElement('label');
+        notationLabel.textContent = '输入棋谱 (格式: 起始位置+结束位置, 如 "0001 0110"):';
+        notationLabel.style = 'display: block; margin-bottom: 8px;';
+        
+        this.notationInput = document.createElement('textarea');
+        this.notationInput.style.cssText = `
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            height: 100px;
+            margin-bottom: 10px;
+        `;
+        
+        notationArea.appendChild(notationLabel);
+        notationArea.appendChild(this.notationInput);
+        
+        // 按钮区域
+        const buttons = document.createElement('div');
+        buttons.style.cssText = `
+            padding: 10px;
+            display: flex;
+            gap: 8px;
+        `;
+        
+        this.playButton = document.createElement('button');
+        this.playButton.textContent = '播放';
+        this.playButton.style = `
+            padding: 8px 16px;
+            background: #4caf50;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        `;
+        this.playButton.onclick = () => this.togglePlayback();
+        
+        this.pauseButton = document.createElement('button');
+        this.pauseButton.textContent = '暂停';
+        this.pauseButton.style = `
+            padding: 8px 16px;
+            background: #f44336;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 5px;
+        `;
+        this.pauseButton.onclick = () => this.pausePlayback();
+        this.pauseButton.style.display = 'none';
+        
+        this.resetButton = document.createElement('button');
+        this.resetButton.textContent = '重置';
+        this.resetButton.style = `
+            padding: 8px 16px;
+            background: #2196f3;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: auto;
+        `;
+        this.resetButton.onclick = () => this.resetBoard();
+        
+        buttons.appendChild(this.playButton);
+        buttons.appendChild(this.pauseButton);
+        buttons.appendChild(this.resetButton);
+        
+        // 状态栏
+        this.statusBar = document.createElement('div');
+        this.statusBar.style.cssText = `
+            padding: 10px;
+            background: #f5f5f5;
+            border-top: 1px solid #e0e0e0;
+            font-size: 12px;
+            color: #666;
+            text-align: right;
+        `;
+        this.updateStatusBar();
+        
+        // 组装元素
+        this.window.appendChild(titleBar);
+        this.window.appendChild(toolBar); // 添加工具条
+        this.window.appendChild(notationArea);
+        this.window.appendChild(buttons);
+        this.window.appendChild(this.statusBar);
+        document.body.appendChild(this.window);
+        
+        // 初始化画布
+        this.initCanvas();
+        
+        // 绑定事件
+        titleBar.addEventListener('mousedown', this.startDrag.bind(this));
+        titleBar.addEventListener('touchstart', this.startDrag.bind(this));
+        
+        // 初始绘制棋盘
+        this.drawBoard();
+    }
+    
+    // 加载示例棋谱
+    loadSampleNotation(notation) {
+        // 恢复示例按钮样式
+        this.sampleBtn1.style.background = '#2196f3';
+        this.sampleBtn2.style.background = '#4caf50';
+        this.sampleBtn3.style.background = '#ff9800';
+        
+        // 设置当前示例按钮为选中样式
+        if (notation === '7770 0304 1710') {
+            this.sampleBtn1.style.background = '#ff5722';
+        } else if (notation === '1710 7275 2522') {
+            this.sampleBtn2.style.background = '#ff5722';
+        } else if (notation === '0001 9091 0100') {
+            this.sampleBtn3.style.background = '#ff5722';
+        }
+        
+        this.notationInput.value = notation;
+        this.chessNotation = notation;
+        this.resetBoard();
+    }
+    
+    // 初始化画布
+    initCanvas() {
+        this.canvas = document.getElementById(this.canvasId);
+        if (!this.canvas) {
+            console.error('未找到 Canvas 元素！');
+            return;
+        }
+        
+        this.canvas.width = 500;
+        this.canvas.height = 550;
+        this.ctx = this.canvas.getContext('2d');
+    }
+    
+    // 窗口拖拽逻辑
+    startDrag(e) {
+        const event = e.touches ? e.touches[0] : e;
+        this.isDragging = true;
+        this.dragStartX = event.clientX - this.window.offsetLeft;
+        this.dragStartY = event.clientY - this.window.offsetTop;
+        
+        const doDrag = (e) => {
+            const event = e.touches ? e.touches[0] : e;
+            if (!this.isDragging) return;
+            this.window.style.left = `${event.clientX - this.dragStartX}px`;
+            this.window.style.top = `${event.clientY - this.dragStartY}px`;
+        };
+        
+        const stopDrag = () => {
+            this.isDragging = false;
+            document.removeEventListener('mousemove', doDrag);
+            document.removeEventListener('touchmove', doDrag);
+            document.removeEventListener('mouseup', stopDrag);
+            document.removeEventListener('touchend', stopDrag);
+        };
+        
+        document.addEventListener('mousemove', doDrag);
+        document.addEventListener('touchmove', doDrag);
+        document.addEventListener('mouseup', stopDrag);
+        document.addEventListener('touchend', stopDrag);
+    }
+    
+    // 绘制棋盘（升级版）
+    drawBoard() {
+        if (!this.ctx) return;
+        
+        // 清空画布
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // 绘制棋盘背景
+        this.ctx.fillStyle = '#f0d9b5';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // 绘制棋盘网格线
+        this.ctx.strokeStyle = '#000';
+        this.ctx.lineWidth = 2;
+        
+        // 绘制横线（完整）
+        for (let i = 0; i <= 10; i++) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(50, 50 + i * 50);
+            this.ctx.lineTo(450, 50 + i * 50);
+            this.ctx.stroke();
+        }
+        
+        // 绘制竖线（在河界处断开）
+        for (let i = 0; i <= 8; i++) {
+            // 上半部分（从第0行到第4行）
+            this.ctx.beginPath();
+            this.ctx.moveTo(50 + i * 50, 50);
+            this.ctx.lineTo(50 + i * 50, 250); // 只画到河界上方
+            this.ctx.stroke();
+            
+            // 下半部分（从第5行到第10行）
+            this.ctx.beginPath();
+            this.ctx.moveTo(50 + i * 50, 300); // 从河界下方开始
+            this.ctx.lineTo(50 + i * 50, 550); // 画到底部
+            this.ctx.stroke();
+        }
+        
+        // 绘制河界线（完整横线）
+        this.ctx.beginPath();
+        this.ctx.moveTo(50, 250);
+        this.ctx.lineTo(450, 250);
+        this.ctx.stroke();
+        
+        // 绘制"楚河汉界"文字
+        this.ctx.fillStyle = "#000";
+        this.ctx.font = "bold 24px KaiTi";
+        this.ctx.textAlign = "center";
+        this.ctx.fillText("楚 河", 150, 270);
+        this.ctx.fillText("汉 界", 350, 270);
+        
+        // 修正后的九宫格绘制（3-5列）
+        // 红方九宫格（0-2行，3-5列）
+        this.ctx.beginPath();
+        this.ctx.moveTo(50 + 3 * 50, 50); // 左上到右下
+        this.ctx.lineTo(50 + 5 * 50, 50 + 2 * 50); 
+        this.ctx.moveTo(50 + 5 * 50, 50); // 右上到左下
+        this.ctx.lineTo(50 + 3 * 50, 50 + 2 * 50); 
+        this.ctx.stroke();
+        
+        // 黑方九宫格（7-9行，3-5列）
+        this.ctx.beginPath();
+        this.ctx.moveTo(50 + 3 * 50, 50 + 7 * 50); // 左上到右下
+        this.ctx.lineTo(50 + 5 * 50, 50 + 9 * 50); 
+        this.ctx.moveTo(50 + 5 * 50, 50 + 7 * 50); // 右上到左下
+        this.ctx.lineTo(50 + 3 * 50, 50 + 9 * 50); 
+        this.ctx.stroke();
+        
+        // 绘制棋子
+        this.drawPieces();
+    }
+    
+    // 绘制棋子
+    drawPieces() {
+        for (let row = 0; row < 10; row++) {
+            for (let col = 0; col < 9; col++) {
+                const piece = this.board[row][col];
+                if (piece) {
+                    this.drawPiece(piece);
+                }
+            }
+        }
+        
+        // 绘制移动路径（如果有）
+        if (this.lastMove) {
+            this.drawMovePath();
+        }
+        
+        // 高亮当前步（如果有）
+        if (this.highlightedStep !== null) {
+            this.drawStepHighlight();
+        }
+    }
+    
+    // 绘制单个棋子
+    drawPiece(piece) {
+        const size = 40;
+        const x = 50 + piece.col * 50 - size / 2;
+        const y = 50 + piece.row * 50 - size / 2;
+        
+        // 绘制棋子背景
+        this.ctx.beginPath();
+        this.ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+        this.ctx.fillStyle = piece.color === 'red' ? '#ff0000' : '#000000';
+        this.ctx.fill();
+        this.ctx.stroke();
+        
+        // 绘制棋子文字
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.font = '24px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText(piece.name, x + size / 2, y + size / 2);
+    }
+    
+    // 绘制移动路径
+    drawMovePath() {
+        if (!this.lastMove || !this.lastMove.from || !this.lastMove.to) return;
+        
+        const fromRow = this.lastMove.from.row;
+        const fromCol = this.lastMove.from.col;
+        const toRow = this.lastMove.to.row;
+        const toCol = this.lastMove.to.col;
+        
+        // 绘制移动起点
+        this.ctx.beginPath();
+        this.ctx.arc(
+            50 + fromCol * 50,
+            50 + fromRow * 50,
+            8,
+            0,
+            Math.PI * 2
+        );
+        this.ctx.fillStyle = '#00ff00';
+        this.ctx.fill();
+        
+        // 绘制移动终点
+        this.ctx.beginPath();
+        this.ctx.arc(
+            50 + toCol * 50,
+            50 + toRow * 50,
+            8,
+            0,
+            Math.PI * 2
+        );
+        this.ctx.fillStyle = '#0000ff';
+        this.ctx.fill();
+        
+        // 绘制移动路径
+        this.ctx.beginPath();
+        this.ctx.moveTo(50 + fromCol * 50, 50 + fromRow * 50);
+        this.ctx.lineTo(50 + toCol * 50, 50 + toRow * 50);
+        this.ctx.strokeStyle = '#00ff00';
+        this.ctx.lineWidth = 2;
+        this.ctx.stroke();
+    }
+    
+    // 高亮当前步
+    drawStepHighlight() {
+        const moves = this.parseNotation();
+        if (this.highlightedStep >= moves.length) {
+            this.highlightedStep = null;
+            return;
+        }
+        
+        const move = moves[this.highlightedStep];
+        if (move.length < 4) return;
+        
+        const from = move.slice(0, 2);
+        const to = move.slice(2, 4);
+        
+        const fromRow = parseInt(from[1]);
+        const fromCol = parseInt(from[0]);
+        const toRow = parseInt(to[1]);
+        const toCol = parseInt(to[0]);
+        
+        // 高亮起点
+        this.ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
+        this.ctx.fillRect(50 + fromCol * 50 - 5, 50 + fromRow * 50 - 5, 60, 60);
+        
+        // 高亮终点
+        this.ctx.fillStyle = 'rgba(0, 255, 255, 0.3)';
+        this.ctx.fillRect(50 + toCol * 50 - 5, 50 + toRow * 50 - 5, 60, 60);
+    }
+    
+    // 更新状态栏
+    updateStatusBar() {
+        this.statusBar.textContent = `当前步数: ${this.currentStep + 1} | 棋谱长度: ${this.parseNotation().length} | 状态: ${this.isPlaying ? '播放中' : '已暂停'} | 当前时间: ${new Date().toLocaleTimeString()} | 版本: ${XiangqiController.VERSION}`;
+        setTimeout(() => this.updateStatusBar(), 1000);
+    }
+    
+    // 切换播放/暂停
+    togglePlayback() {
+        if (this.isPlaying) {
+            this.pausePlayback();
+        } else {
+            this.chessNotation = this.notationInput.value;
+            this.currentStep = 0;
+            this.playback();
+        }
+    }
+    
+    // 播放棋谱
+    playback() {
+        this.isPlaying = true;
+        this.playButton.style.display = 'none';
+        this.pauseButton.style.display = 'block';
+        
+        const moves = this.parseNotation();
+        if (moves.length === 0) {
+            alert('请输入有效的棋谱！');
+            return;
+        }
+        
+        this.playInterval = setInterval(() => {
+            if (this.currentStep >= moves.length) {
+                clearInterval(this.playInterval);
+                this.isPlaying = false;
+                this.pauseButton.style.display = 'none';
+                this.playButton.style.display = 'block';
+                return;
+            }
+            
+            const move = moves[this.currentStep];
+            this.makeMove(move);
+            this.highlightedStep = this.currentStep;
+            this.currentStep++;
+            this.updateStatusBar();
+        }, this.playSpeed);
+    }
+    
+    // 暂停播放
+    pausePlayback() {
+        if (this.playInterval) {
+            clearInterval(this.playInterval);
+            this.playInterval = null;
+        }
+        
+        this.isPlaying = false;
+        this.pauseButton.style.display = 'none';
+        this.playButton.style.display = 'block';
+    }
+    
+    // 重置棋盘
+    resetBoard() {
+        this.board = this.createEmptyBoard();
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.pausePlayback();
+        this.drawBoard();
+        this.updateStatusBar();
+    }
+    
+    // 解析棋谱
+    parseNotation() {
+        const notation = this.chessNotation.trim();
+        if (!notation) return [];
+        
+        return notation.split(' ').filter(move => move.trim() !== '');
+    }
+    
+    // 执行移动
+    makeMove(move) {
+        if (!move || move.length < 4) return;
+        
+        const from = move.slice(0, 2);
+        const to = move.slice(2, 4);
+        
+        const fromRow = parseInt(from[1]);
+        const fromCol = parseInt(from[0]);
+        const toRow = parseInt(to[1]);
+        const toCol = parseInt(to[0]);
+        
+        if (fromRow >= 0 && fromRow < 10 && fromCol >= 0 && fromCol < 9 &&
+            toRow >= 0 && toRow < 10 && toCol >= 0 && toCol < 9) {
+            
+            const piece = this.board[fromRow][fromCol];
+            if (piece) {
+                // 记录移动
+                this.lastMove = {
+                    from: { row: fromRow, col: fromCol },
+                    to: { row: toRow, col: toCol }
+                };
+                
+                // 执行移动
+                this.board[toRow][toCol] = piece;
+                this.board[fromRow][fromCol] = null;
+                
+                // 更新棋子位置
+                piece.row = toRow;
+                piece.col = toCol;
+                
+                // 绘制更新后的棋盘
+                this.drawBoard();
+                
+                // 1秒后清除移动路径
+                setTimeout(() => {
+                    this.lastMove = null;
+                    this.drawBoard();
+                }, 1000);
+            }
+        }
+    }
+    
+    // 切换窗口显示
+    toggleWindow() {
+        this.window.style.display = this.window.style.display === 'none' ? 'block' : 'none';
+    }
+    
+    static getInstance(id) {
+        return window.xiangqiControllers?.find(obj => obj.id === id) || new this(id);
+    }
+}
+        
+       // 初始化控制器
+        let controller;
+        function initController() {
+            controller = XiangqiController.getInstance('id_s177_i2c1_XiangqiController');
+        }
+        
+        // 显示控制器函数
+        function showController() {
+            if (controller) {
+                controller.toggleWindow();
+            } else {
+                initController();
+            }
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', initController);
+    </script>
+</body>
+</html>
+<!--
+升级程序，楚河汉界的竖线不要连起来。
+return all new code
+-->
