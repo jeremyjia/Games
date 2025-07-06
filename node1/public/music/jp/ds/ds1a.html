@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简谱编辑器 v0.10</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 15px 0;
+            margin-bottom: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .version {
+            color: #ffcc00;
+            font-size: 1rem;
+        }
+        
+        .toolbar {
+            background: rgba(0, 30, 60, 0.85);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .toolbar-title {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: #4fc3f7;
+            display: flex;
+            align-items: center;
+        }
+        
+        .toolbar-title i {
+            margin-right: 10px;
+            font-size: 1.3rem;
+        }
+        
+        .buttons-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .toolbar-btn {
+            flex: 1;
+            min-width: 45px;
+            height: 50px;
+            background: #0d47a1;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .toolbar-btn:hover {
+            background: #1565c0;
+            transform: translateY(-3px);
+        }
+        
+        .toolbar-btn:active {
+            transform: translateY(1px);
+        }
+        
+        .toolbar-btn.active {
+            background: #ff9800;
+            box-shadow: 0 0 15px rgba(255, 152, 0, 0.7);
+        }
+        
+        .toolbar-btn.octave {
+            min-width: 55px;
+        }
+        
+        .toolbar-btn.action {
+            background: #2e7d32;
+            font-size: 1rem;
+            padding: 0 8px;
+        }
+        
+        .toolbar-btn.action.delete {
+            background: #c62828;
+        }
+        
+        .toolbar-btn.action.clear {
+            background: #6a1b9a;
+        }
+        
+        .toolbar-btn.action.play {
+            background: #0277bd;
+        }
+        
+        .setting-toolbar {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: rgba(0, 30, 60, 0.85);
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .setting-label {
+            font-size: 1.1rem;
+            margin-right: 20px;
+            color: #4fc3f7;
+            white-space: nowrap;
+        }
+        
+        .scale-slider {
+            flex: 1;
+            height: 12px;
+            -webkit-appearance: none;
+            background: linear-gradient(to right, #0d47a1, #4fc3f7);
+            border-radius: 6px;
+            outline: none;
+        }
+        
+        .scale-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #ff9800;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 152, 0, 0.8);
+        }
+        
+        .canvas-container {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            overflow: auto;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 25px;
+            min-height: 200px;
+        }
+        
+        #score-canvas {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .status-bar {
+            background: rgba(0, 0, 0, 0.6);
+            color: #81d4fa;
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .current-settings {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            padding: 15px;
+            background: rgba(0, 30, 60, 0.7);
+            border-radius: 10px;
+            margin-top: 10px;
+            font-size: 1rem;
+        }
+        
+        .setting-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 80px;
+        }
+        
+        .setting-value {
+            font-weight: bold;
+            color: #ffcc00;
+            font-size: 1.2rem;
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .toolbar-btn {
+                min-width: 40px;
+                height: 45px;
+                font-size: 1.1rem;
+            }
+            
+            .toolbar-btn.action {
+                font-size: 0.9rem;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .current-settings {
+                gap: 15px;
+                flex-wrap: wrap;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .toolbar-btn {
+                min-width: 35px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            
+            .toolbar-title {
+                font-size: 1rem;
+            }
+            
+            .setting-label {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>简谱编辑器</h1>
+        <div class="version">版本 0.10 - 十六分音符低八度优化版</div>
+    </div>
+    
+    <!-- 音符选择 -->
+    <div class="toolbar">
+        <div class="toolbar-title">
+            <i>🎵</i> 音符选择
+        </div>
+        <div class="buttons-container">
+            <button class="toolbar-btn" data-note="1">1</button>
+            <button class="toolbar-btn" data-note="2">2</button>
+            <button class="toolbar-btn" data-note="3">3</button>
+            <button class="toolbar-btn" data-note="4">4</button>
+            <button class="toolbar-btn active" data-note="5">5</button>
+            <button class="toolbar-btn" data-note="6">6</button>
+            <button class="toolbar-btn" data-note="7">7</button>
+            <button class="toolbar-btn" data-note="0">0</button>
+        </div>
+    </div>
+    
+    <!-- 时值选择 -->
+    <div class="toolbar">
+        <div class="toolbar-title">
+            <i>⏱️</i> 时值选择
+        </div>
+        <div class="buttons-container">
+            <button class="toolbar-btn" data-length="whole">全</button>
+            <button class="toolbar-btn" data-length="half">二分</button>
+            <button class="toolbar-btn" data-length="quarter">4分</button>
+            <button class="toolbar-btn" data-length="eighth">8分</button>
+            <button class="toolbar-btn active" data-length="sixteenth">16分</button>
+        </div>
+    </div>
+    
+    <!-- 八度选择 -->
+    <div class="toolbar">
+        <div class="toolbar-title">
+            <i>🎹</i> 八度设置
+        </div>
+        <div class="buttons-container">
+            <button class="toolbar-btn octave" data-octave="2">2</button>
+            <button class="toolbar-btn octave" data-octave="1">1</button>
+            <button class="toolbar-btn octave" data-octave="0">0</button>
+            <button class="toolbar-btn octave" data-octave="-1">-1</button>
+            <button class="toolbar-btn octave active" data-octave="-2">-2</button>
+        </div>
+    </div>
+    
+    <!-- 操作按钮 -->
+    <div class="toolbar">
+        <div class="toolbar-title">
+            <i>⚙️</i> 乐谱操作
+        </div>
+        <div class="buttons-container">
+            <button class="toolbar-btn action" id="insert-note">插入音符</button>
+            <button class="toolbar-btn action delete" id="delete-note">删除音符</button>
+            <button class="toolbar-btn action clear" id="clear-score">清空乐谱</button>
+            <button class="toolbar-btn action play" id="play-current">播放音符</button>
+        </div>
+    </div>
+    
+    <!-- 设置工具条 -->
+    <div class="setting-toolbar">
+        <div class="setting-label">渲染比例:</div>
+        <input type="range" min="20" max="60" value="40" class="scale-slider" id="scale-slider">
+    </div>
+    
+    <!-- 当前设置状态 -->
+    <div class="current-settings">
+        <div class="setting-item">
+            <div>当前音符</div>
+            <div class="setting-value" id="current-note">5</div>
+        </div>
+        <div class="setting-item">
+            <div>当前时值</div>
+            <div class="setting-value" id="current-length">十六分音符</div>
+        </div>
+        <div class="setting-item">
+            <div>当前八度</div>
+            <div class="setting-value" id="current-octave">-2</div>
+        </div>
+    </div>
+    
+    <!-- 画布容器 -->
+    <div class="canvas-container">
+        <canvas id="score-canvas"></canvas>
+    </div>
+    
+    <!-- 状态栏 -->
+    <div class="status-bar" id="status-bar">
+        就绪 - 2023年11月15日 10:30:45
+    </div>
+    
+    <script>
+        // 状态数据
+        const state = {
+            currentNote: '5',
+            noteLength: 'sixteenth',
+            octave: -2,
+            score: [],
+            gridWidth: 40,
+            audioContext: null
+        };
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 设置默认按钮状态
+            setActiveButton('note', state.currentNote);
+            setActiveButton('length', state.noteLength);
+            setActiveButton('octave', state.octave.toString());
+            
+            // 绑定事件
+            bindEvents();
+            
+            // 初始化画布
+            initCanvas();
+            
+            // 更新时间
+            updateTime();
+            setInterval(updateTime, 1000);
+            
+            // 更新当前设置显示
+            updateCurrentSettings();
+            
+            // 插入示例音符
+            insertExampleNotes();
+        });
+        
+        function bindEvents() {
+            // 音符选择
+            document.querySelectorAll('[data-note]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.currentNote = btn.dataset.note;
+                    setActiveButton('note', state.currentNote);
+                    updateCurrentSettings();
+                });
+            });
+            
+            // 时值选择
+            document.querySelectorAll('[data-length]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.noteLength = btn.dataset.length;
+                    setActiveButton('length', state.noteLength);
+                    updateCurrentSettings();
+                });
+            });
+            
+            // 八度选择
+            document.querySelectorAll('[data-octave]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.octave = parseInt(btn.dataset.octave);
+                    setActiveButton('octave', btn.dataset.octave);
+                    updateCurrentSettings();
+                });
+            });
+            
+            // 操作按钮
+            document.getElementById('insert-note').addEventListener('click', insertNote);
+            document.getElementById('delete-note').addEventListener('click', deleteNote);
+            document.getElementById('clear-score').addEventListener('click', clearScore);
+            document.getElementById('play-current').addEventListener('click', playCurrentNote);
+            
+            // 比例滑块
+            document.getElementById('scale-slider').addEventListener('input', function() {
+                state.gridWidth = parseInt(this.value);
+                renderScore();
+            });
+        }
+        
+        // 插入示例音符
+        function insertExampleNotes() {
+            // 添加几个示例音符
+            state.score.push({note: '5', length: 'whole', octave: 1});
+            state.score.push({note: '3', length: 'half', octave: 0});
+            state.score.push({note: '1', length: 'quarter', octave: 0});
+            state.score.push({note: '6', length: 'eighth', octave: -1});
+            // 重点示例：十六分音符低两个八度
+            state.score.push({note: '2', length: 'sixteenth', octave: -2});
+            renderScore();
+        }
+        
+        // 设置当前激活的按钮
+        function setActiveButton(type, value) {
+            // 移除所有按钮的active类
+            const selector = type === 'note' ? '[data-note]' : 
+                            type === 'length' ? '[data-length]' : 
+                            '[data-octave]';
+            
+            document.querySelectorAll(selector).forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 为当前按钮添加active类
+            const currentBtn = type === 'note' ? 
+                document.querySelector(`[data-note="${value}"]`) :
+                type === 'length' ? 
+                document.querySelector(`[data-length="${value}"]`) :
+                document.querySelector(`[data-octave="${value}"]`);
+            
+            if (currentBtn) {
+                currentBtn.classList.add('active');
+            }
+        }
+        
+        // 更新当前设置显示
+        function updateCurrentSettings() {
+            document.getElementById('current-note').textContent = state.currentNote;
+            
+            // 设置时值显示文本
+            const lengthText = {
+                'whole': '全音符',
+                'half': '二分音符',
+                'quarter': '四分音符',
+                'eighth': '八分音符',
+                'sixteenth': '十六分音符'
+            }[state.noteLength];
+            document.getElementById('current-length').textContent = lengthText;
+            
+            // 设置八度显示文本
+            let octaveText = state.octave;
+            if (state.octave > 0) octaveText = `+${state.octave}`;
+            document.getElementById('current-octave').textContent = octaveText;
+        }
+        
+        // 插入音符
+        function insertNote() {
+            state.score.push({
+                note: state.currentNote,
+                length: state.noteLength,
+                octave: state.octave
+            });
+            renderScore();
+        }
+        
+        // 删除音符
+        function deleteNote() {
+            if (state.score.length > 0) {
+                state.score.pop();
+                renderScore();
+            }
+        }
+        
+        // 清空乐谱
+        function clearScore() {
+            state.score = [];
+            renderScore();
+        }
+        
+        // 播放当前音符
+        function playCurrentNote() {
+            // 初始化音频上下文（如果尚未初始化）
+            if (!state.audioContext) {
+                state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            // 如果是休止符（0），则不播放声音
+            if (state.currentNote === '0') {
+                return;
+            }
+            
+            // 计算频率：根据音符和八度
+            const baseFrequencies = {
+                '1': 261.63, // C4
+                '2': 293.66, // D4
+                '3': 329.63, // E4
+                '4': 349.23, // F4
+                '5': 392.00, // G4
+                '6': 440.00, // A4
+                '7': 493.88  // B4
+            };
+            
+            let frequency = baseFrequencies[state.currentNote];
+            // 调整八度：每高一个八度频率翻倍，低一个八度减半
+            frequency = frequency * Math.pow(2, state.octave);
+            
+            // 播放频率
+            playTone(frequency, getDuration(state.noteLength));
+        }
+        
+        // 获取时值对应的持续时间（秒）
+        function getDuration(length) {
+            // 假设四分音符为0.5秒
+            const quarter = 0.5;
+            switch (length) {
+                case 'whole': return quarter * 4;
+                case 'half': return quarter * 2;
+                case 'quarter': return quarter;
+                case 'eighth': return quarter / 2;
+                case 'sixteenth': return quarter / 4;
+                default: return quarter;
+            }
+        }
+        
+        // 播放一个音调
+        function playTone(frequency, duration) {
+            const audioContext = state.audioContext;
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.value = frequency;
+            gainNode.gain.value = 0.3;
+            
+            // 设置淡出以避免爆音
+            const now = audioContext.currentTime;
+            gainNode.gain.setValueAtTime(0.3, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration);
+            
+            oscillator.start(now);
+            oscillator.stop(now + duration);
+        }
+        
+        // 初始化画布
+        function initCanvas() {
+            const canvas = document.getElementById('score-canvas');
+            // 设置初始画布大小
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+        }
+        
+        // 调整画布大小
+        function resizeCanvas() {
+            const canvas = document.getElementById('score-canvas');
+            const container = document.querySelector('.canvas-container');
+            
+            // 设置画布尺寸为容器尺寸
+            canvas.width = container.clientWidth - 50;
+            canvas.height = Math.max(200, container.clientHeight - 50);
+            
+            renderScore();
+        }
+        
+        // 渲染乐谱
+        function renderScore() {
+            const canvas = document.getElementById('score-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // 清除画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 设置字体
+            ctx.font = `bold ${state.gridWidth * 0.6}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#333';
+            
+            // 起始位置
+            let x = state.gridWidth;
+            const y = canvas.height / 2;
+            
+            // 如果没有音符，显示提示信息
+            if (state.score.length === 0) {
+                ctx.font = 'bold 26px Arial';
+                ctx.fillStyle = '#999';
+                ctx.fillText('点击"插入音符"开始创建乐谱', canvas.width / 2, canvas.height / 2);
+                return;
+            }
+            
+            // 遍历每个音符
+            for (let i = 0; i < state.score.length; i++) {
+                const note = state.score[i];
+                
+                // 计算当前音符占据的宽度
+                let widthMultiplier = 1;
+                if (note.length === 'whole') widthMultiplier = 4;
+                else if (note.length === 'half') widthMultiplier = 2;
+                
+                // 绘制音符文本
+                ctx.fillText(note.note, x, y);
+                
+                // 如果是休止符（0），则不需要八度点
+                if (note.note !== '0') {
+                    // 绘制八度点
+                    if (note.octave > 0) {
+                        // 高八度：在音符上方画点
+                        for (let j = 0; j < note.octave; j++) {
+                            ctx.beginPath();
+                            ctx.arc(x, y - state.gridWidth * 0.5 - j * state.gridWidth * 0.3, 
+                                    state.gridWidth * 0.1, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    } else if (note.octave < 0) {
+                        // 低八度：在音符下方画点
+                        const absOctave = Math.abs(note.octave);
+                        
+                        // 对于十六分音符且低八度的情况，需要调整点的位置
+                        let baseOffset = state.gridWidth * 0.5;
+                        if (note.length === 'sixteenth' || note.length === 'eighth') {
+                            baseOffset += state.gridWidth * 0.2; // 在横杠下方
+                        }
+                        
+                        for (let j = 0; j < absOctave; j++) {
+                            ctx.beginPath();
+                            ctx.arc(x, y + baseOffset + j * state.gridWidth * 0.3, 
+                                    state.gridWidth * 0.1, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+                }
+                
+                // 绘制时值
+                if (note.length === 'whole') {
+                    // 在右侧画三条横线，每条横线之间有间隙
+                    const gap = state.gridWidth * 0.5; // 横线之间的间隙
+                    
+                    // 第一条横线（紧接在音符后面）
+                    ctx.beginPath();
+                    ctx.moveTo(x + state.gridWidth * 0.7, y);
+                    ctx.lineTo(x + state.gridWidth * 1.3, y);
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    
+                    // 第二条横线（与第一条有间隙）
+                    ctx.beginPath();
+                    ctx.moveTo(x + state.gridWidth * 1.3 + gap, y);
+                    ctx.lineTo(x + state.gridWidth * 1.9 + gap, y);
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    
+                    // 第三条横线（与第二条有间隙）
+                    ctx.beginPath();
+                    ctx.moveTo(x + state.gridWidth * 1.9 + gap * 2, y);
+                    ctx.lineTo(x + state.gridWidth * 2.5 + gap * 2, y);
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    
+                } else if (note.length === 'half') {
+                    // 在右侧画一条横线
+                    ctx.beginPath();
+                    ctx.moveTo(x + state.gridWidth * 0.7, y);
+                    ctx.lineTo(x + state.gridWidth * 1.5, y);
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                } else if (note.length === 'quarter') {
+                    // 四分音符不需要额外标记
+                } else if (note.length === 'eighth') {
+                    // 在下方画一条横线
+                    ctx.beginPath();
+                    ctx.moveTo(x - state.gridWidth * 0.3, y + state.gridWidth * 0.4);
+                    ctx.lineTo(x + state.gridWidth * 0.3, y + state.gridWidth * 0.4);
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                } else if (note.length === 'sixteenth') {
+                    // 在下方画两条横线
+                    for (let j = 0; j < 2; j++) {
+                        ctx.beginPath();
+                        ctx.moveTo(x - state.gridWidth * 0.3, y + state.gridWidth * 0.4 + j * state.gridWidth * 0.15);
+                        ctx.lineTo(x + state.gridWidth * 0.3, y + state.gridWidth * 0.4 + j * state.gridWidth * 0.15);
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                    }
+                }
+                
+                // 更新x位置
+                x += widthMultiplier * state.gridWidth;
+                
+                // 如果超出画布宽度，换行（简化处理，实际应用中需要更复杂的布局）
+                if (x > canvas.width - state.gridWidth * 4) {
+                    x = state.gridWidth;
+                    // 这里简化处理，实际应用中需要记录多行位置
+                }
+            }
+        }
+        
+        // 更新时间
+        function updateTime() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            const timeStr = now.toLocaleTimeString('zh-CN');
+            
+            document.getElementById('status-bar').textContent = 
+                `就绪 - ${dateStr} ${timeStr}`;
+        }
+    </script>
+</body>
+</html>
