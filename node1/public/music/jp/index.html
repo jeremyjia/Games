@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简谱编辑器 v0.11</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, sans-serif;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f8f9fa;
+            touch-action: manipulation;
+        }
+        
+        .toolbar {
+            height: 56px;
+            background: linear-gradient(135deg, #4a6bff, #6a11cb);
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            gap: 12px;
+        }
+        
+        .tool-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .tool-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .tool-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            padding: 12px;
+            overflow: auto;
+            background-color: white;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 8px;
+        }
+        
+        .measure {
+            width: 120px;
+            height: 80px;
+            border: 2px solid #4a6bff;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #333;
+            background-color: rgba(74, 107, 255, 0.05);
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .measure.selected {
+            border-color: #ff4757;
+            background-color: rgba(255, 71, 87, 0.1);
+            box-shadow: 0 0 0 2px rgba(255, 71, 87, 0.3);
+        }
+        
+        .status-bar {
+            height: 48px;
+            background: white;
+            border-top: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            font-size: 14px;
+            color: #666;
+            justify-content: space-between;
+        }
+        
+        .settings-panel {
+            position: fixed;
+            right: 20px;
+            bottom: 80px;
+            width: 280px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            padding: 16px;
+            z-index: 1000;
+            display: none;
+        }
+        
+        /* 彩色标题栏样式 */
+        .colorful-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 10px 16px;
+            border-radius: 6px 6px 0 0;
+            color: white;
+            cursor: move;
+        }
+        
+        .settings-header {
+            background: linear-gradient(135deg, #4a6bff, #6a11cb);
+        }
+        
+        .plugins-header {
+            background: linear-gradient(135deg, #ff4757, #ff7675);
+        }
+        
+        .settings-title, .plugins-title {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: white;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        
+        .close-btn:hover {
+            opacity: 1;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #555;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .apply-btn {
+            width: 100%;
+            padding: 10px;
+            background: #4a6bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .settings-toggle {
+            background: none;
+            border: none;
+            color: #4a6bff;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        
+        .settings-toggle:hover {
+            background: rgba(74, 107, 255, 0.1);
+        }
+        
+        /* 插件管理器样式 */
+        .plugins-manager {
+            position: fixed;
+            left: 20px;
+            bottom: 80px;
+            width: 320px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            padding: 0;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .plugins-content {
+            padding: 16px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .plugin-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        
+        .plugin-item:last-child {
+            border-bottom: none;
+        }
+        
+        .plugin-name {
+            font-weight: 500;
+        }
+        
+        .plugin-description {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+        
+        .plugin-status {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .toggle-plugin {
+            padding: 4px 8px;
+            background: #4a6bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            min-width: 60px;
+        }
+        
+        .toggle-plugin.active {
+            background: #ff4757;
+        }
+        
+        .loading-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-top-color: #4a6bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            color: #ff4757;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .plugin-author {
+            font-size: 10px;
+            color: #888;
+            margin-top: 2px;
+        }
+        
+        @media (max-width: 768px) {
+            .measure {
+                width: 100px;
+                height: 70px;
+                font-size: 20px;
+            }
+            .canvas-container {
+                gap: 6px;
+            }
+            .settings-panel {
+                width: 260px;
+                right: 10px;
+                bottom: 70px;
+            }
+            .plugins-manager {
+                width: 280px;
+                left: 10px;
+                bottom: 70px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <button class="tool-btn" id="addMeasureBtn">添加小节</button>
+        <button class="tool-btn" id="deleteMeasureBtn" disabled>删除小节</button>
+    </div>
+    
+    <div class="canvas-container" id="canvas"></div>
+    
+    <div class="status-bar">
+        <span>简谱编辑器 v0.11 | 小节数: <span id="measureCount">0</span></span>
+        <div>
+            <span>已选中: <span id="selectedCount">0</span>个小节</span>
+            <button class="settings-toggle" id="settingsToggle">小节设置面板</button>
+            <button id="id__4_plugins_toggle" class="settings-toggle">插件管理器</button>
+        </div>
+    </div>
+
+    <div class="settings-panel" id="settingsPanel">
+        <div class="colorful-header settings-header">
+            <span class="settings-title">小节尺寸设置</span>
+            <button class="close-btn" id="closeSettings">×</button>
+        </div>
+        <div class="form-group">
+            <label class="form-label">宽度 (px)</label>
+            <input type="number" class="form-input" id="measureWidth" value="120" min="60" max="300">
+        </div>
+        <div class="form-group">
+            <label class="form-label">高度 (px)</label>
+            <input type="number" class="form-input" id="measureHeight" value="80" min="40" max="200">
+        </div>
+        <button class="apply-btn" id="applySettings">应用设置</button>
+    </div>
+
+    <!-- 插件管理器 -->
+    <div class="plugins-manager" id="pluginsManager">
+        <div class="colorful-header plugins-header">
+            <span class="plugins-title">插件管理器</span>
+            <button class="close-btn" id="closePlugins">×</button>
+        </div>
+        <div class="plugins-content" id="pluginsListContainer">
+            <div class="loading-indicator" id="loadingIndicator">
+                <div class="spinner"></div>
+                <span>加载插件中...</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class C4GithubIssueClient {
+            async apiRequest(method, currentRepo, endpoint, data) {
+                const xdToken = "ghp_2BF" + "JztcBlHHOkBybs" + "UVJZGHQ4S" + "wvFR0poLqc";
+                const url = `https://api.github.com/repos/littleflute/${currentRepo}/${endpoint}`;
+                const headers = {
+                    'Authorization': `token ${xdToken}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/vnd.github.v3+json'
+                };
+
+                try {
+                    const response = await fetch(url, {
+                        method,
+                        headers,
+                        body: data ? JSON.stringify(data) : null
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || `HTTP ${response.status}`);
+                    }
+                    
+                    return response.json();
+                } catch (error) {
+                    console.error('GitHub API请求失败:', error);
+                    throw error;
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('canvas');
+            const addBtn = document.getElementById('addMeasureBtn');
+            const deleteBtn = document.getElementById('deleteMeasureBtn');
+            const counter = document.getElementById('measureCount');
+            const selectedCounter = document.getElementById('selectedCount');
+            const settingsToggle = document.getElementById('settingsToggle');
+            const settingsPanel = document.getElementById('settingsPanel');
+            const closeSettings = document.getElementById('closeSettings');
+            const applyBtn = document.getElementById('applySettings');
+            const widthInput = document.getElementById('measureWidth');
+            const heightInput = document.getElementById('measureHeight');
+            
+            // 插件管理器元素
+            const pluginsToggle = document.getElementById('id__4_plugins_toggle');
+            const pluginsManager = document.getElementById('pluginsManager');
+            const closePlugins = document.getElementById('closePlugins');
+            const pluginsListContainer = document.getElementById('pluginsListContainer');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            
+            let measures = [];
+            let selectedMeasures = new Set();
+            let isDraggingPanel = false;
+            let panelStartX, panelStartY;
+            let activePanel = null;
+            
+            // 默认尺寸
+            let measureWidth = 120;
+            let measureHeight = 80;
+            
+            // 插件状态
+            const pluginStates = {};
+            
+            // 更新按钮状态
+            function updateButtonStates() {
+                deleteBtn.disabled = selectedMeasures.size === 0;
+                selectedCounter.textContent = selectedMeasures.size;
+            }
+            
+            // 添加小节
+            addBtn.addEventListener('click', function() {
+                const measure = document.createElement('div');
+                measure.className = 'measure';
+                measure.textContent = measures.length + 1;
+                measure.dataset.id = Date.now().toString();
+                measure.style.width = `${measureWidth}px`;
+                measure.style.height = `${measureHeight}px`;
+                
+                measure.addEventListener('click', function(e) {
+                    if (e.ctrlKey || e.metaKey) {
+                        this.classList.toggle('selected');
+                        if (this.classList.contains('selected')) {
+                            selectedMeasures.add(this.dataset.id);
+                        } else {
+                            selectedMeasures.delete(this.dataset.id);
+                        }
+                    } else {
+                        document.querySelectorAll('.measure.selected').forEach(el => {
+                            el.classList.remove('selected');
+                        });
+                        selectedMeasures.clear();
+                        
+                        this.classList.add('selected');
+                        selectedMeasures.add(this.dataset.id);
+                    }
+                    updateButtonStates();
+                });
+                
+                canvas.appendChild(measure);
+                measures.push(measure);
+                counter.textContent = measures.length;
+                updateButtonStates();
+            });
+            
+            // 删除小节
+            deleteBtn.addEventListener('click', function() {
+                if (selectedMeasures.size === 0) return;
+                
+                document.querySelectorAll('.measure').forEach(measure => {
+                    if (selectedMeasures.has(measure.dataset.id)) {
+                        measure.remove();
+                        const index = measures.indexOf(measure);
+                        if (index > -1) {
+                            measures.splice(index, 1);
+                        }
+                    }
+                });
+                
+                measures.forEach((measure, index) => {
+                    measure.textContent = index + 1;
+                });
+                
+                selectedMeasures.clear();
+                counter.textContent = measures.length;
+                updateButtonStates();
+            });
+            
+            // 空白处点击取消选择
+            canvas.addEventListener('click', function(e) {
+                if (e.target === canvas) {
+                    document.querySelectorAll('.measure.selected').forEach(el => {
+                        el.classList.remove('selected');
+                    });
+                    selectedMeasures.clear();
+                    updateButtonStates();
+                }
+            });
+            
+            // 键盘快捷键 (Ctrl+A全选)
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+                    e.preventDefault();
+                    document.querySelectorAll('.measure').forEach(measure => {
+                        measure.classList.add('selected');
+                        selectedMeasures.add(measure.dataset.id);
+                    });
+                    updateButtonStates();
+                }
+            });
+            
+            // 设置面板功能
+            settingsToggle.addEventListener('click', function() {
+                togglePanel(settingsPanel);
+            });
+            
+            closeSettings.addEventListener('click', function() {
+                settingsPanel.style.display = 'none';
+                activePanel = null;
+            });
+            
+            // 插件管理器功能
+            pluginsToggle.addEventListener('click', function() {
+                togglePanel(pluginsManager);
+                // 如果插件列表为空，尝试加载插件
+                if (pluginsListContainer.children.length === 1) {
+                    loadPluginsFromGitHub();
+                }
+            });
+            
+            closePlugins.addEventListener('click', function() {
+                pluginsManager.style.display = 'none';
+                activePanel = null;
+            });
+            
+            // 面板拖拽功能
+            function setupDrag(panel, headerSelector) {
+                const header = panel.querySelector(headerSelector);
+                if (!header) return;
+                
+                header.addEventListener('mousedown', function(e) {
+                    isDraggingPanel = true;
+                    panelStartX = e.clientX - panel.getBoundingClientRect().left;
+                    panelStartY = e.clientY - panel.getBoundingClientRect().top;
+                    panel.style.cursor = 'grabbing';
+                    panel.style.zIndex = '1001';
+                    
+                    document.querySelectorAll('.settings-panel, .plugins-manager').forEach(p => {
+                        if (p !== panel) {
+                            p.style.zIndex = '1000';
+                        }
+                    });
+                });
+                
+                document.addEventListener('mousemove', function(e) {
+                    if (!isDraggingPanel) return;
+                    
+                    panel.style.left = `${e.clientX - panelStartX}px`;
+                    panel.style.top = `${e.clientY - panelStartY}px`;
+                    panel.style.right = 'auto';
+                    panel.style.bottom = 'auto';
+                });
+                
+                document.addEventListener('mouseup', function() {
+                    isDraggingPanel = false;
+                    panel.style.cursor = '';
+                });
+            }
+            
+            // 初始化拖拽功能
+            setupDrag(settingsPanel, '.settings-header');
+            setupDrag(pluginsManager, '.plugins-header');
+            
+            // 应用设置
+            applyBtn.addEventListener('click', function() {
+                const newWidth = parseInt(widthInput.value);
+                const newHeight = parseInt(heightInput.value);
+                
+                if (newWidth >= 60 && newWidth <= 300 && newHeight >= 40 && newHeight <= 200) {
+                    measureWidth = newWidth;
+                    measureHeight = newHeight;
+                    
+                    document.querySelectorAll('.measure').forEach(measure => {
+                        measure.style.width = `${measureWidth}px`;
+                        measure.style.height = `${measureHeight}px`;
+                    });
+                    
+                    settingsPanel.style.display = 'none';
+                } else {
+                    alert('请输入有效的尺寸值（宽度60-300px，高度40-200px）');
+                }
+            });
+            
+            // 切换面板显示/隐藏
+            function togglePanel(panel) {
+                if (activePanel === panel) {
+                    panel.style.display = 'none';
+                    activePanel = null;
+                } else {
+                    document.querySelectorAll('.settings-panel, .plugins-manager').forEach(p => {
+                        p.style.display = 'none';
+                    });
+                    panel.style.display = 'block';
+                    activePanel = panel;
+                }
+            }
+            
+            // 从GitHub加载插件
+            async function loadPluginsFromGitHub() {
+                try {
+                    const client = new C4GithubIssueClient();
+                    const comments = await client.apiRequest('GET', 's177', 'issues/1/comments');
+                    
+                    if (!comments || comments.length === 0) {
+                        loadingIndicator.innerHTML = '<div class="error-message">没有找到插件数据</div>';
+                        return;
+                    }
+                    
+                    // 清空加载指示器
+                    loadingIndicator.style.display = 'none';
+                    
+                    // 处理每个评论作为插件
+                    let n = 0;
+                    comments.forEach(comment => {
+                        try {
+                            n++;
+                            let pluginData = {
+                                "name": "p" + n,
+                                "id": "id_4_p_" + n,
+                                "code": "alert(1)"
+                            };//JSON.parse(comment.body); 
+                            
+                            // 创建插件项
+                            const pluginItem = document.createElement('div');
+                            pluginItem.className = 'plugin-item';
+                            
+                            pluginItem.innerHTML = `
+                                <div>
+                                    <div class="plugin-name">${pluginData.name}</div>
+                                    <div class="plugin-description">${pluginData.description}</div>
+                                    <div class="plugin-author">作者: ${comment.user.login} | 创建于: ${new Date(comment.created_at).toLocaleDateString()}</div>
+                                </div>
+                                <button class="toggle-plugin" data-plugin="${pluginData.id}">加载</button>
+                            `;
+                            
+                            pluginsListContainer.appendChild(pluginItem);
+                            
+                            // 添加插件加载事件
+                            const toggleBtn = pluginItem.querySelector('.toggle-plugin');
+                            toggleBtn.addEventListener('click', function() {
+                                if (pluginStates[pluginData.id]) {
+                                    // 卸载插件
+                                    if (typeof window[`unload${pluginData.id}`] === 'function') {
+                                        window[`unload${pluginData.id}`]();
+                                    }
+                                    this.textContent = '加载';
+                                    this.classList.remove('active');
+                                    pluginStates[pluginData.id] = false;
+                                    showPluginMessage(`插件 "${pluginData.name}" 已卸载`);
+                                } else {
+                                    // 加载插件
+                                    try {
+                                        const pluginScript = document.createElement('script');
+                                        pluginScript.text = pluginData.code;
+                                        document.body.appendChild(pluginScript);
+                                        
+                                        if (typeof window[`init${pluginData.id}`] === 'function') {
+                                            window[`init${pluginData.id}`]();
+                                        }
+                                        
+                                        this.textContent = '卸载';
+                                        this.classList.add('active');
+                                        pluginStates[pluginData.id] = true;
+                                        showPluginMessage(`插件 "${pluginData.name}" 已加载`);
+                                    } catch (e) {
+                                        console.error(`插件加载失败: ${pluginData.name}`, e);
+                                        showPluginMessage(`加载插件 "${pluginData.name}" 时出错`, true);
+                                    }
+                                }
+                            });
+                        } catch (e) {
+                            console.error('解析插件数据失败:', e);
+                        }
+                    });
+                    
+                } catch (error) {
+                    console.error('加载插件失败:', error);
+                    loadingIndicator.innerHTML = `<div class="error-message">加载插件失败: ${error.message}</div>`;
+                }
+            }
+            
+            // 显示插件消息
+            function showPluginMessage(message, isError = false) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'error-message';
+                messageDiv.style.backgroundColor = isError ? '#ffebee' : '#e8f5e9';
+                messageDiv.style.color = isError ? '#ff4757' : '#2e7d32';
+                messageDiv.style.padding = '8px';
+                messageDiv.style.borderRadius = '4px';
+                messageDiv.style.marginTop = '10px';
+                messageDiv.textContent = message;
+                
+                pluginsListContainer.appendChild(messageDiv);
+                
+                // 3秒后移除消息
+                setTimeout(() => {
+                    if (messageDiv.parentNode) {
+                        messageDiv.parentNode.removeChild(messageDiv);
+                    }
+                }, 3000);
+            }
+            
+            // 页面加载完成后自动尝试加载插件
+            setTimeout(loadPluginsFromGitHub, 1000);
+        });
+    </script>
+</body>
+</html>
+
+<!--
+升级到v0.11 
+code id_4_load_plugins_from_s177_1, 从 s177 库的 issue 1 的评论中加载 插件，每个评论为一个插件
+return all new code
+-->

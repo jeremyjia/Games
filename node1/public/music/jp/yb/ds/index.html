@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>简谱编辑器 v1.17</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #4361ee;
+      --secondary: #3f37c9;
+      --accent: #4895ef;
+      --success: #4cc9f0;
+      --danger: #f72585;
+      --warning: #f8961e;
+      --dark: #212529;
+      --light: #f8f9fa;
+      --gray: #6c757d;
+      --border-radius: 12px;
+      --box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      --transition: all 0.3s ease;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e7f1 100%);
+      color: var(--dark);
+      line-height: 1.6;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding: 15px 20px;
+      background: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .logo-icon {
+      background: var(--primary);
+      color: white;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    
+    .logo-text h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .logo-text .version {
+      color: var(--gray);
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .header-controls {
+      display: flex;
+      gap: 15px;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: var(--transition);
+      box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+    
+    .btn i {
+      font-size: 16px;
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: var(--secondary);
+      transform: translateY(-2px);
+    }
+    
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background: #d1145e;
+      transform: translateY(-2px);
+    }
+    
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background: #3ab4d9;
+      transform: translateY(-2px);
+    }
+    
+    .editor-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+      margin-bottom: 30px;
+    }
+    
+    @media (max-width: 900px) {
+      .editor-container {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .card {
+      background: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      padding: 25px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .card-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    
+    .card-subtitle {
+      font-size: 14px;
+      color: var(--gray);
+      margin-top: 5px;
+    }
+    
+    #editor {
+      flex-grow: 1;
+      min-height: 180px;
+      border: 2px solid #e9ecef;
+      padding: 20px;
+      font-size: 32px;
+      line-height: 1.8;
+      background: white;
+      border-radius: 8px;
+      overflow-y: auto;
+      resize: vertical;
+      transition: border-color 0.3s;
+      font-family: 'Noto Sans SC', sans-serif;
+    }
+    
+    #editor:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+    }
+    
+    #canvas {
+      border: 2px solid #e9ecef;
+      background: white;
+      border-radius: 8px;
+      width: 100%;
+      height: 250px;
+    }
+    
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 25px;
+      background: white;
+      padding: 20px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+    }
+    
+    .toolbar-section {
+      flex: 1;
+      min-width: 200px;
+    }
+    
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .section-title i {
+      color: var(--accent);
+    }
+    
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .tool-btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 90px;
+    }
+    
+    .tool-btn i {
+      font-size: 16px;
+    }
+    
+    .note-btn {
+      background: rgba(67, 97, 238, 0.1);
+      color: var(--primary);
+      border: 1px solid rgba(67, 97, 238, 0.2);
+    }
+    
+    .note-btn:hover {
+      background: rgba(67, 97, 238, 0.2);
+    }
+    
+    .note-btn.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.3);
+    }
+    
+    .duration-btn {
+      background: rgba(76, 201, 240, 0.1);
+      color: var(--success);
+      border: 1px solid rgba(76, 201, 240, 0.2);
+    }
+    
+    .duration-btn:hover {
+      background: rgba(76, 201, 240, 0.2);
+    }
+    
+    .duration-btn.active {
+      background: var(--success);
+      color: white;
+      box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.3);
+    }
+    
+    .octave-btn {
+      background: rgba(248, 150, 30, 0.1);
+      color: var(--warning);
+      border: 1px solid rgba(248, 150, 30, 0.2);
+    }
+    
+    .octave-btn:hover {
+      background: rgba(248, 150, 30, 0.2);
+    }
+    
+    .octave-btn.active {
+      background: var(--warning);
+      color: white;
+      box-shadow: 0 0 0 3px rgba(248, 150, 30, 0.3);
+    }
+    
+    .control-btn {
+      background: rgba(108, 117, 125, 0.1);
+      color: var(--gray);
+      border: 1px solid rgba(108, 117, 125, 0.2);
+    }
+    
+    .control-btn:hover {
+      background: rgba(108, 117, 125, 0.2);
+    }
+    
+    .barline-btn {
+      background: rgba(67, 97, 238, 0.15);
+      color: var(--primary);
+      border: 1px solid rgba(67, 97, 238, 0.25);
+    }
+    
+    .barline-btn:hover {
+      background: rgba(67, 97, 238, 0.25);
+    }
+    
+    .examples {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 25px;
+    }
+    
+    .example-card {
+      background: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      padding: 20px;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+    
+    .example-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+    }
+    
+    .example-title {
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .example-title i {
+      color: var(--accent);
+    }
+    
+    .example-content {
+      font-size: 20px;
+      color: var(--dark);
+      padding: 15px 0;
+      font-family: 'Noto Sans SC', sans-serif;
+    }
+    
+    .example-desc {
+      font-size: 14px;
+      color: var(--gray);
+      margin-top: 10px;
+    }
+    
+    .keyboard-shortcuts {
+      background: rgba(67, 97, 238, 0.05);
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+    
+    .shortcut {
+      display: flex;
+      margin-bottom: 8px;
+    }
+    
+    .shortcut-key {
+      background: white;
+      border: 1px solid #dee2e6;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      min-width: 30px;
+      text-align: center;
+      margin-right: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .shortcut-desc {
+      color: var(--gray);
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      color: var(--gray);
+      font-size: 14px;
+      padding: 20px;
+    }
+    
+    .duration-selector {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    select {
+      padding: 8px 15px;
+      border-radius: 8px;
+      border: 1px solid #ced4da;
+      background: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    
+    select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+    }
+    
+    .feature-badge {
+      background: var(--primary);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <div class="logo-icon">
+          <i class="fas fa-music"></i>
+        </div>
+        <div class="logo-text">
+          <h1>简谱编辑器 <span class="feature-badge">v1.17</span></h1>
+          <div class="version">新增小节线功能 (2024-05-20)</div>
+        </div>
+      </div>
+      <div class="header-controls">
+        <button class="btn btn-primary" onclick="exportImage()">
+          <i class="fas fa-download"></i> 导出图片
+        </button>
+        <button class="btn btn-danger" onclick="clearEditor()">
+          <i class="fas fa-trash-alt"></i> 清空编辑器
+        </button>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <div class="toolbar-section">
+        <div class="section-title">
+          <i class="fas fa-sticky-note"></i> 音符
+        </div>
+        <div class="btn-group">
+          <button class="tool-btn note-btn" onclick="insertNote('1')"><i class="fas fa-music"></i> 1 (Do)</button>
+          <button class="tool-btn note-btn" onclick="insertNote('2')"><i class="fas fa-music"></i> 2 (Re)</button>
+          <button class="tool-btn note-btn" onclick="insertNote('3')"><i class="fas fa-music"></i> 3 (Mi)</button>
+          <button class="tool-btn note-btn" onclick="insertNote('4')"><i class="fas fa-music"></i> 4 (Fa)</button>
+          <button class="tool-btn note-btn" onclick="insertNote('5')"><i class="fas fa-music"></i> 5 (Sol)</button>
+          <button class="tool-btn note-btn" onclick="insertNote('6')"><i class="fas fa-music"></i> 6 (La)</button>
+          <button class="tool-btn note-btn" onclick="insertNote('7')"><i class="fas fa-music"></i> 7 (Si)</button>
+          <button class="tool-btn note-btn" onclick="insertNote('0')"><i class="fas fa-volume-mute"></i> 0 (休止)</button>
+        </div>
+      </div>
+      
+      <div class="toolbar-section">
+        <div class="section-title">
+          <i class="fas fa-clock"></i> 时值
+        </div>
+        <div class="btn-group">
+          <button class="tool-btn duration-btn" onclick="setDuration('whole')"><i class="fas fa-circle"></i> 全音符</button>
+          <button class="tool-btn duration-btn" onclick="setDuration('half')"><i class="fas fa-circle-half-stroke"></i> 二分</button>
+          <button class="tool-btn duration-btn active" onclick="setDuration('quarter')"><i class="fas fa-circle"></i> 四分</button>
+          <button class="tool-btn duration-btn" onclick="setDuration('eighth')"><i class="fas fa-flag"></i> 八分</button>
+          <button class="tool-btn duration-btn" onclick="setDuration('sixteenth')"><i class="fas fa-flag"></i> 十六分</button>
+        </div>
+      </div>
+      
+      <div class="toolbar-section">
+        <div class="section-title">
+          <i class="fas fa-sliders"></i> 控制
+        </div>
+        <div class="btn-group">
+          <button class="tool-btn octave-btn active" onclick="toggleOctave('normal')"><i class="fas fa-circle-dot"></i> 正常</button>
+          <button class="tool-btn octave-btn" onclick="toggleOctave('high')"><i class="fas fa-arrow-up"></i> 高八度</button>
+          <button class="tool-btn octave-btn" onclick="toggleOctave('low')"><i class="fas fa-arrow-down"></i> 低八度</button>
+          <button class="tool-btn barline-btn" onclick="insertBarline()"><i class="fas fa-grip-lines-vertical"></i> 小节线</button>
+          <button class="tool-btn control-btn" onclick="deleteNote()"><i class="fas fa-backspace"></i> 删除</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="editor-container">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">简谱编辑区</div>
+            <div class="card-subtitle">点击下方按钮或直接在编辑区输入简谱 (Alt+数字键快速输入)</div>
+          </div>
+          <button class="btn btn-success" onclick="loadExample('happy_birthday')">
+            <i class="fas fa-lightbulb"></i> 示例
+          </button>
+        </div>
+        <div id="editor" contenteditable="true"></div>
+        <div class="duration-selector">
+          <span>当前时值：</span>
+          <select id="duration-select" onchange="changeDuration(this.value)">
+            <option value="quarter" selected>四分音符</option>
+            <option value="whole">全音符</option>
+            <option value="half">二分音符</option>
+            <option value="eighth">八分音符</option>
+            <option value="sixteenth">十六分音符</option>
+          </select>
+        </div>
+        <div class="keyboard-shortcuts">
+          <div class="shortcut">
+            <div class="shortcut-key">Alt + 数字</div>
+            <div class="shortcut-desc">快速输入音符 (0-7)</div>
+          </div>
+          <div class="shortcut">
+            <div class="shortcut-key">B</div>
+            <div class="shortcut-desc">插入小节线</div>
+          </div>
+          <div class="shortcut">
+            <div class="shortcut-key">Del</div>
+            <div class="shortcut-desc">删除音符</div>
+          </div>
+          <div class="shortcut">
+            <div class="shortcut-key">Ctrl + Z</div>
+            <div class="shortcut-desc">撤销操作</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">乐谱预览</div>
+          <div class="card-subtitle">编辑区的内容将实时转换为乐谱</div>
+        </div>
+        <canvas id="canvas" width="600" height="250"></canvas>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">简谱示例</div>
+        <div class="card-subtitle">点击示例快速加载到编辑器</div>
+      </div>
+      <div class="examples">
+        <div class="example-card" onclick="loadExample('happy_birthday')">
+          <div class="example-title"><i class="fas fa-birthday-cake"></i> 生日快乐歌</div>
+          <div class="example-content">5.5 6 5 1^ 7 - | 5.5 6 5 2^ 1^ - | 5.5 5^ 3^ 1^ 7 6 | 4^.4^ 3^ 1^ 2^ 1^ -</div>
+          <div class="example-desc">经典生日歌曲简谱（带小节线）</div>
+        </div>
+        
+        <div class="example-card" onclick="loadExample('little_star')">
+          <div class="example-title"><i class="fas fa-star"></i> 小星星</div>
+          <div class="example-content">1 1 5 5 6 6 5 - | 4 4 3 3 2 2 1 - | 5 5 4 4 3 3 2 - | 5 5 4 4 3 3 2 -</div>
+          <div class="example-desc">儿童歌曲经典简谱（带小节线）</div>
+        </div>
+        
+        <div class="example-card" onclick="loadExample('ode_to_joy')">
+          <div class="example-title"><i class="fas fa-music"></i> 欢乐颂</div>
+          <div class="example-content">3 3 4 5 | 5 4 3 2 | 1 1 2 3 | 3. 2 2 - | 3 3 4 5 | 5 4 3 2 | 1 1 2 3 | 2. 1 1 -</div>
+          <div class="example-desc">贝多芬第九交响曲主题（带小节线）</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <p>简谱编辑器 v1.17 &copy; 2024 | 新增小节线功能，优化乐谱组织结构</p>
+      <p>使用说明：输入数字音符，使用符号 "^" 表示高八度，"_" 表示低八度，"~"后加时值符号设置音符时值，使用 "|" 添加小节线</p>
+    </div>
+  </div>
+
+  <script>
+    class MusicNotation {
+      constructor(canvasId, editorId) {
+        this.canvas = document.getElementById(canvasId);
+        this.ctx = this.canvas.getContext('2d');
+        this.editor = document.getElementById(editorId);
+        
+        this.config = {
+          noteSpacing: 40,
+          noteRadius: 10,
+          baselineY: this.canvas.height / 2,
+          color: '#334155',
+          dotRadius: 4,
+          dashLength: 15,
+          flagHeight: 15,
+          dashGap: 5,
+          dashSpacing: 10,
+          wholeNoteWidth: 80,
+          wholeNoteDashCount: 3,
+          wholeNoteSpacing: 90,
+          dashOffsetY: 0,
+          barlineWidth: 3,
+          barlineSpacing: 20
+        };
+        
+        this.currentDuration = 'quarter';
+        this.currentOctave = 'normal';
+        this.lastNoteBtn = null;
+        this.lastOctaveBtn = null;
+        
+        this.init();
+      }
+      
+      init() {
+        this.setupCanvas();
+        this.bindEvents();
+        this.render();
+      }
+      
+      setupCanvas() {
+        this.ctx.font = '24px "Noto Sans SC", Arial, sans-serif';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillStyle = this.config.color;
+        this.ctx.strokeStyle = this.config.color;
+        this.ctx.lineWidth = 1.8;
+      }
+      
+      bindEvents() {
+        this.editor.addEventListener('input', () => this.render());
+        
+        this.editor.addEventListener('keydown', (e) => {
+          // Alt + 数字键快速输入音符
+          if (e.altKey && e.key >= '0' && e.key <= '7') {
+            this.insertNote(e.key);
+            e.preventDefault();
+          }
+          
+          // B键插入小节线
+          if (e.key === 'b' || e.key === 'B') {
+            this.insertBarline();
+            e.preventDefault();
+          }
+          
+          // 删除键删除音符
+          if (e.key === 'Delete' || e.key === 'Backspace') {
+            this.deleteNote();
+            e.preventDefault();
+          }
+          
+          // Ctrl+Z 撤销
+          if (e.ctrlKey && e.key === 'z') {
+            // 简单撤销实现
+            this.editor.textContent = this.previousContent || '';
+            this.render();
+            e.preventDefault();
+          }
+        });
+        
+        // 保存上一次内容用于简单撤销
+        this.editor.addEventListener('keyup', () => {
+          this.previousContent = this.editor.textContent;
+        });
+      }
+      
+      clearCanvas() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      }
+      
+      parseNotes() {
+        const content = this.editor.textContent;
+        const notes = [];
+        let i = 0;
+        
+        while (i < content.length) {
+          const char = content[i];
+          
+          // 处理小节线
+          if (char === '|') {
+            notes.push({ type: 'barline' });
+            i++;
+            continue;
+          }
+          
+          if (/[0-7]/.test(char)) {
+            let note = { 
+              value: char, 
+              duration: 'quarter',
+              octave: 'normal' 
+            };
+            
+            let j = i + 1;
+            while (j < content.length) {
+              const nextChar = content[j];
+              if (nextChar === '^') {
+                note.octave = 'high';
+                j++;
+              } else if (nextChar === '_') {
+                note.octave = 'low';
+                j++;
+              } else if (nextChar === '~') {
+                const durationChar = content[j+1];
+                note.duration = this.decodeDuration(durationChar);
+                j += 2;
+              } else if (nextChar === '.') {
+                // 附点音符支持
+                note.dotted = true;
+                j++;
+              } else {
+                break;
+              }
+            }
+            
+            notes.push(note);
+            i = j;
+          } else {
+            i++;
+          }
+        }
+        return notes;
+      }
+      
+      decodeDuration(char) {
+        const map = {
+          'w': 'whole',
+          'h': 'half',
+          'q': 'quarter',
+          'e': 'eighth',
+          's': 'sixteenth'
+        };
+        return map[char] || 'quarter';
+      }
+      
+      encodeDuration(duration) {
+        const map = {
+          'whole': 'w',
+          'half': 'h',
+          'quarter': 'q',
+          'eighth': 'e',
+          'sixteenth': 's'
+        };
+        return map[duration];
+      }
+      
+      drawNote(x, note) {
+        const y = this.config.baselineY;
+        this.ctx.font = '32px "Noto Sans SC", Arial, sans-serif';
+        this.ctx.fillText(note.value, x, y);
+        
+        switch(note.duration) {
+          case 'whole':
+            this.drawWholeNoteDashes(x, y);
+            break;
+          case 'half':
+            this.drawDashes(x, y, 1);
+            break;
+          case 'quarter':
+            break;
+          case 'eighth':
+            this.drawHorizontalFlag(x, y, 1);
+            break;
+          case 'sixteenth':
+            this.drawHorizontalFlag(x, y, 2);
+            break;
+        }
+        
+        // 绘制附点
+        if (note.dotted) {
+          this.ctx.beginPath();
+          this.ctx.arc(x + 20, y, this.config.dotRadius, 0, Math.PI * 2);
+          this.ctx.fill();
+        }
+        
+        // 绘制高低八度点（修复了低八度点位置问题）
+        if (note.octave === 'high') {
+          this.ctx.beginPath();
+          this.ctx.arc(x, y - 25, this.config.dotRadius, 0, Math.PI * 2);
+          this.ctx.fill();
+        } else if (note.octave === 'low') {
+          // 根据音符类型调整低八度点的位置
+          let dotY = y + 25;
+          
+          // 对于十六分音符，点要放在两个横杠下方
+          if (note.duration === 'sixteenth') {
+            dotY = y + 25 + 20; // 在第二个横杠下方
+          } 
+          // 对于八分音符，点放在横杠下方
+          else if (note.duration === 'eighth') {
+            dotY = y + 25 + 10;
+          }
+          
+          this.ctx.beginPath();
+          this.ctx.arc(x, dotY, this.config.dotRadius, 0, Math.PI * 2);
+          this.ctx.fill();
+        }
+      }
+      
+      drawBarline(x, y) {
+        this.ctx.lineWidth = this.config.barlineWidth;
+        this.ctx.beginPath();
+        this.ctx.moveTo(x, y - 35);
+        this.ctx.lineTo(x, y + 35);
+        this.ctx.stroke();
+        this.ctx.lineWidth = 1.8; // 恢复默认线宽
+      }
+      
+      drawWholeNoteDashes(x, y) {
+        const dashCount = this.config.wholeNoteDashCount;
+        const startX = x + 15;
+        const dashSpacing = this.config.dashSpacing;
+        
+        for (let i = 0; i < dashCount; i++) {
+          const dashX = startX + (i * (this.config.dashLength + dashSpacing));
+          this.ctx.beginPath();
+          this.ctx.moveTo(dashX, y);
+          this.ctx.lineTo(dashX + this.config.dashLength, y);
+          this.ctx.stroke();
+        }
+      }
+      
+      drawDashes(x, y, count) {
+        const startX = x + 15;
+        
+        for (let i = 0; i < count; i++) {
+          const dashX = startX + (i * (this.config.dashLength + this.config.dashSpacing));
+          this.ctx.beginPath();
+          this.ctx.moveTo(dashX, y);
+          this.ctx.lineTo(dashX + this.config.dashLength, y);
+          this.ctx.stroke();
+        }
+      }
+      
+      drawHorizontalFlag(x, y, count) {
+        const startY = y + this.config.flagHeight;
+        const spacing = 6;
+        
+        for (let i = 0; i < count; i++) {
+          const currentY = startY + (i * spacing);
+          this.ctx.beginPath();
+          this.ctx.moveTo(x - 5, currentY);
+          this.ctx.lineTo(x + 20, currentY);
+          this.ctx.stroke();
+        }
+      }
+      
+      render() {
+        this.clearCanvas();
+        const notes = this.parseNotes();
+        let x = 60;
+        
+        // 绘制音符和小节线
+        for (let i = 0; i < notes.length; i++) {
+          const element = notes[i];
+          
+          if (element.type === 'barline') {
+            this.drawBarline(x, this.config.baselineY);
+            x += this.config.barlineSpacing;
+          } else {
+            this.drawNote(x, element);
+            
+            if (element.duration === 'whole') {
+              x += this.config.wholeNoteSpacing;
+            } else {
+              x += this.config.noteSpacing;
+            }
+          }
+        }
+      }
+      
+      highlightButton(btnClass, btnValue) {
+        document.querySelectorAll(`.${btnClass}`).forEach(btn => {
+          btn.classList.remove('active');
+        });
+        
+        if (btnValue) {
+          document.querySelectorAll(`.${btnClass}`).forEach(btn => {
+            if (btn.textContent.includes(btnValue)) {
+              btn.classList.add('active');
+            }
+          });
+        }
+      }
+      
+      insertNote(note) {
+        let textToInsert = note;
+        
+        if (this.currentOctave === 'high') {
+          textToInsert += '^';
+        } else if (this.currentOctave === 'low') {
+          textToInsert += '_';
+        }
+        
+        if (this.currentDuration !== 'quarter') {
+          textToInsert += '~' + this.encodeDuration(this.currentDuration);
+        }
+        
+        this.highlightButton('note-btn', note);
+        this.lastNoteBtn = note;
+        
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+          range.deleteContents();
+          range.insertNode(document.createTextNode(textToInsert));
+          range.collapse(false);
+        } else {
+          this.editor.textContent += textToInsert;
+        }
+        this.render();
+      }
+      
+      insertBarline() {
+        const barlineSymbol = '|';
+        const selection = window.getSelection();
+        
+        if (selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+          range.deleteContents();
+          range.insertNode(document.createTextNode(barlineSymbol));
+          range.collapse(false);
+        } else {
+          this.editor.textContent += barlineSymbol;
+        }
+        this.render();
+      }
+      
+      deleteNote() {
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+          if (!range.collapsed) {
+            range.deleteContents();
+          } else {
+            const editor = this.editor;
+            const text = editor.textContent;
+            const anchorOffset = selection.anchorOffset;
+            
+            if (anchorOffset > 0) {
+              editor.textContent = text.substring(0, anchorOffset - 1) + text.substring(anchorOffset);
+              const newRange = document.createRange();
+              newRange.setStart(editor.childNodes[0] || editor, anchorOffset - 1);
+              newRange.collapse(true);
+              selection.removeAllRanges();
+              selection.addRange(newRange);
+            }
+          }
+        }
+        this.render();
+      }
+      
+      clearEditor() {
+        if (confirm('确定要清空整个编辑器吗？所有内容将丢失。')) {
+          this.editor.textContent = '';
+          this.render();
+        }
+      }
+      
+      setDuration(duration) {
+        this.currentDuration = duration;
+        document.getElementById('duration-select').value = duration;
+        
+        this.highlightButton('duration-btn', 
+          duration === 'whole' ? '全音符' : 
+          duration === 'half' ? '二分' : 
+          duration === 'quarter' ? '四分' : 
+          duration === 'eighth' ? '八分' : '十六分');
+      }
+      
+      toggleOctave(type) {
+        this.currentOctave = type;
+        this.highlightButton('octave-btn', 
+          type === 'normal' ? '正常' : 
+          type === 'high' ? '高八度' : '低八度');
+        this.lastOctaveBtn = type;
+      }
+      
+      exportImage() {
+        // 创建更高分辨率的临时canvas
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        const scale = 2;
+        
+        tempCanvas.width = this.canvas.width * scale;
+        tempCanvas.height = this.canvas.height * scale;
+        
+        // 缩放绘图
+        tempCtx.scale(scale, scale);
+        tempCtx.drawImage(this.canvas, 0, 0);
+        
+        // 导出图片
+        const link = document.createElement('a');
+        link.download = '简谱乐谱.png';
+        link.href = tempCanvas.toDataURL('image/png');
+        link.click();
+      }
+      
+      loadExample(content) {
+        this.editor.textContent = content;
+        this.render();
+      }
+    }
+
+    const musicApp = new MusicNotation('canvas', 'editor');
+    
+    function insertNote(note) {
+      musicApp.insertNote(note);
+    }
+    
+    function insertBarline() {
+      musicApp.insertBarline();
+    }
+    
+    function deleteNote() {
+      musicApp.deleteNote();
+    }
+    
+    function clearEditor() {
+      musicApp.clearEditor();
+    }
+    
+    function setDuration(duration) {
+      musicApp.setDuration(duration);
+    }
+    
+    function toggleOctave(type) {
+      musicApp.toggleOctave(type);
+    }
+    
+    function changeDuration(duration) {
+      musicApp.setDuration(duration);
+    }
+    
+    function exportImage() {
+      musicApp.exportImage();
+    }
+    
+    function loadExample(type) {
+      const examples = {
+        happy_birthday: '5.5 6 5 1^ 7 - | 5.5 6 5 2^ 1^ - | 5.5 5^ 3^ 1^ 7 6 | 4^.4^ 3^ 1^ 2^ 1^ -',
+        little_star: '1 1 5 5 6 6 5 - | 4 4 3 3 2 2 1 - | 5 5 4 4 3 3 2 - | 5 5 4 4 3 3 2 -',
+        ode_to_joy: '3 3 4 5 | 5 4 3 2 | 1 1 2 3 | 3. 2 2 - | 3 3 4 5 | 5 4 3 2 | 1 1 2 3 | 2. 1 1 -'
+      };
+      
+      musicApp.loadExample(examples[type] || examples.happy_birthday);
+    }
+    
+    // 初始化加载一个示例
+    window.onload = () => {
+      loadExample('happy_birthday');
+    };
+  </script>
+</body>
+</html>
+<!--
+升级程序到1.17。
+添加输入小节线功能。
+-->
