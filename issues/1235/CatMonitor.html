@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🐱 窗口猫咪监控器 · 全平台修复版</title>
+    <title>🐱 窗口猫咪监控器1002</title>
     <style>
         /* 样式保持不变，添加错误提示样式 */
         * {
@@ -819,7 +819,9 @@
                 updateCameraStatus('请求权限中...', false);
                 
                 let constraints = {
-                    video: true  // 先尝试最简单的配置
+                    video: isMobile ? {
+                        facingMode: { exact: currentCamera }  // 手机使用facingMode指定前后摄像头
+                    } : true  // 电脑使用默认配置
                 };
 
                 // 尝试获取摄像头
@@ -842,6 +844,18 @@
                     
                     // 显示摄像头信息
                     const track = videoStream.getVideoTracks()[0];
+                    const settings = track.getSettings();
+                    console.log('摄像头信息:', settings);
+                    
+                    // 判断实际使用的摄像头方向
+                    if (isMobile && settings.facingMode) {
+                        currentCamera = settings.facingMode;
+                        // 更新UI
+                        document.querySelectorAll('.camera-option').forEach(opt => {
+                            opt.classList.toggle('active', opt.dataset.camera === currentCamera);
+                        });
+                    }
+                    
                     updateCameraStatus('运行中', true);
                     showToast(`📹 已连接: ${track.label || '摄像头'}`, 'success');
                     
@@ -879,6 +893,24 @@
                 } else if (error.name === 'OverconstrainedError') {
                     errorMessage = '摄像头不支持的参数';
                     solution = '尝试使用最简单的摄像头配置。';
+                    
+                    // 如果是facingMode导致的错误，尝试使用默认配置
+                    if (isMobile) {
+                        console.log('facingMode失败，尝试默认配置');
+                        try {
+                            videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                            const video = document.getElementById('video');
+                            video.srcObject = videoStream;
+                            cameraInitialized = true;
+                            updateCameraStatus('运行中', true);
+                            document.getElementById('captureBtn').disabled = false;
+                            document.getElementById('autoModeBtn').disabled = false;
+                            addToHistory('摄像头已连接（默认模式）', 'success');
+                            return;
+                        } catch (fallbackError) {
+                            console.error('默认配置也失败:', fallbackError);
+                        }
+                    }
                 } else {
                     errorMessage = '未知错误: ' + error.message;
                     solution = '请检查摄像头连接，或尝试重启浏览器。';
@@ -1093,6 +1125,7 @@
                                `**状态**：⏳ 等待检测...\n` +
                                `**时间**：${timestamp}\n` +
                                `**设备**：${isMobile ? '📱 手机' : '💻 电脑'}\n` +
+                               `**摄像头**：${currentCamera === 'environment' ? '后置' : '前置'}\n` +
                                `**Issue**：#${issueId}\n`;
 
             addNewGitHubComment(issueId, commentBody, function(response) {
