@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🐱 窗口猫咪监控器 · 全平台修复版</title>
+    <style>
+        /* 样式保持不变，添加错误提示样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #764ba2;
+            margin-bottom: 20px;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .device-badge {
+            font-size: 14px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .camera-container {
+            position: relative;
+            width: 100%;
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            aspect-ratio: 16/9;
+        }
+
+        #video, #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        .camera-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 15px;
+            pointer-events: none;
+        }
+
+        .camera-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #1a1a1a;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .camera-placeholder.hidden {
+            display: none;
+        }
+
+        .camera-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .camera-option {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 120px;
+        }
+
+        .camera-option.active {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .camera-option.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #computerCameraSelect {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .camera-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-width: 140px;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+        }
+
+        .error-panel {
+            background: #fff3f3;
+            border-left: 4px solid #f5576c;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error-title {
+            color: #f5576c;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .error-message {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .error-solution {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        .settings-panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .settings-panel h3 {
+            color: #764ba2;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .setting-item {
+            margin-bottom: 15px;
+        }
+
+        .setting-item label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .setting-item input, .setting-item select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .setting-item input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .interval-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .interval-control input {
+            flex: 1;
+        }
+
+        .interval-control span {
+            min-width: 60px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .status-panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .status-item {
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .status-label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .status-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #764ba2;
+        }
+
+        .history-panel {
+            max-height: 200px;
+            overflow-y: auto;
+            border-radius: 15px;
+            background: #f8f9fa;
+            padding: 15px;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .history-item.success {
+            border-left: 4px solid #43e97b;
+        }
+
+        .history-item.error {
+            border-left: 4px solid #f5576c;
+        }
+
+        .history-item.pending {
+            border-left: 4px solid #fa709a;
+        }
+
+        .history-time {
+            color: #666;
+            font-size: 12px;
+            min-width: 80px;
+        }
+
+        .history-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .history-status.success {
+            background: #43e97b;
+            color: white;
+        }
+
+        .history-status.error {
+            background: #f5576c;
+            color: white;
+        }
+
+        .history-status.pending {
+            background: #fa709a;
+            color: white;
+        }
+
+        .history-message {
+            flex: 1;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 14px;
+            transition: transform 0.3s;
+            z-index: 1000;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .info-note {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #0d47a1;
+            border-left: 4px solid #2196f3;
+        }
+
+        .shortcut-hint {
+            background: #f0f0f0;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #666;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        .permission-hint {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .btn {
+                padding: 12px;
+                font-size: 14px;
+                min-width: 120px;
+            }
+            
+            .status-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 直接引用您的API封装库 -->
+    <script src="https://jeremyjia.github.io/Games/issues/4/server.js"></script>
+    
+    <div class="container">
+        <h1>
+            <span>🐱</span>
+            窗口猫咪监控器
+            <span>📸</span>
+            <span class="device-badge" id="deviceBadge">检测设备中...</span>
+        </h1>
+
+        <!-- 摄像头预览区域 -->
+        <div class="camera-container">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas"></canvas>
+            <div class="camera-overlay"></div>
+            <div class="camera-placeholder" id="cameraPlaceholder">
+                <div style="font-size: 48px; margin-bottom: 20px;">📷</div>
+                <div style="font-size: 18px; margin-bottom: 10px;">摄像头未启动</div>
+                <div style="font-size: 14px; opacity: 0.8;">点击下方按钮启动摄像头</div>
+            </div>
+        </div>
+
+        <!-- 错误提示面板 -->
+        <div class="error-panel" id="errorPanel">
+            <div class="error-title">
+                <span>⚠️</span> 摄像头错误
+            </div>
+            <div class="error-message" id="errorMessage"></div>
+            <div class="error-solution" id="errorSolution"></div>
+        </div>
+
+        <!-- 摄像头选择（手机版） -->
+        <div class="camera-selector" id="mobileCameraSelector">
+            <div class="camera-option active" data-camera="environment" onclick="switchMobileCamera('environment')">
+                📷 后置摄像头
+            </div>
+            <div class="camera-option" data-camera="user" onclick="switchMobileCamera('user')">
+                🤳 前置摄像头
+            </div>
+        </div>
+
+        <!-- 摄像头选择（电脑版） -->
+        <select id="computerCameraSelect"></select>
+
+        <!-- 权限提示（仅在需要时显示） -->
+        <div class="permission-hint" id="permissionHint" style="display: none;">
+            🔒 需要摄像头权限才能使用此应用。请点击浏览器地址栏的摄像头图标，选择"允许"。
+        </div>
+
+        <!-- 控制按钮 -->
+        <div class="camera-controls">
+            <button class="btn btn-primary" onclick="capturePhoto()" id="captureBtn" disabled>
+                <span>📸</span> 抓拍一张
+            </button>
+            <button class="btn btn-success" onclick="toggleAutoMode()" id="autoModeBtn" disabled>
+                <span>⏯️</span> 启动自动模式
+            </button>
+            <button class="btn btn-secondary" onclick="testGitHubConnection()" id="testBtn">
+                <span>🔌</span> 测试连接
+            </button>
+            <button class="btn btn-secondary" onclick="retryCamera()" id="retryBtn">
+                <span>🔄</span> 重试摄像头
+            </button>
+        </div>
+
+        <!-- 设置面板 -->
+        <div class="settings-panel">
+            <h3>⚙️ 基本设置</h3>
+            
+            <div class="setting-item">
+                <label>📁 仓库所有者</label>
+                <input type="text" id="repoOwner" placeholder="例如: jeremyjia" value="jeremyjia">
+            </div>
+
+            <div class="setting-item">
+                <label>📦 仓库名称</label>
+                <input type="text" id="repoName" placeholder="例如: Games" value="Games">
+            </div>
+
+            <div class="setting-item">
+                <label>🔢 Issue编号 (默认: 1235)</label>
+                <input type="number" id="issueNumber" placeholder="Issue编号" value="1235">
+                <div class="info-note">
+                    ℹ️ 图片将保存到 issue #1235 的评论中
+                </div>
+            </div>
+
+            <div class="setting-item">
+                <label>⏱️ 拍照间隔 <span id="intervalValue">5分钟</span></label>
+                <div class="interval-control">
+                    <input type="range" id="intervalSlider" min="1" max="30" value="5">
+                    <span id="intervalValueDisplay">5分钟</span>
+                </div>
+            </div>
+
+            <div class="setting-item">
+                <label style="display: flex; align-items: center; gap: 10px; justify-content: space-between;">
+                    <span>💾 记住设置</span>
+                    <label class="switch">
+                        <input type="checkbox" id="rememberSettings" checked>
+                        <span class="slider"></span>
+                    </label>
+                </label>
+            </div>
+        </div>
+
+        <!-- 电脑高级设置面板 -->
+        <div class="settings-panel" id="computerSettings" style="display: none;">
+            <h3>💻 电脑高级设置</h3>
+            
+            <div class="setting-item">
+                <label>📁 保存方式</label>
+                <select id="saveLocation">
+                    <option value="github">仅GitHub云端</option>
+                    <option value="local">仅本地保存</option>
+                    <option value="both">两者都保存</option>
+                </select>
+            </div>
+
+            <div class="setting-item">
+                <label style="display: flex; align-items: center; gap: 10px; justify-content: space-between;">
+                    <span>🔔 桌面通知</span>
+                    <label class="switch">
+                        <input type="checkbox" id="desktopNotifications" checked>
+                        <span class="slider"></span>
+                    </label>
+                </label>
+            </div>
+
+            <div class="setting-item">
+                <label>📸 图片质量</label>
+                <select id="imageQuality">
+                    <option value="0.9">高画质 (90%)</option>
+                    <option value="0.8" selected>中等画质 (80%)</option>
+                    <option value="0.6">低画质 (60%)</option>
+                </select>
+            </div>
+
+            <div class="setting-item">
+                <label>💾 最大缓存数量</label>
+                <input type="number" id="maxPhotos" min="5" max="100" value="50">
+            </div>
+
+            <div class="shortcut-hint">
+                ⌨️ 快捷键: Ctrl+Shift+C 拍照 | Ctrl+Shift+A 自动模式 | Ctrl+Shift+1/2 切换摄像头
+            </div>
+        </div>
+
+        <!-- 状态面板 -->
+        <div class="status-panel">
+            <div class="status-grid">
+                <div class="status-item">
+                    <span class="status-label">📷 摄像头</span>
+                    <span class="status-value" id="cameraStatus">未启动</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">🔄 自动模式</span>
+                    <span class="status-value" id="autoModeStatus">关闭</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">📸 拍照计数</span>
+                    <span class="status-value" id="photoCount">0</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">💾 缓存图片</span>
+                    <span class="status-value" id="cachedCount">0/10</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">🔗 目标Issue</span>
+                    <span class="status-value" id="targetIssue">#1235</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">📱 设备类型</span>
+                    <span class="status-value" id="deviceType">检测中</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 历史记录 -->
+        <div class="history-panel">
+            <h4 style="margin-bottom: 10px; color: #764ba2;">📋 最近记录</h4>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <!-- 提示信息 -->
+    <div class="toast" id="toast">提示信息</div>
+
+    <script>
+        // ==================== 全局变量 ====================
+        let videoStream = null;
+        let autoModeInterval = null;
+        let photoCount = 0;
+        let currentCamera = 'environment';
+        let isAutoMode = false;
+        let isMobile = false;
+        let availableCameras = [];
+        let cameraInitialized = false;
+        const DEFAULT_ISSUE = '1235';
+
+        // ==================== 初始化 ====================
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 检测设备类型
+            detectDevice();
+            
+            // 设置默认值
+            document.getElementById('issueNumber').value = DEFAULT_ISSUE;
+            document.getElementById('targetIssue').textContent = '#' + DEFAULT_ISSUE;
+            
+            // 加载保存的设置
+            loadSettings();
+            
+            // 检查浏览器是否支持摄像头
+            checkCameraSupport();
+            
+            // 如果是电脑，设置电脑专属功能
+            if (!isMobile) {
+                setupComputerFeatures();
+            }
+            
+            // 检查Issue
+            setTimeout(checkIssueExists, 2000);
+            
+            // 设置键盘快捷键
+            setupKeyboardShortcuts();
+        });
+
+        // ==================== 设备检测 ====================
+        function detectDevice() {
+            const ua = navigator.userAgent;
+            isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+            
+            document.getElementById('deviceBadge').textContent = isMobile ? '📱 手机模式' : '💻 电脑模式';
+            document.getElementById('deviceType').textContent = isMobile ? '手机' : '电脑';
+            
+            // 根据设备显示不同的摄像头选择器
+            if (isMobile) {
+                document.getElementById('mobileCameraSelector').style.display = 'flex';
+                document.getElementById('computerCameraSelect').style.display = 'none';
+            } else {
+                document.getElementById('mobileCameraSelector').style.display = 'none';
+                document.getElementById('computerCameraSelect').style.display = 'block';
+                document.getElementById('computerSettings').style.display = 'block';
+                
+                // 电脑上可以存更多图片
+                document.getElementById('maxPhotos').value = 50;
+            }
+            
+            console.log('设备类型:', isMobile ? '手机' : '电脑');
+        }
+
+        // ==================== 摄像头支持检查 ====================
+        function checkCameraSupport() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showError(
+                    '您的浏览器不支持摄像头访问',
+                    '请尝试更新浏览器，或使用Chrome、Firefox、Edge等现代浏览器。'
+                );
+                return false;
+            }
+            
+            // 检查权限
+            checkPermissions();
+            return true;
+        }
+
+        async function checkPermissions() {
+            try {
+                const permissionStatus = await navigator.permissions.query({ name: 'camera' });
+                
+                if (permissionStatus.state === 'denied') {
+                    showError(
+                        '摄像头权限被拒绝',
+                        '请在浏览器地址栏点击摄像头图标，选择"允许"后重试。'
+                    );
+                    document.getElementById('permissionHint').style.display = 'block';
+                } else if (permissionStatus.state === 'prompt') {
+                    // 尚未决定权限，尝试请求
+                    setTimeout(() => initializeCamera(), 500);
+                } else {
+                    // 已有权限，尝试初始化
+                    setTimeout(() => initializeCamera(), 500);
+                }
+                
+                permissionStatus.onchange = function() {
+                    if (this.state === 'granted') {
+                        hideError();
+                        initializeCamera();
+                    } else if (this.state === 'denied') {
+                        showError(
+                            '摄像头权限被拒绝',
+                            '请在浏览器设置中允许摄像头访问。'
+                        );
+                    }
+                };
+                
+            } catch (e) {
+                // 某些浏览器可能不支持权限查询，直接尝试初始化
+                console.log('权限查询不支持，直接尝试初始化');
+                setTimeout(() => initializeCamera(), 500);
+            }
+        }
+
+        // ==================== 错误处理 ====================
+        function showError(title, solution) {
+            document.getElementById('errorPanel').style.display = 'block';
+            document.getElementById('errorMessage').textContent = title;
+            document.getElementById('errorSolution').textContent = solution;
+            
+            updateCameraStatus('错误', false);
+            
+            // 显示占位图
+            document.getElementById('cameraPlaceholder').classList.remove('hidden');
+            
+            // 禁用拍照按钮
+            document.getElementById('captureBtn').disabled = true;
+            document.getElementById('autoModeBtn').disabled = true;
+        }
+
+        function hideError() {
+            document.getElementById('errorPanel').style.display = 'none';
+            document.getElementById('permissionHint').style.display = 'none';
+        }
+
+        // ==================== 摄像头初始化 ====================
+        async function initializeCamera() {
+            try {
+                hideError();
+                document.getElementById('cameraPlaceholder').classList.add('hidden');
+                updateCameraStatus('请求权限中...', false);
+                
+                let constraints = {
+                    video: true  // 先尝试最简单的配置
+                };
+
+                // 尝试获取摄像头
+                videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+                
+                // 成功获取后，再尝试更精细的配置
+                if (videoStream) {
+                    const video = document.getElementById('video');
+                    video.srcObject = videoStream;
+                    
+                    // 等待视频元数据加载
+                    await new Promise((resolve) => {
+                        video.onloadedmetadata = () => {
+                            video.play();
+                            resolve();
+                        };
+                    });
+                    
+                    cameraInitialized = true;
+                    
+                    // 显示摄像头信息
+                    const track = videoStream.getVideoTracks()[0];
+                    updateCameraStatus('运行中', true);
+                    showToast(`📹 已连接: ${track.label || '摄像头'}`, 'success');
+                    
+                    // 启用拍照按钮
+                    document.getElementById('captureBtn').disabled = false;
+                    document.getElementById('autoModeBtn').disabled = false;
+                    
+                    // 如果是电脑，获取所有可用摄像头
+                    if (!isMobile) {
+                        await enumerateCameras();
+                    }
+                    
+                    // 更新缓存数量
+                    setTimeout(updateCachedCount, 1000);
+                    
+                    addToHistory('摄像头已连接', 'success');
+                }
+                
+            } catch (error) {
+                console.error('摄像头启动失败:', error);
+                
+                let errorMessage = error.message;
+                let solution = '';
+                
+                if (error.name === 'NotAllowedError' || error.message.includes('permission')) {
+                    errorMessage = '摄像头权限被拒绝';
+                    solution = '请在浏览器地址栏点击摄像头图标，选择"允许"后重试。';
+                    document.getElementById('permissionHint').style.display = 'block';
+                } else if (error.name === 'NotFoundError' || error.message.includes('not found')) {
+                    errorMessage = '未找到摄像头设备';
+                    solution = '请确保您的电脑已连接摄像头，并安装了正确的驱动程序。';
+                } else if (error.name === 'NotReadableError' || error.message.includes('in use')) {
+                    errorMessage = '摄像头被其他程序占用';
+                    solution = '请关闭可能正在使用摄像头的其他应用（如Zoom、微信等）。';
+                } else if (error.name === 'OverconstrainedError') {
+                    errorMessage = '摄像头不支持的参数';
+                    solution = '尝试使用最简单的摄像头配置。';
+                } else {
+                    errorMessage = '未知错误: ' + error.message;
+                    solution = '请检查摄像头连接，或尝试重启浏览器。';
+                }
+                
+                showError(errorMessage, solution);
+                updateCameraStatus('失败', false);
+                addToHistory('摄像头连接失败: ' + errorMessage, 'error');
+                
+                // 显示占位图
+                document.getElementById('cameraPlaceholder').classList.remove('hidden');
+            }
+        }
+
+        // 重试摄像头
+        async function retryCamera() {
+            showToast('正在重试摄像头...', 'info');
+            
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+            
+            cameraInitialized = false;
+            document.getElementById('captureBtn').disabled = true;
+            document.getElementById('autoModeBtn').disabled = true;
+            
+            await initializeCamera();
+        }
+
+        // 枚举可用摄像头（电脑版）
+        async function enumerateCameras() {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                availableCameras = devices.filter(d => d.kind === 'videoinput');
+                
+                if (availableCameras.length > 0) {
+                    populateCameraSelect(availableCameras);
+                }
+            } catch (error) {
+                console.error('枚举摄像头失败:', error);
+            }
+        }
+
+        // 电脑版摄像头选择
+        function populateCameraSelect(cameras) {
+            const select = document.getElementById('computerCameraSelect');
+            select.innerHTML = '';
+            
+            cameras.forEach((camera, index) => {
+                const option = document.createElement('option');
+                option.value = camera.deviceId;
+                option.text = camera.label || `摄像头 ${index + 1}`;
+                select.appendChild(option);
+            });
+            
+            select.onchange = async function(e) {
+                if (videoStream) {
+                    videoStream.getTracks().forEach(track => track.stop());
+                }
+                
+                try {
+                    const constraints = {
+                        video: {
+                            deviceId: { exact: e.target.value }
+                        }
+                    };
+                    
+                    videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+                    document.getElementById('video').srcObject = videoStream;
+                    showToast('摄像头已切换', 'success');
+                } catch (error) {
+                    showToast('切换摄像头失败: ' + error.message, 'error');
+                }
+            };
+        }
+
+        // 手机版摄像头切换
+        async function switchMobileCamera(type) {
+            if (!isMobile) return;
+            
+            currentCamera = type;
+            
+            document.querySelectorAll('.camera-option').forEach(opt => {
+                opt.classList.toggle('active', opt.dataset.camera === type);
+            });
+
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+            }
+
+            await initializeCamera();
+        }
+
+        // ==================== GitHub功能 ====================
+        async function testGitHubConnection() {
+            const owner = document.getElementById('repoOwner').value;
+            const repo = document.getElementById('repoName').value;
+            
+            if (!owner || !repo) {
+                showToast('请填写仓库信息', 'error');
+                return;
+            }
+
+            showToast('测试连接中...', 'info');
+            
+            const url = `https://api.github.com/repos/${owner}/${repo}`;
+            
+            // 使用您的myAjaxCmd函数
+            myAjaxCmd('GET', url, null, function(response) {
+                if (response.status == 200) {
+                    const repoInfo = JSON.parse(response.responseText);
+                    showToast(`✅ 连接成功: ${repoInfo.full_name}`, 'success');
+                    checkIssueExists();
+                } else {
+                    showToast(`❌ 连接失败: ${response.status}`, 'error');
+                }
+            });
+        }
+
+        function checkIssueExists() {
+            const issueId = document.getElementById('issueNumber').value;
+            const owner = document.getElementById('repoOwner').value;
+            const repo = document.getElementById('repoName').value;
+            
+            const url = `https://api.github.com/repos/${owner}/${repo}/issues/${issueId}`;
+            
+            myAjaxCmd('GET', url, null, function(response) {
+                if (response.status == 200) {
+                    showToast(`✅ Issue #${issueId} 已存在`, 'success');
+                } else if (response.status == 404) {
+                    showToast(`⚠️ Issue #${issueId} 不存在，将自动创建`, 'info');
+                    createIssue();
+                }
+            });
+        }
+
+        function createIssue() {
+            const title = '窗口猫咪监控 - 自动拍照';
+            const body = '## 🐱 窗口猫咪监控系统\n\n' +
+                        '这是一个自动监控窗口的猫咪拍照系统。\n\n' +
+                        '### 功能\n' +
+                        '- 每隔5分钟自动拍照\n' +
+                        '- 保存最近10张图片\n' +
+                        '- 自动覆盖旧图片\n\n' +
+                        '### 最近更新\n' +
+                        '- 监控开始时间：' + formateDate() + '\n';
+            
+            addNewGitHubIssue(title, body, function(response) {
+                if (response.status === 201) {
+                    const issue = JSON.parse(response.responseText);
+                    showToast(`✅ 已创建新Issue #${issue.number}`, 'success');
+                    document.getElementById('issueNumber').value = issue.number;
+                    document.getElementById('targetIssue').textContent = '#' + issue.number;
+                    saveSettings();
+                }
+            });
+        }
+
+        // ==================== 拍照功能 ====================
+        function capturePhoto() {
+            if (!cameraInitialized || !videoStream) {
+                showToast('请先启动摄像头', 'error');
+                return;
+            }
+            
+            try {
+                showToast('拍照中...', 'info');
+                
+                const video = document.getElementById('video');
+                const canvas = document.getElementById('canvas');
+                const context = canvas.getContext('2d');
+
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                const quality = isMobile ? 0.8 : parseFloat(document.getElementById('imageQuality')?.value || 0.8);
+                const imageData = canvas.toDataURL('image/jpeg', quality);
+                
+                const timestamp = formateDate();
+                const issueId = document.getElementById('issueNumber').value;
+                const saveLocation = document.getElementById('saveLocation')?.value || 'github';
+                
+                // 本地保存（电脑版）
+                if (!isMobile && (saveLocation === 'local' || saveLocation === 'both')) {
+                    saveLocally(imageData, timestamp);
+                }
+                
+                // GitHub保存
+                if (saveLocation !== 'local') {
+                    uploadToGitHub(imageData, timestamp, issueId);
+                } else {
+                    // 仅本地保存
+                    photoCount++;
+                    updatePhotoCount();
+                    addToHistory('本地保存成功', 'success');
+                    showToast('照片已保存到本地');
+                }
+
+            } catch (error) {
+                console.error('拍照失败:', error);
+                showToast('拍照失败: ' + error.message, 'error');
+                addToHistory('抓拍失败', 'error');
+            }
+        }
+
+        function uploadToGitHub(imageData, timestamp, issueId) {
+            const commentBody = `## 🖼️ 窗口监控抓拍 - ${timestamp}\n\n` +
+                               `![监控图片](${imageData})\n\n` +
+                               `---\n` +
+                               `**状态**：⏳ 等待检测...\n` +
+                               `**时间**：${timestamp}\n` +
+                               `**设备**：${isMobile ? '📱 手机' : '💻 电脑'}\n` +
+                               `**Issue**：#${issueId}\n`;
+
+            addNewGitHubComment(issueId, commentBody, function(response) {
+                if (response.status == 201 || response.status == 200) {
+                    photoCount++;
+                    updatePhotoCount();
+                    saveSettings();
+                    
+                    addToHistory('GitHub上传成功', 'success');
+                    showToast('照片已保存到GitHub Issue #' + issueId);
+                    
+                    // 桌面通知
+                    if (!isMobile && document.getElementById('desktopNotifications')?.checked) {
+                        showDesktopNotification('拍照成功', `已拍摄第 ${photoCount} 张照片`);
+                    }
+                    
+                    setTimeout(updateCachedCount, 1000);
+                } else {
+                    showToast('上传失败', 'error');
+                    addToHistory('上传失败', 'error');
+                }
+            });
+        }
+
+        function saveLocally(imageData, timestamp) {
+            const link = document.createElement('a');
+            link.download = `cat_monitor_${timestamp.replace(/[:\s]/g, '-')}.jpg`;
+            link.href = imageData;
+            link.click();
+            addToHistory('本地保存成功', 'success');
+        }
+
+        // ==================== 缓存管理 ====================
+        function updateCachedCount() {
+            const issueId = document.getElementById('issueNumber').value;
+            const owner = document.getElementById('repoOwner').value;
+            const repo = document.getElementById('repoName').value;
+            const maxPhotos = isMobile ? 10 : (parseInt(document.getElementById('maxPhotos')?.value) || 50);
+            
+            const url = `https://api.github.com/repos/${owner}/${repo}/issues/${issueId}/comments?per_page=100`;
+            
+            listGitHubComments(url, function(comments) {
+                const imageComments = comments.filter(comment => 
+                    comment.body.includes('data:image/jpeg') || comment.body.includes('![监控图片]')
+                );
+
+                document.getElementById('cachedCount').textContent = `${imageComments.length}/${maxPhotos}`;
+
+                if (imageComments.length > maxPhotos) {
+                    const toDelete = imageComments.slice(0, imageComments.length - maxPhotos);
+                    toDelete.forEach(function(comment) {
+                        deleteGitHubComment(comment.id, function(res) {
+                            if (res.status == 204) {
+                                console.log('已删除旧评论:', comment.id);
+                            }
+                        });
+                    });
+                }
+            });
+        }
+
+        // ==================== 自动模式 ====================
+        function toggleAutoMode() {
+            if (!cameraInitialized || !videoStream) {
+                showToast('请先启动摄像头', 'error');
+                return;
+            }
+            
+            const autoModeBtn = document.getElementById('autoModeBtn');
+            
+            if (!isAutoMode) {
+                if (!document.getElementById('issueNumber').value) {
+                    showToast('请填写Issue编号', 'error');
+                    return;
+                }
+
+                const interval = document.getElementById('intervalSlider').value * 60 * 1000;
+                
+                autoModeInterval = setInterval(() => {
+                    capturePhoto();
+                }, interval);
+
+                isAutoMode = true;
+                autoModeBtn.innerHTML = '<span>⏸️</span> 停止自动模式';
+                autoModeBtn.classList.remove('btn-success');
+                autoModeBtn.classList.add('btn-warning');
+                document.getElementById('autoModeStatus').textContent = '运行中';
+                
+                showToast(`自动模式已启动，间隔${document.getElementById('intervalSlider').value}分钟`);
+
+                setTimeout(capturePhoto, 1000);
+            } else {
+                clearInterval(autoModeInterval);
+                autoModeInterval = null;
+
+                isAutoMode = false;
+                autoModeBtn.innerHTML = '<span>⏯️</span> 启动自动模式';
+                autoModeBtn.classList.remove('btn-warning');
+                autoModeBtn.classList.add('btn-success');
+                document.getElementById('autoModeStatus').textContent = '关闭';
+                
+                showToast('自动模式已停止');
+            }
+        }
+
+        // ==================== 电脑专属功能 ====================
+        function setupComputerFeatures() {
+            // 请求桌面通知权限
+            if (Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+            
+            // 尝试保持屏幕唤醒
+            if ('wakeLock' in navigator) {
+                navigator.wakeLock.request('screen').catch(err => {
+                    console.log('无法保持唤醒:', err);
+                });
+            }
+            
+            // 定期检查摄像头状态
+            setInterval(() => {
+                if (cameraInitialized && videoStream && videoStream.getVideoTracks()[0].readyState === 'ended') {
+                    console.log('摄像头断开，尝试重新连接...');
+                    retryCamera();
+                }
+            }, 60000);
+        }
+
+        function showDesktopNotification(title, message) {
+            if (Notification.permission === 'granted') {
+                new Notification(title, {
+                    body: message,
+                    icon: 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png'
+                });
+            }
+        }
+
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', function(e) {
+                // Ctrl+Shift+C 拍照
+                if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+                    e.preventDefault();
+                    capturePhoto();
+                }
+                
+                // Ctrl+Shift+A 切换自动模式
+                if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+                    e.preventDefault();
+                    toggleAutoMode();
+                }
+                
+                // Ctrl+Shift+R 重试摄像头
+                if (e.ctrlKey && e.shiftKey && e.key === 'R') {
+                    e.preventDefault();
+                    retryCamera();
+                }
+                
+                // Ctrl+Shift+1 前置/第一个摄像头
+                if (e.ctrlKey && e.shiftKey && e.key === '1') {
+                    e.preventDefault();
+                    if (isMobile) {
+                        switchMobileCamera('user');
+                    } else if (availableCameras.length > 0) {
+                        document.getElementById('computerCameraSelect').value = availableCameras[0].deviceId;
+                        document.getElementById('computerCameraSelect').onchange();
+                    }
+                }
+                
+                // Ctrl+Shift+2 后置/第二个摄像头
+                if (e.ctrlKey && e.shiftKey && e.key === '2') {
+                    e.preventDefault();
+                    if (isMobile) {
+                        switchMobileCamera('environment');
+                    } else if (availableCameras.length > 1) {
+                        document.getElementById('computerCameraSelect').value = availableCameras[1].deviceId;
+                        document.getElementById('computerCameraSelect').onchange();
+                    }
+                }
+            });
+        }
+
+        // ==================== 设置管理 ====================
+        function loadSettings() {
+            const savedOwner = getCookie('repoOwner');
+            const savedRepo = getCookie('repoName');
+            const savedIssue = getCookie('issueNumber');
+            const savedInterval = getCookie('interval');
+            const savedPhotoCount = getCookie('photoCount');
+
+            if (savedOwner) document.getElementById('repoOwner').value = savedOwner;
+            if (savedRepo) document.getElementById('repoName').value = savedRepo;
+            if (savedIssue) {
+                document.getElementById('issueNumber').value = savedIssue;
+                document.getElementById('targetIssue').textContent = '#' + savedIssue;
+            }
+            if (savedInterval) {
+                document.getElementById('intervalSlider').value = savedInterval;
+                document.getElementById('intervalValueDisplay').textContent = savedInterval + '分钟';
+            }
+            if (savedPhotoCount) {
+                photoCount = parseInt(savedPhotoCount);
+            }
+        }
+
+        function saveSettings() {
+            if (!document.getElementById('rememberSettings').checked) return;
+
+            setCookie('repoOwner', document.getElementById('repoOwner').value, 720);
+            setCookie('repoName', document.getElementById('repoName').value, 720);
+            setCookie('issueNumber', document.getElementById('issueNumber').value, 720);
+            setCookie('interval', document.getElementById('intervalSlider').value, 720);
+            setCookie('photoCount', photoCount, 720);
+        }
+
+        // ==================== UI更新函数 ====================
+        function updateCameraStatus(status, isActive) {
+            document.getElementById('cameraStatus').textContent = status;
+            document.getElementById('cameraStatus').style.color = isActive ? '#43e97b' : '#f5576c';
+        }
+
+        function updatePhotoCount() {
+            document.getElementById('photoCount').textContent = photoCount;
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            const colors = {
+                'success': 'rgba(67, 233, 123, 0.9)',
+                'error': 'rgba(245, 87, 108, 0.9)',
+                'info': 'rgba(102, 126, 234, 0.9)',
+                'warning': 'rgba(250, 112, 154, 0.9)'
+            };
+            toast.style.background = colors[type] || colors.success;
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function addToHistory(message, type) {
+            const historyList = document.getElementById('historyList');
+            const historyItem = document.createElement('div');
+            historyItem.className = `history-item ${type}`;
+            
+            const time = new Date().toLocaleTimeString();
+            
+            historyItem.innerHTML = `
+                <span class="history-time">${time}</span>
+                <span class="history-status ${type}">${type === 'success' ? '✓' : type === 'error' ? '✗' : '⏳'}</span>
+                <span class="history-message">${message}</span>
+            `;
+            
+            historyList.insertBefore(historyItem, historyList.firstChild);
+            
+            while (historyList.children.length > 20) {
+                historyList.removeChild(historyList.lastChild);
+            }
+        }
+
+        // ==================== 事件监听 ====================
+        document.getElementById('intervalSlider').addEventListener('input', function(e) {
+            document.getElementById('intervalValueDisplay').textContent = e.target.value + '分钟';
+            saveSettings();
+            
+            if (isAutoMode) {
+                clearInterval(autoModeInterval);
+                const interval = e.target.value * 60 * 1000;
+                autoModeInterval = setInterval(capturePhoto, interval);
+            }
+        });
+
+        document.getElementById('issueNumber').addEventListener('change', function(e) {
+            document.getElementById('targetIssue').textContent = '#' + e.target.value;
+            saveSettings();
+        });
+
+        document.getElementById('repoOwner').addEventListener('change', saveSettings);
+        document.getElementById('repoName').addEventListener('change', saveSettings);
+        document.getElementById('rememberSettings').addEventListener('change', saveSettings);
+
+        // 页面关闭前清理
+        window.addEventListener('beforeunload', function() {
+            saveSettings();
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+            }
+            if (autoModeInterval) {
+                clearInterval(autoModeInterval);
+            }
+        });
+    </script>
+</body>
+</html>
