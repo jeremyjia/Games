@@ -9,6 +9,11 @@ import random
 import textwrap
 import os
 import argparse
+import sys
+import io
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 # 预设颜色方案（文字颜色，阴影颜色）
 COLOR_PALETTES = [
