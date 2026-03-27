@@ -1,6 +1,6 @@
 //i4c4
  
-var s= "v0.0.115 "; 
+var s= "v0.0.123 "; 
  
 s += "<a target='_blank' href='https://github.com/jeremyjia/Games/edit/master/issues/4/c4.js'"
 s += " style='color:blue;'";		s +=">"; s += "c4.js* ";
@@ -197,11 +197,7 @@ if(!md.run){
 	
 	 var nTokenNum; 
 	 var timerId;	 
-	 function readTimer(){
-		readMsg();
-	    md.v.ta.value = allMsg; 
-	    md.timer2Users(md.vLogin.ta.value);
-	 }
+	 
 	
 	var allMsg="";
 	var globalJsonObj;
@@ -229,9 +225,13 @@ if(!md.run){
 	   }
 	   var userName= md.vLogin.ta.value;
 	   md.v.userInfo.innerHTML ="User:" + userName;
-       bl$(md.v.id).style.display = "block";
-	   bl$(md.vLogin.id).style.display = "none";
-	   timerId = setInterval(readTimer, 1000);
+       md.v.style.display = "block";
+	   md.vLogin.style.display = "none";
+	   timerId = setInterval(function readTimer(){ 
+			readMsg();
+			md.v.ta.value = allMsg; 
+			md.timer2Users(md.vLogin.ta.value);
+		},  1000);
 	   getOnlineUser(false);
 	   sleep(1000);
 	   setTimeout(function(){login();}, 1000);
@@ -240,8 +240,10 @@ if(!md.run){
 	
 	function addBtn(number)
 	{
-	  md.v.d1 = blo0.blDiv(md,md.id+"vd1","",blColor[1]);
-	  function _Comments(o) {
+	  md.v.d1 = blo0.blDiv(md,md.id+"vd1","",blColor[1]); 
+	 
+	 var _src = "https://api.github.com/repos/jeremyjia/Games/issues/4/comments";
+	 w3.getHttpObject(_src, function _Comments(o) {
 		var index = 0;
 		var parentDiv = md.v.d1;
 		for(i in o){
@@ -266,10 +268,7 @@ if(!md.run){
 		 }
 	
 		}
-	 }
-	 
-	 var _src = "https://api.github.com/repos/jeremyjia/Games/issues/4/comments";
-	 w3.getHttpObject(_src, _Comments);
+	 });
     }
 	
 	function dispatchMessage(message){
@@ -313,9 +312,7 @@ if(!md.run){
 	function readMsg() 
 	{
 		var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/526806470";
-		myAjaxCmd('GET',url, null, readCallBack);
-	
-        function readCallBack(resp){
+		myAjaxCmd('GET',url, null, function readCallBack(resp){
 			if(resp.readyState == 4){
 			  if(resp.status==200){
 				  var msg = JSON.parse(resp.responseText);
@@ -327,14 +324,12 @@ if(!md.run){
 				clearInterval(timerId); 
 			  }
 		    }			 
-         }
+        }); 
 	}
 	
 	function getOnlineUser(isShow){
 		var url = "https://api.github.com/repos/jeremyjia/Games/issues/comments/543738078";
-		myAjaxCmd('GET',url, null, usercallback);
-	
-        function usercallback(response){
+		myAjaxCmd('GET',url, null, function usercallback(response){
 			if(response.readyState == 4){
 			  if(response.status==200){
 				  var msgObj = JSON.parse(response.responseText);
@@ -347,7 +342,7 @@ if(!md.run){
 				}	  
 			  }
 		    }			 
-         }
+         }); 
 	}
 	
 	function updateOnlineUser(jsonAll)

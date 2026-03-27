@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>简谱编辑工具 v0.10</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: #fff;
+            min-height: 100vh;
+            padding: 10px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        header {
+            text-align: center;
+            padding: 15px 0;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+            background: linear-gradient(90deg, #ff8a00, #e52e71);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+        
+        .toolbar {
+            background: rgba(30, 30, 40, 0.8);
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .toolbar-title {
+            width: 100%;
+            text-align: center;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            color: #a0a0ff;
+        }
+        
+        .tool-btn {
+            background: rgba(60, 60, 80, 0.9);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 15px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 40px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .tool-btn:hover {
+            background: rgba(80, 80, 120, 0.9);
+            transform: translateY(-2px);
+        }
+        
+        .tool-btn:active {
+            transform: translateY(1px);
+        }
+        
+        .tool-btn.active {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            box-shadow: 0 0 10px rgba(255, 65, 108, 0.5);
+        }
+        
+        .action-btn {
+            background: linear-gradient(45deg, #3498db, #1abc9c);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 0 5px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .action-btn:active {
+            transform: translateY(1px);
+        }
+        
+        .action-btn.delete {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+        }
+        
+        .action-btn.clear {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+        }
+        
+        .action-btn.play {
+            background: linear-gradient(45deg, #2ecc71, #27ae60);
+        }
+        
+        .scale-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(30, 30, 40, 0.8);
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .scale-control label {
+            margin-right: 10px;
+            font-size: 0.95rem;
+        }
+        
+        .scale-slider {
+            width: 200px;
+            max-width: 60%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: rgba(100, 100, 140, 0.8);
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        .scale-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #9b59b6, #8e44ad);
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+        
+        .scale-value {
+            margin-left: 10px;
+            font-size: 0.95rem;
+            min-width: 40px;
+            text-align: center;
+        }
+        
+        .staff-container {
+            flex: 1;
+            background: rgba(20, 20, 30, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            overflow: auto;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5),
+                        0 5px 15px rgba(0, 0, 0, 0.4);
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .staff-paper {
+            background: #f9f3e9;
+            border-radius: 8px;
+            min-height: 200px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            overflow: auto;
+            border: 2px solid #d4c0a1;
+        }
+        
+        #staffCanvas {
+            background: #f9f3e9;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .status-bar {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            padding: 10px 15px;
+            text-align: center;
+            font-size: 0.9rem;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .current-note-display {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 5px 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .tool-btn {
+                padding: 8px 12px;
+                font-size: 1rem;
+                min-width: 35px;
+            }
+            
+            .action-btn {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+                margin: 0 3px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .toolbar {
+                gap: 5px;
+            }
+            
+            .scale-slider {
+                width: 150px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .tool-btn {
+                padding: 6px 8px;
+                font-size: 0.9rem;
+                min-width: 30px;
+            }
+            
+            .action-btn {
+                padding: 6px 8px;
+                font-size: 0.8rem;
+                margin: 0 2px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .toolbar-title {
+                font-size: 0.8rem;
+            }
+            
+            .scale-control {
+                flex-wrap: wrap;
+            }
+            
+            .scale-slider {
+                width: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>简谱编辑工具</h1>
+            <p class="subtitle">版本 0.10 | 移动设备优化</p>
+        </header>
+        
+        <!-- 音符选择工具栏 -->
+        <div class="toolbar">
+            <div class="toolbar-title">音符选择</div>
+            <button class="tool-btn active" data-note="1">1</button>
+            <button class="tool-btn" data-note="2">2</button>
+            <button class="tool-btn" data-note="3">3</button>
+            <button class="tool-btn" data-note="4">4</button>
+            <button class="tool-btn" data-note="5">5</button>
+            <button class="tool-btn" data-note="6">6</button>
+            <button class="tool-btn" data-note="7">7</button>
+            <button class="tool-btn" data-note="0">0</button>
+        </div>
+        
+        <!-- 时值选择工具栏 -->
+        <div class="toolbar">
+            <div class="toolbar-title">音符时值</div>
+            <button class="tool-btn active" data-length="1">全</button>
+            <button class="tool-btn" data-length="2">二分</button>
+            <button class="tool-btn" data-length="4">4分</button>
+            <button class="tool-btn" data-length="8">8分</button>
+            <button class="tool-btn" data-length="16">16分</button>
+        </div>
+        
+        <!-- 八度选择工具栏 -->
+        <div class="toolbar">
+            <div class="toolbar-title">八度设置</div>
+            <button class="tool-btn" data-octave="-2">-2</button>
+            <button class="tool-btn" data-octave="-1">-1</button>
+            <button class="tool-btn active" data-octave="0">0</button>
+            <button class="tool-btn" data-octave="1">1</button>
+            <button class="tool-btn" data-octave="2">2</button>
+        </div>
+        
+        <!-- 操作工具栏 -->
+        <div class="toolbar">
+            <div class="toolbar-title">乐谱操作</div>
+            <button class="action-btn" id="insertBtn">插入音符</button>
+            <button class="action-btn delete" id="deleteBtn">删除音符</button>
+            <button class="action-btn clear" id="clearBtn">清空乐谱</button>
+            <button class="action-btn play" id="playBtn">播放音符</button>
+        </div>
+        
+        <!-- 比例设置工具栏 -->
+        <div class="scale-control">
+            <label for="scaleSlider">乐谱比例:</label>
+            <input type="range" min="50" max="150" value="100" class="scale-slider" id="scaleSlider">
+            <div class="scale-value" id="scaleValue">100%</div>
+        </div>
+        
+        <!-- 乐谱显示区域 -->
+        <div class="staff-container">
+            <div class="staff-paper">
+                <canvas id="staffCanvas"></canvas>
+            </div>
+        </div>
+        
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div>当前选择: <span class="current-note-display" id="currentNoteDisplay">5 (全音符, 高八度)</span></div>
+            <div id="timeDisplay">2023年11月15日 10:30:45</div>
+        </div>
+    </div>
+
+    <script>
+        // 当前选择的音符数据
+        let currentNote = {
+            note: '5',
+            length: '1',
+            octave: 1
+        };
+        
+        // 乐谱数据
+        let score = [];
+        
+        // Canvas 和上下文
+        const canvas = document.getElementById('staffCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 比例设置
+        let scale = 1.0;
+        
+        // 初始化函数
+        function init() {
+            // 设置初始按钮状态
+            updateButtonStates();
+            
+            // 更新当前音符显示
+            updateCurrentNoteDisplay();
+            
+            // 设置画布尺寸
+            resizeCanvas();
+            
+            // 初始化时间显示
+            updateTime();
+            setInterval(updateTime, 1000);
+            
+            // 绘制初始乐谱
+            renderScore();
+            
+            // 添加事件监听器
+            setupEventListeners();
+        }
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 音符按钮
+            document.querySelectorAll('[data-note]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentNote.note = btn.getAttribute('data-note');
+                    updateButtonStates();
+                    updateCurrentNoteDisplay();
+                });
+            });
+            
+            // 时值按钮
+            document.querySelectorAll('[data-length]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentNote.length = btn.getAttribute('data-length');
+                    updateButtonStates();
+                    updateCurrentNoteDisplay();
+                });
+            });
+            
+            // 八度按钮
+            document.querySelectorAll('[data-octave]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentNote.octave = parseInt(btn.getAttribute('data-octave'));
+                    updateButtonStates();
+                    updateCurrentNoteDisplay();
+                });
+            });
+            
+            // 操作按钮
+            document.getElementById('insertBtn').addEventListener('click', insertNote);
+            document.getElementById('deleteBtn').addEventListener('click', deleteNote);
+            document.getElementById('clearBtn').addEventListener('click', clearScore);
+            document.getElementById('playBtn').addEventListener('click', playNote);
+            
+            // 比例滑块
+            document.getElementById('scaleSlider').addEventListener('input', function() {
+                scale = this.value / 100;
+                document.getElementById('scaleValue').textContent = this.value + '%';
+                resizeCanvas();
+                renderScore();
+            });
+            
+            // 窗口大小变化时调整画布
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+                renderScore();
+            });
+        }
+        
+        // 更新按钮状态
+        function updateButtonStates() {
+            // 更新音符按钮
+            document.querySelectorAll('[data-note]').forEach(btn => {
+                if (btn.getAttribute('data-note') === currentNote.note) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // 更新时值按钮
+            document.querySelectorAll('[data-length]').forEach(btn => {
+                if (btn.getAttribute('data-length') === currentNote.length) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // 更新八度按钮
+            document.querySelectorAll('[data-octave]').forEach(btn => {
+                if (parseInt(btn.getAttribute('data-octave')) === currentNote.octave) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+        
+        // 更新当前音符显示
+        function updateCurrentNoteDisplay() {
+            const noteNames = { '0': '休止符', '1': 'do', '2': 're', '3': 'mi', '4': 'fa', '5': 'sol', '6': 'la', '7': 'si' };
+            const lengthNames = { '1': '全音符', '2': '二分音符', '4': '四分音符', '8': '八分音符', '16': '十六分音符' };
+            const octaveNames = { '-2': '低两个八度', '-1': '低八度', '0': '正常', '1': '高八度', '2': '高两个八度' };
+            
+            const noteDisplay = `${currentNote.note} (${noteNames[currentNote.note]}, ${lengthNames[currentNote.length]}, ${octaveNames[currentNote.octave]})`;
+            document.getElementById('currentNoteDisplay').textContent = noteDisplay;
+        }
+        
+        // 更新时间显示
+        function updateTime() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('zh-CN', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('timeDisplay').textContent = dateStr;
+        }
+        
+        // 调整画布尺寸
+        function resizeCanvas() {
+            const container = document.querySelector('.staff-paper');
+            const width = container.clientWidth - 40; // 减去内边距
+            const height = Math.max(200, container.clientHeight - 40);
+            
+            // 设置画布尺寸
+            canvas.width = width;
+            canvas.height = height;
+            
+            // 设置显示尺寸
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+        }
+        
+        // 插入音符
+        function insertNote() {
+            // 添加新音符到乐谱
+            score.push({...currentNote});
+            renderScore();
+        }
+        
+        // 删除音符
+        function deleteNote() {
+            if (score.length > 0) {
+                score.pop();
+                renderScore();
+            }
+        }
+        
+        // 清空乐谱
+        function clearScore() {
+            if (confirm('确定要清空整个乐谱吗？')) {
+                score = [];
+                renderScore();
+            }
+        }
+        
+        // 播放音符
+        function playNote() {
+            // 这里简化处理，实际应用中可以使用Web Audio API播放对应音高
+            alert(`播放: ${currentNote.note} (${currentNote.length}分音符, ${currentNote.octave > 0 ? '高' : currentNote.octave < 0 ? '低' : ''}${Math.abs(currentNote.octave)}个八度`);
+        }
+        
+        // 渲染乐谱
+        function renderScore() {
+            // 清除画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 设置基本参数
+            const baseX = 30;
+            const baseY = canvas.height / 2;
+            const noteSpacing = 60 * scale;
+            const fontSize = 30 * scale;
+            
+            // 设置样式
+            ctx.font = `${fontSize}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#000';
+            
+            // 绘制五线谱参考线
+            for (let i = -2; i <= 2; i++) {
+                const y = baseY + i * 12;
+                ctx.beginPath();
+                ctx.moveTo(20, y);
+                ctx.lineTo(canvas.width - 20, y);
+                ctx.strokeStyle = '#999';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+            
+            // 如果没有音符，显示提示
+            if (score.length === 0) {
+                ctx.font = '24px Arial';
+                ctx.fillStyle = '#666';
+                ctx.textAlign = 'center';
+                ctx.fillText('点击"插入音符"按钮开始创建乐谱', canvas.width / 2, canvas.height / 2);
+                return;
+            }
+            
+            // 绘制所有音符
+            let x = baseX;
+            for (const noteData of score) {
+                drawNote(x, baseY, noteData);
+                x += noteSpacing;
+                
+                // 如果超出画布宽度，换行（简化处理）
+                if (x > canvas.width - 50) {
+                    x = baseX;
+                }
+            }
+        }
+        
+        // 绘制单个音符
+        function drawNote(x, y, noteData) {
+            const fontSize = 30 * scale;
+            const note = noteData.note;
+            const length = noteData.length;
+            const octave = noteData.octave;
+            
+            // 绘制音符数字
+            ctx.font = `bold ${fontSize}px Arial`;
+            ctx.fillStyle = '#000';
+            ctx.fillText(note, x, y);
+            
+            // 绘制时值
+            if (length === '1') {
+                // 全音符：三个横杠
+                ctx.beginPath();
+                ctx.moveTo(x + fontSize/2, y);
+                ctx.lineTo(x + fontSize*2, y);
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(x + fontSize/2, y - fontSize/2);
+                ctx.lineTo(x + fontSize*2, y - fontSize/2);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(x + fontSize/2, y + fontSize/2);
+                ctx.lineTo(x + fontSize*2, y + fontSize/2);
+                ctx.stroke();
+            } else if (length === '2') {
+                // 二分音符：一个横杠
+                ctx.beginPath();
+                ctx.moveTo(x + fontSize/2, y);
+                ctx.lineTo(x + fontSize*2, y);
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            } else if (length === '8') {
+                // 八分音符：下方一个横杠
+                ctx.beginPath();
+                ctx.moveTo(x - fontSize/3, y + fontSize/2);
+                ctx.lineTo(x + fontSize/1.5, y + fontSize/2);
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            } else if (length === '16') {
+                // 十六分音符：下方两个横杠
+                ctx.beginPath();
+                ctx.moveTo(x - fontSize/3, y + fontSize/2);
+                ctx.lineTo(x + fontSize/1.5, y + fontSize/2);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(x - fontSize/3, y + fontSize/1.5);
+                ctx.lineTo(x + fontSize/1.5, y + fontSize/1.5);
+                ctx.stroke();
+            }
+            
+            // 绘制八度点
+            if (octave === 1 || octave === 2) {
+                // 高八度：上方点
+                ctx.beginPath();
+                ctx.arc(x - fontSize/3, y - fontSize/2, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#000';
+                ctx.fill();
+                
+                if (octave === 2) {
+                    // 高两个八度：两个点
+                    ctx.beginPath();
+                    ctx.arc(x + fontSize/3, y - fontSize/2, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (octave === -1 || octave === -2) {
+                // 低八度：下方点
+                ctx.beginPath();
+                ctx.arc(x - fontSize/3, y + fontSize/2, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#000';
+                ctx.fill();
+                
+                if (octave === -2) {
+                    // 低两个八度：两个点
+                    ctx.beginPath();
+                    ctx.arc(x + fontSize/3, y + fontSize/2, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+        
+        // 初始化应用
+        window.onload = init;
+    </script>
+</body>
+</html>
