@@ -234,18 +234,52 @@ function decodeComment(body) {
   try { return JSON.parse(m[1]); } catch { return null; }
 }
 
-/* ── 逆地理编码（OpenStreetMap Nominatim） ── */
+/* ── 逆地理编码（高德地图，国内支持好，微信浏览器无跨域问题） ── */
+// 在 https://lbs.amap.com/ 免费注册可获取自己的 Key，每日 5000 次
+const AMAP_KEY = '11f945b4a4be1e72cef07f2e9c1c311d';  // ← 替换成你的高德 Key（见下方说明）
+
 async function reverseGeocode(lat, lng) {
+  const [gcjLng, gcjLat] = wgs84ToGcj02(lng, lat);
   try {
     const r = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=zh`,
-      { headers: { 'User-Agent': 'LocationShare/1.0' } }
+      `https://restapi.amap.com/v3/geocode/regeo?key=${AMAP_KEY}` +
+      `&location=${gcjLng.toFixed(6)},${gcjLat.toFixed(6)}&extensions=base&output=json`
     );
     const d = await r.json();
-    const a = d.address || {};
-    return (a.city || a.town || a.county || a.state || '') +
-           (a.suburb || a.neighbourhood || a.road || '');
+    if (d.status === '1' && d.regeocode) {
+      const c = d.regeocode.addressComponent || {};
+      return (c.city || c.province || '') + (c.district || '') + (c.township || '');
+    }
+    return '';
   } catch { return ''; }
+}
+
+/* WGS-84 → GCJ-02 坐标转换（GPS原始坐标 → 高德/国内标准） */
+function wgs84ToGcj02(lng, lat) {
+  const a = 6378245.0, ee = 0.00669342162296594323;
+  if (lng < 72.004 || lng > 137.8347 || lat < 0.8293 || lat > 55.8271) return [lng, lat];
+  let dLat = transformLat(lng - 105.0, lat - 35.0);
+  let dLng = transformLng(lng - 105.0, lat - 35.0);
+  const radLat = lat / 180.0 * Math.PI;
+  let magic = 1 - ee * Math.sin(radLat) ** 2;
+  const sq = Math.sqrt(magic);
+  dLat = dLat * 180.0 / ((a * (1 - ee)) / (magic * sq) * Math.PI);
+  dLng = dLng * 180.0 / (a / sq * Math.cos(radLat) * Math.PI);
+  return [lng + dLng, lat + dLat];
+}
+function transformLat(x, y) {
+  let r = -100 + 2*x + 3*y + 0.2*y*y + 0.1*x*y + 0.2*Math.sqrt(Math.abs(x));
+  r += (20*Math.sin(6*x*Math.PI) + 20*Math.sin(2*x*Math.PI)) * 2/3;
+  r += (20*Math.sin(y*Math.PI) + 40*Math.sin(y/3*Math.PI)) * 2/3;
+  r += (160*Math.sin(y/12*Math.PI) + 320*Math.sin(y*Math.PI/30)) * 2/3;
+  return r;
+}
+function transformLng(x, y) {
+  let r = 300 + x + 2*y + 0.1*x*x + 0.1*x*y + 0.1*Math.sqrt(Math.abs(x));
+  r += (20*Math.sin(6*x*Math.PI) + 20*Math.sin(2*x*Math.PI)) * 2/3;
+  r += (20*Math.sin(x*Math.PI) + 40*Math.sin(x/3*Math.PI)) * 2/3;
+  r += (150*Math.sin(x/12*Math.PI) + 300*Math.sin(x/30*Math.PI)) * 2/3;
+  return r;
 }
 
 /* ── 上传位置 ── */
