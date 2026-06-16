@@ -181,9 +181,10 @@ function getColor(name) {
 
 /* ── 地图 ── */
 const map = L.map('map', { zoomControl: true }).setView([35.86, 104.19], 4);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-  maxZoom: 19
+L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+  attribution: '© <a href="https://amap.com">高德地图</a>',
+  subdomains: '1234',
+  maxZoom: 18
 }).addTo(map);
 
 const markerMap = {};   // name → L.marker
@@ -282,6 +283,20 @@ function transformLng(x, y) {
   return r;
 }
 
+/* ── 上次上传的坐标（用于判断是否移动） ── */
+let lastUploadedPos = null;  // { lat, lng }
+const MOVE_THRESHOLD_M = 50; // 移动超过 50 米才更新
+
+/* 计算两点距离（米），Haversine 公式 */
+function distanceMeters(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 +
+            Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
 /* ── 上传位置 ── */
 async function uploadLocation(silent = false) {
   const name = nameInput.value.trim();
@@ -300,6 +315,22 @@ async function uploadLocation(silent = false) {
 
     const { latitude: lat, longitude: lng, accuracy } = pos.coords;
     console.log(`GPS 精度: ${accuracy.toFixed(0)}m`);
+
+    // 判断是否移动超过阈值
+    if (lastUploadedPos) {
+      const dist = distanceMeters(lastUploadedPos.lat, lastUploadedPos.lng, lat, lng);
+      console.log(`距上次位置: ${dist.toFixed(0)}m`);
+      if (dist < MOVE_THRESHOLD_M) {
+        // 位置没有明显变化，跳过上传，只刷新同伴
+        setStatus('ok', `未移动 (${dist.toFixed(0)}m)`);
+        if (!silent) {
+          btn.textContent = '📍 位置未变化';
+          setTimeout(() => { btn.textContent = '📤 分享我的当前位置'; btn.disabled = false; }, 1500);
+        }
+        await loadMembers();
+        return;
+      }
+    }
 
     if (!silent) btn.textContent = '🔍 解析地址…';
     const addr = await reverseGeocode(lat, lng);
@@ -330,6 +361,7 @@ async function uploadLocation(silent = false) {
         );
       }
 
+      lastUploadedPos = { lat, lng };  // 记录本次上传坐标
       setStatus('ok', '已更新');
       await loadMembers();
 
