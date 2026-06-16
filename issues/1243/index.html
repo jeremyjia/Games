@@ -293,8 +293,13 @@ async function uploadLocation(silent = false) {
   setStatus('loading', silent ? '更新位置…' : '获取 GPS…');
   if (!silent) btn.textContent = '📡 获取 GPS 中…';
 
-  navigator.geolocation.getCurrentPosition(async pos => {
-    const { latitude: lat, longitude: lng } = pos.coords;
+  // 用 watchPosition 代替 getCurrentPosition，强制获取实时坐标，避免系统缓存
+  let watchId = null;
+  watchId = navigator.geolocation.watchPosition(async pos => {
+    navigator.geolocation.clearWatch(watchId);  // 拿到坐标立即停止监听
+
+    const { latitude: lat, longitude: lng, accuracy } = pos.coords;
+    console.log(`GPS 精度: ${accuracy.toFixed(0)}m`);
 
     if (!silent) btn.textContent = '🔍 解析地址…';
     const addr = await reverseGeocode(lat, lng);
@@ -358,7 +363,7 @@ async function uploadLocation(silent = false) {
       btn.disabled = false;
       alert('定位失败：' + err.message + '\n\n请检查浏览器定位权限是否已开启。');
     }
-  }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+  }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });  // maximumAge:0 禁用缓存
 }
 
 /* ── 创建地图标记 ── */
