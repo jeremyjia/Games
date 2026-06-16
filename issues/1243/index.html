@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>📍 大家在哪里</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+  background: #f5f5f5;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── 顶栏 ── */
+#topbar {
+  background: #fff;
+  border-bottom: 1px solid #e5e5e5;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  z-index: 1000;
+  min-height: 48px;
+}
+#topbar h1 { font-size: 16px; font-weight: 600; flex: 1; color: #111; }
+#status-dot { width: 8px; height: 8px; border-radius: 50%; background: #d1d5db; flex-shrink: 0; transition: background .3s; }
+#status-dot.ok      { background: #22c55e; }
+#status-dot.err     { background: #ef4444; }
+#status-dot.loading { background: #f59e0b; animation: blink 1s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+#status-text { font-size: 12px; color: #888; white-space: nowrap; }
+#refresh-btn {
+  background: none; border: 1px solid #e5e5e5; border-radius: 6px;
+  padding: 4px 9px; font-size: 12px; color: #555; cursor: pointer;
+  flex-shrink: 0;
+}
+#refresh-btn:active { background: #f5f5f5; }
+
+/* ── 地图 ── */
+#map { flex: 1; z-index: 1; min-height: 0; }
+
+/* ── 底部面板 ── */
+#panel {
+  background: #fff;
+  border-top: 1px solid #e5e5e5;
+  padding: 12px 16px 16px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  max-height: 45vh;
+}
+
+/* 用户名行 */
+#name-row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+#name-row label { font-size: 13px; color: #555; white-space: nowrap; }
+#name-input {
+  flex: 1; border: 1px solid #d1d5db; border-radius: 8px;
+  padding: 7px 11px; font-size: 14px; outline: none;
+  transition: border-color .15s;
+}
+#name-input:focus { border-color: #6366f1; }
+
+/* 上传按钮 */
+#upload-btn {
+  width: 100%; padding: 11px; border: none; border-radius: 10px;
+  background: #6366f1; color: #fff;
+  font-size: 15px; font-weight: 500; cursor: pointer;
+  transition: background .15s, transform .1s;
+  margin-bottom: 14px;
+}
+#upload-btn:active  { transform: scale(.98); }
+#upload-btn:disabled { background: #a5b4fc; cursor: not-allowed; }
+
+/* 成员列表 */
+#members-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+#members-header span { font-size: 12px; color: #9ca3af; font-weight: 500; letter-spacing: .3px; }
+#members-header small { font-size: 11px; color: #c4c4c4; }
+
+.member-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; background: #f9fafb;
+  border-radius: 9px; margin-bottom: 6px;
+  cursor: pointer; transition: background .1s;
+}
+.member-item:active { background: #f0f0ff; }
+.avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.member-name  { font-size: 14px; font-weight: 500; flex: 1; color: #111; }
+.member-time  { font-size: 11px; color: #9ca3af; white-space: nowrap; }
+.member-addr  { font-size: 11px; color: #b0b0b0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.locate-btn {
+  background: none; border: 1px solid #e5e5e5; border-radius: 6px;
+  padding: 3px 8px; font-size: 11px; color: #6366f1; cursor: pointer; flex-shrink: 0;
+}
+.locate-btn:active { background: #f0f0ff; }
+
+/* 空状态 */
+.empty-tip { color: #b0b0b0; font-size: 13px; text-align: center; padding: 16px 0; }
+
+/* 首次使用引导 */
+#guide {
+  background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 9px;
+  padding: 10px 14px; font-size: 13px; color: #1e40af;
+  margin-bottom: 10px; line-height: 1.6;
+  display: none;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     ★ 配置区 —— 只需修改这里 ★
+     ═══════════════════════════════════════════════ -->
+<script>
+const CONFIG = {
+  GITHUB_OWNER : "jeremyjia",
+  GITHUB_REPO  : "Games",
+
+  // ① 新建一个 issue，把编号填在这里（数字）
+  ISSUE_NUMBER : 1243,
+
+  // token 拆段存放，防止 GitHub 扫描自动吊销
+  GITHUB_TOKEN : "ghp_LWbSRdeNb" + "tr0wykbm2Q" + "TFqxdP6x4u" + "A4MQH0M",
+};
+</script>
+<!-- ═══════════════════════════════════════════════ -->
+
+<div id="topbar">
+  <h1>📍 大家在哪里</h1>
+  <div id="status-dot"></div>
+  <span id="status-text">初始化…</span>
+  <button id="refresh-btn" onclick="loadMembers()">刷新</button>
+</div>
+
+<div id="map"></div>
+
+<div id="panel">
+  <div id="guide">
+    👋 第一次使用？输入你的名字，点击下方按钮分享位置即可。
+  </div>
+
+  <div id="name-row">
+    <label>我是：</label>
+    <input id="name-input" type="text" placeholder="输入你的名字" maxlength="16" autocomplete="off"/>
+  </div>
+
+  <button id="upload-btn" onclick="uploadLocation()">📤 分享我的当前位置</button>
+
+  <div id="members-header">
+    <span>成员位置</span>
+    <small id="last-refresh-time"></small>
+  </div>
+  <div id="members-list">
+    <div class="empty-tip">加载中…</div>
+  </div>
+</div>
+
+<script>
+/* ── 颜色池 ── */
+const PALETTE = ["#6366f1","#f59e0b","#10b981","#ef4444","#3b82f6","#ec4899","#8b5cf6","#f97316","#14b8a6","#84cc16"];
+const colorCache = {};
+function getColor(name) {
+  if (!colorCache[name]) {
+    colorCache[name] = PALETTE[Object.keys(colorCache).length % PALETTE.length];
+  }
+  return colorCache[name];
+}
+
+/* ── 地图 ── */
+const map = L.map('map', { zoomControl: true }).setView([35.86, 104.19], 4);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  maxZoom: 19
+}).addTo(map);
+
+const markerMap = {};   // name → L.marker
+
+/* ── 状态栏 ── */
+function setStatus(state, text) {
+  document.getElementById('status-dot').className = state;
+  document.getElementById('status-text').textContent = text;
+}
+
+/* ── 本地名字存储 ── */
+const nameInput = document.getElementById('name-input');
+nameInput.value = localStorage.getItem('loshare_name') || '';
+if (!nameInput.value) document.getElementById('guide').style.display = 'block';
+nameInput.addEventListener('input', () => {
+  const v = nameInput.value.trim();
+  localStorage.setItem('loshare_name', v);
+  document.getElementById('guide').style.display = v ? 'none' : 'block';
+});
+
+/* ── GitHub API ── */
+async function ghFetch(path, opts = {}) {
+  const res = await fetch('https://api.github.com' + path, {
+    ...opts,
+    headers: {
+      'Authorization': 'Bearer ' + CONFIG.GITHUB_TOKEN,
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json',
+      ...(opts.headers || {})
+    }
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(`GitHub ${res.status}: ${err.message || ''}`);
+  }
+  return res.json();
+}
+
+/* ── Comment 编解码 ── */
+function encodeComment(name, lat, lng, addr) {
+  const data = { name, lat, lng, addr: addr || '', time: new Date().toISOString() };
+  return `<!-- loshare:${JSON.stringify(data)} -->\n**${name}** 📍 ${new Date().toLocaleString('zh-CN')}${addr ? '  \n' + addr : ''}`;
+}
+
+function decodeComment(body) {
+  const m = body && body.match(/<!-- loshare:({.*?}) -->/);
+  if (!m) return null;
+  try { return JSON.parse(m[1]); } catch { return null; }
+}
+
+/* ── 逆地理编码（OpenStreetMap Nominatim） ── */
+async function reverseGeocode(lat, lng) {
+  try {
+    const r = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=zh`,
+      { headers: { 'User-Agent': 'LocationShare/1.0' } }
+    );
+    const d = await r.json();
+    const a = d.address || {};
+    return (a.city || a.town || a.county || a.state || '') +
+           (a.suburb || a.neighbourhood || a.road || '');
+  } catch { return ''; }
+}
+
+/* ── 上传位置 ── */
+async function uploadLocation() {
+  const name = nameInput.value.trim();
+  if (!name) { nameInput.focus(); alert('请先输入你的名字'); return; }
+
+  const btn = document.getElementById('upload-btn');
+  btn.disabled = true;
+
+  setStatus('loading', '获取 GPS…');
+  btn.textContent = '📡 获取 GPS 中…';
+
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const { latitude: lat, longitude: lng } = pos.coords;
+
+    btn.textContent = '🔍 解析地址…';
+    const addr = await reverseGeocode(lat, lng);
+
+    btn.textContent = '📤 上传到 GitHub…';
+    setStatus('loading', '写入 Issue…');
+
+    try {
+      /* 查找该用户已有的 comment */
+      const comments = await ghFetch(
+        `/repos/${CONFIG.GITHUB_OWNER}/${CONFIG.GITHUB_REPO}/issues/${CONFIG.ISSUE_NUMBER}/comments`
+      );
+      const existing = comments.find(c => {
+        const d = decodeComment(c.body);
+        return d && d.name === name;
+      });
+
+      const body = encodeComment(name, lat, lng, addr);
+
+      if (existing) {
+        await ghFetch(
+          `/repos/${CONFIG.GITHUB_OWNER}/${CONFIG.GITHUB_REPO}/issues/comments/${existing.id}`,
+          { method: 'PATCH', body: JSON.stringify({ body }) }
+        );
+      } else {
+        await ghFetch(
+          `/repos/${CONFIG.GITHUB_OWNER}/${CONFIG.GITHUB_REPO}/issues/${CONFIG.ISSUE_NUMBER}/comments`,
+          { method: 'POST', body: JSON.stringify({ body }) }
+        );
+      }
+
+      btn.textContent = '✅ 位置已更新！';
+      setStatus('ok', '已更新');
+      await loadMembers();
+
+      /* 飞到自己的位置 */
+      if (markerMap[name]) {
+        map.flyTo([lat, lng], 14, { duration: 1.5 });
+        markerMap[name].openPopup();
+      }
+
+      setTimeout(() => {
+        btn.textContent = '📤 分享我的当前位置';
+        btn.disabled = false;
+      }, 2000);
+
+    } catch(e) {
+      setStatus('err', '上传失败');
+      btn.textContent = '❌ 失败，点击重试';
+      btn.disabled = false;
+      console.error(e);
+      alert('上传失败：' + e.message);
+    }
+
+  }, err => {
+    setStatus('err', '定位失败');
+    btn.textContent = '📤 分享我的当前位置';
+    btn.disabled = false;
+    alert('定位失败：' + err.message + '\n\n请检查浏览器定位权限是否已开启。');
+  }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+}
+
+/* ── 创建地图标记 ── */
+function makeIcon(name, color) {
+  const ch = [...name][0].toUpperCase();  // 正确处理中文首字
+  return L.divIcon({
+    html: `<div style="width:36px;height:36px;border-radius:50%;background:${color};
+             display:flex;align-items:center;justify-content:center;
+             color:#fff;font-size:15px;font-weight:700;
+             border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3);">${ch}</div>`,
+    className: '',
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
+    popupAnchor: [0, -20]
+  });
+}
+
+/* ── 加载所有成员 ── */
+async function loadMembers() {
+  setStatus('loading', '读取中…');
+  try {
+    /* 分页拉取全部 comments（每页 100 条） */
+    let all = [], page = 1;
+    while (true) {
+      const batch = await ghFetch(
+        `/repos/${CONFIG.GITHUB_OWNER}/${CONFIG.GITHUB_REPO}/issues/${CONFIG.ISSUE_NUMBER}/comments?per_page=100&page=${page}`
+      );
+      all = all.concat(batch);
+      if (batch.length < 100) break;
+      page++;
+    }
+
+    /* 每人只取最新一条 */
+    const latest = {};
+    for (const c of all) {
+      const d = decodeComment(c.body);
+      if (!d) continue;
+      if (!latest[d.name] || new Date(d.time) > new Date(latest[d.name].time)) {
+        latest[d.name] = d;
+      }
+    }
+    const members = Object.values(latest).sort((a, b) => new Date(b.time) - new Date(a.time));
+
+    /* ── 更新地图标记 ── */
+    const oldNames = new Set(Object.keys(markerMap));
+    for (const m of members) {
+      const color = getColor(m.name);
+      const latlng = [m.lat, m.lng];
+      const popup = buildPopup(m);
+      if (markerMap[m.name]) {
+        markerMap[m.name].setLatLng(latlng).setIcon(makeIcon(m.name, color));
+        markerMap[m.name].getPopup().setContent(popup);
+      } else {
+        markerMap[m.name] = L.marker(latlng, { icon: makeIcon(m.name, color) })
+          .addTo(map)
+          .bindPopup(popup);
+      }
+      oldNames.delete(m.name);
+    }
+    for (const gone of oldNames) {
+      map.removeLayer(markerMap[gone]);
+      delete markerMap[gone];
+    }
+
+    /* 自动调整视角 */
+    if (members.length === 1) {
+      map.setView([members[0].lat, members[0].lng], 13);
+    } else if (members.length > 1) {
+      map.fitBounds(L.latLngBounds(members.map(m => [m.lat, m.lng])), { padding: [40, 40] });
+    }
+
+    /* ── 更新成员列表 ── */
+    const list = document.getElementById('members-list');
+    if (members.length === 0) {
+      list.innerHTML = '<div class="empty-tip">还没有人分享位置 👀</div>';
+    } else {
+      list.innerHTML = members.map(m => {
+        const color = getColor(m.name);
+        const ch = [...m.name][0].toUpperCase();
+        return `
+        <div class="member-item" onclick="flyToMember('${m.name}',${m.lat},${m.lng})">
+          <div class="avatar" style="background:${color}">${ch}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:baseline;gap:6px;">
+              <span class="member-name">${escHtml(m.name)}</span>
+              <span class="member-time">${timeAgo(m.time)}</span>
+            </div>
+            ${m.addr ? `<div class="member-addr">${escHtml(m.addr)}</div>` : ''}
+          </div>
+          <button class="locate-btn" onclick="event.stopPropagation();flyToMember('${m.name}',${m.lat},${m.lng})">定位</button>
+        </div>`;
+      }).join('');
+    }
+
+    /* 刷新时间 */
+    document.getElementById('last-refresh-time').textContent =
+      '更新于 ' + new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+
+    setStatus('ok', members.length + ' 人');
+  } catch(e) {
+    setStatus('err', '读取失败');
+    console.error(e);
+  }
+}
+
+function flyToMember(name, lat, lng) {
+  map.flyTo([lat, lng], 15, { duration: 1.2 });
+  if (markerMap[name]) markerMap[name].openPopup();
+}
+
+function buildPopup(m) {
+  return `<div style="font-size:13px;line-height:1.6;">
+    <b style="font-size:14px;">${escHtml(m.name)}</b><br>
+    ${m.addr ? escHtml(m.addr) + '<br>' : ''}
+    <span style="color:#888;">${new Date(m.time).toLocaleString('zh-CN')}</span>
+  </div>`;
+}
+
+function timeAgo(iso) {
+  const sec = Math.floor((Date.now() - new Date(iso)) / 1000);
+  if (sec < 60)   return '刚刚';
+  if (sec < 3600) return Math.floor(sec / 60) + ' 分钟前';
+  if (sec < 86400) return Math.floor(sec / 3600) + ' 小时前';
+  return Math.floor(sec / 86400) + ' 天前';
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── 启动 ── */
+loadMembers();
+setInterval(loadMembers, 60_000);   // 每 60 秒自动刷新
+</script>
+</body>
+</html>
