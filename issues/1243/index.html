@@ -142,7 +142,7 @@ const CONFIG = {
   <h1>📍 大家在哪里</h1>
   <div id="status-dot"></div>
   <span id="status-text">初始化…</span>
-  <button id="refresh-btn" onclick="loadMembers()">刷新</button>
+  <button id="refresh-btn" onclick="refreshAll()">刷新</button>
 </div>
 
 <div id="map"></div>
@@ -283,27 +283,26 @@ function transformLng(x, y) {
 }
 
 /* ── 上传位置 ── */
-async function uploadLocation() {
+async function uploadLocation(silent = false) {
   const name = nameInput.value.trim();
   if (!name) { nameInput.focus(); alert('请先输入你的名字'); return; }
 
   const btn = document.getElementById('upload-btn');
-  btn.disabled = true;
+  if (!silent) { btn.disabled = true; }
 
-  setStatus('loading', '获取 GPS…');
-  btn.textContent = '📡 获取 GPS 中…';
+  setStatus('loading', silent ? '更新位置…' : '获取 GPS…');
+  if (!silent) btn.textContent = '📡 获取 GPS 中…';
 
   navigator.geolocation.getCurrentPosition(async pos => {
     const { latitude: lat, longitude: lng } = pos.coords;
 
-    btn.textContent = '🔍 解析地址…';
+    if (!silent) btn.textContent = '🔍 解析地址…';
     const addr = await reverseGeocode(lat, lng);
 
-    btn.textContent = '📤 上传到 GitHub…';
+    if (!silent) { btn.textContent = '📤 上传到 GitHub…'; }
     setStatus('loading', '写入 Issue…');
 
     try {
-      /* 查找该用户已有的 comment */
       const comments = await ghFetch(
         `/repos/${CONFIG.GITHUB_OWNER}/${CONFIG.GITHUB_REPO}/issues/${CONFIG.ISSUE_NUMBER}/comments`
       );
@@ -326,34 +325,39 @@ async function uploadLocation() {
         );
       }
 
-      btn.textContent = '✅ 位置已更新！';
       setStatus('ok', '已更新');
       await loadMembers();
 
-      /* 飞到自己的位置 */
-      if (markerMap[name]) {
-        map.flyTo([lat, lng], 14, { duration: 1.5 });
-        markerMap[name].openPopup();
+      if (!silent) {
+        /* 飞到自己的位置 */
+        if (markerMap[name]) {
+          map.flyTo([lat, lng], 14, { duration: 1.5 });
+          markerMap[name].openPopup();
+        }
+        btn.textContent = '✅ 位置已更新！';
+        setTimeout(() => {
+          btn.textContent = '📤 分享我的当前位置';
+          btn.disabled = false;
+        }, 2000);
       }
-
-      setTimeout(() => {
-        btn.textContent = '📤 分享我的当前位置';
-        btn.disabled = false;
-      }, 2000);
 
     } catch(e) {
       setStatus('err', '上传失败');
-      btn.textContent = '❌ 失败，点击重试';
-      btn.disabled = false;
+      if (!silent) {
+        btn.textContent = '❌ 失败，点击重试';
+        btn.disabled = false;
+        alert('上传失败：' + e.message);
+      }
       console.error(e);
-      alert('上传失败：' + e.message);
     }
 
   }, err => {
     setStatus('err', '定位失败');
-    btn.textContent = '📤 分享我的当前位置';
-    btn.disabled = false;
-    alert('定位失败：' + err.message + '\n\n请检查浏览器定位权限是否已开启。');
+    if (!silent) {
+      btn.textContent = '📤 分享我的当前位置';
+      btn.disabled = false;
+      alert('定位失败：' + err.message + '\n\n请检查浏览器定位权限是否已开启。');
+    }
   }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
 }
 
@@ -483,6 +487,16 @@ function timeAgo(iso) {
 
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── 刷新按钮：静默上传自己 + 读取同伴 ── */
+async function refreshAll() {
+  const name = nameInput.value.trim();
+  if (name) {
+    await uploadLocation(true);   // 静默模式：不改按钮文字，后台上传
+  } else {
+    await loadMembers();          // 没有名字则只刷新同伴
+  }
 }
 
 /* ── 启动 ── */
