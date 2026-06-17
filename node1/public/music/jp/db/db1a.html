@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简谱编辑器 v0.10</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind自定义颜色 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#8B5CF6',
+                        dark: '#1F2937',
+                        light: '#F9FAFB'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .toolbar-shadow {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .btn-active {
+                @apply bg-primary text-white transform scale-95;
+            }
+            .btn-hover {
+                @apply hover:bg-primary/90 hover:text-white hover:shadow-lg transition-all duration-200;
+            }
+            .canvas-container {
+                height: calc(100vh - 320px);
+            }
+            @screen sm {
+                .canvas-container {
+                    height: calc(100vh - 240px);
+                }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-dark min-h-screen flex flex-col">
+    <!-- 头部工具栏 -->
+    <header class="bg-white toolbar-shadow sticky top-0 z-10">
+        <!-- 音符选择工具栏 -->
+        <div class="p-2 border-b border-gray-200">
+            <div class="flex justify-center flex-wrap gap-2">
+                <button id="note-1" class="note-btn btn-hover px-4 py-2 rounded-lg bg-gray-100 font-bold text-lg">1</button>
+                <button id="note-2" class="note-btn btn-hover px-4 py-2 rounded-lg bg-gray-100 font-bold text-lg">2</button>
+                <button id="note-3" class="note-btn btn-hover px-4 py-2 rounded-lg bg-gray-100 font-bold text-lg">3</button>
+                <button id="note-4" class="note-btn btn-hover px-4 py-2 rounded-lg bg-gray-100 font-bold text-lg">4</button>
+                <button id="note-5" class="note-btn btn-hover px-4 py-2 rounded-lg bg-gray-100 font-bold text-lg">5</button>
+                <button id="note-6" class="note-btn btn-hover px-4 py-2 rounded-lg bg-gray-100 font-bold text-lg">6</button>
+                <button id="note-7" class="note-btn btn-hover px-4 py-2 rounded-lg bg-gray-100 font-bold text-lg">7</button>
+                <button id="note-0" class="note-btn btn-hover px-4 py-2 rounded-lg bg-gray-100 font-bold text-lg">0</button>
+            </div>
+        </div>
+        
+        <!-- 时值选择工具栏 -->
+        <div class="p-2 border-b border-gray-200">
+            <div class="flex justify-center flex-wrap gap-2">
+                <button id="length-1" class="length-btn btn-hover px-4 py-2 rounded-lg bg-gray-100 font-bold">全</button>
+                <button id="length-2" class="length-btn btn-hover px-4 py-2 rounded-lg bg-gray-100 font-bold">二分</button>
+                <button id="length-4" class="length-btn btn-hover px-4 py-2 rounded-lg bg-gray-100 font-bold">4分</button>
+                <button id="length-8" class="length-btn btn-hover px-4 py-2 rounded-lg bg-gray-100 font-bold">8分</button>
+                <button id="length-16" class="length-btn btn-hover px-4 py-2 rounded-lg bg-gray-100 font-bold">16分</button>
+            </div>
+        </div>
+        
+        <!-- 八度选择工具栏 -->
+        <div class="p-2 border-b border-gray-200">
+            <div class="flex justify-center flex-wrap gap-2">
+                <button id="octave-2" class="octave-btn btn-hover px-4 py-2 rounded-lg bg-gray-100 font-bold">2</button>
+                <button id="octave-1" class="octave-btn btn-hover px-4 py-2 rounded-lg bg-gray-100 font-bold">1</button>
+                <button id="octave-0" class="octave-btn btn-hover px-4 py-2 rounded-lg bg-gray-100 font-bold">0</button>
+                <button id="octave--1" class="octave-btn btn-hover px-4 py-2 rounded-lg bg-gray-100 font-bold">-1</button>
+                <button id="octave--2" class="octave-btn btn-hover px-4 py-2 rounded-lg bg-gray-100 font-bold">-2</button>
+            </div>
+        </div>
+        
+        <!-- 操作工具栏 -->
+        <div class="p-2 border-b border-gray-200">
+            <div class="flex justify-center flex-wrap gap-2">
+                <button id="insert-btn" class="btn-hover px-4 py-2 rounded-lg bg-secondary text-white font-bold flex items-center">
+                    <i class="fa fa-plus mr-2"></i>插入音符
+                </button>
+                <button id="delete-btn" class="btn-hover px-4 py-2 rounded-lg bg-amber-500 text-white font-bold flex items-center">
+                    <i class="fa fa-trash mr-2"></i>删除音符
+                </button>
+                <button id="clear-btn" class="btn-hover px-4 py-2 rounded-lg bg-red-500 text-white font-bold flex items-center">
+                    <i class="fa fa-eraser mr-2"></i>清空乐谱
+                </button>
+                <button id="play-btn" class="btn-hover px-4 py-2 rounded-lg bg-accent text-white font-bold flex items-center">
+                    <i class="fa fa-play mr-2"></i>播放音符
+                </button>
+            </div>
+        </div>
+        
+        <!-- 缩放工具栏 -->
+        <div class="p-2 border-b border-gray-200">
+            <div class="flex justify-center items-center gap-2">
+                <button id="zoom-out" class="btn-hover p-2 rounded-lg bg-gray-100">
+                    <i class="fa fa-search-minus text-lg"></i>
+                </button>
+                <span id="zoom-level" class="text-lg font-bold">100%</span>
+                <button id="zoom-in" class="btn-hover p-2 rounded-lg bg-gray-100">
+                    <i class="fa fa-search-plus text-lg"></i>
+                </button>
+                <input type="range" id="zoom-slider" min="50" max="200" value="100" 
+                       class="w-32 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary">
+            </div>
+        </div>
+    </header>
+
+    <!-- 画布区域 -->
+    <main class="flex-grow overflow-auto p-4 bg-gray-100">
+        <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="p-2 bg-gray-800 text-white text-center font-bold">乐谱预览</div>
+            <div class="p-4 canvas-container relative">
+                <canvas id="sheet-music" class="w-full h-full"></canvas>
+                <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
+                    <i class="fa fa-music text-6xl mb-4"></i>
+                    <p class="text-xl">乐谱为空</p>
+                    <p class="text-sm mt-2">请从上方工具栏选择音符、时值和八度，然后点击"插入音符"按钮</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 状态栏 -->
+    <footer class="bg-dark text-white p-2 text-center text-sm">
+        <div class="flex justify-between items-center">
+            <div>简谱编辑器 v0.10</div>
+            <div id="status-time">2025-06-15 12:00:00</div>
+        </div>
+    </footer>
+
+    <script>
+        // 当前音符状态
+        const state = {
+            currentNote: "5",
+            noteLength: "1",
+            octave: 1,
+            zoom: 100,
+            notes: []
+        };
+
+        // DOM元素
+        const noteButtons = document.querySelectorAll('.note-btn');
+        const lengthButtons = document.querySelectorAll('.length-btn');
+        const octaveButtons = document.querySelectorAll('.octave-btn');
+        const insertBtn = document.getElementById('insert-btn');
+        const deleteBtn = document.getElementById('delete-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const playBtn = document.getElementById('play-btn');
+        const zoomInBtn = document.getElementById('zoom-in');
+        const zoomOutBtn = document.getElementById('zoom-out');
+        const zoomSlider = document.getElementById('zoom-slider');
+        const zoomLevel = document.getElementById('zoom-level');
+        const canvas = document.getElementById('sheet-music');
+        const ctx = canvas.getContext('2d');
+        const emptyState = document.getElementById('empty-state');
+        const statusTime = document.getElementById('status-time');
+
+        // 初始化按钮状态
+        document.getElementById(`note-${state.currentNote}`).classList.add('btn-active');
+        document.getElementById(`length-${state.noteLength}`).classList.add('btn-active');
+        document.getElementById(`octave-${state.octave}`).classList.add('btn-active');
+
+        // 更新时间显示
+        function updateTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            statusTime.textContent = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        }
+        
+        // 每秒更新时间
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // 音符选择事件
+        noteButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                noteButtons.forEach(btn => btn.classList.remove('btn-active', 'bg-primary', 'text-white'));
+                button.classList.add('btn-active');
+                state.currentNote = button.textContent;
+            });
+        });
+
+        // 时值选择事件
+        lengthButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                lengthButtons.forEach(btn => btn.classList.remove('btn-active', 'bg-primary', 'text-white'));
+                button.classList.add('btn-active');
+                state.noteLength = button.id.split('-')[1];
+            });
+        });
+
+        // 八度选择事件
+        octaveButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                octaveButtons.forEach(btn => btn.classList.remove('btn-active', 'bg-primary', 'text-white'));
+                button.classList.add('btn-active');
+                state.octave = parseInt(button.id.split('-')[1]);
+            });
+        });
+
+        // 插入音符
+        insertBtn.addEventListener('click', () => {
+            state.notes.push({
+                note: state.currentNote,
+                length: state.noteLength,
+                octave: state.octave
+            });
+            renderSheetMusic();
+            updateEmptyState();
+        });
+
+        // 删除最后一个音符
+        deleteBtn.addEventListener('click', () => {
+            if (state.notes.length > 0) {
+                state.notes.pop();
+                renderSheetMusic();
+                updateEmptyState();
+            } else {
+                showToast('没有可删除的音符');
+            }
+        });
+
+        // 清空乐谱
+        clearBtn.addEventListener('click', () => {
+            if (state.notes.length > 0) {
+                if (confirm('确定要清空整个乐谱吗？')) {
+                    state.notes = [];
+                    renderSheetMusic();
+                    updateEmptyState();
+                }
+            } else {
+                showToast('乐谱已经为空');
+            }
+        });
+
+        // 播放音符（模拟）
+        playBtn.addEventListener('click', () => {
+            if (state.notes.length > 0) {
+                showToast('播放音符...');
+                // 实际应用中可以添加音频播放功能
+            } else {
+                showToast('没有可播放的音符');
+            }
+        });
+
+        // 缩放控制
+        zoomInBtn.addEventListener('click', () => {
+            if (state.zoom < 200) {
+                state.zoom += 10;
+                updateZoom();
+            }
+        });
+
+        zoomOutBtn.addEventListener('click', () => {
+            if (state.zoom > 50) {
+                state.zoom -= 10;
+                updateZoom();
+            }
+        });
+
+        zoomSlider.addEventListener('input', () => {
+            state.zoom = parseInt(zoomSlider.value);
+            updateZoom();
+        });
+
+        function updateZoom() {
+            zoomSlider.value = state.zoom;
+            zoomLevel.textContent = `${state.zoom}%`;
+            renderSheetMusic();
+        }
+
+        // 响应式画布
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            renderSheetMusic();
+        }
+
+        // 监听窗口大小变化
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // 更新空状态显示
+        function updateEmptyState() {
+            if (state.notes.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+            }
+        }
+
+        // 显示提示消息
+        function showToast(message) {
+            // 创建toast元素
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-4 right-4 bg-dark text-white px-4 py-2 rounded-lg shadow-lg z-50 transform transition-all duration-300 translate-y-2 opacity-0';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            // 显示toast
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+            
+            // 自动隐藏
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 2000);
+        }
+
+        // 渲染乐谱
+        function renderSheetMusic() {
+            // 清除画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (state.notes.length === 0) return;
+            
+            // 设置缩放
+            const scale = state.zoom / 100;
+            ctx.scale(scale, scale);
+            
+            // 设置字体和颜色
+            ctx.font = '40px Arial';
+            ctx.fillStyle = '#000';
+            ctx.textBaseline = 'middle';
+            
+            // 绘制音符
+            const noteSpacing = 60;
+            let xPos = 50;
+            const centerY = canvas.height / 2 / scale;
+            
+            state.notes.forEach(noteData => {
+                const { note, length, octave } = noteData;
+                
+                // 绘制音符
+                ctx.font = '40px Arial';
+                ctx.fillText(note, xPos, centerY);
+                
+                // 绘制八度点
+                if (octave > 0) {
+                    // 高音点
+                    ctx.beginPath();
+                    ctx.arc(xPos + 8, centerY - 30, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    if (octave > 1) {
+                        ctx.beginPath();
+                        ctx.arc(xPos + 8, centerY - 40, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                } else if (octave < 0) {
+                    // 低音点
+                    ctx.beginPath();
+                    ctx.arc(xPos + 8, centerY + 30, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    if (octave < -1) {
+                        ctx.beginPath();
+                        ctx.arc(xPos + 8, centerY + 40, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+                
+                // 绘制时值线
+                if (length === '1') {
+                    // 全音符 (- - -)
+                    ctx.beginPath();
+                    ctx.moveTo(xPos + 15, centerY);
+                    ctx.lineTo(xPos + 35, centerY);
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(xPos + 45, centerY);
+                    ctx.lineTo(xPos + 65, centerY);
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(xPos + 75, centerY);
+                    ctx.lineTo(xPos + 95, centerY);
+                    ctx.stroke();
+                    
+                    xPos += 110;
+                } else if (length === '2') {
+                    // 二分音符 (-)
+                    ctx.beginPath();
+                    ctx.moveTo(xPos + 15, centerY);
+                    ctx.lineTo(xPos + 35, centerY);
+                    ctx.stroke();
+                    
+                    xPos += 50;
+                } else if (length === '4') {
+                    // 四分音符 (no line)
+                    xPos += 30;
+                } else if (length === '8') {
+                    // 八分音符 (下划线)
+                    ctx.beginPath();
+                    ctx.moveTo(xPos - 5, centerY + 15);
+                    ctx.lineTo(xPos + 15, centerY + 15);
+                    ctx.stroke();
+                    
+                    xPos += 30;
+                } else if (length === '16') {
+                    // 十六分音符 (双下划线)
+                    ctx.beginPath();
+                    ctx.moveTo(xPos - 5, centerY + 15);
+                    ctx.lineTo(xPos + 15, centerY + 15);
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(xPos - 5, centerY + 22);
+                    ctx.lineTo(xPos + 15, centerY + 22);
+                    ctx.stroke();
+                    
+                    xPos += 30;
+                }
+            });
+            
+            // 恢复缩放
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+        }
+
+        // 初始渲染
+        renderSheetMusic();
+        updateEmptyState();
+    </script>
+</body>
+</html>    

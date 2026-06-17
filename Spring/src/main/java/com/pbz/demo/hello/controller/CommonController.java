@@ -1,8 +1,11 @@
 package com.pbz.demo.hello.controller;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -273,7 +276,7 @@ public class CommonController {
 	@RequestMapping(value = "/getServerInfo", method = RequestMethod.GET)
 	@ResponseBody
 	public LinkedHashMap<String, Object> getServerInfo() {
-		LinkedHashMap<String, Object> ret = new LinkedHashMap<String, Object>();
+    	LinkedHashMap<String, Object> ret = new LinkedHashMap<String, Object>();
 		ret.put("Application Version", app_version);
 
 		String app_path = System.getProperty("user.dir");
@@ -290,6 +293,31 @@ public class CommonController {
 
 		String java_version = System.getProperty("java.version");
 		ret.put("Java Runtime Version", java_version);
+
+		// 获取服务器真实IP
+		String ipServer = "127.0.0.1"; // 默认值
+		try {
+			Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+			while (interfaces.hasMoreElements()) {
+				NetworkInterface iface = interfaces.nextElement();
+				// 跳过非活动接口/回环接口/虚拟接口
+				if (!iface.isUp() || iface.isLoopback() || iface.isVirtual()) 
+					continue;
+				
+				Enumeration<InetAddress> addresses = iface.getInetAddresses();
+				while (addresses.hasMoreElements()) {
+					InetAddress addr = addresses.nextElement();
+					// 跳过回环地址和IPv6地址（按需调整）
+					if (!addr.isLoopbackAddress() && addr.getHostAddress().contains(".")) {
+						ipServer = addr.getHostAddress();
+						break; // 找到第一个符合条件的IP即退出
+					}
+				}
+			}
+		} catch (Exception e) {
+			System.err.println("Error getting IP address: " + e.getMessage());
+		}
+		ret.put("Server IP", ipServer);
 
 		return ret;
 	}

@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简谱编辑器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#8B5CF6',
+                        dark: '#1E293B',
+                        light: '#F8FAFC'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .toolbar-btn {
+                @apply px-3 py-2 rounded-lg transition-all duration-200 text-center font-medium;
+            }
+            .toolbar-btn-active {
+                @apply bg-primary text-white;
+            }
+            .toolbar-btn-inactive {
+                @apply bg-gray-100 hover:bg-gray-200 text-gray-700;
+            }
+            .action-btn {
+                @apply px-4 py-2 rounded-lg transition-all duration-200 text-center font-medium;
+            }
+            .action-btn-primary {
+                @apply bg-primary hover:bg-primary/90 text-white;
+            }
+            .action-btn-danger {
+                @apply bg-red-500 hover:bg-red-600 text-white;
+            }
+            .action-btn-secondary {
+                @apply bg-gray-200 hover:bg-gray-300 text-gray-700;
+            }
+            .status-bar {
+                @apply bg-gray-800 text-white text-sm p-2 flex justify-between items-center;
+            }
+            .score-canvas {
+                @apply w-full bg-white rounded-lg shadow-md p-4 overflow-auto;
+            }
+            .dot-above {
+                position: relative;
+            }
+            .dot-above::before {
+                content: '•';
+                position: absolute;
+                top: -0.7em;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 0.7em;
+            }
+            .dot-below {
+                position: relative;
+            }
+            .dot-below::after {
+                content: '•';
+                position: absolute;
+                bottom: -0.7em;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 0.7em;
+            }
+            .two-dots-above {
+                position: relative;
+            }
+            .two-dots-above::before {
+                content: '••';
+                position: absolute;
+                top: -0.7em;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 0.7em;
+            }
+            .two-dots-below {
+                position: relative;
+            }
+            .two-dots-below::after {
+                content: '••';
+                position: absolute;
+                bottom: -0.7em;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 0.7em;
+            }
+            .eighth-note {
+                position: relative;
+            }
+            .eighth-note::after {
+                content: '⎯';
+                position: absolute;
+                bottom: -0.3em;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 0.7em;
+            }
+            .sixteenth-note {
+                position: relative;
+            }
+            .sixteenth-note::after {
+                content: '⎯⎯';
+                position: absolute;
+                bottom: -0.3em;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 0.7em;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <!-- 顶部工具栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <!-- 音符选择工具栏 -->
+        <div class="flex flex-wrap p-2 gap-2 border-b border-gray-200">
+            <button id="note-1" class="toolbar-btn toolbar-btn-inactive">1</button>
+            <button id="note-2" class="toolbar-btn toolbar-btn-inactive">2</button>
+            <button id="note-3" class="toolbar-btn toolbar-btn-inactive">3</button>
+            <button id="note-4" class="toolbar-btn toolbar-btn-inactive">4</button>
+            <button id="note-5" class="toolbar-btn toolbar-btn-inactive">5</button>
+            <button id="note-6" class="toolbar-btn toolbar-btn-inactive">6</button>
+            <button id="note-7" class="toolbar-btn toolbar-btn-inactive">7</button>
+            <button id="note-0" class="toolbar-btn toolbar-btn-inactive">0</button>
+        </div>
+
+        <!-- 时值选择工具栏 -->
+        <div class="flex flex-wrap p-2 gap-2 border-b border-gray-200">
+            <button id="length-1" class="toolbar-btn toolbar-btn-inactive">全</button>
+            <button id="length-2" class="toolbar-btn toolbar-btn-inactive">二分</button>
+            <button id="length-4" class="toolbar-btn toolbar-btn-inactive">4分</button>
+            <button id="length-8" class="toolbar-btn toolbar-btn-inactive">8分</button>
+            <button id="length-16" class="toolbar-btn toolbar-btn-inactive">16分</button>
+        </div>
+
+        <!-- 八度选择工具栏 -->
+        <div class="flex flex-wrap p-2 gap-2 border-b border-gray-200">
+            <button id="octave-2" class="toolbar-btn toolbar-btn-inactive">2</button>
+            <button id="octave-1" class="toolbar-btn toolbar-btn-inactive">1</button>
+            <button id="octave-0" class="toolbar-btn toolbar-btn-inactive">0</button>
+            <button id="octave--1" class="toolbar-btn toolbar-btn-inactive">-1</button>
+            <button id="octave--2" class="toolbar-btn toolbar-btn-inactive">-2</button>
+        </div>
+
+        <!-- 操作工具栏 -->
+        <div class="flex flex-wrap p-2 gap-2 border-b border-gray-200">
+            <button id="insert-note" class="action-btn action-btn-primary flex items-center">
+                <i class="fa fa-plus mr-1"></i> 插入音符
+            </button>
+            <button id="delete-note" class="action-btn action-btn-danger flex items-center">
+                <i class="fa fa-trash mr-1"></i> 删除最后
+            </button>
+            <button id="clear-score" class="action-btn action-btn-secondary flex items-center">
+                <i class="fa fa-eraser mr-1"></i> 清空乐谱
+            </button>
+            <button id="play-note" class="action-btn action-btn-secondary flex items-center">
+                <i class="fa fa-play mr-1"></i> 播放当前
+            </button>
+        </div>
+
+        <!-- 设置工具栏 -->
+        <div class="flex flex-wrap p-2 gap-2 items-center">
+            <label for="scale" class="text-sm font-medium text-gray-700">缩放:</label>
+            <input type="range" id="scale" min="0.5" max="2" step="0.1" value="1" 
+                   class="w-full max-w-md h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+            <span id="scale-value" class="text-sm font-medium text-gray-700">100%</span>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-grow p-4">
+        <div class="score-canvas" id="score-display">
+            <div class="score-content" id="score-content" style="font-size: 24px; line-height: 2;">
+                <!-- 乐谱将在这里动态生成 -->
+                <div class="text-center text-gray-400 italic">点击上方按钮选择音符、时值和八度，然后点击"插入音符"开始创作</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 状态栏 -->
+    <footer class="status-bar">
+        <div>简谱编辑器 v0.10</div>
+        <div id="current-time">加载中...</div>
+    </footer>
+
+    <script>
+        // 当前音符设置
+        let currentNote = {
+            note: "5",
+            noteLength: "1",
+            octave: 1
+        };
+
+        // 乐谱数据
+        let scoreData = [];
+
+        // DOM 元素
+        const noteButtons = document.querySelectorAll('[id^="note-"]');
+        const lengthButtons = document.querySelectorAll('[id^="length-"]');
+        const octaveButtons = document.querySelectorAll('[id^="octave-"]');
+        const insertButton = document.getElementById('insert-note');
+        const deleteButton = document.getElementById('delete-note');
+        const clearButton = document.getElementById('clear-score');
+        const playButton = document.getElementById('play-note');
+        const scoreDisplay = document.getElementById('score-content');
+        const scaleSlider = document.getElementById('scale');
+        const scaleValue = document.getElementById('scale-value');
+        const currentTimeElement = document.getElementById('current-time');
+
+        // 初始化选择
+        document.getElementById(`note-${currentNote.note}`).classList.add('toolbar-btn-active');
+        document.getElementById(`length-${currentNote.noteLength}`).classList.add('toolbar-btn-active');
+        document.getElementById(`octave-${currentNote.octave}`).classList.add('toolbar-btn-active');
+
+        // 更新当前时间
+        function updateCurrentTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            currentTimeElement.textContent = `${hours}:${minutes}:${seconds}`;
+        }
+
+        // 音符按钮事件
+        noteButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                noteButtons.forEach(btn => btn.classList.remove('toolbar-btn-active'));
+                button.classList.add('toolbar-btn-active');
+                currentNote.note = button.id.split('-')[1];
+            });
+        });
+
+        // 时值按钮事件
+        lengthButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                lengthButtons.forEach(btn => btn.classList.remove('toolbar-btn-active'));
+                button.classList.add('toolbar-btn-active');
+                currentNote.noteLength = button.id.split('-')[1];
+            });
+        });
+
+        // 八度按钮事件
+        octaveButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                octaveButtons.forEach(btn => btn.classList.remove('toolbar-btn-active'));
+                button.classList.add('toolbar-btn-active');
+                currentNote.octave = parseInt(button.id.split('-')[1]);
+            });
+        });
+
+        // 插入音符
+        insertButton.addEventListener('click', () => {
+            scoreData.push({...currentNote});
+            renderScore();
+            scrollToEnd();
+        });
+
+        // 删除最后一个音符
+        deleteButton.addEventListener('click', () => {
+            if (scoreData.length > 0) {
+                scoreData.pop();
+                renderScore();
+                scrollToEnd();
+            }
+        });
+
+        // 清空乐谱
+        clearButton.addEventListener('click', () => {
+            if (confirm('确定要清空整个乐谱吗？')) {
+                scoreData = [];
+                renderScore();
+            }
+        });
+
+        // 播放当前音符
+        playButton.addEventListener('click', () => {
+            playNote(currentNote);
+        });
+
+        // 缩放控制
+        scaleSlider.addEventListener('input', () => {
+            const scale = scaleSlider.value;
+            scaleValue.textContent = `${Math.round(scale * 100)}%`;
+            scoreDisplay.style.fontSize = `${24 * scale}px`;
+        });
+
+        // 滚动到乐谱末尾
+        function scrollToEnd() {
+            const container = document.getElementById('score-display');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // 渲染乐谱
+        function renderScore() {
+            if (scoreData.length === 0) {
+                scoreDisplay.innerHTML = '<div class="text-center text-gray-400 italic">乐谱为空</div>';
+                return;
+            }
+
+            let html = '';
+            scoreData.forEach((note, index) => {
+                html += renderSingleNote(note, index);
+            });
+
+            scoreDisplay.innerHTML = html;
+        }
+
+        // 渲染单个音符
+        function renderSingleNote(note, index) {
+            let noteHtml = '';
+            let noteValue = note.note;
+
+            // 处理八度
+            if (note.octave === 2) {
+                noteHtml += `<span class="two-dots-above">${noteValue}</span>`;
+            } else if (note.octave === 1) {
+                noteHtml += `<span class="dot-above">${noteValue}</span>`;
+            } else if (note.octave === -1) {
+                noteHtml += `<span class="dot-below">${noteValue}</span>`;
+            } else if (note.octave === -2) {
+                noteHtml += `<span class="two-dots-below">${noteValue}</span>`;
+            } else {
+                noteHtml += noteValue;
+            }
+
+            // 处理时值
+            if (note.noteLength === "1") {
+                noteHtml += ' - - -';
+            } else if (note.noteLength === "2") {
+                noteHtml += ' -';
+            } else if (note.noteLength === "8") {
+                noteHtml = `<span class="eighth-note">${noteHtml}</span>`;
+            } else if (note.noteLength === "16") {
+                noteHtml = `<span class="sixteenth-note">${noteHtml}</span>`;
+            }
+
+            // 每10个音符换行
+            const isLastInLine = (index + 1) % 10 === 0;
+            const lineBreak = isLastInLine ? '<br>' : '';
+
+            return `<span class="mx-1">${noteHtml}</span>${lineBreak}`;
+        }
+
+        // 播放音符 (使用 Web Audio API 模拟简单音调)
+        function playNote(note) {
+            // 音符频率映射 (C大调音阶)
+            const noteFrequencies = {
+                "1": 261.63, // C4
+                "2": 293.66, // D4
+                "3": 329.63, // E4
+                "4": 349.23, // F4
+                "5": 392.00, // G4
+                "6": 440.00, // A4
+                "7": 493.88, // B4
+                "0": 0       // 休止符
+            };
+
+            // 时值持续时间 (毫秒)
+            const durationMap = {
+                "1": 1600, // 全音符
+                "2": 800,  // 二分音符
+                "4": 400,  // 四分音符
+                "8": 200,  // 八分音符
+                "16": 100  // 十六分音符
+            };
+
+            const frequency = noteFrequencies[note.note];
+            const duration = durationMap[note.noteLength];
+
+            // 如果是休止符，直接设置延迟
+            if (frequency === 0) {
+                setTimeout(() => {}, duration);
+                return;
+            }
+
+            // 应用八度调整
+            const octaveFactor = Math.pow(2, note.octave);
+            const adjustedFrequency = frequency * octaveFactor;
+
+            // 使用 Web Audio API 播放音符
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            const audioContext = new AudioContext();
+
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(adjustedFrequency, audioContext.currentTime);
+
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.8, audioContext.currentTime + 0.05);
+            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration / 1000 - 0.1);
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + duration / 1000);
+        }
+
+        // 初始化
+        updateCurrentTime();
+        setInterval(updateCurrentTime, 1000);
+    </script>
+</body>
+</html>    

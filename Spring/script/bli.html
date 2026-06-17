@@ -1,18 +1,420 @@
-<!DOCTYPE HTML>
-<html>
-
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>手机画布应用</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+            color: white;
+            overflow: hidden;
+        }
+        
+        .phone-frame {
+            width: 100%;
+            max-width: 400px;
+            height: 90vh;
+            max-height: 800px;
+            background: #111;
+            border-radius: 30px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            border: 8px solid #333;
+        }
+        
+        /* 手机顶部凹槽 */
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40%;
+            height: 25px;
+            background: #000;
+            border-radius: 0 0 15px 15px;
+            z-index: 10;
+        }
+        
+        .toolbar {
+            height: 60px;
+            background: linear-gradient(to right, #3a7bd5, #00d2ff);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            z-index: 2;
+        }
+        
+        .app-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .toggle-clock-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .toggle-clock-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+        
+        .toggle-clock-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .canvas-container {
+            flex: 1;
+            background: #0a0e21;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #myCanvas {
+            background: #121212;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        .canvas-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        .overlay-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background: linear-gradient(to right, #00d2ff, #3a7bd5);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .overlay-subtitle {
+            font-size: 1.1rem;
+            max-width: 80%;
+            line-height: 1.6;
+            color: #aaa;
+            margin-bottom: 25px;
+        }
+        
+        .status-bar {
+            height: 70px;
+            background: rgba(20, 20, 30, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 2;
+            backdrop-filter: blur(5px);
+        }
+        
+        .clock-display {
+            font-size: 1.8rem;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            letter-spacing: 2px;
+            background: linear-gradient(to right, #00d2ff, #3a7bd5);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .clock-status {
+            font-size: 1rem;
+            padding: 5px 15px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .running {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+        }
+        
+        .stopped {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+        
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 480px) {
+            .phone-frame {
+                height: 85vh;
+                border-radius: 25px;
+            }
+            
+            .overlay-title {
+                font-size: 1.8rem;
+            }
+            
+            .clock-display {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
 <body>
-  <canvas id="myCanvas" width="2048" height="1536"></canvas>
-  <script src="./myplx1.js"></script>
-  <script type="text/javascript">
+  <script src="myplx1.js"></script>
+    <div class="container">
+        <div class="phone-frame">
+            <div class="notch"></div>
+            <div class="toolbar">
+                <div class="app-title">画布应用控制面板</div>
+                <button class="toggle-clock-btn" id="clockBtn">启动时钟</button>
+            </div>
+            
+            <div class="canvas-container">
+                <canvas id="myCanvas"></canvas>
+                <div class="particles" id="particles"></div>
+                <div class="canvas-overlay">
+                    <h1 class="overlay-title">交互式画布应用</h1>
+                    <p class="overlay-subtitle">点击顶部按钮控制状态栏时钟。时钟运行时，画布中会显示动画效果。</p>
+                </div>
+            </div>
+            
+            <div class="status-bar">
+                <div class="clock-display" id="clock">00:00:00</div>
+                <div class="clock-status stopped" id="clockStatus">已停止</div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            手机画布应用 | 点击顶部按钮控制时钟
+        </div>
+    </div>
 
-    var time = 0;
-    var fun = function () {
-      animateFrame(time++);
-    }
-    setInterval(fun, 11);
-  </script>
-
+    <script>
+        let time = 0;
+        // 获取DOM元素
+        const clockBtn = document.getElementById('clockBtn');
+        const clockDisplay = document.getElementById('clock');
+        const clockStatus = document.getElementById('clockStatus');
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 状态变量
+        let isClockRunning = false;
+        let clockInterval = null;
+        let animationFrame = null;
+        
+        // 调整画布大小
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        
+        // 初始化
+        window.addEventListener('load', () => {
+            resizeCanvas();
+            drawInitialCanvas();
+        });
+        
+        window.addEventListener('resize', resizeCanvas);
+        
+        // 绘制初始画布
+        function drawInitialCanvas() {
+            ctx.fillStyle = '#121212';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制网格
+            ctx.strokeStyle = 'rgba(50, 50, 70, 0.5)';
+            ctx.lineWidth = 1;
+            
+            // 垂直线
+            for (let x = 0; x < canvas.width; x += 30) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            // 水平线
+            for (let y = 0; y < canvas.height; y += 30) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // 绘制中心点
+            ctx.fillStyle = '#3a7bd5';
+            ctx.beginPath();
+            ctx.arc(canvas.width/2, canvas.height/2, 8, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // 动画粒子
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = Math.random() * 2 - 1;
+                this.speedY = Math.random() * 2 - 1;
+                this.color = `hsl(${Math.random() * 360}, 70%, 60%)`;
+            }
+            
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                
+                if (this.x < 0 || this.x > canvas.width || 
+                    this.y < 0 || this.y > canvas.height) {
+                    this.reset();
+                }
+            }
+            
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        const particles = [];
+        for (let i = 0; i < 100; i++) {
+            particles.push(new Particle());
+        }
+        
+        // 动画循环
+        function animate() {
+            animateFrame(time++);
+            ctx.fillStyle = 'rgba(18, 18, 18, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+            animationFrame = requestAnimationFrame(animate);
+        }
+        
+        // 停止动画
+        function stopAnimation() {
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+                animationFrame = null;
+                drawInitialCanvas();
+            }
+        }
+        
+        // 更新时钟显示
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            clockDisplay.textContent = `${hours}:${minutes}:${seconds}`;
+        }
+        
+        // 启动时钟
+        function startClock() {
+            if (!isClockRunning) {
+                updateClock();
+                clockInterval = setInterval(updateClock, 1000);
+                clockBtn.textContent = '停止时钟';
+                clockStatus.textContent = '运行中';
+                clockStatus.className = 'clock-status running';
+                isClockRunning = true;
+                
+                // 启动画布动画
+                animate();
+            }
+        }
+        
+        // 停止时钟
+        function stopClock() {
+            if (isClockRunning) {
+                clearInterval(clockInterval);
+                clockBtn.textContent = '启动时钟';
+                clockStatus.textContent = '已停止';
+                clockStatus.className = 'clock-status stopped';
+                isClockRunning = false;
+                
+                // 停止画布动画
+                stopAnimation();
+            }
+        }
+        
+        // 按钮点击事件
+        clockBtn.addEventListener('click', () => {
+            if (isClockRunning) {
+                stopClock();
+            } else {
+                startClock();
+            }
+        });
+        
+        // 初始显示
+        updateClock();
+    </script>
 </body>
-
 </html>

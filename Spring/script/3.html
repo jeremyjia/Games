@@ -1,187 +1,995 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<!-- saved from url=(0046)http://www.baron.com.cn/javascript/bm/you8.htm -->
-<HTML><HEAD><TITLE>模拟游戏</TITLE>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>跳舞小人动画游戏v0.22</title>
+    
+    <script src="plx/ghClient.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: manipulation;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        header {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid #ffd700;
+        }
+        
+        h1 {
+            color: #ffd700;
+            font-size: 2.5rem;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            letter-spacing: 3px;
+        }
+        
+        .subtitle {
+            color: #fff;
+            font-size: 1.2rem;
+            margin-top: 5px;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+        }
+        
+        .animation-container {
+            width: 100%;
+            max-width: 300px;
+            height: 250px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #444;
+        }
+        
+        .animation-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #ff8c00, #ffd700, #ff8c00);
+            box-shadow: 0 0 10px #ffd700;
+        }
+        
+        canvas {
+            background: #111;
+            border-radius: 10px;
+            max-width: 100%;
+            width: 280px;
+            height: 200px;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 25px;
+            width: 100%;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(to right, #ff8c00, #ffd700);
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.4);
+            min-width: 140px;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(255, 140, 0, 0.6);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(to right, #4a00e0, #8e2de2);
+            color: white;
+        }
+        .btn_gh_client {
+            background: linear-gradient(to right, #13b077, #8e2de2);
+            color: white;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            flex-wrap: wrap;
+        }
+        
+        .stat-box {
+            text-align: center;
+            color: white;
+            min-width: 90px;
+            margin: 5px;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ffd700;
+            margin-top: 5px;
+        }
+        
+        .difficulty {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        .diff-btn {
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 80px;
+            text-align: center;
+        }
+        
+        .diff-btn.active {
+            background: linear-gradient(to right, #00c9ff, #92fe9d);
+            color: #000;
+            font-weight: bold;
+        }
+        
+        footer {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            text-align: center;
+            color: #aaa;
+            font-size: 0.9rem;
+            border-top: 1px solid #333;
+        }
+        
+        .instructions {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            color: #ddd;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            width: 100%;
+        }
+        
+        .highlight {
+            color: #ffd700;
+            font-weight: bold;
+        }
+        
+        .music-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+        
+        .music-label {
+            color: white;
+            font-size: 0.9rem;
+        }
+        
+        .mobile-controls {
+            display: none;
+            width: 100%;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+        
+        .mobile-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(to right, #ff8c00, #ffd700);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            user-select: none;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .btn {
+                min-width: 120px;
+                padding: 12px 20px;
+                font-size: 1rem;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            
+            .animation-container {
+                height: 220px;
+            }
+            
+            canvas {
+                width: 260px;
+                height: 180px;
+            }
+            
+            .mobile-controls {
+                display: flex;
+            }
+            
+            .instructions {
+                font-size: 0.85rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .stat-value {
+                font-size: 1.3rem;
+            }
+            
+            .btn {
+                min-width: 100px;
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .animation-container {
+                height: 200px;
+            }
+            
+            canvas {
+                width: 240px;
+                height: 160px;
+            }
+            
+            .mobile-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 1.2rem;
+            }
+            
+            .instructions {
+                font-size: 0.8rem;
+            }
+            
+            .diff-btn {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+                min-width: 70px;
+            }
+        }
+        
+        /* 旋转动画效果 */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 215, 0, 0.3);
+            border-top: 5px solid #ffd700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+        
+        /* 按钮活跃状态 */
+        .btn.active {
+            background: linear-gradient(to right, #ffd700, #ff8c00);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>跳舞小人动画游戏v0.22</h1>
+            <div class="subtitle">移动设备完美演示版</div>
+        </header>
+        
+        <div class="game-area">
+            <div class="animation-container">
+                <canvas id="danceCanvas" width="280" height="200"></canvas>
+                <div class="loading" id="loadingIndicator"></div>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-box">
+                    <div>帧数</div>
+                    <div id="frameCount" class="stat-value">0</div>
+                </div>
+                <div class="stat-box">
+                    <div>速度</div>
+                    <div id="speedValue" class="stat-value">中速</div>
+                </div>
+                <div class="stat-box">
+                    <div>分数</div>
+                    <div id="scoreValue" class="stat-value">0</div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button id="startBtn" class="btn">开始跳舞</button>
+                <button id="stopBtn" class="btn">停止</button>
+                <button id="fasterBtn" class="btn btn-secondary">加速</button>
+                <button id="slowerBtn" class="btn btn-secondary">减速</button>
+                <button id="id_4_toggle_ghClientWnd" class="btn btn_gh_client">ghClientWnd</button>
+            </div>
+            
+            <div class="difficulty">
+                <div class="diff-btn active" data-speed="150">简单</div>
+                <div class="diff-btn" data-speed="100">中等</div>
+                <div class="diff-btn" data-speed="60">困难</div>
+                <div class="diff-btn" data-speed="40">极难</div>
+            </div>
+            
+            <div class="mobile-controls">
+                <div class="mobile-btn" id="mobileFasterBtn">+</div>
+                <div class="mobile-btn" id="mobileSlowerBtn">-</div>
+            </div>
+            
+            <div class="instructions">
+                <p><span class="highlight">游戏说明：</span> 这是一个经典跳舞小人动画的现代实现。点击"开始跳舞"按钮观看动画，使用加速/减速按钮调整动画速度。连续观看动画可获得分数奖励！</p>
+                <p><span class="highlight">移动设备提示：</span> 使用屏幕底部的加减按钮可以快速调整速度！</p>
+            </div>
+            
+            <div class="music-controls">
+                <span class="music-label">背景音乐:</span>
+                <button id="musicBtn" class="btn btn-secondary">开启音乐</button>
+                <span class="music-label">音效:</span>
+                <button id="soundBtn" class="btn btn-secondary">开启音效</button>
+            </div>
+        </div>
+        
+        <footer>
+            <p>基于经典跳舞小人动画 | 移动设备优化版 | © 2023 跳舞小人游戏</p>
+        </footer>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('danceCanvas');
+            const ctx = canvas.getContext('2d');
+            const frameCountEl = document.getElementById('frameCount');
+            const speedValueEl = document.getElementById('speedValue');
+            const scoreValueEl = document.getElementById('scoreValue');
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const fasterBtn = document.getElementById('fasterBtn');
+            const slowerBtn = document.getElementById('slowerBtn');
+            const diffBtns = document.querySelectorAll('.diff-btn');
+            const musicBtn = document.getElementById('musicBtn');
+            const soundBtn = document.getElementById('soundBtn');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const mobileFasterBtn = document.getElementById('mobileFasterBtn');
+            const mobileSlowerBtn = document.getElementById('mobileSlowerBtn');
+            
+            // 跳舞小人动画帧数据
+            const mans = [
+                "   o\n  /|\\\n */ \\*        ",
+                "   o_\n  \\<| *\n  *>\\         ",
+                "  _o/*\n * |\n  / \\         ",
+                " *\\o_\n  /  *\n \\<\\           ",
+                "  _o/*\n * |\n  / \\         ",
+                " *\\c/*\n   )\n  / >         ",
+                "     *\n  \\__/c\n   > \\*       ",
+                "   __/\n    (o_*\n     \\*       ",
+                "      \\ /\n       |\n     */o\\*    ",
+                "       \\_\n       (\n     */o\\*    ",
+                "        \\<_\n      __(\n     * o|*    ",
+                "         /_\n      __(\n     * o|*   ",
+                "         ___\n      */ \\>\n       o|*    ",
+                "        *\n       o|_/\n      */  \\   ",
+                "        *\n      _o|_\n     *   >\\   ",
+                "       _o/*\n      * |\n       / \\    ",
+                "      *\\o/*\n        |\n       / \\    ",
+                "      c/*\n      \\<\\\n      */\\     ",
+                "      c__\n      \\<\\ *\n      */\\     ",
+                "      c__\n      /\\ *\n     * />     ",
+                "      c/*\n     /(__\n    * /       ",
+                "    __o/*\n    * (__\n      \\<       ",
+                "      __o_\n     * /  *\n      \\<\\      ",
+                "     *_o_\n       | *\n      \\< \\     ",
+                "     *_c_*\n       |\n       >\\     ",
+                "     *_c_*\n       |__\n       >      ",
+                "     *_c_*\n     __|__\n              ",
+                " \n     *_c_*\n     __)__    ",
+                " \n     *\\c/*\n     __)__    "
+            ];
+            
+            // 游戏状态
+            let currentFrame = 0;
+            let animationId = null;
+            let speed = 150; // 毫秒
+            let score = 0;
+            let frameCounter = 0;
+            let isPlaying = false;
+            let musicEnabled = false;
+            let soundEnabled = true;
+            let audioContext;
+            let oscillator;
+            let backgroundMusic;
+            let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            // 初始化
+            function init() {
+                // 移动设备优化
+                if (isMobile) {
+                    document.body.classList.add('mobile');
+                }
+                
+                // 设置画布尺寸
+                resizeCanvas();
+                window.addEventListener('resize', resizeCanvas);
+                
+                renderFrame(0);
+                frameCountEl.textContent = "0";
+                scoreValueEl.textContent = "0";
+                speedValueEl.textContent = getSpeedLabel(speed);
+                
+                // 预加载资源
+                preloadResources();
+                
+                // 解决移动端音频问题
+                setupAudioContext();
+            }
+            
+            // 初始化音频上下文
+            function setupAudioContext() {
+                try {
+                    // 为移动端创建音频上下文
+                    if (isMobile && !audioContext) {
+                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        
+                        // 创建空音频源以解锁音频
+                        const buffer = audioContext.createBuffer(1, 1, 22050);
+                        const source = audioContext.createBufferSource();
+                        source.buffer = buffer;
+                        source.connect(audioContext.destination);
+                        
+                        // 第一次交互时播放空音频
+                        document.addEventListener('touchstart', function unlockAudio() {
+                            source.start(0);
+                            document.removeEventListener('touchstart', unlockAudio);
+                        }, { once: true });
+                    }
+                } catch (e) {
+                    console.log("音频上下文初始化失败", e);
+                }
+            }
+            
+            // 调整画布尺寸
+            function resizeCanvas() {
+                const container = document.querySelector('.animation-container');
+                const containerWidth = container.clientWidth;
+                
+                if (containerWidth < 300) {
+                    canvas.width = containerWidth - 20;
+                    canvas.height = (canvas.width * 200) / 280;
+                    canvas.style.width = canvas.width + 'px';
+                    canvas.style.height = canvas.height + 'px';
+                } else {
+                    canvas.width = 280;
+                    canvas.height = 200;
+                    canvas.style.width = '280px';
+                    canvas.style.height = '200px';
+                }
+                
+                if (isPlaying) {
+                    renderFrame(currentFrame);
+                }
+            }
+            
+            // 预加载资源
+            function preloadResources() {
+                loadingIndicator.style.display = 'block';
+                
+                // 模拟加载过程
+                setTimeout(() => {
+                    loadingIndicator.style.display = 'none';
+                }, 800);
+            }
+            
+            // 渲染帧
+            function renderFrame(frameIndex) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // 绘制星空背景
+                drawStars();
+                
+                // 绘制舞台
+                drawStage();
+                
+                // 绘制小人
+                drawCharacter(mans[frameIndex]);
+                
+                // 绘制聚光灯
+                drawSpotlight();
+            }
+            
+            // 绘制星空背景
+            function drawStars() {
+                ctx.fillStyle = '#0a0a2a';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // 绘制星星
+                ctx.fillStyle = 'white';
+                for (let i = 0; i < 50; i++) {
+                    const x = Math.random() * canvas.width;
+                    const y = Math.random() * canvas.height * 0.6;
+                    const radius = Math.random() * 1.2;
+                    ctx.beginPath();
+                    ctx.arc(x, y, radius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            // 绘制舞台
+            function drawStage() {
+                // 舞台地板
+                ctx.fillStyle = '#222';
+                ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
+                
+                // 舞台木纹
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < canvas.width; i += 10) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, canvas.height - 40);
+                    ctx.lineTo(i, canvas.height);
+                    ctx.stroke();
+                }
+                
+                // 舞台前沿
+                ctx.fillStyle = '#ffd700';
+                ctx.fillRect(0, canvas.height - 40, canvas.width, 3);
+            }
+            
+            // 绘制聚光灯
+            function drawSpotlight() {
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2 - 20;
+                
+                // 聚光灯效果
+                const gradient = ctx.createRadialGradient(
+                    centerX, centerY, 10,
+                    centerX, centerY, Math.min(canvas.width, canvas.height) * 0.5
+                );
+                gradient.addColorStop(0, 'rgba(255, 215, 0, 0.6)');
+                gradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
+                
+                ctx.globalCompositeOperation = 'lighter';
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, Math.min(canvas.width, canvas.height) * 0.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalCompositeOperation = 'source-over';
+            }
+            
+            // 绘制跳舞小人
+            function drawCharacter(frame) {
+                const lines = frame.split('\n');
+                const startY = canvas.height / 2 - 30;
+                const centerX = canvas.width / 2;
+                
+                // 根据画布大小调整字体
+                const fontSize = Math.max(12, canvas.width / 20);
+                ctx.font = `bold ${fontSize}px monospace`;
+                
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#ffd700';
+                ctx.shadowColor = 'rgba(255, 215, 0, 0.8)';
+                ctx.shadowBlur = 10;
+                
+                lines.forEach((line, index) => {
+                    ctx.fillText(line, centerX, startY + index * (fontSize + 4));
+                });
+                
+                ctx.shadowBlur = 0;
+            }
+            
+            // 动画循环
+            function animate() {
+                renderFrame(currentFrame);
+                currentFrame = (currentFrame + 1) % mans.length;
+                frameCounter++;
+                frameCountEl.textContent = frameCounter;
+                
+                // 每10帧增加1分
+                if (frameCounter % 10 === 0) {
+                    score++;
+                    scoreValueEl.textContent = score;
+                    
+                    // 每100分增加一个难度级别
+                    if (score % 100 === 0 && speed > 40) {
+                        changeSpeed(speed - 10);
+                        showNotification(`恭喜！达到${score}分，速度提升！`);
+                    }
+                }
+                
+                // 播放音效
+                if (soundEnabled && frameCounter % 3 === 0) {
+                    playSound();
+                }
+                
+                animationId = setTimeout(animate, speed);
+            }
+            
+            // 开始动画
+            function startAnimation() {
+                if (isPlaying) return;
+                
+                // 确保音频上下文已初始化
+                setupAudioContext();
+                
+                isPlaying = true;
+                animate();
+                startBtn.textContent = "跳舞中...";
+                startBtn.classList.add('active');
+                
+                // 播放背景音乐
+                if (musicEnabled) {
+                    playBackgroundMusic();
+                }
+            }
+            
+            // 停止动画
+            function stopAnimation() {
+                if (!isPlaying) return;
+                isPlaying = false;
+                clearTimeout(animationId);
+                startBtn.textContent = "开始跳舞";
+                startBtn.classList.remove('active');
+                
+                // 停止音效
+                if (oscillator) {
+                    oscillator.stop();
+                    oscillator = null;
+                }
+                
+                // 停止背景音乐
+                if (backgroundMusic) {
+                    backgroundMusic.pause();
+                    backgroundMusic.currentTime = 0;
+                }
+            }
+            
+            // 调整速度
+            function changeSpeed(newSpeed) {
+                speed = newSpeed;
+                speedValueEl.textContent = getSpeedLabel(speed);
+                
+                if (isPlaying) {
+                    stopAnimation();
+                    startAnimation();
+                }
+            }
+            
+            // 获取速度标签
+            function getSpeedLabel(speedValue) {
+                if (speedValue > 180) return "慢速";
+                if (speedValue > 100) return "中速";
+                if (speedValue > 60) return "快速";
+                if (speedValue > 40) return "极速";
+                return "超速";
+            }
+            
+            // 播放音效
+            function playSound() {
+                try {
+                    if (!audioContext) {
+                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                    
+                    if (oscillator) {
+                        oscillator.stop();
+                    }
+                    
+                    oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(220 + Math.random() * 440, audioContext.currentTime);
+                    
+                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                } catch (e) {
+                    console.log("音频播放失败", e);
+                }
+            }
+            
+            // 播放背景音乐
+            function playBackgroundMusic() {
+                try {
+                    if (!backgroundMusic) {
+                        backgroundMusic = new Audio();
+                        backgroundMusic.loop = true;
+                        backgroundMusic.volume = 0.3;
+                        
+                        // 生成简单的背景音乐
+                        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+                        
+                        oscillator.type = 'sine';
+                        gainNode.gain.value = 0.2;
+                        
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        
+                        // 创建简单的旋律
+                        const now = audioContext.currentTime;
+                        oscillator.frequency.setValueAtTime(261.63, now); // C4
+                        oscillator.frequency.setValueAtTime(329.63, now + 0.5); // E4
+                        oscillator.frequency.setValueAtTime(392.00, now + 1.0); // G4
+                        oscillator.frequency.setValueAtTime(329.63, now + 1.5); // E4
+                        
+                        oscillator.start();
+                        oscillator.stop(now + 2);
+                        
+                        // 将生成的音频设置为背景音乐
+                        const source = audioContext.createMediaStreamDestination();
+                        oscillator.connect(source);
+                        backgroundMusic.src = URL.createObjectURL(source.stream);
+                    }
+                    
+                    // 确保在用户交互后播放
+                    backgroundMusic.play().catch(e => console.log("背景音乐播放失败:", e));
+                } catch (e) {
+                    console.log("背景音乐生成失败", e);
+                }
+            }
+            
+            // 显示通知
+            function showNotification(message) {
+                const notification = document.createElement('div');
+                notification.textContent = message;
+                notification.style.position = 'fixed';
+                notification.style.top = '20px';
+                notification.style.left = '50%';
+                notification.style.transform = 'translateX(-50%)';
+                notification.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+                notification.style.color = '#ffd700';
+                notification.style.padding = '10px 20px';
+                notification.style.borderRadius = '30px';
+                notification.style.zIndex = '1000';
+                notification.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.5)';
+                notification.style.animation = 'fadeInOut 3s forwards';
+                
+                document.body.appendChild(notification);
+                
+                // 动画结束后移除通知
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
+            
+            // 添加CSS动画
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeInOut {
+                    0% { opacity: 0; transform: translate(-50%, -20px); }
+                    20% { opacity: 1; transform: translate(-50%, 0); }
+                    80% { opacity: 1; transform: translate(-50%, 0); }
+                    100% { opacity: 0; transform: translate(-50%, -20px); }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // 事件监听
+            startBtn.addEventListener('click', startAnimation);
+            stopBtn.addEventListener('click', stopAnimation);
+            
+            document.getElementById('id_4_toggle_ghClientWnd').addEventListener('click', toggle_gh_Client_Wnd);
+            fasterBtn.addEventListener('click', () => {
+                if (speed > 30) {
+                    changeSpeed(speed - 30);
+                }
+            });
+            
+            slowerBtn.addEventListener('click', () => {
+                if (speed < 300) {
+                    changeSpeed(speed + 30);
+                }
+            });
+            
+            // 移动端按钮事件
+            mobileFasterBtn.addEventListener('click', () => {
+                if (speed > 30) {
+                    changeSpeed(speed - 30);
+                    mobileFasterBtn.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        mobileFasterBtn.style.transform = 'scale(1)';
+                    }, 200);
+                }
+            });
+            
+            mobileSlowerBtn.addEventListener('click', () => {
+                if (speed < 300) {
+                    changeSpeed(speed + 30);
+                    mobileSlowerBtn.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        mobileSlowerBtn.style.transform = 'scale(1)';
+                    }, 200);
+                }
+            });
+            
+            diffBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    diffBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    changeSpeed(parseInt(btn.dataset.speed));
+                });
+            });
+            
+            musicBtn.addEventListener('click', () => {
+                musicEnabled = !musicEnabled;
+                musicBtn.textContent = musicEnabled ? "关闭音乐" : "开启音乐";
+                
+                if (musicEnabled && isPlaying) {
+                    playBackgroundMusic();
+                } else if (!musicEnabled && backgroundMusic) {
+                    backgroundMusic.pause();
+                }
+            });
+            
+            soundBtn.addEventListener('click', () => {
+                soundEnabled = !soundEnabled;
+                soundBtn.textContent = soundEnabled ? "关闭音效" : "开启音效";
+            });
+            
+            // 触摸事件支持
+            const buttons = document.querySelectorAll('.btn, .diff-btn, .mobile-btn');
+            buttons.forEach(button => {
+                button.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    this.classList.add('active');
+                });
+                
+                button.addEventListener('touchend', function() {
+                    this.classList.remove('active');
+                });
+                
+                // 移动端点击事件优化
+                button.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    this.classList.add('active');
+                    
+                    // 创建一个临时变量来跟踪触摸是否移动太远
+                    this.touchStartX = e.touches[0].clientX;
+                    this.touchStartY = e.touches[0].clientY;
+                    
+                    // 添加触摸移动和结束事件
+                    const handleTouchMove = (e) => {
+                        const touchX = e.touches[0].clientX;
+                        const touchY = e.touches[0].clientY;
+                        
+                        // 如果触摸移动超过20px，则认为是滑动而不是点击
+                        if (Math.abs(touchX - this.touchStartX) > 20 || Math.abs(touchY - this.touchStartY) > 20) {
+                            this.classList.remove('active');
+                            document.removeEventListener('touchmove', handleTouchMove);
+                            document.removeEventListener('touchend', handleTouchEnd);
+                        }
+                    };
+                    
+                    const handleTouchEnd = (e) => {
+                        this.classList.remove('active');
+                        document.removeEventListener('touchmove', handleTouchMove);
+                        document.removeEventListener('touchend', handleTouchEnd);
+                        
+                        // 如果触摸没有移动太远，则触发点击事件
+                        if (Math.abs(e.changedTouches[0].clientX - this.touchStartX) <= 20 && 
+                            Math.abs(e.changedTouches[0].clientY - this.touchStartY) <= 20) {
+                            // 模拟点击事件
+                            const clickEvent = new MouseEvent('click', {
+                                bubbles: true,
+                                cancelable: true,
+                                view: window
+                            });
+                            this.dispatchEvent(clickEvent);
+                        }
+                    };
+                    
+                    document.addEventListener('touchmove', handleTouchMove);
+                    document.addEventListener('touchend', handleTouchEnd);
+                });
+            });
+            
+            // 初始化游戏
+            init();
+        });
+    </script>
+</body>
+</html>
+    
+<!--
+升级  v0.22
+
  
-<META http-equiv=Content-Type content="text/html; charset=gb2312">
-<META content="MSHTML 6.00.2900.2873" name=GENERATOR></HEAD>
-<BODY onload=tick()>
-<CENTER>
-  <table width="282" border="0" align="center" cellpadding="0" cellspacing="0"> 
-   
-    <tr>  
-      <td colspan="4" valign="top"> <div align="center"> 
-          <table width="100%" border="0" cellpadding="5" cellspacing="5">
-            <tr> 
-              <td bgcolor="#FFE495"> <div align="center">dance game</div></td>
-            </tr>
-            <tr> 
-              <td bgcolor="#FFFFDD"> <div align="center"><strong>demo</strong></div></td>
-            </tr>
-            <tr> 
-              <td><div align="center">
-                  <TABLE >
-                    <TBODY>
-                      <TR> 
-                        <TD align=middle> 
-                          <SCRIPT language=JavaScript>
-<!-- Begin 
-
-const a="\n";
-var max=0;
-function tlist() {
-    max=tlist.arguments.length;
-    for (i=0; i<max; i++){
-      this[i]=tlist.arguments[i];
-    }    
-}
-function init(){
-  return new tlist(
-    "   o"+a+
-"  /|\\"+a+
-" */ \\*        "+a,
-
-"   o_"+a+
-"  \<| *"+a+
-"  *\>\\         "+a,
-
-"  _o/*"+a+
-" * |"+a+
-"  / \\         "+a,
-
-" *\o_"+a+
-"  /  *"+a+
-" \<\\           "+a,
-
-"  _o/*"+a+
-" * |"+a+
-"  / \\         "+a,
-
-" *\\c/*"+a+
-"   )"+a+
-"  / \>         "+a,
-
-"     *"+a+
-"  \\__/c"+a+
-"   \> \\*       "+a,
-
-"   __/"+a+
-"    (o_*"+a+
-"     \\*       "+a,
-
-"      \\ /"+a+
-"       |"+a+
-"     */o\\*    "+a,
-
-"       \\_"+a+
-"       ("+a+
-"     */o\\*    "+a,
-
-"        \<_"+a+
-"      __("+a+
-"     * o|*    "+a,
-
-"         /_"+a+
-"      __("+a+
-"     * o|*   "+a,
-
-"         ___"+a+
-"      *\/ \>"+a+
-"       o|*    "+a,
-
-"        *"+a+
-"       o|_/"+a+
-"      */  \\   "+a,
-
-"        *"+a+
-"      _o|_"+a+
-"     *   \>\\   "+a,
-
-"       _o/*"+a+
-"      * |"+a+
-"       / \\    "+a,
-
-"      *\\o/*"+a+
-"        |"+a+
-"       / \\    "+a,
-
-"      c/*"+a+
-"      \<\\"+a+
-"      */\\     "+a,
-
-"      c__"+a+
-"      \<\ *"+a+
-"      */\\     "+a,
-
-"      c__"+a+
-"      /\ *"+a+
-"     * /\>     "+a,
-
-"      c/*"+a+
-"     /(__"+a+
-"    * /       "+a,
-
-"    __o/*"+a+
-"    * (__"+a+
-"      \<       "+a,
-
-"      __o_"+a+
-"     * /  *"+a+
-"      \<\\      "+a,
-
-"     *_o_"+a+
-"       | *"+a+
-"      \< \\     "+a,
-
-"     *_c_*"+a+
-"       |"+a+
-"       \>\\     "+a,
-
-"     *_c_*"+a+
-"       |__"+a+
-"       \>      "+a,
-
-"     *_c_*"+a+
-"     __|__"+a+
-"              "+a,
-
-" "+a+
-"     *_c_*"+a+
-"     __)__    "+a,
-
-" "+a+
-"     *\\c/*"+a+
-"     __)__    "+a
-  );
-}
-tl0 = init();
- 
-
-var x=0;
-function tick() {
-    document.animation.cheerleader.value = " " + a + tl0[x];
-    x++;
-    if (x != max)
-      setTimeout("tick()", 200);
-    else
-      x = 0;
-}
-//  End -->
-</SCRIPT> 
-<FORM name=animation>
-                            <TEXTAREA name=cheerleader rows=5></TEXTAREA>
-                            <BR>
-                            <INPUT name="button" type=button onclick=javascript:tick() value="try again">
-</FORM>
-                        </TD>
-                      </TR>
-                    </TBODY>
-                  </TABLE>
-                </div></td>
-            </tr> 
-          </table>
-        </div></td> 
-    </tr>
-     
-  </table>
-  
-</BODY></HTML>
+-->

@@ -1,383 +1,243 @@
-class C4MovableWnd {
-    static instances = {};
-
+class BLC4ObjsInWindow {
     constructor(id) {
-        if (C4MovableWnd.instances[id]) {
-            return C4MovableWnd.instances[id];
-        }
+        if (!window.blos) window.blos = [];
+        const existing = window.blos.find(obj => obj.id === id);
+        if (existing) return existing;
 
         this.id = id;
-        this.isTouch = false;
-        this.hasPositioned = false;
-        this.currentTool = null;
-        this.shapes = [];
-        this.draggingShape = null;
-        this.drawingShape = null;
-        this.isDrawing = false;
-        this.startX = 0;
-        this.startY = 0;
-        this.offsetX = 0;
-        this.offsetY = 0;
-        this.initialize();
-        C4MovableWnd.instances[id] = this;
-    }
+        this.currentColor = 'red';
+        this.isVisible = false;
+        this.dragData = { isDragging: false, startX: 0, startY: 0 };
+        this.activeButton = null;
+        this.objectToolbar = null;
 
-    initialize() {
-        this.createElements();
-        this.setStyles();
+        // UI初始化
+        this.createWindow();
+        this.createToolbars();
+        this.createCanvas();
+        this.assembleUI();
         this.bindEvents();
+        
+        // 默认高亮红色按钮
+        this.highlightButton(this.btnRed);
+        window.blos.push(this);
     }
 
-    createElements() {
-        this.element = document.createElement('div');
-        this.titleBar = document.createElement('div');
-        this.toolbar = document.createElement('div');
-        this.canvas = document.createElement('canvas');
-        this.toolbarCircleBtn = document.createElement('button');
-        this.toolbarRectBtn = document.createElement('button');
-
-        this.toolbar.appendChild(this.toolbarCircleBtn);
-        this.toolbar.appendChild(this.toolbarRectBtn);
-        this.element.appendChild(this.titleBar);
-        this.element.appendChild(this.toolbar);
-        this.element.appendChild(this.canvas);
-        document.body.appendChild(this.element);
-
-        this.canvas.id = 'id4canvas';
-        this.toolbar.id = 'id4toolbar';
+    createWindow() {
+        this.window = document.createElement('div');
+        Object.assign(this.window.style, {
+            position: 'absolute',
+            display: 'flex',          // 启用Flex布局
+            flexDirection: 'column',  // 垂直排列子元素
+            border: '1px solid #666',
+            background: '#f0f0f0',
+            minWidth: '300px',
+            minHeight: '200px',
+            left: '100px',
+            top: '100px'
+        });
     }
 
-    setStyles() {
-        Object.assign(this.element.style, {
-            position: 'fixed',
-            display: 'none',
-            flexDirection: 'column',
-            width: '400px',
-            height: '500px',
-            backgroundColor: 'white',
-            border: '1px solid #ccc',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-            zIndex: 1000,
-            borderRadius: '4px',
-            overflow: 'hidden'
-        });
-
-        Object.assign(this.titleBar.style, {
-            cursor: 'move',
-            padding: '8px',
-            backgroundColor: '#f5f5f5',
-            borderBottom: '1px solid #ddd',
-            userSelect: 'none',
-            fontSize: '14px',
-            fontWeight: 'bold'
-        });
-
-        Object.assign(this.toolbar.style, {
-            backgroundColor: '#e0e0e0',
+    createToolbars() {
+        const toolbarStyle = {
             padding: '4px',
-            borderBottom: '1px solid #ccc'
-        });
-
-        const buttonStyle = {
-            padding: '4px 8px',
-            margin: '2px',
-            border: '1px solid #999',
-            borderRadius: '3px',
-            backgroundColor: '#fff',
-            cursor: 'pointer'
+            cursor: 'move',
+            display: 'flex',
+            gap: '8px',
+            flex: 'none'  // 禁止工具栏伸缩
         };
 
-        Object.assign(this.toolbarCircleBtn.style, buttonStyle);
-        Object.assign(this.toolbarRectBtn.style, buttonStyle);
-
-        Object.assign(this.canvas.style, {
-            flex: '1',
-            backgroundColor: 'white'
+        // 顶部工具栏
+        this.topToolbar = document.createElement('div');
+        Object.assign(this.topToolbar.style, {
+            ...toolbarStyle,
+            background: '#007BFF'
         });
+        this.btnCount = this.createButton('显示数量');
+        this.btnHelp = this.createButton('功能说明');
+        this.btnManage = this.createButton('管理对象');
+        this.btnClose = this.createButton('关闭');
+        this.topToolbar.append(this.btnCount, this.btnHelp, this.btnManage, this.btnClose);
 
-        this.titleBar.textContent = 'Movable Window';
-        this.toolbarCircleBtn.textContent = 'addCircle';
-        this.toolbarRectBtn.textContent = 'addRect';
+        // 底部工具栏
+        this.bottomToolbar = document.createElement('div');
+        Object.assign(this.bottomToolbar.style, {
+            ...toolbarStyle,
+            background: '#ddd'
+        });
+        this.btnRed = this.createButton('红');
+        this.btnGreen = this.createButton('绿');
+        this.bottomToolbar.append(this.btnRed, this.btnGreen);
+    }
+
+    createCanvas() {
+        this.canvas = document.createElement('canvas');
+        Object.assign(this.canvas.style, {
+            width: '100%',
+            height: '100%',    // 高度由Flex布局控制
+            background: 'white',
+            flex: '1'         // 占据剩余空间
+        });
+        this.ctx = this.canvas.getContext('2d');
+    }
+
+    assembleUI() {
+        // 按顺序添加：顶部工具栏 -> 画布 -> 底部工具栏
+        this.window.append(this.topToolbar, this.canvas, this.bottomToolbar);
+        document.body.appendChild(this.window);
+        this.resizeCanvas();
+    }
+
+    createButton(text) {
+        const btn = document.createElement('button');
+        btn.textContent = text;
+        Object.assign(btn.style, {
+            padding: '4px 8px',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            border: '1px solid transparent',
+            background: 'none'
+        });
+        return btn;
     }
 
     bindEvents() {
-        this.onDragStart = this.handleDragStart.bind(this);
-        this.onDragMove = this.handleDragMove.bind(this);
-        this.onDragEnd = this.handleDragEnd.bind(this);
-        this.onCanvasMouseDown = this.handleCanvasMouseDown.bind(this);
-        this.onCanvasMouseMove = this.handleCanvasMouseMove.bind(this);
-        this.onCanvasMouseUp = this.handleCanvasMouseUp.bind(this);
-
-        this.titleBar.addEventListener('mousedown', this.onDragStart);
-        this.titleBar.addEventListener('touchstart', this.onDragStart, { passive: false });
-
-        this.toolbarCircleBtn.addEventListener('click', () => this.handleToolSelect('circle'));
-        this.toolbarRectBtn.addEventListener('click', () => this.handleToolSelect('rect'));
-        this.canvas.addEventListener('mousedown', this.onCanvasMouseDown);
-        this.canvas.addEventListener('touchstart', this.onCanvasMouseDown, { passive: false });
-    }
-
-    handleToolSelect(toolType) {
-        this.currentTool = this.currentTool === toolType ? null : toolType;
-
-        const activeStyle = {
-            backgroundColor: '#4CAF50',
-            color: 'white',
-            borderColor: '#357a38'
-        };
-        const defaultStyle = {
-            backgroundColor: '#fff',
-            color: 'inherit',
-            borderColor: '#999'
+        // 拖动处理（保持不变）
+        const handleDrag = {
+            start: (e) => {
+                const event = e.touches? e.touches[0] : e;
+                this.dragData.isDragging = true;
+                this.dragData.startX = event.clientX - this.window.offsetLeft;
+                this.dragData.startY = event.clientY - this.window.offsetTop;
+            },
+            move: (e) => {
+                const event = e.touches? e.touches[0] : e;
+                if (!this.dragData.isDragging) return;
+                this.window.style.left = `${event.clientX - this.dragData.startX}px`;
+                this.window.style.top = `${event.clientY - this.dragData.startY}px`;
+            },
+            end: () => this.dragData.isDragging = false
         };
 
-        if (this.currentTool === 'circle') {
-            Object.assign(this.toolbarCircleBtn.style, activeStyle);
-            Object.assign(this.toolbarRectBtn.style, defaultStyle);
-        } else if (this.currentTool === 'rect') {
-            Object.assign(this.toolbarRectBtn.style, activeStyle);
-            Object.assign(this.toolbarCircleBtn.style, defaultStyle);
-        } else {
-            Object.assign(this.toolbarCircleBtn.style, defaultStyle);
-            Object.assign(this.toolbarRectBtn.style, defaultStyle);
-        }
-    }
+        this.topToolbar.addEventListener('mousedown', handleDrag.start);
+        document.addEventListener('mousemove', handleDrag.move);
+        document.addEventListener('mouseup', handleDrag.end);
 
-    handleDragStart(e) {
-        e.preventDefault();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        const rect = this.element.getBoundingClientRect();
+        this.topToolbar.addEventListener('touchstart', handleDrag.start);
+        document.addEventListener('touchmove', handleDrag.move);
+        document.addEventListener('touchend', handleDrag.end);
 
-        this.initialX = clientX - rect.left;
-        this.initialY = clientY - rect.top;
-        this.isTouch = !!e.touches;
+        // 按钮事件处理（保持不变）
+        const bindAction = (btn, action) => {
+            btn.addEventListener('click', () => {
+                action();
+                this.highlightButton(btn);
+            });
+        };
 
-        document.addEventListener('mousemove', this.onDragMove);
-        document.addEventListener('touchmove', this.onDragMove, { passive: false });
-        document.addEventListener('mouseup', this.onDragEnd);
-        document.addEventListener('touchend', this.onDragEnd);
-    }
-
-    handleDragMove(e) {
-        if (this.isTouch) e.preventDefault();
-
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-        const newX = clientX - this.initialX;
-        const newY = clientY - this.initialY;
-
-        this.element.style.left = `${newX}px`;
-        this.element.style.top = `${newY}px`;
-    }
-
-    handleDragEnd() {
-        document.removeEventListener('mousemove', this.onDragMove);
-        document.removeEventListener('touchmove', this.onDragMove);
-        document.removeEventListener('mouseup', this.onDragEnd);
-        document.removeEventListener('touchend', this.onDragEnd);
-        this.isTouch = false;
-    }
-
-    center() {
-        const rect = this.element.getBoundingClientRect();
-        this.element.style.left = `${(window.innerWidth - rect.width) / 2}px`;
-        this.element.style.top = `${(window.innerHeight - rect.height) / 2}px`;
-    }
-
-    toggleWnd() {
-        if (this.element.style.display === 'none') {
-            this.element.style.display = 'flex';
-            if (!this.hasPositioned) {
-                this.center();
-                this.hasPositioned = true;
-            }
-            const rect = this.canvas.getBoundingClientRect();
-            this.canvas.width = rect.width;
-            this.canvas.height = rect.height;
-            this.redrawCanvas();
-        } else {
-            this.element.style.display = 'none';
-        }
-    }
-
-    handleCanvasMouseDown(e) {
-        e.preventDefault();
-        const canvas = this.canvas;
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        const x = (clientX - rect.left) * scaleX;
-        const y = (clientY - rect.top) * scaleY;
-    
-        // 先检测是否存在图形被点击
-        for (let i = this.shapes.length - 1; i >= 0; i--) {
-            const shape = this.shapes[i];
-            if (shape.type === 'circle') {
-                const dx = x - shape.x;
-                const dy = y - shape.y;
-                if (dx * dx + dy * dy <= shape.radius * shape.radius) {
-                    this.draggingShape = shape;
-                    this.offsetX = x - shape.x;
-                    this.offsetY = y - shape.y;
-                    document.addEventListener('mousemove', this.onCanvasMouseMove);
-                    document.addEventListener('touchmove', this.onCanvasMouseMove, { passive: false });
-                    document.addEventListener('mouseup', this.onCanvasMouseUp);
-                    document.addEventListener('touchend', this.onCanvasMouseUp);
-                    return; // 优先处理拖拽
-                }
-            } else if (shape.type === 'rect') {
-                const halfWidth = shape.width / 2;
-                const halfHeight = shape.height / 2;
-                if (x >= shape.x - halfWidth && 
-                    x <= shape.x + halfWidth && 
-                    y >= shape.y - halfHeight && 
-                    y <= shape.y + halfHeight) {
-                    this.draggingShape = shape;
-                    this.offsetX = x - shape.x;
-                    this.offsetY = y - shape.y;
-                    document.addEventListener('mousemove', this.onCanvasMouseMove);
-                    document.addEventListener('touchmove', this.onCanvasMouseMove, { passive: false });
-                    document.addEventListener('mouseup', this.onCanvasMouseUp);
-                    document.addEventListener('touchend', this.onCanvasMouseUp);
-                    return; // 优先处理拖拽
-                }
-            }
-        }
-    
-        // 没有拖拽时才进入绘制模式
-        if (this.currentTool) {
-            this.isDrawing = true;
-            this.startX = x;
-            this.startY = y;
-            
-            const hue = Math.random() * 360;
-            this.drawingShape = {
-                type: this.currentTool,
-                x: this.startX,
-                y: this.startY,
-                radius: 0,
-                width: 0,
-                height: 0,
-                hue: hue
-            };
-    
-            document.addEventListener('mousemove', this.onCanvasMouseMove);
-            document.addEventListener('touchmove', this.onCanvasMouseMove, { passive: false });
-            document.addEventListener('mouseup', this.onCanvasMouseUp);
-            document.addEventListener('touchend', this.onCanvasMouseUp);
-        }
-    }
-    handleCanvasMouseMove(e) {
-        if (this.isTouch) e.preventDefault();
-        const canvas = this.canvas;
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        const x = (clientX - rect.left) * scaleX;
-        const y = (clientY - rect.top) * scaleY;
-
-        if (this.isDrawing && this.drawingShape) {
-            if (this.drawingShape.type === 'circle') {
-                const dx = x - this.startX;
-                const dy = y - this.startY;
-                this.drawingShape.x = this.startX;
-                this.drawingShape.y = this.startY;
-                this.drawingShape.radius = Math.sqrt(dx*dx + dy*dy);
-            } else if (this.drawingShape.type === 'rect') {
-                this.drawingShape.x = (this.startX + x) / 2;
-                this.drawingShape.y = (this.startY + y) / 2;
-                this.drawingShape.width = Math.abs(x - this.startX);
-                this.drawingShape.height = Math.abs(y - this.startY);
-            }
-            this.redrawCanvas();
-        }
-        else if (this.draggingShape) {
-            this.draggingShape.x = x - this.offsetX;
-            this.draggingShape.y = y - this.offsetY;
-            this.redrawCanvas();
-        }
-    }
-
-    
-    handleCanvasMouseUp() {
-        if (this.isDrawing) {
-            if (this.drawingShape) {
-                
-                if ((this.drawingShape.type === 'circle' && this.drawingShape.radius > 2) ||
-                    (this.drawingShape.type === 'rect' && this.drawingShape.width > 2 && this.drawingShape.height > 2)) {
-                    this.shapes.push(this.drawingShape);
-                }
-                this.drawingShape = null;
-            }
-            this.isDrawing = false;
-        }
-        this.draggingShape = null;
+        bindAction(this.btnCount, () => this.showCount());
+        bindAction(this.btnHelp, () => this.showHelp());
+        bindAction(this.btnRed, () => this.currentColor = 'red');
+        bindAction(this.btnGreen, () => this.currentColor = 'green');
+        bindAction(this.btnManage, () => this.createObjectToolbar());
+        bindAction(this.btnClose, () => this.closeWindow());
         
-        document.removeEventListener('mousemove', this.onCanvasMouseMove);
-        document.removeEventListener('touchmove', this.onCanvasMouseMove);
-        document.removeEventListener('mouseup', this.onCanvasMouseUp);
-        document.removeEventListener('touchend', this.onCanvasMouseUp);
-        this.redrawCanvas();
+        // 画布响应式（保持不变）
+        new ResizeObserver(() => this.resizeCanvas()).observe(this.window);
     }
 
-    redrawCanvas() {
-        const ctx = this.canvas.getContext('2d');
-        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        
-        // 绘制所有图形
-        for (const shape of this.shapes) {
-            if (shape.type === 'circle') {
-                ctx.beginPath();
-                ctx.arc(shape.x, shape.y, shape.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `hsl(${shape.hue}, 70%, 50%)`;
-                ctx.fill();
-                ctx.closePath();
-            } else if (shape.type === 'rect') {
-                ctx.beginPath();
-                ctx.rect(
-                    shape.x - shape.width/2, 
-                    shape.y - shape.height/2, 
-                    shape.width, 
-                    shape.height
-                );
-                ctx.fillStyle = `hsl(${shape.hue}, 70%, 50%)`;
-                ctx.fill();
-                ctx.closePath();
-            }
+    // 以下方法保持不变
+    highlightButton(button) {
+        [this.btnCount, this.btnHelp, this.btnRed, this.btnGreen, this.btnManage, this.btnClose].forEach(btn => {
+            const isActive = btn === button;
+            btn.style.background = isActive ? '#c0c0c0' : '';
+            btn.style.boxShadow = isActive ? 'inset 0 2px 4px rgba(0,0,0,0.2)' : '';
+            btn.style.border = isActive ? '1px solid #808080' : '1px solid transparent';
+        });
+    }
+    resizeCanvas() {
+        const rect = this.canvas.getBoundingClientRect();
+        this.canvas.width = rect.width;
+        this.canvas.height = rect.height;
+    }
+    showCount() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.fillStyle = this.currentColor;
+        this.ctx.font = '14px Arial';
+        this.ctx.fillText(`对象数量: ${window.blos.length}`, 10, 20);
+    }
+    showHelp() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.fillStyle = this.currentColor;
+        this.ctx.font = '14px Arial';
+        [
+            '功能说明：',
+            '1. 拖动顶部栏移动窗口',
+            '2. 底部按钮切换文本颜色',
+            '3. 显示当前管理对象数量',
+            '4. 最近点击的按钮会保持高亮',
+            '5. 点击关闭按钮关闭窗口'
+        ].forEach((line, i) => this.ctx.fillText(line, 10, 20 + i * 20));
+    }
+    toggleUI() {
+        this.isVisible = !this.isVisible;
+        this.window.style.display = this.isVisible ? 'block' : 'none';
+    }
+    closeWindow() {
+        this.window.remove();
+        const index = window.blos.findIndex(obj => obj.id === this.id);
+        if (index!== -1) {
+            window.blos.splice(index, 1);
+        }
+    }
+    createObjectToolbar() {
+        // 移除旧工具栏
+        if (this.objectToolbar) {
+            this.objectToolbar.remove();
         }
 
-        // 绘制临时图形
-        if (this.drawingShape) {
-            ctx.save();
-            ctx.globalAlpha = 0.7;
-            if (this.drawingShape.type === 'circle') {
-                ctx.beginPath();
-                ctx.arc(this.drawingShape.x, this.drawingShape.y, this.drawingShape.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `hsl(${this.drawingShape.hue}, 70%, 50%)`;
-                ctx.fill();
-                ctx.closePath();
-            } else if (this.drawingShape.type === 'rect') {
-                ctx.beginPath();
-                ctx.rect(
-                    this.drawingShape.x - this.drawingShape.width/2,
-                    this.drawingShape.y - this.drawingShape.height/2,
-                    this.drawingShape.width,
-                    this.drawingShape.height
-                );
-                ctx.fillStyle = `hsl(${this.drawingShape.hue}, 70%, 50%)`;
-                ctx.fill();
-                ctx.closePath();
-            }
-            ctx.restore();
+        // 创建新工具栏
+        this.objectToolbar = document.createElement('div');
+        Object.assign(this.objectToolbar.style, {
+            padding: '4px',
+            background: '#eee',
+            display: 'flex',
+            gap: '6px',
+            flexWrap: 'wrap'
+        });
+
+        // 为每个对象创建按钮
+        window.blos.forEach(obj => {
+            const btn = this.createButton(obj.id);
+            btn.style.cursor = 'pointer';
+            btn.addEventListener('click', () => this.showObjectInfo(obj.id));
+            this.objectToolbar.appendChild(btn);
+        });
+
+        // 插入到画布上方
+        this.window.insertBefore(this.objectToolbar, this.canvas);
+    }
+
+    showObjectInfo(id) {
+        // 查找目标对象并触发其UI切换
+        const targetObj = window.blos.find(obj => obj.id === id);
+        if (targetObj) {
+            targetObj.toggleUI();
         }
+
+        // 原有信息显示逻辑
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.fillStyle = this.currentColor;
+        this.ctx.font = '14px Arial';
+        this.ctx.fillText(`当前对象ID: ${id}`, 10, 20);
+        this.highlightButton(this.btnManage);
+    }
+
+    static getInstance(id) {
+        return window.blos?.find(obj => obj.id === id) || new this(id);
     }
 }
 
-if (!window.c4) window.c4 = new C4MovableWnd('id_4_c4');
-window.c4.toggleWnd();
+// 初始化实例
+const objManager = BLC4ObjsInWindow.getInstance('id_s177_i2c3_BLC4ObjsInWindow');
+objManager.toggleUI();
