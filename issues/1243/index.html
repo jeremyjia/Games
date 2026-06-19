@@ -18,7 +18,6 @@ body {
   overflow: hidden;
 }
 
-/* ── 顶栏 ── */
 #topbar {
   background: #fff;
   border-bottom: 1px solid #e5e5e5;
@@ -43,11 +42,13 @@ body {
   flex-shrink: 0;
 }
 #refresh-btn:active { background: #f5f5f5; }
+#accuracy-badge {
+  font-size: 10px; color: #6b7280; background: #f3f4f6;
+  padding: 2px 8px; border-radius: 10px; white-space: nowrap;
+}
 
-/* ── 地图 ── */
 #map { flex: 1; z-index: 1; min-height: 0; }
 
-/* ── 底部面板 ── */
 #panel {
   background: #fff;
   border-top: 1px solid #e5e5e5;
@@ -57,7 +58,6 @@ body {
   max-height: 45vh;
 }
 
-/* 用户名行 */
 #name-row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
 #name-row label { font-size: 13px; color: #555; white-space: nowrap; }
 #name-input {
@@ -67,7 +67,6 @@ body {
 }
 #name-input:focus { border-color: #6366f1; }
 
-/* 上传按钮 */
 #upload-btn {
   width: 100%; padding: 11px; border: none; border-radius: 10px;
   background: #6366f1; color: #fff;
@@ -78,7 +77,6 @@ body {
 #upload-btn:active  { transform: scale(.98); }
 #upload-btn:disabled { background: #a5b4fc; cursor: not-allowed; }
 
-/* 成员列表 */
 #members-header {
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 8px;
@@ -100,46 +98,87 @@ body {
 }
 .member-name  { font-size: 14px; font-weight: 500; flex: 1; color: #111; }
 .member-time  { font-size: 11px; color: #9ca3af; white-space: nowrap; }
-.member-addr  { font-size: 11px; color: #b0b0b0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.member-addr  { 
+  font-size: 11px; color: #6b7280; 
+  flex: 1; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  white-space: nowrap;
+  max-width: 180px;
+}
+.member-accuracy {
+  font-size: 10px; color: #9ca3af;
+  background: #f3f4f6;
+  padding: 1px 6px;
+  border-radius: 8px;
+}
 .locate-btn {
   background: none; border: 1px solid #e5e5e5; border-radius: 6px;
   padding: 3px 8px; font-size: 11px; color: #6366f1; cursor: pointer; flex-shrink: 0;
 }
 .locate-btn:active { background: #f0f0ff; }
 
-/* 空状态 */
 .empty-tip { color: #b0b0b0; font-size: 13px; text-align: center; padding: 16px 0; }
 
-/* 首次使用引导 */
 #guide {
   background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 9px;
   padding: 10px 14px; font-size: 13px; color: #1e40af;
   margin-bottom: 10px; line-height: 1.6;
   display: none;
 }
+
+.loading-skeleton {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.skeleton-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; background: #f3f4f6;
+  border-radius: 9px; margin-bottom: 6px;
+}
+.skeleton-avatar { width: 32px; height: 32px; border-radius: 50%; background: #e5e7eb; flex-shrink: 0; }
+.skeleton-text { flex: 1; height: 14px; background: #e5e7eb; border-radius: 4px; }
+.skeleton-text.short { width: 60px; flex: none; }
+
+.custom-marker {
+  position: relative;
+}
+.custom-marker .marker-label {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.75);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  white-space: nowrap;
+  pointer-events: none;
+  margin-bottom: 4px;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════
-     ★ 配置区 —— 只需修改这里 ★
-     ═══════════════════════════════════════════════ -->
 <script>
 const CONFIG = {
   GITHUB_OWNER : "jeremyjia",
   GITHUB_REPO  : "Games",
-
-  // ① 新建一个 issue，把编号填在这里（数字）
   ISSUE_NUMBER : 1243,
-
-  // token 拆段存放，防止 GitHub 扫描自动吊销
   GITHUB_TOKEN : "ghp_LWbSRdeNb" + "tr0wykbm2Q" + "TFqxdP6x4u" + "A4MQH0M",
 };
 </script>
-<!-- ═══════════════════════════════════════════════ -->
 
 <div id="topbar">
   <h1>📍 大家在哪里</h1>
+  <span id="accuracy-badge">⚡ 高精度</span>
   <div id="status-dot"></div>
   <span id="status-text">初始化…</span>
   <button id="refresh-btn" onclick="refreshAll()">刷新</button>
@@ -169,7 +208,6 @@ const CONFIG = {
 </div>
 
 <script>
-/* ── 颜色池 ── */
 const PALETTE = ["#6366f1","#f59e0b","#10b981","#ef4444","#3b82f6","#ec4899","#8b5cf6","#f97316","#14b8a6","#84cc16"];
 const colorCache = {};
 function getColor(name) {
@@ -179,7 +217,6 @@ function getColor(name) {
   return colorCache[name];
 }
 
-/* ── 地图 ── */
 const map = L.map('map', { zoomControl: true }).setView([35.86, 104.19], 4);
 L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
   attribution: '© <a href="https://amap.com">高德地图</a>',
@@ -187,15 +224,13 @@ L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scal
   maxZoom: 18
 }).addTo(map);
 
-const markerMap = {};   // name → L.marker
+const markerMap = {};
 
-/* ── 状态栏 ── */
 function setStatus(state, text) {
   document.getElementById('status-dot').className = state;
   document.getElementById('status-text').textContent = text;
 }
 
-/* ── 本地名字存储 ── */
 const nameInput = document.getElementById('name-input');
 nameInput.value = localStorage.getItem('loshare_name') || '';
 if (!nameInput.value) document.getElementById('guide').style.display = 'block';
@@ -205,28 +240,43 @@ nameInput.addEventListener('input', () => {
   document.getElementById('guide').style.display = v ? 'none' : 'block';
 });
 
-/* ── GitHub API ── */
-async function ghFetch(path, opts = {}) {
-  const res = await fetch('https://api.github.com' + path, {
-    ...opts,
-    headers: {
-      'Authorization': 'Bearer ' + CONFIG.GITHUB_TOKEN,
-      'Accept': 'application/vnd.github+json',
-      'Content-Type': 'application/json',
-      ...(opts.headers || {})
+let membersCache = null;
+let cacheTime = 0;
+const CACHE_TTL = 30000;
+
+async function ghFetchWithRetry(path, opts = {}, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch('https://api.github.com' + path, {
+        ...opts,
+        headers: {
+          'Authorization': 'Bearer ' + CONFIG.GITHUB_TOKEN,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json',
+          ...(opts.headers || {})
+        }
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(`GitHub ${res.status}: ${err.message || ''}`);
+      }
+      return res.json();
+    } catch (e) {
+      if (i === retries - 1) throw e;
+      await new Promise(r => setTimeout(r, 1000 * (i + 1)));
     }
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(`GitHub ${res.status}: ${err.message || ''}`);
   }
-  return res.json();
 }
 
-/* ── Comment 编解码 ── */
-function encodeComment(name, lat, lng, addr) {
-  const data = { name, lat, lng, addr: addr || '', time: new Date().toISOString() };
-  return `<!-- loshare:${JSON.stringify(data)} -->\n**${name}** 📍 ${new Date().toLocaleString('zh-CN')}${addr ? '  \n' + addr : ''}`;
+function encodeComment(name, lat, lng, addr, preciseAddr, accuracy) {
+  const data = { 
+    name, lat, lng, 
+    addr: addr || '', 
+    preciseAddr: preciseAddr || '',
+    accuracy: accuracy || 0,
+    time: new Date().toISOString() 
+  };
+  return `<!-- loshare:${JSON.stringify(data)} -->\n**${name}** 📍 ${new Date().toLocaleString('zh-CN')}${addr ? '  \n📍 ' + addr : ''}${preciseAddr ? '  \n🏷️ ' + preciseAddr : ''}${accuracy ? '  \n📡 精度 ±' + accuracy + 'm' : ''}`;
 }
 
 function decodeComment(body) {
@@ -235,59 +285,106 @@ function decodeComment(body) {
   try { return JSON.parse(m[1]); } catch { return null; }
 }
 
-/* ── 逆地理编码（高德地图，国内支持好，微信浏览器无跨域问题） ── */
-// 在 https://lbs.amap.com/ 免费注册可获取自己的 Key，每日 5000 次
-const AMAP_KEY = '11f945b4a4be1e72cef07f2e9c1c311d';  // ← 替换成你的高德 Key（见下方说明）
+/* ── 逆地理编码（高德地图） ── */
+const AMAP_KEY = '11f945b4a4be1e72cef07f2e9c1c311d';
 
 async function reverseGeocode(lat, lng) {
-  const [gcjLng, gcjLat] = wgs84ToGcj02(lng, lat);
   try {
     const r = await fetch(
       `https://restapi.amap.com/v3/geocode/regeo?key=${AMAP_KEY}` +
-      `&location=${gcjLng.toFixed(6)},${gcjLat.toFixed(6)}&extensions=base&output=json`
+      `&location=${lng.toFixed(6)},${lat.toFixed(6)}&extensions=all&output=json`
     );
     const d = await r.json();
     if (d.status === '1' && d.regeocode) {
       const c = d.regeocode.addressComponent || {};
-      return (c.city || c.province || '') + (c.district || '') + (c.township || '');
+      
+      let addrParts = [];
+      if (c.province && c.province !== c.city) addrParts.push(c.province);
+      if (c.city && c.city !== c.province) addrParts.push(c.city);
+      if (c.district && !c.district.includes(c.city)) addrParts.push(c.district);
+      
+      let streetInfo = '';
+      if (c.township) streetInfo += c.township;
+      if (c.street) streetInfo += c.street;
+      
+      let poiName = '';
+      if (d.regeocode.pois && d.regeocode.pois.length > 0) {
+        const sortedPois = d.regeocode.pois.sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
+        for (const poi of sortedPois) {
+          if (!poi.name.includes('路') && !poi.name.includes('路口') && !poi.name.includes('交叉口')) {
+            poiName = poi.name;
+            break;
+          }
+        }
+        if (!poiName && sortedPois.length > 0) {
+          poiName = sortedPois[0].name;
+        }
+      }
+      
+      let fullAddr = '';
+      if (poiName) {
+        fullAddr = addrParts.join('') + poiName;
+      } else if (streetInfo) {
+        fullAddr = addrParts.join('') + streetInfo;
+      } else {
+        fullAddr = d.regeocode.formatted_address || addrParts.join('');
+      }
+      
+      let preciseAddr = poiName || streetInfo || addrParts.slice(-2).join('');
+      
+      return { full: fullAddr, precise: preciseAddr };
     }
-    return '';
-  } catch { return ''; }
+    return { full: '', precise: '' };
+  } catch (e) {
+    console.error('逆地理编码失败:', e);
+    return { full: '', precise: '' };
+  }
 }
 
-/* WGS-84 → GCJ-02 坐标转换（GPS原始坐标 → 高德/国内标准） */
-function wgs84ToGcj02(lng, lat) {
-  const a = 6378245.0, ee = 0.00669342162296594323;
-  if (lng < 72.004 || lng > 137.8347 || lat < 0.8293 || lat > 55.8271) return [lng, lat];
-  let dLat = transformLat(lng - 105.0, lat - 35.0);
-  let dLng = transformLng(lng - 105.0, lat - 35.0);
-  const radLat = lat / 180.0 * Math.PI;
-  let magic = 1 - ee * Math.sin(radLat) ** 2;
-  const sq = Math.sqrt(magic);
-  dLat = dLat * 180.0 / ((a * (1 - ee)) / (magic * sq) * Math.PI);
-  dLng = dLng * 180.0 / (a / sq * Math.cos(radLat) * Math.PI);
-  return [lng + dLng, lat + dLat];
-}
-function transformLat(x, y) {
-  let r = -100 + 2*x + 3*y + 0.2*y*y + 0.1*x*y + 0.2*Math.sqrt(Math.abs(x));
-  r += (20*Math.sin(6*x*Math.PI) + 20*Math.sin(2*x*Math.PI)) * 2/3;
-  r += (20*Math.sin(y*Math.PI) + 40*Math.sin(y/3*Math.PI)) * 2/3;
-  r += (160*Math.sin(y/12*Math.PI) + 320*Math.sin(y*Math.PI/30)) * 2/3;
-  return r;
-}
-function transformLng(x, y) {
-  let r = 300 + x + 2*y + 0.1*x*x + 0.1*x*y + 0.1*Math.sqrt(Math.abs(x));
-  r += (20*Math.sin(6*x*Math.PI) + 20*Math.sin(2*x*Math.PI)) * 2/3;
-  r += (20*Math.sin(x*Math.PI) + 40*Math.sin(x/3*Math.PI)) * 2/3;
-  r += (150*Math.sin(x/12*Math.PI) + 300*Math.sin(x/30*Math.PI)) * 2/3;
-  return r;
+/* ── ★★★ 高精度WGS-84 → GCJ-02 转换（优化版） ★★★ ── */
+function wgs84ToGcj02(wgsLng, wgsLat) {
+  const a = 6378245.0;
+  const ee = 0.00669342162296594323;
+  
+  // 检查是否在中国境外
+  if (wgsLng < 72.004 || wgsLng > 137.8347 || wgsLat < 0.8293 || wgsLat > 55.8271) {
+    return [wgsLng, wgsLat];
+  }
+  
+  function transformLat(x, y) {
+    let ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+    ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+    ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+    ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+    return ret;
+  }
+  
+  function transformLng(x, y) {
+    let ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+    ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+    ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+    ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+    return ret;
+  }
+  
+  const dLat = transformLat(wgsLng - 105.0, wgsLat - 35.0);
+  const dLng = transformLng(wgsLng - 105.0, wgsLat - 35.0);
+  const radLat = wgsLat / 180.0 * Math.PI;
+  let magic = Math.sin(radLat);
+  magic = 1 - ee * magic * magic;
+  const sqrtMagic = Math.sqrt(magic);
+  const dLatFinal = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+  const dLngFinal = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+  
+  const gcjLat = wgsLat + dLatFinal;
+  const gcjLng = wgsLng + dLngFinal;
+  
+  return [gcjLng, gcjLat];
 }
 
-/* ── 上次上传的坐标（用于判断是否移动） ── */
-let lastUploadedPos = null;  // { lat, lng }
-const MOVE_THRESHOLD_M = 50; // 移动超过 50 米才更新
+let lastUploadedPos = null;
+const MOVE_THRESHOLD_M = 15;
 
-/* 计算两点距离（米），Haversine 公式 */
 function distanceMeters(lat1, lng1, lat2, lng2) {
   const R = 6371000;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -295,6 +392,114 @@ function distanceMeters(lat1, lng1, lat2, lng2) {
   const a = Math.sin(dLat/2)**2 +
             Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function showSkeleton() {
+  const list = document.getElementById('members-list');
+  list.innerHTML = `
+    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
+    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
+  `;
+}
+
+/* ── ★★★ 核心：原生GPS高精度定位 + 精确坐标转换 ★★★ ── */
+function getHighPrecisionPosition() {
+  return new Promise((resolve, reject) => {
+    let bestPos = null;
+    let bestAccuracy = Infinity;
+    let watchId = null;
+    let timerId = null;
+    let resolved = false;
+    let samples = [];
+
+    function cleanup() {
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+      }
+      if (timerId !== null) {
+        clearTimeout(timerId);
+        timerId = null;
+      }
+    }
+
+    function finish(position, isFinal = false) {
+      if (resolved) return;
+      
+      const accuracy = position.coords.accuracy || Infinity;
+      samples.push({ lat: position.coords.latitude, lng: position.coords.longitude, accuracy });
+      
+      // 取精度最高的样本
+      if (accuracy < bestAccuracy) {
+        bestPos = position;
+        bestAccuracy = accuracy;
+        document.getElementById('accuracy-badge').textContent = `📡 精度 ±${Math.round(accuracy)}m`;
+      }
+      
+      // 如果精度足够好（20米以内），或者已经采集了足够样本
+      if (accuracy <= 20 || samples.length >= 5) {
+        resolved = true;
+        cleanup();
+        // 使用精度最高的位置
+        resolve(bestPos || position);
+      }
+    }
+
+    // 超时
+    timerId = setTimeout(() => {
+      if (resolved) return;
+      resolved = true;
+      cleanup();
+      if (bestPos) {
+        resolve(bestPos);
+      } else {
+        reject(new Error('定位超时'));
+      }
+    }, 25000);
+
+    // 持续监听
+    watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const acc = pos.coords.accuracy || Infinity;
+        console.log(`📍 GPS更新: 精度 ${Math.round(acc)}m, 样本 ${samples.length + 1}`);
+        finish(pos, false);
+      },
+      (err) => {
+        console.warn('GPS错误:', err.message);
+        if (bestPos) {
+          resolved = true;
+          cleanup();
+          resolve(bestPos);
+        } else {
+          cleanup();
+          reject(err);
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      }
+    );
+
+    // 快速获取初始位置
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const acc = pos.coords.accuracy || Infinity;
+        if (acc < bestAccuracy) {
+          bestPos = pos;
+          bestAccuracy = acc;
+        }
+        if (acc <= 20) {
+          resolved = true;
+          cleanup();
+          resolve(pos);
+        }
+      },
+      () => {},
+      { enableHighAccuracy: true, timeout: 3000, maximumAge: 0 }
+    );
+  });
 }
 
 /* ── 上传位置 ── */
@@ -305,23 +510,30 @@ async function uploadLocation(silent = false) {
   const btn = document.getElementById('upload-btn');
   if (!silent) { btn.disabled = true; }
 
-  setStatus('loading', silent ? '更新位置…' : '获取 GPS…');
-  if (!silent) btn.textContent = '📡 获取 GPS 中…';
+  setStatus('loading', silent ? '更新位置…' : '获取高精度GPS…');
+  if (!silent) btn.textContent = '📡 获取高精度GPS…';
 
-  // 用 watchPosition 代替 getCurrentPosition，强制获取实时坐标，避免系统缓存
-  let watchId = null;
-  watchId = navigator.geolocation.watchPosition(async pos => {
-    navigator.geolocation.clearWatch(watchId);  // 拿到坐标立即停止监听
+  try {
+    // 1. 使用原生GPS获取高精度WGS-84坐标
+    const pos = await getHighPrecisionPosition();
+    const { latitude: wgsLat, longitude: wgsLng, accuracy } = pos.coords;
+    
+    console.log(`📍 WGS-84: ${wgsLat}, ${wgsLng}, 精度 ${Math.round(accuracy)}m`);
+    
+    // 2. 转换为GCJ-02（高德地图坐标系）
+    const [gcjLng, gcjLat] = wgs84ToGcj02(wgsLng, wgsLat);
+    console.log(`📍 GCJ-02: ${gcjLat}, ${gcjLng}`);
+    
+    // 3. 计算转换偏移量（用于显示）
+    const offsetLat = gcjLat - wgsLat;
+    const offsetLng = gcjLng - wgsLng;
+    console.log(`📍 转换偏移: ${(offsetLat * 111000).toFixed(0)}m, ${(offsetLng * 111000 * Math.cos(wgsLat * Math.PI / 180)).toFixed(0)}m`);
 
-    const { latitude: lat, longitude: lng, accuracy } = pos.coords;
-    console.log(`GPS 精度: ${accuracy.toFixed(0)}m`);
-
-    // 判断是否移动超过阈值
+    // 检查是否移动
     if (lastUploadedPos) {
-      const dist = distanceMeters(lastUploadedPos.lat, lastUploadedPos.lng, lat, lng);
+      const dist = distanceMeters(lastUploadedPos.lat, lastUploadedPos.lng, gcjLat, gcjLng);
       console.log(`距上次位置: ${dist.toFixed(0)}m`);
       if (dist < MOVE_THRESHOLD_M) {
-        // 位置没有明显变化，跳过上传，只刷新同伴
         setStatus('ok', `未移动 (${dist.toFixed(0)}m)`);
         if (!silent) {
           btn.textContent = '📍 位置未变化';
@@ -333,102 +545,205 @@ async function uploadLocation(silent = false) {
     }
 
     if (!silent) btn.textContent = '🔍 解析地址…';
-    const addr = await reverseGeocode(lat, lng);
+    setStatus('loading', '获取地址…');
+    
+    // 4. 用GCJ-02坐标获取地址
+    const addrInfo = await reverseGeocode(gcjLat, gcjLng);
+    const fullAddr = addrInfo.full || '';
+    const preciseAddr = addrInfo.precise || '';
 
     if (!silent) { btn.textContent = '📤 上传到 GitHub…'; }
     setStatus('loading', '写入 Issue…');
 
-    try {
-      const comments = await ghFetch(
-        `/repos/${CONFIG.GITHUB_OWNER}/${CONFIG.GITHUB_REPO}/issues/${CONFIG.ISSUE_NUMBER}/comments`
+    const comments = await ghFetchWithRetry(
+      `/repos/${CONFIG.GITHUB_OWNER}/${CONFIG.GITHUB_REPO}/issues/${CONFIG.ISSUE_NUMBER}/comments`
+    );
+    const existing = comments.find(c => {
+      const d = decodeComment(c.body);
+      return d && d.name === name;
+    });
+
+    const body = encodeComment(name, gcjLat, gcjLng, fullAddr, preciseAddr, Math.round(accuracy));
+
+    if (existing) {
+      await ghFetchWithRetry(
+        `/repos/${CONFIG.GITHUB_OWNER}/${CONFIG.GITHUB_REPO}/issues/comments/${existing.id}`,
+        { method: 'PATCH', body: JSON.stringify({ body }) }
       );
-      const existing = comments.find(c => {
-        const d = decodeComment(c.body);
-        return d && d.name === name;
-      });
-
-      const body = encodeComment(name, lat, lng, addr);
-
-      if (existing) {
-        await ghFetch(
-          `/repos/${CONFIG.GITHUB_OWNER}/${CONFIG.GITHUB_REPO}/issues/comments/${existing.id}`,
-          { method: 'PATCH', body: JSON.stringify({ body }) }
-        );
-      } else {
-        await ghFetch(
-          `/repos/${CONFIG.GITHUB_OWNER}/${CONFIG.GITHUB_REPO}/issues/${CONFIG.ISSUE_NUMBER}/comments`,
-          { method: 'POST', body: JSON.stringify({ body }) }
-        );
-      }
-
-      lastUploadedPos = { lat, lng };  // 记录本次上传坐标
-      setStatus('ok', '已更新');
-      await loadMembers();
-
-      if (!silent) {
-        /* 飞到自己的位置 */
-        if (markerMap[name]) {
-          map.flyTo([lat, lng], 14, { duration: 1.5 });
-          markerMap[name].openPopup();
-        }
-        btn.textContent = '✅ 位置已更新！';
-        setTimeout(() => {
-          btn.textContent = '📤 分享我的当前位置';
-          btn.disabled = false;
-        }, 2000);
-      }
-
-    } catch(e) {
-      setStatus('err', '上传失败');
-      if (!silent) {
-        btn.textContent = '❌ 失败，点击重试';
-        btn.disabled = false;
-        alert('上传失败：' + e.message);
-      }
-      console.error(e);
+    } else {
+      await ghFetchWithRetry(
+        `/repos/${CONFIG.GITHUB_OWNER}/${CONFIG.GITHUB_REPO}/issues/${CONFIG.ISSUE_NUMBER}/comments`,
+        { method: 'POST', body: JSON.stringify({ body }) }
+      );
     }
 
-  }, err => {
+    lastUploadedPos = { lat: gcjLat, lng: gcjLng, accuracy };
+    setStatus('ok', `已更新 (±${Math.round(accuracy)}m)`);
+    
+    membersCache = null;
+    cacheTime = 0;
+    await loadMembers();
+
+    if (!silent) {
+      if (markerMap[name]) {
+        map.flyTo([gcjLat, gcjLng], 17, { duration: 1.5 });
+        markerMap[name].openPopup();
+      }
+      btn.textContent = '✅ 位置已更新！';
+      setTimeout(() => {
+        btn.textContent = '📤 分享我的当前位置';
+        btn.disabled = false;
+      }, 2000);
+    }
+
+  } catch(e) {
     setStatus('err', '定位失败');
     if (!silent) {
-      btn.textContent = '📤 分享我的当前位置';
+      btn.textContent = '❌ 失败，点击重试';
       btn.disabled = false;
-      alert('定位失败：' + err.message + '\n\n请检查浏览器定位权限是否已开启。');
+      alert('定位失败：' + e.message + '\n\n💡 提示：请在空旷处尝试，并确保已开启GPS/WiFi。');
     }
-  }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });  // maximumAge:0 禁用缓存
+    console.error(e);
+  }
 }
 
-/* ── 创建地图标记 ── */
-function makeIcon(name, color) {
-  const ch = [...name][0].toUpperCase();  // 正确处理中文首字
+/* ── 地图标记 ── */
+function makeCustomIcon(name, color, label = '', accuracy = 0) {
+  const ch = [...name][0].toUpperCase();
+  const labelHtml = label ? `<div class="marker-label">${label}</div>` : '';
+  
   return L.divIcon({
-    html: `<div style="width:36px;height:36px;border-radius:50%;background:${color};
+    html: `
+      <div class="custom-marker">
+        ${labelHtml}
+        <div style="width:42px;height:42px;border-radius:50%;background:${color};
              display:flex;align-items:center;justify-content:center;
-             color:#fff;font-size:15px;font-weight:700;
-             border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3);">${ch}</div>`,
+             color:#fff;font-size:16px;font-weight:700;
+             border:3px solid #fff;box-shadow:0 2px 12px rgba(0,0,0,0.4);
+             transition:transform 0.2s;">
+          ${ch}
+        </div>
+      </div>
+    `,
     className: '',
-    iconSize: [36, 36],
-    iconAnchor: [18, 18],
-    popupAnchor: [0, -20]
+    iconSize: [42, 42],
+    iconAnchor: [21, 21],
+    popupAnchor: [0, -30]
   });
 }
 
-/* ── 加载所有成员 ── */
-async function loadMembers() {
+/* ── 渲染成员 ── */
+function renderMembers(members) {
+  const oldNames = new Set(Object.keys(markerMap));
+  
+  for (const m of members) {
+    const color = getColor(m.name);
+    const latlng = [m.lat, m.lng];
+    const label = m.preciseAddr || m.addr || '';
+    const shortLabel = label.length > 8 ? label.substring(0, 8) + '…' : label;
+    const accuracy = m.accuracy || 0;
+    
+    const popup = buildPopup(m);
+    
+    if (markerMap[m.name]) {
+      markerMap[m.name].setLatLng(latlng)
+        .setIcon(makeCustomIcon(m.name, color, shortLabel, accuracy));
+      markerMap[m.name].getPopup().setContent(popup);
+    } else {
+      markerMap[m.name] = L.marker(latlng, { 
+        icon: makeCustomIcon(m.name, color, shortLabel, accuracy),
+        title: m.name
+      })
+        .addTo(map)
+        .bindPopup(popup);
+    }
+    oldNames.delete(m.name);
+  }
+  
+  for (const gone of oldNames) {
+    map.removeLayer(markerMap[gone]);
+    delete markerMap[gone];
+  }
+
+  if (members.length === 1) {
+    map.setView([members[0].lat, members[0].lng], 16);
+  } else if (members.length > 1) {
+    map.fitBounds(L.latLngBounds(members.map(m => [m.lat, m.lng])), { padding: [50, 50] });
+  }
+
+  const list = document.getElementById('members-list');
+  if (members.length === 0) {
+    list.innerHTML = '<div class="empty-tip">还没有人分享位置 👀</div>';
+  } else {
+    list.innerHTML = members.map(m => {
+      const color = getColor(m.name);
+      const ch = [...m.name][0].toUpperCase();
+      const displayAddr = m.preciseAddr || m.addr || '';
+      const accuracy = m.accuracy || 0;
+      
+      return `
+      <div class="member-item" onclick="flyToMember('${m.name}',${m.lat},${m.lng})">
+        <div class="avatar" style="background:${color}">${ch}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;">
+            <span class="member-name">${escHtml(m.name)}</span>
+            <span class="member-time">${timeAgo(m.time)}</span>
+            ${accuracy ? `<span class="member-accuracy">±${Math.round(accuracy)}m</span>` : ''}
+          </div>
+          ${displayAddr ? `<div class="member-addr">📍 ${escHtml(displayAddr)}</div>` : ''}
+        </div>
+        <button class="locate-btn" onclick="event.stopPropagation();flyToMember('${m.name}',${m.lat},${m.lng})">定位</button>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('last-refresh-time').textContent =
+    '更新于 ' + new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+}
+
+function flyToMember(name, lat, lng) {
+  map.flyTo([lat, lng], 18, { duration: 1.2 });
+  if (markerMap[name]) markerMap[name].openPopup();
+}
+
+function buildPopup(m) {
+  const addr = m.preciseAddr || m.addr || '';
+  const accuracy = m.accuracy || 0;
+  return `
+    <div style="font-size:13px;line-height:1.8;min-width:160px;">
+      <div style="font-size:16px;font-weight:700;color:#1f2937;">${escHtml(m.name)}</div>
+      ${addr ? `<div style="color:#374151;margin:4px 0;">📍 ${escHtml(addr)}</div>` : ''}
+      ${accuracy ? `<div style="color:#6b7280;font-size:11px;">📡 定位精度 ±${Math.round(accuracy)}m</div>` : ''}
+      <div style="color:#9ca3af;font-size:11px;margin-top:4px;border-top:1px solid #f3f4f6;padding-top:4px;">
+        ${new Date(m.time).toLocaleString('zh-CN')}
+      </div>
+    </div>
+  `;
+}
+
+async function loadMembers(forceRefresh = false) {
+  const now = Date.now();
+  
+  if (!forceRefresh && membersCache && (now - cacheTime) < CACHE_TTL) {
+    renderMembers(membersCache);
+    return;
+  }
+  
+  showSkeleton();
   setStatus('loading', '读取中…');
+  
   try {
-    /* 分页拉取全部 comments（每页 100 条） */
-    let all = [], page = 1;
+    const all = [];
+    let page = 1;
     while (true) {
-      const batch = await ghFetch(
+      const batch = await ghFetchWithRetry(
         `/repos/${CONFIG.GITHUB_OWNER}/${CONFIG.GITHUB_REPO}/issues/${CONFIG.ISSUE_NUMBER}/comments?per_page=100&page=${page}`
       );
-      all = all.concat(batch);
+      all.push(...batch);
       if (batch.length < 100) break;
       page++;
     }
 
-    /* 每人只取最新一条 */
     const latest = {};
     for (const c of all) {
       const d = decodeComment(c.body);
@@ -438,80 +753,26 @@ async function loadMembers() {
       }
     }
     const members = Object.values(latest).sort((a, b) => new Date(b.time) - new Date(a.time));
-
-    /* ── 更新地图标记 ── */
-    const oldNames = new Set(Object.keys(markerMap));
-    for (const m of members) {
-      const color = getColor(m.name);
-      const latlng = [m.lat, m.lng];
-      const popup = buildPopup(m);
-      if (markerMap[m.name]) {
-        markerMap[m.name].setLatLng(latlng).setIcon(makeIcon(m.name, color));
-        markerMap[m.name].getPopup().setContent(popup);
-      } else {
-        markerMap[m.name] = L.marker(latlng, { icon: makeIcon(m.name, color) })
-          .addTo(map)
-          .bindPopup(popup);
-      }
-      oldNames.delete(m.name);
-    }
-    for (const gone of oldNames) {
-      map.removeLayer(markerMap[gone]);
-      delete markerMap[gone];
-    }
-
-    /* 自动调整视角 */
-    if (members.length === 1) {
-      map.setView([members[0].lat, members[0].lng], 13);
-    } else if (members.length > 1) {
-      map.fitBounds(L.latLngBounds(members.map(m => [m.lat, m.lng])), { padding: [40, 40] });
-    }
-
-    /* ── 更新成员列表 ── */
-    const list = document.getElementById('members-list');
-    if (members.length === 0) {
-      list.innerHTML = '<div class="empty-tip">还没有人分享位置 👀</div>';
-    } else {
-      list.innerHTML = members.map(m => {
-        const color = getColor(m.name);
-        const ch = [...m.name][0].toUpperCase();
-        return `
-        <div class="member-item" onclick="flyToMember('${m.name}',${m.lat},${m.lng})">
-          <div class="avatar" style="background:${color}">${ch}</div>
-          <div style="flex:1;min-width:0;">
-            <div style="display:flex;align-items:baseline;gap:6px;">
-              <span class="member-name">${escHtml(m.name)}</span>
-              <span class="member-time">${timeAgo(m.time)}</span>
-            </div>
-            ${m.addr ? `<div class="member-addr">${escHtml(m.addr)}</div>` : ''}
-          </div>
-          <button class="locate-btn" onclick="event.stopPropagation();flyToMember('${m.name}',${m.lat},${m.lng})">定位</button>
-        </div>`;
-      }).join('');
-    }
-
-    /* 刷新时间 */
-    document.getElementById('last-refresh-time').textContent =
-      '更新于 ' + new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
-
+    
+    membersCache = members;
+    cacheTime = now;
+    
+    renderMembers(members);
     setStatus('ok', members.length + ' 人');
+    
   } catch(e) {
     setStatus('err', '读取失败');
     console.error(e);
+    
+    if (membersCache) {
+      renderMembers(membersCache);
+      document.getElementById('last-refresh-time').textContent = 
+        '⚠️ 使用缓存 ' + new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+    } else {
+      document.getElementById('members-list').innerHTML = 
+        '<div class="empty-tip">⚠️ 加载失败，请点击刷新重试</div>';
+    }
   }
-}
-
-function flyToMember(name, lat, lng) {
-  map.flyTo([lat, lng], 15, { duration: 1.2 });
-  if (markerMap[name]) markerMap[name].openPopup();
-}
-
-function buildPopup(m) {
-  return `<div style="font-size:13px;line-height:1.6;">
-    <b style="font-size:14px;">${escHtml(m.name)}</b><br>
-    ${m.addr ? escHtml(m.addr) + '<br>' : ''}
-    <span style="color:#888;">${new Date(m.time).toLocaleString('zh-CN')}</span>
-  </div>`;
 }
 
 function timeAgo(iso) {
@@ -526,19 +787,17 @@ function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-/* ── 刷新按钮：静默上传自己 + 读取同伴 ── */
 async function refreshAll() {
   const name = nameInput.value.trim();
   if (name) {
-    await uploadLocation(true);   // 静默模式：不改按钮文字，后台上传
+    await uploadLocation(true);
   } else {
-    await loadMembers();          // 没有名字则只刷新同伴
+    await loadMembers(true);
   }
 }
 
-/* ── 启动 ── */
 loadMembers();
-setInterval(loadMembers, 60_000);   // 每 60 秒自动刷新
+setInterval(() => loadMembers(), 60000);
 </script>
 </body>
 </html>
