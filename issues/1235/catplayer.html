@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>📽️ 猫咪幻灯片 Issue放映厅</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            background: linear-gradient(145deg, #2b3a4a 0%, #1d2a35 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .player-container {
+            max-width: 1100px;
+            width: 100%;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(8px);
+            border-radius: 42px;
+            padding: 24px;
+            box-shadow: 0 30px 50px rgba(0,0,0,0.6), inset 0 1px 2px rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* 画布区域 — 胶片感 */
+        .canvas-wrapper {
+            position: relative;
+            border-radius: 32px;
+            overflow: hidden;
+            background: #0b1219;
+            box-shadow: 0 20px 35px -8px black, inset 0 0 0 2px rgba(255,215,100,0.2);
+            margin-bottom: 25px;
+            aspect-ratio: 16/9;
+        }
+
+        #slideshowCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #0a0f14;
+            transition: opacity 0.4s ease;
+        }
+
+        .canvas-overlay {
+            position: absolute;
+            bottom: 20px;
+            right: 25px;
+            background: rgba(10, 20, 30, 0.7);
+            backdrop-filter: blur(5px);
+            padding: 8px 18px;
+            border-radius: 60px;
+            color: #ffd966;
+            font-size: 15px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            border: 1px solid #ffd96655;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .counter-badge {
+            position: absolute;
+            top: 20px;
+            left: 25px;
+            background: #1e2b38cc;
+            backdrop-filter: blur(4px);
+            padding: 6px 16px;
+            border-radius: 40px;
+            color: #b3e5ff;
+            font-size: 14px;
+            border: 1px solid #58a6ff66;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .no-image-message {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #111a22;
+            color: #9bb7d4;
+            font-size: 1.3rem;
+            gap: 15px;
+            z-index: 5;
+        }
+        .no-image-message span {
+            font-size: 4rem;
+            opacity: 0.6;
+        }
+
+        /* 控制栏 — 玻璃质感 */
+        .control-panel {
+            background: rgba(20, 30, 40, 0.6);
+            backdrop-filter: blur(15px);
+            border-radius: 80px;
+            padding: 18px 25px;
+            border: 1px solid rgba(255,215,140,0.15);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            background: rgba(45, 60, 75, 0.8);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #eef5ff;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,220,150,0.2);
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+        .btn-primary {
+            background: linear-gradient(145deg, #3a5f7a, #1e3a5a);
+            border-color: #ffdb9f55;
+        }
+        .btn-primary:hover {
+            background: #2f5670;
+            border-color: #ffc966aa;
+        }
+        .btn-success {
+            background: linear-gradient(145deg, #2d5f4c, #1b4a3b);
+        }
+        .btn-warning {
+            background: linear-gradient(145deg, #8f5e30, #6f421f);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #6889a2;
+        }
+
+        .btn:disabled {
+            opacity: 0.35;
+            pointer-events: none;
+            filter: grayscale(0.6);
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            background: #0f1a24b3;
+            padding: 10px 20px;
+            border-radius: 50px;
+        }
+        .slider-label {
+            color: #bbd9f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+        }
+        input[type=range] {
+            width: 200px;
+            height: 6px;
+            background: #2e4558;
+            border-radius: 10px;
+            -webkit-appearance: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #ffcd7e;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px #ffb347;
+            border: 2px solid white;
+        }
+
+        .issue-config {
+            background: rgba(10, 20, 28, 0.6);
+            backdrop-filter: blur(8px);
+            border-radius: 60px;
+            padding: 18px 28px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            border: 1px solid #70879b33;
+        }
+
+        .config-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #cedce9;
+            flex-wrap: wrap;
+        }
+        .config-item label {
+            font-weight: 400;
+            font-size: 0.95rem;
+            opacity: 0.8;
+        }
+        .config-item input {
+            background: #1b2a36;
+            border: 1px solid #5f7a97;
+            border-radius: 40px;
+            padding: 12px 18px;
+            color: white;
+            font-size: 15px;
+            width: 160px;
+            outline: none;
+            transition: 0.2s;
+        }
+        .config-item input:focus {
+            border-color: #ffbc6c;
+            box-shadow: 0 0 10px #ffb05477;
+        }
+        .config-item input[type=number] {
+            width: 100px;
+        }
+
+        .toast-message {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #1c2c3cee;
+            backdrop-filter: blur(10px);
+            color: #fadfad;
+            padding: 14px 30px;
+            border-radius: 60px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            border: 1px solid #f3b35e;
+            box-shadow: 0 10px 30px black;
+            transition: 0.3s;
+            z-index: 999;
+            font-size: 1rem;
+        }
+        .toast-message.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .footer-note {
+            text-align: center;
+            color: #95aec7;
+            margin-top: 25px;
+            font-size: 0.9rem;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <!-- 引入 server.js 提供 GitHub API 能力 (来自之前代码) -->
+    <script src="https://jeremyjia.github.io/Games/issues/4/server.js"></script>
+
+    <div class="player-container">
+        <!-- 画布主舞台 -->
+        <div class="canvas-wrapper">
+            <canvas id="slideshowCanvas" width="1280" height="720"></canvas>
+            <div class="counter-badge" id="imageCounter">📸 0 / 0</div>
+            <div class="canvas-overlay" id="filenameHint">等待加载...</div>
+            <div class="no-image-message" id="noImagePlaceholder" style="display: none;">
+                <span>🎞️</span>
+                <div>暂无图片，请点击「读取评论」</div>
+            </div>
+        </div>
+
+        <!-- 播放控制栏 -->
+        <div class="control-panel">
+            <div class="btn-group">
+                <button class="btn btn-primary" id="fetchBtn"><span>⬇️</span> 读取评论</button>
+                <button class="btn btn-success" id="playBtn" disabled><span>▶️</span> 播放</button>
+                <button class="btn btn-warning" id="pauseBtn" disabled><span>⏸️</span> 暂停</button>
+                <button class="btn btn-outline" id="prevBtn" disabled><span>⏮️</span> 上一张</button>
+                <button class="btn btn-outline" id="nextBtn" disabled><span>⏭️</span> 下一张</button>
+            </div>
+
+            <div class="slider-container">
+                <span class="slider-label"><span>⏱️</span> 间隔 <span id="intervalValue">3.0</span> 秒</span>
+                <input type="range" id="intervalSlider" min="1" max="10" step="0.5" value="3.0">
+            </div>
+        </div>
+
+        <!-- Issue 配置区 -->
+        <div class="issue-config">
+            <div class="config-item">
+                <label>所有者</label>
+                <input type="text" id="repoOwner" placeholder="jeremyjia" value="jeremyjia">
+            </div>
+            <div class="config-item">
+                <label>仓库</label>
+                <input type="text" id="repoName" placeholder="Games" value="Games">
+            </div>
+            <div class="config-item">
+                <label>Issue #</label>
+                <input type="number" id="issueNumber" placeholder="1235" value="1235">
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-outline" id="refreshCommentsBtn"><span>🔄</span> 刷新评论</button>
+            </div>
+        </div>
+        <div class="footer-note">
+            ⚡ 从 GitHub Issue 评论中提取 base64 图片，canvas 幻灯片播放
+        </div>
+    </div>
+
+    <div class="toast-message" id="toast">👋 提示</div>
+
+    <script>
+        (function() {
+            // ---------- DOM 元素 ----------
+            const canvas = document.getElementById('slideshowCanvas');
+            const ctx = canvas.getContext('2d');
+            const fetchBtn = document.getElementById('fetchBtn');
+            const playBtn = document.getElementById('playBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const refreshBtn = document.getElementById('refreshCommentsBtn');
+            const intervalSlider = document.getElementById('intervalSlider');
+            const intervalSpan = document.getElementById('intervalValue');
+            const imageCounter = document.getElementById('imageCounter');
+            const filenameHint = document.getElementById('filenameHint');
+            const noImagePlaceholder = document.getElementById('noImagePlaceholder');
+            const toast = document.getElementById('toast');
+
+            // 输入框
+            const repoOwnerInput = document.getElementById('repoOwner');
+            const repoNameInput = document.getElementById('repoName');
+            const issueNumberInput = document.getElementById('issueNumber');
+
+            // ---------- 状态 ----------
+            let imageList = [];               // 存储解析出的图片URL (base64 dataURL)
+            let currentIndex = 0;
+            let slideInterval = null;
+            let isPlaying = false;
+
+            // 默认占满画布黑色
+            ctx.fillStyle = '#0f1a22';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // ---------- 工具函数：吐司 ----------
+            function showToast(msg, type = 'info') {
+                toast.textContent = msg;
+                toast.classList.add('show');
+                toast.style.background = type === 'error' ? '#4a2c2cee' : '#1c2c3cee';
+                setTimeout(() => toast.classList.remove('show'), 2600);
+            }
+
+            // 更新计数器及占位符
+            function updateUI() {
+                if (imageList.length === 0) {
+                    imageCounter.innerText = `📸 0 / 0`;
+                    filenameHint.innerText = '无图片';
+                    noImagePlaceholder.style.display = 'flex';
+                    // 清空画布
+                    ctx.fillStyle = '#0f1a22';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    // 禁用相关按钮
+                    [playBtn, prevBtn, nextBtn, pauseBtn].forEach(btn => btn.disabled = true);
+                    return;
+                }
+                noImagePlaceholder.style.display = 'none';
+                imageCounter.innerText = `📸 ${currentIndex+1} / ${imageList.length}`;
+                filenameHint.innerText = `图片 ${currentIndex+1}`;
+                // 启用相关按钮（播放仅在未播放时启用，但这里开放）
+                prevBtn.disabled = false;
+                nextBtn.disabled = false;
+                playBtn.disabled = isPlaying;      // 播放中禁用播放按钮
+                pauseBtn.disabled = !isPlaying;     // 仅在播放时启用暂停
+            }
+
+            // 绘制当前索引图片到 canvas
+            function drawCurrentImage() {
+                if (imageList.length === 0) {
+                    return;
+                }
+                const imgSrc = imageList[currentIndex];
+                const img = new Image();
+                img.crossOrigin = 'anonymous';   // 处理 base64 不需要，但保留无害
+                img.onload = function() {
+                    // 清空画布，绘制图片保持比例 (contain 效果)
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // 计算居中绘制比例 (contain)
+                    const imgW = img.width;
+                    const imgH = img.height;
+                    const canvasW = canvas.width;
+                    const canvasH = canvas.height;
+
+                    const scale = Math.min(canvasW / imgW, canvasH / imgH);
+                    const drawW = imgW * scale;
+                    const drawH = imgH * scale;
+                    const offsetX = (canvasW - drawW) / 2;
+                    const offsetY = (canvasH - drawH) / 2;
+
+                    ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
+                };
+                img.onerror = () => {
+                    showToast(`第 ${currentIndex+1} 张图片加载失败`, 'error');
+                    // 画个灰色块代替
+                    ctx.fillStyle = '#2a3340';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                };
+                img.src = imgSrc;
+                updateUI();
+            }
+
+            // 从 GitHub 评论提取图片 (data:image)
+            function extractImagesFromComments(comments) {
+                const urls = [];
+                if (!Array.isArray(comments)) return urls;
+
+                // 正则匹配 markdown 中的图片 ![](data:image...)
+                // 也直接匹配裸露的 data:image/jpeg;base64, 或 data:image/png
+                const dataUrlRegex = /(data:image\/[a-zA-Z+]+;base64,[^\s"')]+)/g;
+
+                comments.forEach(comment => {
+                    if (comment.body && typeof comment.body === 'string') {
+                        const matches = comment.body.match(dataUrlRegex);
+                        if (matches) {
+                            matches.forEach(url => urls.push(url));
+                        }
+                    }
+                });
+                return urls;
+            }
+
+            // 核心：读取 issue 评论
+            function fetchCommentsFromIssue() {
+                const owner = repoOwnerInput.value.trim() || 'jeremyjia';
+                const repo = repoNameInput.value.trim() || 'Games';
+                const issueNum = issueNumberInput.value.trim() || '1235';
+
+                if (!owner || !repo || !issueNum) {
+                    showToast('请填写完整的仓库信息', 'error');
+                    return;
+                }
+
+                showToast('正在读取评论...', 'info');
+                // 禁用抓取按钮避免双击
+                fetchBtn.disabled = true;
+                refreshBtn.disabled = true;
+
+                // 用 listGitHubComments 需要 url，我们拼接
+                const commentsUrl = `https://api.github.com/repos/${owner}/${repo}/issues/${issueNum}/comments?per_page=100`;
+
+                // 假设 server.js 提供了 listGitHubComments(url, callback)
+                if (typeof listGitHubComments !== 'function') {
+                    showToast('错误：listGitHubComments 函数未定义', 'error');
+                    fetchBtn.disabled = false;
+                    refreshBtn.disabled = false;
+                    return;
+                }
+
+                listGitHubComments(commentsUrl, function(comments) {
+                    fetchBtn.disabled = false;
+                    refreshBtn.disabled = false;
+
+                    if (!comments || !Array.isArray(comments)) {
+                        showToast('未获取到有效评论', 'error');
+                        return;
+                    }
+
+                    const extracted = extractImagesFromComments(comments);
+                    if (extracted.length === 0) {
+                        showToast('没有找到 base64 图片', 'warning');
+                        imageList = [];
+                        currentIndex = 0;
+                        updateUI();
+                        drawCurrentImage(); // 清空
+                        return;
+                    }
+
+                    imageList = extracted;
+                    currentIndex = 0;
+                    showToast(`找到 ${imageList.length} 张图片 🎉`, 'success');
+                    drawCurrentImage();
+
+                    // 如果之前播放中，停止播放(重置状态)
+                    if (slideInterval) {
+                        clearInterval(slideInterval);
+                        slideInterval = null;
+                        isPlaying = false;
+                    }
+                    updateUI();
+                });
+            }
+
+            // 下一张
+            function nextImage() {
+                if (imageList.length === 0) return;
+                currentIndex = (currentIndex + 1) % imageList.length;
+                drawCurrentImage();
+            }
+
+            // 上一张
+            function prevImage() {
+                if (imageList.length === 0) return;
+                currentIndex = (currentIndex - 1 + imageList.length) % imageList.length;
+                drawCurrentImage();
+            }
+
+            // 播放/暂停逻辑
+            function startSlideshow() {
+                if (imageList.length === 0) {
+                    showToast('没有图片可播放', 'error');
+                    return;
+                }
+                if (slideInterval) clearInterval(slideInterval);
+                const intervalSec = parseFloat(intervalSlider.value) * 1000;
+                slideInterval = setInterval(() => {
+                    if (imageList.length > 0) {
+                        currentIndex = (currentIndex + 1) % imageList.length;
+                        drawCurrentImage();
+                    } else {
+                        // 如果没有图片，停止播放
+                        pauseSlideshow();
+                    }
+                }, intervalSec);
+                isPlaying = true;
+                updateUI();
+                showToast('播放已开始');
+            }
+
+            function pauseSlideshow() {
+                if (slideInterval) {
+                    clearInterval(slideInterval);
+                    slideInterval = null;
+                }
+                isPlaying = false;
+                updateUI();
+                showToast('已暂停');
+            }
+
+            // 刷新评论 (重新提取)
+            function refreshComments() {
+                pauseSlideshow();    // 停止播放
+                fetchCommentsFromIssue();
+            }
+
+            // ---------- 事件绑定 ----------
+            fetchBtn.addEventListener('click', refreshComments);
+            refreshBtn.addEventListener('click', refreshComments);
+
+            playBtn.addEventListener('click', startSlideshow);
+            pauseBtn.addEventListener('click', pauseSlideshow);
+            prevBtn.addEventListener('click', () => {
+                prevImage();
+                if (isPlaying) {  // 如果正在播放，重置计时器避免立即跳转
+                    pauseSlideshow();
+                    startSlideshow(); // 重新开始新的间隔
+                }
+            });
+            nextBtn.addEventListener('click', () => {
+                nextImage();
+                if (isPlaying) {
+                    pauseSlideshow();
+                    startSlideshow();
+                }
+            });
+
+            // 速度滑块
+            intervalSlider.addEventListener('input', (e) => {
+                intervalSpan.innerText = parseFloat(e.target.value).toFixed(1);
+                if (isPlaying) {
+                    // 如果正在播放，重启定时器
+                    pauseSlideshow();
+                    startSlideshow();
+                }
+            });
+
+            // 输入框更改时也可作为重新读取的预备，但不用自动触发
+            // 可添加快捷支持：回车触发刷新
+            [repoOwnerInput, repoNameInput, issueNumberInput].forEach(input => {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        refreshComments();
+                    }
+                });
+            });
+
+            // 初始化尝试读取一次 (可选)
+            setTimeout(() => {
+                fetchCommentsFromIssue();   // 一进来先加载
+            }, 500);
+
+            // 清理定时器
+            window.addEventListener('beforeunload', () => {
+                if (slideInterval) clearInterval(slideInterval);
+            });
+        })();
+    </script>
+</body>
+</html>
