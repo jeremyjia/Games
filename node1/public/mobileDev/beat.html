@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音乐训练工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        canvas { touch-action: none; }
+        .z-1000 { z-index: 1000; }
+        .canvas-container { 
+            box-sizing: border-box;
+            height: 200px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-4">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-3xl font-bold mb-4">音乐训练工具</h1>
+        
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-semibold mb-3">功能说明</h2>
+            <div class="grid grid-cols-2 gap-4 text-gray-700">
+                <div>
+                    <h3 class="font-semibold mb-2">节拍器功能</h3>
+                    <ul class="list-disc pl-6 space-y-1">
+                        <li>可调速度范围：40-240 BPM</li>
+                        <li>支持多种拍号组合</li>
+                        <li>可视化节拍指示</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-2">和弦功能</h3>
+                    <ul class="list-disc pl-6 space-y-1">
+                        <li>5种和弦类型选择</li>
+                        <li>MIDI标准频率生成</li>
+                        <li>钢琴键盘可视化</li>
+                        <li>点击键盘发声</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="mt-4 text-red-500">注意：首次使用需要点击页面激活音频系统</p>
+        </div>
+
+        <div class="flex gap-4">
+            <button onclick="document.getElementById('beatc9').classList.toggle('hidden')" 
+                    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                节拍器面板
+            </button>
+            <button onclick="document.getElementById('chord_panel').classList.toggle('hidden')"
+                    class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">
+                和弦面板
+            </button>
+        </div>
+    </div>
+
+    <!-- 节拍器组件 -->
+    <script>
+    class CBeat {
+        constructor() {
+            this.tempo = 120;
+            this.timeSignature = 3;  // 修复：初始值改为3
+            this.beatUnit = 4;       // 保持4
+            this.isPlaying = false;
+            this.currentBeat = 0;
+            this.audioContext = null;
+            this.timer = null;
+        }
+
+        draw(ctx, width, height) {
+            ctx.clearRect(0, 0, width, height);
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#000';
+            ctx.fillText(`速度：${this.tempo} BPM`, width/2, 30);
+            ctx.fillText(`拍号：${this.timeSignature}/${this.beatUnit}`, width/2, 60);
+
+            const radius = Math.min(width, height) * 0.3;
+            const centerX = width/2;
+            const centerY = height/2;
+            
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            for (let i = 0; i < this.timeSignature; i++) {
+                const angle = (i * (Math.PI * 2) / this.timeSignature) - Math.PI/2;
+                const x = centerX + Math.cos(angle) * (radius - 10);
+                const y = centerY + Math.sin(angle) * (radius - 10);
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fillStyle = i === this.currentBeat ? '#f00' : '#666';
+                ctx.fill();
+            }
+        }
+
+        play() {
+            if (!this.audioContext) {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            const oscillator = this.audioContext.createOscillator();
+            const gainNode = this.audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
+
+            oscillator.frequency.setValueAtTime(this.currentBeat === 0 ? 880 : 440, 
+                                             this.audioContext.currentTime);
+            gainNode.gain.setValueAtTime(0.5, this.audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
+            
+            oscillator.start();
+            oscillator.stop(this.audioContext.currentTime + 0.1);
+        }
+
+        start() {
+            if (!this.isPlaying) {
+                this.isPlaying = true;
+                this.schedule();
+            }
+        }
+
+        stop() {
+            this.isPlaying = false;
+            clearTimeout(this.timer);
+        }
+
+        schedule() {
+            if (!this.isPlaying) return;
+            const interval = 60000 / this.tempo;
+            this.play();
+            this.currentBeat = (this.currentBeat + 1) % this.timeSignature;
+            
+            this.timer = setTimeout(() => this.schedule(), interval);
+        }
+    }
+
+    function createBeatPanel() {
+        const panel = document.createElement('div');
+        panel.id = 'beatc9';
+        panel.className = 'absolute w-[300px] h-[400px] bg-white border border-gray-300 rounded-lg shadow-md z-1000 hidden flex flex-col';
+        panel.style.left = '150px';
+        panel.style.top = '150px';
+
+        const titleBar = document.createElement('div');
+        titleBar.className = 'p-2 bg-gray-100 cursor-move border-b border-gray-300 flex-shrink-0 flex justify-between';
+        
+        const titleText = document.createTextNode("节拍器 v1.2");
+        const closeBtn = document.createElement('button');
+        closeBtn.innerHTML = '&times;';
+        closeBtn.className = 'text-xl text-gray-600 hover:text-red-500';
+        closeBtn.onclick = () => panel.classList.add('hidden');
+
+        titleBar.appendChild(titleText);
+        titleBar.appendChild(closeBtn);
+        
+        const controls = document.createElement('div');
+        controls.className = 'p-2 flex flex-col gap-2';
+        controls.innerHTML = `
+            <div class="flex items-center gap-2">
+                <span class="text-sm">速度：</span>
+                <input type="number" value="120" min="40" max="240" class="w-20 px-2 py-1 border rounded">
+                <button class="px-2 py-1 bg-blue-100 rounded">-</button>
+                <button class="px-2 py-1 bg-blue-100 rounded">+</button>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-sm">拍号：</span>
+                <select class="px-2 py-1 border rounded">
+                    <option>2/4</option>
+                    <option selected>3/4</option>
+                    <option>4/4</option>
+                    <option>6/8</option>
+                </select>
+            </div>
+            <div class="flex gap-2 justify-center">
+                <button class="px-4 py-2 bg-green-500 text-white rounded toggle-btn">▶</button>
+            </div>
+        `;
+
+        const canvasContainer = document.createElement('div');
+        canvasContainer.className = 'canvas-container flex-grow p-2';
+        const canvas = document.createElement('canvas');
+        canvasContainer.appendChild(canvas);
+
+        panel.append(titleBar, controls, canvasContainer);
+        document.body.appendChild(panel);
+
+        const beat = new CBeat();
+        const ctx = canvas.getContext('2d');
+        
+        let isDragging = false;
+        let offsetX, offsetY;
+        titleBar.onmousedown = e => {
+            isDragging = true;
+            offsetX = e.clientX - panel.offsetLeft;
+            offsetY = e.clientY - panel.offsetTop;
+        };
+        document.onmouseup = () => isDragging = false;
+        document.onmousemove = e => {
+            if (isDragging) {
+                panel.style.left = `${e.clientX - offsetX}px`;
+                panel.style.top = `${e.clientY - offsetY}px`;
+            }
+        };
+
+        const tempoInput = controls.querySelector('input');
+        const [decreaseBtn, increaseBtn] = controls.querySelectorAll('button');
+        const timeSigSelect = controls.querySelector('select');
+        const toggleBtn = controls.querySelector('.toggle-btn');
+
+        tempoInput.addEventListener('change', () => {
+            const newTempo = Math.min(240, Math.max(40, tempoInput.valueAsNumber));
+            beat.tempo = newTempo;
+            tempoInput.value = newTempo;
+
+            if (beat.isPlaying) {
+                clearTimeout(beat.timer);
+                beat.schedule();
+            }
+        });
+        decreaseBtn.onclick = () => {
+            tempoInput.stepDown();
+            tempoInput.dispatchEvent(new Event('change'));
+        };
+        increaseBtn.onclick = () => {
+            tempoInput.stepUp();
+            tempoInput.dispatchEvent(new Event('change'));
+        };
+        timeSigSelect.addEventListener('change', () => {
+            const [ts, bu] = timeSigSelect.value.split('/');
+            beat.timeSignature = parseInt(ts);
+            beat.beatUnit = parseInt(bu);
+        });
+        
+        toggleBtn.onclick = () => {
+            if (beat.isPlaying) {
+                beat.stop();
+                toggleBtn.textContent = '▶';
+                toggleBtn.classList.remove('bg-red-500');
+                toggleBtn.classList.add('bg-green-500');
+            } else {
+                beat.start();
+                toggleBtn.textContent = '⏹';
+                toggleBtn.classList.remove('bg-green-500');
+                toggleBtn.classList.add('bg-red-500');
+            }
+        };
+
+        function updateCanvas() {
+            canvas.width = canvasContainer.clientWidth;
+            canvas.height = canvasContainer.clientHeight;
+            beat.draw(ctx, canvas.width, canvas.height);
+        }
+        setInterval(updateCanvas, 100);
+        updateCanvas();
+    }
+
+    <!-- 和弦组件 -->
+    class ChordGenerator {
+        constructor() {
+            this.chordTypes = {
+                'maj': [0, 4, 7],
+                'min': [0, 3, 7],
+                '7': [0, 4, 7, 10],
+                'maj7': [0, 4, 7, 11],
+                'min7': [0, 3, 7, 10]
+            };
+            this.currentChord = { root: 60, type: '7' };
+            this.whiteKeyNotes = [60, 62, 64, 65, 67, 69, 71];
+        }
+
+        getFrequencies() {
+            return this.chordTypes[this.currentChord.type].map(interval => 
+                440 * Math.pow(2, (this.currentChord.root + interval - 69) / 12)
+            );
+        }
+        getMidiNotes() {
+            return this.chordTypes[this.currentChord.type].map(interval => 
+                this.currentChord.root + interval
+            );
+        }
+
+        draw(ctx, width, height, pressedKeys = []) {
+            ctx.clearRect(0, 0, width, height);
+            const whiteKeyWidth = width / 7;
+            const blackKeyWidth = whiteKeyWidth * 0.6;
+            const blackKeyHeight = height * 0.6;
+
+            for (let i = 0; i < 7; i++) {
+                const isPressed = pressedKeys.includes(this.whiteKeyNotes[i]);
+                ctx.fillStyle = isPressed? '#ccc' : '#fff';
+                ctx.fillRect(i * whiteKeyWidth, isPressed? 5 : 0, whiteKeyWidth, height);
+                ctx.strokeStyle = '#666';
+                ctx.strokeRect(i * whiteKeyWidth, isPressed? 5 : 0, whiteKeyWidth, height);
+            }
+
+            const blackKeyPositions = [1, 2, 4, 5, 6];
+            blackKeyPositions.forEach(pos => {
+                const note = this.whiteKeyNotes[pos - 1] + 1;
+                const isPressed = pressedKeys.includes(note);
+                ctx.fillStyle = isPressed? '#333' : '#000';
+                ctx.fillRect((pos - 0.3) * whiteKeyWidth, 0, blackKeyWidth, blackKeyHeight);
+                ctx.strokeStyle = '#666';
+                ctx.strokeRect((pos - 0.3) * whiteKeyWidth, 0, blackKeyWidth, blackKeyHeight);
+            });
+
+            this.getFrequencies().forEach(freq => {
+                const note = Math.round(12 * Math.log2(freq/440) + 69);
+                const noteMod12 = note % 12;
+                const whiteKeyIndices = {0:0, 2:1, 4:2, 5:3, 7:4, 9:5, 11:6};
+                let pos;
+
+                if (noteMod12 in whiteKeyIndices) {
+                    const whiteKeyIndex = whiteKeyIndices[noteMod12];
+                    pos = whiteKeyIndex * whiteKeyWidth + whiteKeyWidth / 2;
+                } else {
+                    const blackKeyMap = {1:0, 3:1, 6:2, 8:3, 10:4};
+                    const bkIndex = blackKeyMap[noteMod12];
+                    if (bkIndex !== undefined) {
+                        const posX = (blackKeyPositions[bkIndex] - 0.3) * whiteKeyWidth + blackKeyWidth / 2;
+                        pos = posX;
+                    } else {
+                        return;
+                    }
+                }
+
+                ctx.fillStyle = '#ff000080';
+                ctx.beginPath();
+                ctx.arc(pos, height/2 + (pressedKeys.includes(note)? 5 : 0), 10, 0, Math.PI*2);
+                ctx.fill();
+            });
+        }
+    }
+
+    function createChordPanel() {
+        const panel = document.createElement('div');
+        panel.id = 'chord_panel';
+        panel.className = 'absolute right-4 bottom-20 w-64 h-64 bg-white border rounded-lg shadow-md z-1000 hidden flex flex-col';
+        
+        const titleBar = document.createElement('div');
+        titleBar.className = 'p-2 bg-gray-100 cursor-move border-b border-gray-300 flex justify-between';
+        titleBar.innerHTML = `
+            <span>和弦生成器</span>
+            <button class="text-gray-600 hover:text-red-500">&times;</button>
+        `;
+        titleBar.querySelector('button').onclick = () => panel.classList.add('hidden');
+        
+        const controls = document.createElement('div');
+        controls.className = 'p-2 flex flex-col gap-2';
+        controls.innerHTML = `
+            <div class="flex gap-2">
+                <select class="flex-1 px-2 py-1 border rounded">
+                    ${['C','C#','D','D#','E','F','F#','G','G#','A','A#','B']
+                      .map((n,i) => `<option value="${60+i}">${n}</option>`).join('')}
+                </select>
+                <select class="flex-1 px-2 py-1 border rounded">
+                    ${Object.keys(new ChordGenerator().chordTypes)
+                      .map(t => `<option>${t}</option>`).join('')}
+                </select>
+            </div>
+            <button class="w-full py-2 bg-purple-500 text-white rounded hover:bg-purple-600">
+                播放和弦
+            </button>
+        `;
+
+        const canvas = document.createElement('canvas');
+        canvas.className = 'flex-grow';
+        
+        panel.append(titleBar, controls, canvas);
+        document.body.appendChild(panel);
+
+        const chordGen = new ChordGenerator();
+        const ctx = canvas.getContext('2d');
+        let audioContext;
+        let pressedKeys = [];
+
+        const rootSelect = controls.querySelector('select:first-child');
+        const typeSelect = controls.querySelector('select:last-child');
+        rootSelect.value = 60;
+        typeSelect.value = '7';
+
+        canvas.addEventListener('mousedown', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const whiteKeyWidth = this.width / 7;
+            const blackKeyWidth = whiteKeyWidth * 0.6;
+            
+            const blackKeyPositions = [1, 2, 4, 5, 6];
+            for (let j = 0; j < blackKeyPositions.length; j++) {
+                const pos = blackKeyPositions[j];
+                const blackKeyX = (pos - 0.3) * whiteKeyWidth;
+                
+                if (x >= blackKeyX && x <= blackKeyX + blackKeyWidth && y <= this.height * 0.6) {
+                    const note = chordGen.whiteKeyNotes[pos - 1] + 1;
+                    pressedKeys.push(note);
+                    playNote(note);
+                    chordGen.draw(ctx, canvas.width, canvas.height, pressedKeys);
+                    return;
+                }
+            }
+
+            const whiteKeyIndex = Math.floor(x / whiteKeyWidth);
+            if (whiteKeyIndex >= 0 && whiteKeyIndex < 7) {
+                const note = chordGen.whiteKeyNotes[whiteKeyIndex];
+                pressedKeys.push(note);
+                playNote(note);
+                chordGen.draw(ctx, canvas.width, canvas.height, pressedKeys);
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            pressedKeys = [];
+            chordGen.draw(ctx, canvas.width, canvas.height, pressedKeys);
+        });
+
+        function playNote(midiNote) {
+            if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(440 * Math.pow(2, (midiNote - 69)/12), audioContext.currentTime);
+            
+            gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.5);
+        }
+
+        controls.querySelector('button').onclick = () => {
+            if (!audioContext) audioContext = new AudioContext();
+            const frequencies = chordGen.getFrequencies();
+            const midiNotes = chordGen.getMidiNotes();
+            pressedKeys = [...midiNotes];
+            chordGen.draw(ctx, canvas.width, canvas.height, pressedKeys);
+            
+            frequencies.forEach(freq => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, audioContext.currentTime);
+                
+                gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+                
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.start();
+                osc.stop(audioContext.currentTime + 1);
+            });
+
+            setTimeout(() => {
+                pressedKeys = [];
+                chordGen.draw(ctx, canvas.width, canvas.height, pressedKeys);
+            }, 1000);
+        };
+        controls.querySelectorAll('select').forEach(select => {
+            select.addEventListener('change', () => {
+                chordGen.currentChord = {
+                    root: parseInt(rootSelect.value),
+                    type: typeSelect.value
+                };
+                chordGen.draw(ctx, canvas.width, canvas.height, pressedKeys);
+            });
+        });
+
+        let chordDragging = false;
+        let chordOffsetX, chordOffsetY;
+        titleBar.addEventListener('mousedown', e => {
+            chordDragging = true;
+            chordOffsetX = e.clientX - panel.offsetLeft;
+            chordOffsetY = e.clientY - panel.offsetTop;
+        });
+        document.addEventListener('mouseup', () => chordDragging = false);
+        document.addEventListener('mousemove', e => {
+            if (chordDragging) {
+                panel.style.left = `${e.clientX - chordOffsetX}px`;
+                panel.style.top = `${e.clientY - chordOffsetY}px`;
+            }
+        });
+
+        function updateCanvas() {
+            canvas.width = panel.clientWidth;
+            canvas.height = panel.clientHeight - 80;
+            chordGen.draw(ctx, canvas.width, canvas.height, pressedKeys);
+        }
+        setInterval(updateCanvas, 100);
+        updateCanvas();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        createBeatPanel();
+        createChordPanel();
+        
+        document.addEventListener('click', () => {
+            if (window.AudioContext && !document.audioActivated) {
+                new AudioContext().resume();
+                document.audioActivated = true;
+            }
+        }, { once: true });
+    });
+    </script>
+</body>
+</html>
+<!--
+    升级：
+    速度改变 ，应该立即让节拍器生效。 
+
+    return all new code so that I can run it at this page
+     
+-->

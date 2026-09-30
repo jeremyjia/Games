@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国象棋棋谱演示器测试</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8b0000',
+                        secondary: '#cd5c5c',
+                        accent: '#ff5722',
+                        board: '#f0d9b5',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .board-grid {
+                background-image: 
+                    linear-gradient(to right, rgba(0,0,0,0.5) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(0,0,0,0.5) 1px, transparent 1px);
+                background-size: 50px 50px;
+            }
+            .piece-shadow {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            }
+            .piece-red {
+                background: radial-gradient(circle, rgba(255,0,0,1) 0%, rgba(139,0,0,1) 100%);
+            }
+            .piece-black {
+                background: radial-gradient(circle, rgba(0,0,0,1) 0%, rgba(50,50,50,1) 100%);
+            }
+            .btn-hover {
+                @apply transition-all duration-300 transform hover:scale-105 hover:shadow-lg;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-gradient-to-r from-primary to-secondary text-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-chess-board text-2xl"></i>
+                <h1 class="text-xl md:text-2xl font-bold">中国象棋棋谱演示器</h1>
+            </div>
+            <nav>
+                <ul class="flex space-x-6">
+                    <li><a href="#" class="hover:text-yellow-200 transition-colors"><i class="fa fa-home mr-1"></i>首页</a></li>
+                    <li><a href="#" class="hover:text-yellow-200 transition-colors"><i class="fa fa-book mr-1"></i>棋谱库</a></li>
+                    <li><a href="#" class="hover:text-yellow-200 transition-colors"><i class="fa fa-info-circle mr-1"></i>关于</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- 左侧说明区 -->
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-bold text-primary mb-4 flex items-center">
+                        <i class="fa fa-info-circle mr-2"></i>使用说明
+                    </h2>
+                    <div class="space-y-4 text-gray-700">
+                        <p><strong>1. 控制窗口</strong></p>
+                        <p>点击右上角的"中国象棋棋谱演示器"窗口，拖动可调整位置，点击关闭按钮可隐藏窗口。</p>
+                        
+                        <p><strong>2. 示例棋谱</strong></p>
+                        <p>点击"示例1"、"示例2"或"示例3"按钮加载预设棋谱。</p>
+                        
+                        <p><strong>3. 自定义棋谱</strong></p>
+                        <p>在文本框中输入自定义棋谱，格式为"起始位置+结束位置"，例如"0001 0110"表示从(0,0)移动到(0,1)，再从(0,1)移动到(1,0)。</p>
+                        
+                        <p><strong>4. 播放控制</strong></p>
+                        <ul class="list-disc pl-5 space-y-1">
+                            <li>点击"播放"按钮开始自动演示棋谱</li>
+                            <li>点击"暂停"按钮停止演示</li>
+                            <li>点击"重置"按钮重新开始</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-bold text-primary mb-4 flex items-center">
+                        <i class="fa fa-chess-king mr-2"></i>象棋规则简介
+                    </h2>
+                    <div class="space-y-3 text-gray-700">
+                        <p><strong>棋盘</strong>: 中国象棋使用9×10的棋盘，双方各有16个棋子。</p>
+                        <p><strong>目标</strong>: 将对方的"将"(黑方)或"帅"(红方)逼入绝境。</p>
+                        <p><strong>主要棋子走法</strong>:
+                            <ul class="list-disc pl-5 space-y-1">
+                                <li>车: 直线移动任意格数</li>
+                                <li>马: 走"日"字，可跨越棋子</li>
+                                <li>炮: 直线移动，吃子时需跳过一个棋子</li>
+                                <li>相/象: 走"田"字，不能过河</li>
+                                <li>士/仕: 斜线移动，不能离开九宫</li>
+                                <li>将/帅: 直线移动一格，不能离开九宫</li>
+                                <li>兵/卒: 未过河时只能前进，过河后可左右移动</li>
+                            </ul>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-bold text-primary mb-4 flex items-center">
+                        <i class="fa fa-lightbulb-o mr-2"></i>更多资源
+                    </h2>
+                    <div class="space-y-3">
+                        <a href="#" class="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                            <i class="fa fa-download mr-2"></i>下载更多棋谱
+                        </a>
+                        <a href="#" class="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                            <i class="fa fa-book mr-2"></i>学习象棋基础
+                        </a>
+                        <a href="#" class="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                            <i class="fa fa-users mr-2"></i>加入象棋社区
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧棋盘和控制器区 -->
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-bold text-primary mb-4 flex items-center">
+                        <i class="fa fa-chess-board mr-2"></i>棋盘演示区
+                    </h2>
+                    <div class="flex justify-center">
+                        <!-- 象棋棋盘Canvas -->
+                        <canvas id="id_4_canvas" class="border-4 border-primary rounded-lg"></canvas>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-bold text-primary mb-4 flex items-center">
+                        <i class="fa fa-comments-o mr-2"></i>用户评价
+                    </h2>
+                    <div class="space-y-4">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="flex items-center mb-2">
+                                <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                                    <i class="fa fa-user"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <h4 class="font-medium">李大明</h4>
+                                    <div class="text-yellow-400 text-sm">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-gray-700">这个演示器非常直观，帮助我理解了很多复杂的棋谱。界面设计也很精美！</p>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="flex items-center mb-2">
+                                <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                                    <i class="fa fa-user"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <h4 class="font-medium">张小红</h4>
+                                    <div class="text-yellow-400 text-sm">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star-half-o"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-gray-700">作为象棋初学者，这个工具对我帮助很大。希望能增加更多棋谱示例。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-bold mb-4">关于我们</h3>
+                    <p class="text-gray-400">我们致力于推广中国传统象棋文化，通过现代技术让更多人了解和喜爱这项古老的智力运动。</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold mb-4">快速链接</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">首页</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">棋谱库</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">学习资源</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">联系我们</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold mb-4">关注我们</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-primary flex items-center justify-center hover:bg-secondary transition-colors">
+                            <i class="fa fa-weixin"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-primary flex items-center justify-center hover:bg-secondary transition-colors">
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-primary flex items-center justify-center hover:bg-secondary transition-colors">
+                            <i class="fa fa-youtube-play"></i>
+                        </a>
+                    </div>
+                    <p class="text-gray-400 mt-4">订阅我们的通讯，获取最新的象棋资讯和教程</p>
+                    <div class="mt-2 flex">
+                        <input type="email" placeholder="您的邮箱地址" class="px-4 py-2 rounded-l-lg w-full focus:outline-none focus:ring-2 focus:ring-primary">
+                        <button class="bg-primary hover:bg-secondary transition-colors px-4 py-2 rounded-r-lg">
+                            <i class="fa fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2023 中国象棋棋谱演示器 | 版本 ${XiangqiController.VERSION}</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 象棋控制器代码 -->
+    <script>
+        class XiangqiController {
+            static VERSION = "1.0.2";
+
+            constructor(id) {
+                if (!window.xiangqiControllers) window.xiangqiControllers = [];
+                const existing = window.xiangqiControllers.find(obj => obj.id === id);
+                if (existing) return existing;
+
+                this.id = id;
+                this.canvasId = 'id_4_canvas'; // 指定的 Canvas 元素 ID
+                this.chessNotation = ''; // 棋谱
+                this.currentStep = 0;
+                this.isPlaying = false;
+                this.playInterval = null;
+                this.playSpeed = 2000; // 每步演示间隔（毫秒）
+                
+                // 棋盘状态
+                this.board = this.createEmptyBoard();
+                this.selectedPiece = null;
+                this.lastMove = null;
+                this.highlightedStep = null; // 用于高亮当前步
+                
+                // 初始化界面
+                this.initUI();
+                
+                window.xiangqiControllers.push(this);
+            }
+            
+            // 创建空棋盘
+            createEmptyBoard() {
+                const board = Array(10).fill().map(() => Array(9).fill(null));
+                
+                // 放置红方棋子
+                board[0][0] = { name: '车', color: 'red', type: '车', row: 0, col: 0 };
+                board[0][1] = { name: '马', color: 'red', type: '马', row: 0, col: 1 };
+                board[0][2] = { name: '相', color: 'red', type: '相', row: 0, col: 2 };
+                board[0][3] = { name: '士', color: 'red', type: '士', row: 0, col: 3 };
+                board[0][4] = { name: '帅', color: 'red', type: '帅', row: 0, col: 4 };
+                board[0][5] = { name: '士', color: 'red', type: '士', row: 0, col: 5 };
+                board[0][6] = { name: '相', color: 'red', type: '相', row: 0, col: 6 };
+                board[0][7] = { name: '马', color: 'red', type: '马', row: 0, col: 7 };
+                board[0][8] = { name: '车', color: 'red', type: '车', row: 0, col: 8 };
+                
+                board[2][1] = { name: '炮', color: 'red', type: '炮', row: 2, col: 1 };
+                board[2][7] = { name: '炮', color: 'red', type: '炮', row: 2, col: 7 };
+                
+                board[3][0] = { name: '兵', color: 'red', type: '兵', row: 3, col: 0 };
+                board[3][2] = { name: '兵', color: 'red', type: '兵', row: 3, col: 2 };
+                board[3][4] = { name: '兵', color: 'red', type: '兵', row: 3, col: 4 };
+                board[3][6] = { name: '兵', color: 'red', type: '兵', row: 3, col: 6 };
+                board[3][8] = { name: '兵', color: 'red', type: '兵', row: 3, col: 8 };
+                
+                // 放置黑方棋子
+                board[9][0] = { name: '车', color: 'black', type: '车', row: 9, col: 0 };
+                board[9][1] = { name: '马', color: 'black', type: '马', row: 9, col: 1 };
+                board[9][2] = { name: '象', color: 'black', type: '象', row: 9, col: 2 };
+                board[9][3] = { name: '士', color: 'black', type: '士', row: 9, col: 3 };
+                board[9][4] = { name: '将', color: 'black', type: '将', row: 9, col: 4 };
+                board[9][5] = { name: '士', color: 'black', type: '士', row: 9, col: 5 };
+                board[9][6] = { name: '象', color: 'black', type: '象', row: 9, col: 6 };
+                board[9][7] = { name: '马', color: 'black', type: '马', row: 9, col: 7 };
+                board[9][8] = { name: '车', color: 'black', type: '车', row: 9, col: 8 };
+                
+                board[7][1] = { name: '炮', color: 'black', type: '炮', row: 7, col: 1 };
+                board[7][7] = { name: '炮', color: 'black', type: '炮', row: 7, col: 7 };
+                
+                board[6][0] = { name: '卒', color: 'black', type: '卒', row: 6, col: 0 };
+                board[6][2] = { name: '卒', color: 'black', type: '卒', row: 6, col: 2 };
+                board[6][4] = { name: '卒', color: 'black', type: '卒', row: 6, col: 4 };
+                board[6][6] = { name: '卒', color: 'black', type: '卒', row: 6, col: 6 };
+                board[6][8] = { name: '卒', color: 'black', type: '卒', row: 6, col: 8 };
+                
+                return board;
+            }
+
+            // 初始化用户界面
+            initUI() {
+                // 移除旧的控制窗口（如果存在）
+                const oldWindow = document.querySelector('.xiangqi-controller');
+                if (oldWindow) {
+                    oldWindow.remove();
+                }
+                
+                // 创建新控制窗口
+                this.window = document.createElement('div');
+                this.window.className = 'xiangqi-controller';
+                this.window.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    left: 20px;
+                    background: white;
+                    border: 2px solid #ccc;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 15px rgba(0,0,0,0.15);
+                    z-index: 9999;
+                    width: 350px;
+                    font-family: Arial, sans-serif;
+                `;
+                
+                // 标题栏
+                const titleBar = document.createElement('div');
+                titleBar.style.cssText = `
+                    padding: 12px 16px;
+                    border-bottom: 1px solid #e0e0e0;
+                    cursor: move;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    background: linear-gradient(to right, #8b0000, #cd5c5c);
+                    color: white;
+                `;
+                
+                const titleContainer = document.createElement('div');
+                titleContainer.style = 'display: flex; align-items: center;';
+                const title = document.createElement('h3');
+                title.textContent = '中国象棋棋谱演示器';
+                title.style = 'margin: 0; font-size: 16px; font-weight: 500;';
+                
+                const closeBtn = document.createElement('button');
+                closeBtn.textContent = '×';
+                closeBtn.style = `
+                    margin-left: 12px;
+                    font-size: 16px;
+                    background: transparent;
+                    border: none;
+                    color: white;
+                    cursor: pointer;
+                    opacity: 0.8;
+                    transition: opacity 0.2s;
+                `;
+                closeBtn.onclick = () => this.toggleWindow();
+                closeBtn.onmouseover = () => { closeBtn.style.opacity = '1'; };
+                closeBtn.onmouseout = () => { closeBtn.style.opacity = '0.8'; };
+                
+                titleContainer.appendChild(title);
+                titleContainer.appendChild(closeBtn);
+                titleBar.appendChild(titleContainer);
+                
+                // 添加工具条
+                const toolBar = document.createElement('div');
+                toolBar.style.cssText = `
+                    padding: 10px 15px;
+                    border-bottom: 1px solid #e0e0e0;
+                    display: flex;
+                    gap: 8px;
+                    align-items: center;
+                `;
+                
+                // 示例按钮样式定义
+                const buttonStyle = `
+                    padding: 6px 12px;
+                    border: none;
+                    border-radius: 4px;
+                    color: white;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                `;
+                
+                this.sampleBtn1 = document.createElement('button');
+                this.sampleBtn1.textContent = '示例1';
+                this.sampleBtn1.style = `
+                    ${buttonStyle}
+                    background: #2196f3;
+                `;
+                this.sampleBtn1.onclick = () => this.loadSampleNotation('7770 0304 2720');
+                
+                this.sampleBtn2 = document.createElement('button');
+                this.sampleBtn2.textContent = '示例2';
+                this.sampleBtn2.style = `
+                    ${buttonStyle}
+                    background: #4caf50;
+                `;
+                this.sampleBtn2.onclick = () => this.loadSampleNotation('1710 7275 2522');
+                
+                this.sampleBtn3 = document.createElement('button');
+                this.sampleBtn3.textContent = '示例3';
+                this.sampleBtn3.style = `
+                    ${buttonStyle}
+                    background: #ff9800;
+                `;
+                this.sampleBtn3.onclick = () => this.loadSampleNotation('0001 9091 0100');
+                
+                toolBar.appendChild(this.sampleBtn1);
+                toolBar.appendChild(this.sampleBtn2);
+                toolBar.appendChild(this.sampleBtn3);
+                
+                // 棋谱输入区域
+                const notationArea = document.createElement('div');
+                notationArea.style.cssText = `
+                    padding: 15px;
+                    border-bottom: 1px solid #e0e0e0;
+                `;
+                
+                const notationLabel = document.createElement('label');
+                notationLabel.textContent = '输入棋谱 (格式: 起始位置+结束位置, 如 "0001 0110"):';
+                notationLabel.style = 'display: block; margin-bottom: 8px;';
+                
+                this.notationInput = document.createElement('textarea');
+                this.notationInput.style.cssText = `
+                    width: 100%;
+                    padding: 8px;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                    font-size: 14px;
+                    height: 100px;
+                    margin-bottom: 10px;
+                `;
+                
+                notationArea.appendChild(notationLabel);
+                notationArea.appendChild(this.notationInput);
+                
+                // 按钮区域
+                const buttons = document.createElement('div');
+                buttons.style.cssText = `
+                    padding: 10px;
+                    display: flex;
+                    gap: 8px;
+                `;
+                
+                this.playButton = document.createElement('button');
+                this.playButton.textContent = '播放';
+                this.playButton.style = `
+                    padding: 8px 16px;
+                    background: #4caf50;
+                    border: none;
+                    border-radius: 4px;
+                    color: white;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                `;
+                this.playButton.onclick = () => this.togglePlayback();
+                
+                this.pauseButton = document.createElement('button');
+                this.pauseButton.textContent = '暂停';
+                this.pauseButton.style = `
+                    padding: 8px 16px;
+                    background: #f44336;
+                    border: none;
+                    border-radius: 4px;
+                    color: white;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    margin-left: 5px;
+                `;
+                this.pauseButton.onclick = () => this.pausePlayback();
+                this.pauseButton.style.display = 'none';
+                
+                this.resetButton = document.createElement('button');
+                this.resetButton.textContent = '重置';
+                this.resetButton.style = `
+                    padding: 8px 16px;
+                    background: #2196f3;
+                    border: none;
+                    border-radius: 4px;
+                    color: white;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    margin-left: auto;
+                `;
+                this.resetButton.onclick = () => this.resetBoard();
+                
+                buttons.appendChild(this.playButton);
+                buttons.appendChild(this.pauseButton);
+                buttons.appendChild(this.resetButton);
+                
+                // 状态栏
+                this.statusBar = document.createElement('div');
+                this.statusBar.style.cssText = `
+                    padding: 10px;
+                    background: #f5f5f5;
+                    border-top: 1px solid #e0e0e0;
+                    font-size: 12px;
+                    color: #666;
+                    text-align: right;
+                `;
+                this.updateStatusBar();
+                
+                // 组装元素
+                this.window.appendChild(titleBar);
+                this.window.appendChild(toolBar); // 添加工具条
+                this.window.appendChild(notationArea);
+                this.window.appendChild(buttons);
+                this.window.appendChild(this.statusBar);
+                document.body.appendChild(this.window);
+                
+                // 初始化画布
+                this.initCanvas();
+                
+                // 绑定事件
+                titleBar.addEventListener('mousedown', this.startDrag.bind(this));
+                titleBar.addEventListener('touchstart', this.startDrag.bind(this));
+                
+                // 初始绘制棋盘
+                this.drawBoard();
+            }
+            
+            // 加载示例棋谱
+            loadSampleNotation(notation) {
+                // 恢复示例按钮样式
+                this.sampleBtn1.style.background = '#2196f3';
+                this.sampleBtn2.style.background = '#4caf50';
+                this.sampleBtn3.style.background = '#ff9800';
+                
+                // 设置当前示例按钮为选中样式
+                if (notation === '7770 0304 2720') {
+                    this.sampleBtn1.style.background = '#ff5722';
+                } else if (notation === '1710 7275 2522') {
+                    this.sampleBtn2.style.background = '#ff5722';
+                } else if (notation === '0001 9091 0100') {
+                    this.sampleBtn3.style.background = '#ff5722';
+                }
+                
+                this.notationInput.value = notation;
+                this.chessNotation = notation;
+                this.resetBoard();
+            }
+            
+            // 初始化画布
+            initCanvas() {
+                this.canvas = document.getElementById(this.canvasId);
+                if (!this.canvas) {
+                    console.error('未找到 Canvas 元素！');
+                    return;
+                }
+                
+                this.canvas.width = 500;
+                this.canvas.height = 550;
+                this.ctx = this.canvas.getContext('2d');
+            }
+            
+            // 窗口拖拽逻辑
+            startDrag(e) {
+                const event = e.touches ? e.touches[0] : e;
+                this.isDragging = true;
+                this.dragStartX = event.clientX - this.window.offsetLeft;
+                this.dragStartY = event.clientY - this.window.offsetTop;
+                
+                const doDrag = (e) => {
+                    const event = e.touches ? e.touches[0] : e;
+                    if (!this.isDragging) return;
+                    this.window.style.left = `${event.clientX - this.dragStartX}px`;
+                    this.window.style.top = `${event.clientY - this.dragStartY}px`;
+                };
+                
+                const stopDrag = () => {
+                    this.isDragging = false;
+                    document.removeEventListener('mousemove', doDrag);
+                    document.removeEventListener('touchmove', doDrag);
+                    document.removeEventListener('mouseup', stopDrag);
+                    document.removeEventListener('touchend', stopDrag);
+                };
+                
+                document.addEventListener('mousemove', doDrag);
+                document.addEventListener('touchmove', doDrag);
+                document.addEventListener('mouseup', stopDrag);
+                document.addEventListener('touchend', stopDrag);
+            }
+            
+            // 绘制棋盘
+            drawBoard() {
+                if (!this.ctx) return;
+                
+                // 清空画布
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // 绘制棋盘背景
+                this.ctx.fillStyle = '#f0d9b5';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // 绘制棋盘网格线
+                this.ctx.strokeStyle = '#000';
+                this.ctx.lineWidth = 2;
+                
+                // 绘制横线
+                for (let i = 0; i <= 10; i++) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(50, 50 + i * 50);
+                    this.ctx.lineTo(450, 50 + i * 50);
+                    this.ctx.stroke();
+                }
+                
+                // 绘制竖线
+                for (let i = 0; i <= 8; i++) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(50 + i * 50, 50);
+                    this.ctx.lineTo(50 + i * 50, 500);
+                    this.ctx.stroke();
+                }
+                
+                // 绘制河界线
+                this.ctx.beginPath();
+                this.ctx.moveTo(50, 250);
+                this.ctx.lineTo(450, 250);
+                this.ctx.stroke();
+                
+                // 修正后的九宫格绘制（3-5列）
+                // 红方九宫格（0-2行，3-5列）
+                this.ctx.beginPath();
+                this.ctx.moveTo(50 + 3 * 50, 50); // 左上到右下
+                this.ctx.lineTo(50 + 5 * 50, 50 + 2 * 50); // 5列到7列，2行
+                this.ctx.moveTo(50 + 5 * 50, 50); // 右上到左下
+                this.ctx.lineTo(50 + 3 * 50, 50 + 2 * 50); // 3列到5列，2行
+                this.ctx.stroke();
+                
+                // 黑方九宫格（7-9行，3-5列）
+                this.ctx.beginPath();
+                this.ctx.moveTo(50 + 3 * 50, 50 + 7 * 50); // 左上到右下
+                this.ctx.lineTo(50 + 5 * 50, 50 + 9 * 50); // 5列到7列，9行
+                this.ctx.moveTo(50 + 5 * 50, 50 + 7 * 50); // 右上到左下
+                this.ctx.lineTo(50 + 3 * 50, 50 + 9 * 50); // 3列到5列，9行
+                this.ctx.stroke();
+                
+                // 绘制棋子
+                this.drawPieces();
+            }
+            
+            // 绘制棋子
+            drawPieces() {
+                for (let row = 0; row < 10; row++) {
+                    for (let col = 0; col < 9; col++) {
+                        const piece = this.board[row][col];
+                        if (piece) {
+                            this.drawPiece(piece);
+                        }
+                    }
+                }
+                
+                // 绘制移动路径（如果有）
+                if (this.lastMove) {
+                    this.drawMovePath();
+                }
+                
+                // 高亮当前步（如果有）
+                if (this.highlightedStep !== null) {
+                    this.drawStepHighlight();
+                }
+            }
+            
+            // 绘制单个棋子
+            drawPiece(piece) {
+                const size = 40;
+                const x = 50 + piece.col * 50 - size / 2;
+                const y = 50 + piece.row * 50 - size / 2;
+                
+                // 绘制棋子背景
+                this.ctx.beginPath();
+                this.ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+                this.ctx.fillStyle = piece.color === 'red' ? '#ff0000' : '#000000';
+                this.ctx.fill();
+                this.ctx.stroke();
+                
+                // 绘制棋子文字
+                this.ctx.fillStyle = '#ffffff';
+                this.ctx.font = '24px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                this.ctx.fillText(piece.name, x + size / 2, y + size / 2);
+            }
+            
+            // 绘制移动路径
+            drawMovePath() {
+                if (!this.lastMove || !this.lastMove.from || !this.lastMove.to) return;
+                
+                const fromRow = this.lastMove.from.row;
+                const fromCol = this.lastMove.from.col;
+                const toRow = this.lastMove.to.row;
+                const toCol = this.lastMove.to.col;
+                
+                // 绘制移动起点
+                this.ctx.beginPath();
+                this.ctx.arc(
+                    50 + fromCol * 50,
+                    50 + fromRow * 50,
+                    8,
+                    0,
+                    Math.PI * 2
+                );
+                this.ctx.fillStyle = '#00ff00';
+                this.ctx.fill();
+                
+                // 绘制移动终点
+                this.ctx.beginPath();
+                this.ctx.arc(
+                    50 + toCol * 50,
+                    50 + toRow * 50,
+                    8,
+                    0,
+                    Math.PI * 2
+                );
+                this.ctx.fillStyle = '#0000ff';
+                this.ctx.fill();
+                
+                // 绘制移动路径
+                this.ctx.beginPath();
+                this.ctx.moveTo(50 + fromCol * 50, 50 + fromRow * 50);
+                this.ctx.lineTo(50 + toCol * 50, 50 + toRow * 50);
+                this.ctx.strokeStyle = '#00ff00';
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke();
+            }
+            
+            // 高亮当前步
+            drawStepHighlight() {
+                const moves = this.parseNotation();
+                if (this.highlightedStep >= moves.length) {
+                    this.highlightedStep = null;
+                    return;
+                }
+                
+                const move = moves[this.highlightedStep];
+                if (move.length < 4) return;
+                
+                const from = move.slice(0, 2);
+                const to = move.slice(2, 4);
+                
+                const fromRow = parseInt(from[1]);
+                const fromCol = parseInt(from[0]);
+                const toRow = parseInt(to[1]);
+                const toCol = parseInt(to[0]);
+                
+                // 高亮起点
+                this.ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
+                this.ctx.fillRect(50 + fromCol * 50 - 5, 50 + fromRow * 50 - 5, 60, 60);
+                
+                // 高亮终点
+                this.ctx.fillStyle = 'rgba(0, 255, 255, 0.3)';
+                this.ctx.fillRect(50 + toCol * 50 - 5, 50 + toRow * 50 - 5, 60, 60);
+            }
+            
+            // 更新状态栏
+            updateStatusBar() {
+                this.statusBar.textContent = `当前步数: ${this.currentStep + 1} | 棋谱长度: ${this.parseNotation().length} | 状态: ${this.isPlaying ? '播放中' : '已暂停'} | 当前时间: ${new Date().toLocaleTimeString()} | 版本: ${XiangqiController.VERSION}`;
+                setTimeout(() => this.updateStatusBar(), 1000);
+            }
+            
+            // 切换播放/暂停
+            togglePlayback() {
+                if (this.isPlaying) {
+                    this.pausePlayback();
+                } else {
+                    this.chessNotation = this.notationInput.value;
+                    this.currentStep = 0;
+                    this.playback();
+                }
+            }
+            
+            // 播放棋谱
+            playback() {
+                this.isPlaying = true;
+                this.playButton.style.display = 'none';
+                this.pauseButton.style.display = 'block';
+                
+                const moves = this.parseNotation();
+                if (moves.length === 0) {
+                    alert('请输入有效的棋谱！');
+                    return;
+                }
+                
+                this.playInterval = setInterval(() => {
+                    if (this.currentStep >= moves.length) {
+                        clearInterval(this.playInterval);
+                        this.isPlaying = false;
+                        this.pauseButton.style.display = 'none';
+                        this.playButton.style.display = 'block';
+                        return;
+                    }
+                    
+                    const move = moves[this.currentStep];
+                    this.makeMove(move);
+                    this.highlightedStep = this.currentStep;
+                    this.currentStep++;
+                    this.updateStatusBar();
+                }, this.playSpeed);
+            }
+            
+            // 暂停播放
+            pausePlayback() {
+                if (this.playInterval) {
+                    clearInterval(this.playInterval);
+                    this.playInterval = null;
+                }
+                
+                this.isPlaying = false;
+                this.pauseButton.style.display = 'none';
+                this.playButton.style.display = 'block';
+            }
+            
+            // 重置棋盘
+            resetBoard() {
+                this.board = this.createEmptyBoard();
+                this.currentStep = 0;
+                this.isPlaying = false;
+                this.pausePlayback();
+                this.drawBoard();
+                this.updateStatusBar();
+            }
+            
+            // 解析棋谱
+            parseNotation() {
+                const notation = this.chessNotation.trim();
+                if (!notation) return [];
+                
+                return notation.split(' ').filter(move => move.trim() !== '');
+            }
+            
+            // 执行移动
+            makeMove(move) {
+                if (!move || move.length < 4) return;
+                
+                const from = move.slice(0, 2);
+                const to = move.slice(2, 4);
+                
+                const fromRow = parseInt(from[1]);
+                const fromCol = parseInt(from[0]);
+                const toRow = parseInt(to[1]);
+                const toCol = parseInt(to[0]);
+                
+                if (fromRow >= 0 && fromRow < 10 && fromCol >= 0 && fromCol < 9 &&
+                    toRow >= 0 && toRow < 10 && toCol >= 0 && toCol < 9) {
+                    
+                    const piece = this.board[fromRow][fromCol];
+                    if (piece) {
+                        // 记录移动
+                        this.lastMove = {
+                            from: { row: fromRow, col: fromCol },
+                            to: { row: toRow, col: toCol }
+                        };
+                        
+                        // 执行移动
+                        this.board[toRow][toCol] = piece;
+                        this.board[fromRow][fromCol] = null;
+                        
+                        // 更新棋子位置
+                        piece.row = toRow;
+                        piece.col = toCol;
+                        
+                        // 绘制更新后的棋盘
+                        this.drawBoard();
+                        
+                        // 1秒后清除移动路径
+                        setTimeout(() => {
+                            this.lastMove = null;
+                            this.drawBoard();
+                        }, 1000);
+                    }
+                }
+            }
+            
+            // 切换窗口显示
+            toggleWindow() {
+                this.window.style.display = this.window.style.display === 'none' ? 'block' : 'none';
+            }
+            
+            static getInstance(id) {
+                return window.xiangqiControllers?.find(obj => obj.id === id) || new this(id);
+            }
+        }
+
+        // 页面加载完成后初始化控制器
+        document.addEventListener('DOMContentLoaded', () => {
+            const controller = XiangqiController.getInstance('id_s177_i2c1_XiangqiController');
+            controller.toggleWindow();
+        });
+    </script>
+</body>
+</html>

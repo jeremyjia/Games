@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简谱编辑器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <script>
+        if (typeof app === 'undefined') {
+            app = {};
+        }
+
+        class CNote {
+            constructor() {
+                this.currentNote = '3';
+                this.noteLength = '4';
+                this.octave = 0;
+                this.fontSize = '24px';
+                this.fontFamily = 'Arial';
+            }
+
+            draw(ctx, width, height) {
+                ctx.clearRect(0, 0, width, height);
+                ctx.font = `${this.fontSize} ${this.fontFamily}`;
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#000';
+
+                let displayNote = this.currentNote;
+                if (this.currentNote) {
+                    switch (this.noteLength) {
+                        case '1':
+                            displayNote = `${this.currentNote}`;
+                            break;
+                        case '2':
+                            displayNote = `${this.currentNote}`;
+                            break;
+                        case '16':
+                            displayNote = `${this.currentNote}`;
+                            break;
+                    }
+
+                    ctx.fillText(displayNote, width / 2, height / 2 + 10);
+
+                    let lineY = height / 2 + 25;
+                    if (this.noteLength === '8' || this.noteLength === '16') {
+                        ctx.beginPath();
+                        ctx.moveTo(width / 2 - ctx.measureText(displayNote).width / 2, lineY);
+                        ctx.lineTo(width / 2 + ctx.measureText(displayNote).width / 2, lineY);
+                        ctx.strokeStyle = '#000';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+
+                        if (this.noteLength === '16') {
+                            ctx.beginPath();
+                            ctx.moveTo(width / 2 - ctx.measureText(displayNote).width / 2, lineY + 5);
+                            ctx.lineTo(width / 2 + ctx.measureText(displayNote).width / 2, lineY + 5);
+                            ctx.strokeStyle = '#000';
+                            ctx.lineWidth = 2;
+                            ctx.stroke();
+                        }
+                    }
+
+                    if (this.noteLength === '1') {
+                        const noteWidth = ctx.measureText(displayNote).width;
+                        const startX = width / 2 + noteWidth / 2 + 5;
+                        const lineLength = 5;
+                        const spacing = 5;
+                        const dy = 2;
+
+                        for (let i = 0; i < 3; i++) {
+                            const x = startX + i * (lineLength + spacing);
+                            ctx.beginPath();
+                            ctx.moveTo(x, height / 2 + dy);
+                            ctx.lineTo(x + lineLength, height / 2 + dy);
+                            ctx.strokeStyle = '#000';
+                            ctx.lineWidth = 2;
+                            ctx.stroke();
+                        }
+                    } else if (this.noteLength === '2') {
+                        const noteWidth = ctx.measureText(displayNote).width;
+                        const startX = width / 2 + noteWidth / 2 + 5;
+                        const lineLength = 5;
+                        const dy = 2;
+
+                        ctx.beginPath();
+                        ctx.moveTo(startX, height / 2 + dy);
+                        ctx.lineTo(startX + lineLength, height / 2 + dy);
+                        ctx.strokeStyle = '#000';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                    }
+
+                    const noteWidth = ctx.measureText(this.currentNote).width;
+                    const dotX = width / 2 - noteWidth / 2 + noteWidth / 2;
+
+                    if (this.octave === 1) {
+                        const dotY = height / 2 - parseInt(this.fontSize) / 2;
+                        ctx.beginPath();
+                        ctx.arc(dotX, dotY, 3, 0, 2 * Math.PI);
+                        ctx.fillStyle = '#000';
+                        ctx.fill();
+                    } else if (this.octave === 2) {
+                        const baseDotY = height / 2 - parseInt(this.fontSize) - 5;
+                        const dotSpacing = 8;
+                        for (let i = 0; i < 2; i++) {
+                            const dotY = baseDotY - i * dotSpacing;
+                            ctx.beginPath();
+                            ctx.arc(dotX, dotY, 3, 0, 2 * Math.PI);
+                            ctx.fillStyle = '#000';
+                            ctx.fill();
+                        }
+                    }
+
+                    if (this.octave === -1) {
+                        let dotY;
+                        if (this.noteLength === '8' || this.noteLength === '16') {
+                            dotY = lineY + (this.noteLength === '16' ? 10 : 5);
+                        } else {
+                            dotY = height / 2 + parseInt(this.fontSize) / 2 + 5;
+                        }
+                        ctx.beginPath();
+                        ctx.arc(dotX, dotY, 3, 0, 2 * Math.PI);
+                        ctx.fillStyle = '#000';
+                        ctx.fill();
+                    } else if (this.octave === -2) {
+                        let baseDotY;
+                        if (this.noteLength === '8' || this.noteLength === '16') {
+                            baseDotY = lineY + (this.noteLength === '16' ? 15 : 10);
+                        } else {
+                            baseDotY = height / 2 + parseInt(this.fontSize) + 10;
+                        }
+                        const dotSpacing = 8;
+                        for (let i = 0; i < 2; i++) {
+                            const dotY = baseDotY + i * dotSpacing;
+                            ctx.beginPath();
+                            ctx.arc(dotX, dotY, 3, 0, 2 * Math.PI);
+                            ctx.fillStyle = '#000';
+                            ctx.fill();
+                        }
+                    }
+                }
+            }
+
+            play() {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                const noteFrequencies = {
+                    '1': 261.63,
+                    '2': 293.66,
+                    '3': 329.63,
+                    '4': 349.23,
+                    '5': 392.00,
+                    '6': 440.00,
+                    '7': 493.88,
+                    '0': 0
+                };
+
+                const frequency = noteFrequencies[this.currentNote] * Math.pow(2, this.octave);
+                oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+
+                const noteLengthMultiplier = {
+                    '1': 4,
+                    '2': 2,
+                    '4': 1,
+                    '8': 0.5,
+                    '16': 0.25
+                };
+
+                const duration = noteLengthMultiplier[this.noteLength] * 0.5;
+
+                gainNode.gain.setValueAtTime(1, audioContext.currentTime);
+                oscillator.start(audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+                oscillator.stop(audioContext.currentTime + duration);
+            }
+        }
+
+        app.C4NoteEditor = function (id) {
+            let d = document.getElementById(id);
+            if (!d) {
+                d = document.createElement('div');
+                d.id = id;
+                d.note = new CNote();
+
+                d.classList.add('absolute', 'w-[300px]', 'h-[400px]', 'bg-white', 'border', 'border-gray-300', 'rounded-lg', 'shadow-md', 'z-1000', 'hidden', 'flex', 'flex-col');
+
+                const titleBar = document.createElement('div');
+                titleBar.classList.add('p-2', 'bg-gray-100', 'cursor-move', 'border-b', 'border-gray-300', 'flex-shrink-0');
+                titleBar.textContent = "简谱编辑器v0.12";
+
+                const closeBtn = document.createElement('button');
+                closeBtn.textContent = '×';
+                closeBtn.classList.add('float-right', '-mt-4', '-mr-2', 'bg-transparent', 'border-none', 'text-lg', 'cursor-pointer', 'text-gray-600');
+                closeBtn.onclick = function () {
+                    d.classList.add('hidden');
+                };
+
+                titleBar.appendChild(closeBtn);
+                d.appendChild(titleBar);
+
+                const editorContainer = document.createElement('div');
+                editorContainer.classList.add('p-2', 'flex-grow', 'overflow-y-auto', 'border-b', 'border-gray-300');
+
+                const noteToolbar = document.createElement('div');
+                noteToolbar.classList.add('flex', 'justify-center', 'mb-2');
+
+                const noteButtons = ['1', '2', '3', '4', '5', '6', '7', '0'];
+
+                noteButtons.forEach(note => {
+                    const btn = document.createElement('button');
+                    btn.textContent = note;
+                    btn.classList.add('w-8', 'h-8', 'mx-1', 'bg-gray-100', 'border', 'border-gray-300', 'rounded', 'cursor-pointer', 'text-sm', 'hover:bg-red-100', 'transition-colors');
+
+                    btn.onclick = function () {
+                        noteToolbar.querySelectorAll('button').forEach(button => {
+                            button.classList.remove('bg-red-100');
+                        });
+                        this.classList.add('bg-red-100');
+                        d.note.currentNote = note;
+                        updateCanvas();
+                    };
+
+                    noteToolbar.appendChild(btn);
+                });
+
+                const defaultNoteButton = noteToolbar.querySelector('button:nth-child(3)');
+                if (defaultNoteButton) {
+                    defaultNoteButton.classList.add('bg-red-100');
+                }
+
+                editorContainer.appendChild(noteToolbar);
+
+                const noteLengthToolbar = document.createElement('div');
+                noteLengthToolbar.classList.add('flex', 'justify-center', 'mb-2');
+
+                const noteLengthOptions = [
+                    { value: '1', label: '全音符' },
+                    { value: '2', label: '二分音符' },
+                    { value: '4', label: '四分音符' },
+                    { value: '8', label: '八分音符' },
+                    { value: '16', label: '十六分音符' }
+                ];
+
+                noteLengthOptions.forEach(option => {
+                    const btn = document.createElement('button');
+                    btn.textContent = option.label;
+                    btn.dataset.value = option.value;
+                    btn.classList.add('w-auto', 'h-8', 'mx-1', 'bg-gray-100', 'border', 'border-gray-300', 'rounded', 'cursor-pointer', 'text-sm', 'hover:bg-red-100', 'transition-colors');
+
+                    if (option.value === d.note.noteLength) {
+                        btn.classList.add('bg-red-100');
+                    }
+
+                    btn.onclick = function () {
+                        noteLengthToolbar.querySelectorAll('button').forEach(button => {
+                            button.classList.remove('bg-red-100');
+                        });
+                        this.classList.add('bg-red-100');
+                        d.note.noteLength = this.dataset.value;
+                        updateCanvas();
+                    };
+
+                    noteLengthToolbar.appendChild(btn);
+                });
+
+                editorContainer.appendChild(noteLengthToolbar);
+
+                const octaveToolbar = document.createElement('div');
+                octaveToolbar.classList.add('flex', 'justify-center', 'mb-2');
+
+                const octaveOptions = [
+                    { value: -2, label: '低两个八度' },
+                    { value: -1, label: '低八度' },
+                    { value: 0, label: '正常' },
+                    { value: 1, label: '高八度' },
+                    { value: 2, label: '高两个八度' }
+                ];
+
+                octaveOptions.forEach(option => {
+                    const btn = document.createElement('button');
+                    btn.textContent = option.label;
+                    btn.dataset.value = option.value;
+                    btn.classList.add('w-auto', 'h-8', 'mx-1', 'bg-gray-100', 'border', 'border-gray-300', 'rounded', 'cursor-pointer', 'text-sm', 'hover:bg-red-100', 'transition-colors');
+
+                    if (option.value === d.note.octave) {
+                        btn.classList.add('bg-red-100');
+                    }
+
+                    btn.onclick = function () {
+                        octaveToolbar.querySelectorAll('button').forEach(button => {
+                            button.classList.remove('bg-red-100');
+                        });
+                        this.classList.add('bg-red-100');
+                        d.note.octave = parseInt(this.dataset.value);
+                        updateCanvas();
+                    };
+
+                    octaveToolbar.appendChild(btn);
+                });
+
+                editorContainer.appendChild(octaveToolbar);
+
+                d.appendChild(editorContainer);
+
+                const canvasContainer = document.createElement('div');
+                canvasContainer.classList.add('p-2', 'flex-grow', 'flex', 'justify-center', 'items-center', 'border-b', 'border-gray-300', 'min-h-[100px]');
+
+                const canvas = document.createElement('canvas');
+                canvas.classList.add('w-full', 'h-full', 'border', 'border-gray-200', 'cursor-crosshair', 'bg-gray-50');
+                canvasContainer.appendChild(canvas);
+                d.appendChild(canvasContainer);
+
+                const statusBar = document.createElement('div');
+                statusBar.classList.add('p-2', 'bg-gray-100', 'border-t', 'border-gray-300', 'text-xs', 'text-gray-600', 'text-left', 'flex-shrink-0');
+
+                const playButton = document.createElement('button');
+                playButton.textContent = '播放音符';
+                playButton.classList.add('bg-blue-500', 'text-white', 'px-2', 'py-1', 'rounded', 'hover:bg-blue-600', 'transition-colors');
+                playButton.onclick = function () {
+                    d.note.play();
+                };
+
+                statusBar.appendChild(playButton);
+                statusBar.appendChild(document.createTextNode("  状态栏"));
+                d.appendChild(statusBar);
+
+                document.body.appendChild(d);
+
+                function updateCanvas() {
+                    const ctx = canvas.getContext('2d');
+                    const container = canvas.parentElement;
+                    const width = container.clientWidth - 20;
+                    const height = container.clientHeight - 20;
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    d.note.draw(ctx, width, height);
+                }
+
+                updateCanvas();
+            }
+
+            d.toggleUI = function () {
+                d.classList.toggle('hidden');
+            };
+
+            let isDragging = false;
+            let offsetX, offsetY;
+            const titleBar = d.querySelector('div');
+
+            titleBar.onmousedown = function (e) {
+                isDragging = true;
+                offsetX = e.clientX - d.offsetLeft;
+                offsetY = e.clientY - d.offsetTop;
+            };
+
+            titleBar.ontouchstart = function (e) {
+                isDragging = true;
+                const touch = e.touches[0];
+                offsetX = touch.clientX - d.offsetLeft;
+                offsetY = touch.clientY - d.offsetTop;
+            };
+
+            document.onmouseup = function () {
+                isDragging = false;
+            };
+
+            document.ontouchend = function () {
+                isDragging = false;
+            };
+
+            document.onmousemove = function (e) {
+                if (isDragging) {
+                    d.style.left = (e.clientX - offsetX) + 'px';
+                    d.style.top = (e.clientY - offsetY) + 'px';
+                }
+            };
+
+            document.ontouchmove = function (e) {
+                if (isDragging) {
+                    const touch = e.touches[0];
+                    d.style.left = (touch.clientX - offsetX) + 'px';
+                    d.style.top = (touch.clientY - offsetY) + 'px';
+                    e.preventDefault();
+                }
+            };
+
+            d.style.left = '100px';
+            d.style.top = '100px';
+            d.toggleUI();
+        }
+
+        app.C4NoteEditor('n1c11');
+    </script>
+</body>
+
+</html>    
+    
+<!--
+add a button to status to play the note
+-->
