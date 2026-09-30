@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>国际象棋 · 棋谱研究</title>
+<style>
+:root{--bg:#eceff3;--fg:#1f2933;--panel:#fff;--bd:#cfd6df;--l:#e3e8ef;--d:#7b91ab;--acc:#1f4e79;--mut:#5f6b7a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171b21;--fg:#e4e8ee;--panel:#222831;--bd:#38414d;--l:#b8c2d0;--d:#5b708a;--acc:#8fb8e8;--mut:#93a0b0}}
+:root[data-theme="dark"]{--bg:#171b21;--fg:#e4e8ee;--panel:#222831;--bd:#38414d;--l:#b8c2d0;--d:#5b708a;--acc:#8fb8e8;--mut:#93a0b0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+main{display:flex;flex-wrap:wrap;gap:20px;justify-content:center;padding:14px}
+#wrap{width:min(94vw,580px);container-type:inline-size}
+#board{display:grid;grid-template-columns:1.5rem repeat(8,1fr) 1.5rem}
+.lb{font-style:normal;font-weight:700;font-size:.95rem;display:flex;align-items:center;justify-content:center;min-height:1.5rem;color:var(--mut)}
+.sq{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:8.6cqw;line-height:1;position:relative;cursor:pointer;user-select:none;-webkit-user-select:none}
+.sq.l{background-color:var(--l)}.sq.d{background-color:var(--d)}
+.last{background-image:linear-gradient(rgba(255,214,10,.45),rgba(255,214,10,.45))}
+.sel{background-image:linear-gradient(rgba(60,180,90,.55),rgba(60,180,90,.55))}
+.ck{background-image:radial-gradient(circle,rgba(230,20,20,.85),rgba(230,20,20,0) 72%)}
+.tg::after,.tgc::after{content:"";position:absolute;pointer-events:none;border-radius:50%;width:30%;height:30%;background:rgba(20,80,40,.5)}
+.tgc::after{width:86%;height:86%;background:none;border:5px solid rgba(20,80,40,.5)}
+.pc.w{color:#fff;text-shadow:0 0 1px #000,0 0 2px #000,0 1px 2px #000}
+.pc.b{color:#1b1b1b;text-shadow:0 0 1px #fff}
+.side{width:min(94vw,340px);display:flex;flex-direction:column;gap:10px}
+.box{background:var(--panel);border:1px solid var(--bd);border-radius:8px;padding:10px}
+#status{font-weight:600}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+button{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:5px 10px;cursor:pointer}
+button:hover{border-color:var(--acc)}button:focus-visible,a:focus-visible{outline:2px solid var(--acc)}
+#moves{max-height:300px;overflow:auto;font-variant-numeric:tabular-nums}
+.row{display:grid;grid-template-columns:2.2rem 1fr 1fr}.row b{color:var(--mut);font-weight:500}
+.row a{padding:1px 6px;border-radius:4px;cursor:pointer;min-height:1.5em}
+.row a.cur{background:var(--acc);color:var(--panel)}
+textarea{width:100%;box-sizing:border-box;height:84px;font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;background:var(--bg);color:var(--fg);border:1px solid var(--bd);border-radius:6px;padding:6px}
+#promo{display:none;gap:6px;align-items:center}#promo button{font-size:26px;line-height:1;padding:2px 10px}
+.hint{color:var(--mut);font-size:12px}
+</style>
+</head>
+<body>
+<main>
+<div id="wrap"><div id="board"></div></div>
+<div class="side">
+ <div class="box"><div id="status"></div><div id="promo"><span>升变为：</span></div></div>
+ <div class="btns">
+  <button data-a="first" title="Home">⏮</button><button data-a="prev" title="←">◀</button><button data-a="next" title="→">▶</button><button data-a="last" title="End">⏭</button>
+  <button data-a="flip">翻转棋盘</button><button data-a="undo">删除末着</button><button data-a="new">新局</button>
+ </div>
+ <div class="box"><div id="moves"></div></div>
+ <div class="box">
+  <textarea id="pgn" placeholder="在此粘贴 PGN / 着法列表，如：1. e4 e5 2. Nf3 Nc6"></textarea>
+  <div class="btns" style="margin-top:6px"><button data-a="imp">导入</button><button data-a="exp">导出 PGN</button></div>
+  <div class="hint" style="margin-top:6px">点击棋子再点目标格走棋；点击着法可跳转；← → 键逐步浏览。在历史局面走新招会替换其后着法。</div>
+ </div>
+</div>
+</main>
+<script>
+const $=s=>document.querySelector(s),F='abcdefgh',GL={k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'};
+const N=[[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]],D8=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+const col=p=>p===p.toUpperCase()?'w':'b',sqn=i=>F[i&7]+(8-(i>>3));
+function init(){const b=[];for(const ch of'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR'){if(ch==='/')continue;if(ch>='1'&&ch<='8')for(let k=0;k<+ch;k++)b.push(null);else b.push(ch)}return{b,t:'w',c:'KQkq',ep:-1,n:1}}
+function att(b,sq,by){const r=sq>>3,c=sq&7,w=by==='w';
+ const at=(rr,cc,set)=>{if(rr<0||rr>7||cc<0||cc>7)return false;const p=b[rr*8+cc];return p&&col(p)===by&&p.toLowerCase()===set};
+ const pr=w?r+1:r-1;if(at(pr,c-1,'p')||at(pr,c+1,'p'))return true;
+ for(const[d,e]of N)if(at(r+d,c+e,'n'))return true;
+ for(const[d,e]of D8){if(at(r+d,c+e,'k'))return true;let rr=r+d,cc=c+e;
+  while(rr>=0&&rr<8&&cc>=0&&cc<8){const p=b[rr*8+cc];if(p){if(col(p)===by){const t=p.toLowerCase();if(t==='q'||t===(d&&e?'b':'r'))return true}break}rr+=d;cc+=e}}
+ return false}
+function pseudo(s){const{b,t}=s,w=t==='w',opp=w?'b':'w',out=[],add=(f,to,x)=>out.push({f,to,...x});
+ for(let i=0;i<64;i++){const p=b[i];if(!p||col(p)!==t)continue;const T=p.toLowerCase(),r=i>>3,c=i&7;
+  if(T==='p'){const d=w?-1:1,pr=w?0:7,st=w?6:1,f1=i+d*8;
+   const push=to=>{if((to>>3)===pr)for(const q of'qrbn')add(i,to,{pr:q});else add(i,to)};
+   if(!b[f1]){push(f1);if(r===st&&!b[f1+d*8])add(i,f1+d*8)}
+   for(const dc of[-1,1]){const cc=c+dc;if(cc<0||cc>7)continue;const to=f1+dc;
+    if(b[to]&&col(b[to])!==t)push(to);else if(!b[to]&&to===s.ep)add(i,to)}
+  }else if(T==='n'||T==='k'){
+   for(const[d,e]of T==='n'?N:D8){const rr=r+d,cc=c+e;if(rr<0||rr>7||cc<0||cc>7)continue;const to=rr*8+cc;if(!b[to]||col(b[to])!==t)add(i,to)}
+   if(T==='k'&&i===(w?60:4)&&!att(b,i,opp)){
+    if(s.c.includes(w?'K':'k')&&!b[i+1]&&!b[i+2]&&b[i+3]===(w?'R':'r')&&!att(b,i+1,opp)&&!att(b,i+2,opp))add(i,i+2);
+    if(s.c.includes(w?'Q':'q')&&!b[i-1]&&!b[i-2]&&!b[i-3]&&b[i-4]===(w?'R':'r')&&!att(b,i-1,opp)&&!att(b,i-2,opp))add(i,i-2)}
+  }else{for(const[d,e]of D8){if(T!=='q'&&(T==='r')===!!(d&&e))continue;let rr=r+d,cc=c+e;
+   while(rr>=0&&rr<8&&cc>=0&&cc<8){const to=rr*8+cc;if(!b[to])add(i,to);else{if(col(b[to])!==t)add(i,to);break}rr+=d;cc+=e}}}
+ }return out}
+const RT={60:'KQ',63:'K',56:'Q',4:'kq',7:'k',0:'q'};
+function make(s,m){const b=s.b.slice(),p=b[m.f],T=p.toLowerCase(),w=s.t==='w';let ep=-1,c=s.c;
+ const isEp=T==='p'&&!b[m.to]&&(m.f&7)!==(m.to&7);
+ b[m.to]=m.pr?(w?m.pr.toUpperCase():m.pr):p;b[m.f]=null;
+ if(isEp)b[m.to+(w?8:-8)]=null;
+ if(T==='p'&&Math.abs(m.to-m.f)===16)ep=(m.f+m.to)/2;
+ if(T==='k'){if(m.to-m.f===2){b[m.f+1]=b[m.f+3];b[m.f+3]=null}if(m.to-m.f===-2){b[m.f-1]=b[m.f-4];b[m.f-4]=null}}
+ for(const q of[m.f,m.to])if(RT[q])c=c.replace(new RegExp('['+RT[q]+']','g'),'');
+ return{b,t:w?'b':'w',c,ep,n:s.n+(w?0:1)}}
+const kingOf=(s,t)=>s.b.indexOf(t==='w'?'K':'k');
+const inCheck=s=>att(s.b,kingOf(s,s.t),s.t==='w'?'b':'w');
+const legal=s=>pseudo(s).filter(m=>{const n=make(s,m);return!att(n.b,kingOf(n,s.t),n.t)});
+function san(s,m,L){const p=s.b[m.f],T=p.toLowerCase();let o='';
+ if(T==='k'&&Math.abs(m.to-m.f)===2)o=m.to>m.f?'O-O':'O-O-O';
+ else{const cap=s.b[m.to]||(T==='p'&&(m.f&7)!==(m.to&7));
+  if(T==='p'){if(cap)o+=F[m.f&7]}
+  else{o+=T.toUpperCase();const x2=L.filter(x=>x!==m&&x.to===m.to&&s.b[x.f]===p);
+   if(x2.length){if(!x2.some(x=>(x.f&7)===(m.f&7)))o+=F[m.f&7];else if(!x2.some(x=>(x.f>>3)===(m.f>>3)))o+=8-(m.f>>3);else o+=sqn(m.f)}}
+  if(cap)o+='x';o+=sqn(m.to);if(m.pr)o+='='+m.pr.toUpperCase()}
+ const n=make(s,m);return o+(inCheck(n)?(legal(n).length?'+':'#'):'')}
+
+let states=[init()],moves=[],idx=0,sel=null,flip=false,pend=null;
+function result(){const s=states[states.length-1];if(legal(s).length)return'*';return inCheck(s)?(s.t==='w'?'0-1':'1-0'):'1/2-1/2'}
+function commit(m){const s=states[idx];
+ if(idx<moves.length&&!confirm('在历史局面走新招将丢弃其后的着法，继续？'))return;
+ const sn=san(s,m,legal(s));states.length=idx+1;moves.length=idx;states.push(make(s,m));moves.push({san:sn,m});idx++;sel=null;render()}
+function click(i){const s=states[idx],L=legal(s);pend=null;
+ if(sel!=null){const ms=L.filter(m=>m.f===sel&&m.to===i);
+  if(ms.length){if(ms[0].pr){pend=ms;showPromo()}else commit(ms[0]);return}}
+ const p=s.b[i];sel=p&&col(p)===s.t&&L.some(m=>m.f===i)?i:null;render()}
+function showPromo(){const e=$('#promo'),w=states[idx].t==='w';e.style.display='flex';
+ e.innerHTML='<span>升变为：</span>'+'qrbn'.split('').map(q=>`<button data-q="${q}">${GL[q]}\uFE0E</button>`).join('')}
+function render(){const s=states[idx],L=legal(s),last=idx?moves[idx-1].m:null,ck=inCheck(s)?kingOf(s,s.t):-1;
+ const rs=flip?[7,6,5,4,3,2,1,0]:[0,1,2,3,4,5,6,7],cs=flip?[7,6,5,4,3,2,1,0]:[0,1,2,3,4,5,6,7];
+ const fl='<i></i>'+cs.map(c=>`<i class="lb">${F[c]}</i>`).join('')+'<i></i>';let h=fl;
+ for(const r of rs){h+=`<i class="lb">${8-r}</i>`;
+  for(const c of cs){const i=r*8+c,p=s.b[i];let k='sq '+((r+c)%2?'d':'l');
+   if(last&&(i===last.f||i===last.to))k+=' last';if(i===sel)k+=' sel';if(i===ck)k+=' ck';
+   if(sel!=null&&L.some(m=>m.f===sel&&m.to===i))k+=(p||(s.b[sel].toLowerCase()==='p'&&(sel&7)!==c))?' tgc':' tg';
+   h+=`<div class="${k}" data-i="${i}">${p?`<span class="pc ${col(p)}">${GL[p.toLowerCase()]}\uFE0E</span>`:''}</div>`}
+  h+=`<i class="lb">${8-r}</i>`}
+ $('#board').innerHTML=h+fl;
+ const who=s.t==='w'?'白方':'黑方';
+ $('#status').textContent=!L.length?(inCheck(s)?`将杀，${s.t==='w'?'黑':'白'}方胜`:'逼和'):`轮到${who}${inCheck(s)?'（被将军）':''}`;
+ if(!pend)$('#promo').style.display='none';
+ let m='';const cell=j=>moves[j]?`<a data-j="${j+1}" tabindex="0" class="${j+1===idx?'cur':''}">${moves[j].san}</a>`:'<a></a>';
+ for(let i=0;i<moves.length;i+=2)m+=`<div class="row"><b>${i/2+1}.</b>${cell(i)}${cell(i+1)}</div>`;
+ $('#moves').innerHTML=m||'<span class="hint">尚无着法</span>';
+ const cur=$('#moves a.cur');if(cur)cur.scrollIntoView({block:'nearest'})}
+function go(n){idx=Math.max(0,Math.min(moves.length,n));sel=null;pend=null;render()}
+function exp(){let o='';moves.forEach((x,i)=>{o+=(i%2?'':(i/2+1)+'. ')+x.san+' '});$('#pgn').value=o+result()}
+function imp(){let t=$('#pgn').value.replace(/\[[^\]]*\]/g,' ').replace(/\{[^}]*\}/g,' ').replace(/;[^\n]*/g,' '),q;
+ do{q=t;t=t.replace(/\([^()]*\)/g,' ')}while(q!==t);
+ t=t.replace(/\$\d+/g,' ').replace(/\d+\.+/g,' ');
+ const norm=x=>x.replace(/[+#!?=]/g,'').replace(/0/g,'O').replace(/[Ee]\.?p\.?$/,''),
+  toks=t.split(/\s+/).filter(x=>x&&!/^(1-0|0-1|1\/2-1\/2|\*)$/.test(x));
+ const S=[init()],M=[];
+ for(const tk of toks){const s=S[S.length-1],L=legal(s);let hit=null,sn;
+  for(const m of L){sn=san(s,m,L);if(norm(sn)===norm(tk)){hit=m;break}}
+  if(!hit){alert(`第 ${M.length+1} 着无法识别或不合法：${tk}\n已导入此前的 ${M.length} 着。`);break}
+  S.push(make(s,hit));M.push({san:sn,m:hit})}
+ states=S;moves=M;go(0)}
+document.addEventListener('click',e=>{
+ const sq=e.target.closest('.sq'),a=e.target.closest('[data-j]'),b=e.target.closest('button');
+ if(b&&b.dataset.q&&pend){const m=pend.find(x=>x.pr===b.dataset.q);pend=null;commit(m);return}
+ if(sq)return click(+sq.dataset.i);
+ if(a)return go(+a.dataset.j);
+ if(!b)return;
+ ({first:()=>go(0),prev:()=>go(idx-1),next:()=>go(idx+1),last:()=>go(moves.length),
+  flip:()=>{flip=!flip;render()},
+  undo:()=>{if(moves.length){moves.pop();states.pop();go(Math.min(idx,moves.length))}},
+  new:()=>{if(!moves.length||confirm('清空当前棋谱并开始新局？')){states=[init()];moves=[];go(0)}},
+  imp,exp})[b.dataset.a]?.()});
+document.addEventListener('keydown',e=>{if(e.target.tagName==='TEXTAREA')return;
+ const k={ArrowLeft:idx-1,ArrowRight:idx+1,Home:0,End:moves.length}[e.key];if(k!==undefined){e.preventDefault();go(k)}});
+render();
+</script>
+</body>
+</html>
