@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>简谱编辑器 v1.18</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f7fa;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .editor-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px; /* 进一步减小编辑器和画布之间的间距 */
+    }
+    #editor {
+      height: 150px;
+      border: 2px solid #d1d5db;
+      padding: 15px;
+      font-size: 28px;
+      line-height: 2;
+      background: white;
+      border-radius: 8px;
+      overflow-y: auto;
+    }
+    #canvas {
+      border: 2px solid #d1d5db;
+      background: white;
+      border-radius: 8px;
+    }
+    .toolbar {
+      display: flex;
+      gap: 8px; /* 微调工具栏按钮之间的间距 */
+      flex-wrap: wrap;
+      margin-bottom: 12px; /* 减小工具栏下方的边距 */
+    }
+    .btn-group {
+      display: flex;
+      gap: 5px;
+      padding: 5px;
+      background: #f1f5f9;
+      border-radius: 8px;
+    }
+    button {
+      padding: 8px 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .note-btn {
+      background: #60a5fa;
+      color: white;
+    }
+    .note-btn.active {
+      background: #1d4ed8;
+      box-shadow: 0 0 0 2px #93c5fd;
+    }
+    .duration-btn {
+      background: #34d399;
+      color: white;
+    }
+    .duration-btn.active {
+      background: #047857;
+      box-shadow: 0 0 0 2px #6ee7b7;
+    }
+    .octave-btn {
+      background: #f59e0b;
+      color: white;
+    }
+    .octave-btn.active {
+      background: #b45309;
+      box-shadow: 0 0 0 2px #fcd34d;
+    }
+    .control-btn {
+      background: #94a3b8;
+      color: white;
+    }
+    .duration-selector {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .version {
+      color: #64748b;
+      font-size: 14px;
+    }
+    h2 {
+      color: #1e293b;
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2>简谱编辑器</h2>
+    <div class="version">版本: v1.18 (2025-06-23)</div>
+  </div>
+
+  <div class="toolbar">
+    <div class="btn-group">
+      <button class="note-btn" onclick="insertNote('1')">1 (Do)</button>
+      <button class="note-btn" onclick="insertNote('2')">2 (Re)</button>
+      <button class="note-btn" onclick="insertNote('3')">3 (Mi)</button>
+      <button class="note-btn" onclick="insertNote('4')">4 (Fa)</button>
+      <button class="note-btn" onclick="insertNote('5')">5 (Sol)</button>
+      <button class="note-btn" onclick="insertNote('6')">6 (La)</button>
+      <button class="note-btn" onclick="insertNote('7')">7 (Si)</button>
+      <button class="note-btn" onclick="insertNote('0')">0 (休止)</button>
+    </div>
+    
+    <div class="btn-group">
+      <button class="duration-btn" onclick="setDuration('whole')">全音符</button>
+      <button class="duration-btn" onclick="setDuration('half')">二分</button>
+      <button class="duration-btn active" onclick="setDuration('quarter')">四分</button>
+      <button class="duration-btn" onclick="setDuration('eighth')">八分</button>
+      <button class="duration-btn" onclick="setDuration('sixteenth')">十六分</button>
+    </div>
+    
+    <div class="btn-group">
+      <button class="octave-btn active" onclick="toggleOctave('normal')">正常</button>
+      <button class="octave-btn" onclick="toggleOctave('high')">高八度</button>
+      <button class="octave-btn" onclick="toggleOctave('low')">低八度</button>
+    </div>
+    
+    <div class="btn-group">
+      <button class="control-btn" onclick="deleteNote()">删除</button>
+      <button class="control-btn" onclick="clearEditor()">清空</button>
+      <button class="control-btn" onclick="exportImage()">导出图片</button>
+    </div>
+  </div>
+
+  <div class="editor-container">
+    <div>
+      <div id="editor" contenteditable="true"></div>
+      <div class="duration-selector">
+        <span>当前时值：</span>
+        <select id="duration-select" onchange="changeDuration(this.value)">
+          <option value="quarter" selected>四分音符</option>
+          <option value="whole">全音符</option>
+          <option value="half">二分音符</option>
+          <option value="eighth">八分音符</option>
+          <option value="sixteenth">十六分音符</option>
+        </select>
+      </div>
+    </div>
+    <div>
+      <canvas id="canvas" width="600" height="200"></canvas>
+    </div>
+  </div>
+
+  <script>
+    class MusicNotation {
+      constructor(canvasId, editorId) {
+        this.canvas = document.getElementById(canvasId);
+        this.ctx = this.canvas.getContext('2d');
+        this.editor = document.getElementById(editorId);
+        
+        this.config = {
+          noteSpacing: 40,
+          noteRadius: 10,
+          baselineY: 100,
+          color: '#334155',
+          dotRadius: 3,
+          dashLength: 15,
+          flagHeight: 15,
+          dashGap: 5,
+          dashSpacing: 10,
+          wholeNoteWidth: 80,
+          wholeNoteDashCount: 3,
+          wholeNoteSpacing: 90,
+          dashOffsetY: 0 // 新增横杠垂直偏移量
+        };
+        
+        this.currentDuration = 'quarter';
+        this.currentOctave = 'normal';
+        this.lastNoteBtn = null;
+        this.lastOctaveBtn = null;
+        
+        this.init();
+      }
+      
+      init() {
+        this.setupCanvas();
+        this.bindEvents();
+        this.render();
+      }
+      
+      setupCanvas() {
+        this.ctx.font = '20px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillStyle = this.config.color;
+        this.ctx.strokeStyle = this.config.color;
+        this.ctx.lineWidth = 1.5;
+      }
+      
+      bindEvents() {
+        this.editor.addEventListener('input', () => this.render());
+        
+        this.editor.addEventListener('keydown', (e) => {
+          if (e.altKey && e.key >= '0' && e.key <= '7') {
+            this.insertNote(e.key);
+            e.preventDefault();
+          }
+        });
+      }
+      
+      clearCanvas() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      }
+      
+      parseNotes() {
+        const content = this.editor.textContent;
+        const notes = [];
+        let i = 0;
+        
+        while (i < content.length) {
+          const char = content[i];
+          if (/[0-7]/.test(char)) {
+            let note = { 
+              value: char, 
+              duration: 'quarter',
+              octave: 'normal' 
+            };
+            
+            let j = i + 1;
+            while (j < content.length) {
+              const nextChar = content[j];
+              if (nextChar === '^') {
+                note.octave = 'high';
+                j++;
+              } else if (nextChar === '_') {
+                note.octave = 'low';
+                j++;
+              } else if (nextChar === '~') {
+                const durationChar = content[j+1];
+                note.duration = this.decodeDuration(durationChar);
+                j += 2;
+              } else {
+                break;
+              }
+            }
+            
+            notes.push(note);
+            i = j;
+          } else {
+            i++;
+          }
+        }
+        return notes;
+      }
+      
+      decodeDuration(char) {
+        const map = {
+          'w': 'whole',
+          'h': 'half',
+          'q': 'quarter',
+          'e': 'eighth',
+          's': 'sixteenth'
+        };
+        return map[char] || 'quarter';
+      }
+      
+      encodeDuration(duration) {
+        const map = {
+          'whole': 'w',
+          'half': 'h',
+          'quarter': 'q',
+          'eighth': 'e',
+          'sixteenth': 's'
+        };
+        return map[duration];
+      }
+      
+      drawNote(x, note) {
+        const y = this.config.baselineY;
+        this.ctx.font = '24px Arial';
+        this.ctx.fillText(note.value, x, y);
+        
+        // 存储低八度标记的Y坐标
+        let lowOctaveY = y;
+        
+        switch(note.duration) {
+          case 'whole':
+            this.drawWholeNoteDashes(x, y);
+            break;
+          case 'half':
+            this.drawDashes(x, y, 1);
+            break;
+          case 'quarter':
+            break;
+          case 'eighth':
+            this.drawHorizontalFlag(x, y, 1);
+            lowOctaveY = y + this.config.flagHeight + 5; // 调整低八度标记的位置
+            break;
+          case 'sixteenth':
+            this.drawHorizontalFlag(x, y, 2);
+            lowOctaveY = y + this.config.flagHeight * 2 + 10; // 调整低八度标记的位置
+            break;
+        }
+        
+        if (note.octave === 'high') {
+          this.ctx.beginPath();
+          this.ctx.arc(x, y - 20, this.config.dotRadius, 0, Math.PI * 2);
+          this.ctx.fill();
+        } else if (note.octave === 'low') {
+          // 绘制低八度标记，位置根据音符类型调整
+          this.ctx.beginPath();
+          this.ctx.arc(x, lowOctaveY + 10, this.config.dotRadius, 0, Math.PI * 2);
+          this.ctx.fill();
+        }
+      }
+      
+      drawWholeNoteDashes(x, y) {
+        const dashCount = this.config.wholeNoteDashCount;
+        const startX = x + 15;
+        const dashSpacing = this.config.dashSpacing;
+        
+        for (let i = 0; i < dashCount; i++) {
+          const dashX = startX + (i * (this.config.dashLength + dashSpacing));
+          this.ctx.beginPath();
+          this.ctx.moveTo(dashX, y); // 修改为y，与音符中心对齐
+          this.ctx.lineTo(dashX + this.config.dashLength, y);
+          this.ctx.stroke();
+        }
+      }
+      
+      drawDashes(x, y, count) {
+        const startX = x + 15;
+        
+        for (let i = 0; i < count; i++) {
+          const dashX = startX + (i * (this.config.dashLength + this.config.dashSpacing));
+          this.ctx.beginPath();
+          this.ctx.moveTo(dashX, y); // 修改为y，与音符中心对齐
+          this.ctx.lineTo(dashX + this.config.dashLength, y);
+          this.ctx.stroke();
+        }
+      }
+      
+      drawHorizontalFlag(x, y, count) {
+        const startY = y + this.config.flagHeight;
+        const spacing = 5;
+        
+        for (let i = 0; i < count; i++) {
+          const currentY = startY + (i * spacing);
+          this.ctx.beginPath();
+          this.ctx.moveTo(x - 5, currentY);
+          this.ctx.lineTo(x + 15, currentY);
+          this.ctx.stroke();
+        }
+      }
+      
+      render() {
+        this.clearCanvas();
+        const notes = this.parseNotes();
+        let x = 50;
+        
+        for (let i = 0; i < notes.length; i++) {
+          const note = notes[i];
+          
+          this.drawNote(x, note);
+          
+          if (note.duration === 'whole') {
+            x += this.config.wholeNoteSpacing;
+          } else {
+            x += this.config.noteSpacing;
+          }
+        }
+      }
+      
+      highlightButton(btnClass, btnValue) {
+        document.querySelectorAll(`.${btnClass}`).forEach(btn => {
+          btn.classList.remove('active');
+        });
+        
+        if (btnValue) {
+          document.querySelectorAll(`.${btnClass}`).forEach(btn => {
+            if (btn.textContent.includes(btnValue)) {
+              btn.classList.add('active');
+            }
+          });
+        }
+      }
+      
+      insertNote(note) {
+        let textToInsert = note;
+        
+        if (this.currentOctave === 'high') {
+          textToInsert += '^';
+        } else if (this.currentOctave === 'low') {
+          textToInsert += '_';
+        }
+        
+        if (this.currentDuration !== 'quarter') {
+          textToInsert += '~' + this.encodeDuration(this.currentDuration);
+        }
+        
+        this.highlightButton('note-btn', note);
+        this.lastNoteBtn = note;
+        
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+          range.deleteContents();
+          range.insertNode(document.createTextNode(textToInsert));
+          range.collapse(false);
+        } else {
+          this.editor.textContent += textToInsert;
+        }
+        this.render();
+      }
+      
+      deleteNote() {
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+          if (!range.collapsed) {
+            range.deleteContents();
+          } else {
+            const editor = this.editor;
+            const text = editor.textContent;
+            const anchorOffset = selection.anchorOffset;
+            
+            if (anchorOffset > 0) {
+              editor.textContent = text.substring(0, anchorOffset - 1) + text.substring(anchorOffset);
+              const newRange = document.createRange();
+              newRange.setStart(editor.childNodes[0] || editor, anchorOffset - 1);
+              newRange.collapse(true);
+              selection.removeAllRanges();
+              selection.addRange(newRange);
+            }
+          }
+        }
+        this.render();
+      }
+      
+      clearEditor() {
+        this.editor.textContent = '';
+        this.render();
+      }
+      
+      setDuration(duration) {
+        this.currentDuration = duration;
+        document.getElementById('duration-select').value = duration;
+        
+        this.highlightButton('duration-btn', 
+          duration === 'whole' ? '全音符' : 
+          duration === 'half' ? '二分' : 
+          duration === 'quarter' ? '四分' : 
+          duration === 'eighth' ? '八分' : '十六分');
+      }
+      
+      toggleOctave(type) {
+        this.currentOctave = type;
+        this.highlightButton('octave-btn', 
+          type === 'normal' ? '正常' : 
+          type === 'high' ? '高八度' : '低八度');
+        this.lastOctaveBtn = type;
+      }
+      
+      exportImage() {
+        const link = document.createElement('a');
+        link.download = '简谱.png';
+        link.href = this.canvas.toDataURL('image/png');
+        link.click();
+      }
+    }
+
+    const musicApp = new MusicNotation('canvas', 'editor');
+    
+    function insertNote(note) {
+      musicApp.insertNote(note);
+    }
+    
+    function deleteNote() {
+      musicApp.deleteNote();
+    }
+    
+    function clearEditor() {
+      musicApp.clearEditor();
+    }
+    
+    function setDuration(duration) {
+      musicApp.setDuration(duration);
+    }
+    
+    function toggleOctave(type) {
+      musicApp.toggleOctave(type);
+    }
+    
+    function changeDuration(duration) {
+      musicApp.setDuration(duration);
+    }
+    
+    function exportImage() {
+      musicApp.exportImage();
+    }
+  </script>
+</body>
+</html>
+    

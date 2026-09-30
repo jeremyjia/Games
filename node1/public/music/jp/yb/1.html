@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>节奏型教学 v0.5</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #f5f5f5;
+            touch-action: none;
+            overflow: hidden;
+        }
+        
+        /* 顶部工具栏 */
+        .top-toolbar {
+            background-color: #3498db;
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .app-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .settings-btn {
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        /* 画布区域 */
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background-color: white;
+        }
+        
+        #mainCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        /* 底部状态栏 */
+        .status-bar {
+            background-color: #333;
+            color: white;
+            padding: 8px 10px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        /* 设置窗口 */
+        .settings-window {
+            position: fixed;
+            width: 300px;
+            height: 400px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            display: none;
+            flex-direction: column;
+            z-index: 100;
+            top: 50px;
+            left: 20px;
+            user-select: none;
+        }
+        
+        .settings-window.visible {
+            display: flex;
+        }
+        
+        .settings-header {
+            background-color: #3498db;
+            color: white;
+            padding: 10px;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            cursor: move;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .settings-title {
+            font-weight: bold;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0 5px;
+        }
+        
+        .settings-content {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .rhythm-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .rhythm-btn {
+            padding: 10px;
+            background-color: #f1f1f1;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        
+        .rhythm-btn:hover {
+            background-color: #e1e1e1;
+        }
+        
+        .rhythm-btn.active {
+            background-color: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+        
+        .rhythm-info {
+            margin-top: 15px;
+        }
+        
+        .info-textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: none;
+            font-family: inherit;
+        }
+        
+        .settings-footer {
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部工具栏 -->
+    <div class="top-toolbar">
+        <div class="app-title">节奏型教学 v0.5</div>
+        <button class="settings-btn" id="toggleSettings">设置</button>
+    </div>
+    
+    <!-- 画布区域 -->
+    <div class="canvas-container">
+        <canvas id="mainCanvas"></canvas>
+    </div>
+    
+    <!-- 底部状态栏 -->
+    <div class="status-bar">
+        <div>就绪</div>
+        <div>© 2024 吉他小助手教室</div>
+    </div>
+    
+    <!-- 设置窗口 -->
+    <div class="settings-window" id="settingsWindow">
+        <div class="settings-header" id="settingsHeader">
+            <div class="settings-title">节奏型设置</div>
+            <button class="close-btn" id="closeSettings">×</button>
+        </div>
+        
+        <div class="settings-content">
+            <div class="rhythm-buttons">
+                <button class="rhythm-btn" data-type="erba">二八节奏型</button>
+                <button class="rhythm-btn" data-type="sishiliu">四十六节奏型</button>
+                <button class="rhythm-btn" data-type="qianba">前八后十六</button>
+                <button class="rhythm-btn" data-type="qianshiliu">前十六后八</button>
+            </div>
+            
+            <div class="rhythm-info">
+                <textarea class="info-textarea" id="rhythmInfo" readonly></textarea>
+            </div>
+        </div>
+        
+        <div class="settings-footer">
+            点击按钮在画布上绘制对应节奏型
+        </div>
+    </div>
+
+    <script>
+        // 初始化变量
+        let isDragging = false;
+        let offsetX, offsetY;
+        const settingsWindow = document.getElementById('settingsWindow');
+        const settingsHeader = document.getElementById('settingsHeader');
+        const toggleSettingsBtn = document.getElementById('toggleSettings');
+        const closeSettingsBtn = document.getElementById('closeSettings');
+        const rhythmButtons = document.querySelectorAll('.rhythm-btn');
+        const rhythmInfo = document.getElementById('rhythmInfo');
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 节奏型数据
+        const rhythmData = {
+            erba: {
+                name: "二八节奏型",
+                pattern: "X X",
+                notation: "♫ ♫",
+                counting: "1 & 2 &",
+                memory: "烤鸭",
+                color: "#f1c40f",
+                description: "两个八分音符连续出现，常用于轻快的节奏中。"
+            },
+            sishiliu: {
+                name: "四十六节奏型",
+                pattern: "X X X X",
+                notation: "♫ ♫ ♫ ♫",
+                counting: "1 e & a",
+                memory: "冰糖葫芦",
+                color: "#e74c3c",
+                description: "四个十六分音符连续出现，节奏紧凑有力。"
+            },
+            qianba: {
+                name: "前八后十六节奏型",
+                pattern: "X X X",
+                notation: "♫ ♪ ♪",
+                counting: "1 & a",
+                memory: "小兔子",
+                color: "#9b59b6",
+                description: "一个八分音符后接两个十六分音符，节奏富有动感。"
+            },
+            qianshiliu: {
+                name: "前十六后八节奏型",
+                pattern: "X X X",
+                notation: "♪ ♪ ♫",
+                counting: "1 e &",
+                memory: "炸酱面",
+                color: "#3498db",
+                description: "两个十六分音符后接一个八分音符，节奏感强烈。"
+            }
+        };
+        
+        // 调整画布大小
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            drawInitialContent();
+        }
+        
+        // 绘制初始内容（按照图片样式）
+        function drawInitialContent() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制浅色背景
+            ctx.fillStyle = "#f9f9f9";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制标题
+            ctx.fillStyle = "#333";
+            ctx.font = "bold 28px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText("一次性搞懂12种节奏型", canvas.width / 2, 50);
+            
+            // 绘制4种节奏型
+            drawRhythmBox("二八节奏型", "X X", "♫ ♫", "1 & 2 &", "烤鸭", "#f1c40f", 50, 80);
+            drawRhythmBox("四十六节奏型", "X X X X", "♫ ♫ ♫ ♫", "1 e & a", "冰糖葫芦", "#e74c3c", canvas.width / 2 + 50, 80);
+            drawRhythmBox("前八后十六节奏型", "X X X", "♫ ♪ ♪", "1 & a", "小兔子", "#9b59b6", 50, canvas.height / 2 + 30);
+            drawRhythmBox("前十六后八节奏型", "X X X", "♪ ♪ ♫", "1 e &", "炸酱面", "#3498db", canvas.width / 2 + 50, canvas.height / 2 + 30);
+            
+            // 绘制底部版权信息
+            ctx.fillStyle = "#666";
+            ctx.font = "12px Arial";
+            ctx.textAlign = "right";
+            ctx.fillText("公众号·吉他小助手教室", canvas.width - 20, canvas.height - 20);
+        }
+        
+        // 绘制节奏型盒子
+        function drawRhythmBox(title, pattern, notation, counting, memory, color, x, y) {
+            const boxWidth = canvas.width / 2 - 70;
+            const boxHeight = canvas.height / 2 - 70;
+            
+            // 绘制标题
+            ctx.fillStyle = "#333";
+            ctx.font = "bold 20px Arial";
+            ctx.textAlign = "left";
+            ctx.fillText(title, x, y);
+            
+            // 绘制分隔线
+            ctx.strokeStyle = "#ddd";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(x, y + 10);
+            ctx.lineTo(x + boxWidth, y + 10);
+            ctx.stroke();
+            
+            // 绘制节奏型内容
+            const contentY = y + 40;
+            
+            // 绘制"节奏型"标签
+            ctx.fillStyle = "#666";
+            ctx.font = "14px Arial";
+            ctx.fillText("节奏型", x, contentY);
+            
+            // 绘制节奏型
+            ctx.fillStyle = color;
+            ctx.font = "bold 24px Arial";
+            ctx.fillText(pattern, x + 80, contentY);
+            
+            // 绘制"简谱"标签
+            ctx.fillStyle = "#666";
+            ctx.font = "14px Arial";
+            ctx.fillText("简谱", x, contentY + 30);
+            
+            // 绘制简谱
+            ctx.fillStyle = color;
+            ctx.font = "24px Arial";
+            ctx.fillText(notation, x + 80, contentY + 30);
+            
+            // 绘制"记拍方式"标签
+            ctx.fillStyle = "#666";
+            ctx.font = "14px Arial";
+            ctx.fillText("记拍方式", x, contentY + 60);
+            
+            // 绘制记拍方式
+            ctx.fillStyle = color;
+            ctx.font = "18px Arial";
+            ctx.fillText(counting, x + 80, contentY + 60);
+            
+            // 绘制音符图示
+            drawNotes(pattern, notation, color, x + boxWidth - 120, contentY - 10);
+            
+            // 绘制联想记忆
+            ctx.fillStyle = "#666";
+            ctx.font = "14px Arial";
+            ctx.fillText("联想记忆", x, contentY + 90);
+            
+            // 绘制记忆内容
+            ctx.fillStyle = color;
+            ctx.font = "italic 18px Arial";
+            ctx.fillText(memory, x + 80, contentY + 90);
+        }
+        
+        // 绘制音符图示
+        function drawNotes(pattern, notation, color, x, y) {
+            const notes = pattern.split(' ');
+            const noteWidth = 40;
+            const noteHeight = 60;
+            
+            ctx.fillStyle = color;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            
+            for (let i = 0; i < notes.length; i++) {
+                const noteX = x + i * noteWidth;
+                
+                // 绘制音符头
+                ctx.beginPath();
+                ctx.arc(noteX + 20, y + 10, 8, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 绘制音符杆
+                ctx.fillRect(noteX + 20, y + 18, 2, noteHeight - 18);
+                
+                // 如果是八分音符，绘制符尾
+                if (notation[i] === '♫') {
+                    ctx.beginPath();
+                    ctx.moveTo(noteX + 22, y + 18);
+                    ctx.lineTo(noteX + 30, y + 10);
+                    ctx.lineTo(noteX + 32, y + 12);
+                    ctx.lineTo(noteX + 24, y + 20);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                // 如果是十六分音符，绘制双符尾
+                else if (notation[i] === '♪') {
+                    ctx.beginPath();
+                    ctx.moveTo(noteX + 22, y + 18);
+                    ctx.lineTo(noteX + 30, y + 10);
+                    ctx.lineTo(noteX + 32, y + 12);
+                    ctx.lineTo(noteX + 24, y + 20);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(noteX + 22, y + 15);
+                    ctx.lineTo(noteX + 30, y + 7);
+                    ctx.lineTo(noteX + 32, y + 9);
+                    ctx.lineTo(noteX + 24, y + 17);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            }
+        }
+        
+        // 绘制节奏型
+        function drawRhythm(type) {
+            const rhythm = rhythmData[type];
+            if (!rhythm) return;
+            
+            // 清除画布
+            drawInitialContent();
+            
+            // 高亮显示选中的节奏型
+            const title = rhythm.name;
+            let x, y;
+            
+            if (title.includes("二八")) {
+                x = 50;
+                y = 80;
+            } else if (title.includes("四十六")) {
+                x = canvas.width / 2 + 50;
+                y = 80;
+            } else if (title.includes("前八后十六")) {
+                x = 50;
+                y = canvas.height / 2 + 30;
+            } else if (title.includes("前十六后八")) {
+                x = canvas.width / 2 + 50;
+                y = canvas.height / 2 + 30;
+            }
+            
+            // 绘制高亮框
+            ctx.strokeStyle = rhythm.color;
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x - 10, y - 30, canvas.width / 2 - 50, canvas.height / 2 - 60);
+            
+            // 更新信息框
+            rhythmInfo.value = `${rhythm.name}\n\n节奏型: ${rhythm.pattern}\n简谱: ${rhythm.notation}\n记拍方式: ${rhythm.counting}\n联想记忆: ${rhythm.memory}\n\n${rhythm.description}`;
+        }
+        
+        // 初始化设置窗口拖拽
+        function initDrag() {
+            settingsHeader.addEventListener('mousedown', startDrag);
+            settingsHeader.addEventListener('touchstart', startDrag);
+            
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('touchmove', drag);
+            
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchend', endDrag);
+        }
+        
+        function startDrag(e) {
+            // 如果点击的是关闭按钮，不启动拖拽
+            if (e.target === closeSettingsBtn) return;
+            
+            isDragging = true;
+            
+            // 获取触摸事件或鼠标事件的位置
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+            
+            offsetX = clientX - settingsWindow.offsetLeft;
+            offsetY = clientY - settingsWindow.offsetTop;
+            
+            // 阻止默认行为，防止触摸滚动
+            e.preventDefault();
+        }
+        
+        function drag(e) {
+            if (!isDragging) return;
+            
+            // 获取触摸事件或鼠标事件的位置
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+            
+            // 计算新位置
+            let newLeft = clientX - offsetX;
+            let newTop = clientY - offsetY;
+            
+            // 设置窗口可以移动到屏幕任何位置
+            settingsWindow.style.left = newLeft + 'px';
+            settingsWindow.style.top = newTop + 'px';
+            
+            // 阻止默认行为，防止触摸滚动
+            e.preventDefault();
+        }
+        
+        function endDrag() {
+            isDragging = false;
+        }
+        
+        // 初始化事件监听
+        function initEvents() {
+            // 切换设置窗口显示/隐藏
+            toggleSettingsBtn.addEventListener('click', () => {
+                settingsWindow.classList.toggle('visible');
+            });
+            
+            // 关闭设置窗口
+            closeSettingsBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // 阻止事件冒泡
+                settingsWindow.classList.remove('visible');
+            });
+            
+            // 节奏型按钮点击事件
+            rhythmButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // 移除所有按钮的active类
+                    rhythmButtons.forEach(b => b.classList.remove('active'));
+                    // 给当前按钮添加active类
+                    btn.classList.add('active');
+                    // 绘制对应的节奏型
+                    drawRhythm(btn.dataset.type);
+                });
+            });
+        }
+        
+        // 初始化应用
+        function initApp() {
+            resizeCanvas();
+            initDrag();
+            initEvents();
+            
+            // 默认绘制第一个节奏型
+            drawRhythm('erba');
+            rhythmButtons[0].classList.add('active');
+        }
+        
+        // 窗口大小改变时调整画布
+        window.addEventListener('resize', resizeCanvas);
+        
+        // 页面加载完成后初始化应用
+        window.addEventListener('load', initApp);
+    </script>
+</body>
+</html>

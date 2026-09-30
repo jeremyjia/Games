@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>高级移动端画布应用</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: manipulation;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            max-width: 100%;
+            height: 100vh;
+            margin: 0 auto;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+            background: rgba(25, 25, 35, 0.95);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* 顶部导航菜单 */
+        nav {
+            background: linear-gradient(to right, #1a2980, #26d0ce);
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+            font-size: 1.8rem;
+            color: #ffd700;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin-left: 15px;
+        }
+        
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 5px 8px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+        }
+        
+        /* 工具条样式 */
+        .toolbar {
+            background: #2c3e50;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 90;
+            flex-wrap: wrap;
+        }
+        
+        .toolbar-btn {
+            background: linear-gradient(to right, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin: 5px;
+            min-width: 120px;
+        }
+        
+        .toolbar-btn i {
+            margin-right: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .toolbar-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .toolbar-btn.active {
+            background: linear-gradient(to right, #e74c3c, #c0392b);
+        }
+        
+        .toolbar-btn.delete-btn {
+            background: linear-gradient(to right, #e74c3c, #c0392b);
+        }
+        
+        .toolbar-btn.delete-btn:hover {
+            background: linear-gradient(to right, #c0392b, #9b2c2c);
+        }
+        
+        /* 画布区域 */
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: #ecf0f1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.5s ease;
+            touch-action: none;
+        }
+        
+        .canvas-content {
+            text-align: center;
+            padding: 20px;
+            color: #2c3e50;
+            max-width: 90%;
+        }
+        
+        .canvas-content h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #1a2980;
+        }
+        
+        .canvas-content p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(200, 200, 200, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(200, 200, 200, 0.2) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+        
+        .grid-overlay.hidden {
+            opacity: 0;
+        }
+        
+        /* 状态栏样式 */
+        footer {
+            background: linear-gradient(to right, #1a2980, #26d0ce);
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+        }
+        
+        .status-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-info i {
+            margin-right: 8px;
+            color: #ffd700;
+        }
+        
+        .battery {
+            display: flex;
+            align-items: center;
+        }
+        
+        .battery-level {
+            height: 15px;
+            width: 40px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 3px;
+            margin-right: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .battery-level::after {
+            content: '';
+            position: absolute;
+            height: 100%;
+            width: 82%;
+            background: #2ecc71;
+            border-radius: 2px;
+        }
+        
+        /* 可移动设置窗口 */
+        .settings-window {
+            position: absolute;
+            width: 280px;
+            background: rgba(40, 44, 52, 0.95);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            display: none;
+            z-index: 200;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .window-header {
+            background: linear-gradient(to right, #1a2980, #26d0ce);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+        }
+        
+        .window-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .close-btn {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .close-btn:hover {
+            background: rgba(255, 0, 0, 0.6);
+        }
+        
+        .window-content {
+            padding: 20px;
+        }
+        
+        .color-picker {
+            margin-bottom: 25px;
+        }
+        
+        .color-picker label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+        
+        .color-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        
+        .color-option {
+            width: 100%;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+        
+        .color-option.active {
+            border: 2px solid white;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+        
+        .preset-label {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+        
+        .custom-color {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+        }
+        
+        .custom-color input {
+            flex: 1;
+            height: 40px;
+            width: 180px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 0 15px;
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .custom-color-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .custom-color-btn:hover {
+            background: #2980b9;
+        }
+        
+        .setting-group {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .setting-group:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .setting-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider-toggle {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider-toggle:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider-toggle {
+            background-color: #3498db;
+        }
+        
+        input:checked + .slider-toggle:before {
+            transform: translateX(26px);
+        }
+        
+        /* 画布工具提示 */
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            z-index: 300;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        /* 临时形状预览 */
+        .preview-shape {
+            position: absolute;
+            pointer-events: none;
+            border: 2px dashed rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 选中形状的样式 */
+        .selected-indicator {
+            position: absolute;
+            pointer-events: none;
+            border: 2px dashed #e74c3c;
+            background-color: rgba(231, 76, 60, 0.1);
+            border-radius: 4px;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 480px) {
+            .nav-links li {
+                margin-left: 10px;
+            }
+            
+            .nav-links a {
+                font-size: 0.8rem;
+                padding: 4px 6px;
+            }
+            
+            .canvas-content h2 {
+                font-size: 1.5rem;
+            }
+            
+            .canvas-content p {
+                font-size: 1rem;
+            }
+            
+            .toolbar-btn {
+                padding: 8px 12px;
+                font-size: 0.85rem;
+                min-width: 100px;
+            }
+            
+            .settings-window {
+                width: 90%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航菜单 -->
+        <nav>
+            <div class="logo">
+                <i class="fas fa-palette"></i>
+                <span>高级画布工作室 v1.22</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">index.html</a></li>
+                <li><a href="1.html">1.html</a></li> 
+                <li><a href="#" class="active">2.html</a></li>
+            </ul>
+        </nav>
+        
+        <!-- 工具条 -->
+        <div class="toolbar">
+            <button class="toolbar-btn" id="settings_btn">
+                <i class="fas fa-cog"></i>
+                <span>画布设置</span>
+            </button>
+            <button class="toolbar-btn active" id="free_draw_btn">
+                <i class="fas fa-pencil-alt"></i>
+                <span>自由绘制</span>
+            </button>
+            <button class="toolbar-btn" id="line_btn">
+                <i class="fas fa-minus"></i>
+                <span>直线</span>
+            </button>
+            <button class="toolbar-btn" id="rect_btn">
+                <i class="fas fa-square"></i>
+                <span>矩形</span>
+            </button>
+            <button class="toolbar-btn" id="circle_btn">
+                <i class="fas fa-circle"></i>
+                <span>圆形</span>
+            </button>
+            <button class="toolbar-btn" id="select_btn">
+                <i class="fas fa-mouse-pointer"></i>
+                <span>选择/移动</span>
+            </button>
+            <button class="toolbar-btn delete-btn" id="delete_btn">
+                <i class="fas fa-trash"></i>
+                <span>删除</span>
+            </button>
+            <button class="toolbar-btn" id="clear_btn">
+                <i class="fas fa-trash-alt"></i>
+                <span>清空画布</span>
+            </button>
+            <button class="toolbar-btn" id="grid_toggle">
+                <i class="fas fa-th"></i>
+                <span>网格: 开</span>
+            </button>
+        </div>
+        
+        <!-- 画布区域 -->
+        <div class="canvas-container" id="canvas">
+            <div class="canvas-content">
+                <h2>创意画布空间</h2>
+                <p>选择左侧工具开始创作，使用"画布设置"自定义背景和画笔设置。</p>
+                <p>支持自由绘制、直线、矩形和圆形，使用"选择/移动"工具可以拖动图形，选中后点击"删除"按钮或按Delete键删除。</p>
+                <div style="margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.05); border-radius: 10px;">
+                    <i class="fas fa-info-circle" style="color: #3498db;"></i>
+                    <span style="font-size: 0.9rem;">更新版本：支持删除已绘制的图形</span>
+                </div>
+            </div>
+            <div class="grid-overlay" id="grid-overlay"></div>
+            <canvas id="drawing-canvas" style="display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
+            <div class="tooltip" id="tooltip"></div>
+            <div class="preview-shape" id="preview-shape" style="display: none;"></div>
+            <div class="selected-indicator" id="selected-indicator" style="display: none;"></div>
+        </div>
+        
+        <!-- 状态栏 -->
+        <footer>
+            <div class="status-info">
+                <i class="fas fa-sync-alt"></i>
+                <span>当前工具: <span id="current-tool">自由绘制</span></span>
+            </div>
+            <div class="battery">
+                <div class="battery-level"></div>
+                <span>82%</span>
+            </div>
+        </footer>
+        
+        <!-- 可移动设置窗口 -->
+        <div class="settings-window" id="settings-window">
+            <div class="window-header" id="window-header">
+                <div class="window-title">
+                    <i class="fas fa-fill-drip"></i> 画布设置
+                </div>
+                <button class="close-btn" id="close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="window-content">
+                <div class="setting-group">
+                    <label>画布背景颜色:</label>
+                    <div class="color-options">
+                        <div class="color-option active" style="background-color: #ecf0f1;" data-color="#ecf0f1"></div>
+                        <div class="color-option" style="background-color: #d5f5e3;" data-color="#d5f5e3"></div>
+                        <div class="color-option" style="background-color: #f9ebea;" data-color="#f9ebea"></div>
+                        <div class="color-option" style="background-color: #eaf2f8;" data-color="#eaf2f8"></div>
+                        <div class="color-option" style="background-color: #fdebd0;" data-color="#fdebd0"></div>
+                        <div class="color-option" style="background-color: #e8daef;" data-color="#e8daef"></div>
+                        <div class="color-option" style="background-color: #d1f2eb;" data-color="#d1f2eb"></div>
+                        <div class="color-option" style="background-color: #f5eef8;" data-color="#f5eef8"></div>
+                    </div>
+                    
+                    <div class="preset-label">自定义颜色:</div>
+                    <div class="custom-color">
+                        <input type="text" id="custom-color-input" placeholder="#FFFFFF 或 rgb(255,255,255)">
+                        <button class="custom-color-btn" id="apply_custom_btn">应用</button>
+                    </div>
+                </div>
+                
+                <div class="setting-group">
+                    <label>画笔颜色:</label>
+                    <div class="color-options">
+                        <div class="color-option active" style="background-color: #000000;" data-color="#000000" data-type="brush"></div>
+                        <div class="color-option" style="background-color: #e74c3c;" data-color="#e74c3c" data-type="brush"></div>
+                        <div class="color-option" style="background-color: #3498db;" data-color="#3498db" data-type="brush"></div>
+                        <div class="color-option" style="background-color: #2ecc71;" data-color="#2ecc71" data-type="brush"></div>
+                    </div>
+                </div>
+                
+                <div class="setting-group">
+                    <label>画笔大小: <span id="brush-size-value">5</span>px</label>
+                    <div class="slider-container">
+                        <input type="range" min="1" max="20" value="5" class="slider" id="brush-size">
+                    </div>
+                </div>
+                
+                <div class="setting-group">
+                    <label>网格显示:</label>
+                    <div class="slider-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="grid-toggle" checked>
+                            <span class="slider-toggle"></span>
+                        </label>
+                        <span id="grid-status">开</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+      class C4Shape{}
+      class C4Line  extends C4Shape {} 
+      class C4Circle  extends C4Shape {}
+      class C4Rect  extends C4Shape {}
+      class C4Freehand  extends C4Shape {} 
+       
+      class C4CanvasManager {}
+      class CanvasApp {} 
+   
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', () => {
+            const app = new CanvasApp();
+        });
+    </script>
+</body>
+</html>
+<!--
+升级：
+实现：
+
+清空画布
+已经画的图形可以移动，调整大小
+可保存矢量文件。
+可导入矢量文件
+-->

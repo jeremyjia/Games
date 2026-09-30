@@ -1,76 +1,481 @@
-
-<!DOCTYPE HTML>
-<html>
-
-<body>
-  <div id="id4dbg">v0.35
-    <a href="../../index.html">Home</a>
-    <a href="../index.html">[..]</a>
-    <a href="1.html">1.html</a>
-    <a href="2.html">2.html</a>
-    <a href="3.html">3.html</a>
-    <a href="51voa.html">51voa.html</a> 
-    <a href="blfw.html">blfw.html</a> 
-    <a href="bli.html">bli.html</a> 
-    <a href="pluginCall.html">pluginCall.html</a> 
-    <a href="translate.html">translate.html</a>
-    <a href="https://www.runoob.com/">runoob.com</a>
-    <a href="https://www.w3schools.com/">w3schools.com</a> 
-
-  </div>
-  <canvas id="myCanvas" width="444" height="333"></canvas>
-  <script src="https://jeremyjia.github.io/Games/js/blclass.js"></script>
-  <script src="firework.js"></script>
-  <script src="so646.js"></script>
-  <script type="text/javascript">
-    const d = bl$("id4dbg");
-    const tb = blo0.blDiv(d,d.id+"tb","tb",blGrey[0]); tb.ls = [];
-    const s1= blo0.blBtn(tb,tb.id+"s1","s1",blGrey[1]); tb.ls.push(s1);
-    const s2= blo0.blBtn(tb,tb.id+"s2","s2",blGrey[1]);tb.ls.push(s2);
-    var sn = 2;
-    s1.onclick = function(){
-      blo0.blMarkBtnInList(this,tb.ls,"green","grey");
-      sn = 1;
-    }
-    s2.onclick = function(){
-      blo0.blMarkBtnInList(this,tb.ls,"green","grey");
-      sn = 2;
-    }
-
-
-    let c = document.querySelector('#myCanvas');
-    let ctx = c.getContext('2d');
-    c.width = 1200;//window.innerWidth/2;
-    c.height = 600;// window.innerHeight/2;
-    let w = c.width;
-    let h = c.height;  
-    let gN = 0;
-
-    function draw(ts) {
-        gN++;
-        clear(); 
-        if(sn==1)        animateFrame(gN);
-        if(sn==2)        animateFrame2(gN);
-        window.requestAnimationFrame(ts => draw(ts));
-    }
-
-    function clear() {
-        ctx.save();
-        ctx.fillStyle = 'black';
-        ctx.fillRect(0, 0, w, h);
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas动画控制</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         
-        ctx.fillStyle = 'blue';
-        ctx.font = "30px Verdana";
-        ctx.fillText(gN, 10, 44);
-        ctx.restore();
-    }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            background: linear-gradient(to right, #ff8a00, #da1b60);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .nav-bar {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+        }
+        
+        .nav-bar a {
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 1rem;
+        }
+        
+        .nav-bar a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        canvas {
+            width: 100%;
+            background: #000;
+            border-radius: 10px;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .controls {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .control-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(45deg, #ff8a00, #da1b60);
+            color: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn.active {
+            background: linear-gradient(45deg, #00c9ff, #92fe9d);
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 201, 255, 0.5);
+        }
+        
+        .info-panel {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+        
+        .info-panel h3 {
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            color: #00c9ff;
+        }
+        
+        .info-content {
+            line-height: 1.7;
+        }
+        
+        .info-content p {
+            margin-bottom: 10px;
+        }
+        
+        .highlight {
+            color: #ff8a00;
+            font-weight: bold;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            margin-top: 30px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .nav-bar {
+                gap: 8px;
+            }
+            
+            .nav-bar a {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Canvas动画控制器v0.11</h1>
+            <p class="subtitle">使用HTML5 Canvas实现动态视觉效果，通过控制面板切换不同动画模式，实时显示帧数统计。</p>
+        </header>
+        
+        <div class="nav-bar">
+            <a href="../../index.html">Home</a>
+            <a href="../index.html">[..]</a>
+            <a href="1.html">1.html</a>
+            <a href="2.html">2.html</a>
+            <a href="3.html">3.html</a>
+            <a href="voa.html">voa.html</a> 
+            <a href="blfw.html">blfw.html</a> 
+            <a href="bli.html">bli.html</a> 
+            <a href="pluginCall.html">pluginCall.html</a> 
+            <a href="translate.html">translate.html</a>
+            <a href="https://www.runoob.com/">runoob.com</a>
+            <a href="https://www.w3schools.com/">w3schools.com</a>
+        </div>
+        
+        <div class="content">
+            <div class="canvas-container">
+                <canvas id="myCanvas" width="1200" height="600"></canvas>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="control-panel" id="controlPanel">
+                <!-- 按钮将通过JS动态添加 -->
+            </div>
+            
+            <div class="info-panel">
+                <h3>动画说明</h3>
+                <div class="info-content">
+                    <p><span class="highlight">动画模式1</span>: 粒子系统与重力模拟 - 展示粒子在重力作用下的运动轨迹</p>
+                    <p><span class="highlight">动画模式2</span>: 几何变换与波形 - 展示几何图形的动态变换和波形效果</p>
+                    <p><span class="highlight">帧计数器</span>: 显示当前动画已渲染的帧数，用于性能参考</p>
+                    <p><span class="highlight">控制说明</span>: 点击上方按钮切换不同动画模式，当前活动按钮显示为绿色</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Canvas动画演示 &copy; 2023 | 使用HTML5 Canvas和JavaScript实现</p>
+        </footer>
+    </div>
 
-    window.requestAnimationFrame(ts => { 
-        draw(ts);
-    });
-
-  </script>
-
+    <script>
+        // 初始化控制面板
+        const controlPanel = document.getElementById('controlPanel');
+        const buttons = [];
+        
+        // 创建两个控制按钮
+        for (let i = 1; i <= 2; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'btn';
+            btn.id = `s${i}`;
+            btn.textContent = `动画模式${i}`;
+            controlPanel.appendChild(btn);
+            buttons.push(btn);
+        }
+        
+        // 获取Canvas和上下文
+        const c = document.getElementById('myCanvas');
+        const ctx = c.getContext('2d');
+        const w = c.width;
+        const h = c.height;
+        
+        // 帧计数器
+        let gN = 0;
+        let sn = 1; // 默认动画模式
+        
+        // 粒子系统
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            
+            reset() {
+                this.x = Math.random() * w;
+                this.y = Math.random() * h;
+                this.size = Math.random() * 8 + 2;
+                this.speedX = (Math.random() - 0.5) * 4;
+                this.speedY = (Math.random() - 0.5) * 4;
+                this.color = `hsl(${Math.random() * 360}, 70%, 60%)`;
+                this.alpha = Math.random() * 0.5 + 0.5;
+            }
+            
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                
+                // 添加重力效果
+                this.speedY += 0.05;
+                
+                // 边界反弹
+                if (this.x < 0 || this.x > w) {
+                    this.speedX = -this.speedX * 0.8;
+                }
+                if (this.y > h) {
+                    this.speedY = -this.speedY * 0.7;
+                    this.y = h;
+                    
+                    // 能量损失
+                    if (Math.abs(this.speedY) < 0.5) {
+                        this.reset();
+                    }
+                }
+                
+                // 随机重置离开屏幕的粒子
+                if (this.y < -20 || this.x < -20 || this.x > w + 20) {
+                    this.reset();
+                }
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+        
+        // 创建粒子数组
+        const particles = [];
+        for (let i = 0; i < 150; i++) {
+            particles.push(new Particle());
+        }
+        
+        // 动画模式1：粒子系统
+        function animateFrame1() {
+            // 更新并绘制所有粒子
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+            
+            // 绘制中心能量源
+            ctx.save();
+            ctx.fillStyle = 'rgba(255, 100, 100, 0.3)';
+            ctx.beginPath();
+            ctx.arc(w/2, h/4, 40, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制能量脉冲
+            const pulseSize = 60 + Math.sin(gN * 0.1) * 20;
+            ctx.strokeStyle = `rgba(255, 100, 100, ${0.3 + Math.sin(gN * 0.1) * 0.2})`;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(w/2, h/4, pulseSize, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+        }
+        
+        // 动画模式2：几何变换
+        function animateFrame2() {
+            const centerX = w / 2;
+            const centerY = h / 2;
+            const maxRadius = Math.min(w, h) * 0.4;
+            
+            // 绘制波形背景
+            for (let i = 0; i < w; i += 20) {
+                const waveHeight = Math.sin(i * 0.02 + gN * 0.05) * 30;
+                ctx.beginPath();
+                ctx.moveTo(i, h);
+                ctx.lineTo(i, h - 100 - waveHeight);
+                ctx.strokeStyle = `hsl(${i / w * 120 + gN}, 70%, 50%)`;
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+            
+            // 绘制旋转几何图形
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            
+            // 绘制多个旋转多边形
+            for (let i = 0; i < 5; i++) {
+                const angle = gN * 0.01 + i * Math.PI * 0.4;
+                const radius = maxRadius * (0.6 - i * 0.1);
+                const sides = 3 + i;
+                
+                ctx.save();
+                ctx.rotate(angle);
+                ctx.beginPath();
+                
+                for (let j = 0; j < sides; j++) {
+                    const a = j * (Math.PI * 2) / sides;
+                    const x = Math.cos(a) * radius;
+                    const y = Math.sin(a) * radius;
+                    
+                    if (j === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                
+                ctx.closePath();
+                ctx.strokeStyle = `hsl(${gN * 2 + i * 72}, 80%, 60%)`;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.restore();
+            }
+            
+            ctx.restore();
+            
+            // 绘制移动的小球
+            for (let i = 0; i < 8; i++) {
+                const angle = gN * 0.02 + i * Math.PI * 0.25;
+                const radius = maxRadius * 0.8;
+                const x = centerX + Math.cos(angle) * radius;
+                const y = centerY + Math.sin(angle) * radius;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 15, 0, Math.PI * 2);
+                ctx.fillStyle = `hsl(${gN * 5 + i * 45}, 80%, 60%)`;
+                ctx.fill();
+            }
+        }
+        
+        // 清除画布
+        function clear() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; // 半透明清除创建拖尾效果
+            ctx.fillRect(0, 0, w, h);
+            
+            ctx.fillStyle = '#00ccff';
+            ctx.font = "bold 24px 'Segoe UI', sans-serif";
+            ctx.fillText(`帧数: ${gN}`, 20, 40);
+            
+            ctx.fillStyle = '#ff9900';
+            ctx.font = "bold 18px 'Segoe UI', sans-serif";
+            ctx.fillText(`当前模式: ${sn}`, 20, 70);
+        }
+        
+        // 主绘制循环
+        function draw() {
+            gN++;
+            clear();
+            
+            if (sn === 1) {
+                animateFrame1();
+            } else if (sn === 2) {
+                animateFrame2();
+            }
+            
+            requestAnimationFrame(draw);
+        }
+        
+        // 按钮事件处理
+        buttons[0].onclick = function() {
+            sn = 1;
+            buttons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+        };
+        
+        buttons[1].onclick = function() {
+            sn = 2;
+            buttons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+        };
+        
+        // 初始激活第一个按钮
+        buttons[0].classList.add('active');
+        
+        // 开始动画
+        draw();
+    </script>
 </body>
-
 </html>
+<!--
+升级
+让手机可完美演示
+return all new code
+-->
