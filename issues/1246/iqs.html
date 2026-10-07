@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>面试题库</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f5f6f8;
+    color: #1f2328;
+    line-height: 1.6;
+  }
+  header {
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  header h1 { font-size: 18px; }
+  header .status { font-size: 13px; color: #6b7280; margin-left: auto; }
+
+  .layout {
+    display: flex;
+    max-width: 1100px;
+    margin: 24px auto;
+    gap: 24px;
+    padding: 0 16px;
+  }
+  aside {
+    width: 240px;
+    flex-shrink: 0;
+    background: #fff;
+    border-radius: 10px;
+    padding: 12px;
+    height: fit-content;
+    position: sticky;
+    top: 80px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+  }
+  aside h2 { font-size: 13px; color: #6b7280; margin-bottom: 8px; padding: 0 8px; }
+  aside ul { list-style: none; }
+  aside li {
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  aside li:hover { background: #f3f4f6; }
+  aside li.active { background: #eef2ff; color: #4338ca; font-weight: 600; }
+  aside li .count { color: #9ca3af; font-size: 12px; }
+  aside li.group-title {
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 600;
+    padding: 12px 10px 4px;
+    cursor: default;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  aside li.group-title:hover { background: transparent; }
+  aside li.sub { padding-left: 20px; }
+
+  main { flex: 1; min-width: 0; }
+
+  .toolbar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .toolbar input, .toolbar select {
+    padding: 8px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    background: #fff;
+  }
+  .toolbar input { flex: 1; min-width: 180px; }
+  .toolbar input:focus { border-color: #6366f1; }
+
+  .card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  }
+  .card .q-title {
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .card .q-title .num {
+    color: #9ca3af;
+    font-weight: 400;
+    flex-shrink: 0;
+  }
+  .card .meta {
+    margin-top: 10px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .tag {
+    font-size: 12px;
+    background: #f3f4f6;
+    color: #4b5563;
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+  .tag.diff-简单 { background: #ecfdf5; color: #047857; }
+  .tag.diff-中等 { background: #fffbeb; color: #b45309; }
+  .tag.diff-困难 { background: #fef2f2; color: #b91c1c; }
+
+  .answer {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed #e5e7eb;
+    font-size: 14px;
+    color: #374151;
+    white-space: pre-wrap;
+  }
+  .answer[hidden] { display: none; }
+
+  .empty, .error {
+    text-align: center;
+    padding: 60px 20px;
+    color: #9ca3af;
+    font-size: 14px;
+  }
+  .error { color: #dc2626; }
+
+  @media (max-width: 720px) {
+    .layout { flex-direction: column; }
+    aside { width: 100%; position: static; max-height: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📚 面试题库</h1>
+  <span class="status" id="status">加载中…</span>
+</header>
+
+<div class="layout">
+  <aside>
+    <h2>分类</h2>
+    <ul id="categoryList"></ul>
+  </aside>
+
+  <main>
+    <div class="toolbar">
+      <input id="search" placeholder="搜索题目…" />
+      <select id="filterDiff">
+        <option value="">全部难度</option>
+        <option>简单</option>
+        <option>中等</option>
+        <option>困难</option>
+      </select>
+    </div>
+    <div id="questions"></div>
+  </main>
+</div>
+
+<script>
+// ================== 配置 ==================
+const CONFIG = {
+  owner: 'jeremyjia',     // ← 改成你的 GitHub 用户名
+  repo:  'Corpus',  // ← 改成你的题库仓库名
+  // 可选：只在打了某个 label 的 issue 里找题库；留空则不限
+  label: '',                     // 例如 'question-bank'
+};
+
+// ================== 过滤规则 ==================
+const FILTER_RULES = {
+  // 标题必须匹配 [分类] 子分类
+  pattern: /^\[([^\]]+)\]\s*(.+)$/,
+  // 只显示这些大分类（空数组 = 全部显示）
+  allowCategories: [],           // 例如 ['月嫂', '程序员']
+  // 标题里带这些词直接排除（不区分大小写）
+  excludeKeywords: ['草稿', 'draft', '公告', 'template', '模板', 'todo'],
+};
+
+// ================== 常量 ==================
+const API = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}`;
+
+// ================== 状态 ==================
+const state = {
+  issues: [],
+  currentIssue: null,
+  questions: [],
+  keyword: '',
+  difficulty: '',
+};
+
+// ================== 工具 ==================
+const $ = (sel) => document.querySelector(sel);
+const setStatus = (t) => { $('#status').textContent = t; };
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+// ================== Issue 过滤与解析 ==================
+function parseIssue(issue) {
+  const title = (issue.title || '').trim();
+
+  // 1) 排除关键词
+  const lower = title.toLowerCase();
+  if (FILTER_RULES.excludeKeywords.some(k => lower.includes(k.toLowerCase()))) {
+    return null;
+  }
+
+  // 2) 必须匹配 [分类] 子分类
+  const m = title.match(FILTER_RULES.pattern);
+  if (!m) return null;
+
+  const category = m[1].trim();
+  const subtitle = m[2].trim();
+
+  // 3) 分类白名单
+  if (FILTER_RULES.allowCategories.length &&
+      !FILTER_RULES.allowCategories.includes(category)) {
+    return null;
+  }
+
+  return {
+    number: issue.number,
+    title,
+    category,
+    subtitle,
+    comments: issue.comments,
+  };
+}
+
+// ================== Comment 解析 ==================
+function parseComment(comment) {
+  const body = comment.body || '';
+
+  const section = (name) => {
+    const re = new RegExp(`###\\s*${name}\\s*\\n([\\s\\S]*?)(?=\\n###|$)`, 'i');
+    return body.match(re)?.[1]?.trim() || '';
+  };
+
+  let question = section('题目');
+  const answer = section('参考答案') || section('答案');
+  const diffRaw = section('难度');
+  const tagLine = section('标签');
+
+  if (!question) {
+    const firstLine = body.split('\n').find(l => l.trim() && !l.startsWith('#'));
+    question = (firstLine || '（无题目）').trim();
+  }
+
+  const tags = (tagLine.match(/#[\u4e00-\u9fa5\w]+/g) || []).map(t => t.slice(1));
+  if (!tags.length && tagLine) {
+    tags.push(...tagLine.split(/[,，\s]+/).filter(Boolean));
+  }
+
+  let difficulty = '';
+  const dm = diffRaw.match(/简单|中等|困难/);
+  if (dm) difficulty = dm[0];
+
+  return {
+    id: comment.id,
+    question,
+    answer,
+    tags,
+    difficulty,
+    url: comment.html_url,
+  };
+}
+
+// ================== API ==================
+async function fetchIssues() {
+  const params = new URLSearchParams({ state: 'open', per_page: '100' });
+  if (CONFIG.label) params.set('labels', CONFIG.label);
+
+  const res = await fetch(`${API}/issues?${params}`);
+  if (!res.ok) throw new Error(`Issues 请求失败：${res.status}`);
+  const data = await res.json();
+
+  return data
+    .filter(i => !i.pull_request)  // 排除 PR
+    .map(parseIssue)
+    .filter(Boolean);
+}
+
+async function fetchQuestions(issueNumber) {
+  let all = [], page = 1;
+  while (true) {
+    const res = await fetch(
+      `${API}/issues/${issueNumber}/comments?per_page=100&page=${page}`
+    );
+    if (!res.ok) throw new Error(`Comments 请求失败：${res.status}`);
+    const data = await res.json();
+    if (!data.length) break;
+    all = all.concat(data);
+    if (data.length < 100) break;
+    page++;
+  }
+  return all.map(parseComment);
+}
+
+// ================== 渲染 ==================
+function renderCategories() {
+  const ul = $('#categoryList');
+  ul.innerHTML = '';
+
+  if (!state.issues.length) {
+    ul.innerHTML = `<li style="color:#9ca3af">暂无匹配的分类</li>`;
+    return;
+  }
+
+  // 按 category 分组
+  const groups = {};
+  state.issues.forEach(issue => {
+    (groups[issue.category] ||= []).push(issue);
+  });
+
+  Object.entries(groups).forEach(([category, list]) => {
+    const head = document.createElement('li');
+    head.className = 'group-title';
+    head.textContent = category;
+    ul.appendChild(head);
+
+    list.forEach(issue => {
+      const li = document.createElement('li');
+      li.className = 'sub' +
+        (state.currentIssue?.number === issue.number ? ' active' : '');
+      li.innerHTML = `
+        <span>${escapeHtml(issue.subtitle)}</span>
+        <span class="count">${issue.comments}</span>
+      `;
+      li.onclick = () => selectIssue(issue);
+      ul.appendChild(li);
+    });
+  });
+}
+
+function renderQuestions() {
+  const container = $('#questions');
+  const list = filterQuestions();
+
+  if (!list.length) {
+    container.innerHTML = `<div class="empty">没有匹配的题目</div>`;
+    return;
+  }
+
+  container.innerHTML = '';
+  list.forEach((q, idx) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="q-title">
+        <span class="num">${idx + 1}.</span>
+        <span>${escapeHtml(q.question)}</span>
+      </div>
+      <div class="meta">
+        ${q.difficulty ? `<span class="tag diff-${q.difficulty}">${q.difficulty}</span>` : ''}
+        ${q.tags.map(t => `<span class="tag">#${escapeHtml(t)}</span>`).join('')}
+      </div>
+      <div class="answer" hidden>${escapeHtml(q.answer || '（暂无答案）')}</div>
+    `;
+    card.querySelector('.q-title').onclick = () => {
+      const a = card.querySelector('.answer');
+      a.hidden = !a.hidden;
+    };
+    container.appendChild(card);
+  });
+}
+
+function filterQuestions() {
+  const kw = state.keyword.trim().toLowerCase();
+  return state.questions.filter(q => {
+    if (state.difficulty && q.difficulty !== state.difficulty) return false;
+    if (kw) {
+      const hay = (q.question + q.answer + q.tags.join(' ')).toLowerCase();
+      if (!hay.includes(kw)) return false;
+    }
+    return true;
+  });
+}
+
+// ================== 交互 ==================
+async function selectIssue(issue) {
+  state.currentIssue = issue;
+  renderCategories();
+  $('#questions').innerHTML = `<div class="empty">加载中…</div>`;
+  setStatus(`加载「${issue.title}」…`);
+  try {
+    state.questions = await fetchQuestions(issue.number);
+    setStatus(`共 ${state.questions.length} 题`);
+    renderQuestions();
+  } catch (e) {
+    $('#questions').innerHTML = `<div class="error">${escapeHtml(e.message)}</div>`;
+    setStatus('加载失败');
+  }
+}
+
+// ================== 启动 ==================
+async function init() {
+  setStatus('加载分类…');
+  try {
+    state.issues = await fetchIssues();
+    renderCategories();
+    setStatus(`共 ${state.issues.length} 个分类`);
+    if (state.issues.length) selectIssue(state.issues[0]);
+  } catch (e) {
+    setStatus('加载失败');
+    $('#categoryList').innerHTML =
+      `<li style="color:#dc2626">${escapeHtml(e.message)}</li>`;
+  }
+}
+
+$('#search').addEventListener('input', e => {
+  state.keyword = e.target.value;
+  renderQuestions();
+});
+$('#filterDiff').addEventListener('change', e => {
+  state.difficulty = e.target.value;
+  renderQuestions();
+});
+
+init();
+</script>
+</body>
+</html>
